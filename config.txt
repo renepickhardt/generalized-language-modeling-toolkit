@@ -1,0 +1,2 @@
+wikiXmlPath = /var/lib/datasets/de-wiki.xml
+parsedWikiOutputPath = /var/lib/datases/out.txt
