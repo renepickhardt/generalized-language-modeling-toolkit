@@ -23,6 +23,9 @@ import java.util.Properties;
 public class Config extends Properties {
 	public String wikiXmlPath; 
 	public String parsedWikiOutputPath;
+	public String germanWikiText;
+	public String letterGraph;
+	public int keystrokesWindowSize;
 	
 	private static final long serialVersionUID = -4439565094382127683L;
 

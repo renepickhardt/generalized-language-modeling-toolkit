@@ -1,6 +1,7 @@
 package de.typology.parser;
 import static org.junit.Assert.*;
 
+import org.junit.Test;
 import org.junit.Assert.*;
 
 public class ParserModifyTextTest {
@@ -76,6 +77,11 @@ public class ParserModifyTextTest {
 		input = "1 2 3 b a d k";
 		expectedOutput = "b b a d k";
 		output = ParserModifyText.removeNumbers(input);
-		assertTrue(output.equals(expectedOutput));		
+		assertTrue(output.equals(expectedOutput));
 	}
+	
+	@Test(expected= NullPointerException.class) public void ExceptionTest() { 
+	    ParserModifyText.removeMultipleWhitespaces(null); 
+	}
+
 }
