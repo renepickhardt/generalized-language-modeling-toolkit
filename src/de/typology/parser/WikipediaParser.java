@@ -27,60 +27,62 @@ import edu.jhu.nlp.wikipedia.WikiXMLParser;
 import edu.jhu.nlp.wikipedia.WikiXMLParserFactory;
 
 public class WikipediaParser {
-    //constants
-    public static int cnt = 0;
-    public static FileWriter out;
+	// constants
+	public static int cnt = 0;
+	public static FileWriter out;
 
-    
-    public static void main(String[] args) {
-     	WikiXMLParser wxsp = WikiXMLParserFactory.getSAXParser(Config.get().wikiXmlPath);
-        File file = new File(Config.get().parsedWikiOutputPath);
-        try {
+	public static void main(String[] args) {
+		WikiXMLParser wxsp = WikiXMLParserFactory
+				.getSAXParser(Config.get().wikiXmlPath);
+		File file = new File(Config.get().parsedWikiOutputPath);
+		try {
 			out = new FileWriter(file, true);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
-     	
-     	try {
-            wxsp.setPageCallback(new PageCallbackHandler() {
-                public void process(WikiPage page) {
-                    if(page.isSpecialPage()){
-                        return;
-                    }
-                    if (page.getWikiText().startsWith("#REDIRECT ")){
-//                    	System.out.println("redirect...");
-                    	return;
-                    }
-                    if (page.getWikiText().startsWith("#WEITERLEITUNG")){
-                    	return;
-                    }
-                    
-                    String out = getCleanText(page);
-                    output(out+"\n");
-                    if (cnt%1000==0){
-                    	System.out.println("Processing: " + page.getTitle() + " - " + cnt);
-                    }
-                    cnt++;
-                }
-            });
-            wxsp.parse();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
+		try {
+			wxsp.setPageCallback(new PageCallbackHandler() {
+				@Override
+				public void process(WikiPage page) {
+					if (page.isSpecialPage()) {
+						return;
+					}
+					if (page.getWikiText().startsWith("#REDIRECT ")) {
+						// System.out.println("redirect...");
+						return;
+					}
+					if (page.getWikiText().startsWith("#WEITERLEITUNG")) {
+						return;
+					}
+
+					String out = getCleanText(page);
+					output(out + "\n");
+					if (cnt % 1000 == 0) {
+						System.out.println("Processing: " + page.getTitle()
+								+ " - " + cnt);
+					}
+					cnt++;
+				}
+			});
+			wxsp.parse();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
 			out.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-    }
+	}
 
-    
 	/**
-	 * categories and translations at the very end of the text have to be thrown away
+	 * categories and translations at the very end of the text have to be thrown
+	 * away
+	 * 
 	 * @param page
 	 * @return
 	 */
@@ -100,42 +102,36 @@ public class WikipediaParser {
 		final StringBuilder cleaned = new StringBuilder();
 
 		HTMLEditorKit.ParserCallback callback = new HTMLEditorKit.ParserCallback() {
+			@Override
 			public void handleText(char[] data, int pos) {
 				cleaned.append(new String(data)).append(' ');
 			}
 		};
 		try {
-			new ParserDelegator().parse(new StringReader(html),
-					callback, false);
+			new ParserDelegator()
+					.parse(new StringReader(html), callback, false);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//TODO: more hast to be done... this is very dirty
+
+		// TODO: more hast to be done... this is very dirty
 		String result = cleaned.toString();
-		result = ParserModifyText.removeChildNodes(result,"<ref","</ref>");
-		result = ParserModifyText.removeChildNodes(result,"<math>","</math>");
-		result = ParserModifyText.removeChildNodes(result,"{{","}}");
-		result = ParserModifyText.removeChildNodes(result,"{|","|}");
+		result = ParserModifyText.removeChildNodes(result, "<ref", "</ref>");
+		result = ParserModifyText.removeChildNodes(result, "<math>", "</math>");
+		result = ParserModifyText.removeChildNodes(result, "{{", "}}");
+		result = ParserModifyText.removeChildNodes(result, "{|", "|}");
 		result = result.split("Kategorie:")[0];
 		return result;
 	}
-	
-	
-	   public static void output(String result) {
-	        try {
-	            out.write(result);
-	            out.flush();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    }
-	
-	
+
+	public static void output(String result) {
+		try {
+			out.write(result);
+			out.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 }
-
-
-
-
-
