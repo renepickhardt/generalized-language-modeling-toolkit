@@ -20,13 +20,17 @@ import static de.typology.lexerParser.Token.WS;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.itadaki.bzip2.BZip2InputStream;
 
 /**
  * @author Martin Koerner
@@ -59,7 +63,10 @@ public class Recognizer implements Iterator<Token> {
 	}
 
 	public Recognizer(String s) throws FileNotFoundException {
-		this.reader = new BufferedReader(new FileReader(new File(s)));
+		InputStream input = new FileInputStream(new File(s));
+		BZip2InputStream cb = new BZip2InputStream(input, false);
+		this.reader = new BufferedReader(new InputStreamReader(cb));
+		// this.reader = new BufferedReader(new FileReader(new File(s)));
 	}
 
 	// Extract lexeme from buffer

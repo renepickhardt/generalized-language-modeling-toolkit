@@ -2,6 +2,8 @@ package de.typology.lexerParser;
 
 import java.io.FileNotFoundException;
 
+import de.typology.utils.Config;
+
 public class TestLexParser {
 
 	/**
@@ -9,10 +11,9 @@ public class TestLexParser {
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		Recognizer recognizer = new Recognizer(
-				"D:/Arbeit/Typology/dewiki-20120630-pages-meta-current.xml");
+		Recognizer recognizer = new Recognizer(Config.get().wikiXmlPath);
 
-		for (int i = 0; i < 20000; i++) {
+		for (int i = 0; i < 100; i++) {
 			Token t = recognizer.next();
 			System.out.println(t + " : " + recognizer.getLexeme());
 		}
