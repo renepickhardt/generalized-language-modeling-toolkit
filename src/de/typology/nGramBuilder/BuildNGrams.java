@@ -3,10 +3,10 @@ package de.typology.nGramBuilder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class BuildNGrams {
 
@@ -14,6 +14,8 @@ public class BuildNGrams {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+		// read from larg text corpus and save ngrams on the fly
 		BufferedReader br = IOHelper
 				.openReadFile(Config.get().parsedWikiOutputPath);
 		BufferedWriter bw = IOHelper.openWriteFile(Config.get().parsedNGrams);
@@ -33,23 +35,43 @@ public class BuildNGrams {
 					bw.write("\n");
 				}
 				bw.flush();
-				if (cnt > 10) {
-					break;
-				}
+				// if (cnt > 10000) {
+				// break;
+				// }
 			}
 			bw.close();
 			br.close();
 
-			Process p = Runtime
-					.getRuntime()
-					.exec("sort --output=/var/lib/datasets/test /var/lib/datasets/parsedNGrams.txt");
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
-			String s = "";
-			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
-			}
+			SystemHelper.runUnixCommand("sort --output="
+					+ Config.get().sortedNGrams + " "
+					+ Config.get().parsedNGrams);
+
 			System.out.println("sorting done need to aggregate now");
+
+			SystemHelper.runUnixCommand("rm -rf " + Config.get().parsedNGrams);
+
+			br = IOHelper.openReadFile(Config.get().sortedNGrams);
+			bw = IOHelper.openWriteFile(Config.get().parsedNGrams);
+			String currentLine = br.readLine();
+			cnt = 0;
+			while (currentLine != null) {
+				String nextLine = br.readLine();
+				int cooccurence = 1;
+				while (currentLine.equals(nextLine)) {
+					cooccurence++;
+					nextLine = br.readLine();
+				}
+				bw.write("#" + cooccurence + "\t" + currentLine + "\n");
+				if (cnt++ % 1000 == 0) {
+					bw.flush();
+				}
+				currentLine = nextLine;
+			}
+			bw.flush();
+			bw.close();
+			br.close();
+
+			SystemHelper.runUnixCommand("rm -rf " + Config.get().sortedNGrams);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
