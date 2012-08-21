@@ -11,10 +11,11 @@ public class TestLexParser {
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
-		Recognizer recognizer = new Recognizer(Config.get().wikiXmlPath);
+		WikipediaRecognizer recognizer = new WikipediaRecognizer(
+				Config.get().wikiXmlPath);
 
 		for (int i = 0; i < 100; i++) {
-			Token t = recognizer.next();
+			WikipediaToken t = recognizer.next();
 			System.out.println(t + " : " + recognizer.getLexeme());
 		}
 

@@ -93,7 +93,7 @@ public class WikipediaParser {
 					}
 
 				}
-				writer.write(System.lineSeparator());// new line after page
+				writer.write("\n");// new line after page
 			}
 		}
 		writer.close();
