@@ -6,6 +6,10 @@ import java.io.InputStreamReader;
 
 public class SystemHelper {
 
+	/*
+	 * from stack overflow discussion:
+	 * http://stackoverflow.com/a/3403256/1512538
+	 */
 	public static void runUnixCommand(String cmd) {
 		Process p;
 		try {

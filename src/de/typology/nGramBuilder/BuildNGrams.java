@@ -20,7 +20,7 @@ public class BuildNGrams {
 				.openReadFile(Config.get().parsedWikiOutputPath);
 		BufferedWriter bw = IOHelper.openWriteFile(Config.get().parsedNGrams);
 		String line = "";
-		int cnt = 0;
+		long cnt = 0;
 		try {
 			while ((line = br.readLine()) != null) {
 				cnt++;
@@ -35,12 +35,14 @@ public class BuildNGrams {
 					bw.write("\n");
 				}
 				bw.flush();
-				// if (cnt > 10000) {
-				// break;
-				// }
+				if (cnt > 10000) {
+					System.out.println("processed articles:" + cnt);
+				}
 			}
 			bw.close();
 			br.close();
+
+			System.out.println("start sorting");
 
 			SystemHelper.runUnixCommand("sort --output="
 					+ Config.get().sortedNGrams + " "
@@ -63,6 +65,7 @@ public class BuildNGrams {
 				}
 				bw.write("#" + cooccurence + "\t" + currentLine + "\n");
 				if (cnt++ % 1000 == 0) {
+					System.out.println("processed ngrams: " + cnt);
 					bw.flush();
 				}
 				currentLine = nextLine;
