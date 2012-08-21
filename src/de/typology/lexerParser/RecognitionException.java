@@ -1,5 +1,13 @@
 package de.typology.lexerParser;
 
+/**
+ * @author Martin Koerner
+ * 
+ *         derived from
+ *         http://101companies.org/index.php/101implementation:javaLexer
+ * 
+ */
+
 public class RecognitionException extends RuntimeException {
 	private static final long serialVersionUID = 6584696724594981863L;
 

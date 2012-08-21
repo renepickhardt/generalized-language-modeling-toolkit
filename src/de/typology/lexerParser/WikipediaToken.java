@@ -1,7 +1,7 @@
 package de.typology.lexerParser;
 
-public enum Token {
-	OBJECT, STRING, OTHER, WS, LINESEPERATOR, URI, EOL, EOF, FULLSTOP, COMMA,
+public enum WikipediaToken {
+	OBJECT, STRING, OTHER, WS, LINESEPERATOR, URI, EOL, EOF, FULLSTOP, COMMA, EM, QM,
 	//
 	INFOBOX,
 	//

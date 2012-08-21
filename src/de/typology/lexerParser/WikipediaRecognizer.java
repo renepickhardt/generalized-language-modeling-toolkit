@@ -1,22 +1,24 @@
 package de.typology.lexerParser;
 
-import static de.typology.lexerParser.Token.CLOSEDPAGE;
-import static de.typology.lexerParser.Token.CLOSEDTEXT;
-import static de.typology.lexerParser.Token.CLOSEDTITLE;
-import static de.typology.lexerParser.Token.COMMA;
-import static de.typology.lexerParser.Token.EOF;
-import static de.typology.lexerParser.Token.FULLSTOP;
-import static de.typology.lexerParser.Token.INFOBOX;
-import static de.typology.lexerParser.Token.LABELEDLINK;
-import static de.typology.lexerParser.Token.LINESEPERATOR;
-import static de.typology.lexerParser.Token.LINK;
-import static de.typology.lexerParser.Token.OTHER;
-import static de.typology.lexerParser.Token.PAGE;
-import static de.typology.lexerParser.Token.STRING;
-import static de.typology.lexerParser.Token.TEXT;
-import static de.typology.lexerParser.Token.TITLE;
-import static de.typology.lexerParser.Token.URI;
-import static de.typology.lexerParser.Token.WS;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDPAGE;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDTITLE;
+import static de.typology.lexerParser.WikipediaToken.COMMA;
+import static de.typology.lexerParser.WikipediaToken.EM;
+import static de.typology.lexerParser.WikipediaToken.EOF;
+import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
+import static de.typology.lexerParser.WikipediaToken.INFOBOX;
+import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
+import static de.typology.lexerParser.WikipediaToken.LINESEPERATOR;
+import static de.typology.lexerParser.WikipediaToken.LINK;
+import static de.typology.lexerParser.WikipediaToken.OTHER;
+import static de.typology.lexerParser.WikipediaToken.PAGE;
+import static de.typology.lexerParser.WikipediaToken.QM;
+import static de.typology.lexerParser.WikipediaToken.STRING;
+import static de.typology.lexerParser.WikipediaToken.TEXT;
+import static de.typology.lexerParser.WikipediaToken.TITLE;
+import static de.typology.lexerParser.WikipediaToken.URI;
+import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,13 +37,13 @@ import org.itadaki.bzip2.BZip2InputStream;
 /**
  * @author Martin Koerner
  * 
- *         approach inspired by
+ *         derived from
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class Recognizer implements Iterator<Token> {
+public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 
-	private Token token = null; // last token recognized
+	private WikipediaToken token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
@@ -49,10 +51,12 @@ public class Recognizer implements Iterator<Token> {
 	private int index = 0; // length of lexeme
 
 	// Keywords to token mapping
-	private static Map<String, Token> keywords;
+	private static Map<String, WikipediaToken> keywords;
 
 	static {
-		keywords = new HashMap<String, Token>();
+		int[] a = { 1, 2, 3 };
+		HashMap h = new HashMap();
+		keywords = new HashMap<String, WikipediaToken>();
 		keywords.put("page", PAGE);
 		keywords.put("title", TITLE);
 		keywords.put("text xml:space=\"preserve\"", TEXT);
@@ -62,7 +66,7 @@ public class Recognizer implements Iterator<Token> {
 		keywords.put("/text", CLOSEDTEXT);
 	}
 
-	public Recognizer(String s) throws FileNotFoundException {
+	public WikipediaRecognizer(String s) throws FileNotFoundException {
 		InputStream input = new FileInputStream(new File(s));
 		BZip2InputStream cb = new BZip2InputStream(input, false);
 		this.reader = new BufferedReader(new InputStreamReader(cb));
@@ -97,7 +101,8 @@ public class Recognizer implements Iterator<Token> {
 			this.buffer[this.index] = this.lookahead;
 			this.index++;
 			if (this.index == 10000) {
-				throw new IllegalStateException();
+				this.index = 0;
+				// reset buffer if token gets too big (very unlikely to happen)
 			}
 		}
 		this.lookahead = this.reader.read();
@@ -137,6 +142,20 @@ public class Recognizer implements Iterator<Token> {
 		if (this.lookahead == ',') {
 			this.read();
 			this.token = COMMA;
+			return;
+		}
+
+		// Recognize exclamation mark
+		if (this.lookahead == '!') {
+			this.read();
+			this.token = EM;
+			return;
+		}
+
+		// Recognize question mark
+		if (this.lookahead == '?') {
+			this.read();
+			this.token = QM;
 			return;
 		}
 
@@ -266,9 +285,9 @@ public class Recognizer implements Iterator<Token> {
 	}
 
 	@Override
-	public Token next() {
+	public WikipediaToken next() {
 		if (this.hasNext()) {
-			Token result = this.token;
+			WikipediaToken result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -284,7 +303,7 @@ public class Recognizer implements Iterator<Token> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			Token t = this.next();
+			WikipediaToken t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}
