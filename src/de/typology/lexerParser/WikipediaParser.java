@@ -1,15 +1,15 @@
 package de.typology.lexerParser;
 
-import static de.typology.lexerParser.Token.CLOSEDTEXT;
-import static de.typology.lexerParser.Token.COMMA;
-import static de.typology.lexerParser.Token.FULLSTOP;
-import static de.typology.lexerParser.Token.LABELEDLINK;
-import static de.typology.lexerParser.Token.LINESEPERATOR;
-import static de.typology.lexerParser.Token.LINK;
-import static de.typology.lexerParser.Token.OTHER;
-import static de.typology.lexerParser.Token.STRING;
-import static de.typology.lexerParser.Token.TEXT;
-import static de.typology.lexerParser.Token.WS;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
+import static de.typology.lexerParser.WikipediaToken.COMMA;
+import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
+import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
+import static de.typology.lexerParser.WikipediaToken.LINESEPERATOR;
+import static de.typology.lexerParser.WikipediaToken.LINK;
+import static de.typology.lexerParser.WikipediaToken.OTHER;
+import static de.typology.lexerParser.WikipediaToken.STRING;
+import static de.typology.lexerParser.WikipediaToken.TEXT;
+import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,12 +20,13 @@ import de.typology.utils.Config;
 
 public class WikipediaParser {
 	public static void main(String[] args) throws IOException {
-		Recognizer recognizer = new Recognizer(Config.get().wikiXmlPath);
+		WikipediaRecognizer recognizer = new WikipediaRecognizer(
+				Config.get().wikiXmlPath);
 		Writer writer = new OutputStreamWriter(new FileOutputStream(
 				Config.get().parsedWikiOutputPath));
 
-		Token current = null;
-		Token previous = null;
+		WikipediaToken current = null;
+		WikipediaToken previous = null;
 		String lexeme = null;
 		while (recognizer.hasNext()) {
 			previous = current;
@@ -37,7 +38,7 @@ public class WikipediaParser {
 					previous = current;
 					current = recognizer.next();
 					lexeme = recognizer.getLexeme();
-					
+
 					if (current == OTHER && previous == TEXT) {
 						if (lexeme.equals("#") || lexeme.equals("_")) {
 							while (recognizer.hasNext()
@@ -48,7 +49,7 @@ public class WikipediaParser {
 							}
 						}
 					}
-					
+
 					if (current == STRING) {
 						writer.write(lexeme);
 					}
@@ -68,13 +69,13 @@ public class WikipediaParser {
 							previous = current;
 						}
 					}
-					
+
 					if (current == LINK) {
 						// write right part
 						writer.write(recognizer.getLexeme().substring(2,
 								recognizer.getLexeme().length() - 2));
 					}
-					
+
 					if (current == LABELEDLINK && previous != TEXT) {
 						// write right part
 						String[] splitLabel = recognizer.getLexeme().split(
