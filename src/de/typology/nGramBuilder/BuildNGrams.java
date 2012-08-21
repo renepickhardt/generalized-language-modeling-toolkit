@@ -35,9 +35,13 @@ public class BuildNGrams {
 					bw.write("\n");
 				}
 				bw.flush();
-				if (cnt > 10000) {
+				if (cnt % 1000 == 0) {
 					System.out.println("processed articles:" + cnt);
+					if (cnt > 300000) {
+						break;
+					}
 				}
+
 			}
 			bw.close();
 			br.close();
