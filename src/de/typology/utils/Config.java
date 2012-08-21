@@ -25,7 +25,10 @@ public class Config extends Properties {
 	public String parsedWikiOutputPath;
 	public String germanWikiText;
 	public String letterGraph;
+	public String parsedNGrams;
 	public int keystrokesWindowSize;
+	public int nGramLength;
+	public String sortedNGrams;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
