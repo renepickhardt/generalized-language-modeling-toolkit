@@ -14,7 +14,7 @@ public class TestLexParser {
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(
 				Config.get().wikiXmlPath);
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 3000; i++) {
 			WikipediaToken t = recognizer.next();
 			System.out.println(t + " : " + recognizer.getLexeme());
 		}

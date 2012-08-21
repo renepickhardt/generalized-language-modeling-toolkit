@@ -1,12 +1,16 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.WikipediaToken.CLOSEDREF;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
+import static de.typology.lexerParser.WikipediaToken.HYPHEN;
 import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
 import static de.typology.lexerParser.WikipediaToken.LINESEPERATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
+import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
+import static de.typology.lexerParser.WikipediaToken.REF;
 import static de.typology.lexerParser.WikipediaToken.STRING;
 import static de.typology.lexerParser.WikipediaToken.TEXT;
 import static de.typology.lexerParser.WikipediaToken.WS;
@@ -18,6 +22,13 @@ import java.io.Writer;
 
 import de.typology.utils.Config;
 
+/**
+ * @author Martin Koerner
+ * 
+ *         derived from
+ *         http://101companies.org/index.php/101implementation:javaLexer
+ * 
+ */
 public class WikipediaParser {
 	public static void main(String[] args) throws IOException {
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(
@@ -50,6 +61,10 @@ public class WikipediaParser {
 						}
 					}
 
+					if (previous == FULLSTOP && current == LINESEPERATOR) {
+						writer.write(" ");
+					}
+
 					if (current == STRING) {
 						writer.write(lexeme);
 					}
@@ -59,6 +74,14 @@ public class WikipediaParser {
 					}
 					if (current == COMMA) {
 						writer.write(lexeme);
+					}
+					if (current == HYPHEN) {
+						writer.write("-");
+					}
+
+					if (previous == LINESEPERATOR && current == QUOTATIONMARK) {
+						current = recognizer.next();
+						previous = current;
 					}
 
 					if (previous == LINESEPERATOR && current != STRING) {
@@ -88,8 +111,16 @@ public class WikipediaParser {
 						}
 					}
 
+					if (current == REF) {
+						while (recognizer.hasNext() && current != CLOSEDREF
+								&& current != LINESEPERATOR) {
+							current = recognizer.next();
+							previous = current;
+						}
+					}
+
 					if (current == WS) {
-						writer.write(lexeme);
+						writer.write(" ");
 					}
 
 				}
