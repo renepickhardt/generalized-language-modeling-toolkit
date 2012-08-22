@@ -11,7 +11,7 @@ import static de.typology.lexerParser.ReutersToken.EOF;
 import static de.typology.lexerParser.ReutersToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.ReutersToken.FULLSTOP;
 import static de.typology.lexerParser.ReutersToken.HYPHEN;
-import static de.typology.lexerParser.ReutersToken.LINESEPERATOR;
+import static de.typology.lexerParser.ReutersToken.LINESEPARATOR;
 import static de.typology.lexerParser.ReutersToken.OTHER;
 import static de.typology.lexerParser.ReutersToken.P;
 import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
@@ -111,7 +111,7 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 
 		// Recognize newline
 		if (this.lookahead == 10) {
-			this.token = LINESEPERATOR;
+			this.token = LINESEPARATOR;
 			this.read();
 			return;
 		}

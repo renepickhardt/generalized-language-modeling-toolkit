@@ -36,8 +36,8 @@ public class ReutersParser {
 		File[] fileList = dir.listFiles();
 		for (File f : fileList) {
 			ReutersRecognizer recognizer = new ReutersRecognizer(f);
-			writer.write(f.toString());
-			writer.write("\n");
+			// writer.write(f.toString());
+			// writer.write("\n");
 			ReutersToken current = null;
 			// ReutersToken previous = null;
 			String lexeme = null;
