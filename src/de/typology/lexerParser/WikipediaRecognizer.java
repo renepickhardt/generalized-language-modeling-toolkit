@@ -1,15 +1,18 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.WikipediaToken.BRACKET;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDBRACKET;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDCURLYBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDPAGE;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDREF;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTITLE;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
+import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
 import static de.typology.lexerParser.WikipediaToken.EOF;
 import static de.typology.lexerParser.WikipediaToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
-import static de.typology.lexerParser.WikipediaToken.INFOBOX;
 import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
@@ -224,6 +227,24 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 					}
 				}
 			}
+			// &quot;
+			if (this.lookahead == 'q') {
+				this.read();
+				if (this.lookahead == 'u') {
+					this.read();
+					if (this.lookahead == 'o') {
+						this.read();
+						if (this.lookahead == 't') {
+							this.read();
+							if (this.lookahead == ';') {
+								this.token = OTHER;
+								this.read();
+								return;
+							}
+						}
+					}
+				}
+			}
 			// &amp;nbsp;
 			if (this.lookahead == 'a') {
 				this.read();
@@ -294,8 +315,8 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 					if (this.lookahead == '[') {
 						this.read();
 						int open = 2;
-						while (open != 0 && this.lookahead != 10
-								&& this.hasNext()) {
+						while (open != 0 && this.hasNext()
+								&& this.lookahead != 10) {
 							if (this.lookahead == '[') {
 								open++;
 							}
@@ -324,52 +345,30 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			}
 		}
 
-		// Recognize infobox
-		if (this.lookahead == '{') {
-			this.read();
-			if (this.lookahead == '{') {
-				this.read();
-				if (this.lookahead == 'I') {
-					this.read();
-					if (this.lookahead == 'n') {
-						this.read();
-						if (this.lookahead == 'f') {
-							this.read();
-							if (this.lookahead == 'o') {
-								this.read();
-								this.token = INFOBOX;
-								while (this.lookahead != 10) {
-									this.read();
-								}
-								return;
-							}
-						}
-					}
-				}
-			}
-			while (this.lookahead != 10 && this.lookahead != '}') {
-				this.read();
-			}
-			if (this.lookahead == '}') {
-				this.read();
-				if (this.lookahead == '}') {
-					this.read();
-				}
-			}
-			this.token = OTHER;
-			return;
-		}
-		// Recognize braces
+		// Recognize bracket open
 		if (this.lookahead == '(') {
 			this.read();
-			while (this.lookahead != ')' && this.lookahead != '<'
-					&& this.hasNext()) {
-				this.read();
-			}
-			if (this.lookahead == ')') {
-				this.read();
-			}
-			this.token = OTHER;
+			this.token = BRACKET;
+			return;
+		}
+
+		// Recognize bracket close
+		if (this.lookahead == ')') {
+			this.read();
+			this.token = CLOSEDBRACKET;
+			return;
+		}
+		// Recognize curly bracket open
+		if (this.lookahead == '{') {
+			this.read();
+			this.token = CURLYBRACKET;
+			return;
+		}
+
+		// Recognize curly bracket close
+		if (this.lookahead == '}') {
+			this.read();
+			this.token = CLOSEDCURLYBRACKET;
 			return;
 		}
 
