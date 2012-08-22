@@ -11,7 +11,7 @@ import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
 import static de.typology.lexerParser.WikipediaToken.INFOBOX;
 import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
-import static de.typology.lexerParser.WikipediaToken.LINESEPERATOR;
+import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
 import static de.typology.lexerParser.WikipediaToken.PAGE;
@@ -26,17 +26,13 @@ import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.itadaki.bzip2.BZip2InputStream;
 
 /**
  * @author Martin Koerner
@@ -71,11 +67,11 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 	}
 
 	public WikipediaRecognizer(String s) throws FileNotFoundException {
-		InputStream input = new FileInputStream(new File(s));
-		BZip2InputStream cb = new BZip2InputStream(input, false);
-		this.reader = new BufferedReader(new InputStreamReader(cb));
+		// InputStream input = new FileInputStream(new File(s));
+		// BZip2InputStream cb = new BZip2InputStream(input, false);
+		// this.reader = new BufferedReader(new InputStreamReader(cb));
 		// use the following line for reading xml files:
-		// this.reader = new BufferedReader(new FileReader(new File(s)));
+		this.reader = new BufferedReader(new FileReader(new File(s)));
 	}
 
 	// Extract lexeme from buffer
@@ -119,7 +115,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 
 		// Recognize newline
 		if (this.lookahead == 10) {
-			this.token = LINESEPERATOR;
+			this.token = LINESEPARATOR;
 			this.read();
 			return;
 		}
@@ -354,8 +350,12 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			while (this.lookahead != 10 && this.lookahead != '}') {
 				this.read();
 			}
-			this.read();
-			this.read();
+			if (this.lookahead == '}') {
+				this.read();
+				if (this.lookahead == '}') {
+					this.read();
+				}
+			}
 			this.token = OTHER;
 			return;
 		}
@@ -366,7 +366,9 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 					&& this.hasNext()) {
 				this.read();
 			}
-			this.read();
+			if (this.lookahead == ')') {
+				this.read();
+			}
 			this.token = OTHER;
 			return;
 		}

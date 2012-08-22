@@ -6,7 +6,7 @@ import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
 import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
-import static de.typology.lexerParser.WikipediaToken.LINESEPERATOR;
+import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
 import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
@@ -54,14 +54,14 @@ public class WikipediaParser {
 						if (lexeme.equals("#") || lexeme.equals("_")) {
 							while (recognizer.hasNext()
 									&& current != CLOSEDTEXT
-									&& current != LINESEPERATOR) {
+									&& current != LINESEPARATOR) {
 								current = recognizer.next();
 								previous = current;
 							}
 						}
 					}
 
-					if (previous == FULLSTOP && current == LINESEPERATOR) {
+					if (previous == FULLSTOP && current == LINESEPARATOR) {
 						writer.write(" ");
 					}
 
@@ -79,15 +79,15 @@ public class WikipediaParser {
 						writer.write("-");
 					}
 
-					if (previous == LINESEPERATOR && current == QUOTATIONMARK) {
+					if (previous == LINESEPARATOR && current == QUOTATIONMARK) {
 						current = recognizer.next();
 						previous = current;
 					}
 
-					if (previous == LINESEPERATOR && current != STRING) {
+					if (previous == LINESEPARATOR && current != STRING) {
 						// first token in line has to be a letter
 						while (recognizer.hasNext() && current != CLOSEDTEXT
-								&& current != LINESEPERATOR) {
+								&& current != LINESEPARATOR) {
 							current = recognizer.next();
 							previous = current;
 						}
@@ -113,7 +113,7 @@ public class WikipediaParser {
 
 					if (current == REF) {
 						while (recognizer.hasNext() && current != CLOSEDREF
-								&& current != LINESEPERATOR) {
+								&& current != LINESEPARATOR) {
 							current = recognizer.next();
 							previous = current;
 						}
