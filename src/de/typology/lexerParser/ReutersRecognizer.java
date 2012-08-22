@@ -1,5 +1,8 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.ReutersToken.AND;
+import static de.typology.lexerParser.ReutersToken.BRACES;
+import static de.typology.lexerParser.ReutersToken.CLOSEDBRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDP;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTEXT;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTITLE;
@@ -58,12 +61,13 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 		keywords.put("/text", CLOSEDTEXT);
 	}
 
-	public ReutersRecognizer(String s) throws FileNotFoundException {
-		// InputStream input = new FileInputStream(new File(s));
-		// BZip2InputStream cb = new BZip2InputStream(input, false);
-		// this.reader = new BufferedReader(new InputStreamReader(cb));
-		// use the following line for reading xml files:
-		this.reader = new BufferedReader(new FileReader(new File(s)));
+	public ReutersRecognizer(File f) {
+		try {
+			this.reader = new BufferedReader(new FileReader(f));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	// Extract lexeme from buffer
@@ -188,8 +192,24 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 					}
 				}
 			}
+			if (this.lookahead == 'a') {
+				this.read();
+				if (this.lookahead == 'm') {
+					this.read();
+					if (this.lookahead == 'p') {
+						this.read();
+						if (this.lookahead == ';') {
+							this.read();
+							this.token = AND;
+							return;
+						}
+					}
+
+				}
+			}
 			this.token = OTHER;
 			return;
+
 		}
 		// Recognize end of file
 		if (this.lookahead == -1) {
@@ -215,20 +235,47 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 			return;
 		}
 
-		// Recognize braces
+		// Recognize braces open
 		if (this.lookahead == '(') {
 			this.read();
-			while (this.lookahead != ')' && this.lookahead != '<'
-					&& this.hasNext()) {
-				this.read();
-			}
-			this.read();
-			this.token = OTHER;
+			this.token = BRACES;
 			return;
 		}
 
+		// Recognize braces close
+		if (this.lookahead == ')') {
+			this.read();
+			this.token = CLOSEDBRACES;
+			return;
+		}
+
+		// Recognize Uppercase
+		// if (Character.isUpperCase(this.lookahead)) {
+		// this.token = UPPERCASE;
+		// this.read();
+		// if (Character.isWhitespace(this.lookahead)) {
+		// this.token = STRING;
+		// return;
+		// }
+		//
+		// while (!Character.isWhitespace(this.lookahead)
+		// && Character.isUpperCase(this.lookahead)) {
+		// this.read();
+		// }
+		// ;
+		// if (!Character.isUpperCase(this.lookahead)
+		// && Character.isLetterOrDigit(this.lookahead)) {
+		// this.token = STRING;
+		// do {
+		// this.read();
+		// } while (!Character.isWhitespace(this.lookahead)
+		// && Character.isLetterOrDigit(this.lookahead));
+		// }
+		// return;
+		// }
+
 		// Recognize String
-		if (Character.isLetterOrDigit(this.lookahead)) {
+		if (Character.isLetterOrDigit(this.lookahead) && this.lookahead != '&') {
 			do {
 				this.read();
 			} while (!Character.isWhitespace(this.lookahead)
@@ -239,9 +286,7 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 
 		// Recognize other
 		if (!Character.isLetterOrDigit(this.lookahead)) {
-
 			this.read();
-
 			this.token = OTHER;
 			return;
 		}
