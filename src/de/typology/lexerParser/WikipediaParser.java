@@ -1,18 +1,26 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.WikipediaToken.ASTERISK;
 import static de.typology.lexerParser.WikipediaToken.BRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDCURLYBRACKET;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDEHH;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDIMAGEMAP;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDREF;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDSQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
 import static de.typology.lexerParser.WikipediaToken.COLON;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
+import static de.typology.lexerParser.WikipediaToken.EHH;
+import static de.typology.lexerParser.WikipediaToken.EQUALITYSIGN;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
+import static de.typology.lexerParser.WikipediaToken.IMAGEMAP;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
-import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
+import static de.typology.lexerParser.WikipediaToken.REF;
+import static de.typology.lexerParser.WikipediaToken.SEMICOLON;
 import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.STRING;
 import static de.typology.lexerParser.WikipediaToken.TEXT;
@@ -43,6 +51,11 @@ public class WikipediaParser {
 		WikipediaToken current = null;
 		WikipediaToken previous = null;
 		String lexeme = null;
+
+		String link = "";
+		boolean isLink = false;
+		int bracketCount = 0;
+		int verticalBarCount = 0;
 		while (recognizer.hasNext()) {
 			previous = current;
 			current = recognizer.next();
@@ -64,11 +77,26 @@ public class WikipediaParser {
 							}
 						}
 					}
-
-					if (current == CURLYBRACKET) {
-						int bracketCount = 1;
+					if (current == BRACKET) {
+						bracketCount = 1;
 						while (bracketCount != 0 && recognizer.hasNext()
 								&& current != CLOSEDTEXT) {
+							current = recognizer.next();
+							if (current == BRACKET) {
+								bracketCount++;
+							}
+							if (current == CLOSEDBRACKET) {
+								bracketCount--;
+							}
+						}
+
+					}
+
+					if (current == CURLYBRACKET) {
+						bracketCount = 1;
+						while (bracketCount != 0 && recognizer.hasNext()
+								&& current != CLOSEDTEXT) {
+							previous = current;
 							current = recognizer.next();
 							if (current == CURLYBRACKET) {
 								bracketCount++;
@@ -76,14 +104,48 @@ public class WikipediaParser {
 							if (current == CLOSEDCURLYBRACKET) {
 								bracketCount--;
 							}
+							if (previous == CURLYBRACKET
+									&& current == STRING
+									&& recognizer.getLexeme().equals(
+											"Begriffsklärung")) {
+								writer.write("<BEGRIFFSKLAERUNG>");
+							}
+							if (previous == CURLYBRACKET && current == STRING
+									&& recognizer.getLexeme().equals("TOC")) {
+								writer.write("<TOC>");
+							}
+							// Recognize {{Audio|...}}
+							if (current == STRING
+									&& recognizer.getLexeme().equals("Audio")) {
+								isLink = true;
+							}
+
+							if (current == STRING) {
+								link += recognizer.getLexeme();
+							}
+							if (current == WS) {
+								link += " ";
+							}
+							if (current == HYPHEN) {
+								link += "-";
+							}
+							if (current == VERTICALBAR) {
+								// remove part before vertical bar
+								link = "";
+							}
+
+						}
+						if (isLink) {
+							writer.write(link);
+							isLink = false;
 						}
 					}
 
 					if (current == SQUAREDBRACKET) {
-						String link = "";
-						boolean isLink = true;
-						int bracketCount = 1;
-						int verticalBarCount = 0;
+						link = "";
+						isLink = true;
+						bracketCount = 1;
+						verticalBarCount = 0;
 						while (bracketCount != 0 && recognizer.hasNext()
 								&& current != CLOSEDTEXT) {
 							current = recognizer.next();
@@ -120,6 +182,7 @@ public class WikipediaParser {
 						}
 						if (isLink && verticalBarCount < 2) {
 							writer.write(link);
+							isLink = false;
 						}
 					}
 
@@ -137,17 +200,16 @@ public class WikipediaParser {
 					if (current == COMMA) {
 						writer.write(lexeme);
 					}
+					if (current == SEMICOLON) {
+						writer.write(lexeme);
+					}
 					if (current == HYPHEN) {
 						writer.write("-");
 					}
-					// some pages start with '''Title'''
-					if (previous == LINESEPARATOR && current == QUOTATIONMARK) {
-						previous = current;
-						current = recognizer.next();
-					}
 
-					if (previous == LINESEPARATOR && current != STRING) {
-						// first token in line has to be a letter
+					if (previous == LINESEPARATOR
+							&& (current == EQUALITYSIGN || current == COLON || current == ASTERISK)) {
+						// equality sign-->headline, colon or asterisk-->listing
 						while (recognizer.hasNext() && current != CLOSEDTEXT
 								&& current != LINESEPARATOR) {
 							current = recognizer.next();
@@ -155,52 +217,32 @@ public class WikipediaParser {
 						}
 					}
 
-					// if (current == REF) {
-					// while (recognizer.hasNext() && current != CLOSEDREF
-					// && current != LINESEPARATOR) {
-					// current = recognizer.next();
-					// previous = current;
-					// }
-					// }
-
-					if (current == BRACKET) {
-						while (recognizer.hasNext() && current != CLOSEDBRACKET
+					if (current == REF) {
+						while (recognizer.hasNext() && current != CLOSEDREF
 								&& current != CLOSEDTEXT) {
 							current = recognizer.next();
+							previous = current;
 						}
-
+					}
+					if (current == EHH) {
+						while (recognizer.hasNext() && current != CLOSEDEHH
+								&& current != CLOSEDTEXT) {
+							current = recognizer.next();
+							previous = current;
+						}
+					}
+					if (current == IMAGEMAP) {
+						while (recognizer.hasNext()
+								&& current != CLOSEDIMAGEMAP
+								&& current != CLOSEDTEXT) {
+							current = recognizer.next();
+							previous = current;
+						}
 					}
 
-					// if (recognizer.hasNext()) {
-					// current = recognizer.next();
-					// if (recognizer.hasNext()) {
-					// current = recognizer.next();
-					// if (current == STRING
-					// && (recognizer.getLexeme().equals(
-					// "Infobox") || recognizer
-					// .getLexeme().equals("Taxobox"))) {
-					//
-					// while (recognizer.hasNext()
-					// && current != CLOSEDTEXT
-					// && current != LINESEPARATOR) {
-					// current = recognizer.next();
-					// previous = current;
-					// }
-					// }
-					// }
-					// while (recognizer.hasNext()
-					// && current != LINESEPARATOR
-					// && current != CLOSEDCURLYBRACKET
-					// && current != CLOSEDTEXT) {
-					// current = recognizer.next();
-					// }
-					//
-					// }
-
-					if (current == WS) {
+					if (current == WS && previous != WS) {
 						writer.write(" ");
 					}
-
 				}
 				writer.write("\n");// new line after page
 			}

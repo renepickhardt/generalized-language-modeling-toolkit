@@ -1,8 +1,11 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.WikipediaToken.ASTERISK;
 import static de.typology.lexerParser.WikipediaToken.BRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDCURLYBRACKET;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDEHH;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDIMAGEMAP;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDPAGE;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDREF;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDSQUAREDBRACKET;
@@ -11,16 +14,20 @@ import static de.typology.lexerParser.WikipediaToken.CLOSEDTITLE;
 import static de.typology.lexerParser.WikipediaToken.COLON;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
+import static de.typology.lexerParser.WikipediaToken.EHH;
 import static de.typology.lexerParser.WikipediaToken.EOF;
+import static de.typology.lexerParser.WikipediaToken.EQUALITYSIGN;
 import static de.typology.lexerParser.WikipediaToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
+import static de.typology.lexerParser.WikipediaToken.IMAGEMAP;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
 import static de.typology.lexerParser.WikipediaToken.PAGE;
 import static de.typology.lexerParser.WikipediaToken.QUESTIONMARK;
 import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.REF;
+import static de.typology.lexerParser.WikipediaToken.SEMICOLON;
 import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.STRING;
 import static de.typology.lexerParser.WikipediaToken.TEXT;
@@ -52,8 +59,9 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
-	private int[] buffer = new int[10000]; // lexeme buffer
+	private int[] buffer = new int[100000]; // lexeme buffer
 	private int index = 0; // length of lexeme
+	private String label = "";
 
 	// Keywords to token mapping
 	private static Map<String, WikipediaToken> keywords;
@@ -64,11 +72,13 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		keywords.put("title", TITLE);
 		keywords.put("text xml:space=\"preserve\"", TEXT);
 		keywords.put("ref", REF);
-
+		keywords.put("!--", EHH);
+		keywords.put("imagemap", IMAGEMAP);
 		keywords.put("/page", CLOSEDPAGE);
 		keywords.put("/title", CLOSEDTITLE);
 		keywords.put("/text", CLOSEDTEXT);
 		keywords.put("/ref", CLOSEDREF);
+		keywords.put("/imagemap", CLOSEDIMAGEMAP);
 	}
 
 	public WikipediaRecognizer(String s) throws FileNotFoundException {
@@ -106,8 +116,9 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		if (this.lookahead != 0) {
 			this.buffer[this.index] = this.lookahead;
 			this.index++;
-			if (this.index == 10000) {
+			if (this.index == 100000) {
 				this.index = 0;
+				System.out.println("buffer overflow!");
 				// reset buffer if token gets too big (very unlikely to happen)
 			}
 		}
@@ -117,6 +128,16 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 	// Recognize a token
 	public void lex() throws IOException {
 		this.reset();
+		// Recognize newline
+		if (this.lookahead == 13) {
+			this.token = LINESEPARATOR;
+			this.read();
+			if (this.lookahead == 10) {
+				this.token = LINESEPARATOR;
+				this.read();
+			}
+			return;
+		}
 
 		// Recognize newline
 		if (this.lookahead == 10) {
@@ -126,10 +147,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		}
 		// Recognize whitespace
 		if (Character.isWhitespace(this.lookahead)) {
-			do {
-				this.read();
-			} while (Character.isWhitespace(this.lookahead));// removes multiple
-																// spaces
+			this.read();
 			this.token = WS;
 			return;
 		}
@@ -147,11 +165,35 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			this.token = COMMA;
 			return;
 		}
-
+		// Recognize semicolon
+		if (this.lookahead == ';') {
+			this.read();
+			this.token = SEMICOLON;
+			return;
+		}
 		// Recognize hyphen
 		if (this.lookahead == '-') {
 			this.read();
 			this.token = HYPHEN;
+			// Recognize --&gt; as CLOSEDEHH
+			if (this.lookahead == '-') {
+				this.read();
+				if (this.lookahead == '&') {
+					this.read();
+					if (this.lookahead == 'g') {
+						this.read();
+						if (this.lookahead == 't') {
+							this.read();
+							if (this.lookahead == ';') {
+								this.read();
+								this.token = CLOSEDEHH;
+								return;
+							}
+						}
+					}
+				}
+				this.token = OTHER;
+			}
 			return;
 		}
 		// Recognize dash (as hyphen)
@@ -165,6 +207,33 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		if (this.lookahead == '!') {
 			this.read();
 			this.token = EXCLAMATIONMARK;
+			// Recognize !-->
+			if (this.lookahead == '-') {
+				this.read();
+				if (this.lookahead == '-') {
+					this.read();
+					if (this.lookahead == '&') {
+						this.read();
+						if (this.lookahead == 'g') {
+							this.read();
+							if (this.lookahead == 't') {
+								this.read();
+								if (this.lookahead == ';') {
+									this.read();
+									this.token = CLOSEDEHH;
+									return;
+								}
+							}
+						}
+					}
+					if (this.lookahead == '>') {
+						this.read();
+						this.token = CLOSEDEHH;
+						return;
+					}
+				}
+				this.token = OTHER;
+			}
 			return;
 		}
 
@@ -174,22 +243,34 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			this.token = QUESTIONMARK;
 			return;
 		}
-		// recognize quotation mark
+		// Recognize quotation mark
 		if (this.lookahead == 39) {
 			this.read();
 			this.token = QUOTATIONMARK;
 			return;
 		}
-		// recognize vertical bar
+		// Recognize vertical bar
 		if (this.lookahead == '|') {
 			this.read();
 			this.token = VERTICALBAR;
 			return;
 		}
-		// recognize colon
+		// Recognize colon
 		if (this.lookahead == ':') {
 			this.read();
 			this.token = COLON;
+			return;
+		}
+		// Recognize asterisk
+		if (this.lookahead == '*') {
+			this.read();
+			this.token = ASTERISK;
+			return;
+		}
+		// Recognize equality sign
+		if (this.lookahead == '=') {
+			this.read();
+			this.token = EQUALITYSIGN;
 			return;
 		}
 		// Recognize end of file
@@ -199,30 +280,92 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			return;
 		}
 
+		// Recognize <???>
+		if (this.lookahead == '<') {
+			this.read();
+			while (this.lookahead != '>') {
+				this.read();
+				this.label = this.getLexeme().substring(1);
+				if (keywords.containsKey(this.label)) {
+					this.token = keywords.get(this.label);
+					while (this.lookahead != '>') {
+						this.read();
+					}
+					if (this.lookahead == '>') {
+						this.read();
+					}
+					return;
+				}
+			}
+			if (this.lookahead == '>') {
+				this.read();
+			}
+			this.token = OTHER;
+			return;
+		}
+
 		if (this.lookahead == '&') {
 			this.read();
 			if (this.lookahead == 'l') {
 				this.read();
 				if (this.lookahead == 't') {
-					while (this.lookahead != '<' && this.hasNext()) {
-						this.read();
-						if (this.lookahead == '&') {
+					this.read();
+					if (this.lookahead == ';') {
+						//
+						this.label = "";
+						//
+						while (this.lookahead != '&') {
 							this.read();
-							if (this.lookahead == 'l') {
-								this.read();
-								if (this.lookahead == 't') {
-									this.token = OTHER;
-									while (!Character
-											.isWhitespace(this.lookahead)) {
+							try {
+								this.label = this.getLexeme().substring(4);
+								if (keywords.containsKey(this.label)) {
+									this.token = keywords.get(this.label);
+									while (this.lookahead != '&') {
 										this.read();
 									}
 									return;
+								}
+							} catch (StringIndexOutOfBoundsException e) {
+								// buffer was full
+							}
+
+							// Recognizes "<!--"
+							if (this.lookahead == '!') {
+								this.read();
+								if (this.lookahead == '-') {
+									this.read();
+									if (this.lookahead == '-') {
+										this.read();
+										this.token = EHH;
+										return;
+									}
+								}
+							}
+						}
+						this.read();
+						if (this.lookahead == 'g') {
+							this.read();
+							if (this.lookahead == 't') {
+								this.read();
+								if (this.lookahead == ';') {
+									this.read();
+									// String label =
+									// this.getLexeme().substring(
+									// 4, this.getLexeme().length() - 4);
+									// if (keywords.containsKey(this.label)) {
+									// this.token = keywords.get(this.label);
+									// } else {
+									// this.token = OTHER;
+									// }
+									return;
+
 								}
 							}
 						}
 					}
 				}
 			}
+
 			// &nbsp;
 			if (this.lookahead == 'n') {
 				this.read();
@@ -289,24 +432,16 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 					}
 				}
 			}
-
-			this.token = OTHER;
-			return;
-		}
-		// Recognize <???>
-		if (this.lookahead == '<') {
-			do {
+			if (this.lookahead == 'g') {
 				this.read();
-
-			} while (this.lookahead != '>');
-			this.read();
-			String label = (String) this.getLexeme().subSequence(1,
-					this.getLexeme().length() - 1);
-			if (keywords.containsKey(label)) {
-				this.token = keywords.get(label);
-			} else {
-				this.token = OTHER;
+				if (this.lookahead == 't') {
+					this.read();
+					if (this.lookahead == ';') {
+						this.read();
+					}
+				}
 			}
+			this.token = OTHER;
 			return;
 		}
 
