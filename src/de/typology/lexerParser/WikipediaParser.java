@@ -52,6 +52,24 @@ public class WikipediaParser {
 		WikipediaToken previous = null;
 		String lexeme = null;
 
+		// this part declares language specific variables
+		String disambiguation = new String();
+		String disambiguation2 = new String();
+		if (Config.get().wikiXmlPath.contains("dewiki")) {
+			disambiguation = "Begriffsklärung";
+			System.out.println("This is a german wikipedia XML.");
+		} else {
+			if (Config.get().wikiXmlPath.contains("enwiki")) {
+				disambiguation = "disambig";
+				disambiguation2 = "geodis";// see
+											// http://en.wikipedia.org/wiki/Template:Geodis
+				System.out.println("This is a english wikipedia XML.");
+			} else {
+				System.out
+						.println("Please declare language specific variables (see WikipediaParser.java)");
+			}
+		}
+
 		String link = "";
 		boolean isLink = false;
 		int bracketCount = 0;
@@ -106,17 +124,19 @@ public class WikipediaParser {
 							}
 							if (previous == CURLYBRACKET
 									&& current == STRING
-									&& recognizer.getLexeme().equals(
-											"Begriffsklärung")) {
-								writer.write("<BEGRIFFSKLAERUNG>");
+									&& (recognizer.getLexeme().contains(
+											disambiguation) || recognizer
+											.getLexeme().contains(
+													disambiguation2))) {
+								writer.write("<DISAMBIGUATION>");
 							}
 							if (previous == CURLYBRACKET && current == STRING
-									&& recognizer.getLexeme().equals("TOC")) {
+									&& recognizer.getLexeme().contains("TOC")) {
 								writer.write("<TOC>");
 							}
 							// Recognize {{Audio|...}}
 							if (current == STRING
-									&& recognizer.getLexeme().equals("Audio")) {
+									&& recognizer.getLexeme().contains("Audio")) {
 								isLink = true;
 							}
 
