@@ -3,18 +3,20 @@ package de.typology.lexerParser;
 import static de.typology.lexerParser.WikipediaToken.BRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDCURLYBRACKET;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDSQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
+import static de.typology.lexerParser.WikipediaToken.COLON;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
-import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
-import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
 import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
+import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.STRING;
 import static de.typology.lexerParser.WikipediaToken.TEXT;
+import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.FileOutputStream;
@@ -65,7 +67,6 @@ public class WikipediaParser {
 
 					if (current == CURLYBRACKET) {
 						int bracketCount = 1;
-
 						while (bracketCount != 0 && recognizer.hasNext()
 								&& current != CLOSEDTEXT) {
 							current = recognizer.next();
@@ -75,6 +76,50 @@ public class WikipediaParser {
 							if (current == CLOSEDCURLYBRACKET) {
 								bracketCount--;
 							}
+						}
+					}
+
+					if (current == SQUAREDBRACKET) {
+						String link = "";
+						boolean isLink = true;
+						int bracketCount = 1;
+						int verticalBarCount = 0;
+						while (bracketCount != 0 && recognizer.hasNext()
+								&& current != CLOSEDTEXT) {
+							current = recognizer.next();
+							if (current == SQUAREDBRACKET) {
+								bracketCount++;
+							}
+							if (current == CLOSEDSQUAREDBRACKET) {
+								bracketCount--;
+							}
+							if (bracketCount > 2) {
+								isLink = false;
+							}
+							if (bracketCount == 2) {
+								// inside a valid link
+								if (current == STRING) {
+									link += recognizer.getLexeme();
+								}
+								if (current == WS) {
+									link += " ";
+								}
+								if (current == HYPHEN) {
+									link += "-";
+								}
+								if (current == COLON) {
+									isLink = false;
+								}
+								if (current == VERTICALBAR) {
+									// remove part before vertical bar
+									link = "";
+									verticalBarCount++;
+								}
+							}
+
+						}
+						if (isLink && verticalBarCount < 2) {
+							writer.write(link);
 						}
 					}
 
@@ -97,8 +142,8 @@ public class WikipediaParser {
 					}
 					// some pages start with '''Title'''
 					if (previous == LINESEPARATOR && current == QUOTATIONMARK) {
-						current = recognizer.next();
 						previous = current;
+						current = recognizer.next();
 					}
 
 					if (previous == LINESEPARATOR && current != STRING) {
@@ -107,24 +152,6 @@ public class WikipediaParser {
 								&& current != LINESEPARATOR) {
 							current = recognizer.next();
 							previous = current;
-						}
-					}
-
-					if (current == LINK) {
-						// write right part
-						writer.write(recognizer.getLexeme().substring(2,
-								recognizer.getLexeme().length() - 2));
-					}
-
-					if (current == LABELEDLINK && previous != TEXT) {
-						// write right part
-						String[] splitLabel = recognizer.getLexeme().split(
-								"\\|");
-						try {
-							writer.write(splitLabel[1].substring(0,
-									splitLabel[1].length() - 2));
-						} catch (StringIndexOutOfBoundsException s) {
-							// TODO: fix this...probably substrings too small?
 						}
 					}
 

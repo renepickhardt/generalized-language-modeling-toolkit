@@ -5,26 +5,28 @@ import static de.typology.lexerParser.WikipediaToken.CLOSEDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDCURLYBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDPAGE;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDREF;
+import static de.typology.lexerParser.WikipediaToken.CLOSEDSQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDTITLE;
+import static de.typology.lexerParser.WikipediaToken.COLON;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
 import static de.typology.lexerParser.WikipediaToken.EOF;
 import static de.typology.lexerParser.WikipediaToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
-import static de.typology.lexerParser.WikipediaToken.LABELEDLINK;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
-import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
 import static de.typology.lexerParser.WikipediaToken.PAGE;
 import static de.typology.lexerParser.WikipediaToken.QUESTIONMARK;
 import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.REF;
+import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.STRING;
 import static de.typology.lexerParser.WikipediaToken.TEXT;
 import static de.typology.lexerParser.WikipediaToken.TITLE;
 import static de.typology.lexerParser.WikipediaToken.URI;
+import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.BufferedReader;
@@ -178,6 +180,18 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			this.token = QUOTATIONMARK;
 			return;
 		}
+		// recognize vertical bar
+		if (this.lookahead == '|') {
+			this.read();
+			this.token = VERTICALBAR;
+			return;
+		}
+		// recognize colon
+		if (this.lookahead == ':') {
+			this.read();
+			this.token = COLON;
+			return;
+		}
 		// Recognize end of file
 		if (this.lookahead == -1) {
 			this.eof = true;
@@ -296,53 +310,18 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 			return;
 		}
 
-		// Recognize link
+		// Recognize squared bracket open
 		if (this.lookahead == '[') {
 			this.read();
-			while (this.lookahead != '[' && this.hasNext()) {
-				if (this.lookahead == ']') {
-					this.read();
-					this.token = OTHER;
-					return;
-				}
-				this.next();
-			}
-			if (this.lookahead == '[') {
-				this.read();
-				this.token = LINK;
-				while (this.lookahead != ']') {
+			this.token = SQUAREDBRACKET;
+			return;
+		}
 
-					if (this.lookahead == '[') {
-						this.read();
-						int open = 2;
-						while (open != 0 && this.hasNext()
-								&& this.lookahead != 10) {
-							if (this.lookahead == '[') {
-								open++;
-							}
-							if (this.lookahead == ']') {
-								open--;
-							}
-							this.next();
-						}
-						this.token = OTHER;
-						return;
-					}
-
-					if (this.lookahead == '|') {
-						this.token = LABELEDLINK;
-					}
-					this.read();
-				}
-				this.read();
-				if (this.lookahead == ']') {
-					this.read();
-				} else {
-					this.token = OTHER;
-				}
-				return;
-
-			}
+		// Recognize squared bracket close
+		if (this.lookahead == ']') {
+			this.read();
+			this.token = CLOSEDSQUAREDBRACKET;
+			return;
 		}
 
 		// Recognize bracket open
