@@ -54,15 +54,15 @@ public class WikipediaParser {
 
 		// this part declares language specific variables
 		String disambiguation = new String();
-		String disambiguation2 = new String();
+		// String disambiguation2 = new String();
 		if (Config.get().wikiXmlPath.contains("dewiki")) {
 			disambiguation = "Begriffsklärung";
 			System.out.println("This is a german wikipedia XML.");
 		} else {
 			if (Config.get().wikiXmlPath.contains("enwiki")) {
 				disambiguation = "disambig";
-				disambiguation2 = "geodis";// see
-											// http://en.wikipedia.org/wiki/Template:Geodis
+				// disambiguation2 = "geodis";// see
+				// http://en.wikipedia.org/wiki/Template:Geodis
 				System.out.println("This is a english wikipedia XML.");
 			} else {
 				System.out
@@ -124,10 +124,8 @@ public class WikipediaParser {
 							}
 							if (previous == CURLYBRACKET
 									&& current == STRING
-									&& (recognizer.getLexeme().contains(
-											disambiguation) || recognizer
-											.getLexeme().contains(
-													disambiguation2))) {
+									&& recognizer.getLexeme().equals(
+											disambiguation)) {
 								writer.write("<DISAMBIGUATION>");
 							}
 							if (previous == CURLYBRACKET && current == STRING

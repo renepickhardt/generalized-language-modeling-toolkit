@@ -38,17 +38,13 @@ import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.itadaki.bzip2.BZip2InputStream;
 
 /**
  * @author Martin Koerner
@@ -86,11 +82,11 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 	}
 
 	public WikipediaRecognizer(String s) throws FileNotFoundException {
-		InputStream input = new FileInputStream(new File(s));
-		BZip2InputStream cb = new BZip2InputStream(input, false);
-		this.reader = new BufferedReader(new InputStreamReader(cb));
+		// InputStream input = new FileInputStream(new File(s));
+		// BZip2InputStream cb = new BZip2InputStream(input, false);
+		// this.reader = new BufferedReader(new InputStreamReader(cb));
 		// use the following line for reading xml files:
-		// this.reader = new BufferedReader(new FileReader(new File(s)));
+		this.reader = new BufferedReader(new FileReader(new File(s)));
 	}
 
 	// Extract lexeme from buffer
