@@ -29,11 +29,9 @@ public class WikipediaNormalizer {
 		String line;
 		try {
 			while ((line = this.reader.readLine()) != null) {
-				if (line.contains("<DISAMBIGUATION>")) {
-					continue;
-				}
-				if (line.contains("<TOC>")) {
-					continue;
+				if (line.contains("<DISAMBIGUATION>") || line.contains("<TOC>")
+						|| line.contains("<SYNTAXERROR>")) {
+					line = "";
 				}
 				line = line.replaceAll(" +", " ");
 				if (line.startsWith(" ")) {
@@ -44,13 +42,11 @@ public class WikipediaNormalizer {
 				line = line.replaceAll(",,+", ",");
 				line = line.replaceAll("\\p{Punct}+\\p{Punct}+", ".");
 
-				if (line.isEmpty()) {
-					continue;
+				if (!line.isEmpty()) {
+					this.writer.write(line);
+					this.writer.write('\n');
+					this.writer.flush();
 				}
-				this.writer.write(line);
-				this.writer.write('\n');
-				this.writer.flush();
-
 			}
 			this.writer.close();
 		} catch (IOException e) {
