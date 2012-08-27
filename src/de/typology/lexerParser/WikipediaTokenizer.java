@@ -25,6 +25,7 @@ import static de.typology.lexerParser.WikipediaToken.SEMICOLON;
 import static de.typology.lexerParser.WikipediaToken.SLASH;
 import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.STRING;
+import static de.typology.lexerParser.WikipediaToken.UNDERSCORE;
 import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 import static de.typology.lexerParser.WikipediaToken.WS;
 
@@ -74,9 +75,22 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			System.out.println("This is a german wikipedia XML.");
 		} else {
 			if (Config.get().wikiXmlPath.contains("enwiki")) {
+				this.disambiguations.add("Disambiguation");
+				this.disambiguations.add("disambiguation");
+				this.disambiguations.add("Disambig");
 				this.disambiguations.add("disambig");
+				this.disambiguations.add("Geodis");
 				this.disambiguations.add("geodis");
-				// see http://en.wikipedia.org/wiki/Template:Geodis
+				// geographical location name disambiguation pages
+				this.disambiguations.add("Hndis");
+				this.disambiguations.add("hndis");
+				// Human name disambiguation pages
+				this.disambiguations.add("Roadindex");
+				this.disambiguations.add("roadindex");
+				// Street name disambiguation pages
+				this.disambiguations.add("Shipindex");
+				this.disambiguations.add("shipindex");
+				// ship name disambiguation pages
 				System.out.println("This is a english wikipedia XML.");
 			} else {
 				System.out
@@ -171,6 +185,13 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		if (this.lookahead == ';') {
 			this.read();
 			this.token = SEMICOLON;
+			return;
+		}
+
+		// Recognize semicolon
+		if (this.lookahead == '_') {
+			this.read();
+			this.token = UNDERSCORE;
 			return;
 		}
 		// Recognize hyphen

@@ -1,5 +1,6 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.WikipediaToken.BR;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDELEMENT;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDPAGE;
 import static de.typology.lexerParser.WikipediaToken.CLOSEDREF;
@@ -25,7 +26,6 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 
 	private WikipediaTokenizer tokenizer;
 	private String lexeme;
-	private int bracketCount;
 	private WikipediaToken current;
 	private WikipediaToken previous;
 	private WikipediaToken label;
@@ -40,6 +40,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		keywords.put("title", TITLE);
 		keywords.put("text", TEXT);
 		keywords.put("ref", REF);
+		keywords.put("br", BR);
 		keywords.put("/page", CLOSEDPAGE);
 		keywords.put("/title", CLOSEDTITLE);
 		keywords.put("/text", CLOSEDTEXT);
@@ -89,7 +90,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		if (this.current == LESSTHAN) {
 			this.read();
 			if (this.current == EHH) {
-				this.label = EHH;
+				return EHH;
 			}
 
 			if (this.current == STRING) {

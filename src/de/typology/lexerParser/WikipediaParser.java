@@ -12,9 +12,12 @@ import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
 import static de.typology.lexerParser.WikipediaToken.COLON;
 import static de.typology.lexerParser.WikipediaToken.COMMA;
 import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
+import static de.typology.lexerParser.WikipediaToken.EHH;
 import static de.typology.lexerParser.WikipediaToken.ELEMENT;
 import static de.typology.lexerParser.WikipediaToken.EQUALITYSIGN;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
+import static de.typology.lexerParser.WikipediaToken.GREATERTHAN;
+import static de.typology.lexerParser.WikipediaToken.HH;
 import static de.typology.lexerParser.WikipediaToken.HYPHEN;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
@@ -24,6 +27,7 @@ import static de.typology.lexerParser.WikipediaToken.SEMICOLON;
 import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
 import static de.typology.lexerParser.WikipediaToken.STRING;
 import static de.typology.lexerParser.WikipediaToken.TEXT;
+import static de.typology.lexerParser.WikipediaToken.UNDERSCORE;
 import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 import static de.typology.lexerParser.WikipediaToken.WS;
 
@@ -99,6 +103,18 @@ public class WikipediaParser {
 							}
 						}
 					}
+					if (this.previous == LINESEPARATOR
+							&& (this.current == EQUALITYSIGN
+									|| this.current == COLON
+									|| this.current == ASTERISK
+									|| this.current == SEMICOLON || this.current == UNDERSCORE)) {
+						// equality sign or semicolon-->headline, colon or
+						// asterisk-->listing
+						while (this.current != CLOSEDTEXT
+								&& this.current != LINESEPARATOR) {
+							this.read();
+						}
+					}
 
 					if (this.previous == FULLSTOP
 							&& this.current == LINESEPARATOR) {
@@ -132,24 +148,15 @@ public class WikipediaParser {
 						this.write(" ");
 					}
 
-					if (this.previous == LINESEPARATOR
-							&& (this.current == EQUALITYSIGN
-									|| this.current == COLON || this.current == ASTERISK)) {
-						// equality sign-->headline, colon or asterisk-->listing
-						while (this.current != CLOSEDTEXT
-								&& this.current != LINESEPARATOR) {
-							this.read();
-						}
-					}
 					if (this.current == REF) {
 						while (this.current != CLOSEDREF
 								&& this.current != CLOSEDTEXT) {
 							this.read();
 						}
-						if (this.current == CLOSEDREF) {
-							this.read();
-						}
-						// } else {
+						// if (this.current == CLOSEDREF) {
+						// this.read();
+						// }
+						// else {
 						// this.write("<SYNTAXERROR>");
 						// }
 					}
@@ -158,9 +165,24 @@ public class WikipediaParser {
 								&& this.current != CLOSEDTEXT) {
 							this.read();
 						}
-						if (this.current == CLOSEDELEMENT) {
+						// if (this.current == CLOSEDELEMENT) {
+						// this.read();
+						// }
+						// else {
+						// this.write("<SYNTAXERROR>");
+						// }
+					}
+
+					if (this.current == EHH) {
+						while (this.current != GREATERTHAN
+								&& this.previous != HH
+								&& this.current != CLOSEDTEXT) {
 							this.read();
 						}
+						// if (this.current == GREATERTHAN && this.previous ==
+						// HH) {
+						// this.read();
+						// }
 						// } else {
 						// this.write("<SYNTAXERROR>");
 						// }
@@ -195,8 +217,7 @@ public class WikipediaParser {
 								this.bracketCount--;
 							}
 
-							if (this.previous == CURLYBRACKET
-									&& this.current == STRING
+							if (this.current == STRING
 									&& this.disambiguations
 											.contains(this.lexeme)) {
 								this.writer.write("<DISAMBIGUATION>");
