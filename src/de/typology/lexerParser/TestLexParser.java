@@ -15,7 +15,7 @@ public class TestLexParser {
 		//
 
 		// test parser
-		//
+		// //
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(
 				Config.get().wikiXmlPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
@@ -25,7 +25,7 @@ public class TestLexParser {
 
 		// test recognizer
 		//
-		// for (int i = 0; i < 4000; i++) {
+		// for (int i = 0; i < 2000; i++) {
 		// // while (tokenizer.hasNext()) {
 		// if (recognizer.hasNext()) {
 		// WikipediaToken t = recognizer.next();

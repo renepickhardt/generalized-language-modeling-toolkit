@@ -68,35 +68,75 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		// use the following line for reading xml files:
 		// this.reader = new BufferedReader(new FileReader(new File(s)));
 		this.disambiguations = new HashSet<String>();
-
+		boolean languageSpecified = false;
 		// this part declares language specific variables
 		if (Config.get().wikiXmlPath.contains("dewiki")) {
 			this.disambiguations.add("Begriffsklärung");
+			this.disambiguations.add("begriffsklärung");
 			System.out.println("This is a german wikipedia XML.");
-		} else {
-			if (Config.get().wikiXmlPath.contains("enwiki")) {
-				this.disambiguations.add("Disambiguation");
-				this.disambiguations.add("disambiguation");
-				this.disambiguations.add("Disambig");
-				this.disambiguations.add("disambig");
-				this.disambiguations.add("Geodis");
-				this.disambiguations.add("geodis");
-				// geographical location name disambiguation pages
-				this.disambiguations.add("Hndis");
-				this.disambiguations.add("hndis");
-				// Human name disambiguation pages
-				this.disambiguations.add("Roadindex");
-				this.disambiguations.add("roadindex");
-				// Street name disambiguation pages
-				this.disambiguations.add("Shipindex");
-				this.disambiguations.add("shipindex");
-				// ship name disambiguation pages
-				System.out.println("This is a english wikipedia XML.");
-			} else {
-				System.out
-						.println("Please declare language specific variables (see WikipediaTokenizer.java)");
-			}
+			languageSpecified = true;
 		}
+
+		if (Config.get().wikiXmlPath.contains("enwiki")) {
+			this.disambiguations.add("Disambiguation");
+			this.disambiguations.add("disambiguation");
+			this.disambiguations.add("Disambig");
+			this.disambiguations.add("disambig");
+			this.disambiguations.add("Geodis");
+			this.disambiguations.add("geodis");
+			// geographical location name disambiguation pages
+			this.disambiguations.add("Hndis");
+			this.disambiguations.add("hndis");
+			// Human name disambiguation pages
+			this.disambiguations.add("Roadindex");
+			this.disambiguations.add("roadindex");
+			// Street name disambiguation pages
+			this.disambiguations.add("Shipindex");
+			this.disambiguations.add("shipindex");
+			// ship name disambiguation pages
+			System.out.println("This is a english wikipedia XML.");
+			languageSpecified = true;
+		}
+
+		if (Config.get().wikiXmlPath.contains("eswiki")) {
+			this.disambiguations.add("Homonimia");
+			this.disambiguations.add("homonimia");
+			this.disambiguations.add("Idénticos");
+			this.disambiguations.add("idénticos");
+			System.out.println("This is a spanish wikipedia XML.");
+			languageSpecified = true;
+		}
+
+		if (Config.get().wikiXmlPath.contains("frwiki")) {
+			this.disambiguations.add("Homonymie");
+			this.disambiguations.add("homonymie");
+			this.disambiguations.add("Patronymie");
+			this.disambiguations.add("patronymie");
+			this.disambiguations.add("Homonymes");
+			this.disambiguations.add("homonymes");
+			this.disambiguations.add("Toponymie");
+			this.disambiguations.add("toponymie");
+			System.out.println("This is a french wikipedia XML.");
+			languageSpecified = true;
+		}
+
+		if (Config.get().wikiXmlPath.contains("itwiki")) {
+			this.disambiguations.add("Disambigua");
+			this.disambiguations.add("disambigua");
+			this.disambiguations.add("Omonime");
+			this.disambiguations.add("omonime");
+			this.disambiguations.add("Mercurio");
+			this.disambiguations.add("mercurio");
+			this.disambiguations.add("Interprogetto");
+			this.disambiguations.add("interprogetto");
+			System.out.println("This is a italian wikipedia XML.");
+			languageSpecified = true;
+		}
+		if (languageSpecified == false) {
+			System.out
+					.println("Please check naming or declare language specific variables (see WikipediaTokenizer.java)");
+		}
+
 	}
 
 	// Extract lexeme from buffer
