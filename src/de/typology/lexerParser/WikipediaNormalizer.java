@@ -30,7 +30,8 @@ public class WikipediaNormalizer {
 		try {
 			while ((line = this.reader.readLine()) != null) {
 				if (line.contains("<DISAMBIGUATION>") || line.contains("<TOC>")
-						|| line.contains("<SYNTAXERROR>")) {
+						|| line.contains("<SYNTAXERROR>")
+						|| line.contains("NOTOC")) {
 					line = "";
 				}
 				line = line.replaceAll(" +", " ");

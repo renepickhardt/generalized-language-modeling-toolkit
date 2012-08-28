@@ -69,6 +69,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		// this.reader = new BufferedReader(new FileReader(new File(s)));
 		this.disambiguations = new HashSet<String>();
 		boolean languageSpecified = false;
+
 		// this part declares language specific variables
 		if (Config.get().wikiXmlPath.contains("dewiki")) {
 			this.disambiguations.add("Begriffsklärung");
@@ -99,6 +100,8 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		}
 
 		if (Config.get().wikiXmlPath.contains("eswiki")) {
+			this.disambiguations.add("Desambiguación");
+			this.disambiguations.add("desambiguación");
 			this.disambiguations.add("Homonimia");
 			this.disambiguations.add("homonimia");
 			this.disambiguations.add("Idénticos");
@@ -116,6 +119,8 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.disambiguations.add("homonymes");
 			this.disambiguations.add("Toponymie");
 			this.disambiguations.add("toponymie");
+			this.disambiguations.add("Abréviation");
+			this.disambiguations.add("abréviation");
 			System.out.println("This is a french wikipedia XML.");
 			languageSpecified = true;
 		}
@@ -255,7 +260,6 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		// Recognize exclamation mark
 		if (this.lookahead == '!') {
 			this.read();
-			this.token = EXCLAMATIONMARK;
 			// Recognize !-->
 			if (this.lookahead == '-') {
 				this.read();
@@ -264,9 +268,11 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 					this.token = EHH;
 					return;
 				}
+				this.token = OTHER;
+				return;
 
 			}
-			this.token = OTHER;
+			this.token = EXCLAMATIONMARK;
 			return;
 		}
 

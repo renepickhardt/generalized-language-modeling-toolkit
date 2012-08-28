@@ -15,6 +15,7 @@ import static de.typology.lexerParser.WikipediaToken.CURLYBRACKET;
 import static de.typology.lexerParser.WikipediaToken.EHH;
 import static de.typology.lexerParser.WikipediaToken.ELEMENT;
 import static de.typology.lexerParser.WikipediaToken.EQUALITYSIGN;
+import static de.typology.lexerParser.WikipediaToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.FULLSTOP;
 import static de.typology.lexerParser.WikipediaToken.GREATERTHAN;
 import static de.typology.lexerParser.WikipediaToken.HH;
@@ -107,7 +108,9 @@ public class WikipediaParser {
 							&& (this.current == EQUALITYSIGN
 									|| this.current == COLON
 									|| this.current == ASTERISK
-									|| this.current == SEMICOLON || this.current == UNDERSCORE)) {
+									|| this.current == SEMICOLON
+									|| this.current == UNDERSCORE
+									|| this.current == EXCLAMATIONMARK || this.current == VERTICALBAR)) {
 						// equality sign or semicolon-->headline, colon or
 						// asterisk-->listing
 						while (this.current != CLOSEDTEXT
