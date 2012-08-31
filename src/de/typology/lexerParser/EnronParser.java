@@ -3,12 +3,18 @@ package de.typology.lexerParser;
 import static de.typology.lexerParser.EnronToken.AT;
 import static de.typology.lexerParser.EnronToken.BRACES;
 import static de.typology.lexerParser.EnronToken.CLOSEDBRACES;
+import static de.typology.lexerParser.EnronToken.COLON;
 import static de.typology.lexerParser.EnronToken.COMMA;
+import static de.typology.lexerParser.EnronToken.EQUALITYSIGN;
+import static de.typology.lexerParser.EnronToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.EnronToken.FULLSTOP;
 import static de.typology.lexerParser.EnronToken.HEADER;
 import static de.typology.lexerParser.EnronToken.HYPHEN;
 import static de.typology.lexerParser.EnronToken.LINESEPARATOR;
+import static de.typology.lexerParser.EnronToken.QUESTIONMARK;
+import static de.typology.lexerParser.EnronToken.QUOTATIONMARK;
 import static de.typology.lexerParser.EnronToken.SEMICOLON;
+import static de.typology.lexerParser.EnronToken.SLASH;
 import static de.typology.lexerParser.EnronToken.STRING;
 import static de.typology.lexerParser.EnronToken.WS;
 
@@ -32,7 +38,6 @@ import de.typology.utils.Config;
 public class EnronParser {
 	private EnronRecognizer recognizer;
 	private String lexeme = new String();
-	private int bracketCount;
 	boolean lastLineWasAHeader;
 	boolean isString;
 	private EnronToken current;
@@ -50,8 +55,8 @@ public class EnronParser {
 	public void parse() throws IOException {
 		for (File f : this.fileList) {
 			this.recognizer = new EnronRecognizer(f);
-			// write(f.toString());
-			// write("\n");
+			// this.write(f.toString());
+			// this.write("\n");
 			this.lastLineWasAHeader = false;
 			while (this.recognizer.hasNext()) {
 				this.read();
@@ -62,9 +67,9 @@ public class EnronParser {
 							&& this.recognizer.hasNext()) {
 						this.skip();
 					}
-					if (this.current == LINESEPARATOR) {
-						this.skip();
-					}
+					// if (this.current == LINESEPARATOR) {
+					// this.skip();
+					// }
 					this.lastLineWasAHeader = true;
 				}
 
@@ -75,9 +80,9 @@ public class EnronParser {
 							&& this.recognizer.hasNext()) {
 						this.skip();
 					}
-					if (this.current == LINESEPARATOR) {
-						this.skip();
-					}
+					// if (this.current == LINESEPARATOR) {
+					// this.skip();
+					// }
 				}
 
 				// Remove lines that start with hyphen
@@ -95,17 +100,23 @@ public class EnronParser {
 					}
 				}
 				if (this.current == LINESEPARATOR) {
-					this.write(" ");
+					this.write("\n");
 					this.lastLineWasAHeader = false;
 				}
 				if (this.current == FULLSTOP) {
-					this.write(this.lexeme);
+					this.write(".");
 				}
 				if (this.current == COMMA) {
-					this.write(this.lexeme);
+					this.write(",");
 				}
 				if (this.current == SEMICOLON) {
-					this.write(this.lexeme);
+					this.write(";");
+				}
+				if (this.current == QUESTIONMARK) {
+					this.write("?");
+				}
+				if (this.current == EXCLAMATIONMARK) {
+					this.write("!");
 				}
 				if (this.current == HYPHEN) {
 					this.write("-");
@@ -116,14 +127,30 @@ public class EnronParser {
 				if (this.current == WS) {
 					this.write(" ");
 				}
+				if (this.current == EQUALITYSIGN) {
+					this.write("=");
+				}
+				if (this.current == SLASH) {
+					this.write("/");
+				}
+				if (this.current == COLON) {
+					this.write(":");
+				}
+
+				if (this.current == QUOTATIONMARK) {
+					this.write("'");
+				}
 				if (this.current == BRACES) {
 					while (this.recognizer.hasNext()
 							&& this.current != CLOSEDBRACES) {
 						this.current = this.recognizer.next();
 					}
 				}
+
 			}
-			this.write("\n");// new line after file
+			this.write("\n");
+			this.write("<ENDOFMAIL>");// marks end of the file
+			this.write("\n");
 		}
 		this.writer.close();
 	}

@@ -1,15 +1,18 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.EnronToken.ASTERISK;
 import static de.typology.lexerParser.EnronToken.AT;
 import static de.typology.lexerParser.EnronToken.BCC;
 import static de.typology.lexerParser.EnronToken.BRACES;
 import static de.typology.lexerParser.EnronToken.CC;
 import static de.typology.lexerParser.EnronToken.CLOSEDBRACES;
+import static de.typology.lexerParser.EnronToken.COLON;
 import static de.typology.lexerParser.EnronToken.COMMA;
 import static de.typology.lexerParser.EnronToken.CONTENTTRANSFERENCODING;
 import static de.typology.lexerParser.EnronToken.CONTENTTYPE;
 import static de.typology.lexerParser.EnronToken.DATE;
 import static de.typology.lexerParser.EnronToken.EOF;
+import static de.typology.lexerParser.EnronToken.EQUALITYSIGN;
 import static de.typology.lexerParser.EnronToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.EnronToken.FROM;
 import static de.typology.lexerParser.EnronToken.FULLSTOP;
@@ -21,9 +24,11 @@ import static de.typology.lexerParser.EnronToken.MIMEVERSION;
 import static de.typology.lexerParser.EnronToken.OTHER;
 import static de.typology.lexerParser.EnronToken.QUESTIONMARK;
 import static de.typology.lexerParser.EnronToken.QUOTATIONMARK;
+import static de.typology.lexerParser.EnronToken.SLASH;
 import static de.typology.lexerParser.EnronToken.STRING;
 import static de.typology.lexerParser.EnronToken.SUBJECT;
 import static de.typology.lexerParser.EnronToken.TO;
+import static de.typology.lexerParser.EnronToken.VERTICALBAR;
 import static de.typology.lexerParser.EnronToken.WS;
 import static de.typology.lexerParser.EnronToken.XBCC;
 import static de.typology.lexerParser.EnronToken.XCC;
@@ -71,6 +76,8 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		keywords.put("To", TO);
 		keywords.put("cc", CC);
 		keywords.put("bcc", BCC);
+		keywords.put("Cc", CC);
+		keywords.put("Bcc", BCC);
 		keywords.put("Subject", SUBJECT);
 		keywords.put("Mime-Version", MIMEVERSION);
 		keywords.put("Content-Type", CONTENTTYPE);
@@ -196,6 +203,44 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
+			return;
+		}
+
+		// Recognize quotation mark
+		if (this.lookahead == '\'') {
+			this.read();
+			this.token = QUOTATIONMARK;
+			return;
+		}
+		// Recognize vertical bar
+		if (this.lookahead == '|') {
+			this.read();
+			this.token = VERTICALBAR;
+			return;
+		}
+
+		// Recognize slash
+		if (this.lookahead == '/') {
+			this.read();
+			this.token = SLASH;
+			return;
+		}
+		// Recognize colon
+		if (this.lookahead == ':') {
+			this.read();
+			this.token = COLON;
+			return;
+		}
+		// Recognize asterisk
+		if (this.lookahead == '*') {
+			this.read();
+			this.token = ASTERISK;
+			return;
+		}
+		// Recognize equality sign
+		if (this.lookahead == '=') {
+			this.read();
+			this.token = EQUALITYSIGN;
 			return;
 		}
 
