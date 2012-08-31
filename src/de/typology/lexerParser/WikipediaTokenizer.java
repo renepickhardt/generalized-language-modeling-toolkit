@@ -510,7 +510,6 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		try {
 			this.lex();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return true;

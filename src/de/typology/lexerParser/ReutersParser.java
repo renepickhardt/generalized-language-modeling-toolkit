@@ -13,10 +13,12 @@ import static de.typology.lexerParser.ReutersToken.TEXT;
 import static de.typology.lexerParser.ReutersToken.WS;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 
 import de.typology.utils.Config;
 
@@ -28,66 +30,99 @@ import de.typology.utils.Config;
  * 
  */
 public class ReutersParser {
-	public static void main(String[] args) throws IOException {
+	private ReutersRecognizer recognizer;
+	private String lexeme = new String();
+	private int bracketCount;
+	boolean lastLineWasAHeader;
+	boolean isString;
+	private ReutersToken current;
+	private ReutersToken previous;
+	private Writer writer;
+	private ArrayList<File> fileList;
 
-		Writer writer = new OutputStreamWriter(new FileOutputStream(
+	public ReutersParser(ArrayList<File> fileList) throws FileNotFoundException {
+		this.fileList = fileList;
+		this.writer = new OutputStreamWriter(new FileOutputStream(
 				Config.get().parsedReutersOutputPath));
-		File dir = new File(Config.get().reutersXmlPath);
-		File[] fileList = dir.listFiles();
-		for (File f : fileList) {
-			ReutersRecognizer recognizer = new ReutersRecognizer(f);
+
+	}
+
+	public void parse() throws IOException {
+		for (File f : this.fileList) {
+			this.recognizer = new ReutersRecognizer(f);
 			// writer.write(f.toString());
 			// writer.write("\n");
-			ReutersToken current = null;
-			// ReutersToken previous = null;
-			String lexeme = null;
-			while (recognizer.hasNext()) {
-				// previous = current;
-				current = recognizer.next();
-				lexeme = recognizer.getLexeme();
-				if (current == TEXT) {
-					while (recognizer.hasNext() && current != CLOSEDTEXT) {
+			while (this.recognizer.hasNext()) {
+				this.read();
+				if (this.current == TEXT) {
+					while (this.recognizer.hasNext()
+							&& this.current != CLOSEDTEXT) {
 						// inside a textblock
-						// previous = current;
-						current = recognizer.next();
-						lexeme = recognizer.getLexeme();
-						if (current == P) {
-							while (recognizer.hasNext() && current != CLOSEDP) {
-								current = recognizer.next();
-								lexeme = recognizer.getLexeme();
+						this.read();
+						if (this.current == P) {
+							while (this.recognizer.hasNext()
+									&& this.current != CLOSEDP) {
+								this.read();
 
-								if (current == STRING) {
-									writer.write(lexeme);
+								if (this.current == STRING) {
+									this.write(this.lexeme);
 								}
-								if (current == FULLSTOP) {
-									writer.write(lexeme);
+								if (this.current == FULLSTOP) {
+									this.write(this.lexeme);
 								}
-								if (current == COMMA) {
-									writer.write(lexeme);
+								if (this.current == COMMA) {
+									this.write(this.lexeme);
 								}
-								if (current == HYPHEN) {
-									writer.write("-");
+								if (this.current == HYPHEN) {
+									this.write("-");
 								}
 
-								if (current == WS) {
-									writer.write(" ");
+								if (this.current == WS) {
+									this.write(" ");
 								}
-								if (current == BRACES) {
-									while (recognizer.hasNext()
-											&& current != CLOSEDBRACES
-											&& current != CLOSEDP) {
-										current = recognizer.next();
+								if (this.current == BRACES) {
+									while (this.recognizer.hasNext()
+											&& this.current != CLOSEDBRACES
+											&& this.current != CLOSEDP) {
+										this.skip();
 									}
 								}
 
 							}
-							writer.write("\n");// new line after arcticle
+							this.write("\n");// new line after arcticle
 						}
 					}
 				}
 			}
-			writer.write("\n");// new line after page
+			this.write("\n");// new line after page
 		}
-		writer.close();
+		this.writer.close();
+	}
+
+	public void read() throws IOException {
+		if (this.recognizer.hasNext()) {
+			this.previous = this.current;
+			this.current = this.recognizer.next();
+			this.lexeme = this.recognizer.getLexeme();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	public void skip() {
+		if (this.recognizer.hasNext()) {
+			this.previous = this.current;
+			this.current = this.recognizer.next();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	public void write(String s) {
+		try {
+			this.writer.write(s);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

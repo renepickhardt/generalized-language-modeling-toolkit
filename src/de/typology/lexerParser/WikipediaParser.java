@@ -77,7 +77,6 @@ public class WikipediaParser {
 			// try {
 			// Thread.sleep(1);
 			// } catch (InterruptedException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// }
 
@@ -89,12 +88,11 @@ public class WikipediaParser {
 					// try {
 					// Thread.sleep(20);
 					// } catch (InterruptedException e) {
-					// // TODO Auto-generated catch block
 					// e.printStackTrace();
 					// }
 
-					// inside a textblock
-
+					// Remove lines at the beginning of text starting with # or
+					// _
 					if (this.current == OTHER && this.previous == TEXT) {
 						if (this.lexeme.equals("#") || this.lexeme.equals("_")) {
 							while (this.recognizer.hasNext()
@@ -104,6 +102,8 @@ public class WikipediaParser {
 							}
 						}
 					}
+
+					// Remove headlines and listings
 					if (this.previous == LINESEPARATOR
 							&& (this.current == EQUALITYSIGN
 									|| this.current == COLON
@@ -123,14 +123,12 @@ public class WikipediaParser {
 							&& this.current == LINESEPARATOR) {
 						this.write(" ");
 					}
-
 					if (this.current == STRING) {
 						this.write(this.lexeme);
 					}
 					if (this.current == WS) {
 						this.write(" ");
 					}
-
 					if (this.current == FULLSTOP) {
 						this.write(this.lexeme);
 					}
@@ -151,6 +149,7 @@ public class WikipediaParser {
 						this.write(" ");
 					}
 
+					// Recognize <ref>...</ref> inside a text block
 					if (this.current == REF) {
 						while (this.current != CLOSEDREF
 								&& this.current != CLOSEDTEXT) {
@@ -163,6 +162,8 @@ public class WikipediaParser {
 						// this.write("<SYNTAXERROR>");
 						// }
 					}
+
+					// Recognize <...>...</...> inside a text block
 					if (this.current == ELEMENT) {
 						while (this.current != CLOSEDELEMENT
 								&& this.current != CLOSEDTEXT) {
@@ -176,6 +177,7 @@ public class WikipediaParser {
 						// }
 					}
 
+					// Recognize <!--...--> inside a text block
 					if (this.current == EHH) {
 						while (this.current != GREATERTHAN
 								&& this.previous != HH
@@ -296,7 +298,6 @@ public class WikipediaParser {
 									// this.link = this.lexeme.substring(2,
 									// this.lexeme.length() - 1);
 									this.linkLabel = "";
-
 								}
 								if (this.current == COLON) {
 									// Recognize [[lang:language]]
@@ -326,14 +327,6 @@ public class WikipediaParser {
 		this.writer.close();
 	}
 
-	public void write(String s) {
-		try {
-			this.writer.write(s);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public void read() throws IOException {
 		if (this.recognizer.hasNext()) {
 			this.previous = this.current;
@@ -341,6 +334,14 @@ public class WikipediaParser {
 			this.lexeme = this.recognizer.getLexeme();
 		} else {
 			throw new IllegalStateException();
+		}
+	}
+
+	public void write(String s) {
+		try {
+			this.writer.write(s);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

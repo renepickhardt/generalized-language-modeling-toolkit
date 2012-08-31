@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import de.typology.utils.Config;
 
-public class Main {
+public class WikipediaMain {
 
 	/**
 	 * @param args
@@ -16,19 +16,19 @@ public class Main {
 				Config.get().wikiXmlPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaParser parser = new WikipediaParser(recognizer);
-		System.out.println("Start parsing.");
+		System.out.println("start parsing");
 		parser.parse();
-		System.out.println("Parsing done.");
-		System.out.println("Start cleanup.");
+		System.out.println("parsing done");
+		System.out.println("start cleanup");
 		WikipediaNormalizer wn = new WikipediaNormalizer(
 				Config.get().parsedWikiOutputPath,
 				Config.get().normalizedWikiOutputPath);
 		wn.normalize();
-		System.out.println("Cleanup done.");
-		System.out.println("Generate indicator file.");
+		System.out.println("cleanup done");
+		System.out.println("generate indicator file");
 		File done = new File(Config.get().normalizedWikiOutputPath + "IsDone");
 		done.createNewFile();
-		System.out.println("Done.");
+		System.out.println("done");
 	}
 
 }
