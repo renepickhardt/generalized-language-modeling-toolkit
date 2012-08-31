@@ -1,5 +1,6 @@
 package de.typology.lexerParser;
 
+import static de.typology.lexerParser.EnronToken.AT;
 import static de.typology.lexerParser.EnronToken.BCC;
 import static de.typology.lexerParser.EnronToken.BRACES;
 import static de.typology.lexerParser.EnronToken.CC;
@@ -63,9 +64,6 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 
 	static {
 		keywords = new HashMap<String, EnronToken>();
-		// MESSAGEID, DATE, FROM, TO, CC, BCC, SUBJECT, MIMEVERSION,
-		// CONTENTTYPE, CONTENTTRANSFERENCODING, XFROM, XTO, XCC, XBCC, XFOLDER,
-		// XORIGIN, XFILENAME
 
 		keywords.put("Message-ID", MESSAGEID);
 		keywords.put("Date", DATE);
@@ -144,18 +142,17 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			}
 			return;
 		}
+
 		// Recognize newline
 		if (this.lookahead == 10) {
 			this.token = LINESEPARATOR;
 			this.read();
 			return;
 		}
+
 		// Recognize whitespace
 		if (Character.isWhitespace(this.lookahead)) {
-			do {
-				this.read();
-			} while (Character.isWhitespace(this.lookahead));// removes multiple
-																// spaces
+			this.read();
 			this.token = WS;
 			return;
 		}
@@ -180,6 +177,7 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			this.token = HYPHEN;
 			return;
 		}
+
 		// Recognize dash (as hyphen)
 		if (this.lookahead == '–') {
 			this.read();
@@ -200,10 +198,18 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			this.token = QUESTIONMARK;
 			return;
 		}
+
 		// recognize quotation mark
 		if (this.lookahead == 39) {// 39='
 			this.read();
 			this.token = QUOTATIONMARK;
+			return;
+		}
+
+		// recognize @
+		if (this.lookahead == '@') {
+			this.read();
+			this.token = AT;
 			return;
 		}
 
@@ -296,4 +302,5 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}
+
 }
