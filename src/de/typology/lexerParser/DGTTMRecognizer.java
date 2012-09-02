@@ -19,7 +19,6 @@ import static de.typology.lexerParser.DGTTMToken.QUOTATIONMARK;
 import static de.typology.lexerParser.DGTTMToken.SEG;
 import static de.typology.lexerParser.DGTTMToken.STRING;
 import static de.typology.lexerParser.DGTTMToken.TUV;
-import static de.typology.lexerParser.DGTTMToken.UPPERCASE;
 import static de.typology.lexerParser.DGTTMToken.WS;
 
 import java.io.BufferedReader;
@@ -129,10 +128,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		}
 		// Recognize whitespace
 		if (Character.isWhitespace(this.lookahead)) {
-			do {
-				this.read();
-			} while (Character.isWhitespace(this.lookahead));// removes multiple
-																// spaces
+			this.read();
 			this.token = WS;
 			return;
 		}
@@ -258,31 +254,6 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		if (this.lookahead == ')') {
 			this.read();
 			this.token = CLOSEDBRACES;
-			return;
-		}
-
-		// Recognize Uppercase
-		if (Character.isUpperCase(this.lookahead)) {
-			this.token = UPPERCASE;
-			this.read();
-			if (Character.isWhitespace(this.lookahead)) {
-				this.token = STRING;
-				return;
-			}
-
-			while (!Character.isWhitespace(this.lookahead)
-					&& Character.isUpperCase(this.lookahead)) {
-				this.read();
-			}
-			;
-			if (!Character.isUpperCase(this.lookahead)
-					&& Character.isLetterOrDigit(this.lookahead)) {
-				this.token = STRING;
-				do {
-					this.read();
-				} while (!Character.isWhitespace(this.lookahead)
-						&& Character.isLetterOrDigit(this.lookahead));
-			}
 			return;
 		}
 

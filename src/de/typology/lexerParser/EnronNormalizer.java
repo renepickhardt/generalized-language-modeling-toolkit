@@ -40,58 +40,68 @@ public class EnronNormalizer {
 					this.line = this.line.substring(1, this.line.length());
 				}
 				this.line = this.line.replaceAll(" ,", ",");
-				this.line = this.line.replaceAll(" \\p{Punct}", ".");
-				this.line = this.line.replaceAll(",,+", ",");
-				this.line = this.line.replaceAll("\\p{Punct}+\\p{Punct}+", ".");
+				this.line = this.line.replaceAll(" \\.", ".");
+				this.line = this.line.replaceAll(" !", "!");
+				this.line = this.line.replaceAll(" \\?", "\\?");
+				this.line = this.line.replaceAll(",+", ",");
+				this.line = this.line.replaceAll("\\.\\.+", ".");
+				this.line = this.line.replaceAll("!+", "!");
+				this.line = this.line.replaceAll("\\?+", "\\?");
 
 				String[] strings = this.line.split("\\s");
 				this.stringCount = 0;
 				this.atCount = 0;
 				this.numberCount = 0;
-				// if (!this.originalLine.startsWith(" - ")) {
-				// attachments start with " - "
-				for (int i = 0; i < strings.length; i++) {
-					if (strings[i].contains("@")) {
-						this.atCount++;
-					}
-					if (strings[i].contains("@") || strings[i].contains("http")
-							|| strings[i].contains("Http")
-							|| strings[i].contains("www")
-							|| strings[i].contains("/")
-							|| strings[i].contains("=")) {
-						strings[i] = "";
-					}
-					if (strings[i].contains("<ENDOFMAIL>")) {
-						// remove token
-						strings[i] = "";
-					}
-					if (strings[i].matches(".*[0-9].*")) {
-						this.numberCount++;
-					}
-					if (strings[i].matches(".*[a-z]+.*")) {
-						this.stringCount++;
-					}
-				}
-				this.numberStringProportion = this.numberCount
-						/ (strings.length + 1);
-				this.atStringProportion = this.atCount / (strings.length + 1);
-				// stringCount + 1 to prevent division by zero
-				if (this.numberStringProportion < 0.3
-						&& this.atStringProportion < 0.2
-						&& this.stringCount > 0) {
-					// print strings if less then 30% are numbers, less
-					// than 20% contain @ and contains at least one string
-					for (String s : strings) {
-						if (!s.isEmpty()) {
-							this.writer.write(s + " ");
+				if (!this.originalLine.startsWith(" - ")) {
+					// attachments start with " - "
+					for (int i = 0; i < strings.length; i++) {
+						if (strings[i].contains("@")) {
+							this.atCount++;
+						}
+						if (strings[i].contains("http")
+								|| strings[i].contains("@")
+								|| strings[i].contains("--")
+								|| strings[i].contains("/")
+								|| strings[i].contains("Http")
+								|| strings[i].contains("www")
+								|| strings[i].contains(".com")
+								|| strings[i].contains("=")) {
+							strings[i] = "";
+						}
+						if (strings[i].contains("<ENDOFMAIL>")) {
+							// remove token
+							strings[i] = "";
+						}
+						if (strings[i].matches(".*[0-9].*")) {
+							this.numberCount++;
+						}
+						if (strings[i].matches(".*[a-z]+.*")) {
+							this.stringCount++;
 						}
 					}
-				}
-				if (this.originalLine.equals("<ENDOFMAIL>")) {
-					this.writer.write("\n");
+					this.numberStringProportion = this.numberCount
+							/ (strings.length + 1);
+					this.atStringProportion = this.atCount
+							/ (strings.length + 1);
+					// stringCount + 1 to prevent division by zero
+
+					if (this.numberStringProportion < 0.3
+							&& this.atStringProportion < 0.15
+							&& this.stringCount > 0) {
+						// print strings if less then 30% are numbers, less
+						// than 20% contain @ and contains at least one string
+						for (String s : strings) {
+							if (!s.isEmpty()) {
+								this.writer.write(s + " ");
+
+							}
+						}
+					}
+					if (this.originalLine.equals("<ENDOFMAIL>")) {
+						this.writer.write("\n");
+					}
 				}
 			}
-			// }
 			this.writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();

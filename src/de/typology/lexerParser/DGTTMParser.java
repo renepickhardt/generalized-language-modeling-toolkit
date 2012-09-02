@@ -4,18 +4,18 @@ import static de.typology.lexerParser.DGTTMToken.BODY;
 import static de.typology.lexerParser.DGTTMToken.BRACES;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDBODY;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDBRACES;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDSEG;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDTUV;
 import static de.typology.lexerParser.DGTTMToken.COMMA;
 import static de.typology.lexerParser.DGTTMToken.FULLSTOP;
 import static de.typology.lexerParser.DGTTMToken.HYPHEN;
+import static de.typology.lexerParser.DGTTMToken.LINESEPARATOR;
 import static de.typology.lexerParser.DGTTMToken.SEG;
 import static de.typology.lexerParser.DGTTMToken.STRING;
 import static de.typology.lexerParser.DGTTMToken.TUV;
-import static de.typology.lexerParser.DGTTMToken.UPPERCASE;
 import static de.typology.lexerParser.DGTTMToken.WS;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -33,7 +33,22 @@ import de.typology.utils.Config;
  * 
  */
 public class DGTTMParser {
-	public static void main(String[] args) throws IOException {
+	private DGTTMRecognizer recognizer;
+	private String lexeme = new String();
+	boolean lastLineWasAHeader;
+	boolean isString;
+	private DGTTMToken current;
+	private DGTTMToken previous;
+	private Writer writer;
+	private ArrayList<File> fileList;
+
+	public DGTTMParser(ArrayList<File> fileList) throws FileNotFoundException {
+		this.fileList = fileList;
+		this.writer = new OutputStreamWriter(new FileOutputStream(
+				Config.get().parsedDGTTMOutputPath));
+	}
+
+	public void parse() throws IOException {
 		HashSet<String> keywords = new HashSet<String>();
 		keywords.add("Seite");
 		keywords.add("vom");
@@ -46,101 +61,98 @@ public class DGTTMParser {
 		keywords.add("in Anhang");
 		keywords.add("ABl");
 
-		Writer writer = new OutputStreamWriter(new FileOutputStream(
-				Config.get().parsedDGTTMOutputPath));
-		System.out.println("Get list of files.");
-		getFileList(new File(Config.get().DGTTMPath));
-		System.out.println("Start parsing.");
-		for (File f : fileList) {
-			DGTTMRecognizer recognizer = new DGTTMRecognizer(f);
+		for (File f : this.fileList) {
+			this.recognizer = new DGTTMRecognizer(f);
 			// writer.write(f.toString());
 			// writer.write("\n");
-			DGTTMToken current = null;
-			DGTTMToken previous = null;
-			String lexeme = null;
-			while (recognizer.hasNext()) {
-				previous = current;
-				current = recognizer.next();
-				lexeme = recognizer.getLexeme();
-				if (current == BODY) {
-					while (recognizer.hasNext() && current != CLOSEDBODY) {
+			this.reset();
+			while (this.recognizer.hasNext()) {
+				this.read();
+				if (this.current == BODY) {
+					while (this.recognizer.hasNext()
+							&& this.current != CLOSEDBODY) {
 						// inside a textblock
-						previous = current;
-						current = recognizer.next();
-						lexeme = recognizer.getLexeme();
-						if (current == TUV) {
-							while (recognizer.hasNext() && current != CLOSEDTUV) {
-								previous = current;
-								current = recognizer.next();
-								lexeme = recognizer.getLexeme();
-
-								// removes lines with uppercase only
-								if (previous == SEG && current == UPPERCASE) {
-									while (current != CLOSEDSEG
-											&& current != STRING) {
-										current = recognizer.next();
-									}
-								}
-
-								// removes lines, that start with a keyword
-								if (previous == SEG && current == STRING) {
-									if (keywords.contains(lexeme)) {
-										while (current != CLOSEDSEG) {
-											current = recognizer.next();
+						this.read();
+						if (this.current == TUV) {
+							while (this.recognizer.hasNext()
+									&& this.current != CLOSEDTUV) {
+								this.read();
+								if (this.current == STRING
+										&& this.previous == SEG) {
+									if (keywords.contains(this.lexeme)) {
+										while (this.recognizer.hasNext()
+												&& this.current != LINESEPARATOR
+												&& this.current != CLOSEDTUV) {
+											this.skip();
 										}
 									}
 								}
-								if (current == STRING) {
-									writer.write(lexeme);
+								if (this.current == STRING) {
+									if (!this.lexeme.matches(".+[A-Z].*")) {
+										this.write(this.lexeme);
+									}
 								}
-								if (current == UPPERCASE) {
-									writer.write(lexeme);
+								if (this.current == FULLSTOP) {
+									this.write(this.lexeme);
 								}
-								if (current == FULLSTOP) {
-									writer.write(lexeme);
+								if (this.current == COMMA) {
+									this.write(this.lexeme);
 								}
-								if (current == COMMA) {
-									writer.write(lexeme);
+								if (this.current == HYPHEN) {
+									this.write("-");
 								}
-								if (current == HYPHEN) {
-									writer.write("-");
+								if (this.current == WS) {
+									this.write(" ");
 								}
-
-								if (current == WS) {
-									writer.write(" ");
-								}
-								if (current == BRACES) {
-									while (recognizer.hasNext()
-											&& current != CLOSEDBRACES
-											&& current != CLOSEDTUV) {
-										current = recognizer.next();
+								if (this.current == BRACES) {
+									while (this.recognizer.hasNext()
+											&& this.current != CLOSEDBRACES
+											&& this.current != CLOSEDTUV) {
+										this.current = this.recognizer.next();
 									}
 								}
 
 							}
-							writer.write("\n");// new line after segment
+							this.write("\n");// new line after segment
 						}
 					}
 				}
 			}
-			writer.write("\n");// new line after file
+			this.write("\n");// new line after file
 		}
-		writer.close();
-		System.out.println("Done.");
+		this.writer.close();
 	}
 
-	private static ArrayList<File> fileList = new ArrayList<File>();
+	public void read() throws IOException {
+		if (this.recognizer.hasNext()) {
+			this.previous = this.current;
+			this.current = this.recognizer.next();
+			this.lexeme = this.recognizer.getLexeme();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
 
-	private static void getFileList(File f) {
-		File[] files = f.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					getFileList(file);
-				} else {
-					fileList.add(file);
-				}
-			}
+	public void reset() {
+		this.lexeme = "";
+		this.current = null;
+		this.previous = null;
+	}
+
+	public void skip() {
+		if (this.recognizer.hasNext()) {
+			this.previous = this.current;
+			this.current = this.recognizer.next();
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+
+	public void write(String s) {
+		try {
+			this.writer.write(s);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }

@@ -55,8 +55,8 @@ public class EnronParser {
 	public void parse() throws IOException {
 		for (File f : this.fileList) {
 			this.recognizer = new EnronRecognizer(f);
-			// this.write(f.toString());
-			// this.write("\n");
+			this.write(f.toString());
+			this.write("\n");
 			this.lastLineWasAHeader = false;
 			while (this.recognizer.hasNext()) {
 				this.read();
