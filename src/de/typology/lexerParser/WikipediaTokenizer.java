@@ -233,7 +233,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			return;
 		}
 
-		// Recognize semicolon
+		// Recognize underscore
 		if (this.lookahead == '_') {
 			this.read();
 			this.token = UNDERSCORE;

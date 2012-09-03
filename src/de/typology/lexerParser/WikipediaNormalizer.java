@@ -17,10 +17,8 @@ public class WikipediaNormalizer {
 			this.reader = new BufferedReader(new FileReader(input));
 			this.writer = new BufferedWriter(new FileWriter(output));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -39,9 +37,15 @@ public class WikipediaNormalizer {
 					line = line.substring(1, line.length());
 				}
 				line = line.replaceAll(" ,", ",");
-				line = line.replaceAll(" \\p{Punct}", ".");
-				line = line.replaceAll(",,+", ",");
-				line = line.replaceAll("\\p{Punct}+\\p{Punct}+", ".");
+				line = line.replaceAll(" ;", ";");
+				line = line.replaceAll(" \\.", ".");
+				line = line.replaceAll(" !", "!");
+				line = line.replaceAll(" \\?", "\\?");
+				line = line.replaceAll(",+", ",");
+				line = line.replaceAll(";+", ";");
+				line = line.replaceAll("\\.+", ".");
+				line = line.replaceAll("!+", "!");
+				line = line.replaceAll("\\?+", "\\?");
 
 				if (!line.isEmpty()) {
 					this.writer.write(line);
@@ -51,7 +55,6 @@ public class WikipediaNormalizer {
 			}
 			this.writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

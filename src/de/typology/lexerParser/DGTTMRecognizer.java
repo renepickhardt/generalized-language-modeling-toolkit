@@ -17,6 +17,7 @@ import static de.typology.lexerParser.DGTTMToken.OTHER;
 import static de.typology.lexerParser.DGTTMToken.QUESTIONMARK;
 import static de.typology.lexerParser.DGTTMToken.QUOTATIONMARK;
 import static de.typology.lexerParser.DGTTMToken.SEG;
+import static de.typology.lexerParser.DGTTMToken.SEMICOLON;
 import static de.typology.lexerParser.DGTTMToken.STRING;
 import static de.typology.lexerParser.DGTTMToken.TUV;
 import static de.typology.lexerParser.DGTTMToken.WS;
@@ -32,6 +33,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import de.typology.utils.Config;
 
 /**
  * @author Martin Koerner
@@ -51,17 +54,23 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 
 	// Keywords to token mapping
 	private static Map<String, DGTTMToken> keywords;
-
+	private static Map<String, String> tuvs;
 	static {
 		keywords = new HashMap<String, DGTTMToken>();
 		keywords.put("body", BODY);
-		keywords.put("tuv lang=\"DE-DE\"", TUV);
 		keywords.put("seg", SEG);
-
 		keywords.put("/body", CLOSEDBODY);
 		keywords.put("/tuv", CLOSEDTUV);
 		keywords.put("/seg", CLOSEDSEG);
-
+	}
+	static {
+		tuvs = new HashMap<String, String>();
+		tuvs.put("EN", "tuv lang=\"EN-GB\"");
+		tuvs.put("DE", "tuv lang=\"DE-DE\"");
+		tuvs.put("ES", "tuv lang=\"ES-ES\"");
+		tuvs.put("FR", "tuv lang=\"FR-FR\"");
+		tuvs.put("IT", "tuv lang=\"IT-IT\"");
+		// add new languages here
 	}
 
 	public DGTTMRecognizer(File f) throws UnsupportedEncodingException,
@@ -69,6 +78,8 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		Reader r = new InputStreamReader(new FileInputStream(
 				f.getAbsolutePath()), "UnicodeLittle");
 		this.reader = new BufferedReader(r);
+		// set language specific header
+		keywords.put(tuvs.get(Config.get().DGTTMLanguage), TUV);
 	}
 
 	// Extract lexeme from buffer
@@ -127,7 +138,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			return;
 		}
 		// Recognize whitespace
-		if (Character.isWhitespace(this.lookahead)) {
+		if (Character.isWhitespace(this.lookahead) || this.lookahead == ' ') {
 			this.read();
 			this.token = WS;
 			return;
@@ -144,6 +155,13 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		if (this.lookahead == ',') {
 			this.read();
 			this.token = COMMA;
+			return;
+		}
+
+		// Recognize semicolon
+		if (this.lookahead == ';') {
+			this.read();
+			this.token = SEMICOLON;
 			return;
 		}
 
@@ -230,7 +248,6 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		if (this.lookahead == '<') {
 			do {
 				this.read();
-
 			} while (this.lookahead != '>');
 			this.read();
 			String label = (String) this.getLexeme().subSequence(1,

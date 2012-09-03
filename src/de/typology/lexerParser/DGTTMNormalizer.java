@@ -12,7 +12,6 @@ public class DGTTMNormalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
-	private String line;
 	HashSet<String> keywords;
 
 	public DGTTMNormalizer(String input, String output) {
@@ -28,24 +27,26 @@ public class DGTTMNormalizer {
 	}
 
 	public void normalize() {
-
+		String line;
 		try {
-			while ((this.line = this.reader.readLine()) != null) {
-				this.line = this.line.replaceAll(" +", " ");
-				if (this.line.startsWith(" ")) {
-					this.line = this.line.substring(1, this.line.length());
+			while ((line = this.reader.readLine()) != null) {
+				line = line.replaceAll(" +", " ");
+				if (line.startsWith(" ")) {
+					line = line.substring(1, line.length());
 				}
-				this.line = this.line.replaceAll(" ,", ",");
-				this.line = this.line.replaceAll(" \\.", ".");
-				this.line = this.line.replaceAll(" !", "!");
-				this.line = this.line.replaceAll(" \\?", "\\?");
-				this.line = this.line.replaceAll(",+", ",");
-				this.line = this.line.replaceAll("\\.\\.+", ".");
-				this.line = this.line.replaceAll("!+", "!");
-				this.line = this.line.replaceAll("\\?+", "\\?");
+				line = line.replaceAll(" ,", ",");
+				line = line.replaceAll(" ;", ";");
+				line = line.replaceAll(" \\.", ".");
+				line = line.replaceAll(" !", "!");
+				line = line.replaceAll(" \\?", "\\?");
+				line = line.replaceAll(",+", ",");
+				line = line.replaceAll(";+", ";");
+				line = line.replaceAll("\\.+", ".");
+				line = line.replaceAll("!+", "!");
+				line = line.replaceAll("\\?+", "\\?");
 
-				if (!this.line.isEmpty()) {
-					this.writer.write(this.line);
+				if (!line.isEmpty()) {
+					this.writer.write(line);
 					this.writer.write('\n');
 					this.writer.flush();
 				}

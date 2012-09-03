@@ -8,8 +8,7 @@ import static de.typology.lexerParser.DGTTMToken.CLOSEDTUV;
 import static de.typology.lexerParser.DGTTMToken.COMMA;
 import static de.typology.lexerParser.DGTTMToken.FULLSTOP;
 import static de.typology.lexerParser.DGTTMToken.HYPHEN;
-import static de.typology.lexerParser.DGTTMToken.LINESEPARATOR;
-import static de.typology.lexerParser.DGTTMToken.SEG;
+import static de.typology.lexerParser.DGTTMToken.SEMICOLON;
 import static de.typology.lexerParser.DGTTMToken.STRING;
 import static de.typology.lexerParser.DGTTMToken.TUV;
 import static de.typology.lexerParser.DGTTMToken.WS;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import de.typology.utils.Config;
 
@@ -38,7 +36,7 @@ public class DGTTMParser {
 	boolean lastLineWasAHeader;
 	boolean isString;
 	private DGTTMToken current;
-	private DGTTMToken previous;
+	// private DGTTMToken previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
 
@@ -49,18 +47,6 @@ public class DGTTMParser {
 	}
 
 	public void parse() throws IOException {
-		HashSet<String> keywords = new HashSet<String>();
-		keywords.add("Seite");
-		keywords.add("vom");
-		keywords.add("Artikel");
-		keywords.add("Anhang");
-		keywords.add("in");
-		keywords.add("Teil");
-		keywords.add("Nummer");
-		keywords.add("Liste");
-		keywords.add("in Anhang");
-		keywords.add("ABl");
-
 		for (File f : this.fileList) {
 			this.recognizer = new DGTTMRecognizer(f);
 			// writer.write(f.toString());
@@ -77,25 +63,20 @@ public class DGTTMParser {
 							while (this.recognizer.hasNext()
 									&& this.current != CLOSEDTUV) {
 								this.read();
-								if (this.current == STRING
-										&& this.previous == SEG) {
-									if (keywords.contains(this.lexeme)) {
-										while (this.recognizer.hasNext()
-												&& this.current != LINESEPARATOR
-												&& this.current != CLOSEDTUV) {
-											this.skip();
-										}
-									}
-								}
 								if (this.current == STRING) {
-									if (!this.lexeme.matches(".+[A-Z].*")) {
-										this.write(this.lexeme);
-									}
+									// the following if-statement removes words
+									// written in all caps
+									// if (!this.lexeme.matches(".+[A-Z].*")) {
+									this.write(this.lexeme);
+									// }
 								}
 								if (this.current == FULLSTOP) {
 									this.write(this.lexeme);
 								}
 								if (this.current == COMMA) {
+									this.write(this.lexeme);
+								}
+								if (this.current == SEMICOLON) {
 									this.write(this.lexeme);
 								}
 								if (this.current == HYPHEN) {
@@ -111,9 +92,9 @@ public class DGTTMParser {
 										this.current = this.recognizer.next();
 									}
 								}
-
 							}
-							this.write("\n");// new line after segment
+							this.write(" ");
+							// this.write("\n");// new line after segment
 						}
 					}
 				}
@@ -125,7 +106,7 @@ public class DGTTMParser {
 
 	public void read() throws IOException {
 		if (this.recognizer.hasNext()) {
-			this.previous = this.current;
+			// this.previous = this.current;
 			this.current = this.recognizer.next();
 			this.lexeme = this.recognizer.getLexeme();
 		} else {
@@ -136,12 +117,12 @@ public class DGTTMParser {
 	public void reset() {
 		this.lexeme = "";
 		this.current = null;
-		this.previous = null;
+		// this.previous = null;
 	}
 
 	public void skip() {
 		if (this.recognizer.hasNext()) {
-			this.previous = this.current;
+			// this.previous = this.current;
 			this.current = this.recognizer.next();
 		} else {
 			throw new IllegalStateException();
