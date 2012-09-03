@@ -7,6 +7,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * @author Martin Koerner
+ * 
+ *         derived from
+ *         http://101companies.org/index.php/101implementation:javaLexer
+ * 
+ */
 public class WikipediaNormalizer {
 
 	private BufferedReader reader;

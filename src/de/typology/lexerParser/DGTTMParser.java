@@ -94,7 +94,6 @@ public class DGTTMParser {
 								}
 							}
 							this.write(" ");
-							// this.write("\n");// new line after segment
 						}
 					}
 				}

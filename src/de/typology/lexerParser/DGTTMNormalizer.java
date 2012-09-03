@@ -6,13 +6,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
 
+/**
+ * @author Martin Koerner
+ * 
+ *         derived from
+ *         http://101companies.org/index.php/101implementation:javaLexer
+ * 
+ */
 public class DGTTMNormalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
-	HashSet<String> keywords;
+	private String line;
 
 	public DGTTMNormalizer(String input, String output) {
 		try {
@@ -27,26 +33,25 @@ public class DGTTMNormalizer {
 	}
 
 	public void normalize() {
-		String line;
 		try {
-			while ((line = this.reader.readLine()) != null) {
-				line = line.replaceAll(" +", " ");
-				if (line.startsWith(" ")) {
-					line = line.substring(1, line.length());
+			while ((this.line = this.reader.readLine()) != null) {
+				this.line = this.line.replaceAll(" +", " ");
+				if (this.line.startsWith(" ")) {
+					this.line = this.line.substring(1, this.line.length());
 				}
-				line = line.replaceAll(" ,", ",");
-				line = line.replaceAll(" ;", ";");
-				line = line.replaceAll(" \\.", ".");
-				line = line.replaceAll(" !", "!");
-				line = line.replaceAll(" \\?", "\\?");
-				line = line.replaceAll(",+", ",");
-				line = line.replaceAll(";+", ";");
-				line = line.replaceAll("\\.+", ".");
-				line = line.replaceAll("!+", "!");
-				line = line.replaceAll("\\?+", "\\?");
+				this.line = this.line.replaceAll(" ,", ",");
+				this.line = this.line.replaceAll(" ;", ";");
+				this.line = this.line.replaceAll(" \\.", ".");
+				this.line = this.line.replaceAll(" !", "!");
+				this.line = this.line.replaceAll(" \\?", "\\?");
+				this.line = this.line.replaceAll(",+", ",");
+				this.line = this.line.replaceAll(";+", ";");
+				this.line = this.line.replaceAll("\\.+", ".");
+				this.line = this.line.replaceAll("!+", "!");
+				this.line = this.line.replaceAll("\\?+", "\\?");
 
-				if (!line.isEmpty()) {
-					this.writer.write(line);
+				if (!this.line.isEmpty()) {
+					this.writer.write(this.line);
 					this.writer.write('\n');
 					this.writer.flush();
 				}

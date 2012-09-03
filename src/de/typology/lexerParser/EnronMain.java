@@ -10,6 +10,8 @@ public class EnronMain {
 	private static ArrayList<File> fileList;
 
 	/**
+	 * @author Martin Koerner
+	 * 
 	 * @param args
 	 * @throws IOException
 	 */

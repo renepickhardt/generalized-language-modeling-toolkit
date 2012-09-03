@@ -22,6 +22,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * @author Martin Koerner
+ * 
+ *         derived from
+ *         http://101companies.org/index.php/101implementation:javaLexer
+ * 
+ */
 public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 
 	private WikipediaTokenizer tokenizer;

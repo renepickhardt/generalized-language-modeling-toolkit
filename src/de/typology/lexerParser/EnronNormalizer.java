@@ -7,6 +7,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * @author Martin Koerner
+ * 
+ *         derived from
+ *         http://101companies.org/index.php/101implementation:javaLexer
+ * 
+ */
 public class EnronNormalizer {
 
 	private BufferedReader reader;
@@ -83,12 +90,12 @@ public class EnronNormalizer {
 							/ (strings.length + 1);
 					this.atStringProportion = this.atCount
 							/ (strings.length + 1);
-					// stringCount + 1 to prevent division by zero
+					// + 1 to prevent division by zero
 
 					if (this.numberStringProportion < 0.3
 							&& this.atStringProportion < 0.15
 							&& this.stringCount > 0) {
-						// print strings if less then 30% are numbers, less
+						// print strings if less then 25% are numbers, less
 						// than 20% contain @ and contains at least one string
 						for (String s : strings) {
 							if (!s.isEmpty()) {

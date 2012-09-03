@@ -95,7 +95,6 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		try {
 			this.reader = new BufferedReader(new FileReader(f));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

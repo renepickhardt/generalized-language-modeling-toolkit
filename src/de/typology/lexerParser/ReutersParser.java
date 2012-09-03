@@ -32,11 +32,10 @@ import de.typology.utils.Config;
 public class ReutersParser {
 	private ReutersRecognizer recognizer;
 	private String lexeme = new String();
-	private int bracketCount;
 	boolean lastLineWasAHeader;
 	boolean isString;
 	private ReutersToken current;
-	private ReutersToken previous;
+	// private ReutersToken previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
 
@@ -101,7 +100,7 @@ public class ReutersParser {
 
 	public void read() throws IOException {
 		if (this.recognizer.hasNext()) {
-			this.previous = this.current;
+			// this.previous = this.current;
 			this.current = this.recognizer.next();
 			this.lexeme = this.recognizer.getLexeme();
 		} else {
@@ -111,7 +110,7 @@ public class ReutersParser {
 
 	public void skip() {
 		if (this.recognizer.hasNext()) {
-			this.previous = this.current;
+			// this.previous = this.current;
 			this.current = this.recognizer.next();
 		} else {
 			throw new IllegalStateException();

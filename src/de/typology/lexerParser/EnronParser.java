@@ -67,9 +67,6 @@ public class EnronParser {
 							&& this.recognizer.hasNext()) {
 						this.skip();
 					}
-					// if (this.current == LINESEPARATOR) {
-					// this.skip();
-					// }
 					this.lastLineWasAHeader = true;
 				}
 
@@ -80,9 +77,6 @@ public class EnronParser {
 							&& this.recognizer.hasNext()) {
 						this.skip();
 					}
-					// if (this.current == LINESEPARATOR) {
-					// this.skip();
-					// }
 				}
 
 				// Remove lines that start with hyphen

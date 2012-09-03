@@ -155,12 +155,6 @@ public class WikipediaParser {
 								&& this.current != CLOSEDTEXT) {
 							this.read();
 						}
-						// if (this.current == CLOSEDREF) {
-						// this.read();
-						// }
-						// else {
-						// this.write("<SYNTAXERROR>");
-						// }
 					}
 
 					// Recognize <...>...</...> inside a text block
@@ -169,12 +163,6 @@ public class WikipediaParser {
 								&& this.current != CLOSEDTEXT) {
 							this.read();
 						}
-						// if (this.current == CLOSEDELEMENT) {
-						// this.read();
-						// }
-						// else {
-						// this.write("<SYNTAXERROR>");
-						// }
 					}
 
 					// Recognize <!--...--> inside a text block
@@ -184,13 +172,6 @@ public class WikipediaParser {
 								&& this.current != CLOSEDTEXT) {
 							this.read();
 						}
-						// if (this.current == GREATERTHAN && this.previous ==
-						// HH) {
-						// this.read();
-						// }
-						// } else {
-						// this.write("<SYNTAXERROR>");
-						// }
 					}
 
 					// Recognize (...)

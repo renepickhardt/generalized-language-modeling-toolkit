@@ -65,7 +65,6 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 		try {
 			this.reader = new BufferedReader(new FileReader(f));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -248,31 +247,6 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 			this.token = CLOSEDBRACES;
 			return;
 		}
-
-		// Recognize Uppercase
-		// if (Character.isUpperCase(this.lookahead)) {
-		// this.token = UPPERCASE;
-		// this.read();
-		// if (Character.isWhitespace(this.lookahead)) {
-		// this.token = STRING;
-		// return;
-		// }
-		//
-		// while (!Character.isWhitespace(this.lookahead)
-		// && Character.isUpperCase(this.lookahead)) {
-		// this.read();
-		// }
-		// ;
-		// if (!Character.isUpperCase(this.lookahead)
-		// && Character.isLetterOrDigit(this.lookahead)) {
-		// this.token = STRING;
-		// do {
-		// this.read();
-		// } while (!Character.isWhitespace(this.lookahead)
-		// && Character.isLetterOrDigit(this.lookahead));
-		// }
-		// return;
-		// }
 
 		// Recognize String
 		if (Character.isLetterOrDigit(this.lookahead) && this.lookahead != '&') {

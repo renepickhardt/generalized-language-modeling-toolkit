@@ -10,6 +10,8 @@ public class ReutersMain {
 	private static ArrayList<File> fileList;
 
 	/**
+	 * @author Martin Koerner
+	 * 
 	 * @param args
 	 * @throws IOException
 	 */

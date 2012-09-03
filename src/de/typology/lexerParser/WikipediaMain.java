@@ -8,6 +8,8 @@ import de.typology.utils.Config;
 public class WikipediaMain {
 
 	/**
+	 * @author Martin Koerner
+	 * 
 	 * @param args
 	 * @throws IOException
 	 */
