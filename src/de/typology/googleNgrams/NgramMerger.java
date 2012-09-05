@@ -26,6 +26,7 @@ public class NgramMerger {
 	 * <p>
 	 * ngram TAB totalized_match_count NEWLINE
 	 * <p>
+	 * only runs on a Unix system
 	 * 
 	 * @param input
 	 *            path to a directory containing google ngram files
@@ -44,9 +45,11 @@ public class NgramMerger {
 		int count;
 
 		ArrayList<File> fileList = IOHelper.getDirectory(new File(input));
-		for (File file : fileList) {
 
-			SystemHelper.runUnixCommand("unzip " + file);
+		for (File file : fileList) {
+			System.out.println("unzip " + file + " -d " + input);
+			SystemHelper.runUnixCommand("unzip " + file + " -d " + input);
+			System.out.println("merge file");
 			reader = new BufferedReader(new FileReader(file.getAbsolutePath()
 					.substring(0, file.getAbsolutePath().length() - 4)));
 			writer = new BufferedWriter(new FileWriter(output,/* append */true));
@@ -91,6 +94,10 @@ public class NgramMerger {
 					}
 				}
 			}
+			System.out.println("rm "
+					+ file.getAbsolutePath().substring(0,
+							file.getAbsolutePath().length() - 4));
+
 			SystemHelper.runUnixCommand("rm "
 					+ file.getAbsolutePath().substring(0,
 							file.getAbsolutePath().length() - 4));
