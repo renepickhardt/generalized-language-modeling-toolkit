@@ -74,7 +74,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		if (Config.get().wikiXmlPath.contains("dewiki")) {
 			this.disambiguations.add("Begriffsklärung");
 			this.disambiguations.add("begriffsklärung");
-			System.out.println("This is a german wikipedia XML.");
+			System.out.println("this is a german wikipedia xml");
 			languageSpecified = true;
 		}
 
@@ -95,7 +95,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.disambiguations.add("Shipindex");
 			this.disambiguations.add("shipindex");
 			// ship name disambiguation pages
-			System.out.println("This is a english wikipedia XML.");
+			System.out.println("this is a english wikipedia xml");
 			languageSpecified = true;
 		}
 
@@ -106,7 +106,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.disambiguations.add("homonimia");
 			this.disambiguations.add("Idénticos");
 			this.disambiguations.add("idénticos");
-			System.out.println("This is a spanish wikipedia XML.");
+			System.out.println("this is a spanish wikipedia xml");
 			languageSpecified = true;
 		}
 
@@ -121,7 +121,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.disambiguations.add("toponymie");
 			this.disambiguations.add("Abréviation");
 			this.disambiguations.add("abréviation");
-			System.out.println("This is a french wikipedia XML.");
+			System.out.println("this is a french wikipedia xml");
 			languageSpecified = true;
 		}
 
@@ -134,12 +134,12 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.disambiguations.add("mercurio");
 			this.disambiguations.add("Interprogetto");
 			this.disambiguations.add("interprogetto");
-			System.out.println("This is a italian wikipedia XML.");
+			System.out.println("this is a italian wikipedia xml");
 			languageSpecified = true;
 		}
 		if (languageSpecified == false) {
 			System.out
-					.println("Please check naming or declare language specific variables (see WikipediaTokenizer.java)");
+					.println("please check naming or declare language specific variables (see WikipediaTokenizer.java)");
 		}
 
 	}

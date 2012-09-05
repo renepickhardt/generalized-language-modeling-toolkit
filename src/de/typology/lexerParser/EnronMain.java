@@ -20,7 +20,8 @@ public class EnronMain {
 		fileList = new ArrayList<File>();
 		getFileList(new File(Config.get().enronPath));
 
-		EnronParser parser = new EnronParser(fileList);
+		EnronParser parser = new EnronParser(fileList,
+				Config.get().parsedEnronOutputPath);
 		System.out.println("start parsing");
 		parser.parse();
 		System.out.println("parsing done");

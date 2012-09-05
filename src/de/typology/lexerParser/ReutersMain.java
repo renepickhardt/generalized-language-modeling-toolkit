@@ -20,7 +20,8 @@ public class ReutersMain {
 		fileList = new ArrayList<File>();
 		getFileList(new File(Config.get().reutersXmlPath));
 
-		ReutersParser parser = new ReutersParser(fileList);
+		ReutersParser parser = new ReutersParser(fileList,
+				Config.get().parsedReutersOutputPath);
 		System.out.println("start parsing");
 		parser.parse();
 		System.out.println("parsing done");

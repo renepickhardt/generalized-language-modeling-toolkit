@@ -20,7 +20,8 @@ public class DGTTMMain {
 		fileList = new ArrayList<File>();
 		getFileList(new File(Config.get().DGTTMPath));
 
-		DGTTMParser parser = new DGTTMParser(fileList);
+		DGTTMParser parser = new DGTTMParser(fileList,
+				Config.get().parsedDGTTMOutputPath);
 		System.out.println("start parsing");
 		parser.parse();
 		System.out.println("parsing done");

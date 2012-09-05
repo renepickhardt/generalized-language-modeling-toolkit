@@ -21,8 +21,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
-import de.typology.utils.Config;
-
 /**
  * @author Martin Koerner
  * 
@@ -40,10 +38,10 @@ public class DGTTMParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public DGTTMParser(ArrayList<File> fileList) throws FileNotFoundException {
+	public DGTTMParser(ArrayList<File> fileList, String path)
+			throws FileNotFoundException {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(
-				Config.get().parsedDGTTMOutputPath));
+		this.writer = new OutputStreamWriter(new FileOutputStream(path));
 	}
 
 	public void parse() throws IOException {

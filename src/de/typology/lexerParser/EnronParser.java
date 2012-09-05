@@ -26,8 +26,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
-import de.typology.utils.Config;
-
 /**
  * @author Martin Koerner
  * 
@@ -45,10 +43,10 @@ public class EnronParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public EnronParser(ArrayList<File> fileList) throws FileNotFoundException {
+	public EnronParser(ArrayList<File> fileList, String path)
+			throws FileNotFoundException {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(
-				Config.get().parsedEnronOutputPath));
+		this.writer = new OutputStreamWriter(new FileOutputStream(path));
 
 	}
 

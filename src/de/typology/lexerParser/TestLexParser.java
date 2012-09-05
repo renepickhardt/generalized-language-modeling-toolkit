@@ -45,10 +45,10 @@ public class TestLexParser {
 
 		// test WikipediaNormalizer
 		//
-		// WikipediaNormalizer wn = new WikipediaNormalizer(
-		// Config.get().parsedWikiOutputPath,
-		// Config.get().normalizedWikiOutputPath);
-		// wn.normalize();
+		WikipediaNormalizer wn = new WikipediaNormalizer(
+				Config.get().parsedWikiOutputPath,
+				Config.get().normalizedWikiOutputPath);
+		wn.normalize();
 		//
 		//
 		// reuters tests
@@ -69,11 +69,16 @@ public class TestLexParser {
 		// ReutersToken t = recognizer.next();
 		// System.out.println(t + " : " + recognizer.getLexeme());
 		// }
+		//
+		// ReutersNormalizer rn = new ReutersNormalizer(
+		// Config.get().parsedReutersOutputPath,
+		// Config.get().normalizedReutersOutputPath);
+		// rn.normalize();
 
 		// enron tests
 		//
 		// EnronRecognizer recognizer = new EnronRecognizer(new File(
-		// Config.get().enronPath + "154"));
+		// Config.get().enronPath + "\\all_documents\\1"));
 		//
 		// while (recognizer.hasNext()) {
 		// EnronToken t = recognizer.next();
@@ -82,10 +87,10 @@ public class TestLexParser {
 
 		// test EnronNormalizer
 		//
-		EnronNormalizer en = new EnronNormalizer(
-				Config.get().parsedEnronOutputPath,
-				Config.get().normalizedEnronOutputPath);
-		en.normalize();
+		// EnronNormalizer en = new EnronNormalizer(
+		// Config.get().parsedEnronOutputPath,
+		// Config.get().normalizedEnronOutputPath);
+		// en.normalize();
 
 		// DGT-TM tests
 		//
@@ -99,6 +104,12 @@ public class TestLexParser {
 		// System.out.println(t + " : " + recognizer.getLexeme());
 		// i++;
 		// }
+
+		// DGTTMNormalizer dn = new DGTTMNormalizer(
+		// Config.get().parsedDGTTMOutputPath,
+		// Config.get().normalizedDGTTMOutputPath);
+		// dn.normalize();
+
 		// string tests
 		//
 		// String s = "[[l|]]";

@@ -17,7 +17,8 @@ public class WikipediaMain {
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(
 				Config.get().wikiXmlPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
-		WikipediaParser parser = new WikipediaParser(recognizer);
+		WikipediaParser parser = new WikipediaParser(recognizer,
+				Config.get().parsedWikiOutputPath);
 		System.out.println("start parsing");
 		parser.parse();
 		System.out.println("parsing done");

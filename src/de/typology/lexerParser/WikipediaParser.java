@@ -39,8 +39,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashSet;
 
-import de.typology.utils.Config;
-
 /**
  * @author Martin Koerner
  * 
@@ -61,11 +59,10 @@ public class WikipediaParser {
 	private Writer writer;
 	private HashSet<String> disambiguations;
 
-	public WikipediaParser(WikipediaRecognizer recognizer)
+	public WikipediaParser(WikipediaRecognizer recognizer, String path)
 			throws FileNotFoundException {
 		this.recognizer = recognizer;
-		this.writer = new OutputStreamWriter(new FileOutputStream(
-				Config.get().parsedWikiOutputPath));
+		this.writer = new OutputStreamWriter(new FileOutputStream(path));
 
 		this.disambiguations = recognizer.getTokenizer().getdisambiguations();
 	}

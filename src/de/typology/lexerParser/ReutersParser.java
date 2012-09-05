@@ -20,8 +20,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
-import de.typology.utils.Config;
-
 /**
  * @author Martin Koerner
  * 
@@ -39,10 +37,10 @@ public class ReutersParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public ReutersParser(ArrayList<File> fileList) throws FileNotFoundException {
+	public ReutersParser(ArrayList<File> fileList, String path)
+			throws FileNotFoundException {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(
-				Config.get().parsedReutersOutputPath));
+		this.writer = new OutputStreamWriter(new FileOutputStream(path));
 
 	}
 
