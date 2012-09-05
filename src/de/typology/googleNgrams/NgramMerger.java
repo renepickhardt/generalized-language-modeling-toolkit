@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class NgramMerger {
 
@@ -44,8 +45,11 @@ public class NgramMerger {
 
 		ArrayList<File> fileList = IOHelper.getDirectory(new File(input));
 		for (File file : fileList) {
-			reader = new BufferedReader(new FileReader(file));
-			writer = new BufferedWriter(new FileWriter(output));
+
+			SystemHelper.runUnixCommand("unzip " + file);
+			reader = new BufferedReader(new FileReader(file.getAbsolutePath()
+					.substring(0, file.getAbsolutePath().length() - 4)));
+			writer = new BufferedWriter(new FileWriter(output,/* append */true));
 
 			// read first line
 			line = reader.readLine();
@@ -87,6 +91,10 @@ public class NgramMerger {
 					}
 				}
 			}
+			SystemHelper.runUnixCommand("rm "
+					+ file.getAbsolutePath().substring(0,
+							file.getAbsolutePath().length() - 4));
+			reader.close();
 			writer.close();
 		}
 	}

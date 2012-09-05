@@ -23,9 +23,24 @@ import java.util.Properties;
 public class Config extends Properties {
 	public String wikiXmlPath;
 	public String parsedWikiOutputPath;
+	public String normalizedWikiOutputPath;
 	public String germanWikiText;
+	public String reutersXmlPath;
+	public String parsedReutersOutputPath;
+	public String normalizedReutersOutputPath;
+	public String enronPath;
+	public String parsedEnronOutputPath;
+	public String normalizedEnronOutputPath;
+	public String DGTTMPath;
+	public String DGTTMLanguage;
+	public String parsedDGTTMOutputPath;
+	public String normalizedDGTTMOutputPath;
 	public String letterGraph;
 	public int keystrokesWindowSize;
+	public String ngramDownloadPath;
+	public String ngramDownloadOutputPath;
+	public String googleNgramsPath;
+	public String googleNgramsMergedPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
