@@ -79,7 +79,6 @@ public class NgramMerger {
 						// write current ngram + count
 						for (int i = 0; i < currentNgram.length - 1; i++) {
 							writer.write(currentNgram[i] + " ");
-
 						}
 						writer.write(currentNgram[currentNgram.length - 1]);
 						writer.write("\t");
@@ -95,6 +94,9 @@ public class NgramMerger {
 				}
 			}
 			// write current ngram (last ngram in file)
+			for (int i = 0; i < currentNgram.length - 1; i++) {
+				writer.write(currentNgram[i] + " ");
+			}
 			writer.write(currentNgram[currentNgram.length - 1]);
 			writer.write("\t");
 			writer.write(String.valueOf(count));
