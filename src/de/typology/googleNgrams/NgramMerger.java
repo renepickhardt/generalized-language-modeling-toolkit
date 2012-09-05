@@ -94,6 +94,14 @@ public class NgramMerger {
 					}
 				}
 			}
+			// write current ngram (last ngram in file)
+			writer.write(currentNgram[currentNgram.length - 1]);
+			writer.write("\t");
+			writer.write(String.valueOf(count));
+			writer.write("\n");
+			writer.flush();
+
+			// remove extracted .zip file
 			System.out.println("rm "
 					+ file.getAbsolutePath().substring(0,
 							file.getAbsolutePath().length() - 4));
