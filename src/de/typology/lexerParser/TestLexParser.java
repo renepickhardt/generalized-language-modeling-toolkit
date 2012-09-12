@@ -1,6 +1,6 @@
 package de.typology.lexerParser;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import de.typology.utils.Config;
 
@@ -8,17 +8,110 @@ public class TestLexParser {
 
 	/**
 	 * @param args
-	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
-	public static void main(String[] args) throws FileNotFoundException {
-		WikipediaRecognizer recognizer = new WikipediaRecognizer(
-				Config.get().wikiXmlPath);
+	public static void main(String[] args) throws IOException {
+		// wiki tests
+		//
 
-		for (int i = 0; i < 100; i++) {
-			WikipediaToken t = recognizer.next();
-			System.out.println(t + " : " + recognizer.getLexeme());
-		}
+		// test parser
+		// //
+		// WikipediaTokenizer tokenizer = new WikipediaTokenizer(
+		// Config.get().wikiXmlPath);
+		// WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
+		// WikipediaParser parser = new WikipediaParser(recognizer);
+		//
+		// parser.parse();
 
+		// test recognizer
+		//
+		// for (int i = 0; i < 5000; i++) {
+		// // while (tokenizer.hasNext()) {
+		// if (recognizer.hasNext()) {
+		// WikipediaToken t = recognizer.next();
+		// System.out.println(t + " : " + recognizer.getLexeme());
+		// }
+		// }
+
+		// test tokenizer
+		//
+		// for (int i = 0; i < 2000; i++) {
+		// while (tokenizer.hasNext()) {
+		// if (tokenizer.hasNext()) {
+		// WikipediaToken t = tokenizer.next();
+		// System.out.println(t + " : " + tokenizer.getLexeme());
+		// }
+		// }
+
+		// test WikipediaNormalizer
+		//
+		WikipediaNormalizer wn = new WikipediaNormalizer(
+				Config.get().parsedWikiOutputPath,
+				Config.get().normalizedWikiOutputPath);
+		wn.normalize();
+		//
+		//
+		// reuters tests
+		//
+		// File dir = new File(Config.get().reutersXmlPath);
+		// File[] fileList = dir.listFiles();
+		// for (File f : fileList) {
+		// ReutersRecognizer recognizer = new ReutersRecognizer(f);
+		// while (recognizer.hasNext()) {
+		// ReutersToken t = recognizer.next();
+		// System.out.println(t + " : " + recognizer.getLexeme());
+		// }
+		// }
+		//
+		// ReutersRecognizer recognizer = new ReutersRecognizer(new File(
+		// Config.get().reutersXmlPath + "100011newsML.xml"));
+		// while (recognizer.hasNext()) {
+		// ReutersToken t = recognizer.next();
+		// System.out.println(t + " : " + recognizer.getLexeme());
+		// }
+		//
+		// ReutersNormalizer rn = new ReutersNormalizer(
+		// Config.get().parsedReutersOutputPath,
+		// Config.get().normalizedReutersOutputPath);
+		// rn.normalize();
+
+		// enron tests
+		//
+		// EnronRecognizer recognizer = new EnronRecognizer(new File(
+		// Config.get().enronPath + "\\all_documents\\1"));
+		//
+		// while (recognizer.hasNext()) {
+		// EnronToken t = recognizer.next();
+		// System.out.println(t + " : " + recognizer.getLexeme());
+		// }
+
+		// test EnronNormalizer
+		//
+		// EnronNormalizer en = new EnronNormalizer(
+		// Config.get().parsedEnronOutputPath,
+		// Config.get().normalizedEnronOutputPath);
+		// en.normalize();
+
+		// DGT-TM tests
+		//
+		// DGTTMRecognizer recognizer = new DGTTMRecognizer(new
+		// File(Config.get().DGTTMPath
+		// + "\\Vol_2004_1\\22004D0069.tmx"));
+		// int i = 0;
+		// // while (recognizer.hasNext()) {
+		// while (i < 2000) {
+		// DGTTMToken t = recognizer.next();
+		// System.out.println(t + " : " + recognizer.getLexeme());
+		// i++;
+		// }
+
+		// DGTTMNormalizer dn = new DGTTMNormalizer(
+		// Config.get().parsedDGTTMOutputPath,
+		// Config.get().normalizedDGTTMOutputPath);
+		// dn.normalize();
+
+		// string tests
+		//
 		// String s = "[[l|]]";
 		// String[] splitLabel = s.split("\\|");
 		//

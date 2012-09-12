@@ -21,12 +21,40 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
+	// used in de.typology.lexerparser:
 	public String wikiXmlPath;
 	public String parsedWikiOutputPath;
+	public String normalizedWikiOutputPath;
+	public String wikiLinksOutputPath;
+
+	public String reutersXmlPath;
+	public String parsedReutersOutputPath;
+	public String normalizedReutersOutputPath;
+
+	public String enronPath;
+	public String parsedEnronOutputPath;
+	public String normalizedEnronOutputPath;
+
+	public String DGTTMPath;
+	public String DGTTMLanguage;
+	public String parsedDGTTMOutputPath;
+	public String normalizedDGTTMOutputPath;
+
+	// used in de.typology.Keystrokes:
 	public String germanWikiText;
 	public String letterGraph;
-	public String parsedNGrams;
 	public int keystrokesWindowSize;
+
+	// used in de.typology.util.GoogleNgramDownloadBuilder:
+	public String ngramDownloadPath;
+	public String ngramDownloadOutputPath;
+
+	// used in de.typology.googleNgrams:
+	public String googleNgramsPath;
+	public String googleNgramsMergedPath;
+
+	// used in de.typology.nGramBuilder
+	public String parsedNGrams;
 	public int nGramLength;
 	public String sortedNGrams;
 
