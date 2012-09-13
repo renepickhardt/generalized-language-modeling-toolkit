@@ -1,5 +1,7 @@
 package de.typology.interfaces;
 
+import de.typology.trainers.NGramReader;
+
 /**
  * Implementing this interface allows an object to build a prediction model
  * using five grams.
@@ -13,7 +15,7 @@ public interface Trainable {
 	 * 
 	 * @param pathToFiveGrams
 	 */
-	public void train(String pathToFiveGrams);
+	public void train(NGramReader nGramReader);
 
 	/**
 	 * 

@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Date;
 
+import de.typology.trainers.NGramReader;
+
 public class IOHelper {
 	// d = debug mode set true if debugg messages should be displayed
 	private static boolean d = true;
@@ -42,6 +44,27 @@ public class IOHelper {
 			return null;
 		}
 		return br;
+	}
+
+	/**
+	 * faster access to a ngram reader
+	 * 
+	 * @param filename
+	 * @return ngram reader for file input
+	 */
+	public static NGramReader openReadNGrams(String filename) {
+		FileInputStream fstream;
+		NGramReader nr = null;
+		try {
+			fstream = new FileInputStream(filename);
+			DataInputStream in = new DataInputStream(fstream);
+			nr = new NGramReader(new InputStreamReader(in));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return nr;
 	}
 
 	/**

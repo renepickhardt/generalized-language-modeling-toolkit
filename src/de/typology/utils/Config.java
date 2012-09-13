@@ -58,6 +58,9 @@ public class Config extends Properties {
 	public int nGramLength;
 	public String sortedNGrams;
 
+	// used in de.typology.trainers
+	public String testDb;
+
 	private static final long serialVersionUID = -4439565094382127683L;
 
 	static Config instance = null;
