@@ -13,9 +13,10 @@ public interface Trainable {
 
 	/**
 	 * 
-	 * @param pathToFiveGrams
+	 * @param nGramReader
+	 * @return runtime in ms
 	 */
-	public void train(NGramReader nGramReader);
+	public double train(NGramReader nGramReader);
 
 	/**
 	 * 

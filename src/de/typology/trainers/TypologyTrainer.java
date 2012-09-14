@@ -12,17 +12,27 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import de.typology.interfaces.Trainable;
 
+/**
+ * Trainer using 5grams to build a neo4j database using the heuristics of
+ * typology.
+ * <p>
+ * 5gram format:
+ * <p>
+ * ngram TAB totalized_match_count NEWLINE
+ * 
+ * @author Martin Koerner
+ * 
+ */
 public class TypologyTrainer implements Trainable {
 	// TODO implement corpusId system
 	private int corpusId;
 	private String storagePath;
-	private NGramReader nr;
+	private NGramReader nGramReader;
 	private NGram currentNGram;
 	private boolean realationshipFound;
 	private List<Pair> currentListOfPairs;
@@ -36,67 +46,91 @@ public class TypologyTrainer implements Trainable {
 		relTypesMap.put(4, FOUR);
 	}
 
-	// typeOne, typeTwo, typeThree, typeFour
-
 	public TypologyTrainer(int corpusId, String storagePath) {
 		this.corpusId = corpusId;
 		this.storagePath = storagePath;
 	}
 
 	@Override
-	public void train(NGramReader nr) {
+	public double train(NGramReader nGramReader) {
+		long start_time = System.nanoTime();
+
 		// neo4j database initialization
 		this.graphDb = new GraphDatabaseFactory()
 				.newEmbeddedDatabase(this.storagePath);
 		this.registerShutdownHook(this.graphDb);
 
-		this.nr = nr;
-		while ((this.currentNGram = this.nr.readNGram()) != null) {
-			for (int edgeType = 1; edgeType < 5; edgeType++) {
-				this.currentListOfPairs = this.currentNGram
-						.getPairsWithEdgeType(edgeType);
-				for (Pair p : this.currentListOfPairs) {
-					// add new words to graphDb and nodeMap
-					if (!this.nodeMap.containsKey(p.getFirst())) {
-						this.newNode(p.getFirst());
-					}
-					if (!this.nodeMap.containsKey(p.getSecond())) {
-						this.newNode(p.getSecond());
-					}
+		this.nGramReader = nGramReader;
 
-					Node start = this.nodeMap.get(p.getFirst());
-					Node end = this.nodeMap.get(p.getSecond());
-					this.realationshipFound = false;
-					for (Relationship r : start.getRelationships(
-							relTypesMap.get(edgeType), Direction.OUTGOING)) {
-						if (r.getEndNode().equals(end)) {
-							// increase count
-							Transaction tx = this.graphDb.beginTx();
-							try {
+		//
+		int nGramCount = 0;
+		//
+		while ((this.currentNGram = this.nGramReader.readNGram()) != null) {
+			//
+			nGramCount++;
+			if (nGramCount % 1000 == 0) {
+				System.out
+						.println(nGramCount
+								+ " "
+								+ Math.round((double) (System.nanoTime() - start_time) / 1000)
+								/ 1000 + " ms");
+			}
+			//
+
+			Transaction tx = this.graphDb.beginTx();
+			try {
+				for (int edgeType = 1; edgeType < 5; edgeType++) {
+					// generate pairs of words with distance=edgeType
+					this.currentListOfPairs = this.currentNGram
+							.getPairsWithEdgeType(edgeType);
+					for (Pair p : this.currentListOfPairs) {
+						// add new words to graphDb and nodeMap
+						if (!this.nodeMap.containsKey(p.getFirst())) {
+							Node n = this.graphDb.createNode();
+							n.setProperty("word", p.getFirst());
+							this.nodeMap.put(p.getFirst(), n);
+						}
+						if (!this.nodeMap.containsKey(p.getSecond())) {
+							Node n = this.graphDb.createNode();
+							n.setProperty("word", p.getSecond());
+							this.nodeMap.put(p.getSecond(), n);
+						}
+
+						Node start = this.nodeMap.get(p.getFirst());
+						Node end = this.nodeMap.get(p.getSecond());
+						this.realationshipFound = false;
+						// iterate over all outgoing relationships of start with
+						// current edgeType
+						for (Relationship r : start.getRelationships(
+								relTypesMap.get(edgeType), Direction.OUTGOING)) {
+							if (r.getEndNode().equals(end)) {
+								// if relationship already exists:increase count
 								r.setProperty(
 										"cnt",
 										(Integer) r.getProperty("cnt")
 												+ this.currentNGram
 														.getOccurrences());
-								tx.success();
-							} finally {
-								tx.finish();
+								this.realationshipFound = true;
+								break;
 							}
-							this.realationshipFound = true;
-							break;
+						}
+						if (this.realationshipFound == false) {
+							// else:create new relationship
+							Relationship r = start.createRelationshipTo(end,
+									relTypesMap.get(edgeType));
+							r.setProperty("cnt",
+									this.currentNGram.getOccurrences());
 						}
 					}
-					if (this.realationshipFound == false) {
-						// create new relationship
-						this.newRelationship(start, end,
-								relTypesMap.get(edgeType),
-								this.currentNGram.getOccurrences());
-					}
-
 				}
+				tx.success();
+			} finally {
+				tx.finish();
 			}
 		}
 		this.graphDb.shutdown();
+		long end_time = System.nanoTime();
+		return Math.round((double) (end_time - start_time) / 1000) / 1000;
 	}
 
 	@Override
@@ -107,30 +141,6 @@ public class TypologyTrainer implements Trainable {
 	@Override
 	public void setCorpusId(int corpusId) {
 		this.corpusId = corpusId;
-	}
-
-	public void newNode(String s) {
-		Transaction tx = this.graphDb.beginTx();
-		try {
-			Node n = this.graphDb.createNode();
-			n.setProperty("word", s);
-			this.nodeMap.put(s, n);
-			tx.success();
-		} finally {
-			tx.finish();
-		}
-	}
-
-	public void newRelationship(Node source, Node target, RelationshipType rt,
-			int i) {
-		Transaction tx = this.graphDb.beginTx();
-		try {
-			Relationship r = source.createRelationshipTo(target, rt);
-			r.setProperty("cnt", i);
-			tx.success();
-		} finally {
-			tx.finish();
-		}
 	}
 
 	/**
@@ -149,9 +159,5 @@ public class TypologyTrainer implements Trainable {
 				graphDb.shutdown();
 			}
 		});
-	}
-
-	public Iterable<Relationship> getRelationships(Node source) {
-		return source.getRelationships(Direction.OUTGOING);
 	}
 }
