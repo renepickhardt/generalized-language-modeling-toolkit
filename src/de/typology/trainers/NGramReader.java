@@ -5,6 +5,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 
+/**
+ * reads file with the following format
+ * <p>
+ * ngram TAB count NEWLINE
+ * <p>
+ * readNGram returns new NGram(ngram, count)
+ * 
+ * @author Martin Koerner
+ * 
+ */
 public class NGramReader extends Reader {
 	BufferedReader br;
 
@@ -15,7 +25,6 @@ public class NGramReader extends Reader {
 	@Override
 	public void close() throws IOException {
 		this.br.close();
-
 	}
 
 	@Override
@@ -23,6 +32,11 @@ public class NGramReader extends Reader {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * reads a line from file
+	 * 
+	 * @return new NGram
+	 */
 	public NGram readNGram() {
 		String line;
 		try {

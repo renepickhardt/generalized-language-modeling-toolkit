@@ -14,9 +14,9 @@ import org.junit.Test;
 public class NGramTest {
 
 	@Test
-	public void testNGramEdgeTypes() {
+	public void testNGramEdgeTypesNormal() {
 		String[] s1 = { "this", "is", "a", "test" };
-		NGram n1 = new NGram(s1.length, s1);
+		NGram n1 = new NGram(s1, 42);
 		List<Pair> e1 = new ArrayList<Pair>();
 		e1.add(new Pair("this", "is"));
 		e1.add(new Pair("is", "a"));
@@ -39,5 +39,19 @@ public class NGramTest {
 		List<Pair> a4 = n1.getPairsWithEdgeType(4);
 		assertEquals(e4, a4);
 
+	}
+
+	@Test
+	public void testNGramEdgeTypesBorder() {
+		String[] s1 = { "" };
+		NGram n1 = new NGram(s1, 42);
+		List<Pair> e1 = new ArrayList<Pair>();
+		List<Pair> a1 = n1.getPairsWithEdgeType(1);
+		assertEquals(e1, a1);
+		String[] s2 = {};
+		NGram n2 = new NGram(s2, 42);
+		List<Pair> e2 = new ArrayList<Pair>();
+		List<Pair> a2 = n2.getPairsWithEdgeType(1);
+		assertEquals(e2, a2);
 	}
 }

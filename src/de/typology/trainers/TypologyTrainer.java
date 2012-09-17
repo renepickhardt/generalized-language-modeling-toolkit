@@ -23,7 +23,7 @@ import de.typology.interfaces.Trainable;
  * <p>
  * 5gram format:
  * <p>
- * ngram TAB totalized_match_count NEWLINE
+ * NGram(5gram, occurrences)
  * 
  * @author Martin Koerner
  * 
@@ -62,11 +62,11 @@ public class TypologyTrainer implements Trainable {
 
 		this.nGramReader = nGramReader;
 
-		//
+		// TODO remove
 		int nGramCount = 0;
 		//
 		while ((this.currentNGram = this.nGramReader.readNGram()) != null) {
-			//
+			// TODO remove
 			nGramCount++;
 			if (nGramCount % 1000 == 0) {
 				System.out
