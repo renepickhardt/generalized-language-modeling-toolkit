@@ -15,7 +15,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.graphdb.index.ReadableIndex;
 
 import de.typology.interfaces.Trainable;
 
@@ -39,6 +38,7 @@ public class TypologyTrainer implements Trainable {
 	private boolean realationshipFound;
 	private List<Pair> currentListOfPairs;
 	public GraphDatabaseService graphDb;
+	public HashMap<String, Node> nodeMap = new HashMap<String, Node>();
 	public static HashMap<Integer, RelTypes> relTypesMap = new HashMap<Integer, RelTypes>();
 	static {
 		relTypesMap.put(1, ONE);
@@ -71,9 +71,6 @@ public class TypologyTrainer implements Trainable {
 
 		this.nGramReader = nGramReader;
 
-		ReadableIndex<Node> autoNodeIndex = this.graphDb.index()
-				.getNodeAutoIndexer().getAutoIndex();
-
 		int nGramCount = 0;
 
 		Transaction tx = this.graphDb.beginTx();
@@ -100,20 +97,19 @@ public class TypologyTrainer implements Trainable {
 							.getPairsWithEdgeType(edgeType);
 					for (Pair p : this.currentListOfPairs) {
 						// add new words to graphDb
-						if (autoNodeIndex.get("word", p.getFirst()).getSingle() == null) {
+						if (!this.nodeMap.containsKey(p.getFirst())) {
 							Node n = this.graphDb.createNode();
 							n.setProperty("word", p.getFirst());
+							this.nodeMap.put(p.getFirst(), n);
 						}
-						if (autoNodeIndex.get("word", p.getSecond())
-								.getSingle() == null) {
+						if (!this.nodeMap.containsKey(p.getSecond())) {
 							Node n = this.graphDb.createNode();
 							n.setProperty("word", p.getSecond());
+							this.nodeMap.put(p.getSecond(), n);
 						}
 
-						Node start = autoNodeIndex.get("word", p.getFirst())
-								.getSingle();
-						Node end = autoNodeIndex.get("word", p.getSecond())
-								.getSingle();
+						Node start = this.nodeMap.get(p.getFirst());
+						Node end = this.nodeMap.get(p.getSecond());
 						this.realationshipFound = false;
 						// iterate over all outgoing relationships of start with
 						// current edgeType
