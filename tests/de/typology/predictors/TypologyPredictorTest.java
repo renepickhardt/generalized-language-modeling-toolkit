@@ -15,10 +15,18 @@ public class TypologyPredictorTest {
 
 	@Test
 	public void test() {
-		System.out.println(tp.buildIndex());
-		String[] s = { "This", "is", "a", "test" };
-		tp.predict(s);
-		// System.out.println(tp.predict(s));
-	}
+		// String[] s = { "This", "is", "a", "test" };
+		// DDR als untrennbarer Bestandteil der
+		String[] s = { "Das", "ist", "ein", "Test" };
+		long start_time = System.nanoTime();
+		String[] result = tp.predict(s);
+		for (String element : result) {
+			System.out.println(element);
+		}
+		long end_time = System.nanoTime();
+		System.out.println("time: "
+				+ Math.round((double) (end_time - start_time) / 1000) / 1000
+				+ " ms");
 
+	}
 }

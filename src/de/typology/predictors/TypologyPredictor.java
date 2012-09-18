@@ -1,46 +1,93 @@
 package de.typology.predictors;
 
+import static de.typology.trainers.RelTypes.FOUR;
+import static de.typology.trainers.RelTypes.ONE;
+import static de.typology.trainers.RelTypes.THREE;
+import static de.typology.trainers.RelTypes.TWO;
+
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.TreeMap;
+
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.index.ReadableIndex;
+import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
 
 import de.typology.interfaces.Predictable;
+import de.typology.trainers.RelTypes;
 
 public class TypologyPredictor implements Predictable {
 	private GraphDatabaseService graphDb;
 	private String dbPath;
-	private Index<Node> index;
+	private ReadableIndex<Node> autoNodeIndex;
+	private TreeMap<String, Double> ends;
+	private TreeMap<String, Double> sortedEnds;
+	private Double[] weights = { 5.0, 2.0, 2.0, 0.0 };
+	public static HashMap<Integer, RelTypes> relTypesMap = new HashMap<Integer, RelTypes>();
+	static {
+		relTypesMap.put(1, ONE);
+		relTypesMap.put(2, TWO);
+		relTypesMap.put(3, THREE);
+		relTypesMap.put(4, FOUR);
+	}
+
+	private final Comparator<String> StringComparator = new Comparator<String>() {
+		@Override
+		public int compare(String a, String b) {
+			if (TypologyPredictor.this.ends.get(a) >= TypologyPredictor.this.ends
+					.get(b)) {
+				return -1;
+			} else {
+				return 1;
+			} // returning 0 would merge keys
+		}
+	};
 
 	public TypologyPredictor(String dbPath) {
 		// neo4j database initialization
 		this.dbPath = dbPath;
-		this.graphDb = new GraphDatabaseFactory()
-				.newEmbeddedDatabase(this.dbPath);
+		this.graphDb = new EmbeddedReadOnlyGraphDatabase(this.dbPath);
 		this.registerShutdownHook(this.graphDb);
+		this.autoNodeIndex = this.graphDb.index().getNodeAutoIndexer()
+				.getAutoIndex();
 	}
 
 	@Override
 	public String[] predict(String[] fourGram) {
 		String[] result = new String[5];
-		String s = fourGram[0];
-		System.out.println("sould be: " + s);
-		IndexHits<Node> hits = this.index.query("word", s + "*");
-		System.out.println(hits.hasNext());
-		for (Node n : hits) {
-			System.out.println("is:" + n.getProperty("word"));
+		this.ends = new TreeMap<String, Double>();
+		for (int i = 0; i < 4; i++) {
+			String s = fourGram[i];
+			this.predict(s, 4 - i);
 		}
-
+		// sort TreeMap
+		this.sortedEnds = new TreeMap<String, Double>(this.StringComparator);
+		this.sortedEnds.putAll(this.ends);
+		for (int i = 0; i < 5 && i < this.sortedEnds.size(); i++) {
+			result[i] = this.sortedEnds.pollFirstEntry().getKey();
+		}
 		return result;
 	}
 
-	public String[] predict(String word, RelationshipType relType) {
-		String[] result = new String[5];
-
-		return result;
+	public void predict(String word, int relType) {
+		Node start = this.autoNodeIndex.get("word", word).getSingle();
+		if (start == null) {
+			return;
+		}
+		for (Relationship relationship : start.getRelationships(
+				relTypesMap.get(relType), Direction.OUTGOING)) {
+			String end = (String) relationship.getEndNode().getProperty("word");
+			Double endWeight = (Integer) relationship.getProperty("cnt")
+					* this.weights[relType - 1];
+			if (this.ends.containsKey(end)) {
+				this.ends.put(end, this.ends.get(end) + endWeight);
+			} else {
+				this.ends.put(end, endWeight);
+			}
+		}
 	}
 
 	@Override
@@ -52,17 +99,6 @@ public class TypologyPredictor implements Predictable {
 	@Override
 	public void setCorpusId(int corpusId) {
 		// TODO Auto-generated method stub
-
-	}
-
-	public double buildIndex() {
-		long start_time = System.nanoTime();
-
-		IndexManager ix = this.graphDb.index();
-		this.index = ix.forNodes("word");
-
-		long end_time = System.nanoTime();
-		return Math.round((double) (end_time - start_time) / 1000) / 1000;
 
 	}
 
@@ -83,4 +119,5 @@ public class TypologyPredictor implements Predictable {
 			}
 		});
 	}
+
 }
