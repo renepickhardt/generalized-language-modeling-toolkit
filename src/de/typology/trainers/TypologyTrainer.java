@@ -62,23 +62,26 @@ public class TypologyTrainer implements Trainable {
 
 		this.nGramReader = nGramReader;
 
-		// TODO remove
 		int nGramCount = 0;
-		//
-		while ((this.currentNGram = this.nGramReader.readNGram()) != null) {
-			// TODO remove
-			nGramCount++;
-			if (nGramCount % 1000 == 0) {
-				System.out
-						.println(nGramCount
-								+ " "
-								+ Math.round((double) (System.nanoTime() - start_time) / 1000)
-								/ 1000 + " ms");
-			}
-			//
 
-			Transaction tx = this.graphDb.beginTx();
-			try {
+		Transaction tx = this.graphDb.beginTx();
+		try {
+			while ((this.currentNGram = this.nGramReader.readNGram()) != null) {
+
+				nGramCount++;
+				if (nGramCount % 10000 == 0) {
+					System.out
+							.println(nGramCount
+									+ " "
+									+ Math.round((double) (System.nanoTime() - start_time) / 1000)
+									/ 1000 + " ms");
+
+					// commit transaction
+					tx.success();
+					tx.finish();
+					tx = this.graphDb.beginTx();
+				}
+
 				for (int edgeType = 1; edgeType < 5; edgeType++) {
 					// generate pairs of words with distance=edgeType
 					this.currentListOfPairs = this.currentNGram
@@ -123,10 +126,11 @@ public class TypologyTrainer implements Trainable {
 						}
 					}
 				}
-				tx.success();
-			} finally {
-				tx.finish();
 			}
+			tx.success();
+		} finally {
+			tx.finish();
+
 		}
 		this.graphDb.shutdown();
 		long end_time = System.nanoTime();
