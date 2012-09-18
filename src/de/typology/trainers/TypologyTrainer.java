@@ -15,6 +15,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
+import org.neo4j.graphdb.index.ReadableIndex;
 
 import de.typology.interfaces.Trainable;
 
@@ -38,7 +39,6 @@ public class TypologyTrainer implements Trainable {
 	private boolean realationshipFound;
 	private List<Pair> currentListOfPairs;
 	public GraphDatabaseService graphDb;
-	public HashMap<String, Node> nodeMap = new HashMap<String, Node>();
 	public static HashMap<Integer, RelTypes> relTypesMap = new HashMap<Integer, RelTypes>();
 	static {
 		relTypesMap.put(1, ONE);
@@ -57,8 +57,6 @@ public class TypologyTrainer implements Trainable {
 		long start_time = System.nanoTime();
 
 		// neo4j database initialization
-		// old:
-		// .newEmbeddedDatabase(this.storagePath);
 		this.graphDb = new GraphDatabaseFactory()
 				.newEmbeddedDatabaseBuilder(this.storagePath)
 				.setConfig(GraphDatabaseSettings.node_keys_indexable, "word")
@@ -72,6 +70,9 @@ public class TypologyTrainer implements Trainable {
 		this.registerShutdownHook(this.graphDb);
 
 		this.nGramReader = nGramReader;
+
+		ReadableIndex<Node> autoNodeIndex = this.graphDb.index()
+				.getNodeAutoIndexer().getAutoIndex();
 
 		int nGramCount = 0;
 
@@ -98,20 +99,21 @@ public class TypologyTrainer implements Trainable {
 					this.currentListOfPairs = this.currentNGram
 							.getPairsWithEdgeType(edgeType);
 					for (Pair p : this.currentListOfPairs) {
-						// add new words to graphDb and nodeMap
-						if (!this.nodeMap.containsKey(p.getFirst())) {
+						// add new words to graphDb
+						if (autoNodeIndex.get("word", p.getFirst()).getSingle() == null) {
 							Node n = this.graphDb.createNode();
 							n.setProperty("word", p.getFirst());
-							this.nodeMap.put(p.getFirst(), n);
 						}
-						if (!this.nodeMap.containsKey(p.getSecond())) {
+						if (autoNodeIndex.get("word", p.getSecond())
+								.getSingle() == null) {
 							Node n = this.graphDb.createNode();
 							n.setProperty("word", p.getSecond());
-							this.nodeMap.put(p.getSecond(), n);
 						}
 
-						Node start = this.nodeMap.get(p.getFirst());
-						Node end = this.nodeMap.get(p.getSecond());
+						Node start = autoNodeIndex.get("word", p.getFirst())
+								.getSingle();
+						Node end = autoNodeIndex.get("word", p.getSecond())
+								.getSingle();
 						this.realationshipFound = false;
 						// iterate over all outgoing relationships of start with
 						// current edgeType
