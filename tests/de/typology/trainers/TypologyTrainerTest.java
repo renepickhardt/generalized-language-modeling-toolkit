@@ -34,12 +34,12 @@ public class TypologyTrainerTest {
 	public void test() throws IOException {
 
 		System.out.println("training");
-		// this.tt.train(IOHelper
-		// .openReadNGrams("tests/de/typology/trainers/ngrams.txt"));
-		System.out
-				.println(this.tt.train(IOHelper
-						.openReadNGrams("D:/Arbeit/Typology/datasets/out/google-ngrams/degooglengramsmerged.txt"))
-						+ " ms");
+		this.tt.train(IOHelper
+				.openReadNGrams("tests/de/typology/trainers/ngrams.txt"));
+		// System.out
+		// .println(this.tt.train(IOHelper
+		// .openReadNGrams("D:/Arbeit/Typology/datasets/out/google-ngrams/degooglengramsmerged.txt"))
+		// + " ms");
 		System.out.println("training done");
 
 		this.writeDB();
