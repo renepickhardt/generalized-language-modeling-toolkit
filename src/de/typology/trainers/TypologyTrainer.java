@@ -14,6 +14,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import de.typology.interfaces.Trainable;
 
@@ -56,8 +57,18 @@ public class TypologyTrainer implements Trainable {
 		long start_time = System.nanoTime();
 
 		// neo4j database initialization
+		// old:
+		// .newEmbeddedDatabase(this.storagePath);
 		this.graphDb = new GraphDatabaseFactory()
-				.newEmbeddedDatabase(this.storagePath);
+				.newEmbeddedDatabaseBuilder(this.storagePath)
+				.setConfig(GraphDatabaseSettings.node_keys_indexable, "word")
+				.setConfig(GraphDatabaseSettings.relationship_keys_indexable,
+						"cnt")
+				.setConfig(GraphDatabaseSettings.node_auto_indexing, "true")
+				.setConfig(GraphDatabaseSettings.relationship_auto_indexing,
+						"true")
+				.setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
+				.newGraphDatabase();
 		this.registerShutdownHook(this.graphDb);
 
 		this.nGramReader = nGramReader;
