@@ -59,12 +59,6 @@ public class TypologyTrainer implements Trainable {
 		// neo4j database initialization
 		this.graphDb = new GraphDatabaseFactory()
 				.newEmbeddedDatabaseBuilder(this.storagePath)
-				.setConfig(GraphDatabaseSettings.node_keys_indexable, "word")
-				.setConfig(GraphDatabaseSettings.relationship_keys_indexable,
-						"cnt")
-				.setConfig(GraphDatabaseSettings.node_auto_indexing, "true")
-				.setConfig(GraphDatabaseSettings.relationship_auto_indexing,
-						"true")
 				.setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
 				.newGraphDatabase();
 		this.registerShutdownHook(this.graphDb);
