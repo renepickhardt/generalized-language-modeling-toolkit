@@ -60,6 +60,9 @@ public class Config extends Properties {
 
 	// used in de.typology.trainers
 	public String testDb;
+	// used in de.typology.utils/WordCounter
+	public String wordCountInput;
+	public String wordCountOutput;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
