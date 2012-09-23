@@ -10,17 +10,16 @@ public class MongoTypologyTrainerMain {
 
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		MongoTypologyTrainer mtt=new MongoTypologyTrainer(1);
-		//TODO drop database
+		MongoTypologyTrainer mtt = new MongoTypologyTrainer(1);
+		// TODO drop database
 		System.out.println("training");
 		double time = mtt
 				.train(IOHelper.openReadNGrams(Config.get().googleNgramsMergedPath));
 		System.out.println(time + " ms");
 		System.out.println("training done");
-
 
 		System.out.println("print db");
 		mtt.writeDB("");
