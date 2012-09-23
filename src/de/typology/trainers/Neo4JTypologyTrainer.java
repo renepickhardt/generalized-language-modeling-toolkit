@@ -29,7 +29,7 @@ import de.typology.interfaces.Trainable;
  * @author Martin Koerner
  * 
  */
-public class TypologyTrainer implements Trainable {
+public class Neo4JTypologyTrainer implements Trainable {
 	// TODO implement corpusId system
 	private int corpusId;
 	private String storagePath;
@@ -47,7 +47,7 @@ public class TypologyTrainer implements Trainable {
 		relTypesMap.put(4, FOUR);
 	}
 
-	public TypologyTrainer(int corpusId, String storagePath) {
+	public Neo4JTypologyTrainer(int corpusId, String storagePath) {
 		this.corpusId = corpusId;
 		this.storagePath = storagePath;
 	}
@@ -59,6 +59,12 @@ public class TypologyTrainer implements Trainable {
 		// neo4j database initialization
 		this.graphDb = new GraphDatabaseFactory()
 				.newEmbeddedDatabaseBuilder(this.storagePath)
+				.setConfig(GraphDatabaseSettings.node_keys_indexable, "word")
+				.setConfig(GraphDatabaseSettings.relationship_keys_indexable,
+						"cnt")
+				.setConfig(GraphDatabaseSettings.node_auto_indexing, "true")
+				.setConfig(GraphDatabaseSettings.relationship_auto_indexing,
+						"true")
 				.setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
 				.newGraphDatabase();
 		this.registerShutdownHook(this.graphDb);

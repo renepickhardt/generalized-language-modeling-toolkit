@@ -6,19 +6,19 @@ import java.io.IOException;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class TypologyTrainerMain {
+public class Neo4JTypologyTrainerMain {
 
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		TypologyTrainer tt;
+		Neo4JTypologyTrainer tt;
 		File f = new File(Config.get().testDb);
 		if (f.exists()) {
 			deleteTree(f);
 		}
-		tt = new TypologyTrainer(1, Config.get().testDb);
+		tt = new Neo4JTypologyTrainer(1, Config.get().testDb);
 
 		System.out.println("training");
 		double time = tt
