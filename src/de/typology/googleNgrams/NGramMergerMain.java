@@ -5,7 +5,7 @@ import java.io.IOException;
 import de.typology.utils.Config;
 import de.typology.utils.SystemHelper;
 
-public class NgramMergerMain {
+public class NGramMergerMain {
 
 	/**
 	 * @param args
@@ -18,7 +18,7 @@ public class NgramMergerMain {
 		SystemHelper
 				.runUnixCommand("rm " + Config.get().googleNgramsMergedPath);
 		System.out.println("start merging");
-		NgramMerger merger = new NgramMerger();
+		NGramMerger merger = new NGramMerger();
 		merger.merge(Config.get().googleNgramsPath,
 				Config.get().googleNgramsMergedPath);
 

@@ -12,7 +12,7 @@ import java.util.Arrays;
 import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
-public class NgramMerger {
+public class NGramMerger {
 
 	/**
 	 * reads: Tab separated file. Each line has the following format:
