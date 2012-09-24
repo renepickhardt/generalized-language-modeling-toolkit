@@ -58,11 +58,10 @@ public class MongoNGramBuilder {
 
 		BasicDBObject nGramCreateOptions = new BasicDBObject();
 		nGramCreateOptions.append("capped", false);
-		nGramCreateOptions.append("size", 1000);
 		DBCollection nGramCollection = this.db.createCollection("ngrams",
 				nGramCreateOptions);
 
-		String line = "";
+		String line;
 		while ((line = this.reader.readLine()) != null) {
 			String[] tokens = line.split(" ");
 			for (int i = 0; i < tokens.length - Config.get().nGramLength + 1; i++) {
@@ -72,11 +71,11 @@ public class MongoNGramBuilder {
 				}
 				DBObject currentNGram = nGramCollection.findOne(nGram);
 				if (currentNGram == null) {
-					System.out.println(nGram);
 					// current ngram does not exist
 					BasicDBObject newEdge = new BasicDBObject();
 					newEdge.put("_id", nGram);
 					newEdge.put("cnt", 1);
+					nGramCollection.insert(newEdge);
 				} else {
 					// current ngram does exist
 					BasicDBObject set = new BasicDBObject("$set",
@@ -84,11 +83,8 @@ public class MongoNGramBuilder {
 									(Integer) currentNGram.get("cnt") + 1));
 					nGramCollection.update(currentNGram, set);
 				}
-
 			}
-
 		}
-
 		long end_time = System.nanoTime();
 		return Math.round((double) (end_time - start_time) / 1000) / 1000;
 	}
@@ -102,14 +98,14 @@ public class MongoNGramBuilder {
 		DBCursor cursor = coll.find();
 		try {
 			while (cursor.hasNext()) {
-				System.out.println(cursor.next() + "\n");
-				// this.writer.write(cursor.next() + "\n");
-				// this.writer.flush();
+				DBObject next = cursor.next();
+				this.writer.write(next.get("_id") + "\t" + next.get("cnt")
+						+ "\n");
+				this.writer.flush();
 			}
 		} finally {
 			cursor.close();
 			this.writer.close();
 		}
-
 	}
 }
