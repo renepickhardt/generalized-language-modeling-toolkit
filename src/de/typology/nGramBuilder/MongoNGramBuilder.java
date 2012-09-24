@@ -78,9 +78,8 @@ public class MongoNGramBuilder {
 					nGramCollection.insert(newEdge);
 				} else {
 					// current ngram does exist
-					BasicDBObject set = new BasicDBObject("$set",
-							new BasicDBObject("cnt",
-									(Integer) currentNGram.get("cnt") + 1));
+					BasicDBObject set = new BasicDBObject("$inc",
+							new BasicDBObject("cnt", 1));
 					nGramCollection.update(currentNGram, set);
 				}
 			}
