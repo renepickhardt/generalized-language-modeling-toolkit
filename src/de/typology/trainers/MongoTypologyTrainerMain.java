@@ -20,9 +20,8 @@ public class MongoTypologyTrainerMain {
 				.train(IOHelper.openReadNGrams(Config.get().googleNgramsMergedPath));
 		System.out.println(time + " ms");
 		System.out.println("training done");
-
 		System.out.println("print db");
-		mtt.writeDB("");
+		mtt.writeDB(Config.get().testDb);
 		System.out.println("generate indicator file");
 		File done = new File(Config.get().testDb + "IsDone." + time + "ms");
 		done.createNewFile();

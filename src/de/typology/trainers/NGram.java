@@ -32,6 +32,10 @@ public class NGram {
 		return pairs;
 	}
 
+	public int getLength() {
+		return this.nGram.length;
+	}
+
 	@Override
 	public String toString() {
 		String result = "";
