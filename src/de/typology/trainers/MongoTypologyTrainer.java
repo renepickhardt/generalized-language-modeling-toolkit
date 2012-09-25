@@ -78,8 +78,8 @@ public class MongoTypologyTrainer implements Trainable {
 				for (Pair p : this.currentListOfPairs) {
 
 					// iterate over all relationships with current edgeType
-					String edgeID = p.getFirst() + "|" + edgeType + "|"
-							+ p.getSecond();
+					String edgeID = p.getFirst() + "\t" + p.getSecond() + "\t"
+							+ edgeType;
 
 					DBObject currentEdge = edgeCollection.findOne(edgeID);
 					if (currentEdge == null) {
@@ -90,11 +90,9 @@ public class MongoTypologyTrainer implements Trainable {
 						edgeCollection.insert(newEdge);
 					} else {
 						// current relationship does exist
-						BasicDBObject set = new BasicDBObject("$set",
+						BasicDBObject set = new BasicDBObject("$inc",
 								new BasicDBObject("cnt",
-										(Integer) currentEdge.get("cnt")
-												+ this.currentNGram
-														.getOccurrences()));
+										this.currentNGram.getOccurrences()));
 						edgeCollection.update(currentEdge, set);
 					}
 				}
@@ -123,7 +121,8 @@ public class MongoTypologyTrainer implements Trainable {
 		DBCursor cursor = coll.find();
 		try {
 			while (cursor.hasNext()) {
-				writer.write(cursor.next() + "\n");
+				DBObject next = cursor.next();
+				writer.write(next.get("_id") + "\t" + next.get("cnt") + "\n");
 				writer.flush();
 			}
 		} finally {
