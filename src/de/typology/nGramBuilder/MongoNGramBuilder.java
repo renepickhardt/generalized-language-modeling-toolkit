@@ -21,6 +21,7 @@ public class MongoNGramBuilder {
 	private BufferedWriter writer;
 	private DB db;
 	private Mongo m;
+	private int nGramLength;
 
 	/**
 	 * @param args
@@ -51,6 +52,7 @@ public class MongoNGramBuilder {
 
 		this.m = new Mongo();
 		this.db = this.m.getDB("mydb");
+		this.nGramLength = Config.get().nGramLength;
 
 		Set<String> colls = this.db.getCollectionNames();
 		for (String s : colls) {
@@ -65,18 +67,19 @@ public class MongoNGramBuilder {
 		String line;
 		while ((line = this.reader.readLine()) != null) {
 			String[] tokens = line.split(" ");
-			for (int i = 0; i < tokens.length - Config.get().nGramLength + 1; i++) {
+			for (int i = 0; i < tokens.length - this.nGramLength + 1; i++) {
 				String nGram = "";
-				for (int j = 0; j < Config.get().nGramLength; j++) {
+				for (int j = 0; j < this.nGramLength - 1; j++) {
 					nGram += tokens[i + j] + " ";
 				}
+				nGram += tokens[i + this.nGramLength - 1];
 				DBObject currentNGram = nGramCollection.findOne(nGram);
 				if (currentNGram == null) {
 					// current ngram does not exist
-					BasicDBObject newEdge = new BasicDBObject();
-					newEdge.put("_id", nGram);
-					newEdge.put("cnt", 1);
-					nGramCollection.insert(newEdge);
+					BasicDBObject newNGram = new BasicDBObject();
+					newNGram.put("_id", nGram);
+					newNGram.put("cnt", 1);
+					nGramCollection.insert(newNGram);
 				} else {
 					// current ngram does exist
 					BasicDBObject set = new BasicDBObject("$inc",
