@@ -38,7 +38,8 @@ public class MongoNGramBuilder {
 		System.out.println("print db");
 		mngb.writeNGrams(Config.get().parsedNGrams);
 		System.out.println("generate indicator file");
-		File done = new File(Config.get().nGramInput + "IsDone." + time + "ms");
+		File done = new File(Config.get().parsedNGrams + "IsDone." + time
+				+ "ms");
 		done.createNewFile();
 		System.out.println("done");
 	}
