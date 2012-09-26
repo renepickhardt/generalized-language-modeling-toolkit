@@ -6,6 +6,7 @@ import static de.typology.lexerParser.ReutersToken.CLOSEDBRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDP;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTEXT;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTITLE;
+import static de.typology.lexerParser.ReutersToken.COLON;
 import static de.typology.lexerParser.ReutersToken.COMMA;
 import static de.typology.lexerParser.ReutersToken.EOF;
 import static de.typology.lexerParser.ReutersToken.EXCLAMATIONMARK;
@@ -16,6 +17,7 @@ import static de.typology.lexerParser.ReutersToken.OTHER;
 import static de.typology.lexerParser.ReutersToken.P;
 import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
 import static de.typology.lexerParser.ReutersToken.QUOTATIONMARK;
+import static de.typology.lexerParser.ReutersToken.SEMICOLON;
 import static de.typology.lexerParser.ReutersToken.STRING;
 import static de.typology.lexerParser.ReutersToken.TEXT;
 import static de.typology.lexerParser.ReutersToken.TITLE;
@@ -135,6 +137,18 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 		if (this.lookahead == ',') {
 			this.read();
 			this.token = COMMA;
+			return;
+		}
+		// Recognize semicolon
+		if (this.lookahead == ';') {
+			this.read();
+			this.token = SEMICOLON;
+			return;
+		}
+		// Recognize colon
+		if (this.lookahead == ':') {
+			this.read();
+			this.token = COLON;
 			return;
 		}
 

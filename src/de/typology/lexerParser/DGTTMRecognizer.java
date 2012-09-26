@@ -7,6 +7,7 @@ import static de.typology.lexerParser.DGTTMToken.CLOSEDBODY;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDBRACES;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDSEG;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDTUV;
+import static de.typology.lexerParser.DGTTMToken.COLON;
 import static de.typology.lexerParser.DGTTMToken.COMMA;
 import static de.typology.lexerParser.DGTTMToken.EOF;
 import static de.typology.lexerParser.DGTTMToken.EXCLAMATIONMARK;
@@ -162,6 +163,12 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		if (this.lookahead == ';') {
 			this.read();
 			this.token = SEMICOLON;
+			return;
+		}
+		// Recognize colon
+		if (this.lookahead == ':') {
+			this.read();
+			this.token = COLON;
 			return;
 		}
 

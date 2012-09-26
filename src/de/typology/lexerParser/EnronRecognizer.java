@@ -24,6 +24,7 @@ import static de.typology.lexerParser.EnronToken.MIMEVERSION;
 import static de.typology.lexerParser.EnronToken.OTHER;
 import static de.typology.lexerParser.EnronToken.QUESTIONMARK;
 import static de.typology.lexerParser.EnronToken.QUOTATIONMARK;
+import static de.typology.lexerParser.EnronToken.SEMICOLON;
 import static de.typology.lexerParser.EnronToken.SLASH;
 import static de.typology.lexerParser.EnronToken.STRING;
 import static de.typology.lexerParser.EnronToken.SUBJECT;
@@ -174,6 +175,12 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		if (this.lookahead == ',') {
 			this.read();
 			this.token = COMMA;
+			return;
+		}
+		// Recognize semicolon
+		if (this.lookahead == ';') {
+			this.read();
+			this.token = SEMICOLON;
 			return;
 		}
 

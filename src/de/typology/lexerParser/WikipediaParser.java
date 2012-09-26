@@ -23,6 +23,7 @@ import static de.typology.lexerParser.WikipediaToken.HYPHEN;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
+import static de.typology.lexerParser.WikipediaToken.QUESTIONMARK;
 import static de.typology.lexerParser.WikipediaToken.REF;
 import static de.typology.lexerParser.WikipediaToken.SEMICOLON;
 import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
@@ -126,6 +127,12 @@ public class WikipediaParser {
 					if (this.current == WS) {
 						this.write(" ");
 					}
+					if (this.current == QUESTIONMARK) {
+						this.write("? ");
+					}
+					if (this.current == EXCLAMATIONMARK) {
+						this.write("! ");
+					}
 					if (this.current == FULLSTOP) {
 						this.write(this.lexeme);
 					}
@@ -134,6 +141,9 @@ public class WikipediaParser {
 					}
 					if (this.current == SEMICOLON) {
 						this.write(this.lexeme);
+					}
+					if (this.current == COLON) {
+						this.write(": ");
 					}
 					if (this.current == HYPHEN) {
 						this.write("-");
@@ -220,6 +230,12 @@ public class WikipediaParser {
 							}
 							if (this.current == WS) {
 								this.linkLabel += " ";
+							}
+							if (this.current == QUESTIONMARK) {
+								this.linkLabel += "?";
+							}
+							if (this.current == EXCLAMATIONMARK) {
+								this.linkLabel += "!";
 							}
 							if (this.current == HYPHEN) {
 								this.linkLabel += "-";

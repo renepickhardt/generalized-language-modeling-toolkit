@@ -5,9 +5,12 @@ import static de.typology.lexerParser.DGTTMToken.BRACES;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDBODY;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDBRACES;
 import static de.typology.lexerParser.DGTTMToken.CLOSEDTUV;
+import static de.typology.lexerParser.DGTTMToken.COLON;
 import static de.typology.lexerParser.DGTTMToken.COMMA;
+import static de.typology.lexerParser.DGTTMToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.DGTTMToken.FULLSTOP;
 import static de.typology.lexerParser.DGTTMToken.HYPHEN;
+import static de.typology.lexerParser.DGTTMToken.QUESTIONMARK;
 import static de.typology.lexerParser.DGTTMToken.SEMICOLON;
 import static de.typology.lexerParser.DGTTMToken.STRING;
 import static de.typology.lexerParser.DGTTMToken.TUV;
@@ -77,11 +80,20 @@ public class DGTTMParser {
 								if (this.current == SEMICOLON) {
 									this.write(this.lexeme);
 								}
+								if (this.current == COLON) {
+									this.write(": ");
+								}
 								if (this.current == HYPHEN) {
 									this.write("-");
 								}
 								if (this.current == WS) {
 									this.write(" ");
+								}
+								if (this.current == QUESTIONMARK) {
+									this.write("? ");
+								}
+								if (this.current == EXCLAMATIONMARK) {
+									this.write("! ");
 								}
 								if (this.current == BRACES) {
 									while (this.recognizer.hasNext()
