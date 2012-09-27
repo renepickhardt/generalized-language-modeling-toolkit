@@ -232,6 +232,12 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.token = SEMICOLON;
 			return;
 		}
+		// Recognize colon
+		if (this.lookahead == ':') {
+			this.read();
+			this.token = COLON;
+			return;
+		}
 
 		// Recognize underscore
 		if (this.lookahead == '_') {
@@ -299,12 +305,6 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		if (this.lookahead == '/') {
 			this.read();
 			this.token = SLASH;
-			return;
-		}
-		// Recognize colon
-		if (this.lookahead == ':') {
-			this.read();
-			this.token = COLON;
 			return;
 		}
 		// Recognize asterisk

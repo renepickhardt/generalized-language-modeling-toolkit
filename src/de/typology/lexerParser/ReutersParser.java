@@ -4,10 +4,14 @@ import static de.typology.lexerParser.ReutersToken.BRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDBRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDP;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTEXT;
+import static de.typology.lexerParser.ReutersToken.COLON;
 import static de.typology.lexerParser.ReutersToken.COMMA;
+import static de.typology.lexerParser.ReutersToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.ReutersToken.FULLSTOP;
 import static de.typology.lexerParser.ReutersToken.HYPHEN;
 import static de.typology.lexerParser.ReutersToken.P;
+import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
+import static de.typology.lexerParser.ReutersToken.SEMICOLON;
 import static de.typology.lexerParser.ReutersToken.STRING;
 import static de.typology.lexerParser.ReutersToken.TEXT;
 import static de.typology.lexerParser.ReutersToken.WS;
@@ -70,10 +74,21 @@ public class ReutersParser {
 								if (this.current == COMMA) {
 									this.write(this.lexeme);
 								}
+								if (this.current == SEMICOLON) {
+									this.write(this.lexeme);
+								}
+								if (this.current == COLON) {
+									this.write(": ");
+								}
 								if (this.current == HYPHEN) {
 									this.write("-");
 								}
-
+								if (this.current == QUESTIONMARK) {
+									this.write("? ");
+								}
+								if (this.current == EXCLAMATIONMARK) {
+									this.write("! ");
+								}
 								if (this.current == WS) {
 									this.write(" ");
 								}
