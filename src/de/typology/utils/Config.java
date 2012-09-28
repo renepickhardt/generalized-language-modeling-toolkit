@@ -41,6 +41,8 @@ public class Config extends Properties {
 	public String ngramDownloadOutputPath;
 	public String googleNgramsPath;
 	public String googleNgramsMergedPath;
+	public String parsedGoogleNGramsOutputPath;
+	public String normalizedGoogleNgramsPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
