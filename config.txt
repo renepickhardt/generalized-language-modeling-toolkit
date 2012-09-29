@@ -9,4 +9,8 @@ letterGraph = /var/lib/datasets/letterGraph
 
 keystrokesWindowSize = 7
 
-parsedWikiOutputPath = /var/lib/datasets/wikiout.txt
+parsedNGrams = /var/lib/datasets/parsedNGrams.txt
+sortedNGrams = /var/lib/datasets/sortedNGrams.txt
+nGramLength = 5
+
+parsedWikiOutputPath = /var/lib/datasets/germanwikiout.txt
