@@ -1,47 +1,47 @@
 #wikipedia bzip file
-wikiXmlPath = /mnt/vdb/typoeval/datasets/wikipedia/enwiki-20120803-pages-articles.xml.bz2
+wikiXmlPath = /var/lib/datasets/wikipedia/dewiki-20120204-pages-articles.xml.bz2
 
-germanWikiText = /mnt/vdb/typoeval/datasets/germanwikitext.txt
-letterGraph = /mnt/vdb/typoeval/datasets/letterGraph
+germanWikiText = /var/lib/datasets/germanwikitext.txt
+letterGraph = /var/lib/datasets/letterGraph
 
 #reutersXmlPath
-reutersXmlPath = /mnt/vdb/typoeval/datasets/Reuters-CV1-CV2/unzip/
+reutersXmlPath = /var/lib/datasets/Reuters-CV1-CV2/unzip/
 
 #enronXmlPath
-enronPath = /mnt/vdb/typoeval/datasets/Enron-Mail/maildir/
+enronPath = /var/lib/datasets/Enron-Mail/maildir/
 
 #DGTTMPath
-DGTTMPath = /mnt/vdb/typoeval/datasets/JRC-Acquis-2012/unzip/
+DGTTMPath = /var/lib/datasets/JRC-Acquis-2012/unzip/
 
 DGTTMLanguage = DE
 
 keystrokesWindowSize = 7
 
-nGramInput= /mnt/vdb/typoeval/datasets/out/wikipedia/frwikinormalized.txt
-parsedNGrams = /mnt/vdb/typoeval/datasets/out/wikipedia/frwiki5grams.txt
-sortedNGrams = /mnt/vdb/typoeval/datasets/out/wikipedia/sortedNGrams.txt
+nGramInput= /var/lib/datasets/out/wikipedia/frwikinormalized.txt
+parsedNGrams = /var/lib/datasets/out/wikipedia/frwiki5grams.txt
+sortedNGrams = /var/lib/datasets/out/wikipedia/sortedNGrams.txt
 nGramLength = 5
 
-googleNgramsPath = /mnt/vdb/typoeval/datasets/google-ngrams/ger-all-5gram-20090715/
-googleNgramsMergedPath = /mnt/vdb/typoeval/datasets/out/googlengrams.txt
+googleNgramsPath = /var/lib/datasets/google-ngrams/ger-all-5gram-20090715/
+googleNgramsMergedPath = /var/lib/datasets/out/googlengrams.txt
 
-parsedWikiOutputPath = /mnt/vdb/typoeval/datasets/out/wikipedia/wikiout.txt
-parsedReutersOutputPath = /mnt/vdb/typoeval/datasets/out/reutersout.txt
-parsedEnronOutputPath = /mnt/vdb/typoeval/datasets/out/enronout.txt
-parsedDGTTMOutputPath = /mnt/vdb/typoeval/datasets/out/dgttmout.txt
+parsedWikiOutputPath = /var/lib/datasets/out/wikipedia/wikiout.txt
+parsedReutersOutputPath = /var/lib/datasets/out/reutersout.txt
+parsedEnronOutputPath = /var/lib/datasets/out/enronout.txt
+parsedDGTTMOutputPath = /var/lib/datasets/out/dgttmout.txt
 
-normalizedWikiOutputPath = /mnt/vdb/typoeval/datasets/out/wikipedia/enwikinormalized.txt
-normalizedReutersOutputPath = /mnt/vdb/typoeval/datasets/out/reutersnormalized.txt
-normalizedEnronOutputPath = /mnt/vdb/typoeval/datasets/out/enronnormalized.txt
-normalizedDGTTMOutputPath = /mnt/vdb/typoeval/datasets/out/dgttmnormalized.txt
+normalizedWikiOutputPath = /var/lib/datasets/out/wikipedia/enwikinormalized.txt
+normalizedReutersOutputPath = /var/lib/datasets/out/reutersnormalized.txt
+normalizedEnronOutputPath = /var/lib/datasets/out/enronnormalized.txt
+normalizedDGTTMOutputPath = /var/lib/datasets/out/dgttmnormalized.txt
 
-wikiLinksOutputPath = /mnt/vdb/typoeval/datasets/out/wikipedia/wikilinks.txt
+wikiLinksOutputPath = /var/lib/datasets/out/wikipedia/wikilinks.txt
 
 ngramDownloadPath = googlebooks-spa-all-5gram-20090715
-ngramDownloadOutputPath = /mnt/vdb/typoeval/datasets/out/
+ngramDownloadOutputPath = /var/lib/datasets/out/
 
-googleNgramsPath = /mnt/vdb/typoeval/datasets/google-ngrams/eng-all-5gram-20090715
-googleNgramsMergedPath = /mnt/vdb/typoeval/datasets/out/google-ngrams/engooglengramsmerged.txt
+googleNgramsPath = /var/lib/datasets/google-ngrams/eng-all-5gram-20090715
+googleNgramsMergedPath = /var/lib/datasets/out/google-ngrams/engooglengramsmerged.txt
 
 #TypologyTrainer
-testDb = /mnt/vdb/typoeval/databases/degooglengrams.db
+testDb = /var/lib/databases/degooglengrams.db
