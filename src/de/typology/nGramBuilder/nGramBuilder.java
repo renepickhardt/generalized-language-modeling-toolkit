@@ -3,7 +3,11 @@ package de.typology.nGramBuilder;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 import de.typology.utils.Config;
@@ -15,18 +19,41 @@ public class nGramBuilder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
 		new File(Config.get().typologyEdgesPathNotAggregated).mkdirs();
+		String[] letters = countMostFrequentStartingLetters(62);
+		createNGramChunks(Config.get().germanWikiText);
 
-		createNGramChunks();
-		aggregateNGrams();
-		for (int i = 1; i < 5; i++) {
-			new File(Config.get().typologyEdgesPathNotAggregated + i
-					+ "/aggregated/").mkdirs();
-
-			createTypologyEgeds(i);
-			aggregateTypologyEdges(i);
+		BufferedReader keys = IOHelper.openReadFile(Config.get().nGramKeyFile);
+		String line = "";
+		try {
+			while ((line = keys.readLine()) != null) {
+				File f = new File(Config.get().nGramsNotAggregatedPath + line);
+				if (!f.exists()) {
+					continue;
+				}
+				if (f.length() > 512 * 1024 * 1024) {
+					System.out.println("need to further split file: " + line);
+					createDetailedNGramChunks(Config.get().nGramsNotAggregatedPath
+							+ line);
+					f.delete();
+				} else {
+					System.out.println("file '" + line + "' can be aggregated");
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
+		// createNGramChunks();
+		// aggregateNGrams();
+		// for (int i = 1; i < 5; i++) {
+		// new File(Config.get().typologyEdgesPathNotAggregated + i
+		// + "/aggregated/").mkdirs();
+		//
+		// createTypologyEgeds(i);
+		// aggregateTypologyEdges(i);
+		// }
 	}
 
 	private static void aggregateNGrams() {
@@ -73,6 +100,113 @@ public class nGramBuilder {
 				bw.flush();
 				bw.close();
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private static void createNGramChunks(String fromFile) {
+		String[] mostFrequentLetters = countMostFrequentStartingLetters(62);
+
+		BufferedReader br = IOHelper.openReadFile(fromFile, 8 * 1024 * 1024);// "/var/lib/datasets/out/wikipedia/testfile.txt");
+		String line = "";
+		int cnt = 0;
+
+		HashMap<String, BufferedWriter> writers = createWriter(
+				Config.get().nGramsNotAggregatedPath, mostFrequentLetters);// createWriterOld();
+
+		try {
+			while ((line = br.readLine()) != null) {
+				cnt++;
+				String[] tokens = line.split(" ");
+				for (int i = Config.get().nGramLength; i < tokens.length; i++) {
+					boolean first = true;
+					BufferedWriter bw = null;
+					for (int j = i - Config.get().nGramLength; j < i; j++) {
+						if (first) {
+							String token = tokens[i - Config.get().nGramLength];
+							String key = null;
+							key = token.substring(0, 1);
+							bw = writers.get(key);
+							if (bw == null) {
+								key = "other";
+								bw = writers.get(key);
+							}
+							first = false;
+						}
+						bw.write(tokens[j]);
+						if (j < i - 1) {
+							bw.write("\t");
+						}
+					}
+					bw.write("\n");
+				}
+				if (cnt % 50000 == 0) {
+					IOHelper.log("processed " + cnt + " articles into chunks:");
+				}
+			}
+			BufferedWriter kw = IOHelper
+					.openWriteFile(Config.get().nGramKeyFile);
+			for (String k : writers.keySet()) {
+				kw.write(k + "\n");
+				BufferedWriter tmp = writers.get(k);
+				tmp.flush();
+				tmp.close();
+			}
+			kw.flush();
+			kw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	private static void createDetailedNGramChunks(String fromFile) {
+		String[] mostFrequentLetters = countMostFrequentStartingLetters(62);
+
+		BufferedReader br = IOHelper.openReadFile(fromFile);// "/var/lib/datasets/out/wikipedia/testfile.txt");
+		String line = "";
+		int cnt = 0;
+
+		HashMap<String, BufferedWriter> writers = createWriter(fromFile,
+				mostFrequentLetters);
+
+		try {
+			while ((line = br.readLine()) != null) {
+				cnt++;
+				String[] tokens = line.split("\\s");
+				if (tokens.length != Config.get().nGramLength) {
+					continue;
+				}
+				String key = tokens[1].substring(0, 1);
+				BufferedWriter bw = null;
+				bw = writers.get(key);
+				if (bw == null) {
+					key = "other";
+					bw = writers.get(key);
+				}
+				bw.write(line + "\n");
+				if (cnt % 1000000 == 0) {
+					for (String k : writers.keySet()) {
+						writers.get(k).flush();
+					}
+					System.out.println("processed ngrams into smaller chunks:"
+							+ cnt);
+				}
+			}
+			BufferedWriter kw = IOHelper
+					.openAppendFile(Config.get().nGramKeyFile);
+			for (String k : writers.keySet()) {
+				String[] tmp = fromFile.split("/");
+				String prefix = tmp[tmp.length - 1];
+				kw.write(prefix + k + "\n");
+				writers.get(k).flush();
+				writers.get(k).close();
+			}
+			kw.flush();
+			kw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -136,6 +270,24 @@ public class nGramBuilder {
 		}
 	}
 
+	private static HashMap<String, BufferedWriter> createWriter(String oldPath,
+			String[] letters) {
+		IOHelper.log("create chunks for most common letters: "
+				+ letters.toString());
+		HashMap<String, BufferedWriter> writers = new HashMap<String, BufferedWriter>();
+		for (String letter : letters) {
+			BufferedWriter bw = IOHelper.openWriteFile(oldPath + letter,
+					8 * 1024 * 1024);
+			writers.put(letter, bw);
+		}
+		BufferedWriter bw = IOHelper.openWriteFile(oldPath + "other",
+				8 * 1024 * 1024);
+		writers.put("other", bw);
+
+		IOHelper.log("all chunks are created");
+		return writers;
+	}
+
 	private static HashMap<String, BufferedWriter> createWriterOld() {
 		System.out.println("get most common letters");
 		String[] letters = countMostFrequentStartingLetters(62);
@@ -158,7 +310,27 @@ public class nGramBuilder {
 	}
 
 	private static String[] countMostFrequentStartingLetters(int k) {
+		IOHelper.log("Counting the " + k + " most frequent letters in: "
+				+ Config.get().germanWikiText);
 		String[] result = new String[k];
+		try {
+			IOHelper.log("Check if most frequent letters have been counted");
+			File file = new File(Config.get().nGramsNotAggregatedPath
+					+ "mostFrequentLetters.txt");
+			if (file.exists()) {
+				IOHelper.log("Yes! load from file");
+				FileInputStream f = new FileInputStream(file);
+				ObjectInputStream s;
+				s = new ObjectInputStream(f);
+				result = (String[]) s.readObject();
+				s.close();
+				return result;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		IOHelper.log("No! just start counting now");
 
 		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);// Config.get().nGramKeyFile);
 		String line = "";
@@ -204,6 +376,22 @@ public class nGramBuilder {
 			}
 			br.close();
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		File file = new File(Config.get().nGramsNotAggregatedPath
+				+ "mostFrequentLetters.txt");
+		try {
+			IOHelper.log("Counting done! save results to file");
+
+			FileOutputStream f = new FileOutputStream(file);
+			ObjectOutputStream s = new ObjectOutputStream(f);
+
+			s.writeObject(result);
+			s.flush();
+			s.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return result;

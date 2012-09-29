@@ -44,6 +44,21 @@ public class IOHelper {
 		return br;
 	}
 
+	public static BufferedReader openReadFile(String filename, int bufferSize) {
+		FileInputStream fstream;
+		BufferedReader br = null;
+		try {
+			fstream = new FileInputStream(filename);
+			DataInputStream in = new DataInputStream(fstream);
+			br = new BufferedReader(new InputStreamReader(in), bufferSize);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		return br;
+	}
+
 	/**
 	 * Faster access to a bufferedWriter
 	 * 
