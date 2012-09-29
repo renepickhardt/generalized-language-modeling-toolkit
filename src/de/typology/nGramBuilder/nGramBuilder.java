@@ -1,10 +1,12 @@
-package de.typology.lexerParser;
+package de.typology.nGramBuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class nGramBuilder {
@@ -13,9 +15,15 @@ public class nGramBuilder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// createNGramChunks();
-		// aggregateNGrams();
-		for (int i = 1; i < 2; i++) {
+
+		new File(Config.get().typologyEdgesPathNotAggregated).mkdirs();
+
+		createNGramChunks();
+		aggregateNGrams();
+		for (int i = 1; i < 5; i++) {
+			new File(Config.get().typologyEdgesPathNotAggregated + i
+					+ "/aggregated/").mkdirs();
+
 			createTypologyEgeds(i);
 			aggregateTypologyEdges(i);
 		}
@@ -24,13 +32,13 @@ public class nGramBuilder {
 	private static void aggregateNGrams() {
 		HashMap<String, BufferedReader> readers = new HashMap<String, BufferedReader>();
 		BufferedReader keyReader = IOHelper
-				.openReadFile("/var/lib/datasets/out/wikipedia/letteroutput/keys.txt");
+				.openReadFile(Config.get().nGramKeyFile);// "/var/lib/datasets/out/wikipedia/letteroutput/keys.txt"
 		try {
 			String key = "";
 			while ((key = keyReader.readLine()) != null) {
 				System.out.println("processing key: " + key);
 				BufferedReader br = IOHelper
-						.openReadFile("/var/lib/datasets/out/wikipedia/letteroutput/"
+						.openReadFile(Config.get().nGramsNotAggregatedPath// "/var/lib/datasets/out/wikipedia/letteroutput/"
 								+ key);
 				HashMap<String, Integer> nGrams = new HashMap<String, Integer>();
 				String line = "";
@@ -51,7 +59,7 @@ public class nGramBuilder {
 				System.out.println("aggregation done for key: " + key
 						+ "\nstart writing to file");
 				BufferedWriter bw = IOHelper
-						.openWriteFile("/var/lib/datasets/out/wikipedia/letteroutput/aggregated/"
+						.openWriteFile(Config.get().nGramsAggregatedPath// "/var/lib/datasets/out/wikipedia/letteroutput/aggregated/"
 								+ key);
 				int nCnt = 0;
 				for (String nGram : nGrams.keySet()) {
@@ -72,11 +80,9 @@ public class nGramBuilder {
 	}
 
 	private static void createNGramChunks() {
-		BufferedReader br = IOHelper
-				.openReadFile("/var/lib/datasets/out/wikipedia/testfile.txt");
+		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);// "/var/lib/datasets/out/wikipedia/testfile.txt");
 		String line = "";
 		int cnt = 0;
-		final int NGRAMLENGTH = 5;
 
 		HashMap<String, BufferedWriter> writers = createWriterOld();
 
@@ -84,16 +90,16 @@ public class nGramBuilder {
 			while ((line = br.readLine()) != null) {
 				cnt++;
 				String[] tokens = line.split(" ");
-				for (int i = NGRAMLENGTH; i < tokens.length; i++) {
+				for (int i = Config.get().nGramLength; i < tokens.length; i++) {
 					boolean first = true;
 					BufferedWriter bw = null;
-					for (int j = i - NGRAMLENGTH; j < i; j++) {
+					for (int j = i - Config.get().nGramLength; j < i; j++) {
 						if (first) {
-							String token = tokens[i - NGRAMLENGTH];
+							String token = tokens[i - Config.get().nGramLength];
 							String key = null;
 							key = token.substring(0, 1)
-									+ tokens[i - NGRAMLENGTH + 1].substring(0,
-											1);
+									+ tokens[i - Config.get().nGramLength + 1]
+											.substring(0, 1);
 							bw = writers.get(key);
 							if (bw == null) {
 								key = "other";
@@ -131,13 +137,6 @@ public class nGramBuilder {
 	}
 
 	private static HashMap<String, BufferedWriter> createWriterOld() {
-		// String[] letters = { "a", "b", "c", "d", "e", "f", "g", "h", "i",
-		// "j",
-		// "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v",
-		// "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H",
-		// "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
-		// "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6",
-		// "7", "8", "9", "0" };
 		System.out.println("get most common letters");
 		String[] letters = countMostFrequentStartingLetters(62);
 		System.out.println("open files now");
@@ -145,15 +144,13 @@ public class nGramBuilder {
 		for (String letter : letters) {
 			for (String letter2 : letters) {
 				String tmp = letter + letter2;
-				// TODO: buffered writer size setzen!!!
-				BufferedWriter bw = IOHelper
-						.openWriteFile("/var/lib/datasets/out/wikipedia/letteroutput/"
-								+ tmp);
+				BufferedWriter bw = IOHelper.openWriteFile(
+						Config.get().nGramsNotAggregatedPath + tmp, 128 * 1024);
 				writers.put(tmp, bw);
 			}
 		}
 		BufferedWriter bw = IOHelper
-				.openWriteFile("/var/lib/datasets/out/wikipedia/letteroutput/other");
+				.openWriteFile(Config.get().nGramsNotAggregatedPath + "other");
 		writers.put("other", bw);
 
 		System.out.println("files open lets go");
@@ -163,8 +160,7 @@ public class nGramBuilder {
 	private static String[] countMostFrequentStartingLetters(int k) {
 		String[] result = new String[k];
 
-		BufferedReader br = IOHelper
-				.openReadFile("/var/lib/datasets/out/wikipedia/testfile.txt");
+		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);// Config.get().nGramKeyFile);
 		String line = "";
 		int cnt = 0;
 
@@ -214,12 +210,12 @@ public class nGramBuilder {
 	}
 
 	private static void createTypologyEgeds(int distance) {
-		String path = "/var/lib/datasets/out/wikipedia/letteroutput/";
-		String keyFile = path + "keys.txt";
-		String aggregatedPath = path + "aggregated/";
-		String typoPath = aggregatedPath + "typoedges/";
+		// String path = "/var/lib/datasets/out/wikipedia/letteroutput/";
+		// String keyFile = path + "keys.txt";
+		// String aggregatedPath = path + "aggregated/";
+		// String typoPath = aggregatedPath + "typoedges/";
 
-		BufferedReader br = IOHelper.openReadFile(keyFile);
+		BufferedReader br = IOHelper.openReadFile(Config.get().nGramKeyFile);
 		String line = "";
 
 		HashMap<String, BufferedWriter> writers = new HashMap<String, BufferedWriter>();
@@ -229,23 +225,24 @@ public class nGramBuilder {
 			long startTime = System.currentTimeMillis();
 			System.out.println("create writers");
 			while ((line = br.readLine()) != null) {
-				BufferedWriter bw = IOHelper.openWriteFile(typoPath + distance
-						+ "/" + line, 128 * 1024);
+				BufferedWriter bw = IOHelper.openWriteFile(
+						Config.get().typologyEdgesPathNotAggregated + distance
+								+ "/" + line, 128 * 1024);
 				writers.put(line, bw);
 			}
 			br.close();
-			br = IOHelper.openReadFile(keyFile);
+			br = IOHelper.openReadFile(Config.get().nGramKeyFile);
 			System.out
 					.println("writers created read every single aggreagted ngram file now");
 			// for all aggregated NGramFiles put edges to typology files;
 			int cnt = 0;
 			int fileCnt = 0;
 			while ((line = br.readLine()) != null) {
-				BufferedReader nGramsReader = IOHelper
-						.openReadFile(aggregatedPath + line);
+				BufferedReader nGramsReader = IOHelper.openReadFile(Config
+						.get().nGramsAggregatedPath + line);
 				String nGram = "";
 				System.out.println(fileCnt++ + "\tprocessing: "
-						+ aggregatedPath + line);
+						+ Config.get().nGramsAggregatedPath + line);
 				while ((nGram = nGramsReader.readLine()) != null) {
 					String[] values = nGram.split("\\s");
 					if (values.length != 6) {
@@ -295,12 +292,12 @@ public class nGramBuilder {
 	}
 
 	private static void aggregateTypologyEdges(int distance) {
-		String path = "/var/lib/datasets/out/wikipedia/letteroutput/";
-		String keyFile = path + "keys.txt";
-		String aggregatedPath = path + "aggregated/";
-		String typoPath = aggregatedPath + "typoedges/";
+		// String path = "/var/lib/datasets/out/wikipedia/letteroutput/";
+		// String keyFile = path + "keys.txt";
+		// String aggregatedPath = path + "aggregated/";
+		// String typoPath = aggregatedPath + "typoedges/";
 
-		BufferedReader br = IOHelper.openReadFile(keyFile);
+		BufferedReader br = IOHelper.openReadFile(Config.get().nGramKeyFile);
 		String line = "";
 		int gCnt = 0;
 
@@ -310,13 +307,15 @@ public class nGramBuilder {
 			long startTime = System.currentTimeMillis();
 			System.out.println("create writers");
 			while ((line = br.readLine()) != null) {
-				BufferedWriter bw = IOHelper.openWriteFile(typoPath + distance
-						+ "/aggregated/" + line);
+				BufferedWriter bw = IOHelper
+						.openWriteFile(Config.get().typologyEdgesPathNotAggregated
+								+ distance + "/aggregated/" + line);
 
 				// System.out.println("aggregate: " + line);
 
-				BufferedReader edgesReader = IOHelper.openReadFile(typoPath
-						+ distance + "/" + line);
+				BufferedReader edgesReader = IOHelper
+						.openReadFile(Config.get().typologyEdgesPathNotAggregated
+								+ distance + "/" + line);
 
 				String edge = "";
 				HashMap<String, Integer> edges = new HashMap<String, Integer>();

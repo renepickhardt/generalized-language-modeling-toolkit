@@ -37,8 +37,13 @@ public class Config extends Properties {
 	public String normalizedDGTTMOutputPath;
 	public String letterGraph;
 	public int keystrokesWindowSize;
+	public int nGramLength;
 	public String ngramDownloadPath;
 	public String ngramDownloadOutputPath;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String nGramsAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 

@@ -1,7 +1,8 @@
 #wikipedia bzip file
-wikiXmlPath = /var/lib/datasets/wikipedia/dewiki-20120204-pages-articles.xml.bz2
+wikiXmlPath = /var/lib/datasets/wikipedia/barwiki-20120710-pages-articles.xml.bz2
+#wikiXmlPath = /var/lib/datasets/wikipedia/dewiki-20120204-pages-articles.xml.bz2
 
-germanWikiText = /var/lib/datasets/germanwikitext.txt
+germanWikiText = /var/lib/datasets/out/wikipedia/testfile.txt
 letterGraph = /var/lib/datasets/letterGraph
 
 #reutersXmlPath
@@ -45,3 +46,12 @@ googleNgramsMergedPath = /var/lib/datasets/out/google-ngrams/engooglengramsmerge
 
 #TypologyTrainer
 testDb = /var/lib/databases/degooglengrams.db
+
+#BUILD NGRAMS FROM WIKI
+nGramKeyFile = /var/lib/datasets/out/wikipedia/letteroutput/keys.txt
+nGramsNotAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput/
+nGramsAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/
+
+#CREATE TYPOLOGY EDGES
+typologyEdgesPathNotAggregated = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/typoedges/
+
