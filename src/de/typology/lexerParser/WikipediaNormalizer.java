@@ -47,9 +47,7 @@ public class WikipediaNormalizer {
 				line = line.replaceAll("!+", "!");
 				line = line.replaceAll("\\?+", "\\?");
 
-				line = line.replaceAll("''''", "");
-				line = line.replaceAll("'''", "");
-				line = line.replaceAll("''", "");
+				line = line.replaceAll("''+", "");
 
 				line = line.replaceAll(" +", " ");
 
