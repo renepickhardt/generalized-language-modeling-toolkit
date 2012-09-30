@@ -45,13 +45,23 @@ public class nGramBuilder {
 		sek = (endTime - startTime) / 1000;
 		IOHelper.strongLog(sek + " seconds to: finnish aggregating ngrams");
 
-		// for (int i = 1; i < 5; i++) {
-		// new File(Config.get().typologyEdgesPathNotAggregated + i
-		// + "/aggregated/").mkdirs();
-		//
-		// createTypologyEgeds(i);
-		// aggregateTypologyEdges(i);
-		// }
+		for (int i = 1; i < 5; i++) {
+			new File(Config.get().typologyEdgesPathNotAggregated + i
+					+ "/aggregated/").mkdirs();
+			createTypologyEgeds(i);
+
+			endTime = System.currentTimeMillis();
+			sek = (endTime - startTime) / 1000;
+			IOHelper.strongLog(sek
+					+ " seconds to: finnish creating first chunks of typo edges of distance "
+					+ i);
+
+			// TODO: correct createSecendLevelTypologyEdges(int) such that to
+			// big chunk files are being seperated again. similar to ngrams...
+			// and then aggregate everyting. until here everything should work
+			// fine
+			// aggregateTypologyEdges(i);
+		}
 	}
 
 	private static void createSecendLevelNGramChunks() {
@@ -68,7 +78,7 @@ public class nGramBuilder {
 				}
 				if (f.length() > 512 * 1024 * 1024) {
 					IOHelper.log("need to further split file: " + line);
-					createDetailedNGramChunks(
+					usedKeys = createDetailedNGramChunks(
 							Config.get().nGramsNotAggregatedPath + line,
 							usedKeys);
 					// TODO: aus keyfile loeschen
@@ -212,7 +222,8 @@ public class nGramBuilder {
 
 	}
 
-	private static void createDetailedNGramChunks(String fromFile, HashMap<String, Integer> usedKeys) {
+	private static HashMap<String, Integer> createDetailedNGramChunks(
+			String fromFile, HashMap<String, Integer> usedKeys) {
 		String[] mostFrequentLetters = countMostFrequentStartingLetters(62);
 
 		BufferedReader br = IOHelper.openReadFile(fromFile);// "/var/lib/datasets/out/wikipedia/testfile.txt");
@@ -245,79 +256,23 @@ public class nGramBuilder {
 							+ cnt);
 				}
 			}
-//			BufferedWriter kw = IOHelper
-//					.openAppendFile(Config.get().nGramKeyFile);
+			// BufferedWriter kw = IOHelper
+			// .openAppendFile(Config.get().nGramKeyFile);
 			for (String k : writers.keySet()) {
 				String[] tmp = fromFile.split("/");
 				String prefix = tmp[tmp.length - 1];
-				usedKeys.put(prefix+k, 1_);
-//				kw.write(prefix + k + "\n");
+				usedKeys.put(prefix + k, 1);
+				// kw.write(prefix + k + "\n");
 				writers.get(k).flush();
 				writers.get(k).close();
 			}
-//			kw.flush();
-//			kw.close();
+			// kw.flush();
+			// kw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	private static void createNGramChunks() {
-		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);// "/var/lib/datasets/out/wikipedia/testfile.txt");
-		String line = "";
-		int cnt = 0;
-
-		HashMap<String, BufferedWriter> writers = createWriterOld();
-
-		try {
-			while ((line = br.readLine()) != null) {
-				cnt++;
-				String[] tokens = line.split(" ");
-				for (int i = Config.get().nGramLength; i < tokens.length; i++) {
-					boolean first = true;
-					BufferedWriter bw = null;
-					for (int j = i - Config.get().nGramLength; j < i; j++) {
-						if (first) {
-							String token = tokens[i - Config.get().nGramLength];
-							String key = null;
-							key = token.substring(0, 1)
-									+ tokens[i - Config.get().nGramLength + 1]
-											.substring(0, 1);
-							bw = writers.get(key);
-							if (bw == null) {
-								key = "other";
-								bw = writers.get(key);
-							}
-							first = false;
-						}
-						bw.write(tokens[j]);
-						if (j < i - 1) {
-							bw.write("\t");
-						}
-					}
-					bw.write("\n");
-				}
-				if (cnt % 20000 == 0) {
-					for (String k : writers.keySet()) {
-						writers.get(k).flush();
-					}
-					System.out.println("processed articles:" + cnt);
-				}
-			}
-			BufferedWriter kw = IOHelper
-					.openWriteFile("/var/lib/datasets/out/wikipedia/letteroutput/keys.txt");
-			for (String k : writers.keySet()) {
-				kw.write(k + "\n");
-				writers.get(k).flush();
-				writers.get(k).close();
-			}
-			kw.flush();
-			kw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		return usedKeys;
 	}
 
 	private static HashMap<String, BufferedWriter> createWriter(String oldPath,
@@ -448,11 +403,6 @@ public class nGramBuilder {
 	}
 
 	private static void createTypologyEgeds(int distance) {
-		// String path = "/var/lib/datasets/out/wikipedia/letteroutput/";
-		// String keyFile = path + "keys.txt";
-		// String aggregatedPath = path + "aggregated/";
-		// String typoPath = aggregatedPath + "typoedges/";
-
 		BufferedReader br = IOHelper.openReadFile(Config.get().nGramKeyFile);
 		String line = "";
 
@@ -461,17 +411,20 @@ public class nGramBuilder {
 			// create files in which typo edges will be written (not aggregated
 			// yet)
 			long startTime = System.currentTimeMillis();
-			System.out.println("create writers");
-			while ((line = br.readLine()) != null) {
+			String[] startLetters = countMostFrequentStartingLetters(62);
+			IOHelper.log("create writers for typology edges");
+			for (String l : startLetters) {
 				BufferedWriter bw = IOHelper.openWriteFile(
 						Config.get().typologyEdgesPathNotAggregated + distance
-								+ "/" + line, 128 * 1024);
-				writers.put(line, bw);
+								+ "/" + l, 8 * 1024 * 1024);
+				writers.put(l, bw);
 			}
-			br.close();
-			br = IOHelper.openReadFile(Config.get().nGramKeyFile);
-			System.out
-					.println("writers created read every single aggreagted ngram file now");
+			BufferedWriter bwo = IOHelper.openWriteFile(
+					Config.get().typologyEdgesPathNotAggregated + distance
+							+ "/other", 8 * 1024 * 1024);
+			writers.put("other", bwo);
+
+			IOHelper.log("writers created read every single aggreagted ngram file now");
 			// for all aggregated NGramFiles put edges to typology files;
 			int cnt = 0;
 			int fileCnt = 0;
@@ -479,7 +432,7 @@ public class nGramBuilder {
 				BufferedReader nGramsReader = IOHelper.openReadFile(Config
 						.get().nGramsAggregatedPath + line);
 				String nGram = "";
-				System.out.println(fileCnt++ + "\tprocessing: "
+				IOHelper.log(fileCnt++ + "\tprocessing: "
 						+ Config.get().nGramsAggregatedPath + line);
 				while ((nGram = nGramsReader.readLine()) != null) {
 					String[] values = nGram.split("\\s");
@@ -491,7 +444,8 @@ public class nGramBuilder {
 					for (int i = 0; i < 5 - distance; i++) {
 						String from = values[i];
 						String to = values[i + distance];
-						String key = from.substring(0, 1) + to.substring(0, 1);
+						String key = from.substring(0, 1);// + to.substring(0,
+															// 1);
 						BufferedWriter bw = writers.get(key);
 						if (bw == null) {
 							key = "other";
@@ -502,10 +456,10 @@ public class nGramBuilder {
 						cnt++;
 						if (cnt % 50000000 == 0) {
 							long endTime = System.currentTimeMillis();
-							long sek = (startTime - endTime) / 1000;
-							System.out.println(cnt
-									+ "flush writers time passed: " + sek
-									+ "\t ngrams per sec: " + cnt / (sek + 1));
+							long sek = (endTime - startTime) / 1000;
+							IOHelper.log(cnt + " flush writers time passed: "
+									+ sek + "\t ngrams per sec: " + cnt
+									/ (sek + 1));
 
 							for (String k : writers.keySet()) {
 								writers.get(k).flush();
@@ -524,6 +478,38 @@ public class nGramBuilder {
 			// TODO: need to aggregate all of the eges
 
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private static void createSecendLevelTypologyEdges(int distance) {
+		String[] letters = countMostFrequentStartingLetters(62);
+		String line = "";
+
+		try {
+			for (String letter : letters) {
+				line = letter;
+				File f = new File(Config.get().typologyEdgesPathNotAggregated
+						+ "/" + distance + "/" + line);
+				if (!f.exists()) {
+					continue;
+				}
+				if (f.length() > 512 * 1024 * 1024) {
+					IOHelper.log("need to further split file: " + line);
+					// createDetailedNGramChunks(
+					// Config.get().nGramsNotAggregatedPath + line,
+					// usedKeys);
+					// TODO: aus keyfile loeschen
+					f.delete();
+				} else {
+					// usedKeys.put(line, 1);
+					// IOHelper.log("file '" + line + "' can be aggregated");
+					// TODO:aggregieren sollte so bleiben wie vorher nur erst
+					// wenn alle kleineren chunks existieren.
+				}
+			}
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -597,4 +583,63 @@ public class nGramBuilder {
 			e.printStackTrace();
 		}
 	}
+
+	// private static void createNGramChunks() {
+	// BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);//
+	// "/var/lib/datasets/out/wikipedia/testfile.txt");
+	// String line = "";
+	// int cnt = 0;
+	//
+	// HashMap<String, BufferedWriter> writers = createWriterOld();
+	//
+	// try {
+	// while ((line = br.readLine()) != null) {
+	// cnt++;
+	// String[] tokens = line.split(" ");
+	// for (int i = Config.get().nGramLength; i < tokens.length; i++) {
+	// boolean first = true;
+	// BufferedWriter bw = null;
+	// for (int j = i - Config.get().nGramLength; j < i; j++) {
+	// if (first) {
+	// String token = tokens[i - Config.get().nGramLength];
+	// String key = null;
+	// key = token.substring(0, 1)
+	// + tokens[i - Config.get().nGramLength + 1]
+	// .substring(0, 1);
+	// bw = writers.get(key);
+	// if (bw == null) {
+	// key = "other";
+	// bw = writers.get(key);
+	// }
+	// first = false;
+	// }
+	// bw.write(tokens[j]);
+	// if (j < i - 1) {
+	// bw.write("\t");
+	// }
+	// }
+	// bw.write("\n");
+	// }
+	// if (cnt % 20000 == 0) {
+	// for (String k : writers.keySet()) {
+	// writers.get(k).flush();
+	// }
+	// System.out.println("processed articles:" + cnt);
+	// }
+	// }
+	// BufferedWriter kw = IOHelper
+	// .openWriteFile("/var/lib/datasets/out/wikipedia/letteroutput/keys.txt");
+	// for (String k : writers.keySet()) {
+	// kw.write(k + "\n");
+	// writers.get(k).flush();
+	// writers.get(k).close();
+	// }
+	// kw.flush();
+	// kw.close();
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// }
+
 }
