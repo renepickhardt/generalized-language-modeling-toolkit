@@ -2,10 +2,9 @@ package de.typology.googleNgrams;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -21,15 +20,8 @@ public class NGramNormalizer {
 	private String line;
 
 	public NGramNormalizer(String input, String output) {
-		try {
-			this.reader = new BufferedReader(new FileReader(input));
-			this.writer = new BufferedWriter(new FileWriter(output));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		this.reader = IOHelper.openReadFile(input);
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
 
 	public void normalize() {

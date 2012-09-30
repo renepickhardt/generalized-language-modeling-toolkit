@@ -3,7 +3,6 @@ package de.typology.googleNgrams;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,8 +49,8 @@ public class NGramMerger {
 			System.out.println("unzip " + file + " -d " + input);
 			SystemHelper.runUnixCommand("unzip " + file + " -d " + input);
 			System.out.println("merge file");
-			reader = new BufferedReader(new FileReader(file.getAbsolutePath()
-					.substring(0, file.getAbsolutePath().length() - 4)));
+			reader = IOHelper.openReadFile(file.getAbsolutePath().substring(0,
+					file.getAbsolutePath().length() - 4));
 			writer = new BufferedWriter(new FileWriter(output,/* append */true));
 
 			// read first line

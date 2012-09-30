@@ -14,16 +14,12 @@ import static de.typology.googleNgrams.NGramToken.SEMICOLON;
 import static de.typology.googleNgrams.NGramToken.STRING;
 import static de.typology.googleNgrams.NGramToken.WS;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
 import de.typology.lexerParser.RecognitionException;
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -41,11 +37,8 @@ public class NGramRecognizer implements Iterator<NGramToken> {
 	private int[] buffer = new int[10000]; // lexeme buffer
 	private int index = 0; // length of lexeme
 
-	public NGramRecognizer(String path) throws UnsupportedEncodingException,
-			FileNotFoundException {
-		Reader r = new InputStreamReader(new FileInputStream(path));
-		this.reader = new BufferedReader(r);
-		// set language specific header
+	public NGramRecognizer(String input) {
+		this.reader = IOHelper.openReadFile(input);
 	}
 
 	// Extract lexeme from buffer

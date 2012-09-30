@@ -12,13 +12,11 @@ import static de.typology.googleNgrams.NGramToken.SEMICOLON;
 import static de.typology.googleNgrams.NGramToken.STRING;
 import static de.typology.googleNgrams.NGramToken.WS;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -35,10 +33,10 @@ public class NGramParser {
 	private NGramToken current;
 	private Writer writer;
 
-	public NGramParser(NGramRecognizer recognizer) throws FileNotFoundException {
+	public NGramParser(NGramRecognizer recognizer) {
 		this.recognizer = recognizer;
-		this.writer = new OutputStreamWriter(new FileOutputStream(
-				Config.get().parsedGoogleNGramsOutputPath));
+		this.writer = IOHelper.openWriteFile(
+				Config.get().parsedGoogleNGramsOutputPath, 32 * 1024 * 1024);
 	}
 
 	public void parse() throws IOException {
