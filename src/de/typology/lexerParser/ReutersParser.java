@@ -11,6 +11,7 @@ import static de.typology.lexerParser.ReutersToken.FULLSTOP;
 import static de.typology.lexerParser.ReutersToken.HYPHEN;
 import static de.typology.lexerParser.ReutersToken.P;
 import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
+import static de.typology.lexerParser.ReutersToken.QUOTATIONMARK;
 import static de.typology.lexerParser.ReutersToken.SEMICOLON;
 import static de.typology.lexerParser.ReutersToken.STRING;
 import static de.typology.lexerParser.ReutersToken.TEXT;
@@ -18,11 +19,11 @@ import static de.typology.lexerParser.ReutersToken.WS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -41,10 +42,10 @@ public class ReutersParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public ReutersParser(ArrayList<File> fileList, String path)
+	public ReutersParser(ArrayList<File> fileList, String output)
 			throws FileNotFoundException {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(path));
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 
 	}
 
@@ -80,6 +81,9 @@ public class ReutersParser {
 								if (this.current == COLON) {
 									this.write(": ");
 								}
+								if (this.current == QUOTATIONMARK) {
+									this.write("'");
+								}
 								if (this.current == HYPHEN) {
 									this.write("-");
 								}
@@ -107,6 +111,7 @@ public class ReutersParser {
 				}
 			}
 			this.write("\n");// new line after page
+			this.writer.flush();
 		}
 		this.writer.close();
 	}

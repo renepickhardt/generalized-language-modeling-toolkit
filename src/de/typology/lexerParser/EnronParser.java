@@ -20,11 +20,11 @@ import static de.typology.lexerParser.EnronToken.WS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -43,10 +43,10 @@ public class EnronParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public EnronParser(ArrayList<File> fileList, String path)
+	public EnronParser(ArrayList<File> fileList, String output)
 			throws FileNotFoundException {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(path));
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 
 	}
 
@@ -128,7 +128,6 @@ public class EnronParser {
 				if (this.current == COLON) {
 					this.write(":");
 				}
-
 				if (this.current == QUOTATIONMARK) {
 					this.write("'");
 				}
@@ -142,6 +141,7 @@ public class EnronParser {
 			}
 			this.write("\n");
 			this.write("<ENDOFMAIL>");// marks end of the file
+			this.writer.flush();
 			this.write("\n");
 		}
 		this.writer.close();

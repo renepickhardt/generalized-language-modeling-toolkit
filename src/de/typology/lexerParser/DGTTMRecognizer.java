@@ -74,11 +74,19 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		// add new languages here
 	}
 
-	public DGTTMRecognizer(File f) throws UnsupportedEncodingException,
-			FileNotFoundException {
-		Reader r = new InputStreamReader(new FileInputStream(
-				f.getAbsolutePath()), "UnicodeLittle");
-		this.reader = new BufferedReader(r);
+	public DGTTMRecognizer(File f) {
+		Reader r;
+		try {
+			r = new InputStreamReader(new FileInputStream(f.getAbsolutePath()),
+					"UnicodeLittle");
+			this.reader = new BufferedReader(r);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// set language specific header
 		keywords.put(tuvs.get(Config.get().DGTTMLanguage), TUV);
 	}
@@ -103,7 +111,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	// Read one more char.
 	// Add previous char, if any, to the buffer.
 	//
-	private void read() throws IOException {
+	private void read() {
 		if (this.eof) {
 			throw new IllegalStateException();
 		}
@@ -115,7 +123,12 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 				// reset buffer if token gets too big (very unlikely to happen)
 			}
 		}
-		this.lookahead = this.reader.read();
+		try {
+			this.lookahead = this.reader.read();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	// Recognize a token
@@ -171,6 +184,12 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			this.token = COLON;
 			return;
 		}
+		// recognize quotation mark
+		if (this.lookahead == 39) {// 39='
+			this.read();
+			this.token = QUOTATIONMARK;
+			return;
+		}
 
 		// Recognize hyphen
 		if (this.lookahead == '-') {
@@ -186,22 +205,16 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		}
 
 		// Recognize exclamation mark
-		if (this.lookahead == '!') {
+		if (this.lookahead == '!' || this.lookahead == '¡') {
 			this.read();
 			this.token = EXCLAMATIONMARK;
 			return;
 		}
 
 		// Recognize question mark
-		if (this.lookahead == '?') {
+		if (this.lookahead == '?' || this.lookahead == '¿') {
 			this.read();
 			this.token = QUESTIONMARK;
-			return;
-		}
-		// recognize quotation mark
-		if (this.lookahead == 39) {// 39='
-			this.read();
-			this.token = QUOTATIONMARK;
 			return;
 		}
 

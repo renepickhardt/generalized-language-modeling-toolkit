@@ -11,18 +11,18 @@ import static de.typology.lexerParser.DGTTMToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.DGTTMToken.FULLSTOP;
 import static de.typology.lexerParser.DGTTMToken.HYPHEN;
 import static de.typology.lexerParser.DGTTMToken.QUESTIONMARK;
+import static de.typology.lexerParser.DGTTMToken.QUOTATIONMARK;
 import static de.typology.lexerParser.DGTTMToken.SEMICOLON;
 import static de.typology.lexerParser.DGTTMToken.STRING;
 import static de.typology.lexerParser.DGTTMToken.TUV;
 import static de.typology.lexerParser.DGTTMToken.WS;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -41,13 +41,12 @@ public class DGTTMParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public DGTTMParser(ArrayList<File> fileList, String path)
-			throws FileNotFoundException {
+	public DGTTMParser(ArrayList<File> fileList, String output) {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(path));
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
 
-	public void parse() throws IOException {
+	public void parse() {
 		for (File f : this.fileList) {
 			this.recognizer = new DGTTMRecognizer(f);
 			// writer.write(f.toString());
@@ -83,6 +82,9 @@ public class DGTTMParser {
 								if (this.current == COLON) {
 									this.write(": ");
 								}
+								if (this.current == QUOTATIONMARK) {
+									this.write("'");
+								}
 								if (this.current == HYPHEN) {
 									this.write("-");
 								}
@@ -90,10 +92,10 @@ public class DGTTMParser {
 									this.write(" ");
 								}
 								if (this.current == QUESTIONMARK) {
-									this.write("? ");
+									this.write(this.lexeme);
 								}
 								if (this.current == EXCLAMATIONMARK) {
-									this.write("! ");
+									this.write(this.lexeme);
 								}
 								if (this.current == BRACES) {
 									while (this.recognizer.hasNext()
@@ -109,11 +111,22 @@ public class DGTTMParser {
 				}
 			}
 			this.write("\n");// new line after file
+			try {
+				this.writer.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		this.writer.close();
+		try {
+			this.writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
-	public void read() throws IOException {
+	public void read() {
 		if (this.recognizer.hasNext()) {
 			// this.previous = this.current;
 			this.current = this.recognizer.next();

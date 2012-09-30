@@ -16,7 +16,7 @@ public class ReutersMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		long startTime = System.nanoTime();
+		long startTime = System.currentTimeMillis();
 		System.out.println("getting file list");
 		fileList = new ArrayList<File>();
 		getFileList(new File(Config.get().reutersXmlPath));
@@ -33,10 +33,10 @@ public class ReutersMain {
 		wn.normalize();
 		System.out.println("cleanup done");
 		System.out.println("generate indicator file");
-		long endTime = System.nanoTime();
-		long time = Math.round((double) (endTime - startTime) / 1000) / 1000;
+		long endTime = System.currentTimeMillis();
+		long time = (endTime - startTime) / 1000;
 		File done = new File(Config.get().normalizedReutersOutputPath
-				+ "IsDone." + time + "ms");
+				+ "IsDone." + time + "s");
 		done.createNewFile();
 		System.out.println("done");
 	}

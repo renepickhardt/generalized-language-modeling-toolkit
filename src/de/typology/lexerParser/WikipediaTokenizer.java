@@ -239,6 +239,13 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			return;
 		}
 
+		// recognize quotation mark
+		if (this.lookahead == 39) {// 39='
+			this.read();
+			this.token = QUOTATIONMARK;
+			return;
+		}
+
 		// Recognize underscore
 		if (this.lookahead == '_') {
 			this.read();
@@ -281,19 +288,20 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.token = EXCLAMATIONMARK;
 			return;
 		}
+		// Recognize exclamation mark
+		if (this.lookahead == '¡') {
+			this.read();
+			this.token = EXCLAMATIONMARK;
+			return;
+		}
 
 		// Recognize question mark
-		if (this.lookahead == '?') {
+		if (this.lookahead == '?' || this.lookahead == '¿') {
 			this.read();
 			this.token = QUESTIONMARK;
 			return;
 		}
-		// Recognize quotation mark
-		if (this.lookahead == '\'') {
-			this.read();
-			this.token = QUOTATIONMARK;
-			return;
-		}
+
 		// Recognize vertical bar
 		if (this.lookahead == '|') {
 			this.read();
