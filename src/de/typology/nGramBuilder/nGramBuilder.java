@@ -19,34 +19,32 @@ public class nGramBuilder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		long startTime = System.currentTimeMillis();
+		long endTime = 0;
+		long sek = 0;
 		new File(Config.get().typologyEdgesPathNotAggregated).mkdirs();
+
 		String[] letters = countMostFrequentStartingLetters(62);
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
+		IOHelper.strongLog(sek + " seconds to: count most frequent letters");
+
 		createNGramChunks(Config.get().germanWikiText);
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
+		IOHelper.strongLog(sek + " seconds to: finnish creating first chunks");
 
-		BufferedReader keys = IOHelper.openReadFile(Config.get().nGramKeyFile);
-		String line = "";
-		try {
-			while ((line = keys.readLine()) != null) {
-				File f = new File(Config.get().nGramsNotAggregatedPath + line);
-				if (!f.exists()) {
-					continue;
-				}
-				if (f.length() > 512 * 1024 * 1024) {
-					System.out.println("need to further split file: " + line);
-					createDetailedNGramChunks(Config.get().nGramsNotAggregatedPath
-							+ line);
-					f.delete();
-				} else {
-					System.out.println("file '" + line + "' can be aggregated");
-				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		createSecendLevelNGramChunks();
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
+		IOHelper.strongLog(sek
+				+ " seconds to: finnish creating detailed ngram chunks");
 
-		// createNGramChunks();
-		// aggregateNGrams();
+		aggregateNGrams();
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
+		IOHelper.strongLog(sek + " seconds to: finnish aggregating ngrams");
+
 		// for (int i = 1; i < 5; i++) {
 		// new File(Config.get().typologyEdgesPathNotAggregated + i
 		// + "/aggregated/").mkdirs();
@@ -56,6 +54,45 @@ public class nGramBuilder {
 		// }
 	}
 
+	private static void createSecendLevelNGramChunks() {
+		BufferedReader keys = IOHelper.openReadFile(Config.get().nGramKeyFile);
+		String line = "";
+
+		HashMap<String, Integer> usedKeys = new HashMap<String, Integer>();
+
+		try {
+			while ((line = keys.readLine()) != null) {
+				File f = new File(Config.get().nGramsNotAggregatedPath + line);
+				if (!f.exists()) {
+					continue;
+				}
+				if (f.length() > 512 * 1024 * 1024) {
+					IOHelper.log("need to further split file: " + line);
+					createDetailedNGramChunks(
+							Config.get().nGramsNotAggregatedPath + line,
+							usedKeys);
+					// TODO: aus keyfile loeschen
+					f.delete();
+				} else {
+					usedKeys.put(line, 1);
+					IOHelper.log("file '" + line + "' can be aggregated");
+					// TODO:aggregieren sollte so bleiben wie vorher nur erst
+					// wenn alle kleineren chunks existieren.
+				}
+			}
+			keys.close();
+			BufferedWriter keyFile = IOHelper
+					.openWriteFile(Config.get().nGramKeyFile);
+			for (String k : usedKeys.keySet()) {
+				keyFile.write(k + "\n");
+			}
+			keyFile.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	private static void aggregateNGrams() {
 		HashMap<String, BufferedReader> readers = new HashMap<String, BufferedReader>();
 		BufferedReader keyReader = IOHelper
@@ -63,7 +100,15 @@ public class nGramBuilder {
 		try {
 			String key = "";
 			while ((key = keyReader.readLine()) != null) {
-				System.out.println("processing key: " + key);
+				IOHelper.log("processing key: " + key);
+
+				File f = new File(Config.get().nGramsNotAggregatedPath + key);
+				if (!f.exists()) {
+					IOHelper.log(key
+							+ " not found. probably becuase file was to big and got split into further chunks");
+					continue;
+				}
+
 				BufferedReader br = IOHelper
 						.openReadFile(Config.get().nGramsNotAggregatedPath// "/var/lib/datasets/out/wikipedia/letteroutput/"
 								+ key);
@@ -85,9 +130,9 @@ public class nGramBuilder {
 				}
 				System.out.println("aggregation done for key: " + key
 						+ "\nstart writing to file");
-				BufferedWriter bw = IOHelper
-						.openWriteFile(Config.get().nGramsAggregatedPath// "/var/lib/datasets/out/wikipedia/letteroutput/aggregated/"
-								+ key);
+				BufferedWriter bw = IOHelper.openWriteFile(
+						Config.get().nGramsAggregatedPath// "/var/lib/datasets/out/wikipedia/letteroutput/aggregated/"
+								+ key, 32 * 1024 * 1024);
 				int nCnt = 0;
 				for (String nGram : nGrams.keySet()) {
 					bw.write(nGram + "\t#" + nGrams.get(nGram) + "\n");
@@ -99,6 +144,10 @@ public class nGramBuilder {
 				}
 				bw.flush();
 				bw.close();
+				br.close();
+				// DELETE THE UNAGGREGATED FILE TO SAVE DISKSPACE
+				f.delete();
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -163,7 +212,7 @@ public class nGramBuilder {
 
 	}
 
-	private static void createDetailedNGramChunks(String fromFile) {
+	private static void createDetailedNGramChunks(String fromFile, HashMap<String, Integer> usedKeys) {
 		String[] mostFrequentLetters = countMostFrequentStartingLetters(62);
 
 		BufferedReader br = IOHelper.openReadFile(fromFile);// "/var/lib/datasets/out/wikipedia/testfile.txt");
@@ -196,17 +245,18 @@ public class nGramBuilder {
 							+ cnt);
 				}
 			}
-			BufferedWriter kw = IOHelper
-					.openAppendFile(Config.get().nGramKeyFile);
+//			BufferedWriter kw = IOHelper
+//					.openAppendFile(Config.get().nGramKeyFile);
 			for (String k : writers.keySet()) {
 				String[] tmp = fromFile.split("/");
 				String prefix = tmp[tmp.length - 1];
-				kw.write(prefix + k + "\n");
+				usedKeys.put(prefix+k, 1_);
+//				kw.write(prefix + k + "\n");
 				writers.get(k).flush();
 				writers.get(k).close();
 			}
-			kw.flush();
-			kw.close();
+//			kw.flush();
+//			kw.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
