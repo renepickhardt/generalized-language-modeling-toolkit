@@ -15,7 +15,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class IOHelper {
@@ -23,7 +22,6 @@ public class IOHelper {
 	private static boolean d = true;
 	private static BufferedWriter logFile = openAppendFile("Complet.log");
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
-	private static ArrayList<File> fileList = new ArrayList<File>();
 
 	/**
 	 * faster access to a buffered reader
@@ -63,8 +61,19 @@ public class IOHelper {
 		return new BufferedWriter(filestream);
 	}
 
+	public static BufferedWriter openWriteFile(String filename, int bufferSize) {
+		FileWriter filestream = null;
+		try {
+			filestream = new FileWriter(filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return new BufferedWriter(filestream, bufferSize);
+	}
+
 	/**
-	 * Faster access to a bufferedWriter that appends to a file
+	 * Faster access to a bufferedWriter that appands to a fil
 	 * 
 	 * @param filename
 	 * @return buffered writer which can be used for output
@@ -174,7 +183,7 @@ public class IOHelper {
 
 	/**
 	 * @param path
-	 *            : file path to the directory that needs to be deleted
+	 *            : filepath to the directory that needs to be deleted
 	 * @return true if successful
 	 */
 	public static boolean deleteDirectory(File path) {
@@ -189,29 +198,5 @@ public class IOHelper {
 			}
 		}
 		return path.delete();
-	}
-
-	/**
-	 * @param path
-	 *            : file path to the directory
-	 * @return list of files contained in given directory
-	 */
-	public static ArrayList<File> getDirectory(File path) {
-		fileList.clear();
-		return getFileList(path);
-	}
-
-	private static ArrayList<File> getFileList(File path) {
-		File[] files = path.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					getDirectory(file);
-				} else {
-					fileList.add(file);
-				}
-			}
-		}
-		return fileList;
 	}
 }
