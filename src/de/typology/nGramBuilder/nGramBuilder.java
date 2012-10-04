@@ -13,6 +13,67 @@ import java.util.HashMap;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
+/**
+ * INPUT: Huge textfile with clean text.
+ * 
+ * OUTPUT: N grams as well as typology edges of distance 1,...,n
+ * 
+ * REMARK1: the N Gram Files are not sorted by frequency!
+ * 
+ * REMARK2: See Below to know which variables can and should be set in the
+ * config file.
+ * 
+ * REMARK3: this programm can work on relativly few memory (less than 1 GB
+ * though 6 GB is suggested) it does not run into "too many open files issues",
+ * should be able to process almost 1 TB of text into N-grams and is also
+ * relatively fast. The programm will not scale to arbitrary files though this
+ * could be easily achieved by doing aggregation steps more frequently and
+ * splitting ngram chunks further down. Even more speed could probably be
+ * obtained by introducing good multi threading.
+ * 
+ * To achieve the output the code does the following:
+ * 
+ * # reading text from some file and finding the top k most frequent case
+ * sensitive starting letters.
+ * 
+ * # writing out all possible N grams to files. in the format
+ * w_1\tw_2\t...\tw_n\nThe N grams are written to a file starting with the
+ * respective starting letter or are saved to a file 'other'
+ * 
+ * # looks through the N gram files. If a file is bigger than X MB (in our case
+ * 512 MB) the file is divided into further chunks that correspond to the start
+ * letter of the second word of the N gram. For reusability this function works
+ * on any file with the format w_1\tw_2\t...\n
+ * 
+ * # an aggregation function will be able to aggregate common lines in the
+ * produced files. This aggregation process is done via Hashmaps in Memory. One
+ * reason why the unaggregated N gram Chunks need to be small and fit into
+ * memory. The Format of the aggregation process is: w_1\tw_2\t...\tw_n\t#cnt\n
+ * 
+ * # now the typology edges are created. This is done in a similar manner as the
+ * N Grams but for reusability issues creation of N Grams and Typology edges is
+ * seperated
+ * 
+ * # first from every N Gram typology edges of distance 1,2,...,n-1 are written
+ * to files named with the starting letter of the first word. Those edges also
+ * take the count of the N Gram into the file format: w_1\tw_2\t#cnt. Every
+ * typology edge type has its own folder with its files.
+ * 
+ * # Now the edges are further divided if necessary and afterwards aggregated
+ * with the same methods that have been used for the N Grams.
+ * 
+ * aggregateFile(String inputFileWithPath, String outputFileWithPath); (in order
+ * to be general this function needs also unaggregated ngrams with #1 at the end
+ * or with a boolean switch flag)
+ * 
+ * buildFurtherChunks(String inputFileWithPath, String outputPath)
+ * 
+ * buildFurtherChunks(String inputPath)
+ * 
+ * @author rpickhardt
+ * 
+ */
+
 public class nGramBuilder {
 
 	/**
