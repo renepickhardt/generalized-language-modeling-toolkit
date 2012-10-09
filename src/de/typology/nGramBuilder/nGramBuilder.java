@@ -66,6 +66,10 @@ import de.typology.utils.IOHelper;
  * to be general this function needs also unaggregated ngrams with #1 at the end
  * or with a boolean switch flag)
  * 
+ * countMostFrequentLetters()
+ * 
+ * createUnaggregatedNGramChunks(String fromFile, String toPath)
+ * 
  * buildFurtherChunks(String inputFileWithPath, String outputPath)
  * 
  * buildFurtherChunks(String inputPath)
