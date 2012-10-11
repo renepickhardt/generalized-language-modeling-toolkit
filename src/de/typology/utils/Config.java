@@ -38,6 +38,8 @@ public class Config extends Properties {
 	public String letterGraph;
 	public int keystrokesWindowSize;
 	public int nGramLength;
+	public int fileChunkThreashhold;
+	public int memoryLimitForWritingFiles;
 	public String ngramDownloadPath;
 	public String ngramDownloadOutputPath;
 	public String nGramKeyFile;

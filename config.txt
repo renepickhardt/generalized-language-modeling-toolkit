@@ -55,3 +55,6 @@ nGramsAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/
 #CREATE TYPOLOGY EDGES
 typologyEdgesPathNotAggregated = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/typoedges/
 
+#ChunkCreator class
+fileChunkThreashhold = 536870912
+memoryLimitForWritingFiles = 8388608

@@ -15,19 +15,9 @@ public class Aggregator {
 
 	public boolean aggregateNGrams(String sourcePath,
 			final String fileExtension, int numberOfThreads) {
-		File dir = new File(sourcePath);
-		if (!dir.isDirectory()) {
-			IOHelper.strongLog("error in aggregateNGrams specified argument sourcePath: "
-					+ sourcePath + " is not a directory");
-			return false;
-		}
-		if (!fileExtension.startsWith(".")) {
-			IOHelper.strongLog("error in aggregateNGrams specified argument fileExtension: "
-					+ fileExtension
-					+ " is not a proper fileExtension e.g. it does not start with a \".\"");
-			return false;
-		}
-		File[] files = dir.listFiles();
+
+		File[] files = IOHelper.getAllFilesInDirWithExtension(sourcePath,
+				fileExtension, this.getClass().getName() + "aggregateNGrams");
 
 		Parallelizer pll = new Parallelizer(numberOfThreads);
 		for (File f : files) {
@@ -96,7 +86,7 @@ public class Aggregator {
 						br.close();
 						// DELETE THE UNAGGREGATED FILE TO SAVE DISKSPACE
 						File f = new File(fullQualifiedFileName);
-						f.delete();
+						// f.delete();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

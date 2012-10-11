@@ -15,7 +15,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class IOHelper {
 	// d = debug mode set true if debugg messages should be displayed
@@ -42,6 +44,89 @@ public class IOHelper {
 			return null;
 		}
 		return br;
+	}
+
+	/**
+	 * this function returns all files in a directory that have a certain
+	 * extension. it also checks if the argument is a directory and the
+	 * extension is a proper extension
+	 * 
+	 * @param sourcePath
+	 * @param fileExtension
+	 * @param calledFunctionName
+	 * @return
+	 */
+	public static File[] getAllFilesInDirWithExtension(String sourcePath,
+			String fileExtension, String calledFunctionName) {
+		File dir = new File(sourcePath);
+		if (!dir.isDirectory()) {
+			IOHelper.strongLog("error in " + calledFunctionName
+					+ " . specified argument sourcePath: " + sourcePath
+					+ " is not a directory");
+			return null;
+		}
+		if (!fileExtension.startsWith(".")) {
+			IOHelper.strongLog("error in "
+					+ calledFunctionName
+					+ " specified argument fileExtension: "
+					+ fileExtension
+					+ " is not a proper fileExtension e.g. it does not start with a \".\"");
+			return null;
+		}
+		File[] files = dir.listFiles();
+
+		ArrayList<File> res = new ArrayList<File>();
+		for (File f : files) {
+			String fileName = f.getName();
+			if (!fileName.endsWith(fileExtension)) {
+				IOHelper.log(fileName
+						+ " is not an un aggregated ngram file. process next");
+				continue;
+			}
+			res.add(f);
+		}
+		return (File[]) res.toArray();
+	}
+
+	/**
+	 * opens buffered reader that are named after the oldFile + a letter from
+	 * the most common letters. the buffered readers are stored into a hashset
+	 * and returned. the memory of the buffered is set according to the flag
+	 * memoryLimitForWritingFiles in the config file
+	 * 
+	 * @param oldFile
+	 * @param letters
+	 * @return
+	 */
+	public static HashMap<String, BufferedWriter> createWriter(String oldFile,
+			String[] letters) {
+		IOHelper.log("create chunks for most common letters: "
+				+ letters.toString());
+		HashMap<String, BufferedWriter> writers = new HashMap<String, BufferedWriter>();
+		for (String letter : letters) {
+			String newFileName;
+			if (oldFile.contains(".")) {
+				newFileName = oldFile.replace(".", letter + ".");
+			} else {
+				newFileName = oldFile + letter + ".chk";
+			}
+			BufferedWriter bw = IOHelper.openWriteFile(newFileName,
+					Config.get().memoryLimitForWritingFiles);
+			writers.put(letter, bw);
+		}
+		String newFileName;
+		if (oldFile.contains(".")) {
+			newFileName = oldFile.replace(".", "other.");
+		} else {
+			newFileName = oldFile + "other.chk";
+		}
+
+		BufferedWriter bw = IOHelper.openWriteFile(newFileName,
+				Config.get().memoryLimitForWritingFiles);
+		writers.put("other", bw);
+
+		IOHelper.log("all chunks are created");
+		return writers;
 	}
 
 	public static BufferedReader openReadFile(String filename, int bufferSize) {
