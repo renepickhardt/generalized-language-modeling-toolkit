@@ -29,7 +29,8 @@ import de.typology.utils.IOHelper;
  * relatively fast. The programm will not scale to arbitrary files though this
  * could be easily achieved by doing aggregation steps more frequently and
  * splitting ngram chunks further down. Even more speed could probably be
- * obtained by introducing good multi threading.
+ * obtained by introducing good multi threading. Now multithreading is included
+ * by the code of http://ostermiller.org/utils/Parallelizer.html Thanks!
  * 
  * To achieve the output the code does the following:
  * 
@@ -37,7 +38,7 @@ import de.typology.utils.IOHelper;
  * sensitive starting letters.
  * 
  * # writing out all possible N grams to files. in the format
- * w_1\tw_2\t...\tw_n\nThe N grams are written to a file starting with the
+ * w_1\tw_2\t...\tw_n\n The N grams are written to a file starting with the
  * respective starting letter or are saved to a file 'other'
  * 
  * # looks through the N gram files. If a file is bigger than X MB (in our case
@@ -87,6 +88,16 @@ public class nGramBuilder {
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
 		long sek = 0;
+
+		Aggregator a = new Aggregator();
+
+		a.aggregateNGrams("/var/lib/datasets/test", ".uan", 3);
+
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
+		IOHelper.strongLog(sek + " aggregate typo edges");
+
+		System.exit(0);
 		new File(Config.get().typologyEdgesPathNotAggregated).mkdirs();
 
 		String[] letters = countMostFrequentStartingLetters(62);
