@@ -34,22 +34,28 @@ public class NGramChunkCreator extends ChunkCreator {
 				for (int i = Config.get().nGramLength; i < tokens.length; i++) {
 					boolean first = true;
 					BufferedWriter bw = null;
-					for (int j = i - Config.get().nGramLength; j < i; j++) {
-						if (first) {
-							String token = tokens[i - Config.get().nGramLength];
-							String key = null;
-							key = token.substring(0, 1);
-							bw = writers.get(key);
-							if (bw == null) {
-								key = "other";
+					try {
+
+						for (int j = i - Config.get().nGramLength; j < i; j++) {
+							if (first) {
+								String token = tokens[i
+										- Config.get().nGramLength];
+								String key = null;
+								key = token.substring(0, 1);
 								bw = writers.get(key);
+								if (bw == null) {
+									key = "other";
+									bw = writers.get(key);
+								}
+								first = false;
 							}
-							first = false;
+							bw.write(tokens[j]);
+							if (j < i - 1) {
+								bw.write("\t");
+							}
 						}
-						bw.write(tokens[j]);
-						if (j < i - 1) {
-							bw.write("\t");
-						}
+					} catch (IndexOutOfBoundsException e) {
+						continue;
 					}
 					bw.write("\t#1\n");
 				}

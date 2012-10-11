@@ -418,6 +418,9 @@ public class nGramBuilder {
 				cnt++;
 				String[] tokens = line.split(" ");
 				for (String token : tokens) {
+					if (token == null || token.length() < 1) {
+						continue;
+					}
 					String key = token.substring(0, 1);
 					Integer c = letters.get(key);
 					if (c == null) {

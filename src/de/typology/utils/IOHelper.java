@@ -113,7 +113,7 @@ public class IOHelper {
 			if (oldFile.contains(".")) {
 				newFileName = oldFile.replace(".", letter + ".");
 			} else {
-				newFileName = oldFile + letter + ".chk";
+				newFileName = oldFile + "/" + letter + ".chk";
 			}
 			BufferedWriter bw = IOHelper.openWriteFile(newFileName,
 					Config.get().memoryLimitForWritingFiles);
@@ -123,7 +123,7 @@ public class IOHelper {
 		if (oldFile.contains(".")) {
 			newFileName = oldFile.replace(".", "other.");
 		} else {
-			newFileName = oldFile + "other.chk";
+			newFileName = oldFile + "/" + "other.chk";
 		}
 
 		BufferedWriter bw = IOHelper.openWriteFile(newFileName,
