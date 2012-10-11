@@ -88,13 +88,6 @@ public class nGramBuilder {
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
 		long sek = 0;
-		// Aggregator a = new Aggregator();
-		// a.aggregateNGrams("/var/lib/datasets/test", ".uan", 3);
-		// endTime = System.currentTimeMillis();
-		// sek = (endTime - startTime) / 1000;
-		// IOHelper.strongLog(sek + " aggregate typo edges");
-		//
-		// System.exit(0);
 
 		new File(Config.get().typologyEdgesPathNotAggregated).mkdirs();
 		String[] letters = countMostFrequentStartingLetters(62);
@@ -117,7 +110,6 @@ public class nGramBuilder {
 
 		Aggregator a = new Aggregator();
 		a.aggregateNGrams(Config.get().nGramsNotAggregatedPath, ".chk", 3);
-		// aggregateNGrams();
 		endTime = System.currentTimeMillis();
 		sek = (endTime - startTime) / 1000;
 		IOHelper.strongLog(sek + " seconds to: finnish aggregating ngrams");

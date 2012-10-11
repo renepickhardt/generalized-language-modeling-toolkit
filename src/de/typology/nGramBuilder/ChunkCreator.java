@@ -38,6 +38,9 @@ public class ChunkCreator {
 						+ ".createSecondLevelChunks");
 
 		for (File f : files) {
+			if (f == null) {
+				continue;
+			}
 			if (!f.exists()) {
 				continue;
 			}
@@ -47,6 +50,7 @@ public class ChunkCreator {
 				// idea since the task here is very disk intensive
 				this.CreateDetailedChunks(
 						sourcePath + f.separator + f.getName(), fileExtension);
+				f.delete();
 			} else {
 				IOHelper.log("file '" + f.getName()
 						+ "' is ready to be aggregated");
@@ -55,7 +59,7 @@ public class ChunkCreator {
 		return true;
 	}
 
-	public boolean CreateDetailedChunks(String sourceFile, String fileExtension) {
+	private boolean CreateDetailedChunks(String sourceFile, String fileExtension) {
 		BufferedReader br = IOHelper.openReadFile(sourceFile);
 		String line = "";
 		int cnt = 0;

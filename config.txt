@@ -49,11 +49,11 @@ testDb = /var/lib/databases/degooglengrams.db
 
 #BUILD NGRAMS FROM WIKI
 nGramKeyFile = /var/lib/datasets/out/wikipedia/letteroutput/keys.txt
-nGramsNotAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput/
-nGramsAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/
+nGramsNotAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput
+nGramsAggregatedPath = /var/lib/datasets/out/wikipedia/letteroutput/aggregated
 
 #CREATE TYPOLOGY EDGES
-typologyEdgesPathNotAggregated = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/typoedges/
+typologyEdgesPathNotAggregated = /var/lib/datasets/out/wikipedia/letteroutput/aggregated/typoedges
 
 #ChunkCreator class
 fileChunkThreashhold = 536870912

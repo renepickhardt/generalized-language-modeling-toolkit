@@ -80,12 +80,17 @@ public class IOHelper {
 			String fileName = f.getName();
 			if (!fileName.endsWith(fileExtension)) {
 				IOHelper.log(fileName
-						+ " is not an un aggregated ngram file. process next");
+						+ " is not an unaggregated ngram file. process next");
 				continue;
 			}
 			res.add(f);
 		}
-		return (File[]) res.toArray();
+		// File[] retArray = new File[res.size()];
+		// for (int i = 0; i < res.size(); i++) {
+		// retArray[0] = res.get(i).getAbsoluteFile();
+		// }
+		File[] array = res.toArray(new File[res.size()]);
+		return array;
 	}
 
 	/**

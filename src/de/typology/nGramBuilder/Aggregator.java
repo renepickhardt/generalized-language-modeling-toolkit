@@ -86,9 +86,8 @@ public class Aggregator {
 						br.close();
 						// DELETE THE UNAGGREGATED FILE TO SAVE DISKSPACE
 						File f = new File(fullQualifiedFileName);
-						// f.delete();
+						// TODO: comment in! f.delete();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					IOHelper.strongLog("\t\t\tsuccessfully aggregated: "
