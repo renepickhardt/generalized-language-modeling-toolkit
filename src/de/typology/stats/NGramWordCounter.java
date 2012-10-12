@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import java.util.TreeMap;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class WordCounter {
+public class NGramWordCounter {
 	private static ArrayList<File> files;
 	private BufferedReader reader;
 	private BufferedWriter wordsWriter;
@@ -25,7 +26,6 @@ public class WordCounter {
 	private TreeMap<String, Integer> sortedWordMap;
 	private String line;
 	private long wordCount;
-	private long wordCountCheck;
 
 	/**
 	 * @param args
@@ -41,7 +41,7 @@ public class WordCounter {
 			String filePathCut = file.getAbsolutePath().substring(0,
 					file.getAbsolutePath().length() - 4);
 
-			WordCounter wC = new WordCounter(file.getAbsolutePath(),
+			NGramWordCounter wC = new NGramWordCounter(file.getAbsolutePath(),
 					filePathCut + "words.txt", filePathCut
 							+ "wordsdistribution.txt",
 					Config.get().wordCountStats);
@@ -59,7 +59,7 @@ public class WordCounter {
 		}
 	}
 
-	public WordCounter(String input, String wordsOutput,
+	public NGramWordCounter(String input, String wordsOutput,
 			String wordsDistributionOutput, String statsOutput)
 			throws IOException {
 		this.reader = IOHelper.openReadFile(input);
@@ -72,13 +72,7 @@ public class WordCounter {
 	private void printStats(File file, long sek) throws IOException {
 
 		this.statsWriter.write(file.getAbsolutePath() + ":" + "\n");
-		this.statsWriter.write("\t" + "total words: " + this.wordCount);
-		if (this.wordCountCheck == this.wordCount) {
-			this.statsWriter.write(" (checked)\n");
-		} else {
-			this.statsWriter.write(" (check failed: should be equal to:"
-					+ this.wordCountCheck + ")\n");
-		}
+		this.statsWriter.write("\t" + "total words: " + this.wordCount + "\n");
 		this.statsWriter.write("\t" + "size in bytes: " + file.length() + "\n");
 		this.statsWriter.write("\t" + "average size of one word in bytes: "
 				+ file.length() / this.wordCount + "\n");
@@ -95,7 +89,7 @@ public class WordCounter {
 	private final Comparator<String> StringComparator = new Comparator<String>() {
 		@Override
 		public int compare(String a, String b) {
-			if (WordCounter.this.wordMap.get(a) >= WordCounter.this.wordMap
+			if (NGramWordCounter.this.wordMap.get(a) >= NGramWordCounter.this.wordMap
 					.get(b)) {
 				return -1;
 			} else {
@@ -108,13 +102,17 @@ public class WordCounter {
 		this.wordMap = new HashMap<String, Integer>();
 
 		while ((this.line = this.reader.readLine()) != null) {
-			String[] words = this.line.split("\\s");
+			String[] splitLine = this.line.split("\t");
+			String[] words = Arrays.copyOfRange(splitLine, 0,
+					splitLine.length - 1);
+			String countWithRhomb = splitLine[splitLine.length - 1];
+			int count = Integer.parseInt(countWithRhomb.substring(1,
+					countWithRhomb.length()));
 			for (String word : words) {
-				this.wordCount++;
 				if (this.wordMap.containsKey(word)) {
-					this.wordMap.put(word, this.wordMap.get(word) + 1);
+					this.wordMap.put(word, this.wordMap.get(word) + count);
 				} else {
-					this.wordMap.put(word, 1);
+					this.wordMap.put(word, count);
 				}
 			}
 		}
@@ -138,7 +136,7 @@ public class WordCounter {
 			this.wordsWriter.write(entry.getKey() + "#" + entry.getValue()
 					+ "\n");
 			this.wordsWriter.flush();
-			this.wordCountCheck += entry.getValue();
+			this.wordCount += entry.getValue();
 			// for (int i = 0; i < 1000; i++) {
 			while (true) {
 				if ((entry = this.sortedWordMap.pollFirstEntry()) != null) {
@@ -152,7 +150,7 @@ public class WordCounter {
 						currentOccurrences = entry.getValue();
 						currentOccurrencesCount = 1;
 					}
-					this.wordCountCheck += entry.getValue();
+					this.wordCount += entry.getValue();
 					this.wordsWriter.write(entry.getKey() + "#"
 							+ entry.getValue() + "\n");
 					this.wordsWriter.flush();
