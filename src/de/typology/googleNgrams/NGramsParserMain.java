@@ -7,7 +7,9 @@ import de.typology.utils.Config;
 
 public class NGramsParserMain {
 	public static void main(String[] args) throws IOException {
-		long startTime = System.nanoTime();
+		long startTime = System.currentTimeMillis();
+		long endTime = 0;
+		long sek = 0;
 		NGramRecognizer recognizer = new NGramRecognizer(
 				Config.get().googleNgramsPath);
 		NGramParser parser = new NGramParser(recognizer);
@@ -21,10 +23,10 @@ public class NGramsParserMain {
 		ngn.normalize();
 		System.out.println("cleanup done");
 		System.out.println("generate indicator file");
-		long endTime = System.nanoTime();
-		long time = Math.round((double) (endTime - startTime) / 1000) / 1000;
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
 		File done = new File(Config.get().normalizedGoogleNgramsPath
-				+ "IsDone." + time + "ms");
+				+ "IsDone." + sek + "s");
 		done.createNewFile();
 		System.out.println("done");
 	}

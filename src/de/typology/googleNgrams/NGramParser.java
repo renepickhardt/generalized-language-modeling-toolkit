@@ -71,7 +71,7 @@ public class NGramParser {
 				this.write("'");
 			}
 			if (this.current == WS) {
-				this.write("\t");
+				this.write(" ");
 			}
 			if (this.current == LINESEPARATOR) {
 				this.write("\n");

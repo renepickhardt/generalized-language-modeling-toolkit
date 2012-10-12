@@ -3,6 +3,7 @@ package de.typology.googleNgrams;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 import de.typology.utils.IOHelper;
 
@@ -30,17 +31,17 @@ public class NGramNormalizer {
 				if (this.line.contains("-")) {
 					this.line = "";
 				}
-				this.line = this.line.replaceAll("\t+", "\t");
-				this.line = this.line.replaceAll("\t\\.", ".");
-				this.line = this.line.replaceAll("\t,", ",");
-				this.line = this.line.replaceAll("\t;", ";");
-				this.line = this.line.replaceAll("\t:", ":");
+				this.line = this.line.replaceAll(" +", " ");
+				this.line = this.line.replaceAll(" \\.", ".");
+				this.line = this.line.replaceAll(" ,", ",");
+				this.line = this.line.replaceAll(" ;", ";");
+				this.line = this.line.replaceAll(" :", ":");
 				// this.line = this.line.replaceAll("\t-", "-");
-				this.line = this.line.replaceAll("\t'", "'");
-				this.line = this.line.replaceAll("\t\\?", "\\?");
-				this.line = this.line.replaceAll("\t!", "!");
-				this.line = this.line.replaceAll("\t¿", "¿");
-				this.line = this.line.replaceAll("\t¡", "¡");
+				this.line = this.line.replaceAll(" '", "'");
+				this.line = this.line.replaceAll(" \\?", "\\?");
+				this.line = this.line.replaceAll(" !", "!");
+				this.line = this.line.replaceAll(" ¿", "¿");
+				this.line = this.line.replaceAll(" ¡", "¡");
 
 				this.line = this.line.replaceAll("\\.+", ".");
 				this.line = this.line.replaceAll(",+", ",");
@@ -68,13 +69,20 @@ public class NGramNormalizer {
 						break;
 					}
 				}
-				if (this.line.startsWith("\t")) {
+				if (this.line.startsWith(" ")) {
 					this.line = this.line.substring(1, this.line.length());
 				}
 
+				// change format from w1 ... w3\tcount\n to w1\t...w3\t#count\n
 				String[] splitLine = this.line.split("\\s");
 				if (splitLine.length > 2) {
-					this.writer.write(this.line + "\n");
+					for (String word : Arrays.copyOfRange(splitLine, 0,
+							splitLine.length - 1)) {
+						this.writer.write(word + "\t");
+					}
+					this.writer.write("#");
+					this.writer.write(splitLine[splitLine.length - 1]);
+					this.writer.write("\n");
 					this.writer.flush();
 				}
 			}
