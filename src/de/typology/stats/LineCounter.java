@@ -2,8 +2,10 @@ package de.typology.stats;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 import de.typology.utils.Config;
@@ -12,17 +14,23 @@ import de.typology.utils.IOHelper;
 public class LineCounter {
 	private BufferedReader reader;
 	private BufferedWriter writer;
+	private static ArrayList<File> files;
 
 	/**
 	 * @param args
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		LineCounter lC = new LineCounter(Config.get().lineCountInput,
-				Config.get().lineCountStats);
-		System.out.println("start counting");
-		lC.writeResult(Config.get().lineCountInput, lC.countLines());
-		System.out.println("done");
+		files = IOHelper.getFileList(new File(Config.get().wordCountInput));
+		for (File file : files) {
+			LineCounter lC = new LineCounter(file.getAbsolutePath(),
+					Config.get().lineCountStats);
+			System.out.println(file.getAbsolutePath() + ": ");
+			System.out.println("start counting");
+			lC.writeResult(file.getAbsolutePath(), lC.countLines());
+			System.out.println("done");
+		}
+
 	}
 
 	public LineCounter(String input, String output) throws IOException {
