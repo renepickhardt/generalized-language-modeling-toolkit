@@ -54,7 +54,7 @@ public class WordCounter {
 			wC.printWordsAndDistribution();
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;
-			wC.printStats(file.getAbsolutePath(), sek);
+			wC.printStats(file, sek);
 			System.out.println("done");
 		}
 	}
@@ -69,8 +69,9 @@ public class WordCounter {
 		this.statsWriter = new BufferedWriter(new FileWriter(statsOutput, true));
 	}
 
-	private void printStats(String info, long sek) throws IOException {
-		this.statsWriter.write(info + ":" + "\n");
+	private void printStats(File file, long sek) throws IOException {
+
+		this.statsWriter.write(file.getAbsolutePath() + ":" + "\n");
 		this.statsWriter.write("\t" + "total words: " + this.wordCount);
 		if (this.wordCountCheck == this.wordCount) {
 			this.statsWriter.write(" (checked)\n");
@@ -78,6 +79,9 @@ public class WordCounter {
 			this.statsWriter.write(" (check failed: should be equal to:"
 					+ this.wordCountCheck + ")\n");
 		}
+		this.statsWriter.write("\t" + "size in bytes: " + file.length() + "\n");
+		this.statsWriter.write("\t" + "average size of one word in bytes: "
+				+ file.length() / this.wordCount + "\n");
 		this.statsWriter.write("\t" + "unique words: " + this.wordMap.size()
 				+ "\n");
 		this.statsWriter.write("\t" + "seconds to generate stats: " + sek
