@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
 
 import de.typology.trainers.NGramReader;
@@ -24,6 +25,7 @@ public class IOHelper {
 	private static boolean d = true;
 	private static BufferedWriter logFile = openAppendFile("Complet.log");
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
+	private static ArrayList<File> files = new ArrayList<File>();
 
 	/**
 	 * faster access to a buffered reader
@@ -123,7 +125,7 @@ public class IOHelper {
 		}
 	}
 
-	/*
+	/**
 	 * function for error-output that is only displayed in debugmode
 	 * 
 	 * @param out
@@ -210,5 +212,30 @@ public class IOHelper {
 			}
 		}
 		return path.delete();
+	}
+
+	/**
+	 * @param path
+	 *            : filepath to a directory
+	 * @return Array of files contained in directory
+	 */
+	public static ArrayList<File> getFileList(File path) {
+		if (path.exists()) {
+			getFiles(path);
+		}
+		return files;
+	}
+
+	private static void getFiles(File f) {
+		File[] currentFiles = f.listFiles();
+		if (currentFiles != null) {
+			for (File file : currentFiles) {
+				if (file.isDirectory()) {
+					getFileList(file);
+				} else {
+					files.add(file);
+				}
+			}
+		}
 	}
 }

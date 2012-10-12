@@ -62,10 +62,10 @@ public class Config extends Properties {
 	public String testDb;
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;
-	public String wordCountOutput;
+	public String wordCountStats;
 	// used in de.typology.utils/LineCounter
 	public String lineCountInput;
-	public String lineCountOutput;
+	public String lineCountStats;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
