@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class WordCounter {
-	private static ArrayList<File> files;
 	private BufferedReader reader;
 	private BufferedWriter wordsWriter;
 	private BufferedWriter statsWriter;
@@ -33,30 +31,27 @@ public class WordCounter {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		files = IOHelper.getFileList(new File(Config.get().wordCountInput));
-		for (File file : files) {
-			long startTime = System.currentTimeMillis();
-			long endTime = 0;
-			long sek = 0;
-			String filePathCut = file.getAbsolutePath().substring(0,
-					file.getAbsolutePath().length() - 4);
+		long startTime = System.currentTimeMillis();
+		long endTime = 0;
+		long sek = 0;
+		String filePathCut = Config.get().wordCountInput.substring(0,
+				Config.get().wordCountInput.length() - 4);
 
-			WordCounter wC = new WordCounter(file.getAbsolutePath(),
-					filePathCut + "words.txt", filePathCut
-							+ "wordsdistribution.txt",
-					Config.get().wordCountStats);
-			System.out.println(file.getAbsolutePath() + ": ");
-			System.out.println("start counting");
-			wC.countWords();
-			System.out.println("counting done, start sorting");
-			wC.sortWordMap();
-			System.out.println("sorting done, start writing to file");
-			wC.printWordsAndDistribution();
-			endTime = System.currentTimeMillis();
-			sek = (endTime - startTime) / 1000;
-			wC.printStats(file, sek);
-			System.out.println("done");
-		}
+		WordCounter wC = new WordCounter(Config.get().wordCountInput,
+				filePathCut + "words.txt", filePathCut
+						+ "wordsdistribution.txt", Config.get().wordCountStats);
+		System.out.println(Config.get().wordCountInput + ": ");
+		System.out.println("start counting");
+		wC.countWords();
+		System.out.println("counting done, start sorting");
+		wC.sortWordMap();
+		System.out.println("sorting done, start writing to file");
+		wC.printWordsAndDistribution();
+		endTime = System.currentTimeMillis();
+		sek = (endTime - startTime) / 1000;
+		wC.printStats(new File(Config.get().wordCountInput), sek);
+		System.out.println("done");
+
 	}
 
 	public WordCounter(String input, String wordsOutput,
