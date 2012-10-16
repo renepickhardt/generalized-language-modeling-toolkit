@@ -34,7 +34,10 @@ public class Aggregator {
 					+ fullQualifiedFileName);
 			BufferedReader br = IOHelper.openReadFile(fullQualifiedFileName,
 					32 * 1024 * 1024);
-			HashMap<String, Integer> nGrams = new HashMap<String, Integer>();
+			HashMap<String, Integer> unEvenNGrams = new HashMap<String, Integer>();
+
+			HashMap<String, Integer> evenNGrams = new HashMap<String, Integer>();
+
 			String line = "";
 			int lCnt = 0;
 			try {
@@ -47,16 +50,46 @@ public class Aggregator {
 					}
 					String key = values[0];
 					Integer value = Integer.parseInt(values[1]);
-					Integer cnt = nGrams.get(key);
-					lCnt++;
-					if (cnt != null) {
-						nGrams.put(key, cnt + value);
-					} else {
-						nGrams.put(key, value);
+
+					try {
+						if (key.length() % 2 == 0) {
+							Integer cnt = evenNGrams.get(key);
+							lCnt++;
+							if (cnt != null) {
+								evenNGrams.put(key, cnt + value);
+							} else {
+								// TODO: kann nicht mehr als ca. 15. mio 5 grams
+								// speichern (in text form weniger als 700 MB in
+								// VM
+								// 2033
+								// MB obwohl vm mehr speicher hat.)
+								evenNGrams.put(key, value);
+							}
+						} else {
+							Integer cnt = unEvenNGrams.get(key);
+							lCnt++;
+							if (cnt != null) {
+								unEvenNGrams.put(key, cnt + value);
+							} else {
+								// TODO: kann nicht mehr als ca. 15. mio 5 grams
+								// speichern (in text form weniger als 700 MB in
+								// VM
+								// 2033
+								// MB obwohl vm mehr speicher hat.)
+								unEvenNGrams.put(key, value);
+							}
+						}
+					} catch (OutOfMemoryError e) {
+						IOHelper.strongLog(lCnt + "\t uneven:"
+								+ unEvenNGrams.size() + "\teven: "
+								+ evenNGrams.size());
+						break;
 					}
 					if (lCnt % 5000000 == 0) {
 						IOHelper.log(fullQualifiedFileName + "\t" + lCnt
-								+ " nGrams processed for aggregating");
+								+ " nGrams processed for aggregating\tuneven: "
+								+ unEvenNGrams.size() + "\teven: "
+								+ evenNGrams.size());
 					}
 				}
 				IOHelper.log("aggregation done for: " + fullQualifiedFileName
@@ -70,8 +103,9 @@ public class Aggregator {
 				BufferedWriter bw = IOHelper.openWriteFile(outFileName,
 						32 * 1024 * 1024);
 				int nCnt = 0;
-				for (String nGram : nGrams.keySet()) {
-					bw.write(nGram + "\t#" + nGrams.get(nGram) + "\n");
+
+				for (String nGram : evenNGrams.keySet()) {
+					bw.write(nGram + "\t#" + evenNGrams.get(nGram) + "\n");
 					nCnt++;
 					if (nCnt % 1000000 == 0) {
 						bw.flush();
@@ -80,6 +114,18 @@ public class Aggregator {
 					}
 				}
 				bw.flush();
+
+				for (String nGram : unEvenNGrams.keySet()) {
+					bw.write(nGram + "\t#" + unEvenNGrams.get(nGram) + "\n");
+					nCnt++;
+					if (nCnt % 1000000 == 0) {
+						bw.flush();
+						IOHelper.log(fullQualifiedFileName + "\t" + nCnt
+								+ " written to file");
+					}
+				}
+				bw.flush();
+
 				bw.close();
 				br.close();
 				// TODO: comment in the following line to DELETE THE
