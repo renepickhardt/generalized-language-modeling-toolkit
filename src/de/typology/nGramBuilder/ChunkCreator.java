@@ -65,7 +65,7 @@ public class ChunkCreator {
 		int cnt = 0;
 
 		HashMap<String, BufferedWriter> writers = IOHelper.createWriter(
-				sourceFile, this.mostFrequentStartingLetters);
+				sourceFile, this.mostFrequentStartingLetters, fileExtension);
 
 		try {
 			while ((line = br.readLine()) != null) {

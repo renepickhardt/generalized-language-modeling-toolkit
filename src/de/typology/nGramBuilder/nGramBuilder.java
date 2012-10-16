@@ -75,6 +75,20 @@ import de.typology.utils.IOHelper;
  * 
  * buildFurtherChunks(String inputPath)
  * 
+ * file extensions:
+ * 
+ * .5gc = 5gram chunk
+ * 
+ * .4gc = 4gram chunk and so on...
+ * 
+ * 1ec = 1edge chunk (standing for typology edges of type 1)
+ * 
+ * 2ec = 2edge chunk and so on...
+ * 
+ * the same extensions also exist with an 'a' instead of 'c' in this case the
+ * chunks are aggreaged. The last version is that there will be an 's' instead
+ * of 'a' or 'c' in this case the cunks are sorted descending by counts
+ * 
  * @author rpickhardt
  * 
  */
@@ -89,30 +103,36 @@ public class nGramBuilder {
 		long endTime = 0;
 		long sek = 0;
 
-		new File(Config.get().typologyEdgesPathNotAggregated).mkdirs();
 		String[] letters = countMostFrequentStartingLetters(62);
 		endTime = System.currentTimeMillis();
 		sek = (endTime - startTime) / 1000;
 		IOHelper.strongLog(sek + " seconds to: count most frequent letters");
 
-		NGramChunkCreator ngcc = new NGramChunkCreator(letters);
-		ngcc.createNGramChunks(Config.get().germanWikiText);
-		endTime = System.currentTimeMillis();
-		sek = (endTime - startTime) / 1000;
-		IOHelper.strongLog(sek + " seconds to: finnish creating first chunks");
+		for (int n = Config.get().nGramLength; n >= 2; n--) {
+			new File(Config.get().nGramsNotAggregatedPath + "/" + n).mkdirs();
+			NGramChunkCreator ngcc = new NGramChunkCreator(letters);
+			ngcc.createNGramChunks(Config.get().germanWikiText, n);
+			endTime = System.currentTimeMillis();
+			sek = (endTime - startTime) / 1000;
+			IOHelper.strongLog(sek
+					+ " seconds to: finnish creating first chunks");
 
-		ngcc.createSecondLevelChunks(Config.get().nGramsNotAggregatedPath,
-				".chk");
-		endTime = System.currentTimeMillis();
-		sek = (endTime - startTime) / 1000;
-		IOHelper.strongLog(sek
-				+ " seconds to: finnish creating detailed ngram chunks");
+			ngcc.createSecondLevelChunks(Config.get().nGramsNotAggregatedPath
+					+ "/" + n, "." + n + "gc");
+			endTime = System.currentTimeMillis();
+			sek = (endTime - startTime) / 1000;
+			IOHelper.strongLog(sek
+					+ " seconds to: finnish creating detailed ngram chunks");
 
-		Aggregator a = new Aggregator();
-		a.aggregateNGrams(Config.get().nGramsNotAggregatedPath, ".chk", 3);
-		endTime = System.currentTimeMillis();
-		sek = (endTime - startTime) / 1000;
-		IOHelper.strongLog(sek + " seconds to: finnish aggregating ngrams");
+			Aggregator a = new Aggregator();
+			a.aggregateNGrams(Config.get().nGramsNotAggregatedPath + "/" + n,
+					"." + n + "gc", 3);
+			endTime = System.currentTimeMillis();
+			sek = (endTime - startTime) / 1000;
+			IOHelper.strongLog(sek + " seconds to: finnish aggregating ngrams");
+		}
+
+		// TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
 
 		// for (int i = 1; i < 5; i++) {
 		// new File(Config.get().typologyEdgesPathNotAggregated + i

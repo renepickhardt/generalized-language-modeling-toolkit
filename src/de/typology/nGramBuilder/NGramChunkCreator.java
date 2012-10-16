@@ -17,7 +17,16 @@ public class NGramChunkCreator extends ChunkCreator {
 		super(mostFrequentLetters);
 	}
 
-	public void createNGramChunks(String fromFile) {
+	public void createNGramChunks(String fromFile, int n) {
+		if (n > Config.get().nGramLength) {
+			IOHelper.strongLog("can't create " + n
+					+ "-grams only allowed to build up to "
+					+ Config.get().nGramLength + "-grams.");
+			return;
+		}
+
+		String extension = "." + n + "gc";
+
 		String[] mostFrequentLetters = this.getMostFrequentStartingLetters();
 
 		BufferedReader br = IOHelper.openReadFile(fromFile, 8 * 1024 * 1024);
@@ -25,21 +34,21 @@ public class NGramChunkCreator extends ChunkCreator {
 		int cnt = 0;
 
 		HashMap<String, BufferedWriter> writers = IOHelper.createWriter(
-				Config.get().nGramsNotAggregatedPath, mostFrequentLetters);
+				Config.get().nGramsNotAggregatedPath + "/" + n,
+				mostFrequentLetters, extension);
 
 		try {
 			while ((line = br.readLine()) != null) {
 				cnt++;
 				String[] tokens = line.split(" ");
-				for (int i = Config.get().nGramLength; i < tokens.length; i++) {
+				for (int i = n; i < tokens.length; i++) {
 					boolean first = true;
 					BufferedWriter bw = null;
 					try {
 
-						for (int j = i - Config.get().nGramLength; j < i; j++) {
+						for (int j = i - n; j < i; j++) {
 							if (first) {
-								String token = tokens[i
-										- Config.get().nGramLength];
+								String token = tokens[i - n];
 								String key = null;
 								key = token.substring(0, 1);
 								bw = writers.get(key);

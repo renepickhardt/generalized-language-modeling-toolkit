@@ -104,16 +104,16 @@ public class IOHelper {
 	 * @return
 	 */
 	public static HashMap<String, BufferedWriter> createWriter(String oldFile,
-			String[] letters) {
-		IOHelper.log("create chunks for most common letters: "
-				+ letters.toString());
+			String[] letters, String extension) {
+		IOHelper.strongLog("create chunks for most common letters: with extension "
+				+ extension);
 		HashMap<String, BufferedWriter> writers = new HashMap<String, BufferedWriter>();
 		for (String letter : letters) {
 			String newFileName;
 			if (oldFile.contains(".")) {
 				newFileName = oldFile.replace(".", letter + ".");
 			} else {
-				newFileName = oldFile + "/" + letter + ".chk";
+				newFileName = oldFile + "/" + letter + extension;
 			}
 			BufferedWriter bw = IOHelper.openWriteFile(newFileName,
 					Config.get().memoryLimitForWritingFiles);
@@ -123,7 +123,7 @@ public class IOHelper {
 		if (oldFile.contains(".")) {
 			newFileName = oldFile.replace(".", "other.");
 		} else {
-			newFileName = oldFile + "/" + "other.chk";
+			newFileName = oldFile + "/other" + extension;
 		}
 
 		BufferedWriter bw = IOHelper.openWriteFile(newFileName,
