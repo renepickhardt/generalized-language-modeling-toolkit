@@ -47,13 +47,14 @@ public class Config extends Properties {
 	public String nGramsAggregatedPath;
 	public String typologyEdgesPathNotAggregated;
 
+	public boolean createNGramChunks;
+	public boolean createSecondLevelNGramChunks;
+	public boolean aggregateNGramChunks;
+	public boolean sortNGrams;
+
 	private static final long serialVersionUID = -4439565094382127683L;
 
 	static Config instance = null;
-	public static Boolean createNGramChunks;
-	public static Boolean createSecondLevelNGramChunks;
-	public static Boolean aggregateNGramChunks;
-	public static Boolean sortNGrams;
 
 	public Config() {
 		String file = "config.txt";

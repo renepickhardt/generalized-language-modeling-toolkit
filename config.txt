@@ -1,8 +1,8 @@
 #what to do
-createNGramChunks = true
-createSecondLevelNGramChunks = true
-aggregateNGramChunks = false
-sortNGrams = false
+createNGramChunks = false
+createSecondLevelNGramChunks = false
+aggregateNGramChunks = true
+sortNGrams = true
 
 
 #wikipedia bzip file

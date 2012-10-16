@@ -149,7 +149,7 @@ public class nGramBuilder {
 			}
 		}
 
-		TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
+		// TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
 
 		// for (int i = 1; i < 5; i++) {
 		// new File(Config.get().typologyEdgesPathNotAggregated + i
