@@ -1,3 +1,10 @@
+#what to do
+createNGramChunks = true
+createSecondLevelNGramChunks = true
+aggregateNGramChunks = false
+sortNGrams = false
+
+
 #wikipedia bzip file
 wikiXmlPath = /var/lib/datasets/wikipedia/barwiki-20120710-pages-articles.xml.bz2
 #wikiXmlPath = /var/lib/datasets/wikipedia/dewiki-20120204-pages-articles.xml.bz2
