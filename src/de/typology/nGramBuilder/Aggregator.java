@@ -19,7 +19,6 @@ public class Aggregator {
 		File[] files = IOHelper.getAllFilesInDirWithExtension(sourcePath,
 				fileExtension, this.getClass().getName() + "aggregateNGrams");
 
-		Parallelizer pll = new Parallelizer(numberOfThreads);
 		for (File f : files) {
 			String fileName = f.getName();
 			if (!fileName.endsWith(fileExtension)) {

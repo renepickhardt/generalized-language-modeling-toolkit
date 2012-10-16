@@ -103,7 +103,7 @@ public class nGramBuilder {
 		long endTime = 0;
 		long sek = 0;
 
-		String[] letters = countMostFrequentStartingLetters(62);
+		String[] letters = countMostFrequentStartingLetters(6);
 		endTime = System.currentTimeMillis();
 		sek = (endTime - startTime) / 1000;
 		IOHelper.strongLog(sek + " seconds to: count most frequent letters");
@@ -130,6 +130,15 @@ public class nGramBuilder {
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;
 			IOHelper.strongLog(sek + " seconds to: finnish aggregating ngrams");
+
+			Sorter s = new Sorter();
+			s.sort(Config.get().nGramsNotAggregatedPath + "/" + n, "." + n
+					+ "ga");
+			endTime = System.currentTimeMillis();
+			sek = (endTime - startTime) / 1000;
+			IOHelper.strongLog(sek
+					+ " seconds to: finnish sorting aggregated ngrams");
+
 		}
 
 		// TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
