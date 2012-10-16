@@ -32,105 +32,75 @@ public class Aggregator {
 					+ fileName;
 			IOHelper.strongLog("\t\t\tstart thread to aggregate: "
 					+ fullQualifiedFileName);
-			BufferedReader br = IOHelper.openReadFile(fullQualifiedFileName,
-					32 * 1024 * 1024);
-			HashMap<String, Integer> unEvenNGrams = new HashMap<String, Integer>();
-
-			HashMap<String, Integer> evenNGrams = new HashMap<String, Integer>();
 
 			String line = "";
 			int lCnt = 0;
-			try {
-				while ((line = br.readLine()) != null) {
-					String[] values = line.split("\t#");
-					if (values.length != 2) {
-						IOHelper.log("bad format for: " + line + " in file: "
-								+ fullQualifiedFileName);
-						continue;
-					}
-					String key = values[0];
-					Integer value = Integer.parseInt(values[1]);
 
-					try {
-						if (key.length() % 2 == 0) {
-							Integer cnt = evenNGrams.get(key);
+			String aggregatedFileExtension = fileExtension.replace("c", "a");
+
+			String outFileName = fullQualifiedFileName.replaceFirst(
+					fileExtension, aggregatedFileExtension);
+			BufferedWriter bw = IOHelper.openWriteFile(outFileName,
+					32 * 1024 * 1024);
+			int nCnt = 0;
+
+			int div = 4;// yes this loop is neccessary du to sucking java can
+						// only allocate 2GB per thread in unix and I wanted to
+						// have a dirty solution.
+			try {
+
+				for (int mod = 0; mod < div; mod++) {
+					HashMap<String, Integer> nGrams = new HashMap<String, Integer>();
+					BufferedReader br = IOHelper.openReadFile(
+							fullQualifiedFileName, 32 * 1024 * 1024);
+					while ((line = br.readLine()) != null) {
+						String[] values = line.split("\t#");
+						if (values.length != 2) {
+							IOHelper.log("bad format for: " + line
+									+ " in file: " + fullQualifiedFileName);
+							continue;
+						}
+						String key = values[0];
+						Integer value = Integer.parseInt(values[1]);
+
+						if (key.length() % div == mod) {
+							Integer cnt = nGrams.get(key);
 							lCnt++;
 							if (cnt != null) {
-								evenNGrams.put(key, cnt + value);
+								nGrams.put(key, cnt + value);
 							} else {
-								// TODO: kann nicht mehr als ca. 15. mio 5 grams
-								// speichern (in text form weniger als 700 MB in
-								// VM
-								// 2033
-								// MB obwohl vm mehr speicher hat.)
-								evenNGrams.put(key, value);
+								nGrams.put(key, value);
+							}
+							if (lCnt % 5000000 == 0) {
+								IOHelper.log(fullQualifiedFileName + "\t"
+										+ lCnt
+										+ " nGrams processed for aggregating");
 							}
 						} else {
-							Integer cnt = unEvenNGrams.get(key);
-							lCnt++;
-							if (cnt != null) {
-								unEvenNGrams.put(key, cnt + value);
-							} else {
-								// TODO: kann nicht mehr als ca. 15. mio 5 grams
-								// speichern (in text form weniger als 700 MB in
-								// VM
-								// 2033
-								// MB obwohl vm mehr speicher hat.)
-								unEvenNGrams.put(key, value);
-							}
+							continue;
 						}
-					} catch (OutOfMemoryError e) {
-						IOHelper.strongLog(lCnt + "\t uneven:"
-								+ unEvenNGrams.size() + "\teven: "
-								+ evenNGrams.size());
-						break;
 					}
-					if (lCnt % 5000000 == 0) {
-						IOHelper.log(fullQualifiedFileName + "\t" + lCnt
-								+ " nGrams processed for aggregating\tuneven: "
-								+ unEvenNGrams.size() + "\teven: "
-								+ evenNGrams.size());
+
+					IOHelper.log("aggregation done for: "
+							+ fullQualifiedFileName + "\nstart writing to file");
+					for (String nGram : nGrams.keySet()) {
+						bw.write(nGram + "\t#" + nGrams.get(nGram) + "\n");
+						nCnt++;
+						if (nCnt % 1000000 == 0) {
+							bw.flush();
+							IOHelper.log(fullQualifiedFileName + "\t" + nCnt
+									+ " written to file");
+						}
 					}
+					bw.flush();
+
+					br.close();
+					// TODO: comment in the following line to DELETE THE
+					// UNAGGREGATED FILE AND SAVE DISKSPACE
 				}
-				IOHelper.log("aggregation done for: " + fullQualifiedFileName
-						+ "\nstart writing to file");
-
-				String aggregatedFileExtension = fileExtension
-						.replace("c", "a");
-
-				String outFileName = fullQualifiedFileName.replaceFirst(
-						fileExtension, aggregatedFileExtension);
-				BufferedWriter bw = IOHelper.openWriteFile(outFileName,
-						32 * 1024 * 1024);
-				int nCnt = 0;
-
-				for (String nGram : evenNGrams.keySet()) {
-					bw.write(nGram + "\t#" + evenNGrams.get(nGram) + "\n");
-					nCnt++;
-					if (nCnt % 1000000 == 0) {
-						bw.flush();
-						IOHelper.log(fullQualifiedFileName + "\t" + nCnt
-								+ " written to file");
-					}
-				}
-				bw.flush();
-
-				for (String nGram : unEvenNGrams.keySet()) {
-					bw.write(nGram + "\t#" + unEvenNGrams.get(nGram) + "\n");
-					nCnt++;
-					if (nCnt % 1000000 == 0) {
-						bw.flush();
-						IOHelper.log(fullQualifiedFileName + "\t" + nCnt
-								+ " written to file");
-					}
-				}
-				bw.flush();
-
 				bw.close();
-				br.close();
-				// TODO: comment in the following line to DELETE THE
-				// UNAGGREGATED FILE AND SAVE DISKSPACE
 				f.delete();
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
