@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
+import de.typology.stats.NGramDistribution;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -147,6 +148,17 @@ public class nGramBuilder {
 				IOHelper.strongLog(sek
 						+ " seconds to: finnish sorting aggregated ngrams");
 			}
+
+			if (Config.get().generateNGramDistribution) {
+				NGramDistribution ngd = new NGramDistribution();
+				ngd.countDistribution(Config.get().nGramsNotAggregatedPath
+						+ "/" + n, "." + n + "gs");
+				endTime = System.currentTimeMillis();
+				sek = (endTime - startTime) / 1000;
+				IOHelper.strongLog(sek
+						+ " seconds to: finnish creating distribution for ngrams");
+			}
+
 		}
 
 		// TypologyChunkCreator tcc = new TypologyChunkCreator(letters);

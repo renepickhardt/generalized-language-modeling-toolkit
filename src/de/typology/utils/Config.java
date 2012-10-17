@@ -51,6 +51,7 @@ public class Config extends Properties {
 	public boolean createSecondLevelNGramChunks;
 	public boolean aggregateNGramChunks;
 	public boolean sortNGrams;
+	public boolean generateNGramDistribution;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
