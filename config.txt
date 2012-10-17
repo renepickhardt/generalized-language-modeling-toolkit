@@ -1,6 +1,6 @@
 #what to do
-createNGramChunks = false
-createSecondLevelNGramChunks = false
+createNGramChunks = true
+createSecondLevelNGramChunks = true
 aggregateNGramChunks = true
 sortNGrams = true
 

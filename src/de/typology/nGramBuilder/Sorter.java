@@ -1,10 +1,10 @@
 package de.typology.nGramBuilder;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.util.HashSet;
-import java.util.TreeMap;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import de.typology.utils.IOHelper;
 
@@ -21,76 +21,44 @@ public class Sorter {
 						+ " is not an aggregated ngram file. process next");
 				continue;
 			}
-			System.out.println(sourcePath + File.separator + fileName);
 
 			String fullQualifiedFileName = sourcePath + File.separator
 					+ fileName;
 
-			BufferedReader br = IOHelper.openReadFile(fullQualifiedFileName,
-					32 * 1024 * 1024);
+			IOHelper.log("start sorting " + fullQualifiedFileName);
+			String aggregatedFileExtension = fileExtension.replace("a", "s");
 
-			TreeMap<Integer, HashSet<String>> data = new TreeMap<Integer, HashSet<String>>();
+			String outFileName = fullQualifiedFileName.replaceFirst(
+					fileExtension, aggregatedFileExtension);
+
+			String sortCommand = "sort -r -t\'#\' -k 2 -n -S3G \""
+					+ fullQualifiedFileName + "\" --output=\"" + outFileName
+					+ "\"";
+			Runtime rt = Runtime.getRuntime();
+			Process p = null;
+			try {
+				p = rt.exec(new String[] { "bash", "-c", sortCommand });
+				System.out.println(sortCommand);
+			} catch (IOException ioe) {
+				IOHelper.log("Error executing: " + sortCommand);
+			}
+			InputStream output = p.getInputStream();
+
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(output));
 			String line = "";
-			int lCnt = 0;
 			try {
 				while ((line = br.readLine()) != null) {
-					String[] values = line.split("\t#");
-					if (values.length != 2) {
-						IOHelper.log("bad format for: " + line + " in file: "
-								+ fullQualifiedFileName);
-						continue;
-					}
-					String strData = values[0];
-					Integer count = Integer.parseInt(values[1]);
-
-					HashSet<String> tmp = data.get(count);
-
-					if (tmp == null) {
-						tmp = new HashSet<String>();
-					}
-
-					tmp.add(strData);
-
-					data.put(count, tmp);
-
-					if (lCnt++ % 5000000 == 0) {
-						IOHelper.log(fullQualifiedFileName + "\t" + lCnt
-								+ " nGrams processed for sorting");
-					}
+					System.out.println(line);
 				}
-				IOHelper.log("sorting done for: " + fullQualifiedFileName
-						+ "\nstart writing to file");
-
-				String aggregatedFileExtension = fileExtension
-						.replace("a", "s");
-
-				String outFileName = fullQualifiedFileName.replaceFirst(
-						fileExtension, aggregatedFileExtension);
-				BufferedWriter bw = IOHelper.openWriteFile(outFileName,
-						32 * 1024 * 1024);
-				int nCnt = 0;
-
-				for (Integer key : data.descendingKeySet()) {
-					HashSet<String> tmp = data.get(key);
-					for (String s : tmp) {
-						bw.write(s + "\t#" + key + "\n");
-						nCnt++;
-						if (nCnt % 1000000 == 0) {
-							bw.flush();
-							IOHelper.log(fullQualifiedFileName + "\t" + nCnt
-									+ " written to file");
-						}
-					}
-				}
-				bw.flush();
-				bw.close();
-				br.close();
-				// TODO: comment in the following line to DELETE THE
-				// UNAGGREGATED FILE AND SAVE DISKSPACE
-				f.delete();
-			} catch (Exception e) {
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
+			// SystemHelper.runUnixCommand(sortCommand);
+			// TODO: comment out to delete aggregated files after sorting
+			f.delete();
 		}
 	}
 }
