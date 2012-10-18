@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class NGramDistribution {
@@ -58,14 +57,13 @@ public class NGramDistribution {
 			}
 		}
 
-		BufferedWriter bw = IOHelper
-				.openWriteFile(Config.get().nGramsNotAggregatedPath
-						+ "/distribution" + fileExtension);
+		BufferedWriter bw = IOHelper.openWriteFile(sourcePath + "/distribution"
+				+ fileExtension);
 		try {
 			for (int i = n - 1; i > 0; i--) {
 				if (count[i] > 0) {
 					bw.write(i + "\t" + count[i] + "\n");
-					// System.out.println(count[i] + " ngrams " + i + " times");
+					IOHelper.log(count[i] + " ngrams " + i + " times");
 				}
 			}
 			bw.close();

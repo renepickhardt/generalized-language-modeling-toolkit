@@ -47,11 +47,19 @@ public class Config extends Properties {
 	public String nGramsAggregatedPath;
 	public String typologyEdgesPathNotAggregated;
 
+	// Flags for ngram building
 	public boolean createNGramChunks;
 	public boolean createSecondLevelNGramChunks;
 	public boolean aggregateNGramChunks;
 	public boolean sortNGrams;
 	public boolean generateNGramDistribution;
+
+	// same flags for typology edge creating as for ngram building
+	public boolean createTypologyEdgeChunks;
+	public boolean createSecondLevelTypologyEdgeChunks;
+	public boolean aggregateTypologyEdgeChunks;
+	public boolean sortTypologyEdges;
+	public boolean generateTypologyEdgeDistribution;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 

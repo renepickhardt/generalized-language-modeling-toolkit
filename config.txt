@@ -4,7 +4,13 @@ createSecondLevelNGramChunks = false
 aggregateNGramChunks = false
 sortNGrams = false
 
-generateNGramDistribution = true
+generateNGramDistribution = false
+
+createTypologyEdgeChunks = true
+createSecondLevelTypologyEdgeChunks = true
+aggregateTypologyEdgeChunks = true
+sortTypologyEdges = true
+generateTypologyEdgeDistribution = true
 
 
 #wikipedia bzip file

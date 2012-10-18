@@ -80,7 +80,8 @@ public class IOHelper {
 			String fileName = f.getName();
 			if (!fileName.endsWith(fileExtension)) {
 				IOHelper.log(fileName
-						+ " is not an unaggregated ngram file. process next");
+						+ " is not an unaggregated ngram file. process next it shuould end with: "
+						+ fileExtension);
 				continue;
 			}
 			res.add(f);
