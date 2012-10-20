@@ -197,6 +197,7 @@ public class IOHelper {
 	 * @return Array of files contained in directory
 	 */
 	public static ArrayList<File> getFileList(File path) {
+		files = new ArrayList<File>();
 		if (path.exists()) {
 			getFiles(path);
 		}
