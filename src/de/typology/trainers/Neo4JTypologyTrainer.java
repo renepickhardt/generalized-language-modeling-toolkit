@@ -36,6 +36,9 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 	private BufferedReader reader;
 	private ArrayList<File> files;
 	private String line;
+	private String[] lineSplit;
+	private String temp;
+	private Map<String, Object> properties;
 
 	private int edgeCount;
 	private int lineCount;
@@ -73,28 +76,29 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 					}
 
 					// initialize edgeCount
-					String[] lineSplit = this.line.split("\t");
-					if (lineSplit.length < 3) {
+					this.lineSplit = this.line.split("\t");
+					if (this.lineSplit.length < 3) {
 						continue;
 					}
-					String temp = lineSplit[lineSplit.length - 1].substring(1);
-					this.edgeCount = Integer.parseInt(temp);
+					this.temp = this.lineSplit[this.lineSplit.length - 1]
+							.substring(1);
+					this.edgeCount = Integer.parseInt(this.temp);
 
 					for (int i = 0; i < 2; i++) {
-						if (!this.nodeMap.containsKey(lineSplit[i])) {
-							Map<String, Object> properties = new HashMap<String, Object>();
-							properties.put("word", lineSplit[i]);
-							long n = this.inserter.createNode(properties);
-							this.nodeMap.put(lineSplit[i], n);
+						if (!this.nodeMap.containsKey(this.lineSplit[i])) {
+							this.properties = new HashMap<String, Object>();
+							this.properties.put("word", this.lineSplit[i]);
+							this.nodeMap.put(this.lineSplit[i],
+									this.inserter.createNode(this.properties));
 						}
 
 					}
-					Map<String, Object> properties = new HashMap<String, Object>();
-					properties.put("cnt", this.edgeCount);
+					this.properties = new HashMap<String, Object>();
+					this.properties.put("cnt", this.edgeCount);
 					this.inserter.createRelationship(
-							this.nodeMap.get(lineSplit[0]),
-							this.nodeMap.get(lineSplit[1]),
-							relTypesMap.get(relType), properties);
+							this.nodeMap.get(this.lineSplit[0]),
+							this.nodeMap.get(this.lineSplit[1]),
+							relTypesMap.get(relType), this.properties);
 				}
 			}
 		}
