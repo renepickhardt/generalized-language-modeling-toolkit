@@ -14,9 +14,6 @@ public class NGramMergerMain {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
-		System.out.println("delete old output file");
-		// SystemHelper
-		// .runUnixCommand("rm " + Config.get().googleNgramsMergedPath);
 		File inputDirectory = new File(Config.get().googleNgramsPath);
 		File[] files = inputDirectory.listFiles();
 

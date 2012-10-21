@@ -71,7 +71,7 @@ public class NGramMerger {
 							lineSplit, 0, lineSplit.length - 4))) {
 						// same ngram
 						count += Integer
-								.parseInt(lineSplit[lineSplit.length - 2]);
+								.parseInt(lineSplit[lineSplit.length - 3]);
 					} else {
 						// new ngram
 
@@ -88,7 +88,8 @@ public class NGramMerger {
 						// set currentNgram and reset count
 						currentNgram = Arrays.copyOfRange(lineSplit, 0,
 								lineSplit.length - 4);
-						count = 1;
+						count = Integer
+								.parseInt(lineSplit[lineSplit.length - 3]);
 					}
 				}
 			}
