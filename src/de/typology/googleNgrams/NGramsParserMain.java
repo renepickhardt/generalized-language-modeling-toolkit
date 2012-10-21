@@ -9,12 +9,13 @@ import de.typology.utils.IOHelper;
 
 public class NGramsParserMain {
 	public static void main(String[] args) throws IOException {
-		long startTime = System.currentTimeMillis();
-		long endTime = 0;
-		long sek = 0;
+
 		ArrayList<File> files = IOHelper.getDirectory(new File(
 				Config.get().googleNgramsPath));
 		for (File file : files) {
+			long startTime = System.currentTimeMillis();
+			long endTime = 0;
+			long sek = 0;
 			NGramRecognizer recognizer = new NGramRecognizer(
 					file.getAbsolutePath());
 			NGramParser parser = new NGramParser(recognizer);
