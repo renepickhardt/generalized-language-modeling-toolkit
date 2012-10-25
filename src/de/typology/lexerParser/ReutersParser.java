@@ -105,7 +105,7 @@ public class ReutersParser {
 								}
 
 							}
-							this.write("\n");// new line after arcticle
+							this.write(" ");// space after article
 						}
 					}
 				}
