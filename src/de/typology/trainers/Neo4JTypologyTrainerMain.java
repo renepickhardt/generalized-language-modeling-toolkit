@@ -12,6 +12,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class Neo4JTypologyTrainerMain {
 
@@ -27,16 +28,16 @@ public class Neo4JTypologyTrainerMain {
 		}
 		tt = new Neo4JTypologyTrainer(1, Config.get().dbPath);
 
-		System.out.println("training");
+		IOHelper.strongLog("training");
 		double time = tt.train(Config.get().edgeInput);
-		System.out.println(time + " s");
-		System.out.println("training done");
+		IOHelper.strongLog(time + " s");
+		IOHelper.strongLog("training done");
 
 		// writeDB(Config.get().dbPath);
-		System.out.println("generate indicator file");
+		IOHelper.strongLog("generate indicator file");
 		File done = new File(Config.get().dbPath + "IsDone." + time + "s");
 		done.createNewFile();
-		System.out.println("done");
+		IOHelper.strongLog("done");
 	}
 
 	/**
@@ -74,9 +75,7 @@ public class Neo4JTypologyTrainerMain {
 							+ r.getEndNode().getProperty("word") + "\n");
 				}
 				writer.flush();
-
 			}
-
 		}
 		writer.close();
 		graphDb.shutdown();
