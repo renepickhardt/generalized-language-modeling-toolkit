@@ -23,6 +23,8 @@ import static de.typology.lexerParser.WikipediaToken.HYPHEN;
 import static de.typology.lexerParser.WikipediaToken.LINESEPARATOR;
 import static de.typology.lexerParser.WikipediaToken.LINK;
 import static de.typology.lexerParser.WikipediaToken.OTHER;
+import static de.typology.lexerParser.WikipediaToken.QUESTIONMARK;
+import static de.typology.lexerParser.WikipediaToken.QUOTATIONMARK;
 import static de.typology.lexerParser.WikipediaToken.REF;
 import static de.typology.lexerParser.WikipediaToken.SEMICOLON;
 import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
@@ -33,11 +35,11 @@ import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 import static de.typology.lexerParser.WikipediaToken.WS;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.HashSet;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -59,11 +61,10 @@ public class WikipediaParser {
 	private Writer writer;
 	private HashSet<String> disambiguations;
 
-	public WikipediaParser(WikipediaRecognizer recognizer, String path)
+	public WikipediaParser(WikipediaRecognizer recognizer, String output)
 			throws FileNotFoundException {
 		this.recognizer = recognizer;
-		this.writer = new OutputStreamWriter(new FileOutputStream(path));
-
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 		this.disambiguations = recognizer.getTokenizer().getdisambiguations();
 	}
 
@@ -126,6 +127,12 @@ public class WikipediaParser {
 					if (this.current == WS) {
 						this.write(" ");
 					}
+					if (this.current == QUESTIONMARK) {
+						this.write(this.lexeme);
+					}
+					if (this.current == EXCLAMATIONMARK) {
+						this.write(this.lexeme);
+					}
 					if (this.current == FULLSTOP) {
 						this.write(this.lexeme);
 					}
@@ -134,6 +141,12 @@ public class WikipediaParser {
 					}
 					if (this.current == SEMICOLON) {
 						this.write(this.lexeme);
+					}
+					if (this.current == COLON) {
+						this.write(": ");
+					}
+					if (this.current == QUOTATIONMARK) {
+						this.write("'");
 					}
 					if (this.current == HYPHEN) {
 						this.write("-");
@@ -221,6 +234,12 @@ public class WikipediaParser {
 							if (this.current == WS) {
 								this.linkLabel += " ";
 							}
+							if (this.current == QUESTIONMARK) {
+								this.linkLabel += "?";
+							}
+							if (this.current == EXCLAMATIONMARK) {
+								this.linkLabel += "!";
+							}
 							if (this.current == HYPHEN) {
 								this.linkLabel += "-";
 							}
@@ -300,6 +319,7 @@ public class WikipediaParser {
 
 				}
 				this.write("\n");// new line after page
+				this.writer.flush();
 			}
 		}
 		this.writer.close();

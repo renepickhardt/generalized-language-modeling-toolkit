@@ -6,6 +6,7 @@ import static de.typology.lexerParser.ReutersToken.CLOSEDBRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDP;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTEXT;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTITLE;
+import static de.typology.lexerParser.ReutersToken.COLON;
 import static de.typology.lexerParser.ReutersToken.COMMA;
 import static de.typology.lexerParser.ReutersToken.EOF;
 import static de.typology.lexerParser.ReutersToken.EXCLAMATIONMARK;
@@ -16,20 +17,20 @@ import static de.typology.lexerParser.ReutersToken.OTHER;
 import static de.typology.lexerParser.ReutersToken.P;
 import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
 import static de.typology.lexerParser.ReutersToken.QUOTATIONMARK;
+import static de.typology.lexerParser.ReutersToken.SEMICOLON;
 import static de.typology.lexerParser.ReutersToken.STRING;
 import static de.typology.lexerParser.ReutersToken.TEXT;
 import static de.typology.lexerParser.ReutersToken.TITLE;
 import static de.typology.lexerParser.ReutersToken.WS;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -62,11 +63,7 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 	}
 
 	public ReutersRecognizer(File f) {
-		try {
-			this.reader = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 	}
 
 	// Extract lexeme from buffer
@@ -137,6 +134,25 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 			this.token = COMMA;
 			return;
 		}
+		// Recognize semicolon
+		if (this.lookahead == ';') {
+			this.read();
+			this.token = SEMICOLON;
+			return;
+		}
+		// Recognize colon
+		if (this.lookahead == ':') {
+			this.read();
+			this.token = COLON;
+			return;
+		}
+
+		// recognize quotation mark
+		if (this.lookahead == 39) {// 39='
+			this.read();
+			this.token = QUOTATIONMARK;
+			return;
+		}
 
 		// Recognize hyphen
 		if (this.lookahead == '-') {
@@ -162,12 +178,6 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
-			return;
-		}
-		// recognize quotation mark
-		if (this.lookahead == 39) {// 39='
-			this.read();
-			this.token = QUOTATIONMARK;
 			return;
 		}
 

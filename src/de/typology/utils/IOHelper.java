@@ -63,6 +63,17 @@ public class IOHelper {
 		return new BufferedWriter(filestream);
 	}
 
+	public static BufferedWriter openWriteFile(String filename, int bufferSize) {
+		FileWriter filestream = null;
+		try {
+			filestream = new FileWriter(filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return new BufferedWriter(filestream, bufferSize);
+	}
+
 	/**
 	 * Faster access to a bufferedWriter that appands to a fil
 	 * 

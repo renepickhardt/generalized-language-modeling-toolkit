@@ -18,7 +18,9 @@ public class WikipediaLinkExtractorMain {
 				Config.get().wikiXmlPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaLinkExtractor linkExtractor = new WikipediaLinkExtractor(
-				recognizer, Config.get().wikiLinksOutputPath, "de:wiki:");
+				recognizer, Config.get().wikiLinksOutputPath,
+				Config.get().wikiLinksHead);
+		// head could be something like "en:wiki:"
 		System.out.println("start extracting");
 		linkExtractor.extract();
 		System.out.println("extracting done");

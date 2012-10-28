@@ -14,6 +14,7 @@ public class WikipediaMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
+		long startTime = System.currentTimeMillis();
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(
 				Config.get().wikiXmlPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
@@ -29,7 +30,10 @@ public class WikipediaMain {
 		wn.normalize();
 		System.out.println("cleanup done");
 		System.out.println("generate indicator file");
-		File done = new File(Config.get().normalizedWikiOutputPath + "IsDone");
+		long endTime = System.currentTimeMillis();
+		long time = (endTime - startTime) / 1000;
+		File done = new File(Config.get().normalizedWikiOutputPath + "IsDone."
+				+ time + "s");
 		done.createNewFile();
 		System.out.println("done");
 	}
