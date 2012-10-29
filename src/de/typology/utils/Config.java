@@ -61,6 +61,7 @@ public class Config extends Properties {
 	// used in de.typology.trainers
 	public String dbPath;
 	public String edgeInput;
+	public String hashMapMinSize;
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;
 	public String wordCountStats;

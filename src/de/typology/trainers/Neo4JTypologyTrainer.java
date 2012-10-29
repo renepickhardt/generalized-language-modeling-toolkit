@@ -26,6 +26,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 /**
@@ -157,7 +158,9 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 
 					// initialize edgeCount
 					this.lineSplit = this.line.split("\t");
-					if (this.lineSplit.length < 3) {
+					int hashMapMinSize = Integer
+							.parseInt(Config.get().hashMapMinSize);
+					if (this.lineSplit.length < hashMapMinSize) {
 						continue;
 					}
 					this.temp = this.lineSplit[this.lineSplit.length - 1]
