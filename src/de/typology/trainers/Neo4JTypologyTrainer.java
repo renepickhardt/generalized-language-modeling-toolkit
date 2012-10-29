@@ -121,9 +121,10 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 			}
 		}
 		Iterator<Entry<String, Integer>> it = tempNodeMap.entrySet().iterator();
+		int hashMapMinSize = Integer.parseInt(Config.get().hashMapMinSize);
 		while (it.hasNext()) {
 			Entry<String, Integer> pair = it.next();
-			if (pair.getValue() > 2) {
+			if (pair.getValue() > hashMapMinSize) {
 				this.properties = new HashMap<String, Object>();
 				this.properties.put("word", pair.getKey());
 				this.nodeMap.put(pair.getKey(),
@@ -158,9 +159,7 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 
 					// initialize edgeCount
 					this.lineSplit = this.line.split("\t");
-					int hashMapMinSize = Integer
-							.parseInt(Config.get().hashMapMinSize);
-					if (this.lineSplit.length < hashMapMinSize) {
+					if (this.lineSplit.length < 3) {
 						continue;
 					}
 					this.temp = this.lineSplit[this.lineSplit.length - 1]
