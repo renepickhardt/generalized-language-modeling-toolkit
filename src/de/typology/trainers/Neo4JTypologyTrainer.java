@@ -88,11 +88,12 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 		long startTime = System.currentTimeMillis();
 
 		this.inserter = BatchInserters.inserter(this.storagePath);
-		HashMap<String, Integer> tempNodeMap = new HashMap<String, Integer>();
+
 		for (int relType = 1; relType < 5; relType++) {
 			this.files = IOHelper.getFileList(new File(path + relType));
 			for (File file : this.files) {
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
+				HashMap<String, Integer> tempNodeMap = new HashMap<String, Integer>();
 				while ((this.line = this.reader.readLine()) != null) {
 					this.lineCount++;
 					if (this.lineCount % 1000000 == 0) {
@@ -100,7 +101,6 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 								+ (System.currentTimeMillis() - startTime)
 								/ 1000 + " s");
 					}
-
 					// initialize edgeCount
 					this.lineSplit = this.line.split("\t");
 					if (this.lineSplit.length < 3) {
@@ -118,19 +118,23 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 								tempNodeMap.get(this.lineSplit[0]) + 1);
 					}
 				}
+				Iterator<Entry<String, Integer>> it = tempNodeMap.entrySet()
+						.iterator();
+				int hashMapMinSize = Integer
+						.parseInt(Config.get().hashMapMinSize);
+				while (it.hasNext()) {
+					Entry<String, Integer> pair = it.next();
+					if (pair.getValue() > hashMapMinSize
+							&& !this.nodeMap.containsKey(pair.getKey())) {
+						this.properties = new HashMap<String, Object>();
+						this.properties.put("word", pair.getKey());
+						this.nodeMap.put(pair.getKey(),
+								this.inserter.createNode(this.properties));
+					}
+				}
 			}
 		}
-		Iterator<Entry<String, Integer>> it = tempNodeMap.entrySet().iterator();
-		int hashMapMinSize = Integer.parseInt(Config.get().hashMapMinSize);
-		while (it.hasNext()) {
-			Entry<String, Integer> pair = it.next();
-			if (pair.getValue() > hashMapMinSize) {
-				this.properties = new HashMap<String, Object>();
-				this.properties.put("word", pair.getKey());
-				this.nodeMap.put(pair.getKey(),
-						this.inserter.createNode(this.properties));
-			}
-		}
+
 		System.out.println("HashMap size: " + this.nodeMap.size());
 		this.inserter.shutdown();
 		long endTime = System.currentTimeMillis();
