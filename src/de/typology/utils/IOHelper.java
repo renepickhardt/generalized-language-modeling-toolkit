@@ -15,15 +15,15 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
-
-import de.typology.trainers.NGramReader;
 
 public class IOHelper {
 	// d = debug mode set true if debugg messages should be displayed
 	private static boolean d = true;
 	private static BufferedWriter logFile = openAppendFile("Complet.log");
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
+	private static ArrayList<File> files = new ArrayList<File>();
 
 	/**
 	 * faster access to a buffered reader
@@ -47,27 +47,6 @@ public class IOHelper {
 	}
 
 	/**
-	 * faster access to a ngram reader
-	 * 
-	 * @param filename
-	 * @return ngram reader for file input
-	 */
-	public static NGramReader openReadNGrams(String filename) {
-		FileInputStream fstream;
-		NGramReader nr = null;
-		try {
-			fstream = new FileInputStream(filename);
-			DataInputStream in = new DataInputStream(fstream);
-			nr = new NGramReader(new InputStreamReader(in));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		return nr;
-	}
-
-	/**
 	 * Faster access to a bufferedWriter
 	 * 
 	 * @param filename
@@ -82,6 +61,17 @@ public class IOHelper {
 			return null;
 		}
 		return new BufferedWriter(filestream);
+	}
+
+	public static BufferedWriter openWriteFile(String filename, int bufferSize) {
+		FileWriter filestream = null;
+		try {
+			filestream = new FileWriter(filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return new BufferedWriter(filestream, bufferSize);
 	}
 
 	/**
@@ -123,7 +113,7 @@ public class IOHelper {
 		}
 	}
 
-	/*
+	/**
 	 * function for error-output that is only displayed in debugmode
 	 * 
 	 * @param out
@@ -210,5 +200,31 @@ public class IOHelper {
 			}
 		}
 		return path.delete();
+	}
+
+	/**
+	 * @param path
+	 *            : filepath to a directory
+	 * @return Array of files contained in directory
+	 */
+	public static ArrayList<File> getFileList(File path) {
+		files = new ArrayList<File>();
+		if (path.exists()) {
+			getFiles(path);
+		}
+		return files;
+	}
+
+	private static void getFiles(File f) {
+		File[] currentFiles = f.listFiles();
+		if (currentFiles != null) {
+			for (File file : currentFiles) {
+				if (file.isDirectory()) {
+					getFileList(file);
+				} else {
+					files.add(file);
+				}
+			}
+		}
 	}
 }

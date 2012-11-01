@@ -59,7 +59,15 @@ public class Config extends Properties {
 	public String sortedNGrams;
 
 	// used in de.typology.trainers
-	public String testDb;
+	public String dbPath;
+	public String edgeInput;
+	public String hashMapMinSize;
+	// used in de.typology.utils/WordCounter
+	public String wordCountInput;
+	public String wordCountStats;
+	// used in de.typology.utils/LineCounter
+	public String lineCountInput;
+	public String lineCountStats;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 

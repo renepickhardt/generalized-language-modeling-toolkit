@@ -11,10 +11,10 @@ import static de.typology.lexerParser.WikipediaToken.TITLE;
 import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -36,10 +36,10 @@ public class WikipediaLinkExtractor {
 	private int bracketCount;
 	private int verticalBarCount;
 
-	public WikipediaLinkExtractor(WikipediaRecognizer recognizer, String path,
-			String head) throws FileNotFoundException {
+	public WikipediaLinkExtractor(WikipediaRecognizer recognizer,
+			String output, String head) throws FileNotFoundException {
 		this.recognizer = recognizer;
-		this.writer = new OutputStreamWriter(new FileOutputStream(path));
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 		this.head = head;
 	}
 
@@ -132,6 +132,7 @@ public class WikipediaLinkExtractor {
 						}
 					}
 				}
+				this.writer.flush();
 			}
 		}
 		this.writer.close();
