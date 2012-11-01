@@ -259,6 +259,8 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 						this.currentNodes[i] = this.graphDb.createNode();
 						this.currentNodes[i].setProperty("word",
 								this.lineSplit[i]);
+						nodeIndex.add(this.currentNodes[i], "word",
+								this.lineSplit[i]);
 					}
 				}
 				Relationship r = this.currentNodes[0].createRelationshipTo(
