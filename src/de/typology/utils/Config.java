@@ -25,25 +25,6 @@ public class Config extends Properties {
 	public String wikiXmlPath;
 	public String parsedWikiOutputPath;
 	public String normalizedWikiOutputPath;
-	public String wikiLinksOutputPath;
-
-	public String reutersXmlPath;
-	public String parsedReutersOutputPath;
-	public String normalizedReutersOutputPath;
-
-	public String enronPath;
-	public String parsedEnronOutputPath;
-	public String normalizedEnronOutputPath;
-
-	public String DGTTMPath;
-	public String DGTTMLanguage;
-	public String parsedDGTTMOutputPath;
-	public String normalizedDGTTMOutputPath;
-
-	// used in de.typology.Keystrokes:
-	public String germanWikiText;
-	public String letterGraph;
-	public int keystrokesWindowSize;
 
 	// used in de.typology.util.GoogleNgramDownloadBuilder:
 	public String ngramDownloadPath;
@@ -60,6 +41,9 @@ public class Config extends Properties {
 
 	// used in de.typology.trainers
 	public String testDb;
+
+	public String parsedGoogleNGramsOutputPath;
+	public String normalizedGoogleNgramsPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
