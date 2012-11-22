@@ -4,21 +4,26 @@ import static de.typology.lexerParser.ReutersToken.BRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDBRACES;
 import static de.typology.lexerParser.ReutersToken.CLOSEDP;
 import static de.typology.lexerParser.ReutersToken.CLOSEDTEXT;
+import static de.typology.lexerParser.ReutersToken.COLON;
 import static de.typology.lexerParser.ReutersToken.COMMA;
+import static de.typology.lexerParser.ReutersToken.EXCLAMATIONMARK;
 import static de.typology.lexerParser.ReutersToken.FULLSTOP;
 import static de.typology.lexerParser.ReutersToken.HYPHEN;
 import static de.typology.lexerParser.ReutersToken.P;
+import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
+import static de.typology.lexerParser.ReutersToken.QUOTATIONMARK;
+import static de.typology.lexerParser.ReutersToken.SEMICOLON;
 import static de.typology.lexerParser.ReutersToken.STRING;
 import static de.typology.lexerParser.ReutersToken.TEXT;
 import static de.typology.lexerParser.ReutersToken.WS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -37,10 +42,10 @@ public class ReutersParser {
 	private Writer writer;
 	private ArrayList<File> fileList;
 
-	public ReutersParser(ArrayList<File> fileList, String path)
+	public ReutersParser(ArrayList<File> fileList, String output)
 			throws FileNotFoundException {
 		this.fileList = fileList;
-		this.writer = new OutputStreamWriter(new FileOutputStream(path));
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 
 	}
 
@@ -70,10 +75,24 @@ public class ReutersParser {
 								if (this.current == COMMA) {
 									this.write(this.lexeme);
 								}
+								if (this.current == SEMICOLON) {
+									this.write(this.lexeme);
+								}
+								if (this.current == COLON) {
+									this.write(": ");
+								}
+								if (this.current == QUOTATIONMARK) {
+									this.write("'");
+								}
 								if (this.current == HYPHEN) {
 									this.write("-");
 								}
-
+								if (this.current == QUESTIONMARK) {
+									this.write("? ");
+								}
+								if (this.current == EXCLAMATIONMARK) {
+									this.write("! ");
+								}
 								if (this.current == WS) {
 									this.write(" ");
 								}
@@ -86,12 +105,13 @@ public class ReutersParser {
 								}
 
 							}
-							this.write("\n");// new line after arcticle
+							this.write(" ");// space after article
 						}
 					}
 				}
 			}
 			this.write("\n");// new line after page
+			this.writer.flush();
 		}
 		this.writer.close();
 	}

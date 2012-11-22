@@ -2,10 +2,9 @@ package de.typology.lexerParser;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -24,14 +23,8 @@ public class ReutersNormalizer {
 	private double numberStringProportion;
 
 	public ReutersNormalizer(String input, String output) {
-		try {
-			this.reader = new BufferedReader(new FileReader(input));
-			this.writer = new BufferedWriter(new FileWriter(output));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		this.reader = IOHelper.openReadFile(input);
+		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
 
 	public void normalize() {
@@ -53,6 +46,8 @@ public class ReutersNormalizer {
 				this.line = this.line.replaceAll("!+", "!");
 				this.line = this.line.replaceAll("\\?+", "\\?");
 				this.line = this.line.replaceAll("-+", "-");
+				this.line = this.line.replaceAll("pos;", "'");
+				this.line = this.line.replaceAll("Reuters Limited .*", "");
 
 				String[] strings = this.line.split("\\s");
 				this.stringCount = 0;
@@ -70,7 +65,7 @@ public class ReutersNormalizer {
 						/ (strings.length + 1);
 				// stringCount + 1 to prevent division by zero
 
-				if (this.numberStringProportion < 0.2 && this.stringCount > 0) {
+				if (this.numberStringProportion < 0.2 && this.stringCount > 1) {
 					// print strings if less then 25% are numbers and contains
 					// at least one string
 					for (String s : strings) {
@@ -79,6 +74,7 @@ public class ReutersNormalizer {
 						}
 					}
 					this.writer.write("\n");
+					this.writer.flush();
 				}
 			}
 			this.writer.close();

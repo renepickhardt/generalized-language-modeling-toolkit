@@ -25,8 +25,21 @@ public class Config extends Properties {
 	public String wikiXmlPath;
 	public String parsedWikiOutputPath;
 	public String normalizedWikiOutputPath;
-
-	// used in de.typology.util.GoogleNgramDownloadBuilder:
+	public String wikiLinksOutputPath;
+	public String wikiLinksHead;
+	public String germanWikiText;
+	public String reutersXmlPath;
+	public String parsedReutersOutputPath;
+	public String normalizedReutersOutputPath;
+	public String enronPath;
+	public String parsedEnronOutputPath;
+	public String normalizedEnronOutputPath;
+	public String DGTTMPath;
+	public String DGTTMLanguage;
+	public String parsedDGTTMOutputPath;
+	public String normalizedDGTTMOutputPath;
+	public String letterGraph;
+	public int keystrokesWindowSize;
 	public String ngramDownloadPath;
 	public String ngramDownloadOutputPath;
 
