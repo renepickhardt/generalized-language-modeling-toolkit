@@ -21,7 +21,7 @@ public class LineCounter {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		files = IOHelper.getFileList(new File(Config.get().wordCountInput));
+		files = IOHelper.getDirectory(new File(Config.get().wordCountInput));
 		for (File file : files) {
 			LineCounter lC = new LineCounter(file.getAbsolutePath(),
 					Config.get().lineCountStats);

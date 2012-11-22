@@ -204,7 +204,6 @@ public class IOHelper {
 
 	/**
 	 * @param path
-	 *            <<<<<<< HEAD : file path to the directory
 	 * @return list of files contained in given directory
 	 */
 	public static ArrayList<File> getDirectory(File path) {

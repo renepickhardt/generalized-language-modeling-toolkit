@@ -52,8 +52,6 @@ public class Config extends Properties {
 	public int nGramLength;
 	public String sortedNGrams;
 
-	// used in de.typology.trainers
-	public String testDb;
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;
 	public String wordCountStats;

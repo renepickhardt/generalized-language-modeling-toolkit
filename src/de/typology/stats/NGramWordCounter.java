@@ -33,7 +33,7 @@ public class NGramWordCounter {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		files = IOHelper.getFileList(new File(Config.get().wordCountInput));
+		files = IOHelper.getDirectory(new File(Config.get().wordCountInput));
 		for (File file : files) {
 			long startTime = System.currentTimeMillis();
 			long endTime = 0;
