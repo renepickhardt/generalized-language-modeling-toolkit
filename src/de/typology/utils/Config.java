@@ -24,6 +24,8 @@ public class Config extends Properties {
 	public String wikiXmlPath;
 	public String parsedWikiOutputPath;
 	public String normalizedWikiOutputPath;
+	public String wikiLinksOutputPath;
+	public String wikiLinksHead;
 	public String germanWikiText;
 	public String reutersXmlPath;
 	public String parsedReutersOutputPath;
