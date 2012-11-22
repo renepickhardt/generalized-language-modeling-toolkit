@@ -113,7 +113,7 @@ public class IOHelper {
 		}
 	}
 
-	/*
+	/**
 	 * function for error-output that is only displayed in debugmode
 	 * 
 	 * @param out
@@ -204,7 +204,7 @@ public class IOHelper {
 
 	/**
 	 * @param path
-	 *            : file path to the directory
+	 *            <<<<<<< HEAD : file path to the directory
 	 * @return list of files contained in given directory
 	 */
 	public static ArrayList<File> getDirectory(File path) {

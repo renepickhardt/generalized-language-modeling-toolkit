@@ -54,6 +54,12 @@ public class Config extends Properties {
 
 	// used in de.typology.trainers
 	public String testDb;
+	// used in de.typology.utils/WordCounter
+	public String wordCountInput;
+	public String wordCountStats;
+	// used in de.typology.utils/LineCounter
+	public String lineCountInput;
+	public String lineCountStats;
 
 	public String parsedGoogleNGramsOutputPath;
 	public String normalizedGoogleNgramsPath;

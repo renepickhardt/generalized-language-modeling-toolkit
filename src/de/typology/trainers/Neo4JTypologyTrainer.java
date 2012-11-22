@@ -14,6 +14,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 import de.typology.interfaces.Trainable;
 
@@ -28,7 +29,7 @@ import de.typology.interfaces.Trainable;
  * @author Martin Koerner
  * 
  */
-public class TypologyTrainer implements Trainable {
+public class Neo4JTypologyTrainer implements Trainable {
 	// TODO implement corpusId system
 	private int corpusId;
 	private String storagePath;
@@ -46,7 +47,7 @@ public class TypologyTrainer implements Trainable {
 		relTypesMap.put(4, FOUR);
 	}
 
-	public TypologyTrainer(int corpusId, String storagePath) {
+	public Neo4JTypologyTrainer(int corpusId, String storagePath) {
 		this.corpusId = corpusId;
 		this.storagePath = storagePath;
 	}
@@ -57,34 +58,45 @@ public class TypologyTrainer implements Trainable {
 
 		// neo4j database initialization
 		this.graphDb = new GraphDatabaseFactory()
-				.newEmbeddedDatabase(this.storagePath);
+				.newEmbeddedDatabaseBuilder(this.storagePath)
+				.setConfig(GraphDatabaseSettings.node_keys_indexable, "word")
+				.setConfig(GraphDatabaseSettings.relationship_keys_indexable,
+						"cnt")
+				.setConfig(GraphDatabaseSettings.node_auto_indexing, "true")
+				.setConfig(GraphDatabaseSettings.relationship_auto_indexing,
+						"true")
+				.setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
+				.newGraphDatabase();
 		this.registerShutdownHook(this.graphDb);
 
 		this.nGramReader = nGramReader;
 
-		// TODO remove
 		int nGramCount = 0;
-		//
-		while ((this.currentNGram = this.nGramReader.readNGram()) != null) {
-			// TODO remove
-			nGramCount++;
-			if (nGramCount % 1000 == 0) {
-				System.out
-						.println(nGramCount
-								+ " "
-								+ Math.round((double) (System.nanoTime() - start_time) / 1000)
-								/ 1000 + " ms");
-			}
-			//
 
-			Transaction tx = this.graphDb.beginTx();
-			try {
+		Transaction tx = this.graphDb.beginTx();
+		try {
+			while ((this.currentNGram = this.nGramReader.readNGram()) != null) {
+
+				nGramCount++;
+				if (nGramCount % 10000 == 0) {
+					System.out
+							.println(nGramCount
+									+ " "
+									+ Math.round((double) (System.nanoTime() - start_time) / 1000)
+									/ 1000 + " ms");
+
+					// commit transaction
+					tx.success();
+					tx.finish();
+					tx = this.graphDb.beginTx();
+				}
+
 				for (int edgeType = 1; edgeType < 5; edgeType++) {
 					// generate pairs of words with distance=edgeType
 					this.currentListOfPairs = this.currentNGram
 							.getPairsWithEdgeType(edgeType);
 					for (Pair p : this.currentListOfPairs) {
-						// add new words to graphDb and nodeMap
+						// add new words to graphDb
 						if (!this.nodeMap.containsKey(p.getFirst())) {
 							Node n = this.graphDb.createNode();
 							n.setProperty("word", p.getFirst());
@@ -123,10 +135,11 @@ public class TypologyTrainer implements Trainable {
 						}
 					}
 				}
-				tx.success();
-			} finally {
-				tx.finish();
 			}
+			tx.success();
+		} finally {
+			tx.finish();
+
 		}
 		this.graphDb.shutdown();
 		long end_time = System.nanoTime();
