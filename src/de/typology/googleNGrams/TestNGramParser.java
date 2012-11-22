@@ -1,4 +1,4 @@
-package de.typology.googleNgrams;
+package de.typology.googleNGrams;
 
 import java.io.IOException;
 

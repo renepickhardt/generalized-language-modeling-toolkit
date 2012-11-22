@@ -1,4 +1,4 @@
-package de.typology.googleNgrams;
+package de.typology.googleNGrams;
 
 public enum NGramToken {
 	STRING, OTHER, WS, LINESEPARATOR, EOF,

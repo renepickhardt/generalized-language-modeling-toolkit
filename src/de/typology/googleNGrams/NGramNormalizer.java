@@ -1,4 +1,4 @@
-package de.typology.googleNgrams;
+package de.typology.googleNGrams;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,11 +8,13 @@ import java.util.Arrays;
 import de.typology.utils.IOHelper;
 
 /**
+ * Normalizes the format of a given (and parsed) google ngrams file, removing
+ * multiple white spaces and punctuation marks and white spaces before
+ * punctuation marks.
+ * <p>
+ * derived from http://101companies.org/index.php/101implementation:javaLexer
+ * 
  * @author Martin Koerner
- * 
- *         derived from
- *         http://101companies.org/index.php/101implementation:javaLexer
- * 
  */
 public class NGramNormalizer {
 

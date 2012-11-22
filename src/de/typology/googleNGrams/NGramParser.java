@@ -1,16 +1,16 @@
-package de.typology.googleNgrams;
+package de.typology.googleNGrams;
 
-import static de.typology.googleNgrams.NGramToken.COLON;
-import static de.typology.googleNgrams.NGramToken.COMMA;
-import static de.typology.googleNgrams.NGramToken.EXCLAMATIONMARK;
-import static de.typology.googleNgrams.NGramToken.FULLSTOP;
-import static de.typology.googleNgrams.NGramToken.HYPHEN;
-import static de.typology.googleNgrams.NGramToken.LINESEPARATOR;
-import static de.typology.googleNgrams.NGramToken.QUESTIONMARK;
-import static de.typology.googleNgrams.NGramToken.QUOTATIONMARK;
-import static de.typology.googleNgrams.NGramToken.SEMICOLON;
-import static de.typology.googleNgrams.NGramToken.STRING;
-import static de.typology.googleNgrams.NGramToken.WS;
+import static de.typology.googleNGrams.NGramToken.COLON;
+import static de.typology.googleNGrams.NGramToken.COMMA;
+import static de.typology.googleNGrams.NGramToken.EXCLAMATIONMARK;
+import static de.typology.googleNGrams.NGramToken.FULLSTOP;
+import static de.typology.googleNGrams.NGramToken.HYPHEN;
+import static de.typology.googleNGrams.NGramToken.LINESEPARATOR;
+import static de.typology.googleNGrams.NGramToken.QUESTIONMARK;
+import static de.typology.googleNGrams.NGramToken.QUOTATIONMARK;
+import static de.typology.googleNGrams.NGramToken.SEMICOLON;
+import static de.typology.googleNGrams.NGramToken.STRING;
+import static de.typology.googleNGrams.NGramToken.WS;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -19,11 +19,11 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 /**
+ * Given a NGramRecognizer, this parser only prints declared parts of the ngram.
+ * <p>
+ * derived from http://101companies.org/index.php/101implementation:javaLexer
+ * 
  * @author Martin Koerner
- * 
- *         derived from
- *         http://101companies.org/index.php/101implementation:javaLexer
- * 
  */
 public class NGramParser {
 	private NGramRecognizer recognizer;
