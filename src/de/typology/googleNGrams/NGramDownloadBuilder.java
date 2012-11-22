@@ -1,17 +1,28 @@
-package de.typology.utils;
+package de.typology.googleNGrams;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-public class GoogleNgramDownloadBuilder {
+import de.typology.utils.Config;
+
+public class NGramDownloadBuilder {
 
 	/**
-	 * @author Martin Koerner
+	 * output example:
+	 * http://commondatastorage.googleapis.com/books/ngrams/books
+	 * /googlebooks-ger-all-5gram-20090715-0.csv.zip
+	 * <p>
+	 * ...
+	 * <p>
+	 * http://commondatastorage
+	 * .googleapis.com/books/ngrams/books/googlebooks-ger
+	 * -all-5gram-20090715-799.csv.zip
 	 * 
 	 * @param args
 	 * @throws IOException
+	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
 		// example for a link:
