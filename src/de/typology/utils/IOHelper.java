@@ -211,7 +211,19 @@ public class IOHelper {
 		return getFileList(path);
 	}
 
-	private static ArrayList<File> getFileList(File path) {
+	// TODO: non recursive version of getFileList I don't know what to do with
+	// it in merge! there is a function with the same name that is recursive. i
+	// don't know who is calling it and so on we need testing (:
+
+	// public static ArrayList<File> getFileList(File path) {
+	// files = new ArrayList<File>();
+	// if (path.exists()) {
+	// getFiles(path);
+	// }
+	// return files;
+	// }
+
+	public static ArrayList<File> getFileList(File path) {
 		File[] files = path.listFiles();
 		if (files != null) {
 			for (File file : files) {
