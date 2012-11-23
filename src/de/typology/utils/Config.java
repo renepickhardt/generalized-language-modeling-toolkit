@@ -40,6 +40,7 @@ public class Config extends Properties {
 	public String normalizedDGTTMOutputPath;
 	public String letterGraph;
 	public int keystrokesWindowSize;
+
 	public String ngramDownloadPath;
 	public String ngramDownloadOutputPath;
 
@@ -51,6 +52,24 @@ public class Config extends Properties {
 	public String parsedNGrams;
 	public int nGramLength;
 	public String sortedNGrams;
+	public int fileChunkThreashhold;
+	public int memoryLimitForWritingFiles;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String nGramsAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
+	// Flags for ngram building
+	public boolean createNGramChunks;
+	public boolean createSecondLevelNGramChunks;
+	public boolean aggregateNGramChunks;
+	public boolean sortNGrams;
+	public boolean generateNGramDistribution;
+	// same flags for typology edge creating as for ngram building
+	public boolean createTypologyEdgeChunks;
+	public boolean createSecondLevelTypologyEdgeChunks;
+	public boolean aggregateTypologyEdgeChunks;
+	public boolean sortTypologyEdges;
+	public boolean generateTypologyEdgeDistribution;
 
 	// used in de.typology.trainers
 	public String dbPath;
