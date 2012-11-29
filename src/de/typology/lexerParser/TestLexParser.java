@@ -45,10 +45,10 @@ public class TestLexParser {
 
 		// test WikipediaNormalizer
 		//
-		WikipediaNormalizer wn = new WikipediaNormalizer(
-				Config.get().parsedWikiOutputPath,
-				Config.get().normalizedWikiOutputPath);
-		wn.normalize();
+		// WikipediaNormalizer wn = new WikipediaNormalizer(
+		// Config.get().parsedWikiOutputPath,
+		// Config.get().normalizedWikiOutputPath);
+		// wn.normalize();
 		//
 		//
 		// reuters tests
@@ -70,10 +70,10 @@ public class TestLexParser {
 		// System.out.println(t + " : " + recognizer.getLexeme());
 		// }
 		//
-		// ReutersNormalizer rn = new ReutersNormalizer(
-		// Config.get().parsedReutersOutputPath,
-		// Config.get().normalizedReutersOutputPath);
-		// rn.normalize();
+		ReutersNormalizer rn = new ReutersNormalizer(
+				Config.get().parsedReutersOutputPath,
+				Config.get().normalizedReutersOutputPath);
+		rn.normalize();
 
 		// enron tests
 		//

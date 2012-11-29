@@ -21,6 +21,7 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
+	// used in de.typology.lexerparser:
 	public String wikiXmlPath;
 	public String parsedWikiOutputPath;
 	public String normalizedWikiOutputPath;
@@ -39,8 +40,51 @@ public class Config extends Properties {
 	public String normalizedDGTTMOutputPath;
 	public String letterGraph;
 	public int keystrokesWindowSize;
+
 	public String ngramDownloadPath;
 	public String ngramDownloadOutputPath;
+
+	// used in de.typology.googleNgrams:
+	public String googleNgramsPath;
+	public String googleNgramsMergedPath;
+
+	// used in de.typology.nGramBuilder
+	public String parsedNGrams;
+	public int nGramLength;
+	public String sortedNGrams;
+	public int fileChunkThreashhold;
+	public int memoryLimitForWritingFiles;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String nGramsAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
+	// Flags for ngram building
+	public boolean createNGramChunks;
+	public boolean createSecondLevelNGramChunks;
+	public boolean aggregateNGramChunks;
+	public boolean sortNGrams;
+	public boolean generateNGramDistribution;
+	// same flags for typology edge creating as for ngram building
+	public boolean createTypologyEdgeChunks;
+	public boolean createSecondLevelTypologyEdgeChunks;
+	public boolean aggregateTypologyEdgeChunks;
+	public boolean sortTypologyEdges;
+	public boolean generateTypologyEdgeDistribution;
+
+	// used in de.typology.trainers
+	public String dbPath;
+	public String edgeInput;
+	public String hashMapMinSize;
+
+	// used in de.typology.utils/WordCounter
+	public String wordCountInput;
+	public String wordCountStats;
+	// used in de.typology.utils/LineCounter
+	public String lineCountInput;
+	public String lineCountStats;
+
+	public String parsedGoogleNGramsOutputPath;
+	public String normalizedGoogleNgramsPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
