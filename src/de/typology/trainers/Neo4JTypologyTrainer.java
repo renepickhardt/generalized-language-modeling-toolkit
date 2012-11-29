@@ -90,7 +90,7 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 		this.inserter = BatchInserters.inserter(this.storagePath);
 
 		for (int relType = 1; relType < 5; relType++) {
-			this.files = IOHelper.getFileList(new File(path + relType));
+			this.files = IOHelper.getDirectory(new File(path + relType));
 			for (File file : this.files) {
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
 				HashMap<String, Integer> tempNodeMap = new HashMap<String, Integer>();
@@ -150,7 +150,7 @@ public class Neo4JTypologyTrainer /* implements Trainable */{
 
 		this.inserter = BatchInserters.inserter(this.storagePath);
 		for (int relType = 1; relType < 5; relType++) {
-			this.files = IOHelper.getFileList(new File(path + relType));
+			this.files = IOHelper.getDirectory(new File(path + relType));
 			for (File file : this.files) {
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
 				while ((this.line = this.reader.readLine()) != null) {
