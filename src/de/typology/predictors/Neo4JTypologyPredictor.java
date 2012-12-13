@@ -20,7 +20,7 @@ import org.neo4j.kernel.EmbeddedReadOnlyGraphDatabase;
 import de.typology.interfaces.Predictable;
 import de.typology.trainers.RelTypes;
 
-public class TypologyPredictor implements Predictable {
+public class Neo4JTypologyPredictor implements Predictable {
 	private GraphDatabaseService graphDb;
 	private String dbPath;
 	private IndexManager index;
@@ -39,7 +39,7 @@ public class TypologyPredictor implements Predictable {
 	private final Comparator<String> StringComparator = new Comparator<String>() {
 		@Override
 		public int compare(String a, String b) {
-			if (TypologyPredictor.this.ends.get(a) >= TypologyPredictor.this.ends
+			if (Neo4JTypologyPredictor.this.ends.get(a) >= Neo4JTypologyPredictor.this.ends
 					.get(b)) {
 				return -1;
 			} else {
@@ -48,7 +48,7 @@ public class TypologyPredictor implements Predictable {
 		}
 	};
 
-	public TypologyPredictor(String dbPath) {
+	public Neo4JTypologyPredictor(String dbPath) {
 		// neo4j database initialization
 		this.dbPath = dbPath;
 		this.graphDb = new EmbeddedReadOnlyGraphDatabase(this.dbPath);

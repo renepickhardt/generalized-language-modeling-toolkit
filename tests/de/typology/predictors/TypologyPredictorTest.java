@@ -6,11 +6,11 @@ import org.junit.Test;
 import de.typology.utils.Config;
 
 public class TypologyPredictorTest {
-	static TypologyPredictor tp;
+	static Neo4JTypologyPredictor tp;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		tp = new TypologyPredictor(Config.get().testDb);
+		tp = new Neo4JTypologyPredictor(Config.get().testDb);
 	}
 
 	@Test

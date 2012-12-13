@@ -4,13 +4,13 @@ import java.util.Scanner;
 
 import de.typology.utils.Config;
 
-public class TypologyPredictorMain {
+public class Neo4JTypologyPredictorMain {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		TypologyPredictor tp = new TypologyPredictor(Config.get().dbPath);
+		Neo4JTypologyPredictor tp = new Neo4JTypologyPredictor(Config.get().dbPath);
 
 		Scanner sc = new Scanner(System.in);
 		while (true) {
