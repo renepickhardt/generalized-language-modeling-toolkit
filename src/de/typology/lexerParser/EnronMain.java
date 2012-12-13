@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class EnronMain {
 	private static ArrayList<File> fileList;
@@ -18,8 +19,7 @@ public class EnronMain {
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
 		System.out.println("getting file list");
-		fileList = new ArrayList<File>();
-		getFileList(new File(Config.get().enronPath));
+		fileList = IOHelper.getDirectory(new File(Config.get().enronPath));
 
 		EnronParser parser = new EnronParser(fileList,
 				Config.get().parsedEnronOutputPath);
@@ -40,18 +40,4 @@ public class EnronMain {
 		done.createNewFile();
 		System.out.println("done");
 	}
-
-	private static void getFileList(File f) {
-		File[] files = f.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					getFileList(file);
-				} else {
-					fileList.add(file);
-				}
-			}
-		}
-	}
-
 }

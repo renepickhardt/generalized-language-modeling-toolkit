@@ -26,26 +26,21 @@ public class Config extends Properties {
 	public String parsedWikiOutputPath;
 	public String normalizedWikiOutputPath;
 	public String wikiLinksOutputPath;
-
+	public String wikiLinksHead;
+	public String germanWikiText;
 	public String reutersXmlPath;
 	public String parsedReutersOutputPath;
 	public String normalizedReutersOutputPath;
-
 	public String enronPath;
 	public String parsedEnronOutputPath;
 	public String normalizedEnronOutputPath;
-
 	public String DGTTMPath;
 	public String DGTTMLanguage;
 	public String parsedDGTTMOutputPath;
 	public String normalizedDGTTMOutputPath;
-
-	// used in de.typology.Keystrokes:
-	public String germanWikiText;
 	public String letterGraph;
 	public int keystrokesWindowSize;
 
-	// used in de.typology.util.GoogleNgramDownloadBuilder:
 	public String ngramDownloadPath;
 	public String ngramDownloadOutputPath;
 
@@ -57,17 +52,39 @@ public class Config extends Properties {
 	public String parsedNGrams;
 	public int nGramLength;
 	public String sortedNGrams;
+	public int fileChunkThreashhold;
+	public int memoryLimitForWritingFiles;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String nGramsAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
+	// Flags for ngram building
+	public boolean createNGramChunks;
+	public boolean createSecondLevelNGramChunks;
+	public boolean aggregateNGramChunks;
+	public boolean sortNGrams;
+	public boolean generateNGramDistribution;
+	// same flags for typology edge creating as for ngram building
+	public boolean createTypologyEdgeChunks;
+	public boolean createSecondLevelTypologyEdgeChunks;
+	public boolean aggregateTypologyEdgeChunks;
+	public boolean sortTypologyEdges;
+	public boolean generateTypologyEdgeDistribution;
 
 	// used in de.typology.trainers
 	public String dbPath;
 	public String edgeInput;
 	public String hashMapMinSize;
+
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;
 	public String wordCountStats;
 	// used in de.typology.utils/LineCounter
 	public String lineCountInput;
 	public String lineCountStats;
+
+	public String parsedGoogleNGramsOutputPath;
+	public String normalizedGoogleNgramsPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 

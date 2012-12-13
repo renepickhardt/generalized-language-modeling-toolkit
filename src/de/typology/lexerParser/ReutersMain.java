@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class ReutersMain {
 	private static ArrayList<File> fileList;
@@ -18,8 +19,7 @@ public class ReutersMain {
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
 		System.out.println("getting file list");
-		fileList = new ArrayList<File>();
-		getFileList(new File(Config.get().reutersXmlPath));
+		fileList = IOHelper.getDirectory(new File(Config.get().reutersXmlPath));
 
 		ReutersParser parser = new ReutersParser(fileList,
 				Config.get().parsedReutersOutputPath);
@@ -40,18 +40,4 @@ public class ReutersMain {
 		done.createNewFile();
 		System.out.println("done");
 	}
-
-	private static void getFileList(File f) {
-		File[] files = f.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					getFileList(file);
-				} else {
-					fileList.add(file);
-				}
-			}
-		}
-	}
-
 }
