@@ -19,6 +19,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class LuceneTypologySearcher {
 
@@ -45,9 +46,13 @@ public class LuceneTypologySearcher {
 		SortField sortField = new SortField("cnt", SortField.Type.FLOAT, true);
 		// true at sortField: enable reverse sort
 		Sort sort = new Sort(sortField);
+		long startTime = System.currentTimeMillis();
 		TopDocs hits = indexSearcher.search(query, new FieldValueFilter("cnt"),
 				5, sort);
 		// change 3rd parameter at hits to change the number of results
+		long endTime = System.currentTimeMillis();
+		IOHelper.strongLog(endTime - startTime + " milliseconds for searching "
+				+ q);
 		for (ScoreDoc scoreDoc : hits.scoreDocs) {
 			Document doc = indexSearcher.doc(scoreDoc.doc);
 			System.out.println(doc.get("tgt") + " " + doc.get("cnt"));
