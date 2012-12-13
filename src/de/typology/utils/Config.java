@@ -76,6 +76,7 @@ public class Config extends Properties {
 	public String edgeInput;
 	public String normalizedEdges;
 	public String hashMapMinSize;
+	public String indexPath;
 
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;
