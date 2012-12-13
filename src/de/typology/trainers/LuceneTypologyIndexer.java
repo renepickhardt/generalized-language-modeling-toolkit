@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
@@ -50,7 +50,7 @@ public class LuceneTypologyIndexer {
 
 	public LuceneTypologyIndexer(String edgeDir) throws IOException {
 		Directory dir = FSDirectory.open(new File(edgeDir));
-		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
+		Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
 		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_40,
 				analyzer);
 		config.setOpenMode(OpenMode.CREATE);
