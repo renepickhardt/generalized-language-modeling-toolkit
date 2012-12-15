@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -46,11 +46,11 @@ public class LuceneTypologyIndexer {
 
 	private String line;
 	private String[] lineSplit;
-	private Double edgeCount;
+	private Float edgeCount;
 
 	public LuceneTypologyIndexer(String edgeDir) throws IOException {
 		Directory dir = FSDirectory.open(new File(edgeDir));
-		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_40);
+		Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
 		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_40,
 				analyzer);
 		config.setOpenMode(OpenMode.CREATE);
@@ -74,6 +74,10 @@ public class LuceneTypologyIndexer {
 	public int index(String dataDir) throws NumberFormatException, IOException {
 		ArrayList<File> files = IOHelper.getDirectory(new File(dataDir));
 		for (File file : files) {
+			if (file.getName().contains("distribution")) {
+				IOHelper.log("skipping " + file.getAbsolutePath());
+				continue;
+			}
 			IOHelper.log("indexing " + file.getAbsolutePath());
 			this.indexFile(file);
 		}
@@ -91,8 +95,8 @@ public class LuceneTypologyIndexer {
 				IOHelper.strongLog("lineSplit length is "
 						+ this.lineSplit.length);
 			}
-			this.edgeCount = Double
-					.parseDouble(this.lineSplit[this.lineSplit.length - 1]
+			this.edgeCount = Float
+					.parseFloat(this.lineSplit[this.lineSplit.length - 1]
 							.substring(1));
 			Document document = this.getDocument(this.lineSplit[0],
 					this.lineSplit[1], this.edgeCount);
@@ -102,11 +106,11 @@ public class LuceneTypologyIndexer {
 		return docCount;
 	}
 
-	private Document getDocument(String source, String target, Double count) {
+	private Document getDocument(String source, String target, Float count) {
 		Document document = new Document();
 		document.add(new StringField("src", source, Field.Store.YES));
 		document.add(new StringField("tgt", target, Field.Store.YES));
-		document.add(new DoubleField("cnt", count, Field.Store.YES));
+		document.add(new FloatField("cnt", count, Field.Store.YES));
 		return document;
 	}
 }
