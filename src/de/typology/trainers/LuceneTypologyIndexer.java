@@ -74,6 +74,10 @@ public class LuceneTypologyIndexer {
 	public int index(String dataDir) throws NumberFormatException, IOException {
 		ArrayList<File> files = IOHelper.getDirectory(new File(dataDir));
 		for (File file : files) {
+			if (file.getName().contains("distribution")) {
+				IOHelper.log("skipping " + file.getAbsolutePath());
+				continue;
+			}
 			IOHelper.log("indexing " + file.getAbsolutePath());
 			this.indexFile(file);
 		}
