@@ -2,6 +2,7 @@ package de.typology.predictors;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -31,31 +32,40 @@ public class LuceneTypologySearcher {
 	public static void main(String[] args) throws IOException, ParseException {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
 		lts.search(Config.get().indexPath + "1/", "A");
-		System.out.println("exit");
 	}
 
-	public void search(String indexDir, String q) throws IOException,
-			ParseException {
-		Directory directory = FSDirectory.open(new File(indexDir));
-		DirectoryReader directoryReader = DirectoryReader.open(directory);
-		IndexSearcher indexSearcher = new IndexSearcher(directoryReader);
-
-		Term term = new Term("src", q);
-		Query query = new TermQuery(term);
-
-		SortField sortField = new SortField("cnt", SortField.Type.FLOAT, true);
-		// true at sortField: enable reverse sort
-		Sort sort = new Sort(sortField);
+	public HashMap<String, Float> search(String indexDir, String q) {
 		long startTime = System.currentTimeMillis();
-		TopDocs hits = indexSearcher.search(query, new FieldValueFilter("cnt"),
-				5, sort);
-		// change 3rd parameter at hits to change the number of results
-		long endTime = System.currentTimeMillis();
-		IOHelper.strongLog(endTime - startTime + " milliseconds for searching "
-				+ q);
-		for (ScoreDoc scoreDoc : hits.scoreDocs) {
-			Document doc = indexSearcher.doc(scoreDoc.doc);
-			System.out.println(doc.get("tgt") + " " + doc.get("cnt"));
+		Directory directory;
+		DirectoryReader directoryReader;
+		IndexSearcher indexSearcher;
+		HashMap<String, Float> result = new HashMap<String, Float>();
+		try {
+			directory = FSDirectory.open(new File(indexDir));
+			directoryReader = DirectoryReader.open(directory);
+			indexSearcher = new IndexSearcher(directoryReader);
+			Term term = new Term("src", q);
+			Query query = new TermQuery(term);
+
+			SortField sortField = new SortField("cnt", SortField.Type.FLOAT,
+					true);
+			// true at sortField: enable reverse sort
+			Sort sort = new Sort(sortField);
+
+			TopDocs hits = indexSearcher.search(query, new FieldValueFilter(
+					"cnt"), 5, sort);
+			// change 3rd parameter at hits to change the number of results
+			// TODO externalize number of results
+
+			for (ScoreDoc scoreDoc : hits.scoreDocs) {
+				Document doc = indexSearcher.doc(scoreDoc.doc);
+				result.put(doc.get("tgt"), Float.parseFloat(doc.get("cnt")));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
+		long endTime = System.currentTimeMillis();
+		IOHelper.log(endTime - startTime + " milliseconds for searching " + q);
+		return result;
 	}
 }
