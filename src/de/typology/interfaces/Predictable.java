@@ -14,7 +14,7 @@ public interface Predictable {
 	 * @param fourGram
 	 * @return result term
 	 */
-	public String[] predict(String[] fourGram);
+	public String[] predict(String[] fourGram, String prefix);
 
 	/**
 	 * 
