@@ -50,10 +50,9 @@ public class LuceneTypologyPredictor implements Predictable {
 			System.out.println("result: ");
 			int i = 1;
 			for (String s : result) {
-				System.out.println(i + ": " + s);
+				System.out.println("\t" + i + ": " + s);
 				i++;
 			}
-			System.out.println();
 			System.out.println();
 		}
 		sc.close();
