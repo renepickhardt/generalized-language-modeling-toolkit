@@ -59,6 +59,10 @@ public class NGramNormalizer {
 			this.outputPathWithRelType = outputPath + relType + "/";
 			new File(this.outputPathWithRelType).mkdir();
 			for (File file : this.files) {
+				if (file.getName().contains("distribution")) {
+					IOHelper.log("skipping " + file.getAbsolutePath());
+					continue;
+				}
 				// aggregate outgoing edge counts for each node
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
 				this.outgoingEdges = new HashMap<String, Integer>();
