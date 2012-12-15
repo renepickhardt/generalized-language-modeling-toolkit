@@ -3,6 +3,7 @@ package de.typology.predictors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
 import de.typology.interfaces.Predictable;
 import de.typology.utils.Config;
@@ -15,11 +16,47 @@ public class LuceneTypologyPredictor implements Predictable {
 	public static void main(String[] args) {
 		LuceneTypologyPredictor ltp = new LuceneTypologyPredictor(
 				Config.get().indexPath);
-		String[] fourGram = { "This", "is", "only", "a" };
-		String[] result = ltp.predict(fourGram, "t");
-		for (String s : result) {
-			System.out.println(s);
+
+		Scanner sc = new Scanner(System.in);
+		while (true) {
+			System.out
+					.println("please insert four words and an optional prefix");
+			String input = sc.nextLine();
+			String[] inputSplit = input.split("\\s");
+			if (inputSplit.length < 4) {
+				if (inputSplit.length == 1 && inputSplit[0].equals("exit")) {
+					System.out.println("exiting");
+					break;
+				}
+				System.out.println("four words...");
+				continue;
+			}
+			String[] result = new String[0];
+			long startTime = System.currentTimeMillis();
+			if (inputSplit.length == 4) {
+				result = ltp.predict(inputSplit, "");
+			}
+			if (inputSplit.length == 5) {
+				String[] inputSplitSub = new String[4];
+				for (int i = 0; i < 4; i++) {
+					inputSplitSub[i] = inputSplit[i];
+				}
+				result = ltp.predict(inputSplitSub, inputSplit[4]);
+			}
+			long endTime = System.currentTimeMillis();
+
+			System.out.println();
+			System.out.println("total time: " + (endTime - startTime) + " ms");
+			System.out.println("result: ");
+			int i = 1;
+			for (String s : result) {
+				System.out.println(i + ": " + s);
+				i++;
+			}
+			System.out.println();
+			System.out.println();
 		}
+		sc.close();
 	}
 
 	String indexPath;
