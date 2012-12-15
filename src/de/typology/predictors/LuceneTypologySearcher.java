@@ -3,6 +3,7 @@ package de.typology.predictors;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -31,10 +32,15 @@ public class LuceneTypologySearcher {
 	 */
 	public static void main(String[] args) throws IOException, ParseException {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
-		lts.search(Config.get().indexPath + "1/", "A");
+		HashMap<String, Float> result = lts.search(Config.get().indexPath
+				+ "1/", "t", "a");
+		for (Entry<String, Float> e : result.entrySet()) {
+			System.out.println(e.getKey() + ": " + e.getValue());
+		}
 	}
 
-	public HashMap<String, Float> search(String indexDir, String q) {
+	public HashMap<String, Float> search(String indexDir, String prefix,
+			String q) {
 		long startTime = System.currentTimeMillis();
 		Directory directory;
 		DirectoryReader directoryReader;
@@ -53,13 +59,17 @@ public class LuceneTypologySearcher {
 			Sort sort = new Sort(sortField);
 
 			TopDocs hits = indexSearcher.search(query, new FieldValueFilter(
-					"cnt"), 5, sort);
+					"cnt"), Integer.MAX_VALUE, sort);
 			// change 3rd parameter at hits to change the number of results
 			// TODO externalize number of results
 
 			for (ScoreDoc scoreDoc : hits.scoreDocs) {
 				Document doc = indexSearcher.doc(scoreDoc.doc);
-				result.put(doc.get("tgt"), Float.parseFloat(doc.get("cnt")));
+				// this prefix filtering probably could be integrated into the
+				// lucene search query
+				if (doc.get("tgt").startsWith(prefix)) {
+					result.put(doc.get("tgt"), Float.parseFloat(doc.get("cnt")));
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

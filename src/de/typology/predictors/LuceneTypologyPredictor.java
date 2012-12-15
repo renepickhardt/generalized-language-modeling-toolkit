@@ -34,7 +34,7 @@ public class LuceneTypologyPredictor implements Predictable {
 		ArrayList<HashMap<String, Float>> searchResults = new ArrayList<HashMap<String, Float>>();
 		for (int edgeType = 1; edgeType < 5; edgeType++) {
 			searchResults.add(lts.search(this.indexPath + edgeType + "/",
-					fourGram[4 - edgeType]));
+					prefix, fourGram[4 - edgeType]));
 		}
 		HashMap<String, Float> combinedSearchResults = new HashMap<String, Float>();
 
@@ -77,11 +77,13 @@ public class LuceneTypologyPredictor implements Predictable {
 
 	@Override
 	public int getCorpusId() {
+		// TODO implement
 		return 0;
 	}
 
 	@Override
 	public void setCorpusId(int corpusId) {
+		// TODO implement
 	}
 
 }
