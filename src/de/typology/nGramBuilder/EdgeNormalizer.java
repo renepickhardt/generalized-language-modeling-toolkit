@@ -10,7 +10,7 @@ import java.util.HashMap;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class NGramNormalizer {
+public class EdgeNormalizer {
 	private BufferedReader reader;
 	private BufferedWriter writer;
 	private String outputPathWithRelType;
@@ -29,7 +29,7 @@ public class NGramNormalizer {
 	 */
 	public static void main(String[] args) throws NumberFormatException,
 			IOException {
-		NGramNormalizer ngn = new NGramNormalizer();
+		EdgeNormalizer ngn = new EdgeNormalizer();
 		IOHelper.strongLog("normalizing edges from " + Config.get().edgeInput
 				+ " and storing updated edges at "
 				+ Config.get().normalizedEdges);
