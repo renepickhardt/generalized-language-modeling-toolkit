@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import de.typology.lexerParser.WikipediaMain;
 import de.typology.nGramBuilder.BuildNGrams;
+import de.typology.trainers.LuceneTypologyIndexer;
 
 public class WikiNGramBuilder {
 
@@ -25,6 +26,8 @@ public class WikiNGramBuilder {
 		// build ngrams:
 		BuildNGrams.main(args);
 
+		// normalize typology edges and put into lucene index:
+		LuceneTypologyIndexer.main(args);
 	}
 
 }
