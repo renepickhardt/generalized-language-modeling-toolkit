@@ -75,6 +75,10 @@ public class Config extends Properties {
 	public String dbPath;
 	public String edgeInput;
 	public String normalizedEdges;
+
+	public String nGramsInput;
+	public String normalizedNGrams;
+
 	public String hashMapMinSize;
 	public String indexPath;
 
