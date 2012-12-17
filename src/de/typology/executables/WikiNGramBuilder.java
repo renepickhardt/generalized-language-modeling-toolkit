@@ -3,7 +3,6 @@ package de.typology.executables;
 import java.io.IOException;
 
 import de.typology.nGramBuilder.NGramNormalizer;
-import de.typology.trainers.LuceneTypologyIndexer;
 
 public class WikiNGramBuilder {
 
@@ -26,10 +25,14 @@ public class WikiNGramBuilder {
 		// nGramBuilder.main(args);
 
 		// normalize typology edges
-		NGramNormalizer.main(args);
+		// EdgeNormalizer.main(args);
 
 		// Put normalized edges to Lucene index:
-		LuceneTypologyIndexer.main(args);
+		// LuceneTypologyIndexer.main(args);
+
+		// normalize ngrams calculate maximal likelihood estimation
+		NGramNormalizer.main(args);
+
 	}
 
 }
