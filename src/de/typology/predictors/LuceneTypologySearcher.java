@@ -62,9 +62,18 @@ public class LuceneTypologySearcher {
 	public static void main(String[] args) throws IOException, ParseException {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
 
+		lts.query("Ich gehe über die", "");
+		lts.query("Bla Ich gehe über die", "");
+		lts.query("eines schoenen", "");
+		lts.query("das wandern ist des", "");
+		lts.query("Koblenz ist eine Stadt am", "");
+		lts.query("Der Frankfurter Flughafen", "");
+
+		HashMap<String, Float> result = lts.search("Bla Ich gehe über die", "",
+				12);
+
 		for (int i = 0; i < 10; i++) {
-			HashMap<String, Float> result = lts.search("Bla Ich gehe über die",
-					"", 12 - i);
+			result = lts.search("Bla Ich gehe über die", "", 12 - i);
 
 			Algo<String, Float> a = new Algo<String, Float>();
 			TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
@@ -76,6 +85,21 @@ public class LuceneTypologySearcher {
 				for (String suggestion : topkSuggestions.get(score)) {
 					System.out.println("  " + suggestion);
 				}
+			}
+		}
+	}
+
+	private void query(String q, String prefix) {
+		HashMap<String, Float> result = this.search(q, prefix, 12);
+		Algo<String, Float> a = new Algo<String, Float>();
+		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
+				5);
+		int topkCnt = 0;
+
+		for (Float score : topkSuggestions.descendingKeySet()) {
+			System.out.println(score);
+			for (String suggestion : topkSuggestions.get(score)) {
+				System.out.println("  " + suggestion);
 			}
 		}
 	}
