@@ -13,13 +13,14 @@ import de.typology.utils.IOHelper;
 public class NGramNormalizer {
 	private BufferedReader reader;
 	private BufferedWriter writer;
-	private String outputPathWithRelType;
+	private String outputPathWithNGramType;
 	private ArrayList<File> files;
-	private HashMap<String, Integer> outgoingEdges;
+	private HashMap<String, Integer> nMinusOneGrams;
 
 	private String line;
 	private String[] lineSplit;
-	private int edgeCount;
+	String nMinusOneGram;
+	private int nGramCount;
 
 	/**
 	 * @param args
@@ -30,18 +31,18 @@ public class NGramNormalizer {
 	public static void main(String[] args) throws NumberFormatException,
 			IOException {
 		NGramNormalizer ngn = new NGramNormalizer();
-		IOHelper.strongLog("normalizing edges from " + Config.get().edgeInput
-				+ " and storing updated edges at "
-				+ Config.get().normalizedEdges);
-		double time = ngn.normalize(Config.get().edgeInput,
-				Config.get().normalizedEdges);
-		IOHelper.strongLog("time for normalizing edges from "
-				+ Config.get().edgeInput + " : " + time);
+		IOHelper.strongLog("normalizing ngrams from "
+				+ Config.get().nGramsInput + " and storing updated ngrams at "
+				+ Config.get().normalizedNGrams);
+		double time = ngn.normalize(Config.get().nGramsInput,
+				Config.get().normalizedNGrams);
+		IOHelper.strongLog("time for normalizing ngrams from "
+				+ Config.get().nGramsInput + " : " + time);
 	}
 
 	/**
-	 * given a directory containing typology edges (type 1 to 4) this function
-	 * copies the edges into new files and replaces the edge counts by its
+	 * given a directory containing ngrams (2grams to 5grams) this function
+	 * copies the ngrams into new files and replaces the ngram counts by its
 	 * probabilities.
 	 * 
 	 * @param inputPath
@@ -54,62 +55,78 @@ public class NGramNormalizer {
 			throws NumberFormatException, IOException {
 		long startTime = System.currentTimeMillis();
 		new File(outputPath).mkdir();
-		for (int relType = 1; relType < 5; relType++) {
-			this.files = IOHelper.getDirectory(new File(inputPath + relType));
-			this.outputPathWithRelType = outputPath + relType + "/";
-			new File(this.outputPathWithRelType).mkdir();
+		for (int nGramType = 2; nGramType < 6; nGramType++) {
+			this.files = IOHelper.getDirectory(new File(inputPath + nGramType));
+			this.outputPathWithNGramType = outputPath + nGramType + "/";
+			new File(this.outputPathWithNGramType).mkdir();
 			for (File file : this.files) {
 				if (file.getName().contains("distribution")) {
 					IOHelper.log("skipping " + file.getAbsolutePath());
 					continue;
 				}
-				// aggregate outgoing edge counts for each node
+				// aggregate outgoing ngram counts for each node
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
-				this.outgoingEdges = new HashMap<String, Integer>();
+				this.nMinusOneGrams = new HashMap<String, Integer>();
 				while ((this.line = this.reader.readLine()) != null) {
 					// extract information from line
-					// line format: word\tword\t#edgeCount\n
+					// line format: ngram\t#nGramCount\n
 					this.lineSplit = this.line.split("\t");
-					if (this.lineSplit.length < 3) {
+					if (this.lineSplit.length != nGramType + 1) {
 						continue;
 					}
-					this.edgeCount = Integer
+
+					this.nMinusOneGram = "";
+					for (int i = 0; i < nGramType - 2; i++) {
+						this.nMinusOneGram += this.lineSplit[i] + "\t";
+					}
+					this.nMinusOneGram += this.lineSplit[nGramType - 2];
+
+					this.nGramCount = Integer
 							.parseInt(this.lineSplit[this.lineSplit.length - 1]
 									.substring(1));
-					if (!this.outgoingEdges.containsKey(this.lineSplit[0])) {
-						this.outgoingEdges.put(this.lineSplit[0],
-								this.edgeCount);
+					if (!this.nMinusOneGrams.containsKey(this.nMinusOneGram)) {
+						this.nMinusOneGrams.put(this.nMinusOneGram,
+								this.nGramCount);
 					} else {
-						this.outgoingEdges.put(this.lineSplit[0],
-								this.outgoingEdges.get(this.lineSplit[0])
-										+ this.edgeCount);
+						this.nMinusOneGrams.put(this.nMinusOneGram,
+								this.nMinusOneGrams.get(this.nMinusOneGram)
+										+ this.nGramCount);
 					}
 				}
 				this.reader.close();
 
 				// normalize edge counts
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
-				this.writer = IOHelper.openWriteFile(this.outputPathWithRelType
-						+ file.getName(), 32 * 1024 * 1024);
+				this.writer = IOHelper.openWriteFile(
+						this.outputPathWithNGramType + file.getName(),
+						32 * 1024 * 1024);
 				while ((this.line = this.reader.readLine()) != null) {
 					// extract information from line
-					// line format: word\tword\t#edgeCount\n
+					// line format: ngram\t#nGramCount\n
 					this.lineSplit = this.line.split("\t");
-					if (this.lineSplit.length < 3) {
+					if (this.lineSplit.length != nGramType + 1) {
 						continue;
 					}
-					this.edgeCount = Integer
+
+					this.nMinusOneGram = "";
+					for (int i = 0; i < nGramType - 2; i++) {
+						this.nMinusOneGram += this.lineSplit[i] + "\t";
+					}
+					this.nMinusOneGram += this.lineSplit[nGramType - 2];
+
+					this.nGramCount = Integer
 							.parseInt(this.lineSplit[this.lineSplit.length - 1]
 									.substring(1));
-					if (this.outgoingEdges.containsKey(this.lineSplit[0])) {
+
+					if (this.nMinusOneGrams.containsKey(this.nMinusOneGram)) {
 						// write updated edge to new file
-						this.writer.write(this.lineSplit[0] + "\t"
-								+ this.lineSplit[1] + "\t#"
-								+ (double) this.edgeCount
-								/ this.outgoingEdges.get(this.lineSplit[0])
+						this.writer.write(this.nMinusOneGram + "\t"
+								+ this.lineSplit[nGramType - 1] + "\t#"
+								+ (double) this.nGramCount
+								/ this.nMinusOneGrams.get(this.nMinusOneGram)
 								+ "\n");
 					} else {
-						IOHelper.strongLog("no edge count for:"
+						IOHelper.strongLog("no ngram count for:"
 								+ this.lineSplit[0] + " in file: "
 								+ file.getName());
 					}
