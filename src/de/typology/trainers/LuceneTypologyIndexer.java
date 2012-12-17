@@ -50,6 +50,10 @@ public class LuceneTypologyIndexer {
 
 	public LuceneTypologyIndexer(String edgeDir) throws IOException {
 		Directory dir = FSDirectory.open(new File(edgeDir));
+		// TODO: change Analyzer since this one makes stuff case insensitive...
+		// also change this in quering: see important note:
+		// http://oak.cs.ucla.edu/cs144/projects/lucene/index.html in chapter
+		// 2.0
 		Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
 		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_40,
 				analyzer);
