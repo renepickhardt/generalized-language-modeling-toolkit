@@ -2,8 +2,7 @@ package de.typology.executables;
 
 import java.io.IOException;
 
-import de.typology.lexerParser.WikipediaMain;
-import de.typology.nGramBuilder.BuildNGrams;
+import de.typology.nGramBuilder.NGramNormalizer;
 import de.typology.trainers.LuceneTypologyIndexer;
 
 public class WikiNGramBuilder {
@@ -21,12 +20,15 @@ public class WikiNGramBuilder {
 	 */
 	public static void main(String[] args) throws IOException {
 		// parse and normalize wikipedia data:
-		WikipediaMain.main(args);
+		// WikipediaMain.main(args);
 
 		// build ngrams:
-		BuildNGrams.main(args);
+		// nGramBuilder.main(args);
 
-		// normalize typology edges and put into lucene index:
+		// normalize typology edges
+		NGramNormalizer.main(args);
+
+		// Put normalized edges to Lucene index:
 		LuceneTypologyIndexer.main(args);
 	}
 
