@@ -89,11 +89,13 @@ public class LuceneTypologySearcher {
 		}
 	}
 
-	private void query(String q, String prefix) {
+	public void query(String q, String prefix) {
+		IOHelper.log(q + " PREFIX: " + prefix);
 		HashMap<String, Float> result = this.search(q, prefix, 12);
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
 				5);
+		;
 		int topkCnt = 0;
 
 		for (Float score : topkSuggestions.descendingKeySet()) {
@@ -102,6 +104,33 @@ public class LuceneTypologySearcher {
 				System.out.println("  " + suggestion);
 			}
 		}
+	}
+
+	public void query(String q, String prefix, String match) {
+		IOHelper.log(q + " \tPREFIX: " + prefix + " \tMATCH: " + match);
+		HashMap<String, Float> result = this.search(q, prefix, 12);
+		Algo<String, Float> a = new Algo<String, Float>();
+		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
+				5);
+		;
+		int topkCnt = 0;
+
+		for (Float score : topkSuggestions.descendingKeySet()) {
+			for (String suggestion : topkSuggestions.get(score)) {
+				topkCnt++;
+				if (suggestion.equals(match)) {
+					IOHelper.log("HIT\tRANK: " + topkCnt + " \tPREFIXLENGHT: "
+							+ prefix.length());
+					if (topkCnt == 1) {
+						IOHelper.log("KSS: "
+								+ (match.length() - prefix.length())
+								+ " \tPREFIXLENGHT: " + prefix.length());
+					}
+					return;
+				}
+			}
+		}
+		IOHelper.log("NOTHING\tPREFIXLENGTH: " + prefix.length());
 	}
 
 	// docs at:
@@ -163,7 +192,8 @@ public class LuceneTypologySearcher {
 			e.printStackTrace();
 		}
 		long endTime = System.currentTimeMillis();
-		IOHelper.log(endTime - startTime + " milliseconds for searching " + q);
+		// IOHelper.log(endTime - startTime + " milliseconds for searching " +
+		// q);
 		return result;
 	}
 }
