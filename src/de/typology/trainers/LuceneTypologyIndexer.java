@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FloatField;
@@ -18,6 +18,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import de.typology.evaluation.TypologyEvaluator;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -39,6 +40,7 @@ public class LuceneTypologyIndexer {
 		long endTime = System.currentTimeMillis();
 		IOHelper.strongLog((endTime - startTime) / 1000
 				+ " seconds for indexing " + Config.get().normalizedEdges);
+		TypologyEvaluator.main(args);
 	}
 
 	private BufferedReader reader;
@@ -54,7 +56,9 @@ public class LuceneTypologyIndexer {
 		// also change this in quering: see important note:
 		// http://oak.cs.ucla.edu/cs144/projects/lucene/index.html in chapter
 		// 2.0
-		Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
+		// http://stackoverflow.com/questions/2487736/lucene-case-sensitive-insensitive-search
+		// Analyzer analyzer = new TypologyAnalyzer(Version.LUCENE_40);
+		Analyzer analyzer = new KeywordAnalyzer();
 		IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_40,
 				analyzer);
 		config.setOpenMode(OpenMode.CREATE);

@@ -81,6 +81,7 @@ public class Config extends Properties {
 
 	public String hashMapMinSize;
 	public String indexPath;
+	public String nGramIndexPath;
 
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;

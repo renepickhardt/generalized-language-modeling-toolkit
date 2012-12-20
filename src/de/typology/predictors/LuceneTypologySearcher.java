@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -149,9 +149,15 @@ public class LuceneTypologySearcher {
 			Sort sort = new Sort(sortField);
 
 			// TODO: change to whiteSpaceanalyzer as in indexer...
-			Analyzer analyzer = new SimpleAnalyzer(Version.LUCENE_40);
+			// Analyzer analyzer = new TypologyAnalyzer(Version.LUCENE_40);
+			Analyzer analyzer = new KeywordAnalyzer();
 			QueryParser queryParser = new QueryParser(Version.LUCENE_40, "src",
 					analyzer);
+
+			// http://elasticsearch-users.115913.n3.nabble.com/WildcardQuery-and-case-sensitivity-td3489451.html
+			// AND
+			// http://wiki.apache.org/lucene-java/LuceneFAQ#Are_Wildcard.2C_Prefix.2C_and_Fuzzy_queries_case_sensitive.3F
+			queryParser.setLowercaseExpandedTerms(false);
 
 			String[] terms = q.split(" ");
 
