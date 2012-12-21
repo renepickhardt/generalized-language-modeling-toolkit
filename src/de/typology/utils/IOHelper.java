@@ -309,6 +309,7 @@ public class IOHelper {
 
 	/**
 	 * @param path
+	 *            : file path to the directory
 	 * @return list of files contained in given directory
 	 */
 	public static ArrayList<File> getDirectory(File path) {
@@ -316,24 +317,12 @@ public class IOHelper {
 		return getFileList(path);
 	}
 
-	// TODO: non recursive version of getFileList I don't know what to do with
-	// it in merge! there is a function with the same name that is recursive. i
-	// don't know who is calling it and so on we need testing (:
-
-	// public static ArrayList<File> getFileList(File path) {
-	// files = new ArrayList<File>();
-	// if (path.exists()) {
-	// getFiles(path);
-	// }
-	// return files;
-	// }
-
-	public static ArrayList<File> getFileList(File path) {
+	private static ArrayList<File> getFileList(File path) {
 		File[] files = path.listFiles();
 		if (files != null) {
 			for (File file : files) {
 				if (file.isDirectory()) {
-					getDirectory(file);
+					getFileList(file);
 				} else {
 					fileList.add(file);
 				}

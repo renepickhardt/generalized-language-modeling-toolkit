@@ -78,6 +78,13 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			languageSpecified = true;
 		}
 
+		if (Config.get().wikiXmlPath.contains("barwiki")) {
+			this.disambiguations.add("Begriffsklärung");
+			this.disambiguations.add("begriffsklärung");
+			System.out.println("this is a bavarian wikipedia xml");
+			languageSpecified = true;
+		}
+
 		if (Config.get().wikiXmlPath.contains("enwiki")) {
 			this.disambiguations.add("Disambiguation");
 			this.disambiguations.add("disambiguation");

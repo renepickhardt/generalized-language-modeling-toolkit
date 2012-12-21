@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class DGTTMMain {
 	private static ArrayList<File> fileList;
@@ -18,8 +19,7 @@ public class DGTTMMain {
 	public static void main(String[] args) throws IOException {
 		long startTime = System.currentTimeMillis();
 		System.out.println("getting file list");
-		fileList = new ArrayList<File>();
-		getFileList(new File(Config.get().DGTTMPath));
+		fileList = IOHelper.getDirectory(new File(Config.get().DGTTMPath));
 
 		DGTTMParser parser = new DGTTMParser(fileList,
 				Config.get().parsedDGTTMOutputPath);
@@ -40,18 +40,4 @@ public class DGTTMMain {
 		done.createNewFile();
 		System.out.println("done");
 	}
-
-	private static void getFileList(File f) {
-		File[] files = f.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					getFileList(file);
-				} else {
-					fileList.add(file);
-				}
-			}
-		}
-	}
-
 }
