@@ -11,7 +11,7 @@ public class TypologyEvaluator {
 	public static void main(String[] args) {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
 
-		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);
+		BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
 		try {
 			String line = "";
 			long start = System.currentTimeMillis();

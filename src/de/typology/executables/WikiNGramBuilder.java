@@ -2,7 +2,7 @@ package de.typology.executables;
 
 import java.io.IOException;
 
-import de.typology.nGramBuilder.NGramNormalizer;
+import de.typology.trainers.LuceneNGramIndexer;
 
 public class WikiNGramBuilder {
 
@@ -21,8 +21,10 @@ public class WikiNGramBuilder {
 		// parse and normalize wikipedia data:
 		// WikipediaMain.main(args);
 
+		// DataSetSplitter.main(args);
+
 		// build ngrams:
-		// nGramBuilder.main(args);
+		// NGramBuilder.main(args);
 
 		// normalize typology edges
 		// EdgeNormalizer.main(args);
@@ -30,8 +32,9 @@ public class WikiNGramBuilder {
 		// Put normalized edges to Lucene index:
 		// LuceneTypologyIndexer.main(args);
 
+		LuceneNGramIndexer.main(args);
 		// normalize ngrams calculate maximal likelihood estimation
-		NGramNormalizer.main(args);
+		// NGramNormalizer.main(args);
 
 	}
 

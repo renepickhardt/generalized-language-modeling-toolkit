@@ -15,7 +15,7 @@ public class NGramEvaluator {
 	public static void main(String[] args) {
 		LuceneNGramSearcher lns = new LuceneNGramSearcher();
 
-		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);
+		BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
 		try {
 			String line = "";
 			long start = System.currentTimeMillis();

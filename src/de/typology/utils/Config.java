@@ -21,43 +21,56 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
-	// used in de.typology.lexerparser:
+
+	// STEP 0 GLOBAL CONFIGS
+	// public String inputPath;
+	// public String parsedDataPath;
+	// public String nGramPath;
+	// public String typologyEdgesPath;
+
+	// STEP 1 PARSING DATA SETS used in de.typology.lexerparser:
+
+	// INPUT:
 	public String wikiXmlPath;
+	public String reutersXmlPath;
+	public String enronPath;
+	public String DGTTMPath;
+	public String ngramDownloadPath;
+
+	// OUTPUT:
 	public String parsedWikiOutputPath;
+	public String parsedReutersOutputPath;
+	public String parsedEnronOutputPath;
+	public String parsedDGTTMOutputPath;
+	public String DGTTMLanguage;
+
 	public String normalizedWikiOutputPath;
+	public String normalizedReutersOutputPath;
+	public String normalizedEnronOutputPath;
+	public String normalizedDGTTMOutputPath;
+	public String ngramDownloadOutputPath;
+
+	// COULD NOT REALLY MATCH
 	public String wikiLinksOutputPath;
 	public String wikiLinksHead;
 	public String germanWikiText;
-	public String reutersXmlPath;
-	public String parsedReutersOutputPath;
-	public String normalizedReutersOutputPath;
-	public String enronPath;
-	public String parsedEnronOutputPath;
-	public String normalizedEnronOutputPath;
-	public String DGTTMPath;
-	public String DGTTMLanguage;
-	public String parsedDGTTMOutputPath;
-	public String normalizedDGTTMOutputPath;
-	public String letterGraph;
-	public int keystrokesWindowSize;
-
-	public String ngramDownloadPath;
-	public String ngramDownloadOutputPath;
-
 	// used in de.typology.googleNgrams:
 	public String googleNgramsPath;
 	public String googleNgramsMergedPath;
 
+	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
+	public String trainingPath;
+	public String testingPath;
+
+	public int sampleRate; // \in [0, 100] 0 means no data from input will be
+							// used. 100 means all input data will be used
+	public int splitDataRatio; // \in [0, 100] 0 means no training data. 100
+								// means only training data
+
+	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
 	// used in de.typology.nGramBuilder
-	public String parsedNGrams;
-	public int nGramLength;
-	public String sortedNGrams;
-	public int fileChunkThreashhold;
-	public int memoryLimitForWritingFiles;
-	public String nGramKeyFile;
-	public String nGramsNotAggregatedPath;
-	public String nGramsAggregatedPath;
-	public String typologyEdgesPathNotAggregated;
+
+	// CONFIG
 	// Flags for ngram building
 	public boolean createNGramChunks;
 	public boolean createSecondLevelNGramChunks;
@@ -71,15 +84,29 @@ public class Config extends Properties {
 	public boolean sortTypologyEdges;
 	public boolean generateTypologyEdgeDistribution;
 
+	// INPUT
+	// should be the output of step1
+
+	// temporary files
+	public String parsedNGrams;
+	public int nGramLength;
+	public String sortedNGrams;
+	public int fileChunkThreashhold;
+	public int memoryLimitForWritingFiles;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
+
+	// OUTPUT
+	public String nGramsAggregatedPath;
+
 	// used in de.typology.trainers
-	public String dbPath;
 	public String edgeInput;
 	public String normalizedEdges;
 
 	public String nGramsInput;
 	public String normalizedNGrams;
 
-	public String hashMapMinSize;
 	public String indexPath;
 	public String nGramIndexPath;
 

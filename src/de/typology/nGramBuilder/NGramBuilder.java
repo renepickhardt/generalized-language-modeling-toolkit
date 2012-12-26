@@ -93,7 +93,7 @@ import de.typology.utils.IOHelper;
  * 
  */
 
-public class nGramBuilder {
+public class NGramBuilder {
 
 	/**
 	 * 
@@ -131,7 +131,7 @@ public class nGramBuilder {
 			NGramChunkCreator ngcc = new NGramChunkCreator(letters);
 			if (Config.get().createNGramChunks) {
 
-				ngcc.createNGramChunks(Config.get().germanWikiText, n);
+				ngcc.createNGramChunks(Config.get().trainingPath, n);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -166,6 +166,18 @@ public class nGramBuilder {
 						+ " seconds to: finnish sorting aggregated ngrams");
 			}
 
+			if (/* Config.get().normalizeNGrams */true) {
+				try {
+					NGramNormalizer.main(args);
+				} catch (NumberFormatException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
 			if (Config.get().generateNGramDistribution) {
 				NGramDistribution ngd = new NGramDistribution();
 				ngd.countDistribution(Config.get().nGramsNotAggregatedPath
@@ -180,7 +192,7 @@ public class nGramBuilder {
 					+ (n - 1)).mkdirs();
 			if (Config.get().createTypologyEdgeChunks) {
 				TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
-				tcc.createTypoelogyEdgeChunks(Config.get().germanWikiText,
+				tcc.createTypoelogyEdgeChunks(Config.get().trainingPath,
 						Config.get().typologyEdgesPathNotAggregated, n - 1);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
@@ -236,13 +248,13 @@ public class nGramBuilder {
 	}
 
 	// TODO: need to generalize this function if it should fit in more general
-	// tests! need to take away the pointing to Config.get().germanWikiText and
+	// tests! need to take away the pointing to Config.get().trainingPath and
 	// put it as a parameter sourceFile. also the output file should be saved to
 	// a different spot
 
 	private static String[] countMostFrequentStartingLetters(int k) {
 		IOHelper.log("Counting the " + k + " most frequent letters in: "
-				+ Config.get().germanWikiText);
+				+ Config.get().trainingPath);
 		String[] result = new String[k];
 		try {
 			IOHelper.log("Check if most frequent letters have been counted");
@@ -263,7 +275,7 @@ public class nGramBuilder {
 		}
 		IOHelper.log("No! just start counting now");
 
-		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);// Config.get().nGramKeyFile);
+		BufferedReader br = IOHelper.openReadFile(Config.get().trainingPath);// Config.get().nGramKeyFile);
 		String line = "";
 		int cnt = 0;
 
