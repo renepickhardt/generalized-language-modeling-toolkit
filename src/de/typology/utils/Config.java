@@ -28,7 +28,8 @@ public class Config extends Properties {
 
 	// STEP 0 GLOBAL CONFIGS
 	public String wikiInputDirectory;
-	public String wikiOutputDirectory;
+	public String googleInputDirectory;
+	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
 	public int nGramLength;
 

@@ -27,14 +27,14 @@ public class WikiNGramBuilder {
 		// parse and normalize wikipedia data:
 
 		File dir = new File(Config.get().wikiInputDirectory);
-		new File(Config.get().wikiOutputDirectory).mkdirs();
+		new File(Config.get().outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
 			// PARSE WIKI!
 			String wikiTyp = f.getName().split("-")[0];
-			String outPath = Config.get().wikiOutputDirectory + wikiTyp + "/";
+			String outPath = Config.get().outputDirectory + wikiTyp + "/";
 			new File(outPath).mkdirs();
-			String normalizedWiki = outPath + "normalized.txt";
 			String parsedWiki = outPath + "parsed.txt";
+			String normalizedWiki = outPath + "normalized.txt";
 
 			if (Config.get().parseWiki) {
 				WikipediaMain.run(f.getAbsolutePath(), parsedWiki,

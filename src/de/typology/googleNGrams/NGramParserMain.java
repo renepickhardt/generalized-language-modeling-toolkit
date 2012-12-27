@@ -4,38 +4,40 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class NGramsParserMain {
+public class NGramParserMain {
 	public static void main(String[] args) throws IOException {
 
-		ArrayList<File> files = IOHelper.getDirectory(new File(
-				Config.get().googleNgramsPath));
+	}
+
+	public static void run(String googleInputPath,
+			String parsedGoogleOutputPath, String normalizedGoogleOutputPath)
+			throws IOException {
+
+		ArrayList<File> files = IOHelper
+				.getDirectory(new File(googleInputPath));
 		for (File file : files) {
 			long startTime = System.currentTimeMillis();
 			long endTime = 0;
 			long sek = 0;
 			NGramRecognizer recognizer = new NGramRecognizer(
 					file.getAbsolutePath());
-			NGramParser parser = new NGramParser(recognizer);
+			NGramParser parser = new NGramParser(recognizer,
+					parsedGoogleOutputPath);
 			System.out.println("start parsing");
 			parser.parse();
 			System.out.println("parsing done");
-			String NGramNormalizerOutput = file.getAbsolutePath().substring(0,
-					file.getAbsolutePath().length() - 4)
-					+ "normalized.txt";
-			NGramNormalizer ngn = new NGramNormalizer(
-					Config.get().parsedGoogleNGramsOutputPath,
-					NGramNormalizerOutput);
+			NGramNormalizer ngn = new NGramNormalizer(parsedGoogleOutputPath,
+					normalizedGoogleOutputPath);
 			System.out.println("start cleanup");
 			ngn.normalize();
 			System.out.println("cleanup done");
 			System.out.println("generate indicator file");
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;
-			File done = new File(NGramNormalizerOutput + "IsDone." + sek + "s");
-			done.createNewFile();
+			IOHelper.strongLog("done normalizing: " + parsedGoogleOutputPath
+					+ ", time: " + sek + " seconds");
 		}
 		System.out.println("done");
 	}

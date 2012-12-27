@@ -15,7 +15,6 @@ import static de.typology.googleNGrams.NGramToken.WS;
 import java.io.IOException;
 import java.io.Writer;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 /**
@@ -33,10 +32,10 @@ public class NGramParser {
 	private NGramToken current;
 	private Writer writer;
 
-	public NGramParser(NGramRecognizer recognizer) {
+	public NGramParser(NGramRecognizer recognizer, String parsedGoogleOutputPath) {
 		this.recognizer = recognizer;
-		this.writer = IOHelper.openWriteFile(
-				Config.get().parsedGoogleNGramsOutputPath, 32 * 1024 * 1024);
+		this.writer = IOHelper.openWriteFile(parsedGoogleOutputPath,
+				32 * 1024 * 1024);
 	}
 
 	public void parse() throws IOException {
