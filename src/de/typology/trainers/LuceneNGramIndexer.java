@@ -108,8 +108,7 @@ public class LuceneNGramIndexer {
 				continue;
 			}
 			this.edgeCount = Float
-					.parseFloat(this.lineSplit[this.lineSplit.length - 1]
-							.substring(1));
+					.parseFloat(this.lineSplit[this.lineSplit.length - 1]);
 			String tmp = this.lineSplit[0].replace('\t', ' ');
 			this.lineSplit = tmp.split(" ");
 			String lastword = this.lineSplit[this.lineSplit.length - 1];
