@@ -40,15 +40,18 @@ public class DGTTMParser {
 	// private DGTTMToken previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
+	private String dgttmLanguage;
 
-	public DGTTMParser(ArrayList<File> fileList, String output) {
+	public DGTTMParser(ArrayList<File> fileList, String output,
+			String dgttmLanguage) {
+		this.dgttmLanguage = dgttmLanguage;
 		this.fileList = fileList;
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
 
 	public void parse() {
 		for (File f : this.fileList) {
-			this.recognizer = new DGTTMRecognizer(f);
+			this.recognizer = new DGTTMRecognizer(f, this.dgttmLanguage);
 			// writer.write(f.toString());
 			// writer.write("\n");
 			this.reset();

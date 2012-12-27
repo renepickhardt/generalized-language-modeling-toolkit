@@ -11,9 +11,8 @@ public class NGramParserMain {
 
 	}
 
-	public static void run(String googleInputPath,
-			String parsedOutputPath, String normalizedOutputPath)
-			throws IOException {
+	public static void run(String googleInputPath, String parsedOutputPath,
+			String normalizedOutputPath) throws IOException {
 
 		ArrayList<File> files = IOHelper
 				.getDirectory(new File(googleInputPath));
@@ -23,22 +22,20 @@ public class NGramParserMain {
 			long sek = 0;
 			NGramRecognizer recognizer = new NGramRecognizer(
 					file.getAbsolutePath());
-			NGramParser parser = new NGramParser(recognizer,
-					parsedOutputPath);
-			System.out.println("start parsing");
+			NGramParser parser = new NGramParser(recognizer, parsedOutputPath);
+			IOHelper.log("start parsing");
 			parser.parse();
-			System.out.println("parsing done");
+			IOHelper.log("parsing done");
 			NGramNormalizer ngn = new NGramNormalizer(parsedOutputPath,
 					normalizedOutputPath);
-			System.out.println("start cleanup");
+			IOHelper.log("start cleanup");
 			ngn.normalize();
-			System.out.println("cleanup done");
-			System.out.println("generate indicator file");
+			IOHelper.log("cleanup done");
+			IOHelper.log("generate indicator file");
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;
-			IOHelper.strongLog("done normalizing: " + parsedOutputPath
+			IOHelper.strongLog("done normalizing: " + googleInputPath
 					+ ", time: " + sek + " seconds");
 		}
-		System.out.println("done");
 	}
 }
