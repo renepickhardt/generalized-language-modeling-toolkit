@@ -16,26 +16,26 @@ public class WikipediaMain {
 		// Config.get().normalizedWikiOutputPath);
 	}
 
-	public static void run(String wikiInputPath, String parsedWikiOutputPath,
-			String normalizedWikiOutputPath) throws IOException {
+	public static void run(String wikiInputPath, String parsedOutputPath,
+			String normalizedOutputPath) throws IOException {
 
 		long startTime = System.currentTimeMillis();
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(wikiInputPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaParser parser = new WikipediaParser(recognizer,
-				parsedWikiOutputPath);
+				parsedOutputPath);
 		System.out.println("start parsing");
 		parser.parse();
 		System.out.println("parsing done");
 		System.out.println("start cleanup");
-		WikipediaNormalizer wn = new WikipediaNormalizer(parsedWikiOutputPath,
-				normalizedWikiOutputPath);
+		WikipediaNormalizer wn = new WikipediaNormalizer(parsedOutputPath,
+				normalizedOutputPath);
 		wn.normalize();
 		System.out.println("cleanup done");
 		System.out.println("generate indicator file");
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;
-		File done = new File(normalizedWikiOutputPath + "IsDone." + time + "s");
+		File done = new File(normalizedOutputPath + "IsDone." + time + "s");
 		done.createNewFile();
 		System.out.println("done");
 
