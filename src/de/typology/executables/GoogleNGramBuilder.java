@@ -3,6 +3,7 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.googleNGrams.NGramMergerMain;
 import de.typology.googleNGrams.NGramParserMain;
 import de.typology.utils.Config;
 
@@ -28,11 +29,13 @@ public class GoogleNGramBuilder {
 			String outPath = Config.get().outputDirectory + "google/"
 					+ googleTyp + "/";
 			new File(outPath).mkdirs();
+			String mergedGoogle = outPath + "merged/";
 			String parsedGoogle = outPath + "parsed.txt";
 			String normalizedGoogle = outPath + "normalized.txt";
 			if (Config.get().parseData) {
-				NGramParserMain.run(f.getAbsolutePath(), parsedGoogle,
-						normalizedGoogle);
+				NGramMergerMain.run(f.getAbsolutePath(), mergedGoogle);
+				NGramParserMain.run(f.getAbsolutePath() + "merged/",
+						parsedGoogle, normalizedGoogle);
 			}
 		}
 	}
