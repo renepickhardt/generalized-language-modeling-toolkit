@@ -22,7 +22,52 @@ import java.util.Properties;
  */
 public class Config extends Properties {
 
+	// CONTROLL PARAMETERS
+	public boolean parseWiki;
+	public boolean sampleSplitData;
+
 	// STEP 0 GLOBAL CONFIGS
+	public String wikiInputDirectory;
+	public String wikiOutputDirectory;
+	public int memoryLimitForWritingFiles;
+	public int nGramLength;
+
+	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
+	public int sampleRate; // \in [0, 100] 0 means no data from input will be
+	// used. 100 means all input data will be used
+	public int splitDataRatio; // \in [0, 100] 0 means no training data. 100
+	// means only training data
+
+	// OPTIONAL only used in standalone scripts
+	public String trainingPath;
+	public String testingPath;
+
+	// STEP3 ngrams & typology edges
+	public boolean createNGramChunks;
+	public boolean createSecondLevelNGramChunks;
+	public boolean aggregateNGramChunks;
+	public boolean sortNGrams;
+	public boolean generateNGramDistribution;
+	public boolean normalizeNGrams;
+	// same flags for typology edge creating as for ngram building
+	public boolean createTypologyEdgeChunks;
+	public boolean createSecondLevelTypologyEdgeChunks;
+	public boolean aggregateTypologyEdgeChunks;
+	public boolean sortTypologyEdges;
+	public boolean generateTypologyEdgeDistribution;
+	public boolean normalizeEdges;
+
+	// INPUT
+	// should be the output of step1
+
+	// temporary files
+	public String parsedNGrams;
+	public String sortedNGrams;
+	public int fileChunkThreashhold;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
+
 	// public String inputPath;
 	// public String parsedDataPath;
 	// public String nGramPath;
@@ -58,44 +103,11 @@ public class Config extends Properties {
 	public String googleNgramsPath;
 	public String googleNgramsMergedPath;
 
-	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
-	public String trainingPath;
-	public String testingPath;
-
-	public int sampleRate; // \in [0, 100] 0 means no data from input will be
-							// used. 100 means all input data will be used
-	public int splitDataRatio; // \in [0, 100] 0 means no training data. 100
-								// means only training data
-
 	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
 	// used in de.typology.nGramBuilder
 
 	// CONFIG
 	// Flags for ngram building
-	public boolean createNGramChunks;
-	public boolean createSecondLevelNGramChunks;
-	public boolean aggregateNGramChunks;
-	public boolean sortNGrams;
-	public boolean generateNGramDistribution;
-	// same flags for typology edge creating as for ngram building
-	public boolean createTypologyEdgeChunks;
-	public boolean createSecondLevelTypologyEdgeChunks;
-	public boolean aggregateTypologyEdgeChunks;
-	public boolean sortTypologyEdges;
-	public boolean generateTypologyEdgeDistribution;
-
-	// INPUT
-	// should be the output of step1
-
-	// temporary files
-	public String parsedNGrams;
-	public int nGramLength;
-	public String sortedNGrams;
-	public int fileChunkThreashhold;
-	public int memoryLimitForWritingFiles;
-	public String nGramKeyFile;
-	public String nGramsNotAggregatedPath;
-	public String typologyEdgesPathNotAggregated;
 
 	// OUTPUT
 	public String nGramsAggregatedPath;

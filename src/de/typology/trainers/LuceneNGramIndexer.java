@@ -32,11 +32,15 @@ public class LuceneNGramIndexer {
 	 * @param args
 	 */
 	public static void main(String[] args) throws IOException {
+	}
+
+	public static void run(String normalizedNGrams, String indexNGrams)
+			throws NumberFormatException, IOException {
 		long startTime = System.currentTimeMillis();
 		for (int nGramType = 2; nGramType < 6; nGramType++) {
-			LuceneNGramIndexer indexer = new LuceneNGramIndexer(
-					Config.get().nGramIndexPath + nGramType);
-			indexer.index(Config.get().normalizedNGrams + nGramType + "/");
+			LuceneNGramIndexer indexer = new LuceneNGramIndexer(indexNGrams
+					+ nGramType);
+			indexer.index(normalizedNGrams + nGramType + "/");
 			indexer.close();
 		}
 		long endTime = System.currentTimeMillis();
@@ -125,4 +129,5 @@ public class LuceneNGramIndexer {
 		document.add(new FloatField("cnt", count, Field.Store.YES));
 		return document;
 	}
+
 }

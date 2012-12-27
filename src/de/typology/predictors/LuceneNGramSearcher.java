@@ -106,7 +106,7 @@ public class LuceneNGramSearcher {
 
 			ArrayList<TopDocs> hits = new ArrayList<TopDocs>();
 
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < terms.length; i++) {
 				String special = "src:\"" + terms[i] + "\"";
 				if (prefix.length() > 0) {
 					special = "src:\"" + terms[i] + "\" AND tgt:" + prefix
@@ -147,15 +147,32 @@ public class LuceneNGramSearcher {
 	// output: {"w3", "w2 w3", "w1 w2 w3", "w0 w1 w2 w3"}
 	private String[] prepareQuery(String q) {
 		String[] words = q.split(" ");
-		if (words.length != 4) {
-			return null;
-		}
-		String[] result = new String[4];
-		result[0] = words[3];
-		result[1] = words[2] + " " + words[3];
-		result[2] = words[1] + " " + words[2] + " " + words[3];
-		result[3] = words[0] + " " + words[1] + " " + words[2] + " " + words[3];
-		return result;
-	}
+		if (words.length == 1) {
+			String[] result = new String[4];
+			result[0] = words[0];
+			return result;
+		} else if (words.length == 2) {
+			String[] result = new String[4];
+			result[0] = words[1];
+			result[1] = words[0] + " " + words[1];
+			return result;
 
+		} else if (words.length == 3) {
+			String[] result = new String[3];
+			result[0] = words[2];
+			result[1] = words[1] + " " + words[2];
+			result[2] = words[0] + " " + words[1] + " " + words[2];
+			return result;
+
+		} else if (words.length == 4) {
+			String[] result = new String[4];
+			result[0] = words[3];
+			result[1] = words[2] + " " + words[3];
+			result[2] = words[1] + " " + words[2] + " " + words[3];
+			result[3] = words[0] + " " + words[1] + " " + words[2] + " "
+					+ words[3];
+			return result;
+		}
+		return null;
+	}
 }

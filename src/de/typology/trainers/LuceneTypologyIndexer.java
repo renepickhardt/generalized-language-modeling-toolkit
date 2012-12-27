@@ -18,7 +18,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import de.typology.evaluation.TypologyEvaluator;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -30,17 +29,21 @@ public class LuceneTypologyIndexer {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
+		run(Config.get().indexPath, Config.get().normalizedEdges);
+	}
+
+	public static void run(String inputPath, String outputPath)
+			throws IOException {
 		long startTime = System.currentTimeMillis();
 		for (int edgeType = 1; edgeType < 5; edgeType++) {
-			LuceneTypologyIndexer indexer = new LuceneTypologyIndexer(
-					Config.get().indexPath + edgeType);
-			indexer.index(Config.get().normalizedEdges + edgeType + "/");
+			LuceneTypologyIndexer indexer = new LuceneTypologyIndexer(inputPath
+					+ edgeType);
+			indexer.index(outputPath + edgeType + "/");
 			indexer.close();
 		}
 		long endTime = System.currentTimeMillis();
 		IOHelper.strongLog((endTime - startTime) / 1000
-				+ " seconds for indexing " + Config.get().normalizedEdges);
-		TypologyEvaluator.main(args);
+				+ " seconds for indexing " + inputPath);
 	}
 
 	private BufferedReader reader;

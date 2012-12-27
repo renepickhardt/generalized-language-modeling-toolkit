@@ -1,8 +1,14 @@
 package de.typology.executables;
 
+import java.io.File;
 import java.io.IOException;
 
+import de.typology.lexerParser.DataSetSplitter;
+import de.typology.lexerParser.WikipediaMain;
+import de.typology.nGramBuilder.NGramBuilder;
 import de.typology.trainers.LuceneNGramIndexer;
+import de.typology.trainers.LuceneTypologyIndexer;
+import de.typology.utils.Config;
 
 public class WikiNGramBuilder {
 
@@ -14,28 +20,63 @@ public class WikiNGramBuilder {
 	 * 2) build ngrams
 	 * <p>
 	 * 
-	 * @author Martin Koerner
+	 * @author Rene Pickhardt
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		// parse and normalize wikipedia data:
-		// WikipediaMain.main(args);
 
-		// DataSetSplitter.main(args);
+		File dir = new File(Config.get().wikiInputDirectory);
+		new File(Config.get().wikiOutputDirectory).mkdirs();
+		for (File f : dir.listFiles()) {
+			// PARSE WIKI!
+			String wikiTyp = f.getName().split("-")[0];
+			String outPath = Config.get().wikiOutputDirectory + wikiTyp + "/";
+			new File(outPath).mkdirs();
+			String normalizedWiki = outPath + "normalized.txt";
+			String parsedWiki = outPath + "parsed.txt";
 
-		// build ngrams:
-		// NGramBuilder.main(args);
+			if (Config.get().parseWiki) {
+				WikipediaMain.run(f.getAbsolutePath(), parsedWiki,
+						normalizedWiki);
+			}
 
-		// normalize typology edges
-		// EdgeNormalizer.main(args);
+			// DATA SPLIT create paths and direcotries for training and test
+			// data
+			String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
+					+ Config.get().splitDataRatio;
+			String testPath = outPath + "test" + ratePathSuffix + "/";
+			String trainingPath = outPath + "training" + ratePathSuffix + "/";
+			new File(trainingPath).mkdirs();
+			new File(testPath).mkdirs();
 
-		// Put normalized edges to Lucene index:
-		// LuceneTypologyIndexer.main(args);
+			String testFile = testPath + "test.file";
+			String trainingFile = trainingPath + "training.file";
 
-		LuceneNGramIndexer.main(args);
-		// normalize ngrams calculate maximal likelihood estimation
-		// NGramNormalizer.main(args);
+			if (Config.get().sampleSplitData) {
+				DataSetSplitter.run(normalizedWiki, testFile, trainingFile);
 
+			}
+
+			NGramBuilder.run(trainingPath, trainingFile);
+
+			String normalizedEdges = trainingPath
+					+ Config.get().typologyEdgesPathNotAggregated
+					+ "Normalized/";
+			String indexEdges = trainingPath
+					+ Config.get().typologyEdgesPathNotAggregated + "Index/";
+			LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
+
+			String normalizedNGrams = trainingPath
+					+ Config.get().nGramsNotAggregatedPath + "Normalized/";
+			String indexNGrams = trainingPath
+					+ Config.get().nGramsNotAggregatedPath + "Index/";
+			LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
+			//
+			// TypologyEvaluator.main(args);
+			//
+			// NGramEvaluator.main(args);
+
+		}
 	}
-
 }

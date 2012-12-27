@@ -330,4 +330,14 @@ public class IOHelper {
 		}
 		return fileList;
 	}
+
+	public static void changeLogFile(String name) {
+		try {
+			logFile.close();
+			logFile = openAppendFile(name);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

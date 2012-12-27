@@ -27,11 +27,10 @@ public class DataSetSplitter {
 	private BufferedWriter testDataWriter;
 	private BufferedWriter trainingDataWriter;
 
-	public DataSetSplitter() {
-		this.testDataWriter = IOHelper.openWriteFile(Config.get().testingPath,
+	public DataSetSplitter(String testFile, String trainingFile) {
+		this.testDataWriter = IOHelper.openWriteFile(testFile,
 				Config.get().memoryLimitForWritingFiles);
-		this.trainingDataWriter = IOHelper.openWriteFile(
-				Config.get().trainingPath,
+		this.trainingDataWriter = IOHelper.openWriteFile(trainingFile,
 				Config.get().memoryLimitForWritingFiles);
 	}
 
@@ -39,9 +38,14 @@ public class DataSetSplitter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DataSetSplitter dss = new DataSetSplitter();
-		BufferedReader br = IOHelper
-				.openReadFile(Config.get().parsedWikiOutputPath);
+		run(Config.get().germanWikiText, Config.get().testingPath,
+				Config.get().trainingPath);
+	}
+
+	public static void run(String inputFile, String testFile,
+			String trainingFile) {
+		DataSetSplitter dss = new DataSetSplitter(testFile, trainingFile);
+		BufferedReader br = IOHelper.openReadFile(inputFile);
 		String line = "";
 		try {
 			while ((line = br.readLine()) != null) {
@@ -68,15 +72,16 @@ public class DataSetSplitter {
 		} finally {
 			dss.close();
 		}
-
 	}
 
 	private void close() {
 		try {
 			if (this.trainingDataWriter != null) {
+				this.trainingDataWriter.flush();
 				this.trainingDataWriter.close();
 			}
 			if (this.testDataWriter != null) {
+				this.testDataWriter.flush();
 				this.testDataWriter.close();
 			}
 		} catch (IOException e) {
