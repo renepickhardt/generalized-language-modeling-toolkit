@@ -34,7 +34,7 @@ public class NGramParserMain {
 			IOHelper.log("generate indicator file");
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;
-			IOHelper.strongLog("done normalizing: " + googleInputPath
+			IOHelper.strongLog("done normalizing: " + file.getAbsolutePath()
 					+ ", time: " + sek + " seconds");
 		}
 	}
