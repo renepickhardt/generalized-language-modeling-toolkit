@@ -30,7 +30,8 @@ public class GoogleNGramBuilder {
 			new File(outPath).mkdirs();
 			String parsedGoogle = outPath + "parsed.txt";
 			String normalizedGoogle = outPath + "normalized.txt";
-			NGramParserMain.run(googleTyp, parsedGoogle, normalizedGoogle);
+			NGramParserMain.run(f.getAbsolutePath(), parsedGoogle,
+					normalizedGoogle);
 		}
 	}
 }
