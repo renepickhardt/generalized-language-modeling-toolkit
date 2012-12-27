@@ -27,8 +27,13 @@ public class Config extends Properties {
 	public boolean sampleSplitData;
 
 	// STEP 0 GLOBAL CONFIGS
-	public String wikiInputDirectory;
+	public String dgttmInputDirectory;
+	public String enronInputDirectory;
 	public String googleInputDirectory;
+	public String reutersInputDirectory;
+	public String wikiInputDirectory;
+	public String DGTTMLanguages;
+
 	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
 	public int nGramLength;
@@ -76,25 +81,25 @@ public class Config extends Properties {
 
 	// STEP 1 PARSING DATA SETS used in de.typology.lexerparser:
 
-	// INPUT:
-	public String wikiXmlPath;
-	public String reutersXmlPath;
-	public String enronPath;
-	public String DGTTMPath;
-	public String ngramDownloadPath;
-
-	// OUTPUT:
-	public String parsedWikiOutputPath;
-	public String parsedReutersOutputPath;
-	public String parsedEnronOutputPath;
-	public String parsedDGTTMOutputPath;
-	public String DGTTMLanguage;
-
-	public String normalizedWikiOutputPath;
-	public String normalizedReutersOutputPath;
-	public String normalizedEnronOutputPath;
-	public String normalizedDGTTMOutputPath;
-	public String ngramDownloadOutputPath;
+	// // INPUT:
+	// public String wikiXmlPath;
+	// public String reutersXmlPath;
+	// public String enronPath;
+	// public String DGTTMPath;
+	// public String ngramDownloadPath;
+	//
+	// // OUTPUT:
+	// public String parsedWikiOutputPath;
+	// public String parsedReutersOutputPath;
+	// public String parsedEnronOutputPath;
+	// public String parsedDGTTMOutputPath;
+	//
+	//
+	// public String normalizedWikiOutputPath;
+	// public String normalizedReutersOutputPath;
+	// public String normalizedEnronOutputPath;
+	// public String normalizedDGTTMOutputPath;
+	// public String ngramDownloadOutputPath;
 
 	// COULD NOT REALLY MATCH
 	public String wikiLinksOutputPath;

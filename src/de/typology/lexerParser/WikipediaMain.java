@@ -3,8 +3,6 @@ package de.typology.lexerParser;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.utils.Config;
-
 public class WikipediaMain {
 
 	/**
@@ -14,15 +12,15 @@ public class WikipediaMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		run(Config.get().wikiXmlPath, Config.get().parsedWikiOutputPath,
-				Config.get().normalizedWikiOutputPath);
+		// run(Config.get().wikiXmlPath, Config.get().parsedWikiOutputPath,
+		// Config.get().normalizedWikiOutputPath);
 	}
 
-	public static void run(String wikiXmlPath, String parsedWikiOutputPath,
+	public static void run(String wikiInputPath, String parsedWikiOutputPath,
 			String normalizedWikiOutputPath) throws IOException {
 
 		long startTime = System.currentTimeMillis();
-		WikipediaTokenizer tokenizer = new WikipediaTokenizer(wikiXmlPath);
+		WikipediaTokenizer tokenizer = new WikipediaTokenizer(wikiInputPath);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaParser parser = new WikipediaParser(recognizer,
 				parsedWikiOutputPath);
