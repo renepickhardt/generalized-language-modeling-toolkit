@@ -24,54 +24,30 @@ public class WikiNGramBuilder {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
+		String parsedOutputPath;
+		String normalizedOutputPath;
 		// parse and normalize wikipedia data:
 
 		File dir = new File(Config.get().wikiInputDirectory);
-		new File(Config.get().outputDirectory).mkdirs();
+		String outputDirectory = Config.get().outputDirectory + "wiki/";
+		new File(outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
 			// PARSE WIKI!
 			String wikiTyp = f.getName().split("-")[0];
-			String outPath = Config.get().outputDirectory + wikiTyp + "/";
-			new File(outPath).mkdirs();
-			String parsedWiki = outPath + "parsed.txt";
-			String normalizedWiki = outPath + "normalized.txt";
+			String outputPath = outputDirectory + wikiTyp + "/";
+			new File(outputPath).mkdirs();
+			parsedOutputPath = outputPath + "parsed.txt";
+			normalizedOutputPath = outputPath + "normalized.txt";
 
-			if (Config.get().parseWiki) {
-				WikipediaMain.run(f.getAbsolutePath(), parsedWiki,
-						normalizedWiki);
+			if (Config.get().parseData) {
+				WikipediaMain.run(f.getAbsolutePath(), parsedOutputPath,
+						normalizedOutputPath);
 			}
-
-			// DATA SPLIT create paths and direcotries for training and test
-			// data
-			String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
-					+ Config.get().splitDataRatio;
-			String testPath = outPath + "test" + ratePathSuffix + "/";
-			String trainingPath = outPath + "training" + ratePathSuffix + "/";
-			new File(trainingPath).mkdirs();
-			new File(testPath).mkdirs();
-
-			String testFile = testPath + "test.file";
-			String trainingFile = trainingPath + "training.file";
 
 			if (Config.get().sampleSplitData) {
-				DataSetSplitter.run(normalizedWiki, testFile, trainingFile);
-
+				splitAndTrain(outputPath, normalizedOutputPath);
 			}
 
-			NGramBuilder.run(trainingPath, trainingFile);
-
-			String normalizedEdges = trainingPath
-					+ Config.get().typologyEdgesPathNotAggregated
-					+ "Normalized/";
-			String indexEdges = trainingPath
-					+ Config.get().typologyEdgesPathNotAggregated + "Index/";
-			LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
-
-			String normalizedNGrams = trainingPath
-					+ Config.get().nGramsNotAggregatedPath + "Normalized/";
-			String indexNGrams = trainingPath
-					+ Config.get().nGramsNotAggregatedPath + "Index/";
-			LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
 			//
 			// TypologyEvaluator.main(args);
 			//
@@ -79,4 +55,40 @@ public class WikiNGramBuilder {
 
 		}
 	}
+
+	public static void splitAndTrain(String outputDirectory,
+			String normalizedOutputPath) throws IOException {
+		// DATA SPLIT create paths and direcotries for training and test
+		// data
+		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
+				+ Config.get().splitDataRatio;
+		String testPath = outputDirectory + "test" + ratePathSuffix + "/";
+		String trainingPath = outputDirectory + "training" + ratePathSuffix
+				+ "/";
+		new File(trainingPath).mkdirs();
+		new File(testPath).mkdirs();
+
+		String testFile = testPath + "test.file";
+		String trainingFile = trainingPath + "training.file";
+
+		if (Config.get().sampleSplitData) {
+			DataSetSplitter.run(normalizedOutputPath, testFile, trainingFile);
+
+		}
+
+		NGramBuilder.run(trainingPath, trainingFile);
+
+		String normalizedEdges = trainingPath
+				+ Config.get().typologyEdgesPathNotAggregated + "Normalized/";
+		String indexEdges = trainingPath
+				+ Config.get().typologyEdgesPathNotAggregated + "Index/";
+		LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
+
+		String normalizedNGrams = trainingPath
+				+ Config.get().nGramsNotAggregatedPath + "Normalized/";
+		String indexNGrams = trainingPath
+				+ Config.get().nGramsNotAggregatedPath + "Index/";
+		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
+	}
+
 }

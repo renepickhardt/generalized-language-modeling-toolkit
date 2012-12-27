@@ -32,7 +32,7 @@ public class DGTTMMain {
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
 		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
-				parsedOutputPath);
+				normalizedOutputPath);
 		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");

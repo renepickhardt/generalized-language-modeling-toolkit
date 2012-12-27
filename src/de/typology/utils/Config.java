@@ -23,7 +23,7 @@ import java.util.Properties;
 public class Config extends Properties {
 
 	// CONTROLL PARAMETERS
-	public boolean parseWiki;
+	public boolean parseData;
 	public boolean sampleSplitData;
 
 	// STEP 0 GLOBAL CONFIGS
@@ -108,6 +108,8 @@ public class Config extends Properties {
 	// used in de.typology.googleNgrams:
 	public String googleNgramsPath;
 	public String googleNgramsMergedPath;
+	public String parsedGoogleNGramsOutputPath;
+	public String normalizedGoogleNgramsPath;
 
 	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
 	// used in de.typology.nGramBuilder
@@ -134,9 +136,6 @@ public class Config extends Properties {
 	// used in de.typology.utils/LineCounter
 	public String lineCountInput;
 	public String lineCountStats;
-
-	public String parsedGoogleNGramsOutputPath;
-	public String normalizedGoogleNgramsPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
