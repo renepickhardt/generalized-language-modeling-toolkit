@@ -13,7 +13,7 @@ public class NGramParserMain {
 
 	public static void run(String googleInputPath, String parsedOutputPath,
 			String normalizedOutputPath) throws IOException {
-
+		IOHelper.log("getting file list");
 		ArrayList<File> files = IOHelper
 				.getDirectory(new File(googleInputPath));
 		for (File file : files) {
