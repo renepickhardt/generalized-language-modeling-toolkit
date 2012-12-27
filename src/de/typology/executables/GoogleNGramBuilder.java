@@ -24,7 +24,7 @@ public class GoogleNGramBuilder {
 		new File(Config.get().outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
 			// PARSE NGRAMS!
-			String googleTyp = f.getName().split("-")[0];
+			String googleTyp = f.getName();
 			String outPath = Config.get().outputDirectory + googleTyp + "/";
 			new File(outPath).mkdirs();
 			String parsedGoogle = outPath + "parsed.txt";
