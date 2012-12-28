@@ -56,14 +56,14 @@ public class WikiNGramBuilder {
 		}
 	}
 
-	public static void splitAndTrain(String outputDirectory,
+	public static void splitAndTrain(String outputPath,
 			String normalizedOutputPath) throws IOException {
 		// DATA SPLIT create paths and direcotries for training and test
 		// data
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
 				+ Config.get().splitDataRatio;
-		String testPath = outputDirectory + "test" + ratePathSuffix + "/";
-		String trainingPath = outputDirectory + "training" + ratePathSuffix
+		String testPath = outputPath + "test" + ratePathSuffix + "/";
+		String trainingPath = outputPath + "training" + ratePathSuffix
 				+ "/";
 		new File(trainingPath).mkdirs();
 		new File(testPath).mkdirs();
