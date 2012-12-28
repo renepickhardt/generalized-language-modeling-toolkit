@@ -44,6 +44,7 @@ public class LuceneTypologySearcher {
 				Directory directory;
 				DirectoryReader directoryReader;
 				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/MMapDirectory.html
+				System.out.println(Config.get().indexPath);
 				directory = MMapDirectory.open(new File(Config.get().indexPath
 						+ i + "/"));
 
@@ -121,11 +122,13 @@ public class LuceneTypologySearcher {
 		}
 	}
 
-	public int query(String q, String prefix, String match) {
-		HashMap<String, Float> result = this.search(q, prefix, 12);
+	public int query(String q, String prefix, String match,
+			int intermediateListLength, int k) {
+		HashMap<String, Float> result = this.search(q, prefix,
+				intermediateListLength);
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
-				5);
+				k);
 		;
 		int topkCnt = 0;
 
@@ -134,11 +137,10 @@ public class LuceneTypologySearcher {
 				topkCnt++;
 				if (suggestion.equals(match)) {
 					IOHelper.logResult("HIT\tRANK: " + topkCnt
-							+ " \tPREFIXLENGHT: " + prefix.length());
+							+ " \tPREFIXLENGTH: " + prefix.length());
 					if (topkCnt == 1) {
 						IOHelper.logResult("KSS: "
-								+ (match.length() - prefix.length())
-								+ " \tPREFIXLENGHT: " + prefix.length());
+								+ (match.length() - prefix.length()));
 					}
 					return topkCnt;
 				}
@@ -171,9 +173,10 @@ public class LuceneTypologySearcher {
 			int edge = 0;
 
 			for (int i = terms.length - 1; i >= Math.max(0, terms.length - 4); i--) {
-				String special = "src:" + terms[i];
+				String special = "src:" + QueryParser.escape(terms[i]);
 				if (prefix.length() > 0) {
-					special = "src:" + terms[i] + " AND tgt:" + prefix + "*";
+					special = "src:" + QueryParser.escape(terms[i])
+							+ " AND tgt:" + QueryParser.escape(prefix) + "*";
 				}
 
 				TopDocs results = this.index.get(edge)

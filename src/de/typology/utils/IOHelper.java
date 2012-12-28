@@ -256,8 +256,7 @@ public class IOHelper {
 	 */
 	public static void logResult(Object out) {
 		try {
-			Date dt = new Date();
-			resultFile.write(dt + " - " + out + "\n");
+			resultFile.write(out + "\n");
 			resultFile.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -11,7 +11,7 @@ public class TypologyEvaluator {
 	public static void main(String[] args) {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
 
-		for (int n = 2; n < 6; n++) {
+		for (int n = 4; n < 6; n++) {
 
 			BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
 			try {
@@ -56,7 +56,8 @@ public class TypologyEvaluator {
 					for (int j = 0; j < words[n - 1].length() - 1; j++) {
 						// include more logic
 						int res = lts.query(query,
-								words[n - 1].substring(0, j), words[n - 1]);
+								words[n - 1].substring(0, j), words[n - 1], 12,
+								10);
 						cnt++;
 						if (cnt % 250 == 0) {
 							long time = System.currentTimeMillis() - start;
