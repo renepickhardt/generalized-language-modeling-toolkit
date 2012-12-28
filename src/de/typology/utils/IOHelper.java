@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 public class IOHelper {
 	// d = debug mode set true if debugg messages should be displayed
-	private static boolean d = false;
+	private static boolean d = true;
 	private static BufferedWriter logFile = openAppendFile("Complet.log");
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
 	private static ArrayList<File> fileList = new ArrayList<File>();
