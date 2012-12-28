@@ -121,8 +121,7 @@ public class LuceneTypologySearcher {
 		}
 	}
 
-	public void query(String q, String prefix, String match) {
-		IOHelper.log(q + " \tPREFIX: " + prefix + " \tMATCH: " + match);
+	public int query(String q, String prefix, String match) {
 		HashMap<String, Float> result = this.search(q, prefix, 12);
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
@@ -134,18 +133,19 @@ public class LuceneTypologySearcher {
 			for (String suggestion : topkSuggestions.get(score)) {
 				topkCnt++;
 				if (suggestion.equals(match)) {
-					IOHelper.log("HIT\tRANK: " + topkCnt + " \tPREFIXLENGHT: "
-							+ prefix.length());
+					IOHelper.logResult("HIT\tRANK: " + topkCnt
+							+ " \tPREFIXLENGHT: " + prefix.length());
 					if (topkCnt == 1) {
-						IOHelper.log("KSS: "
+						IOHelper.logResult("KSS: "
 								+ (match.length() - prefix.length())
 								+ " \tPREFIXLENGHT: " + prefix.length());
 					}
-					return;
+					return topkCnt;
 				}
 			}
 		}
-		IOHelper.log("NOTHING\tPREFIXLENGTH: " + prefix.length());
+		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + prefix.length());
+		return -1;
 	}
 
 	// docs at:
