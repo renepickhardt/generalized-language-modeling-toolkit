@@ -11,23 +11,31 @@ public class NGramParserMain {
 
 	}
 
-	public static void run(String googleInputPath, String parsedOutputPath,
-			String normalizedOutputPath) throws IOException {
+	public static void run(String googleInputPath, String outputPath) throws IOException {
+
 		IOHelper.log("getting file list");
 		ArrayList<File> files = IOHelper
 				.getDirectory(new File(googleInputPath));
+
+		new File(outputPath+"parsed/").mkdirs();
+		new File(outputPath+"normalized/").mkdirs();
 		for (File file : files) {
 			long startTime = System.currentTimeMillis();
 			long endTime = 0;
 			long sek = 0;
 			NGramRecognizer recognizer = new NGramRecognizer(
 					file.getAbsolutePath());
-			NGramParser parser = new NGramParser(recognizer, parsedOutputPath);
+			System.out.println("File:"+ file.getName());
+			String fileName=file.getName().split("-")[0];
+			String parsedOutputName= outputPath+"parsed/"+fileName+"-parsed.txt";
+			String normalizedOutputName= outputPath+"normalized/"+fileName+"-normalized.txt";
+			System.out.println(parsedOutputName);
+			NGramParser parser = new NGramParser(recognizer, parsedOutputName);
 			IOHelper.log("start parsing");
 			parser.parse();
 			IOHelper.log("parsing done");
-			NGramNormalizer ngn = new NGramNormalizer(parsedOutputPath,
-					normalizedOutputPath);
+			NGramNormalizer ngn = new NGramNormalizer(parsedOutputName,
+					normalizedOutputName);
 			IOHelper.log("start cleanup");
 			ngn.normalize();
 			IOHelper.log("cleanup done");
