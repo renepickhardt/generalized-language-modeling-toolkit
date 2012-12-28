@@ -43,10 +43,13 @@ public class Config extends Properties {
 	// used. 100 means all input data will be used
 	public int splitDataRatio; // \in [0, 100] 0 means no training data. 100
 	// means only training data
+	public int splitTestRatio; // \in [0, 100] 0 means all data is stored in
+	// test file. 100 means all data is stored in (smaller) learning file
 
 	// OPTIONAL only used in standalone scripts
 	public String trainingPath;
 	public String testingPath;
+	public String learningPath;
 
 	// STEP3 ngrams & typology edges
 	public boolean createNGramChunks;
