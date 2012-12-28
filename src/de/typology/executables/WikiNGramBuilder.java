@@ -63,16 +63,18 @@ public class WikiNGramBuilder {
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
 				+ Config.get().splitDataRatio;
 		String testPath = outputPath + "test" + ratePathSuffix + "/";
-		String trainingPath = outputPath + "training" + ratePathSuffix
-				+ "/";
+		String trainingPath = outputPath + "training" + ratePathSuffix + "/";
+		String learningPath = outputPath + "learning" + ratePathSuffix + "/";
 		new File(trainingPath).mkdirs();
 		new File(testPath).mkdirs();
 
 		String testFile = testPath + "test.file";
 		String trainingFile = trainingPath + "training.file";
+		String learningFile = learningPath + "learning.file";
 
 		if (Config.get().sampleSplitData) {
-			DataSetSplitter.run(normalizedOutputPath, testFile, trainingFile);
+			DataSetSplitter.run(normalizedOutputPath, testFile, trainingFile,
+					learningFile);
 
 		}
 
