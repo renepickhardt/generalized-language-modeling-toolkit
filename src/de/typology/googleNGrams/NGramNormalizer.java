@@ -77,7 +77,7 @@ public class NGramNormalizer {
 
 				// change format from w1 ... w3\tcount\n to w1\t...w3\t#count\n
 				String[] splitLine = this.line.split("\\s");
-				if (splitLine.length > 2) {
+				if (splitLine.length > 1) {
 					for (String word : Arrays.copyOfRange(splitLine, 0,
 							splitLine.length - 1)) {
 						this.writer.write(word + "\t");
