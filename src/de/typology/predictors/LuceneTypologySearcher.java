@@ -20,7 +20,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
 import de.typology.utils.Algo;
@@ -43,8 +43,23 @@ public class LuceneTypologySearcher {
 			for (int i = 1; i < 5; i++) {
 				Directory directory;
 				DirectoryReader directoryReader;
-				directory = FSDirectory.open(new File(Config.get().indexPath
+				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/MMapDirectory.html
+				directory = MMapDirectory.open(new File(Config.get().indexPath
 						+ i + "/"));
+
+				// directory = FSDirectory.open(new File(Config.get().indexPath
+				// + i + "/"));
+
+				// http://www.avajava.com/tutorials/lessons/how-do-i-convert-a-file-system-index-to-a-memory-index.html
+
+				// http://stackoverflow.com/questions/673887/using-ramdirectory
+				// 2 GB limit on index size
+
+				// Directory memoryDirectory = new RAMDirectory(directory);
+
+				// above is not a good way for big indices according to
+				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/RAMDirectory.html
+
 				directoryReader = DirectoryReader.open(directory);
 				this.index.add(new IndexSearcher(directoryReader));
 
@@ -147,22 +162,13 @@ public class LuceneTypologySearcher {
 			SortField sortField = new SortField("cnt", SortField.Type.FLOAT,
 					true);
 			Sort sort = new Sort(sortField);
-
-			// TODO: change to whiteSpaceanalyzer as in indexer...
-			// Analyzer analyzer = new TypologyAnalyzer(Version.LUCENE_40);
 			Analyzer analyzer = new KeywordAnalyzer();
 			QueryParser queryParser = new QueryParser(Version.LUCENE_40, "src",
 					analyzer);
-
-			// http://elasticsearch-users.115913.n3.nabble.com/WildcardQuery-and-case-sensitivity-td3489451.html
-			// AND
-			// http://wiki.apache.org/lucene-java/LuceneFAQ#Are_Wildcard.2C_Prefix.2C_and_Fuzzy_queries_case_sensitive.3F
 			queryParser.setLowercaseExpandedTerms(false);
 
 			String[] terms = q.split(" ");
-
 			int edge = 0;
-			ArrayList<TopDocs> hits = new ArrayList<TopDocs>();
 
 			for (int i = terms.length - 1; i >= Math.max(0, terms.length - 4); i--) {
 				String special = "src:" + terms[i];
@@ -174,8 +180,6 @@ public class LuceneTypologySearcher {
 						.search(queryParser.parse(special),
 								new FieldValueFilter("cnt"),
 								numIntermediateLists, sort);
-
-				hits.add(results);
 
 				for (ScoreDoc scoreDoc : results.scoreDocs) {
 					Document doc = this.index.get(edge).doc(scoreDoc.doc);
@@ -191,6 +195,7 @@ public class LuceneTypologySearcher {
 				}
 				edge++;
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
@@ -202,4 +207,5 @@ public class LuceneTypologySearcher {
 		// q);
 		return result;
 	}
+
 }

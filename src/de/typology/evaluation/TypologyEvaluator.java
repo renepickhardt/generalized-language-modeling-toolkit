@@ -18,7 +18,7 @@ public class TypologyEvaluator {
 				String line = "";
 				long start = System.currentTimeMillis();
 				int cnt = 0;
-				IOHelper.changeLogFile("typo-" + n + "-"
+				IOHelper.changeLogFile("/dev/shm/typo-" + n + "-"
 						+ Config.get().sampleRate + Config.get().splitDataRatio
 						+ ".log");
 				IOHelper.log("!!!!!!!!!!TYPOLOGY EVAL: N = " + n);
