@@ -3,19 +3,20 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.lexerParser.DGTTMMain;
 import de.typology.lexerParser.DataSetSplitter;
-import de.typology.lexerParser.WikipediaMain;
+import de.typology.lexerParser.EnronMain;
+import de.typology.lexerParser.ReutersMain;
 import de.typology.nGramBuilder.NGramBuilder;
 import de.typology.trainers.LuceneNGramIndexer;
 import de.typology.trainers.LuceneTypologyIndexer;
 import de.typology.utils.Config;
 
-public class WikiNGramBuilder {
-
+public class MixedNGramBuilder {
 	/**
 	 * executes the following steps:
 	 * <p>
-	 * 1) parse and normalize wikipedia data
+	 * 1) parse and normalize dgttm, enron and reuters data
 	 * <p>
 	 * 2) build ngrams
 	 * <p>
@@ -24,36 +25,67 @@ public class WikiNGramBuilder {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
+		String outputDirectory;
+		String outputPath;
 		String parsedOutputPath;
 		String normalizedOutputPath;
-		// parse and normalize wikipedia data:
+		// parse and normalize data:
 
-		File dir = new File(Config.get().wikiInputDirectory);
-		String outputDirectory = Config.get().outputDirectory + "wiki/";
-		new File(outputDirectory).mkdirs();
-		for (File f : dir.listFiles()) {
-			// PARSE WIKI!
-			String wikiTyp = f.getName().split("-")[0];
-			String outputPath = outputDirectory + wikiTyp + "/";
+		new File(Config.get().outputDirectory + "dgttm/").mkdirs();
+		outputDirectory = Config.get().outputDirectory + "dgttm/";
+		String[] languages = Config.get().DGTTMLanguages.split(",");
+		for (String language : languages) {
+			outputPath = outputDirectory + language + "/";
 			new File(outputPath).mkdirs();
 			parsedOutputPath = outputPath + "parsed.txt";
 			normalizedOutputPath = outputPath + "normalized.txt";
-
 			if (Config.get().parseData) {
-				WikipediaMain.run(f.getAbsolutePath(), parsedOutputPath,
-						normalizedOutputPath);
+				DGTTMMain.run(Config.get().dgttmInputDirectory,
+						parsedOutputPath, normalizedOutputPath, language);
 			}
-
 			if (Config.get().sampleSplitData) {
 				splitAndTrain(outputPath, normalizedOutputPath);
 			}
-
 			//
 			// TypologyEvaluator.main(args);
 			//
 			// NGramEvaluator.main(args);
-
 		}
+
+		new File(Config.get().outputDirectory + "enron/").mkdirs();
+		outputDirectory = Config.get().outputDirectory + "enron/";
+		new File(outputDirectory).mkdirs();
+		parsedOutputPath = outputDirectory + "parsed.txt";
+		normalizedOutputPath = outputDirectory + "normalized.txt";
+		if (Config.get().parseData) {
+			EnronMain.run(Config.get().enronInputDirectory, parsedOutputPath,
+					normalizedOutputPath);
+		}
+		if (Config.get().sampleSplitData) {
+			splitAndTrain(outputDirectory, normalizedOutputPath);
+		}
+		//
+		// TypologyEvaluator.main(args);
+		//
+		// NGramEvaluator.main(args);
+
+		new File(Config.get().outputDirectory + "reuters/").mkdirs();
+		outputDirectory = Config.get().outputDirectory + "reuters/";
+		new File(outputDirectory).mkdirs();
+		parsedOutputPath = outputDirectory + "parsed.txt";
+		normalizedOutputPath = outputDirectory + "normalized.txt";
+		if (Config.get().parseData) {
+			ReutersMain.run(Config.get().reutersInputDirectory,
+					parsedOutputPath, normalizedOutputPath);
+		}
+		if (Config.get().sampleSplitData) {
+			splitAndTrain(outputDirectory, normalizedOutputPath);
+		}
+		//
+		// TypologyEvaluator.main(args);
+		//
+		// NGramEvaluator.main(args);
+
 	}
 
 	public static void splitAndTrain(String outputPath,
@@ -63,8 +95,7 @@ public class WikiNGramBuilder {
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
 				+ Config.get().splitDataRatio;
 		String testPath = outputPath + "test" + ratePathSuffix + "/";
-		String trainingPath = outputPath + "training" + ratePathSuffix
-				+ "/";
+		String trainingPath = outputPath + "training" + ratePathSuffix + "/";
 		new File(trainingPath).mkdirs();
 		new File(testPath).mkdirs();
 
@@ -89,6 +120,6 @@ public class WikiNGramBuilder {
 		String indexNGrams = trainingPath
 				+ Config.get().nGramsNotAggregatedPath + "Index/";
 		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
-	}
 
+	}
 }

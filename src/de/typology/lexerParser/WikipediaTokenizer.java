@@ -42,8 +42,6 @@ import java.util.Iterator;
 
 import org.itadaki.bzip2.BZip2InputStream;
 
-import de.typology.utils.Config;
-
 /**
  * @author Martin Koerner
  * 
@@ -61,8 +59,9 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 	private int index = 0; // length of lexeme
 	private HashSet<String> disambiguations;
 
-	public WikipediaTokenizer(String s) throws FileNotFoundException {
-		InputStream input = new FileInputStream(new File(s));
+	public WikipediaTokenizer(String wikiInputPath)
+			throws FileNotFoundException {
+		InputStream input = new FileInputStream(new File(wikiInputPath));
 		BZip2InputStream cb = new BZip2InputStream(input, false);
 		this.reader = new BufferedReader(new InputStreamReader(cb));
 		// use the following line for reading xml files:
@@ -71,21 +70,21 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		boolean languageSpecified = false;
 
 		// this part declares language specific variables
-		if (Config.get().wikiXmlPath.contains("dewiki")) {
+		if (wikiInputPath.contains("dewiki")) {
 			this.disambiguations.add("Begriffsklärung");
 			this.disambiguations.add("begriffsklärung");
 			System.out.println("this is a german wikipedia xml");
 			languageSpecified = true;
 		}
 
-		if (Config.get().wikiXmlPath.contains("barwiki")) {
+		if (wikiInputPath.contains("barwiki")) {
 			this.disambiguations.add("Begriffsklärung");
 			this.disambiguations.add("begriffsklärung");
 			System.out.println("this is a bavarian wikipedia xml");
 			languageSpecified = true;
 		}
 
-		if (Config.get().wikiXmlPath.contains("enwiki")) {
+		if (wikiInputPath.contains("enwiki")) {
 			this.disambiguations.add("Disambiguation");
 			this.disambiguations.add("disambiguation");
 			this.disambiguations.add("Disambig");
@@ -106,7 +105,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			languageSpecified = true;
 		}
 
-		if (Config.get().wikiXmlPath.contains("eswiki")) {
+		if (wikiInputPath.contains("eswiki")) {
 			this.disambiguations.add("Desambiguación");
 			this.disambiguations.add("desambiguación");
 			this.disambiguations.add("Homonimia");
@@ -117,7 +116,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			languageSpecified = true;
 		}
 
-		if (Config.get().wikiXmlPath.contains("frwiki")) {
+		if (wikiInputPath.contains("frwiki")) {
 			this.disambiguations.add("Homonymie");
 			this.disambiguations.add("homonymie");
 			this.disambiguations.add("Patronymie");
@@ -132,7 +131,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			languageSpecified = true;
 		}
 
-		if (Config.get().wikiXmlPath.contains("itwiki")) {
+		if (wikiInputPath.contains("itwiki")) {
 			this.disambiguations.add("Disambigua");
 			this.disambiguations.add("disambigua");
 			this.disambiguations.add("Omonime");

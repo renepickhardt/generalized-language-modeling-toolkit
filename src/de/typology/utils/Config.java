@@ -23,12 +23,18 @@ import java.util.Properties;
 public class Config extends Properties {
 
 	// CONTROLL PARAMETERS
-	public boolean parseWiki;
+	public boolean parseData;
 	public boolean sampleSplitData;
 
 	// STEP 0 GLOBAL CONFIGS
+	public String dgttmInputDirectory;
+	public String enronInputDirectory;
+	public String googleInputDirectory;
+	public String reutersInputDirectory;
 	public String wikiInputDirectory;
-	public String wikiOutputDirectory;
+	public String DGTTMLanguages;
+
+	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
 	public int nGramLength;
 
@@ -75,25 +81,25 @@ public class Config extends Properties {
 
 	// STEP 1 PARSING DATA SETS used in de.typology.lexerparser:
 
-	// INPUT:
-	public String wikiXmlPath;
-	public String reutersXmlPath;
-	public String enronPath;
-	public String DGTTMPath;
-	public String ngramDownloadPath;
-
-	// OUTPUT:
-	public String parsedWikiOutputPath;
-	public String parsedReutersOutputPath;
-	public String parsedEnronOutputPath;
-	public String parsedDGTTMOutputPath;
-	public String DGTTMLanguage;
-
-	public String normalizedWikiOutputPath;
-	public String normalizedReutersOutputPath;
-	public String normalizedEnronOutputPath;
-	public String normalizedDGTTMOutputPath;
-	public String ngramDownloadOutputPath;
+	// // INPUT:
+	// public String wikiXmlPath;
+	// public String reutersXmlPath;
+	// public String enronPath;
+	// public String DGTTMPath;
+	// public String ngramDownloadPath;
+	//
+	// // OUTPUT:
+	// public String parsedWikiOutputPath;
+	// public String parsedReutersOutputPath;
+	// public String parsedEnronOutputPath;
+	// public String parsedDGTTMOutputPath;
+	//
+	//
+	// public String normalizedWikiOutputPath;
+	// public String normalizedReutersOutputPath;
+	// public String normalizedEnronOutputPath;
+	// public String normalizedDGTTMOutputPath;
+	// public String ngramDownloadOutputPath;
 
 	// COULD NOT REALLY MATCH
 	public String wikiLinksOutputPath;
@@ -102,6 +108,8 @@ public class Config extends Properties {
 	// used in de.typology.googleNgrams:
 	public String googleNgramsPath;
 	public String googleNgramsMergedPath;
+	public String parsedGoogleNGramsOutputPath;
+	public String normalizedGoogleNgramsPath;
 
 	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
 	// used in de.typology.nGramBuilder
@@ -128,9 +136,6 @@ public class Config extends Properties {
 	// used in de.typology.utils/LineCounter
 	public String lineCountInput;
 	public String lineCountStats;
-
-	public String parsedGoogleNGramsOutputPath;
-	public String normalizedGoogleNgramsPath;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 
