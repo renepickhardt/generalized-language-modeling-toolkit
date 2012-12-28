@@ -18,6 +18,7 @@ public class NGramMergerMain {
 
 	public static void run(String googleInputPath, String outputPath)
 			throws IOException {
+		IOHelper.log("getting files for merging");
 		File inputDirectory = new File(googleInputPath);
 		File[] files = inputDirectory.listFiles();
 
