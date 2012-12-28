@@ -20,7 +20,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
 import de.typology.utils.Algo;
@@ -43,8 +43,23 @@ public class LuceneTypologySearcher {
 			for (int i = 1; i < 5; i++) {
 				Directory directory;
 				DirectoryReader directoryReader;
-				directory = FSDirectory.open(new File(Config.get().indexPath
+				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/MMapDirectory.html
+				directory = MMapDirectory.open(new File(Config.get().indexPath
 						+ i + "/"));
+
+				// directory = FSDirectory.open(new File(Config.get().indexPath
+				// + i + "/"));
+
+				// http://www.avajava.com/tutorials/lessons/how-do-i-convert-a-file-system-index-to-a-memory-index.html
+
+				// http://stackoverflow.com/questions/673887/using-ramdirectory
+				// 2 GB limit on index size
+
+				// Directory memoryDirectory = new RAMDirectory(directory);
+
+				// above is not a good way for big indices according to
+				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/RAMDirectory.html
+
 				directoryReader = DirectoryReader.open(directory);
 				this.index.add(new IndexSearcher(directoryReader));
 
