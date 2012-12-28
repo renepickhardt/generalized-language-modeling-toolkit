@@ -26,11 +26,15 @@ public class DataSetSplitter {
 
 	private BufferedWriter testDataWriter;
 	private BufferedWriter trainingDataWriter;
+	private BufferedWriter learningDataWriter;
 
-	public DataSetSplitter(String testFile, String trainingFile) {
+	public DataSetSplitter(String testFile, String trainingFile,
+			String learningFile) {
 		this.testDataWriter = IOHelper.openWriteFile(testFile,
 				Config.get().memoryLimitForWritingFiles);
 		this.trainingDataWriter = IOHelper.openWriteFile(trainingFile,
+				Config.get().memoryLimitForWritingFiles);
+		this.learningDataWriter = IOHelper.openWriteFile(learningFile,
 				Config.get().memoryLimitForWritingFiles);
 	}
 
@@ -39,12 +43,13 @@ public class DataSetSplitter {
 	 */
 	public static void main(String[] args) {
 		run(Config.get().germanWikiText, Config.get().testingPath,
-				Config.get().trainingPath);
+				Config.get().trainingPath, Config.get().learningPath);
 	}
 
 	public static void run(String inputFile, String testFile,
-			String trainingFile) {
-		DataSetSplitter dss = new DataSetSplitter(testFile, trainingFile);
+			String trainingFile, String learningFile) {
+		DataSetSplitter dss = new DataSetSplitter(testFile, trainingFile,
+				learningFile);
 		BufferedReader br = IOHelper.openReadFile(inputFile);
 		String line = "";
 		try {
@@ -56,7 +61,12 @@ public class DataSetSplitter {
 					if (rand > Config.get().sampleRate) {// keep data
 						rand = (int) (Math.random() * 100);
 						if (rand > Config.get().splitDataRatio) {
-							dss.appendTestData(tokens, i);
+							rand = (int) (Math.random() * 100);
+							if (rand > Config.get().splitTestRatio) {
+								dss.appendTestData(tokens, i);
+							} else {
+								dss.appendLearningData(tokens, i);
+							}
 						} else {
 							dss.appendTrainingData(tokens, i);
 						}
@@ -84,6 +94,10 @@ public class DataSetSplitter {
 				this.testDataWriter.flush();
 				this.testDataWriter.close();
 			}
+			if (this.learningDataWriter != null) {
+				this.learningDataWriter.flush();
+				this.learningDataWriter.close();
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -110,4 +124,11 @@ public class DataSetSplitter {
 		this.testDataWriter.write("\n");
 	}
 
+	private void appendLearningData(String[] tokens, int i) throws IOException {
+		for (int j = i; j < Math.min(i + Config.get().nGramLength,
+				tokens.length); j++) {
+			this.learningDataWriter.write(tokens[j] + " ");
+		}
+		this.learningDataWriter.write("\n");
+	}
 }
