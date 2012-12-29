@@ -35,8 +35,8 @@ public class TypologyEvaluator {
 			// "-joinLengh-"
 			// + joinLength + "-" + Config.get().sampleRate
 			// + Config.get().splitDataRatio + ".log." + start);
-			IOHelper.setResultFile("typo-" + n + "-joinLengh-" + joinLength
-					+ "-" + Config.get().sampleRate
+			IOHelper.setResultFile("weighted-typo-" + n + "-joinLengh-"
+					+ joinLength + "-" + Config.get().sampleRate
 					+ Config.get().splitDataRatio + ".log");
 			IOHelper.log("!!!!!!!!!!TYPOLOGY EVAL: N = " + n);
 			while ((line = br.readLine()) != null) {
