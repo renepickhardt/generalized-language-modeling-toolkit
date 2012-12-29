@@ -1,45 +1,30 @@
 package de.typology.predictors;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.TreeMap;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.FieldValueFilter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.util.Version;
 
-import de.typology.interfaces.Searchable;
-import de.typology.utils.Algo;
 import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
 
-public class LuceneNGramSearcher implements Searchable {
+public class LuceneNGramSearcher extends Searcher {
 
 	private ArrayList<IndexSearcher> index;
-	private Sort sort;
-	private QueryParser queryParser;
-	private FieldValueFilter fieldValueFilter;
-	private float[][] weights;
 
 	// done:<
-	public LuceneNGramSearcher() {
+	public LuceneNGramSearcher(int n, int k, int joinLength) {
+		super(n, k, joinLength);
 		this.index = new ArrayList<IndexSearcher>();
 		try {
 			for (int i = 2; i < 6; i++) {
@@ -57,68 +42,10 @@ public class LuceneNGramSearcher implements Searchable {
 				this.index.add(new IndexSearcher(directoryReader));
 
 			}
-			// >
-			// copy&paste:<
-			SortField sortField = new SortField("cnt", SortField.Type.FLOAT,
-					true);
-			this.sort = new Sort(sortField);
-			Analyzer analyzer = new KeywordAnalyzer();
-			this.queryParser = new QueryParser(Version.LUCENE_40, "src",
-					analyzer);
-			this.queryParser.setLowercaseExpandedTerms(false);
-			this.fieldValueFilter = new FieldValueFilter("cnt");
-			this.weights = new float[100][Config.get().nGramLength];
-			for (int i = 0; i < 100; i++) {
-				for (int j = 0; j < Config.get().nGramLength; j++) {
-					this.weights[i][j] = 0;
-				}
-			}
-			// >
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-	}
-
-	// TODO: move into super class
-	// done<
-	@Override
-	public int query(String q, String prefix, String match,
-			int intermediateListLength, int k) {
-
-		// IOHelper.logLearn("TYPOLOGY - QUERY: " + q + " PREFIXLENGTH: "
-		// + prefix.length() + " MATCH: " + match);
-
-		HashMap<String, Float> result = this.search(q, prefix,
-				intermediateListLength, match);
-		Algo<String, Float> a = new Algo<String, Float>();
-		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
-				k);
-		int topkCnt = 0;
-
-		for (Float score : topkSuggestions.descendingKeySet()) {
-			for (String suggestion : topkSuggestions.get(score)) {
-				topkCnt++;
-				if (suggestion.equals(match)) {
-					IOHelper.log("HIT\tRANK: " + topkCnt + " \tPREFIXLENGTH: "
-							+ prefix.length());
-					if (topkCnt == 1) {
-						IOHelper.log("KSS: "
-								+ (match.length() - prefix.length()));
-					}
-					return topkCnt;
-				}
-			}
-		}
-		IOHelper.log("NOTHING\tPREFIXLENGTH: " + prefix.length());
-		return -1;
-	}// >
 
 	// not sure:<
 
@@ -127,12 +54,11 @@ public class LuceneNGramSearcher implements Searchable {
 	// http://stackoverflow.com/questions/468405/how-to-incorporate-multiple-fields-in-queryparser
 	// http://oak.cs.ucla.edu/cs144/projects/lucene/index.html in chapter 2
 	@Override
-	public HashMap<String, Float> search(String q, String prefix,
-			int numIntermediateLists, String match) {
+	public HashMap<String, Float> search(String q, String prefix, String match) {
 		HashMap<String, Float> result = new HashMap<String, Float>();
 		try {
 
-			String[] terms = this.prepareQuery(q);
+			String[] terms = this.getQueryNGrams(q);
 			// extend prepareQuery?
 			if (terms == null) {
 				return null;
@@ -148,7 +74,7 @@ public class LuceneNGramSearcher implements Searchable {
 
 				TopDocs results = this.index.get(i).search(
 						this.queryParser.parse(special), this.fieldValueFilter,
-						numIntermediateLists, this.sort);
+						this.joinLength, this.sort);
 
 				// hits.add(results);
 				int rank = 1;
@@ -159,7 +85,7 @@ public class LuceneNGramSearcher implements Searchable {
 					Float value = Float.parseFloat(doc.get("cnt"));
 
 					if (key.equals(match)) {
-						this.weights[prefix.length()][i + 1] += 1 / (float) rank;
+						this.learningWeights[prefix.length()][i + 1] += 1 / (float) rank;
 					}
 					rank++;
 					// String res = "";
@@ -192,65 +118,74 @@ public class LuceneNGramSearcher implements Searchable {
 
 	// >
 
+	// TODO: update this! to be correct: see EvalHelper probably good idea a
+	// prepareQuery function in the interface
 	// query format at least
 	// input: w0 w1 w2 w3
 	// output: {"w3", "w2 w3", "w1 w2 w3", "w0 w1 w2 w3"}
-	private String[] prepareQuery(String q) {
+	// private String[] prepareQuery(String q) {
+	// }
+
+	@Override
+	public String getFileName() {
+		String name = "";
+		if (Config.get().weightedPredictions) {
+			name = name.concat("weighted-");
+		}
+		name = name.concat("nGram-" + this.N + "-joinLengh-" + this.joinLength
+				+ "-" + Config.get().sampleRate + Config.get().splitDataRatio
+				+ ".log");
+		// TODO Auto-generated method stub
+		return name;
+	}
+
+	@Override
+	public String prepareQuery(String[] words, int n) {
+		String query = "";
+		for (int i = 0; i < words.length; i++) {
+			words[i] = QueryParser.escape(words[i]);
+		}
+		if (n == 5) {
+			query = words[0] + " " + words[1] + " " + words[2] + " " + words[3];
+		} else if (n == 4) {
+			query = words[1] + " " + words[2] + " " + words[3];
+		} else if (n == 3) {
+			query = words[2] + " " + words[3];
+		} else if (n == 2) {
+			query = words[4];
+		}
+		return query;
+	}
+
+	public String[] getQueryNGrams(String q) {
 		String[] words = q.split(" ");
+		int l = words.length;
 		if (words.length == 1) {
 			String[] result = new String[4];
-			result[0] = words[0];
+			result[0] = words[l];
 			return result;
 		} else if (words.length == 2) {
 			String[] result = new String[4];
-			result[0] = words[1];
-			result[1] = words[0] + " " + words[1];
+			result[0] = words[l];
+			result[1] = words[l - 1] + " " + words[l];
 			return result;
 
 		} else if (words.length == 3) {
 			String[] result = new String[3];
-			result[0] = words[2];
-			result[1] = words[1] + " " + words[2];
-			result[2] = words[0] + " " + words[1] + " " + words[2];
+			result[0] = words[l];
+			result[1] = words[l - 1] + " " + words[l];
+			result[2] = words[l - 2] + " " + words[l - 1] + " " + words[l];
 			return result;
 
 		} else if (words.length == 4) {
 			String[] result = new String[4];
-			result[0] = words[3];
-			result[1] = words[2] + " " + words[3];
-			result[2] = words[1] + " " + words[2] + " " + words[3];
-			result[3] = words[0] + " " + words[1] + " " + words[2] + " "
-					+ words[3];
+			result[0] = words[l];
+			result[1] = words[l - 1] + " " + words[l];
+			result[2] = words[l - 2] + " " + words[l - 1] + " " + words[l];
+			result[3] = words[l - 3] + " " + words[l - 2] + " " + words[l - 1]
+					+ " " + words[l];
 			return result;
 		}
 		return null;
 	}
-
-	// copy&paste:<
-	@Override
-	public void saveWeights(int numQueries) {
-		BufferedWriter bw = IOHelper.openWriteFile("weights");
-		try {
-			for (int i = 0; i < 10; i++) {
-				bw.write("PREFIXLENGTH: " + i);
-				float max = 0;
-				for (int j = 1; j < Config.get().nGramLength; j++) {
-					if (this.weights[i][j] > max) {
-						max = this.weights[i][j];
-					}
-				}
-				// TODO: can be divided by numQueries
-				for (int j = 1; j < Config.get().nGramLength; j++) {
-					bw.write(" w" + j + ": " + (int) this.weights[i][j] * 1000
-							/ max);
-				}
-				bw.write("\n");
-			}
-			bw.flush();
-			bw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}// >
 }

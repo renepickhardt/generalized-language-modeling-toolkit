@@ -15,4 +15,5 @@ public interface Searchable {
 
 	String getFileName();
 
+	public String prepareQuery(String[] words, int n);
 }

@@ -1,6 +1,5 @@
 package de.typology.utils;
 
-import org.apache.lucene.queryparser.classic.QueryParser;
 
 public class EvalHelper {
 
@@ -14,15 +13,5 @@ public class EvalHelper {
 			}
 		}
 		return false;
-	}
-
-	public static String prepareQuery(String[] words, int n) {
-		String query = "";
-		int l = words.length;
-		for (int i = l - n; i < l - 1; i++) {
-			query = query + QueryParser.escape(words[i]) + " ";
-		}
-		query = query.substring(0, query.length() - 1);
-		return query;
 	}
 }

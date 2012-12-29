@@ -28,6 +28,7 @@ public class Config extends Properties {
 
 	// STEP 0 GLOBAL CONFIGS
 	public boolean loadIndexToRAM;
+	public boolean weightedPredictions;
 
 	public String dgttmInputDirectory;
 	public String enronInputDirectory;
