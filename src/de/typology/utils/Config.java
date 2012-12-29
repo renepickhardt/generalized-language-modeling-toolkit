@@ -27,6 +27,8 @@ public class Config extends Properties {
 	public boolean sampleSplitData;
 
 	// STEP 0 GLOBAL CONFIGS
+	public boolean loadIndexToRAM;
+
 	public String dgttmInputDirectory;
 	public String enronInputDirectory;
 	public String googleInputDirectory;

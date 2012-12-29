@@ -21,6 +21,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
@@ -48,15 +49,15 @@ public class LuceneTypologySearcher {
 			for (int i = 1; i < 5; i++) {
 				Directory directory;
 				DirectoryReader directoryReader;
-				System.out.println(Config.get().indexPath);
-				directory = MMapDirectory.open(new File(Config.get().indexPath
-						+ i + "/"));
-
-				// directory = FSDirectory.open(new File(Config.get().indexPath
-				// + i + "/"));
+				if (Config.get().loadIndexToRAM) {
+					directory = MMapDirectory.open(new File(
+							Config.get().indexPath + i + "/"));
+				} else {
+					directory = FSDirectory.open(new File(
+							Config.get().indexPath + i + "/"));
+				}
 				directoryReader = DirectoryReader.open(directory);
 				this.index.add(new IndexSearcher(directoryReader));
-
 			}
 
 			SortField sortField = new SortField("cnt", SortField.Type.FLOAT,
@@ -85,50 +86,6 @@ public class LuceneTypologySearcher {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException, ParseException {
-		LuceneTypologySearcher lts = new LuceneTypologySearcher();
-
-		lts.query("Ich gehe über die", "");
-		lts.query("Bla Ich gehe über die", "");
-		lts.query("eines schoenen", "");
-		lts.query("das wandern ist des", "");
-		lts.query("Koblenz ist eine Stadt am", "");
-		lts.query("Der Frankfurter Flughafen", "");
-
-		HashMap<String, Float> result = lts.search("Bla Ich gehe über die", "",
-				12, null);
-
-		for (int i = 0; i < 10; i++) {
-			result = lts.search("Bla Ich gehe über die", "", 12 - i, null);
-
-			Algo<String, Float> a = new Algo<String, Float>();
-			TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
-					result, 5);
-			int topkCnt = 0;
-
-			for (Float score : topkSuggestions.descendingKeySet()) {
-				System.out.println(score);
-				for (String suggestion : topkSuggestions.get(score)) {
-					System.out.println("  " + suggestion);
-				}
-			}
-		}
-	}
-
-	public void query(String q, String prefix) {
-		IOHelper.log(q + " PREFIX: " + prefix);
-		HashMap<String, Float> result = this.search(q, prefix, 12, null);
-		Algo<String, Float> a = new Algo<String, Float>();
-		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
-				5);
-		;
-		int topkCnt = 0;
-
-		for (Float score : topkSuggestions.descendingKeySet()) {
-			System.out.println(score);
-			for (String suggestion : topkSuggestions.get(score)) {
-				System.out.println("  " + suggestion);
-			}
-		}
 	}
 
 	public int query(String q, String prefix, String match,
