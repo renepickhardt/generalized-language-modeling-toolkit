@@ -86,7 +86,8 @@ public class LuceneNGramSearcher implements Searchable {
 
 	}
 
-	// done (except comments)<
+	// TODO: move into super class
+	// done<
 	@Override
 	public int query(String q, String prefix, String match,
 			int intermediateListLength, int k) {
@@ -105,14 +106,11 @@ public class LuceneNGramSearcher implements Searchable {
 			for (String suggestion : topkSuggestions.get(score)) {
 				topkCnt++;
 				if (suggestion.equals(match)) {
-					IOHelper.log("HIT\tRANK: " + topkCnt + " \tPREFIXLENGHT: "
+					IOHelper.log("HIT\tRANK: " + topkCnt + " \tPREFIXLENGTH: "
 							+ prefix.length());
 					if (topkCnt == 1) {
 						IOHelper.log("KSS: "
-								+ (match.length() - prefix.length())
-						// + " \tPREFIXLENGHT: " + prefix.length() was removed
-						// in TypologySearcher
-						);
+								+ (match.length() - prefix.length()));
 					}
 					return topkCnt;
 				}
@@ -139,7 +137,6 @@ public class LuceneNGramSearcher implements Searchable {
 			if (terms == null) {
 				return null;
 			}
-			int ngram = 0;
 
 			// ArrayList<TopDocs> hits = new ArrayList<TopDocs>();
 
@@ -162,7 +159,7 @@ public class LuceneNGramSearcher implements Searchable {
 					Float value = Float.parseFloat(doc.get("cnt"));
 
 					if (key.equals(match)) {
-						this.weights[prefix.length()][ngram + 1] += 1 / (float) rank;
+						this.weights[prefix.length()][i + 1] += 1 / (float) rank;
 					}
 					rank++;
 					// String res = "";
@@ -182,7 +179,7 @@ public class LuceneNGramSearcher implements Searchable {
 						result.put(key, value);
 					}
 				}
-				ngram++;
+
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
