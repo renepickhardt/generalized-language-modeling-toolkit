@@ -1,5 +1,6 @@
 package de.typology.predictors;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,10 @@ import de.typology.utils.IOHelper;
 public class LuceneTypologySearcher {
 
 	private ArrayList<IndexSearcher> index;
+	private Sort sort;
+	private QueryParser queryParser;
+	private FieldValueFilter fieldValueFilter;
+	private float[][] weights;
 
 	public LuceneTypologySearcher() {
 		this.index = new ArrayList<IndexSearcher>();
@@ -43,26 +48,30 @@ public class LuceneTypologySearcher {
 			for (int i = 1; i < 5; i++) {
 				Directory directory;
 				DirectoryReader directoryReader;
-				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/MMapDirectory.html
 				System.out.println(Config.get().indexPath);
 				directory = MMapDirectory.open(new File(Config.get().indexPath
 						+ i + "/"));
 
 				// directory = FSDirectory.open(new File(Config.get().indexPath
 				// + i + "/"));
-
-				// http://www.avajava.com/tutorials/lessons/how-do-i-convert-a-file-system-index-to-a-memory-index.html
-
-				// http://stackoverflow.com/questions/673887/using-ramdirectory
-				// 2 GB limit on index size
-
-				// Directory memoryDirectory = new RAMDirectory(directory);
-
-				// above is not a good way for big indices according to
-				// http://lucene.apache.org/core/4_0_0/core/org/apache/lucene/store/RAMDirectory.html
-
 				directoryReader = DirectoryReader.open(directory);
 				this.index.add(new IndexSearcher(directoryReader));
+
+			}
+
+			SortField sortField = new SortField("cnt", SortField.Type.FLOAT,
+					true);
+			this.sort = new Sort(sortField);
+			Analyzer analyzer = new KeywordAnalyzer();
+			this.queryParser = new QueryParser(Version.LUCENE_40, "src",
+					analyzer);
+			this.queryParser.setLowercaseExpandedTerms(false);
+			this.fieldValueFilter = new FieldValueFilter("cnt");
+			this.weights = new float[100][Config.get().nGramLength];
+			for (int i = 0; i < 100; i++) {
+				for (int j = 0; j < Config.get().nGramLength; j++) {
+					this.weights[i][j] = 0;
+				}
 
 			}
 		} catch (IOException e) {
@@ -86,10 +95,10 @@ public class LuceneTypologySearcher {
 		lts.query("Der Frankfurter Flughafen", "");
 
 		HashMap<String, Float> result = lts.search("Bla Ich gehe über die", "",
-				12);
+				12, null);
 
 		for (int i = 0; i < 10; i++) {
-			result = lts.search("Bla Ich gehe über die", "", 12 - i);
+			result = lts.search("Bla Ich gehe über die", "", 12 - i, null);
 
 			Algo<String, Float> a = new Algo<String, Float>();
 			TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
@@ -107,7 +116,7 @@ public class LuceneTypologySearcher {
 
 	public void query(String q, String prefix) {
 		IOHelper.log(q + " PREFIX: " + prefix);
-		HashMap<String, Float> result = this.search(q, prefix, 12);
+		HashMap<String, Float> result = this.search(q, prefix, 12, null);
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
 				5);
@@ -124,8 +133,12 @@ public class LuceneTypologySearcher {
 
 	public int query(String q, String prefix, String match,
 			int intermediateListLength, int k) {
+
+		// IOHelper.logLearn("TYPOLOGY - QUERY: " + q + " PREFIXLENGTH: "
+		// + prefix.length() + " MATCH: " + match);
+
 		HashMap<String, Float> result = this.search(q, prefix,
-				intermediateListLength);
+				intermediateListLength, match);
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
 				k);
@@ -155,40 +168,44 @@ public class LuceneTypologySearcher {
 	// http://stackoverflow.com/questions/468405/how-to-incorporate-multiple-fields-in-queryparser
 	// http://oak.cs.ucla.edu/cs144/projects/lucene/index.html in chapter 2
 	public HashMap<String, Float> search(String q, String prefix,
-			int numIntermediateLists) {
-
-		long startTime = System.currentTimeMillis();
-
+			int numIntermediateLists, String match) {
 		HashMap<String, Float> result = new HashMap<String, Float>();
 		try {
-			SortField sortField = new SortField("cnt", SortField.Type.FLOAT,
-					true);
-			Sort sort = new Sort(sortField);
-			Analyzer analyzer = new KeywordAnalyzer();
-			QueryParser queryParser = new QueryParser(Version.LUCENE_40, "src",
-					analyzer);
-			queryParser.setLowercaseExpandedTerms(false);
 
 			String[] terms = q.split(" ");
 			int edge = 0;
 
 			for (int i = terms.length - 1; i >= Math.max(0, terms.length - 4); i--) {
-				String special = "src:" + QueryParser.escape(terms[i]);
+				String special = "src:" + terms[i];
 				if (prefix.length() > 0) {
-					special = "src:" + QueryParser.escape(terms[i])
-							+ " AND tgt:" + QueryParser.escape(prefix) + "*";
+					special = special.concat(" AND tgt:" + prefix + "*");
 				}
 
-				TopDocs results = this.index.get(edge)
-						.search(queryParser.parse(special),
-								new FieldValueFilter("cnt"),
-								numIntermediateLists, sort);
+				TopDocs results = this.index.get(edge).search(
+						this.queryParser.parse(special), this.fieldValueFilter,
+						numIntermediateLists, this.sort);
 
+				int rank = 1;
 				for (ScoreDoc scoreDoc : results.scoreDocs) {
 					Document doc = this.index.get(edge).doc(scoreDoc.doc);
 
 					String key = doc.get("tgt");
 					Float value = Float.parseFloat(doc.get("cnt"));
+
+					if (key.equals(match)) {
+						this.weights[prefix.length()][edge + 1] += 1 / (float) rank;
+					}
+					rank++;
+					// String res = "";
+					// if (key.equals(match)) {
+					// res = " \tHIT";
+					// } else {
+					// res = " \tNOMATCH";
+					// }
+					// IOHelper.logLearn("FROM: " + terms[i] + " \tEDGETYPE: "
+					// + (edge + 1) + " \t RANK: " + rank++
+					// + " \tPREDICTS: " + key + "\t SCORE: " + value
+					// + res);
 
 					if (result.containsKey(key)) {
 						result.put(key, value + result.get(key));
@@ -198,7 +215,6 @@ public class LuceneTypologySearcher {
 				}
 				edge++;
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
@@ -206,9 +222,32 @@ public class LuceneTypologySearcher {
 			e.printStackTrace();
 		}
 		long endTime = System.currentTimeMillis();
-		// IOHelper.log(endTime - startTime + " milliseconds for searching " +
-		// q);
 		return result;
 	}
 
+	public void saveWeights(int numQueries) {
+		BufferedWriter bw = IOHelper.openWriteFile("weights");
+		try {
+			for (int i = 0; i < 10; i++) {
+				bw.write("PREFIXLENGTH: " + i);
+				float max = 0;
+				for (int j = 1; j < Config.get().nGramLength; j++) {
+					if (this.weights[i][j] > max) {
+						max = this.weights[i][j];
+					}
+				}
+				// TODO: can be divided by numQueries
+				for (int j = 1; j < Config.get().nGramLength; j++) {
+					bw.write(" w" + j + ": " + (int) this.weights[i][j] * 1000
+							/ max);
+				}
+				bw.write("\n");
+			}
+			bw.flush();
+			bw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

@@ -3,6 +3,8 @@ package de.typology.evaluation;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
+
 import de.typology.predictors.LuceneTypologySearcher;
 import de.typology.utils.Config;
 import de.typology.utils.EvalHelper;
@@ -11,12 +13,13 @@ import de.typology.utils.IOHelper;
 public class TypologyEvaluator {
 	public static void main(String[] args) {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
-		// int joinLength = 12;
+		int joinLength = 100;
 		int topK = 10;
-		for (int joinLength = 5; joinLength < 50; joinLength = joinLength + 2) {
-			for (int n = 2; n < 6; n++) {
-				run(lts, n, topK, joinLength);
-			}
+		// for (int joinLength = 5; joinLength < 50; joinLength = joinLength +
+		// 2) {
+		for (int n = 5; n < 6; n++) {
+			run(lts, n, topK, joinLength);
+			// }
 		}
 	}
 
@@ -44,7 +47,7 @@ public class TypologyEvaluator {
 				}
 
 				String query = EvalHelper.prepareQuery(words, n);
-				String match = words[words.length - 1];
+				String match = QueryParser.escape(words[words.length - 1]);
 
 				IOHelper.logResult(query + "  \tMATCH: " + match);
 				for (int j = 0; j < match.length() - 1; j++) {
@@ -63,6 +66,7 @@ public class TypologyEvaluator {
 				}
 				queries++;
 				if (queries % 500 == 0) {
+					lts.saveWeights(queries);
 					long time = System.currentTimeMillis() - start;
 					IOHelper.strongLog(queries + " queries in " + time
 							+ " ms \t" + queries * 1000 / time

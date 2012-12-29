@@ -26,6 +26,7 @@ public class IOHelper {
 	private static BufferedWriter resultFile = openAppendFile("res.log");
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
 	private static ArrayList<File> fileList = new ArrayList<File>();
+	private static BufferedWriter learnFile = openAppendFile("learn.log");;
 
 	/**
 	 * faster access to a buffered reader
@@ -264,6 +265,16 @@ public class IOHelper {
 		}
 	}
 
+	public static void logLearn(Object out) {
+		try {
+			learnFile.write(out + "\n");
+			learnFile.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * function for output that is only displayed in debugmode
 	 * 
@@ -361,6 +372,8 @@ public class IOHelper {
 		try {
 			resultFile.close();
 			resultFile = openAppendFile(name);
+			learnFile.close();
+			learnFile = openAppendFile("learn-" + name);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
