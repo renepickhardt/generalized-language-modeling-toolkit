@@ -5,91 +5,73 @@ import java.io.IOException;
 
 import de.typology.predictors.LuceneTypologySearcher;
 import de.typology.utils.Config;
+import de.typology.utils.EvalHelper;
 import de.typology.utils.IOHelper;
 
 public class TypologyEvaluator {
 	public static void main(String[] args) {
 		LuceneTypologySearcher lts = new LuceneTypologySearcher();
-
 		// int joinLength = 12;
 		int topK = 10;
-
 		for (int joinLength = 5; joinLength < 50; joinLength = joinLength + 2) {
 			for (int n = 2; n < 6; n++) {
+				run(lts, n, topK, joinLength);
+			}
+		}
+	}
 
-				BufferedReader br = IOHelper
-						.openReadFile(Config.get().testingPath);
-				try {
-					String line = "";
-					long start = System.currentTimeMillis();
-					int cnt = 0;
-					int queries = 0;
-					IOHelper.setResultFile("joinlog/typo-" + n + "-joinLengh-"
-							+ joinLength + "-" + Config.get().sampleRate
-							+ Config.get().splitDataRatio + ".log." + start);
-					IOHelper.log("!!!!!!!!!!TYPOLOGY EVAL: N = " + n);
-					while ((line = br.readLine()) != null) {
-						String sentence = line;
-						String[] words = sentence.split("\\ ");
-						if (words.length < n) {
-							continue;
-						}
-						boolean flag = false;
-						for (int l = 0; l < n; l++) {
-							if (words[l].length() < 1) {
-								flag = true;
-							}
-						}
-						if (flag) {
-							continue;
-						}
+	private static void run(LuceneTypologySearcher lts, int n, int topK,
+			int joinLength) {
+		BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
+		try {
+			String line = "";
+			long start = System.currentTimeMillis();
+			int cnt = 0;
+			int queries = 0;
+			// IOHelper.setResultFile("joinlog/typo-" + n +
+			// "-joinLengh-"
+			// + joinLength + "-" + Config.get().sampleRate
+			// + Config.get().splitDataRatio + ".log." + start);
+			IOHelper.setResultFile("typo-" + n + "-joinLengh-" + joinLength
+					+ "-" + Config.get().sampleRate
+					+ Config.get().splitDataRatio + ".log");
+			IOHelper.log("!!!!!!!!!!TYPOLOGY EVAL: N = " + n);
+			while ((line = br.readLine()) != null) {
+				String[] words = line.split("\\ ");
 
-						String query = "";
-						if (n == 5) {
-							query = words[0] + " " + words[1] + " " + words[2]
-									+ " " + words[3];
-						} else if (n == 4) {
-							query = words[0] + " " + words[1] + " " + words[2];
-						} else if (n == 3) {
-							query = words[0] + " " + words[1];
-						} else if (n == 2) {
-							query = words[0];
-						}
+				if (EvalHelper.badLine(words, n)) {
+					continue;
+				}
 
-						// for (int j = 0; j < Math.min(words[n - 1].length(),
-						// 4);
-						// j++) {
-						IOHelper.logResult(query + "  \tMATCH: " + words[n - 1]);
-						for (int j = 0; j < words[n - 1].length() - 1; j++) {
-							// include more logic
-							int res = lts.query(query,
-									words[n - 1].substring(0, j), words[n - 1],
-									joinLength, topK);
-							cnt++;
-							if (cnt % 2000 == 0) {
-								long time = System.currentTimeMillis() - start;
-								IOHelper.strongLog(cnt + " predictions in "
-										+ time + " ms \t" + cnt * 1000 / time
-										+ " predictions / sec");
-							}
-							if (res == 1) {
-								break;
-							}
-						}
-						queries++;
-						if (queries % 250 == 0) {
-							long time = System.currentTimeMillis() - start;
-							IOHelper.strongLog(queries + " queries in " + time
-									+ " ms \t" + queries * 1000 / time
-									+ " queries / sec");
-						}
+				String query = EvalHelper.prepareQuery(words, n);
+				String match = words[words.length - 1];
+
+				IOHelper.logResult(query + "  \tMATCH: " + match);
+				for (int j = 0; j < match.length() - 1; j++) {
+					int res = lts.query(query, match.substring(0, j), match,
+							joinLength, topK);
+					cnt++;
+					if (cnt % 5000 == 0) {
+						long time = System.currentTimeMillis() - start;
+						IOHelper.strongLog(cnt + " predictions in " + time
+								+ " ms \t" + cnt * 1000 / time
+								+ " predictions / sec");
 					}
-					// }
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+					if (res == 1) {
+						break;
+					}
+				}
+				queries++;
+				if (queries % 500 == 0) {
+					long time = System.currentTimeMillis() - start;
+					IOHelper.strongLog(queries + " queries in " + time
+							+ " ms \t" + queries * 1000 / time
+							+ " queries / sec");
 				}
 			}
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
