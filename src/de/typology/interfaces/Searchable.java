@@ -10,4 +10,9 @@ public interface Searchable {
 			int numIntermediateLists, String match);
 
 	public void saveWeights(int numQueries);
+
+	void run(Searchable lts, int n, int topK, int joinLength);// Searchable
+	// lts won't
+	// work
+
 }
