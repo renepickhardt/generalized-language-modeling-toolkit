@@ -25,6 +25,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
+import de.typology.interfaces.Searchable;
 import de.typology.utils.Algo;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
@@ -35,7 +36,7 @@ import de.typology.utils.IOHelper;
  * @author rpickhardt, Martin Koerner
  * 
  */
-public class LuceneTypologySearcher {
+public class LuceneTypologySearcher implements Searchable {
 
 	private ArrayList<IndexSearcher> index;
 	private Sort sort;
@@ -93,6 +94,7 @@ public class LuceneTypologySearcher {
 	public static void main(String[] args) throws IOException, ParseException {
 	}
 
+	@Override
 	public int query(String q, String prefix, String match,
 			int intermediateListLength, int k) {
 
@@ -129,6 +131,7 @@ public class LuceneTypologySearcher {
 	// http://www.ibm.com/developerworks/library/os-apache-lucenesearch/
 	// http://stackoverflow.com/questions/468405/how-to-incorporate-multiple-fields-in-queryparser
 	// http://oak.cs.ucla.edu/cs144/projects/lucene/index.html in chapter 2
+	@Override
 	public HashMap<String, Float> search(String q, String prefix,
 			int numIntermediateLists, String match) {
 		HashMap<String, Float> result = new HashMap<String, Float>();
@@ -191,6 +194,7 @@ public class LuceneTypologySearcher {
 		return result;
 	}
 
+	@Override
 	public void saveWeights(int numQueries) {
 		BufferedWriter bw = IOHelper.openWriteFile("weights");
 		try {
