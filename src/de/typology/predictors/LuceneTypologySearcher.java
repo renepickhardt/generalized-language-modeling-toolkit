@@ -25,7 +25,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
-import de.typology.interfaces.Searchable;
 import de.typology.utils.Algo;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
@@ -36,7 +35,7 @@ import de.typology.utils.IOHelper;
  * @author rpickhardt, Martin Koerner
  * 
  */
-public class LuceneTypologySearcher implements Searchable {
+public class LuceneTypologySearcher extends Searcher {
 
 	private ArrayList<IndexSearcher> index;
 	private Sort sort;
@@ -46,8 +45,14 @@ public class LuceneTypologySearcher implements Searchable {
 
 	private float[][] usedWeights;
 	private boolean useWeights;
+	private int joinLength;
+	private int k;
+	private int N;
 
-	public LuceneTypologySearcher() {
+	public LuceneTypologySearcher(int N, int k, int joinLength) {
+		this.k = k;
+		this.N = N;
+		this.joinLength = joinLength;
 		this.useWeights = true;
 		this.openWeights();
 		this.index = new ArrayList<IndexSearcher>();
@@ -86,26 +91,16 @@ public class LuceneTypologySearcher implements Searchable {
 		}
 	}
 
-	/**
-	 * @param args
-	 * @throws ParseException
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException, ParseException {
-	}
-
 	@Override
-	public int query(String q, String prefix, String match,
-			int intermediateListLength, int k) {
+	public int query(String q, String prefix, String match) {
 
 		// IOHelper.logLearn("TYPOLOGY - QUERY: " + q + " PREFIXLENGTH: "
 		// + prefix.length() + " MATCH: " + match);
 
-		HashMap<String, Float> result = this.search(q, prefix,
-				intermediateListLength, match);
+		HashMap<String, Float> result = this.search(q, prefix, match);
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
-				k);
+				this.k);
 		;
 		int topkCnt = 0;
 
@@ -132,8 +127,7 @@ public class LuceneTypologySearcher implements Searchable {
 	// http://stackoverflow.com/questions/468405/how-to-incorporate-multiple-fields-in-queryparser
 	// http://oak.cs.ucla.edu/cs144/projects/lucene/index.html in chapter 2
 	@Override
-	public HashMap<String, Float> search(String q, String prefix,
-			int numIntermediateLists, String match) {
+	public HashMap<String, Float> search(String q, String prefix, String match) {
 		HashMap<String, Float> result = new HashMap<String, Float>();
 		try {
 
@@ -148,7 +142,7 @@ public class LuceneTypologySearcher implements Searchable {
 
 				TopDocs results = this.index.get(edge).search(
 						this.queryParser.parse(special), this.fieldValueFilter,
-						numIntermediateLists, this.sort);
+						this.joinLength, this.sort);
 
 				int rank = 1;
 				for (ScoreDoc scoreDoc : results.scoreDocs) {
@@ -270,5 +264,18 @@ public class LuceneTypologySearcher implements Searchable {
 		this.usedWeights[9][2] = (float) 682.14557;
 		this.usedWeights[9][3] = (float) 474.29266;
 		this.usedWeights[9][4] = (float) 406.00348;
+	}
+
+	@Override
+	public String getFileName() {
+		String name = "";
+		if (this.useWeights) {
+			name = name.concat("weighted-");
+		}
+		name = name.concat("typo-" + this.N + "-joinLengh-" + this.joinLength
+				+ "-" + Config.get().sampleRate + Config.get().splitDataRatio
+				+ ".log");
+		// TODO Auto-generated method stub
+		return name;
 	}
 }

@@ -11,18 +11,16 @@ import de.typology.utils.Config;
 import de.typology.utils.EvalHelper;
 import de.typology.utils.IOHelper;
 
-public class Searcher implements Searchable {
+public abstract class Searcher implements Searchable {
 
 	@Override
-	public int query(String q, String prefix, String match,
-			int intermediateListLength, int k) {
+	public int query(String q, String prefix, String match) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public HashMap<String, Float> search(String q, String prefix,
-			int numIntermediateLists, String match) {
+	public HashMap<String, Float> search(String q, String prefix, String match) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -45,9 +43,7 @@ public class Searcher implements Searchable {
 			// "-joinLengh-"
 			// + joinLength + "-" + Config.get().sampleRate
 			// + Config.get().splitDataRatio + ".log." + start);
-			IOHelper.setResultFile("weighted-typo-" + n + "-joinLengh-"
-					+ joinLength + "-" + Config.get().sampleRate
-					+ Config.get().splitDataRatio + ".log");
+			IOHelper.setResultFile(this.getFileName());
 			IOHelper.log("!!!!!!!!!!TYPOLOGY EVAL: N = " + n);
 			while ((line = br.readLine()) != null) {
 				String[] words = line.split("\\ ");
@@ -61,8 +57,10 @@ public class Searcher implements Searchable {
 
 				IOHelper.logResult(query + "  \tMATCH: " + match);
 				for (int j = 0; j < match.length() - 1; j++) {
-					int res = lts.query(query, match.substring(0, j), match,
-							joinLength, topK);
+					// int res = lts.query(query, match.substring(0, j), match,
+					// joinLength, topK);
+					// TODO: implement lts.update(n,topK,joinLength)
+					int res = lts.query(query, match.substring(0, j), match);
 					cnt++;
 					if (cnt % 5000 == 0) {
 						long time = System.currentTimeMillis() - start;
