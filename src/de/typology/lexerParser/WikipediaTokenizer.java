@@ -29,6 +29,7 @@ import static de.typology.lexerParser.WikipediaToken.UNDERSCORE;
 import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
 import static de.typology.lexerParser.WikipediaToken.WS;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,6 +40,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashSet;
 import java.util.Iterator;
+
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
 /**
  * @author Martin Koerner
@@ -60,8 +63,20 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 	public WikipediaTokenizer(String wikiInputPath)
 			throws FileNotFoundException {
 		InputStream input = new FileInputStream(new File(wikiInputPath));
-		BZip2InputStream cb = new BZip2InputStream(input, false);
-		this.reader = new BufferedReader(new InputStreamReader(cb));
+
+		BufferedInputStream in = new BufferedInputStream(input);
+		BZip2CompressorInputStream bzIn = null;
+		try {
+			bzIn = new BZip2CompressorInputStream(in);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		this.reader = new BufferedReader(new InputStreamReader(bzIn));
+
+		// BZip2InputStream cb = new BZip2InputStream(input, false);
+		// this.reader = new BufferedReader(new InputStreamReader(cb));
+
 		// use the following line for reading xml files:
 		// this.reader = new BufferedReader(new FileReader(new File(s)));
 		this.disambiguations = new HashSet<String>();
