@@ -67,6 +67,7 @@ public class WikiNGramBuilder {
 		String learningPath = outputPath + "learning" + ratePathSuffix + "/";
 		new File(trainingPath).mkdirs();
 		new File(testPath).mkdirs();
+		new File(learningPath).mkdir();
 
 		String testFile = testPath + "test.file";
 		String trainingFile = trainingPath + "training.file";
