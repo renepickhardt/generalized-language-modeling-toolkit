@@ -1,4 +1,5 @@
 #AUTOR: Rene Pickhardt
+#need to fix the bug at KSS that KSS: 1 also findes KSS: 10
 #Purpose to aggregate data from logfiles
 #run with ./eval.sh logFileName
 LOGFILE=$1
