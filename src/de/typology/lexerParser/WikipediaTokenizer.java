@@ -64,6 +64,7 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			throws FileNotFoundException {
 		InputStream input = new FileInputStream(new File(wikiInputPath));
 
+		// TODO: check if new Bzip2 reader really does the job.
 		BufferedInputStream in = new BufferedInputStream(input);
 		BZip2CompressorInputStream bzIn = null;
 		try {
@@ -73,7 +74,6 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			e.printStackTrace();
 		}
 		this.reader = new BufferedReader(new InputStreamReader(bzIn));
-
 		// BZip2InputStream cb = new BZip2InputStream(input, false);
 		// this.reader = new BufferedReader(new InputStreamReader(cb));
 

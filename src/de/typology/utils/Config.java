@@ -146,6 +146,8 @@ public class Config extends Properties {
 	private static final long serialVersionUID = -4439565094382127683L;
 
 	static Config instance = null;
+	public static String ngramDownloadPath;
+	public static String ngramDownloadOutputPath;
 
 	public Config() {
 		String file = "config.txt";
