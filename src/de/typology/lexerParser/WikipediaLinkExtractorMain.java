@@ -14,11 +14,14 @@ public class WikipediaLinkExtractorMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
+		// TODO: add traversing through directory
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(
-				Config.get().wikiXmlPath);
+				Config.get().wikiInputDirectory);
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaLinkExtractor linkExtractor = new WikipediaLinkExtractor(
-				recognizer, Config.get().wikiLinksOutputPath, "de:wiki:");
+				recognizer, Config.get().wikiLinksOutputPath,
+				Config.get().wikiLinksHead);
+		// head could be something like "en:wiki:"
 		System.out.println("start extracting");
 		linkExtractor.extract();
 		System.out.println("extracting done");

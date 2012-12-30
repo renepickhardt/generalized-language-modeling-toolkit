@@ -39,15 +39,14 @@ import static de.typology.lexerParser.EnronToken.XFROM;
 import static de.typology.lexerParser.EnronToken.XORIGIN;
 import static de.typology.lexerParser.EnronToken.XTO;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -93,11 +92,7 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 	}
 
 	public EnronRecognizer(File f) {
-		try {
-			this.reader = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 	}
 
 	// Extract lexeme from buffer
@@ -212,12 +207,6 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			return;
 		}
 
-		// Recognize quotation mark
-		if (this.lookahead == '\'') {
-			this.read();
-			this.token = QUOTATIONMARK;
-			return;
-		}
 		// Recognize vertical bar
 		if (this.lookahead == '|') {
 			this.read();
@@ -231,12 +220,21 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			this.token = SLASH;
 			return;
 		}
+
 		// Recognize colon
 		if (this.lookahead == ':') {
 			this.read();
 			this.token = COLON;
 			return;
 		}
+
+		// Recognize quotation mark
+		if (this.lookahead == 39) {
+			this.read();
+			this.token = QUOTATIONMARK;
+			return;
+		}
+
 		// Recognize asterisk
 		if (this.lookahead == '*') {
 			this.read();
@@ -247,13 +245,6 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		if (this.lookahead == '=') {
 			this.read();
 			this.token = EQUALITYSIGN;
-			return;
-		}
-
-		// recognize quotation mark
-		if (this.lookahead == 39) {// 39='
-			this.read();
-			this.token = QUOTATIONMARK;
 			return;
 		}
 

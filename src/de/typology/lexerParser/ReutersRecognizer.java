@@ -23,15 +23,14 @@ import static de.typology.lexerParser.ReutersToken.TEXT;
 import static de.typology.lexerParser.ReutersToken.TITLE;
 import static de.typology.lexerParser.ReutersToken.WS;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -64,11 +63,7 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 	}
 
 	public ReutersRecognizer(File f) {
-		try {
-			this.reader = new BufferedReader(new FileReader(f));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 	}
 
 	// Extract lexeme from buffer
@@ -152,6 +147,13 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 			return;
 		}
 
+		// recognize quotation mark
+		if (this.lookahead == 39) {// 39='
+			this.read();
+			this.token = QUOTATIONMARK;
+			return;
+		}
+
 		// Recognize hyphen
 		if (this.lookahead == '-') {
 			this.read();
@@ -176,12 +178,6 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
-			return;
-		}
-		// recognize quotation mark
-		if (this.lookahead == 39) {// 39='
-			this.read();
-			this.token = QUOTATIONMARK;
 			return;
 		}
 

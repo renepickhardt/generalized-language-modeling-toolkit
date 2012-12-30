@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class DGTTMMain {
 	private static ArrayList<File> fileList;
@@ -16,42 +16,29 @@ public class DGTTMMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		long startTime = System.nanoTime();
-		System.out.println("getting file list");
-		fileList = new ArrayList<File>();
-		getFileList(new File(Config.get().DGTTMPath));
+	}
 
-		DGTTMParser parser = new DGTTMParser(fileList,
-				Config.get().parsedDGTTMOutputPath);
-		System.out.println("start parsing");
+	public static void run(String dgttmInputPath, String parsedOutputPath,
+			String normalizedOutputPath, String dgttmLanguage)
+			throws IOException {
+		long startTime = System.currentTimeMillis();
+		IOHelper.log("getting file list");
+		fileList = IOHelper.getDirectory(new File(dgttmInputPath));
+
+		DGTTMParser parser = new DGTTMParser(fileList, parsedOutputPath,
+				dgttmLanguage);
+		IOHelper.log("start parsing");
 		parser.parse();
-		System.out.println("parsing done");
-		System.out.println("start cleanup");
-		DGTTMNormalizer wn = new DGTTMNormalizer(
-				Config.get().parsedDGTTMOutputPath,
-				Config.get().normalizedDGTTMOutputPath);
+		IOHelper.log("parsing done");
+		IOHelper.log("start cleanup");
+		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
+				normalizedOutputPath);
 		wn.normalize();
-		System.out.println("cleanup done");
-		System.out.println("generate indicator file");
-		long endTime = System.nanoTime();
-		long time = Math.round((double) (endTime - startTime) / 1000) / 1000;
-		File done = new File(Config.get().normalizedDGTTMOutputPath + "IsDone."
-				+ time + "ms");
-		done.createNewFile();
-		System.out.println("done");
+		IOHelper.log("cleanup done");
+		IOHelper.log("generate indicator file");
+		long endTime = System.currentTimeMillis();
+		long time = (endTime - startTime) / 1000;
+		IOHelper.strongLog("done normalizing: " + dgttmInputPath + ", time: "
+				+ time + " seconds");
 	}
-
-	private static void getFileList(File f) {
-		File[] files = f.listFiles();
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					getFileList(file);
-				} else {
-					fileList.add(file);
-				}
-			}
-		}
-	}
-
 }
