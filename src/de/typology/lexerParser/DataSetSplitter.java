@@ -38,14 +38,6 @@ public class DataSetSplitter {
 				Config.get().memoryLimitForWritingFiles);
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		run(Config.get().germanWikiText, Config.get().testingPath,
-				Config.get().trainingPath, Config.get().learningPath);
-	}
-
 	public static void run(String inputFile, String testFile,
 			String trainingFile, String learningFile) {
 		DataSetSplitter dss = new DataSetSplitter(testFile, trainingFile,

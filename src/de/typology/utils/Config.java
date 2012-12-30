@@ -73,56 +73,17 @@ public class Config extends Properties {
 	// should be the output of step1
 
 	// temporary files
-	public String parsedNGrams;
-	public String sortedNGrams;
 	public int fileChunkThreashhold;
 	public String nGramKeyFile;
 	public String nGramsNotAggregatedPath;
 	public String typologyEdgesPathNotAggregated;
 
-	// public String inputPath;
-	// public String parsedDataPath;
-	// public String nGramPath;
-	// public String typologyEdgesPath;
-
-	// STEP 1 PARSING DATA SETS used in de.typology.lexerparser:
-
-	// // INPUT:
-	// public String wikiXmlPath;
-	// public String reutersXmlPath;
-	// public String enronPath;
-	// public String DGTTMPath;
-	// public String ngramDownloadPath;
-	//
-	// // OUTPUT:
-	// public String parsedWikiOutputPath;
-	// public String parsedReutersOutputPath;
-	// public String parsedEnronOutputPath;
-	// public String parsedDGTTMOutputPath;
-	//
-	//
-	// public String normalizedWikiOutputPath;
-	// public String normalizedReutersOutputPath;
-	// public String normalizedEnronOutputPath;
-	// public String normalizedDGTTMOutputPath;
-	// public String ngramDownloadOutputPath;
-
 	// COULD NOT REALLY MATCH
 	public String wikiLinksOutputPath;
 	public String wikiLinksHead;
-	public String germanWikiText;
-	// used in de.typology.googleNgrams:
-	public String googleNgramsPath;
-	public String googleNgramsMergedPath;
-	public String parsedGoogleNGramsOutputPath;
-	public String normalizedGoogleNgramsPath;
 
 	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
 	// used in de.typology.nGramBuilder
-
-	// CONFIG
-	// Flags for ngram building
-
 	// OUTPUT
 	public String nGramsAggregatedPath;
 
@@ -146,6 +107,7 @@ public class Config extends Properties {
 	private static final long serialVersionUID = -4439565094382127683L;
 
 	static Config instance = null;
+
 	public static String ngramDownloadPath;
 	public static String ngramDownloadOutputPath;
 
