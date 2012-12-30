@@ -8,7 +8,6 @@ import java.util.HashMap;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -139,27 +138,9 @@ public class LuceneNGramSearcher extends Searcher {
 		return name;
 	}
 
-	@Override
-	public String prepareQuery(String[] words, int n) {
-		String query = "";
-		for (int i = 0; i < words.length; i++) {
-			words[i] = QueryParser.escape(words[i]);
-		}
-		if (n == 5) {
-			query = words[0] + " " + words[1] + " " + words[2] + " " + words[3];
-		} else if (n == 4) {
-			query = words[1] + " " + words[2] + " " + words[3];
-		} else if (n == 3) {
-			query = words[2] + " " + words[3];
-		} else if (n == 2) {
-			query = words[4];
-		}
-		return query;
-	}
-
 	public String[] getQueryNGrams(String q) {
 		String[] words = q.split(" ");
-		int l = words.length;
+		int l = words.length - 1;
 		if (words.length == 1) {
 			String[] result = new String[4];
 			result[0] = words[l];

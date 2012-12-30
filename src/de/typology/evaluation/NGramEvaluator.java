@@ -10,11 +10,12 @@ public class NGramEvaluator {
 	public static void main(String[] args) {
 		int joinLength = 100;
 		int topK = 10;
-		LuceneNGramSearcher lns = new LuceneNGramSearcher(2, 10, 12);
+		LuceneNGramSearcher lns = new LuceneNGramSearcher(2, topK, joinLength);
 		// for (int joinLength = 5; joinLength < 50; joinLength = joinLength +
 		// 2) {
-		for (int n = 2; n < 6; n++) {
-			lns.run(lns, n, topK, joinLength);
+		for (int n = 5; n > 1; n--) {
+			lns.setTestParameter(n, topK, joinLength);
+			lns.run();
 			// }
 		}
 

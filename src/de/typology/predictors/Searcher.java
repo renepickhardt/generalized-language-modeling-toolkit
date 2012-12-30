@@ -75,7 +75,7 @@ public abstract class Searcher implements Searchable {
 				topkCnt++;
 				if (suggestion.equals(match)) {
 					IOHelper.logResult("HIT\tRANK: " + topkCnt
-							+ " \tPREFIXLENGTH: " + prefix.length());
+							+ " \tPREFIXLENGTH: " + prefix.length() + " ");
 					if (topkCnt == 1) {
 						IOHelper.logResult("KSS: "
 								+ (match.length() - prefix.length()));
@@ -84,7 +84,7 @@ public abstract class Searcher implements Searchable {
 				}
 			}
 		}
-		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + prefix.length());
+		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + prefix.length() + " ");
 		return -1;
 	}
 
@@ -167,7 +167,14 @@ public abstract class Searcher implements Searchable {
 	}
 
 	@Override
-	public void run(Searchable lts, int n, int topK, int joinLength) {
+	public void setTestParameter(int n, int topK, int joinLength) {
+		this.N = n;
+		this.k = topK;
+		this.joinLength = joinLength;
+	};
+
+	@Override
+	public void run() {
 		BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
 		try {
 			String line = "";
@@ -180,15 +187,15 @@ public abstract class Searcher implements Searchable {
 			// + Config.get().splitDataRatio + ".log." + start);
 			IOHelper.setResultFile(this.getFileName());
 			IOHelper.log("!!!!!!!!!! EVAL " + this.getClass().getName()
-					+ " : N = " + n);
+					+ " : N = " + this.N);
 			while ((line = br.readLine()) != null) {
 				String[] words = line.split("\\ ");
 
-				if (EvalHelper.badLine(words, n)) {
+				if (EvalHelper.badLine(words, this.N)) {
 					continue;
 				}
 
-				String query = this.prepareQuery(words, n);
+				String query = this.prepareQuery(words, this.N);
 				String match = QueryParser.escape(words[words.length - 1]);
 
 				IOHelper.logResult(query + "  \tMATCH: " + match);
@@ -196,7 +203,7 @@ public abstract class Searcher implements Searchable {
 					// int res = lts.query(query, match.substring(0, j), match,
 					// joinLength, topK);
 					// TODO: implement lts.update(n,topK,joinLength)
-					int res = lts.query(query, match.substring(0, j), match);
+					int res = this.query(query, match.substring(0, j), match);
 					cnt++;
 					if (cnt % 5000 == 0) {
 						long time = System.currentTimeMillis() - start;
@@ -210,7 +217,7 @@ public abstract class Searcher implements Searchable {
 				}
 				queries++;
 				if (queries % 500 == 0) {
-					lts.saveWeights(queries);
+					this.saveWeights(queries);
 					long time = System.currentTimeMillis() - start;
 					IOHelper.strongLog(queries + " queries in " + time
 							+ " ms \t" + queries * 1000 / time
@@ -222,4 +229,16 @@ public abstract class Searcher implements Searchable {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public String prepareQuery(String[] words, int n) {
+		String query = "";
+		int l = words.length;
+		for (int i = l - n; i < l - 1; i++) {
+			query = query + QueryParser.escape(words[i]) + " ";
+		}
+		query = query.substring(0, query.length() - 1);
+		return query;
+	}
+
 }

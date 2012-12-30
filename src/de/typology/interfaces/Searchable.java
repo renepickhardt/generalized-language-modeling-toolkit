@@ -9,11 +9,11 @@ public interface Searchable {
 
 	public void saveWeights(int numQueries);
 
-	void run(Searchable lts, int n, int topK, int joinLength);// Searchable
-	// lts won't
-	// work
+	public void run();// Searchable lts won't work
 
 	String getFileName();
+
+	public void setTestParameter(int n, int topK, int joinLength);
 
 	public String prepareQuery(String[] words, int n);
 }

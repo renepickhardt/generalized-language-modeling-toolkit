@@ -31,12 +31,12 @@ echo "Average Key stroke savings: $AVGKSS " | tee "res.$LOGFILE"
 echo "precision @ k for every prefix with PFL = $PFL and k up to: $PAK"
 for((  i = 0 ;  i <= PFL;  i++  ))
 do
-NUMQUERIES=`grep "PREFIXLENGTH: $i" $LOGFILE | wc -l`
+NUMQUERIES=`grep "PREFIXLENGTH: $i " $LOGFILE | wc -l`
 echo "$NUMQUERIES queries of with prefix of length $i"
 HIT=0
 for((  j = 1 ;  j <= PAK;  j++  ))
 do
-RES=`grep "PREFIXLENGTH: $i" $LOGFILE | grep "RANK: $j" | wc -l`
+RES=`grep "PREFIXLENGTH: $i " $LOGFILE | grep "RANK: $j" | wc -l`
 HIT=$((RES + HIT))
 precisionAtK=`echo "$HIT / $NUMQUERIES " | bc -l`
 echo "   Precision at k = $j: $precisionAtK PFL = $i" | tee -a "res.$LOGFILE"
@@ -47,12 +47,12 @@ done
 echo "TESTS for MRR with PFL = $PFL and RANKS up to $MRRMAXRANK"
 for((  i = 0 ;  i <= PFL;  i++  ))
 do
-NUMQUERIES=`grep "PREFIXLENGTH: $i" $LOGFILE | wc -l`
+NUMQUERIES=`grep "PREFIXLENGTH: $i " $LOGFILE | wc -l`
 #echo "$NUMQUERIES queries of with prefix of length $i"
 HIT=0
 for((  j = 1 ;  j <= MRRMAXRANK;  j++  ))
 do
-CNT=`grep "PREFIXLENGTH: $i" $LOGFILE | grep "RANK: $j" | wc -l`
+CNT=`grep "PREFIXLENGTH: $i " $LOGFILE | grep "RANK: $j" | wc -l`
 WRR=`echo "$CNT / $j " | bc -l`
 HIT=`echo "$HIT + $WRR " | bc -l`
 #HIT=$((HIT + WRR))

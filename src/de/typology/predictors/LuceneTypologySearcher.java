@@ -8,7 +8,6 @@ import java.util.HashMap;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -130,17 +129,6 @@ public class LuceneTypologySearcher extends Searcher {
 				+ ".log");
 		// TODO Auto-generated method stub
 		return name;
-	}
-
-	@Override
-	public String prepareQuery(String[] words, int n) {
-		String query = "";
-		int l = words.length;
-		for (int i = l - n; i < l - 1; i++) {
-			query = query + QueryParser.escape(words[i]) + " ";
-		}
-		query = query.substring(0, query.length() - 1);
-		return query;
 	}
 
 }

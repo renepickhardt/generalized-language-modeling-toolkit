@@ -11,7 +11,8 @@ public class TypologyEvaluator extends Evaluator {
 		// for (int joinLength = 5; joinLength < 50; joinLength = joinLength +
 		// 2) {
 		for (int n = 5; n < 6; n++) {
-			lts.run(lts, n, topK, joinLength);
+			lts.setTestParameter(n, topK, joinLength);
+			lts.run();
 			// }
 		}
 	}
