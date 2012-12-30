@@ -21,9 +21,9 @@ public class TestSampleEffectsEvaluator {
 			Config.get().sampleSplitData = true;
 			try {
 				String parsedEnglishWiki = Config.get().outputDirectory
-						+ "wiki/itwiki/normalized.txt";
+						+ "wiki/enwiki/normalized.txt";
 				String outputDirectory = Config.get().outputDirectory
-						+ "wiki/itwiki/";
+						+ "wiki/enwiki/";
 				WikiNGramBuilder.splitAndTrain(outputDirectory,
 						parsedEnglishWiki);
 			} catch (IOException e) {
