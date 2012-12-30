@@ -40,8 +40,6 @@ import java.io.Reader;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.itadaki.bzip2.BZip2InputStream;
-
 /**
  * @author Martin Koerner
  * 

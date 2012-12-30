@@ -79,10 +79,14 @@ public class LuceneNGramSearcher extends Searcher {
 				int rank = 1;
 				for (ScoreDoc scoreDoc : results.scoreDocs) {
 					Document doc = this.index.get(i).doc(scoreDoc.doc);
-
-					String key = doc.get("tgt");
-					Float value = Float.parseFloat(doc.get("cnt"));
-
+					String key = "";
+					Float value = new Float(0);
+					try {
+						key = doc.get("tgt");
+						value = Float.parseFloat(doc.get("cnt"));
+					} catch (Exception e) {
+						continue;
+					}
 					if (key.equals(match)) {
 						this.learningWeights[prefix.length()][i + 1] += 1 / (float) rank;
 					}
