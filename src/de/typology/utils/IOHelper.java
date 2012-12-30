@@ -23,8 +23,10 @@ public class IOHelper {
 	// d = debug mode set true if debugg messages should be displayed
 	private static boolean d = true;
 	private static BufferedWriter logFile = openAppendFile("Complet.log");
+	private static BufferedWriter resultFile = openAppendFile("res.log");
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
 	private static ArrayList<File> fileList = new ArrayList<File>();
+	private static BufferedWriter learnFile = openAppendFile("learn.log");;
 
 	/**
 	 * faster access to a buffered reader
@@ -253,6 +255,31 @@ public class IOHelper {
 	 * 
 	 * @param out
 	 */
+	public static void logResult(Object out) {
+		try {
+			resultFile.write(out + "\n");
+			resultFile.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void logLearn(Object out) {
+		try {
+			learnFile.write(out + "\n");
+			learnFile.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * function for output that is only displayed in debugmode
+	 * 
+	 * @param out
+	 */
 	public static void logError(Object out) {
 		if (d) {
 			System.err.println(out);
@@ -329,5 +356,27 @@ public class IOHelper {
 			}
 		}
 		return fileList;
+	}
+
+	public static void changeLogFile(String name) {
+		try {
+			logFile.close();
+			logFile = openAppendFile(name);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void setResultFile(String name) {
+		try {
+			resultFile.close();
+			resultFile = openAppendFile(name);
+			learnFile.close();
+			learnFile = openAppendFile("learn-" + name);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

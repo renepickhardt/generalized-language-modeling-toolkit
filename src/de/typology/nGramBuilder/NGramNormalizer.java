@@ -97,8 +97,15 @@ public class NGramNormalizer {
 
 				// normalize edge counts
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
+
+				String fileName = file.getName();
+				if (fileName.endsWith("gs")) {
+					fileName = fileName.substring(0, fileName.length() - 2)
+							+ "n";
+				}
+
 				this.writer = IOHelper.openWriteFile(
-						this.outputPathWithNGramType + file.getName(),
+						this.outputPathWithNGramType + fileName,
 						32 * 1024 * 1024);
 				while ((this.line = this.reader.readLine()) != null) {
 					// extract information from line
@@ -133,6 +140,7 @@ public class NGramNormalizer {
 				}
 				this.reader.close();
 				this.writer.close();
+				file.delete();
 			}
 		}
 		long endTime = System.currentTimeMillis();

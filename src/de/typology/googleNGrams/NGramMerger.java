@@ -51,6 +51,7 @@ public class NGramMerger {
 			System.out.println("merge file");
 			reader = IOHelper.openReadFile(file.getAbsolutePath().substring(0,
 					file.getAbsolutePath().length() - 4));
+
 			writer = new BufferedWriter(new FileWriter(output,/* append */true));
 
 			// read first line

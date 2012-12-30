@@ -21,65 +21,79 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
-	// used in de.typology.lexerparser:
-	public String wikiXmlPath;
-	public String parsedWikiOutputPath;
-	public String normalizedWikiOutputPath;
-	public String wikiLinksOutputPath;
-	public String wikiLinksHead;
-	public String germanWikiText;
-	public String reutersXmlPath;
-	public String parsedReutersOutputPath;
-	public String normalizedReutersOutputPath;
-	public String enronPath;
-	public String parsedEnronOutputPath;
-	public String normalizedEnronOutputPath;
-	public String DGTTMPath;
-	public String DGTTMLanguage;
-	public String parsedDGTTMOutputPath;
-	public String normalizedDGTTMOutputPath;
-	public String letterGraph;
-	public int keystrokesWindowSize;
 
-	public String ngramDownloadPath;
-	public String ngramDownloadOutputPath;
+	// CONTROLL PARAMETERS
+	public boolean parseData;
+	public boolean sampleSplitData;
 
-	// used in de.typology.googleNgrams:
-	public String googleNgramsPath;
-	public String googleNgramsMergedPath;
+	// STEP 0 GLOBAL CONFIGS
+	public boolean loadIndexToRAM;
+	public boolean weightedPredictions;
 
-	// used in de.typology.nGramBuilder
-	public String parsedNGrams;
-	public int nGramLength;
-	public String sortedNGrams;
-	public int fileChunkThreashhold;
+	public String dgttmInputDirectory;
+	public String enronInputDirectory;
+	public String googleInputDirectory;
+	public String reutersInputDirectory;
+	public String wikiInputDirectory;
+	public String DGTTMLanguages;
+
+	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
-	public String nGramKeyFile;
-	public String nGramsNotAggregatedPath;
-	public String nGramsAggregatedPath;
-	public String typologyEdgesPathNotAggregated;
-	// Flags for ngram building
+	public int nGramLength;
+
+	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
+	public int sampleRate; // \in [0, 100] 0 means no data from input will be
+	// used. 100 means all input data will be used
+	public int splitDataRatio; // \in [0, 100] 0 means no training data. 100
+	// means only training data
+	public int splitTestRatio; // \in [0, 100] 0 means all data is stored in
+	// test file. 100 means all data is stored in (smaller) learning file
+
+	// OPTIONAL only used in standalone scripts
+	public String trainingPath;
+	public String testingPath;
+	public String learningPath;
+
+	// STEP3 ngrams & typology edges
 	public boolean createNGramChunks;
 	public boolean createSecondLevelNGramChunks;
 	public boolean aggregateNGramChunks;
 	public boolean sortNGrams;
 	public boolean generateNGramDistribution;
+	public boolean normalizeNGrams;
 	// same flags for typology edge creating as for ngram building
 	public boolean createTypologyEdgeChunks;
 	public boolean createSecondLevelTypologyEdgeChunks;
 	public boolean aggregateTypologyEdgeChunks;
 	public boolean sortTypologyEdges;
 	public boolean generateTypologyEdgeDistribution;
+	public boolean normalizeEdges;
+
+	// INPUT
+	// should be the output of step1
+
+	// temporary files
+	public int fileChunkThreashhold;
+	public String nGramKeyFile;
+	public String nGramsNotAggregatedPath;
+	public String typologyEdgesPathNotAggregated;
+
+	// COULD NOT REALLY MATCH
+	public String wikiLinksOutputPath;
+	public String wikiLinksHead;
+
+	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
+	// used in de.typology.nGramBuilder
+	// OUTPUT
+	public String nGramsAggregatedPath;
 
 	// used in de.typology.trainers
-	public String dbPath;
 	public String edgeInput;
 	public String normalizedEdges;
 
 	public String nGramsInput;
 	public String normalizedNGrams;
 
-	public String hashMapMinSize;
 	public String indexPath;
 	public String nGramIndexPath;
 
@@ -90,12 +104,12 @@ public class Config extends Properties {
 	public String lineCountInput;
 	public String lineCountStats;
 
-	public String parsedGoogleNGramsOutputPath;
-	public String normalizedGoogleNgramsPath;
-
 	private static final long serialVersionUID = -4439565094382127683L;
 
 	static Config instance = null;
+
+	public static String ngramDownloadPath;
+	public static String ngramDownloadOutputPath;
 
 	public Config() {
 		String file = "config.txt";

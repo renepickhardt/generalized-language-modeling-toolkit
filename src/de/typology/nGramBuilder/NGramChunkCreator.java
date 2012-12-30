@@ -17,7 +17,7 @@ public class NGramChunkCreator extends ChunkCreator {
 		super(mostFrequentLetters);
 	}
 
-	public void createNGramChunks(String fromFile, int n) {
+	public void createNGramChunks(String fromFile, int n, String trainingPath) {
 		if (n > Config.get().nGramLength) {
 			IOHelper.strongLog("can't create " + n
 					+ "-grams only allowed to build up to "
@@ -34,7 +34,7 @@ public class NGramChunkCreator extends ChunkCreator {
 		int cnt = 0;
 
 		HashMap<String, BufferedWriter> writers = IOHelper.createWriter(
-				Config.get().nGramsNotAggregatedPath + "/" + n,
+				trainingPath + Config.get().nGramsNotAggregatedPath + "/" + n,
 				mostFrequentLetters, extension);
 
 		try {

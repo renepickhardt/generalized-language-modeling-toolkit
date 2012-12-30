@@ -93,7 +93,7 @@ import de.typology.utils.IOHelper;
  * 
  */
 
-public class nGramBuilder {
+public class NGramBuilder {
 
 	/**
 	 * 
@@ -113,11 +113,16 @@ public class nGramBuilder {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+	}
+
+	public static void run(String trainingPath, String trainingFile) {
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
 		long sek = 0;
 
-		String[] letters = countMostFrequentStartingLetters(62);
+		String[] letters = countMostFrequentStartingLetters(62, trainingFile,
+				trainingPath);
 		endTime = System.currentTimeMillis();
 		sek = (endTime - startTime) / 1000;
 		IOHelper.strongLog(sek + " seconds to: count most frequent letters");
@@ -126,21 +131,22 @@ public class nGramBuilder {
 		// sets that we have an creates the appropreate output
 
 		for (int n = Config.get().nGramLength; n >= 2; n--) {
-			new File(Config.get().nGramsNotAggregatedPath + "/" + n).mkdirs();
+			new File(trainingPath + Config.get().nGramsNotAggregatedPath + "/"
+					+ n).mkdirs();
 
 			NGramChunkCreator ngcc = new NGramChunkCreator(letters);
 			if (Config.get().createNGramChunks) {
 
-				ngcc.createNGramChunks(Config.get().germanWikiText, n);
+				ngcc.createNGramChunks(trainingFile, n, trainingPath);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
 						+ " seconds to: finnish creating first chunks");
 			}
 			if (Config.get().createSecondLevelNGramChunks) {
-				ngcc.createSecondLevelChunks(
-						Config.get().nGramsNotAggregatedPath + "/" + n, "." + n
-								+ "gc");
+				ngcc.createSecondLevelChunks(trainingPath
+						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
+						+ n + "gc");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -148,8 +154,9 @@ public class nGramBuilder {
 			}
 			if (Config.get().aggregateNGramChunks) {
 				Aggregator a = new Aggregator();
-				a.aggregateNGrams(Config.get().nGramsNotAggregatedPath + "/"
-						+ n, "." + n + "gc", 3);
+				a.aggregateNGrams(trainingPath
+						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
+						+ n + "gc", 3);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -158,8 +165,8 @@ public class nGramBuilder {
 
 			if (Config.get().sortNGrams) {
 				Sorter s = new Sorter();
-				s.sort(Config.get().nGramsNotAggregatedPath + "/" + n, "." + n
-						+ "ga");
+				s.sort(trainingPath + Config.get().nGramsNotAggregatedPath
+						+ "/" + n, "." + n + "ga");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -168,20 +175,21 @@ public class nGramBuilder {
 
 			if (Config.get().generateNGramDistribution) {
 				NGramDistribution ngd = new NGramDistribution();
-				ngd.countDistribution(Config.get().nGramsNotAggregatedPath
-						+ "/" + n, "." + n + "gs");
+				ngd.countDistribution(trainingPath
+						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
+						+ n + "gs");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
 						+ " seconds to: finnish creating distribution for ngrams");
 			}
 
-			new File(Config.get().typologyEdgesPathNotAggregated + "/"
-					+ (n - 1)).mkdirs();
+			new File(trainingPath + Config.get().typologyEdgesPathNotAggregated
+					+ "/" + (n - 1)).mkdirs();
 			if (Config.get().createTypologyEdgeChunks) {
 				TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
-				tcc.createTypoelogyEdgeChunks(Config.get().germanWikiText,
-						Config.get().typologyEdgesPathNotAggregated, n - 1);
+				tcc.createTypoelogyEdgeChunks(trainingFile, trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated, n - 1);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -191,9 +199,9 @@ public class nGramBuilder {
 
 			if (Config.get().createSecondLevelTypologyEdgeChunks) {
 				TypologyChunkCreator tcc = new TypologyChunkCreator(letters);
-				tcc.createSecondLevelChunks(
-						Config.get().typologyEdgesPathNotAggregated + "/"
-								+ (n - 1), "." + (n - 1) + "ec");
+				tcc.createSecondLevelChunks(trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated + "/"
+						+ (n - 1), "." + (n - 1) + "ec");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -203,8 +211,9 @@ public class nGramBuilder {
 
 			if (Config.get().aggregateTypologyEdgeChunks) {
 				Aggregator a = new Aggregator();
-				a.aggregateNGrams(Config.get().typologyEdgesPathNotAggregated
-						+ "/" + (n - 1), "." + (n - 1) + "ec", 3);
+				a.aggregateNGrams(trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated + "/"
+						+ (n - 1), "." + (n - 1) + "ec", 3);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -213,7 +222,8 @@ public class nGramBuilder {
 
 			if (Config.get().sortTypologyEdges) {
 				Sorter s = new Sorter();
-				s.sort(Config.get().typologyEdgesPathNotAggregated + "/"
+				s.sort(trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated + "/"
 						+ (n - 1), "." + (n - 1) + "ea");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
@@ -221,11 +231,33 @@ public class nGramBuilder {
 						+ " seconds to: finnish sorting aggregated ngrams");
 			}
 
+			if (Config.get().normalizeEdges) {
+				try {
+					String input = trainingPath
+							+ Config.get().typologyEdgesPathNotAggregated;
+					String output = trainingPath
+							+ Config.get().typologyEdgesPathNotAggregated
+							+ "Normalized/";
+					EdgeNormalizer ngn = new EdgeNormalizer();
+					IOHelper.strongLog("normalizing edges from " + input
+							+ " and storing updated edges at " + output);
+					double time = ngn.normalize(input, output);
+					IOHelper.strongLog("time for normalizing edges from "
+							+ input + " : " + time);
+				} catch (NumberFormatException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
 			if (Config.get().generateTypologyEdgeDistribution) {
 				NGramDistribution ngd = new NGramDistribution();
-				ngd.countDistribution(
-						Config.get().typologyEdgesPathNotAggregated + "/"
-								+ (n - 1), "." + (n - 1) + "es");
+				ngd.countDistribution(trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated + "/"
+						+ (n - 1), "." + (n - 1) + "es");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -233,20 +265,68 @@ public class nGramBuilder {
 			}
 
 		}
+
+		if (Config.get().normalizeNGrams) {
+			try {
+
+				String input = trainingPath
+						+ Config.get().nGramsNotAggregatedPath + "/";
+				String output = trainingPath
+						+ Config.get().nGramsNotAggregatedPath + "Normalized/";
+				new File(output).mkdirs();
+				NGramNormalizer ngn = new NGramNormalizer();
+				IOHelper.strongLog("normalizing ngrams from " + input
+						+ " and storing updated ngrams at " + output);
+				double time = ngn.normalize(input, output);
+				IOHelper.strongLog("time for normalizing ngrams from " + input
+						+ " : " + time);
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		if (Config.get().normalizeEdges) {
+			try {
+				String input = trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated + "/";
+				String output = trainingPath
+						+ Config.get().typologyEdgesPathNotAggregated
+						+ "Normalized/";
+				EdgeNormalizer ngn = new EdgeNormalizer();
+				IOHelper.strongLog("normalizing edges from " + input
+						+ " and storing updated edges at " + output);
+				double time = ngn.normalize(input, output);
+				IOHelper.strongLog("time for normalizing edges from " + input
+						+ " : " + time);
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 	// TODO: need to generalize this function if it should fit in more general
-	// tests! need to take away the pointing to Config.get().germanWikiText and
+	// tests! need to take away the pointing to trainingFile and
 	// put it as a parameter sourceFile. also the output file should be saved to
 	// a different spot
 
-	private static String[] countMostFrequentStartingLetters(int k) {
+	private static String[] countMostFrequentStartingLetters(int k,
+			String trainingFile, String trainingPath) {
 		IOHelper.log("Counting the " + k + " most frequent letters in: "
-				+ Config.get().germanWikiText);
+				+ trainingFile);
 		String[] result = new String[k];
 		try {
 			IOHelper.log("Check if most frequent letters have been counted");
-			File file = new File(Config.get().nGramsNotAggregatedPath
+			File file = new File(trainingPath
+					+ Config.get().nGramsNotAggregatedPath
 					+ "mostFrequentLetters.txt");
 			if (file.exists()) {
 				IOHelper.log("Yes! load from file");
@@ -263,7 +343,7 @@ public class nGramBuilder {
 		}
 		IOHelper.log("No! just start counting now");
 
-		BufferedReader br = IOHelper.openReadFile(Config.get().germanWikiText);// Config.get().nGramKeyFile);
+		BufferedReader br = IOHelper.openReadFile(trainingFile);// Config.get().nGramKeyFile);
 		String line = "";
 		int cnt = 0;
 
@@ -313,7 +393,8 @@ public class nGramBuilder {
 			e.printStackTrace();
 		}
 
-		File file = new File(Config.get().nGramsNotAggregatedPath
+		File file = new File(trainingPath
+				+ Config.get().nGramsNotAggregatedPath
 				+ "mostFrequentLetters.txt");
 		try {
 			IOHelper.log("Counting done! save results to file");

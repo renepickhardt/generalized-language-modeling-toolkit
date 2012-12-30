@@ -35,8 +35,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import de.typology.utils.Config;
-
 /**
  * @author Martin Koerner
  * 
@@ -74,7 +72,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		// add new languages here
 	}
 
-	public DGTTMRecognizer(File f) {
+	public DGTTMRecognizer(File f, String dgttmLanguage) {
 		Reader r;
 		try {
 			r = new InputStreamReader(new FileInputStream(f.getAbsolutePath()),
@@ -88,7 +86,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			e.printStackTrace();
 		}
 		// set language specific header
-		keywords.put(tuvs.get(Config.get().DGTTMLanguage), TUV);
+		keywords.put(tuvs.get(dgttmLanguage), TUV);
 	}
 
 	// Extract lexeme from buffer
