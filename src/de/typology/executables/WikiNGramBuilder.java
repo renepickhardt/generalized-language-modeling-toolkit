@@ -56,12 +56,23 @@ public class WikiNGramBuilder {
 		}
 	}
 
-	public static void splitAndTrain(String outputPath,
-			String normalizedOutputPath) throws IOException {
+	/**
+	 * 
+	 * @param outputPath
+	 *            path where splitted files and trained ngrams as well as
+	 *            indices will be stored
+	 * @param fileToBeSplit
+	 *            path and filename of file that needs to be split e.g. parsed
+	 *            rawdata
+	 * @throws IOException
+	 */
+	public static void splitAndTrain(String outputPath, String fileToBeSplit)
+			throws IOException {
 		// DATA SPLIT create paths and direcotries for training and test
 		// data
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
-				+ Config.get().splitDataRatio;
+				+ Config.get().splitDataRatio + "Test"
+				+ Config.get().splitTestRatio;
 		String testPath = outputPath + "test" + ratePathSuffix + "/";
 		String trainingPath = outputPath + "training" + ratePathSuffix + "/";
 		String learningPath = outputPath + "learning" + ratePathSuffix + "/";
@@ -74,9 +85,8 @@ public class WikiNGramBuilder {
 		String learningFile = learningPath + "learning.file";
 
 		if (Config.get().sampleSplitData) {
-			DataSetSplitter.run(normalizedOutputPath, testFile, trainingFile,
+			DataSetSplitter.run(fileToBeSplit, testFile, trainingFile,
 					learningFile);
-
 		}
 
 		NGramBuilder.run(trainingPath, trainingFile);

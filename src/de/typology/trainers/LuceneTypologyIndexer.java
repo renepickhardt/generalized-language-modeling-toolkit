@@ -26,24 +26,32 @@ public class LuceneTypologyIndexer {
 	/**
 	 * @param args
 	 * @throws IOException
-	 * @author Martin Koerner
+	 * @author rpickhardt, Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
-		run(Config.get().indexPath, Config.get().normalizedEdges);
+		run(Config.get().normalizedEdges, Config.get().indexPath);
 	}
 
-	public static void run(String inputPath, String outputPath)
-			throws IOException {
+	/**
+	 * the methods creates lucene indices from a directory containing normalized
+	 * typology edges
+	 * 
+	 * @param normalizedTypologyEdgesPath
+	 * @param luceneOutputPath
+	 * @throws IOException
+	 */
+	public static void run(String normalizedTypologyEdgesPath,
+			String luceneOutputPath) throws IOException {
 		long startTime = System.currentTimeMillis();
 		for (int edgeType = 1; edgeType < 5; edgeType++) {
-			LuceneTypologyIndexer indexer = new LuceneTypologyIndexer(inputPath
-					+ edgeType);
-			indexer.index(outputPath + edgeType + "/");
+			LuceneTypologyIndexer indexer = new LuceneTypologyIndexer(
+					luceneOutputPath + edgeType);
+			indexer.index(normalizedTypologyEdgesPath + edgeType + "/");
 			indexer.close();
 		}
 		long endTime = System.currentTimeMillis();
 		IOHelper.strongLog((endTime - startTime) / 1000
-				+ " seconds for indexing " + inputPath);
+				+ " seconds for indexing " + normalizedTypologyEdgesPath);
 	}
 
 	private BufferedReader reader;
