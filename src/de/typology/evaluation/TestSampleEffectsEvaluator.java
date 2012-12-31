@@ -8,6 +8,7 @@ import de.typology.predictors.LuceneNGramSearcher;
 import de.typology.predictors.LuceneTypologySearcher;
 import de.typology.utils.Config;
 import de.typology.utils.CopyDirectory;
+import de.typology.utils.IOHelper;
 
 public class TestSampleEffectsEvaluator {
 	private static String wikiType;
@@ -16,7 +17,8 @@ public class TestSampleEffectsEvaluator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		wikiType = "enwiki";
+		//TODO change wikiType
+		wikiType = "dewiki";
 		// part1PrepareIndices();
 		part2runTests();
 	}
@@ -72,7 +74,7 @@ public class TestSampleEffectsEvaluator {
 				}
 
 				// remove ngram indices
-				// TODO:add remove
+				IOHelper.deleteDirectory("/dev/shm/nGramsIndex/");
 
 				// move typology indices
 				new CopyDirectory(file.getAbsolutePath() + "/typoEdgesIndex/",
@@ -90,7 +92,7 @@ public class TestSampleEffectsEvaluator {
 				}
 
 				// remove typology indices
-				// TODO:add remove
+				IOHelper.deleteDirectory("/dev/shm/typoEdgesIndex/");
 			}
 		}
 	}
