@@ -3,13 +3,11 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.googleNGrams.NGramMergerMain;
-import de.typology.googleNGrams.NGramParserMain;
 import de.typology.nGramBuilder.NGramNormalizer;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class GoogleNGramBuilder {
+public class GoogleNGramNormalizer {
 
 	/**
 	 * executes the following steps:
@@ -38,9 +36,7 @@ public class GoogleNGramBuilder {
 			new File(finalGoogle).mkdirs();
 			if (Config.get().parseData) {
 				//TODO combine GoogleNGramNormalizer and GoogleNGramBuilder
-				NGramMergerMain.run(f.getAbsolutePath(), mergedGoogle);
-				NGramParserMain.run(mergedGoogle,
-						outPath);
+				ngn.normalize(outPath+"normalized/", finalGoogle);
 
 			}
 		}
