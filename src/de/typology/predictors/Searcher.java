@@ -90,7 +90,7 @@ public abstract class Searcher implements Searchable {
 
 	@Override
 	public void saveWeights(int numQueries) {
-		BufferedWriter bw = IOHelper.openWriteFile("weights");
+		BufferedWriter bw = IOHelper.openWriteFile("learntWeights" + this.getFileName());
 		try {
 			for (int i = 0; i < 10; i++) {
 				bw.write("PREFIXLENGTH: " + i);
