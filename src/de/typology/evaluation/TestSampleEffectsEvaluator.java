@@ -18,7 +18,7 @@ public class TestSampleEffectsEvaluator {
 	 */
 	public static void main(String[] args) {
 		//TODO change wikiType
-		wikiType = "dewiki";
+		wikiType = "enwiki";
 		// part1PrepareIndices();
 		part2runTests();
 	}
@@ -48,6 +48,12 @@ public class TestSampleEffectsEvaluator {
 			if (file.getName().startsWith("trainingSam")
 					&& file.getName().endsWith("Split95Test50")) {
 
+				// set parameters
+				Config.get().sampleRate=Integer.parseInt(file.getName().replace("trainingSam", "").replace("Split95Test50", ""));
+				Config.get().splitDataRatio=95;
+				int joinLength = 12;
+				int topK = 5;
+
 				// move ngram indices
 				new CopyDirectory(file.getAbsolutePath() + "/nGramsIndex/",
 						"/dev/shm/nGramsIndex/");
@@ -61,9 +67,6 @@ public class TestSampleEffectsEvaluator {
 
 				System.out.println("testingPath: " + Config.get().testingPath);
 
-				// set parameters
-				int joinLength = 12;
-				int topK = 5;
 
 				// ngram tests
 				LuceneNGramSearcher lns = new LuceneNGramSearcher(2, topK,
@@ -86,7 +89,7 @@ public class TestSampleEffectsEvaluator {
 				// typology tests
 				LuceneTypologySearcher lts = new LuceneTypologySearcher(1,
 						topK, joinLength);
-				for (int n = 1; n < 5; n++) {
+				for (int n = 2; n < 6; n++) {
 					lts.setTestParameter(n, topK, joinLength);
 					lts.run();
 				}

@@ -78,7 +78,7 @@ public abstract class Searcher implements Searchable {
 							+ " \tPREFIXLENGTH: " + prefix.length() + " ");
 					if (topkCnt == 1) {
 						IOHelper.logResult("KSS: "
-								+ (match.length() - prefix.length()));
+								+ (match.length() - prefix.length())+" ");
 					}
 					return topkCnt;
 				}
