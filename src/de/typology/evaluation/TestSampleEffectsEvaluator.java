@@ -1,17 +1,23 @@
 package de.typology.evaluation;
 
+import java.io.File;
 import java.io.IOException;
 
 import de.typology.executables.WikiNGramBuilder;
+import de.typology.predictors.LuceneNGramSearcher;
+import de.typology.predictors.LuceneTypologySearcher;
 import de.typology.utils.Config;
+import de.typology.utils.CopyDirectory;
 
 public class TestSampleEffectsEvaluator {
+	private static String wikiType;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		part1PrepareIndices();
+		wikiType = "enwiki";
+		// part1PrepareIndices();
 		part2runTests();
 	}
 
@@ -21,9 +27,9 @@ public class TestSampleEffectsEvaluator {
 			Config.get().sampleSplitData = true;
 			try {
 				String parsedEnglishWiki = Config.get().outputDirectory
-						+ "wiki/enwiki/normalized.txt";
-				String outputDirectory = Config.get().outputDirectory
-						+ "wiki/enwiki/";
+						+ "wiki/" + wikiType + "/normalized.txt";
+				String outputDirectory = Config.get().outputDirectory + "wiki/"
+						+ wikiType + "/";
 				WikiNGramBuilder.splitAndTrain(outputDirectory,
 						parsedEnglishWiki);
 			} catch (IOException e) {
@@ -34,8 +40,58 @@ public class TestSampleEffectsEvaluator {
 	}
 
 	private static void part2runTests() {
-		// TODO Auto-generated method stub
+		File dir = new File(Config.get().outputDirectory + "wiki/" + wikiType
+				+ "/");
+		for (File file : dir.listFiles()) {
+			if (file.getName().startsWith("trainingSam")
+					&& file.getName().endsWith("Split95Test50")) {
 
+				// move ngram indices
+				new CopyDirectory(file.getAbsolutePath() + "/nGramsIndex/",
+						"/dev/shm/nGramsIndex/");
+
+				// set paths for ngram tests
+				Config.get().nGramIndexPath = "/dev/shm/nGramsIndex/";
+
+				String suffix = file.getName().replace("training", "");
+				Config.get().testingPath = file.getParent() + "/test" + suffix
+						+ "/test.file";
+
+				System.out.println("testingPath: " + Config.get().testingPath);
+
+				// set parameters
+				int joinLength = 12;
+				int topK = 5;
+
+				// ngram tests
+				LuceneNGramSearcher lns = new LuceneNGramSearcher(2, topK,
+						joinLength);
+				for (int n = 2; n < 6; n++) {
+					lns.setTestParameter(n, topK, joinLength);
+					lns.run();
+				}
+
+				// remove ngram indices
+				// TODO:add remove
+
+				// move typology indices
+				new CopyDirectory(file.getAbsolutePath() + "/typoEdgesIndex/",
+						"/dev/shm/typoEdgesIndex/");
+
+				// set path for typology tests
+				Config.get().indexPath = "/dev/shm/typoEdgesIndex/";
+
+				// typology tests
+				LuceneTypologySearcher lts = new LuceneTypologySearcher(1,
+						topK, joinLength);
+				for (int n = 1; n < 5; n++) {
+					lts.setTestParameter(n, topK, joinLength);
+					lts.run();
+				}
+
+				// remove typology indices
+				// TODO:add remove
+			}
+		}
 	}
-
 }
