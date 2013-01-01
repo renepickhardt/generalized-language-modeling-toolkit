@@ -85,7 +85,13 @@ public class LuceneNGramSearcher extends Searcher {
 						@Override
 						protected boolean lessThan(Document arg0, Document arg1) {
 							Float f0 = Float.parseFloat(arg0.get("cnt"));
+							if (f0 == null) {
+								return false;
+							}
 							Float f1 = Float.parseFloat(arg1.get("cnt"));
+							if (f1 == null) {
+								return true;
+							}
 							return f0.compareTo(f1) < 0;
 						}
 					}
