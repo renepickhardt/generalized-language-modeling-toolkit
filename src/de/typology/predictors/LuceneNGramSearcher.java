@@ -6,14 +6,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.util.PriorityQueue;
 
 import de.typology.utils.Config;
 
@@ -71,14 +74,61 @@ public class LuceneNGramSearcher extends Searcher {
 					special = special.concat(" AND tgt:" + prefix + "*");
 				}
 
-				TopDocs results = this.index.get(i).search(
-						this.queryParser.parse(special), this.fieldValueFilter,
-						this.joinLength, this.sort);
+				class MyCollector extends Collector {
+					class CustomQueue extends PriorityQueue<Document> {
 
-				// hits.add(results);
+						public CustomQueue(int maxSize) {
+							super(maxSize);
+							// TODO Auto-generated constructor stub
+						}
+
+						@Override
+						protected boolean lessThan(Document arg0, Document arg1) {
+							Float f0 = Float.parseFloat(arg0.get("cnt"));
+							Float f1 = Float.parseFloat(arg1.get("cnt"));
+							return f0.compareTo(f1) < 0;
+						}
+					}
+
+					CustomQueue _queue = null;
+					IndexReader _currentReader;
+
+					public MyCollector(int maxSize) {
+						this._queue = new CustomQueue(maxSize);
+					}
+
+					@Override
+					public boolean acceptsDocsOutOfOrder() {
+						return true;
+					}
+
+					@Override
+					public void collect(int arg0) throws IOException {
+						this._queue.insertWithOverflow(this._currentReader
+								.document(arg0));
+					}
+
+					@Override
+					public void setNextReader(AtomicReaderContext arg0)
+							throws IOException {
+						this._currentReader = arg0.reader();
+
+					}
+
+					@Override
+					public void setScorer(Scorer arg0) throws IOException {
+						// TODO Auto-generated method stub
+
+					}
+
+				}
+
+				MyCollector mc = new MyCollector(this.joinLength);
+				this.index.get(i).search(this.queryParser.parse(special),
+						this.fieldValueFilter, mc);
+				Document doc = null;
 				int rank = 1;
-				for (ScoreDoc scoreDoc : results.scoreDocs) {
-					Document doc = this.index.get(i).doc(scoreDoc.doc);
+				while ((doc = mc._queue.pop()) != null) {
 					String key = "";
 					Float value = new Float(0);
 					try {
@@ -108,6 +158,49 @@ public class LuceneNGramSearcher extends Searcher {
 						result.put(key, value);
 					}
 				}
+				// TopDocs results = this.index.get(i).search(
+				// this.queryParser.parse(special), this.fieldValueFilter,
+				// this.joinLength, this.sort);
+
+				// hits.add(results);
+
+				// << comment out for testing priority queue
+				// int rank = 1;
+				// for (ScoreDoc scoreDoc : results.scoreDocs) {
+				// Document doc = this.index.get(i).doc(scoreDoc.doc);
+				// String key = "";
+				// Float value = new Float(0);
+				// try {
+				// key = doc.get("tgt");
+				// value = Float.parseFloat(doc.get("cnt"));
+				// } catch (Exception e) {
+				// continue;
+				// }
+				// if (key.equals(match)) {
+				// this.learningWeights[prefix.length()][i + 1] += 1 / (float)
+				// rank;
+				// }
+				// rank++;
+				// comment out >>
+				// String res = "";
+				// if (key.equals(match)) {
+				// res = " \tHIT";
+				// } else {
+				// res = " \tNOMATCH";
+				// }
+				// IOHelper.logLearn("FROM: " + terms[i] + " \tEDGETYPE: "
+				// + (edge + 1) + " \t RANK: " + rank++
+				// + " \tPREDICTS: " + key + "\t SCORE: " + value
+				// + res);
+				// << comment out for testing priority queue
+
+				// if (result.containsKey(key)) {
+				// result.put(key, value + result.get(key));
+				// } else {
+				// result.put(key, value);
+				// }
+				// }
+				// << comment out for testing priority queue
 
 			}
 		} catch (IOException e) {
