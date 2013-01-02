@@ -30,7 +30,7 @@ public class TreeTypologyIndexer {
 	public static void main(String[] args) throws IOException {	
 		TreeTypologyIndexer tti=new TreeTypologyIndexer();
 		tti.run(Config.get().normalizedEdges);
-		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("123" + " a");
+		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("1991" + " a");
 		for(int i=0;i<5;i++){
 			Pair<Float> pair=node.getSuggestion(i);
 			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
