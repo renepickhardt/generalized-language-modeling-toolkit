@@ -22,11 +22,11 @@ public abstract class TreeSearcher implements Searchable {
 	protected float[][] usedWeights;
 	protected int joinLength;
 	protected int k;
-	protected int N;
+	protected int n;
 
 	public TreeSearcher(int n, int k, int joinLength) {
 		this.k = k;
-		this.N = n;
+		this.n = n;
 		this.joinLength = joinLength;
 
 		this.learningWeights = new float[100][Config.get().nGramLength];
@@ -47,7 +47,6 @@ public abstract class TreeSearcher implements Searchable {
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
 				this.k);
-		;
 		int topkCnt = 0;
 
 		for (Float score : topkSuggestions.descendingKeySet()) {
@@ -127,7 +126,7 @@ public abstract class TreeSearcher implements Searchable {
 
 	@Override
 	public void setTestParameter(int n, int topK, int joinLength) {
-		this.N = n;
+		this.n = n;
 		this.k = topK;
 		this.joinLength = joinLength;
 	};
@@ -146,11 +145,11 @@ public abstract class TreeSearcher implements Searchable {
 			// + Config.get().splitDataRatio + ".log." + start);
 			IOHelper.setResultFile(this.getFileName());
 			IOHelper.log("!!!!!!!!!! EVAL " + this.getClass().getName()
-					+ " : N = " + this.N);
+					+ " : N = " + this.n);
 			while ((line = br.readLine()) != null) {
 				String[] words = line.split("\\ ");
 
-				if (EvalHelper.badLine(words, this.N)) {
+				if (EvalHelper.badLine(words, this.n)) {
 					continue;
 				}
 

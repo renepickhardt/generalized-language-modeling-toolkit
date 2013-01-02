@@ -19,9 +19,6 @@ public class TreeTypologySearcher extends TreeSearcher{
 	}
 
 	protected static HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap;
-	protected int joinLength;
-	protected int k;
-	protected int n;
 	/**
 	 * @param args
 	 * @throws IOException 
@@ -30,8 +27,8 @@ public class TreeTypologySearcher extends TreeSearcher{
 		TreeTypologyIndexer tti=new TreeTypologyIndexer();
 		HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap= tti.run(Config.get().normalizedEdges);
 		TreeTypologySearcher tts=new TreeTypologySearcher(5, 5, 12,treeMapMap);
-		//tts.query("1 12 123 1991", "a", "1991 an");
-		HashMap<String, Float>result=tts.search("1991 1991 1991 1991", "a","");
+		tts.query("1991 1992 1993 1994", "a", "als");
+		HashMap<String, Float>result=tts.search("1991 1992 1993 1994", "a","");
 		for(Entry<String, Float> e:result.entrySet()){
 			System.out.println(e.getKey()+" "+e.getValue());
 		}
@@ -53,7 +50,7 @@ public class TreeTypologySearcher extends TreeSearcher{
 			String t1=terms[i].substring(0, 1);
 			if(prefix.length()!=0){
 				if(treeMapMap.get(edge).containsKey(t1)){
-					trees.add(treeMapMap.get(edge).get(t1));			
+					trees.add(treeMapMap.get(edge).get(t1));
 				}else{
 					String p1=prefix.substring(0, 1);
 					if(treeMapMap.get(edge).containsKey(t1+p1)){
@@ -61,7 +58,9 @@ public class TreeTypologySearcher extends TreeSearcher{
 					}else{
 						if(treeMapMap.get(edge).containsKey(t1+"other")){
 							trees.add(treeMapMap.get(edge).get(t1+"other"));
-						}else{trees.add(treeMapMap.get(edge).get("other"));}
+						}else{
+							trees.add(treeMapMap.get(edge).get("other"));
+						}
 					}
 				}
 			}else{
@@ -78,7 +77,7 @@ public class TreeTypologySearcher extends TreeSearcher{
 				if(node!=null){
 					for(int join=0;join<this.joinLength&&join<node.listLength();join++){
 						Pair<Float> pair=node.getSuggestion(join);
-						String key=pair.getString();
+						String key=pair.getString().split(" ")[1];
 						Float value=pair.getScore();
 						if (result.containsKey(key)) {
 							result.put(key, weight * value + result.get(key));

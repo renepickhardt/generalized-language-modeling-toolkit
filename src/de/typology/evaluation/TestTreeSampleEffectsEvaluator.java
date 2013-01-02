@@ -8,8 +8,6 @@ import de.typology.predictors.TreeTypologySearcher;
 import de.typology.trainers.SuggestTree;
 import de.typology.trainers.TreeTypologyIndexer;
 import de.typology.utils.Config;
-import de.typology.utils.CopyDirectory;
-import de.typology.utils.IOHelper;
 
 public class TestTreeSampleEffectsEvaluator {
 	private static String wikiType;
@@ -57,46 +55,24 @@ public class TestTreeSampleEffectsEvaluator {
 				int joinLength = 12;
 				int topK = 5;
 
-				// set paths for ngram tests
-				Config.get().nGramIndexPath = file.getAbsolutePath() + "/nGramsIndex/";
-
 				String suffix = file.getName().replace("training", "");
 				Config.get().testingPath = file.getParent() + "/test" + suffix
 						+ "/test.file";
+				Config.get().normalizedEdges=file.getAbsolutePath()+"/typoEdgesNormalized/";
 
 				System.out.println("testingPath: " + Config.get().testingPath);
+				System.out.println("normalizedEdges: "+Config.get().normalizedEdges);
 
-				//				// ngram tests
-				//				TreeNGramSearcher lns = new TreeNGramSearcher(2, topK,
-				//						joinLength);
-				//				for (int n = 2; n < 6; n++) {
-				//					lns.setTestParameter(n, topK, joinLength);
-				//					lns.run();
-				//				}
 
-				// remove ngram indices
-				IOHelper.deleteDirectory("/dev/shm/nGramsIndex/");
-
-				// move typology indices 
-				new
-				CopyDirectory(file.getAbsolutePath() + "/typoEdgesIndex/",
-						"/dev/shm/typoEdgesIndex/");
-
-				// set path for typology tests
-				Config.get().indexPath ="/dev/shm/typoEdgesIndex/";
 
 				// typology tests 
 				TreeTypologyIndexer tti=new TreeTypologyIndexer();
 				HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap= tti.run(Config.get().normalizedEdges);
-				TreeTypologySearcher lts = new	TreeTypologySearcher(2, topK, joinLength,treeMapMap); 
+				TreeTypologySearcher tts = new	TreeTypologySearcher(5, topK, joinLength,treeMapMap); 
 				for (int n = 2;n < 6; n++) 	{
-					lts.setTestParameter(n, topK, joinLength);
-					lts.run();
+					tts.setTestParameter(n, topK, joinLength);
+					tts.run();
 				}
-
-				// remove typology indices
-				IOHelper.deleteDirectory("/dev/shm/typoEdgesIndex/");
-
 			}
 		}
 	}
