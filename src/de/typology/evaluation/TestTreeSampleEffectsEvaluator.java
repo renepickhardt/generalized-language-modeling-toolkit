@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import de.typology.predictors.TreeTypologySearcher;
 import de.typology.trainers.SuggestTree;
-import de.typology.trainers.TreeTypologyIndexer;
+import de.typology.trainers.TreeIndexer;
 import de.typology.utils.Config;
 
 public class TestTreeSampleEffectsEvaluator {
@@ -66,7 +66,7 @@ public class TestTreeSampleEffectsEvaluator {
 
 
 				// typology tests 
-				TreeTypologyIndexer tti=new TreeTypologyIndexer();
+				TreeIndexer tti=new TreeIndexer();
 				HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap= tti.run(Config.get().normalizedEdges);
 				TreeTypologySearcher tts = new	TreeTypologySearcher(5, topK, joinLength,treeMapMap); 
 				for (int n = 2;n < 6; n++) 	{

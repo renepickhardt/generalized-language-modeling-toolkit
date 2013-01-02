@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import de.typology.trainers.SuggestTree;
 import de.typology.trainers.SuggestTree.Node;
 import de.typology.trainers.SuggestTree.Pair;
-import de.typology.trainers.TreeTypologyIndexer;
+import de.typology.trainers.TreeIndexer;
 import de.typology.utils.Config;
 
 public class TreeTypologySearcher extends TreeSearcher{
@@ -24,7 +24,7 @@ public class TreeTypologySearcher extends TreeSearcher{
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		TreeTypologyIndexer tti=new TreeTypologyIndexer();
+		TreeIndexer tti=new TreeIndexer();
 		HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap= tti.run(Config.get().normalizedEdges);
 		TreeTypologySearcher tts=new TreeTypologySearcher(5, 5, 12,treeMapMap);
 		tts.query("1991 1992 1993 1994", "a", "als");

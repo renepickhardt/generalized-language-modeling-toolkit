@@ -12,7 +12,7 @@ import de.typology.trainers.SuggestTree.Pair;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class TreeTypologyIndexer {
+public class TreeIndexer {
 	private BufferedReader reader;
 	private int joinLength = 6;
 	private String line;
@@ -28,10 +28,16 @@ public class TreeTypologyIndexer {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {	
-		TreeTypologyIndexer tti=new TreeTypologyIndexer();
+		TreeIndexer tti=new TreeIndexer();
 		tti.run(Config.get().normalizedEdges);
 		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("1991" + " a");
 		for(int i=0;i<5;i++){
+			Pair<Float> pair=node.getSuggestion(i);
+			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
+		}
+		tti.run(Config.get().normalizedNGrams);
+		node=treeMapMap.get(3).get("1a").getBestSuggestions("1991 an" + " d");
+		for(int i=0;i<5&&i<node.listLength();i++){
 			Pair<Float> pair=node.getSuggestion(i);
 			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
 		}
@@ -43,8 +49,8 @@ public class TreeTypologyIndexer {
 	public HashMap <Integer,HashMap<String,SuggestTree<Float>>>  run(String normalizedTypologyEdgesPath) throws IOException  {
 		long startTime = System.currentTimeMillis();
 		treeMapMap=new HashMap<Integer, HashMap<String,SuggestTree<Float>>>();
-		for (int edgeType = 1; edgeType < 5; edgeType++) {
-			TreeTypologyIndexer indexer = new TreeTypologyIndexer();
+		for (int edgeType = 1; edgeType < 6; edgeType++) {
+			TreeIndexer indexer = new TreeIndexer();
 			indexer.index(normalizedTypologyEdgesPath + edgeType + "/",edgeType);
 		}
 		long endTime = System.currentTimeMillis();
@@ -52,7 +58,7 @@ public class TreeTypologyIndexer {
 				+ " seconds for indexing " + normalizedTypologyEdgesPath);
 		return treeMapMap;
 	}
-	public TreeTypologyIndexer()  {
+	public TreeIndexer()  {
 	}
 
 	private int index(String dataDir,Integer edgeType) throws IOException {
