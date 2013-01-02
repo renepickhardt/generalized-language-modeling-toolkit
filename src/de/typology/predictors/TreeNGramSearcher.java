@@ -27,7 +27,7 @@ public class TreeNGramSearcher extends TreeSearcher{
 		TreeIndexer tti=new TreeIndexer();
 		HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap= tti.run(Config.get().normalizedNGrams);
 		TreeNGramSearcher tns=new TreeNGramSearcher(5, 5, 12,treeMapMap);
-		tns.query("1991 1992 auf 1994", "a", "als");
+		tns.query("1991 1992 auf 1994", "a", "aus");
 		HashMap<String, Float>result=tns.search("1991 1992 auf 1994", "a","");
 		for(Entry<String, Float> e:result.entrySet()){
 			System.out.println(e.getKey()+" "+e.getValue());

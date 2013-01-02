@@ -59,10 +59,7 @@ public class TestTreeSampleEffectsEvaluator {
 				Config.get().testingPath = file.getParent() + "/test" + suffix
 						+ "/test.file";
 				Config.get().normalizedEdges=file.getAbsolutePath()+"/typoEdgesNormalized/";
-
-				System.out.println("testingPath: " + Config.get().testingPath);
-				System.out.println("normalizedEdges: "+Config.get().normalizedEdges);
-
+				Config.get().normalizedNGrams=file.getAbsolutePath()+"/nGramsNormalized/";
 
 
 				// typology tests 
@@ -73,6 +70,13 @@ public class TestTreeSampleEffectsEvaluator {
 					tts.setTestParameter(n, topK, joinLength);
 					tts.run();
 				}
+				//				//ngram tests
+				//				treeMapMap= tti.run(Config.get().normalizedNGrams);
+				//				TreeNGramSearcher tns = new	TreeNGramSearcher(5, topK, joinLength,treeMapMap); 
+				//				for (int n = 2;n < 6; n++) 	{
+				//					tns.setTestParameter(n, topK, joinLength);
+				//					tns.run();
+				//				}
 			}
 		}
 	}
