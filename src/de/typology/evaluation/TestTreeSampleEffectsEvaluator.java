@@ -18,7 +18,7 @@ public class TestTreeSampleEffectsEvaluator {
 	 */
 	public static void main(String[] args) throws IOException {
 		// TODO change wikiType
-		wikiType = "dewiki";
+		wikiType = "enwiki";
 		//part1BuildTrees();
 		part2runTests();
 	}

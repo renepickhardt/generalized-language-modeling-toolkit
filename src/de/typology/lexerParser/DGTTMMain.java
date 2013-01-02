@@ -20,7 +20,7 @@ public class DGTTMMain {
 
 	public static void run(String dgttmInputPath, String parsedOutputPath,
 			String normalizedOutputPath, String dgttmLanguage)
-			throws IOException {
+					throws IOException {
 		long startTime = System.currentTimeMillis();
 		IOHelper.log("getting file list");
 		fileList = IOHelper.getDirectory(new File(dgttmInputPath));
@@ -31,9 +31,9 @@ public class DGTTMMain {
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
-		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
-				normalizedOutputPath);
-		wn.normalize();
+		//		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
+		//				normalizedOutputPath);
+		//wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");
 		long endTime = System.currentTimeMillis();
