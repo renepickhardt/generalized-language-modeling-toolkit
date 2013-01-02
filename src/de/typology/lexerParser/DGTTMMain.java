@@ -31,9 +31,9 @@ public class DGTTMMain {
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
-		//		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
-		//				normalizedOutputPath);
-		//wn.normalize();
+		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
+				normalizedOutputPath);
+		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");
 		long endTime = System.currentTimeMillis();
