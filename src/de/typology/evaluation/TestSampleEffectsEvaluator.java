@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import de.typology.executables.WikiNGramBuilder;
 import de.typology.predictors.LuceneNGramSearcher;
-import de.typology.predictors.LuceneTypologySearcher;
 import de.typology.utils.Config;
 import de.typology.utils.CopyDirectory;
 import de.typology.utils.IOHelper;
@@ -17,7 +16,7 @@ public class TestSampleEffectsEvaluator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//TODO change wikiType
+		// TODO change wikiType
 		wikiType = "enwiki";
 		// part1PrepareIndices();
 		part2runTests();
@@ -49,8 +48,10 @@ public class TestSampleEffectsEvaluator {
 					&& file.getName().endsWith("Split95Test50")) {
 
 				// set parameters
-				Config.get().sampleRate=Integer.parseInt(file.getName().replace("trainingSam", "").replace("Split95Test50", ""));
-				Config.get().splitDataRatio=95;
+				Config.get().sampleRate = Integer.parseInt(file.getName()
+						.replace("trainingSam", "")
+						.replace("Split95Test50", ""));
+				Config.get().splitDataRatio = 95;
 				int joinLength = 12;
 				int topK = 5;
 
@@ -67,7 +68,6 @@ public class TestSampleEffectsEvaluator {
 
 				System.out.println("testingPath: " + Config.get().testingPath);
 
-
 				// ngram tests
 				LuceneNGramSearcher lns = new LuceneNGramSearcher(2, topK,
 						joinLength);
@@ -78,24 +78,22 @@ public class TestSampleEffectsEvaluator {
 
 				// remove ngram indices
 				IOHelper.deleteDirectory("/dev/shm/nGramsIndex/");
-
-				// move typology indices
-				new CopyDirectory(file.getAbsolutePath() + "/typoEdgesIndex/",
-						"/dev/shm/typoEdgesIndex/");
-
-				// set path for typology tests
-				Config.get().indexPath = "/dev/shm/typoEdgesIndex/";
-
-				// typology tests
-				LuceneTypologySearcher lts = new LuceneTypologySearcher(1,
-						topK, joinLength);
-				for (int n = 2; n < 6; n++) {
-					lts.setTestParameter(n, topK, joinLength);
-					lts.run();
-				}
-
-				// remove typology indices
-				IOHelper.deleteDirectory("/dev/shm/typoEdgesIndex/");
+				/*
+				 * // move typology indices new
+				 * CopyDirectory(file.getAbsolutePath() + "/typoEdgesIndex/",
+				 * "/dev/shm/typoEdgesIndex/");
+				 * 
+				 * // set path for typology tests Config.get().indexPath =
+				 * "/dev/shm/typoEdgesIndex/";
+				 * 
+				 * // typology tests LuceneTypologySearcher lts = new
+				 * LuceneTypologySearcher(1, topK, joinLength); for (int n = 2;
+				 * n < 6; n++) { lts.setTestParameter(n, topK, joinLength);
+				 * lts.run(); }
+				 * 
+				 * // remove typology indices
+				 * IOHelper.deleteDirectory("/dev/shm/typoEdgesIndex/");
+				 */
 			}
 		}
 	}
