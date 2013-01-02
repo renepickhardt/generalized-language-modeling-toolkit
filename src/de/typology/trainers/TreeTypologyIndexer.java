@@ -7,17 +7,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import de.typology.trainers.SuggestTree.Node;
+import de.typology.trainers.SuggestTree.Pair;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class TreeTypologyIndexer {
 	private BufferedReader reader;
-
+	private int joinLength = 6;
 	private String line;
 	private String[] lineSplit;
 	private Float edgeCount;
-	static private HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap;
-	static private HashMap <String,SuggestTree<Float>> treeMap;
+	private static HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap;
+	private HashMap <String,SuggestTree<Float>> treeMap;
 	private HashMap <String,Float> edgeMap;
 	private Comparator<Float> comparator;
 
@@ -26,14 +28,19 @@ public class TreeTypologyIndexer {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {	
-		run(Config.get().normalizedEdges);
-		//		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("1991 a");
-		//		for(int i=0;i<5;i++){
-		//			Pair<Float> pair=node.getSuggestion(i);
-		//			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
-		//		}
+		TreeTypologyIndexer tti=new TreeTypologyIndexer();
+		tti.run(Config.get().normalizedEdges);
+		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("123" + " a");
+		for(int i=0;i<5;i++){
+			Pair<Float> pair=node.getSuggestion(i);
+			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
+		}
+		int mb = 1024*1024;
+		Runtime runtime = Runtime.getRuntime();
+		System.out.println("Used Memory:"
+				+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
 	}
-	public static void run(String normalizedTypologyEdgesPath) throws IOException  {
+	public HashMap <Integer,HashMap<String,SuggestTree<Float>>>  run(String normalizedTypologyEdgesPath) throws IOException  {
 		long startTime = System.currentTimeMillis();
 		treeMapMap=new HashMap<Integer, HashMap<String,SuggestTree<Float>>>();
 		for (int edgeType = 1; edgeType < 5; edgeType++) {
@@ -43,13 +50,14 @@ public class TreeTypologyIndexer {
 		long endTime = System.currentTimeMillis();
 		IOHelper.strongLog((endTime - startTime) / 1000
 				+ " seconds for indexing " + normalizedTypologyEdgesPath);
+		return treeMapMap;
 	}
 	public TreeTypologyIndexer()  {
 	}
 
 	private int index(String dataDir,Integer edgeType) throws IOException {
-		this.treeMap=new HashMap<String,SuggestTree<Float>>();
-		treeMapMap.put(edgeType, treeMap);
+		this.treeMap=new HashMap<String, SuggestTree<Float>>();
+		treeMapMap.put(edgeType, this.treeMap);
 		this.comparator=new Comparator<Float>() {
 
 			@Override
@@ -70,6 +78,7 @@ public class TreeTypologyIndexer {
 		return files.size();
 	}
 	private int indexFile(File file) throws IOException {
+		file.getTotalSpace();
 		this.reader = IOHelper.openReadFile(file.getAbsolutePath());
 		this.edgeMap=new HashMap<String, Float>();
 		int docCount = 0;
@@ -88,9 +97,8 @@ public class TreeTypologyIndexer {
 			docCount++;
 		}
 		SuggestTree<Float> tree=new SuggestTree<Float>();
-		int joinLength = 12;
-		//int topK = 5;
-		tree.build(this.edgeMap, this.comparator, joinLength);
+
+		tree.build(this.edgeMap, this.comparator, this.joinLength);
 		this.treeMap.put(file.getName().split("\\.")[0], tree);
 		return docCount;
 	}
