@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import de.typology.trainers.SuggestTree.Node;
-import de.typology.trainers.SuggestTree.Pair;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -29,17 +27,16 @@ public class TreeTypologyIndexer {
 	 */
 	public static void main(String[] args) throws IOException {	
 		run(Config.get().normalizedEdges);
-		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("1991 a");
-		for(int i=0;i<5;i++){
-			Pair<Float> pair=node.getSuggestion(i);
-			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
-		}
+		//		Node<Float> node=treeMapMap.get(1).get("1a").getBestSuggestions("1991 a");
+		//		for(int i=0;i<5;i++){
+		//			Pair<Float> pair=node.getSuggestion(i);
+		//			System.out.println(i+": "+pair.getString()+" score: "+pair.getScore());
+		//		}
 	}
 	public static void run(String normalizedTypologyEdgesPath) throws IOException  {
 		long startTime = System.currentTimeMillis();
 		treeMapMap=new HashMap<Integer, HashMap<String,SuggestTree<Float>>>();
-		for (int edgeType = 1; edgeType < 2; edgeType++) {
-			//TOTO CHANGE edgeType < 2!!!!!
+		for (int edgeType = 1; edgeType < 5; edgeType++) {
 			TreeTypologyIndexer indexer = new TreeTypologyIndexer();
 			indexer.index(normalizedTypologyEdgesPath + edgeType + "/",edgeType);
 		}
