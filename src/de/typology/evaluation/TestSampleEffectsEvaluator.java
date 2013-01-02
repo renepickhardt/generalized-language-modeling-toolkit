@@ -17,7 +17,7 @@ public class TestSampleEffectsEvaluator {
 	 */
 	public static void main(String[] args) {
 		// TODO change wikiType
-		wikiType = "enwiki";
+		wikiType = "barwiki";
 		// part1PrepareIndices();
 		part2runTests();
 	}
@@ -45,13 +45,13 @@ public class TestSampleEffectsEvaluator {
 				+ "/");
 		for (File file : dir.listFiles()) {
 			if (file.getName().startsWith("trainingSam")
-					&& file.getName().endsWith("Split95Test50")) {
+					&& file.getName().endsWith("Split90Test50")) {
 
 				// set parameters
 				Config.get().sampleRate = Integer.parseInt(file.getName()
 						.replace("trainingSam", "")
-						.replace("Split95Test50", ""));
-				Config.get().splitDataRatio = 95;
+						.replace("Split90Test50", ""));
+				Config.get().splitDataRatio = 90;
 				int joinLength = 12;
 				int topK = 5;
 
