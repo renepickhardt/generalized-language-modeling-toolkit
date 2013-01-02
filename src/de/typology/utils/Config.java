@@ -25,6 +25,7 @@ public class Config extends Properties {
 	// CONTROLL PARAMETERS
 	public boolean parseData;
 	public boolean sampleSplitData;
+	public boolean useWeights;
 
 	// STEP 0 GLOBAL CONFIGS
 	public boolean loadIndexToRAM;

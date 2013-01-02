@@ -78,7 +78,7 @@ public abstract class Searcher implements Searchable {
 							+ " \tPREFIXLENGTH: " + prefix.length() + " ");
 					if (topkCnt == 1) {
 						IOHelper.logResult("KSS: "
-								+ (match.length() - prefix.length())+" ");
+								+ (match.length() - prefix.length()) + " ");
 					}
 					return topkCnt;
 				}
@@ -90,10 +90,10 @@ public abstract class Searcher implements Searchable {
 
 	@Override
 	public void saveWeights(int numQueries) {
-		BufferedWriter bw = IOHelper.openWriteFile("learntWeights" + this.getFileName());
+		BufferedWriter bw = IOHelper.openWriteFile("learntWeights"
+				+ this.getFileName());
 		try {
-			for (int i = 0; i < 10; i++) {
-				bw.write("PREFIXLENGTH: " + i);
+			for (int i = 0; i < 100; i++) {
 				float max = 0;
 				for (int j = 1; j < Config.get().nGramLength; j++) {
 					if (this.learningWeights[i][j] > max) {
@@ -102,8 +102,8 @@ public abstract class Searcher implements Searchable {
 				}
 				// TODO: can be divided by numQueries
 				for (int j = 1; j < Config.get().nGramLength; j++) {
-					bw.write(" w" + j + ": " + (int) this.learningWeights[i][j]
-							* 1000 / max);
+					bw.write(this.learningWeights[i][j] * 1000
+							/ (max * numQueries + 1) + "\t");
 				}
 				bw.write("\n");
 			}
@@ -123,47 +123,26 @@ public abstract class Searcher implements Searchable {
 				this.usedWeights[i][j] = 1;
 			}
 		}
-
-		this.usedWeights[0][1] = (float) 999.9863;
-		this.usedWeights[0][2] = (float) 582.0288;
-		this.usedWeights[0][3] = (float) 475.387;
-		this.usedWeights[0][4] = (float) 442.76;
-		this.usedWeights[1][1] = (float) 999.9864;
-		this.usedWeights[1][2] = (float) 740.9225;
-		this.usedWeights[1][3] = (float) 617.5018;
-		this.usedWeights[1][4] = (float) 565.6135;
-		this.usedWeights[2][1] = (float) 999.9889;
-		this.usedWeights[2][2] = (float) 666.84924;
-		this.usedWeights[2][3] = (float) 518.6447;
-		this.usedWeights[2][4] = (float) 465.16992;
-		this.usedWeights[3][1] = (float) 999.9662;
-		this.usedWeights[3][2] = (float) 659.863;
-		this.usedWeights[3][3] = (float) 514.01953;
-		this.usedWeights[3][4] = (float) 459.6574;
-		this.usedWeights[4][1] = (float) 999.95917;
-		this.usedWeights[4][2] = (float) 674.7117;
-		this.usedWeights[4][3] = (float) 518.66986;
-		this.usedWeights[4][4] = (float) 457.94208;
-		this.usedWeights[5][1] = (float) 999.91406;
-		this.usedWeights[5][2] = (float) 675.6378;
-		this.usedWeights[5][3] = (float) 513.2195;
-		this.usedWeights[5][4] = (float) 443.8251;
-		this.usedWeights[6][1] = (float) 999.95074;
-		this.usedWeights[6][2] = (float) 692.6324;
-		this.usedWeights[6][3] = (float) 512.2836;
-		this.usedWeights[6][4] = (float) 435.3245;
-		this.usedWeights[7][1] = (float) 999.85535;
-		this.usedWeights[7][2] = (float) 703.2166;
-		this.usedWeights[7][3] = (float) 510.41943;
-		this.usedWeights[7][4] = (float) 431.86575;
-		this.usedWeights[8][1] = (float) 999.9569;
-		this.usedWeights[8][2] = (float) 698.27765;
-		this.usedWeights[8][3] = (float) 504.47324;
-		this.usedWeights[8][4] = (float) 435.7295;
-		this.usedWeights[9][1] = (float) 999.7089;
-		this.usedWeights[9][2] = (float) 682.14557;
-		this.usedWeights[9][3] = (float) 474.29266;
-		this.usedWeights[9][4] = (float) 406.00348;
+		BufferedReader br = IOHelper.openReadFile("learntWeights"
+				+ this.getFileName());
+		String line = "";
+		try {
+			int i = 0;
+			while ((line = br.readLine()) != null) {
+				String[] values = line.split("\t");
+				if (values.length < Config.get().nGramLength) {
+					break;
+				}
+				int j = 0;
+				for (String value : values) {
+					this.usedWeights[i][j++] = Float.parseFloat(value);
+				}
+				i++;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -217,7 +196,9 @@ public abstract class Searcher implements Searchable {
 				}
 				queries++;
 				if (queries % 500 == 0) {
-					this.saveWeights(queries);
+					if (Config.get().useWeights == false) {
+						this.saveWeights(queries);
+					}
 					long time = System.currentTimeMillis() - start;
 					IOHelper.strongLog(queries + " queries in " + time
 							+ " ms \t" + queries * 1000 / time

@@ -9,13 +9,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
 
 import de.typology.utils.Config;
+import de.typology.utils.MyCollector;
 
 /**
  * typology retrieval implmented on lucene
@@ -25,12 +24,9 @@ import de.typology.utils.Config;
  */
 public class LuceneTypologySearcher extends Searcher {
 
-	private boolean useWeights;
-
 	public LuceneTypologySearcher(int N, int k, int joinLength) {
 		super(N, k, joinLength);
 
-		this.useWeights = true;
 		this.openWeights();
 		this.index = new ArrayList<IndexSearcher>();
 		try {
@@ -70,34 +66,26 @@ public class LuceneTypologySearcher extends Searcher {
 					special = special.concat(" AND tgt:" + prefix + "*");
 				}
 
-				TopDocs results = this.index.get(edge).search(
-						this.queryParser.parse(special), this.fieldValueFilter,
-						this.joinLength, this.sort);
-
+				MyCollector mc = new MyCollector(this.joinLength);
+				this.index.get(edge).search(this.queryParser.parse(special),
+						this.fieldValueFilter, mc);
+				Document doc = null;
 				int rank = 1;
-				for (ScoreDoc scoreDoc : results.scoreDocs) {
-					Document doc = this.index.get(edge).doc(scoreDoc.doc);
-
-					String key = doc.get("tgt");
-					Float value = Float.parseFloat(doc.get("cnt"));
-
+				while ((doc = mc._queue.pop()) != null) {
+					String key = "";
+					Float value = new Float(0);
+					try {
+						key = doc.get("tgt");
+						value = Float.parseFloat(doc.get("cnt"));
+					} catch (Exception e) {
+						continue;
+					}
 					if (key.equals(match)) {
 						this.learningWeights[prefix.length()][edge + 1] += 1 / (float) rank;
 					}
 					rank++;
-					// String res = "";
-					// if (key.equals(match)) {
-					// res = " \tHIT";
-					// } else {
-					// res = " \tNOMATCH";
-					// }
-					// IOHelper.logLearn("FROM: " + terms[i] + " \tEDGETYPE: "
-					// + (edge + 1) + " \t RANK: " + rank++
-					// + " \tPREDICTS: " + key + "\t SCORE: " + value
-					// + res);
-
 					float weight = 1;
-					if (this.useWeights) {
+					if (Config.get().useWeights) {
 						weight = this.usedWeights[prefix.length()][edge + 1];
 					}
 					if (result.containsKey(key)) {
@@ -114,14 +102,13 @@ public class LuceneTypologySearcher extends Searcher {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		long endTime = System.currentTimeMillis();
 		return result;
 	}
 
 	@Override
 	public String getFileName() {
 		String name = "";
-		if (this.useWeights) {
+		if (Config.get().useWeights) {
 			name = name.concat("weighted-");
 		}
 		name = name.concat("typo-" + this.N + "-joinLengh-" + this.joinLength
