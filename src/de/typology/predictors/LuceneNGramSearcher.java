@@ -9,12 +9,13 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
 
 import de.typology.utils.Config;
-import de.typology.utils.MyCollector;
 
 public class LuceneNGramSearcher extends Searcher {
 
@@ -55,9 +56,12 @@ public class LuceneNGramSearcher extends Searcher {
 		try {
 
 			String[] terms = this.getQueryNGrams(q);
+			// extend prepareQuery?
 			if (terms == null) {
 				return null;
 			}
+
+			// ArrayList<TopDocs> hits = new ArrayList<TopDocs>();
 
 			for (int i = 0; i < terms.length; i++) {
 				String special = "src:" + terms[i];
@@ -65,12 +69,14 @@ public class LuceneNGramSearcher extends Searcher {
 					special = special.concat(" AND tgt:" + prefix + "*");
 				}
 
-				MyCollector mc = new MyCollector(this.joinLength);
-				this.index.get(i).search(this.queryParser.parse(special),
-						this.fieldValueFilter, mc);
-				Document doc = null;
+				TopDocs results = this.index.get(i).search(
+						this.queryParser.parse(special), this.fieldValueFilter,
+						this.joinLength, this.sort);
+
+				// hits.add(results);
 				int rank = 1;
-				while ((doc = mc._queue.pop()) != null) {
+				for (ScoreDoc scoreDoc : results.scoreDocs) {
+					Document doc = this.index.get(i).doc(scoreDoc.doc);
 					String key = "";
 					Float value = new Float(0);
 					try {
@@ -83,12 +89,28 @@ public class LuceneNGramSearcher extends Searcher {
 						this.learningWeights[prefix.length()][i + 1] += 1 / (float) rank;
 					}
 					rank++;
+					// String res = "";
+					// if (key.equals(match)) {
+					// res = " \tHIT";
+					// } else {
+					// res = " \tNOMATCH";
+					// }
+					// IOHelper.logLearn("FROM: " + terms[i] + " \tEDGETYPE: "
+					// + (edge + 1) + " \t RANK: " + rank++
+					// + " \tPREDICTS: " + key + "\t SCORE: " + value
+					// + res);
+
+					float weight = 1;
+					if (Config.get().useWeights) {
+						weight = this.usedWeights[prefix.length()][i + 1];
+					}
 					if (result.containsKey(key)) {
-						result.put(key, value + result.get(key));
+						result.put(key, weight * value + result.get(key));
 					} else {
-						result.put(key, value);
+						result.put(key, weight * value);
 					}
 				}
+
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

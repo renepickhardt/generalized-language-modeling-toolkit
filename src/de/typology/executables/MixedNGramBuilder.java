@@ -3,7 +3,8 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.lexerParser.DGTTMMain;
+import de.typology.evaluation.NGramEvaluator;
+import de.typology.evaluation.TypologyEvaluator;
 import de.typology.lexerParser.DataSetSplitter;
 import de.typology.lexerParser.EnronMain;
 import de.typology.nGramBuilder.NGramBuilder;
@@ -38,17 +39,17 @@ public class MixedNGramBuilder {
 			new File(outputPath).mkdirs();
 			parsedOutputPath = outputPath + "parsed.txt";
 			normalizedOutputPath = outputPath + "normalized.txt";
-			if (Config.get().parseData) {
-				DGTTMMain.run(Config.get().dgttmInputDirectory,
-						parsedOutputPath, normalizedOutputPath, language);
-			}
-			if (Config.get().sampleSplitData) {
-				splitAndTrain(outputPath, normalizedOutputPath);
-			}
-			//
-			// TypologyEvaluator.main(args);
-			//
-			// NGramEvaluator.main(args);
+			// if (Config.get().parseData) {
+			// DGTTMMain.run(Config.get().dgttmInputDirectory,
+			// parsedOutputPath, normalizedOutputPath, language);
+			// }
+			// if (Config.get().sampleSplitData) {
+			// splitAndTrain(outputPath, normalizedOutputPath);
+			// }
+
+			TypologyEvaluator.main(args);
+
+			NGramEvaluator.main(args);
 		}
 
 		new File(Config.get().outputDirectory + "enron/").mkdirs();
@@ -68,27 +69,27 @@ public class MixedNGramBuilder {
 		//
 		// NGramEvaluator.main(args);
 		//
-		//		new File(Config.get().outputDirectory + "reuters/").mkdirs();
-		//		outputDirectory = Config.get().outputDirectory + "reuters/";
-		//		new File(outputDirectory).mkdirs();
-		//		parsedOutputPath = outputDirectory + "parsed.txt";
-		//		normalizedOutputPath = outputDirectory + "normalized.txt";
-		//		if (Config.get().parseData) {
-		//			ReutersMain.run(Config.get().reutersInputDirectory,
-		//					parsedOutputPath, normalizedOutputPath);
-		//		}
-		//		if (Config.get().sampleSplitData) {
-		//			splitAndTrain(outputDirectory, normalizedOutputPath);
-		//		}
-		//		//
-		//		// TypologyEvaluator.main(args);
-		//		//
-		//		// NGramEvaluator.main(args);
+		// new File(Config.get().outputDirectory + "reuters/").mkdirs();
+		// outputDirectory = Config.get().outputDirectory + "reuters/";
+		// new File(outputDirectory).mkdirs();
+		// parsedOutputPath = outputDirectory + "parsed.txt";
+		// normalizedOutputPath = outputDirectory + "normalized.txt";
+		// if (Config.get().parseData) {
+		// ReutersMain.run(Config.get().reutersInputDirectory,
+		// parsedOutputPath, normalizedOutputPath);
+		// }
+		// if (Config.get().sampleSplitData) {
+		// splitAndTrain(outputDirectory, normalizedOutputPath);
+		// }
+		// //
+		// // TypologyEvaluator.main(args);
+		// //
+		// // NGramEvaluator.main(args);
 
 	}
 
-	public static void splitAndTrain(String outputPath,
-			String fileToBeSplit) throws IOException {
+	public static void splitAndTrain(String outputPath, String fileToBeSplit)
+			throws IOException {
 		// DATA SPLIT create paths and direcotries for training and test
 		// data
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
