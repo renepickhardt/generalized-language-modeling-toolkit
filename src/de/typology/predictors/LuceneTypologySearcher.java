@@ -117,7 +117,7 @@ public class LuceneTypologySearcher extends Searcher {
 
 	@Override
 	public String getFileName() {
-		String name = "";
+		String name = Config.get().dataSet + "-";
 		if (Config.get().useWeights) {
 			name = name.concat("weighted-");
 		}

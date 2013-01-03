@@ -125,7 +125,7 @@ public class LuceneNGramSearcher extends Searcher {
 
 	@Override
 	public String getFileName() {
-		String name = "";
+		String name = Config.get().dataSet + "-";
 		if (Config.get().weightedPredictions) {
 			name = name.concat("weighted-");
 		}

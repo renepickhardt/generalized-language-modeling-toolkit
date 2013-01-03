@@ -47,7 +47,20 @@ public class MixedNGramBuilder {
 			// splitAndTrain(outputPath, normalizedOutputPath);
 			// }
 
+			String prefix = Config.get().sampleRate + "Split"
+					+ Config.get().splitDataRatio + "Test"
+					+ Config.get().splitTestRatio;
+			Config.get().testingPath = outputPath + "testSam" + prefix
+					+ "/test.file";
+			Config.get().indexPath = outputPath + "training" + prefix
+					+ "/typoEdgesIndex/";
+
+			Config.get().dataSet = "dgttm-" + language + "-";
+
 			TypologyEvaluator.main(args);
+
+			Config.get().indexPath = outputPath + "training" + prefix
+					+ "/nGramsIndex/";
 
 			NGramEvaluator.main(args);
 		}
