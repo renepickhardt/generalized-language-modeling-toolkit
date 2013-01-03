@@ -74,10 +74,16 @@ public class LuceneTypologySearcher extends Searcher {
 				int rank = 1;
 				for (ScoreDoc scoreDoc : results.scoreDocs) {
 					Document doc = this.index.get(edge).doc(scoreDoc.doc);
-
-					String key = doc.get("tgt");
-					Float value = Float.parseFloat(doc.get("cnt"));
-
+					String key = null;
+					Float value = null;
+					try {
+						key = doc.get("tgt");
+						value = Float.parseFloat(doc.get("cnt"));
+					} catch (Exception e) {
+						System.out
+								.println("cant retrieve data from lucene index");
+						continue;
+					}
 					if (key.equals(match)) {
 						this.learningWeights[prefix.length()][edge + 1] += 1 / (float) rank;
 					}
