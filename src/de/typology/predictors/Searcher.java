@@ -117,16 +117,16 @@ public abstract class Searcher implements Searchable {
 
 	public void openWeights() {
 		this.usedWeights = new float[100][Config.get().nGramLength];
-
-		for (int i = 0; i < 100; i++) {
-			for (int j = 0; j < Config.get().nGramLength; j++) {
-				this.usedWeights[i][j] = 1;
-			}
-		}
-		BufferedReader br = IOHelper.openReadFile("learntWeights"
-				+ this.getFileName());
-		String line = "";
 		try {
+
+			for (int i = 0; i < 100; i++) {
+				for (int j = 0; j < Config.get().nGramLength; j++) {
+					this.usedWeights[i][j] = 1;
+				}
+			}
+			BufferedReader br = IOHelper.openReadFile("learntWeights"
+					+ this.getFileName());
+			String line = "";
 			int i = 0;
 			while ((line = br.readLine()) != null) {
 				String[] values = line.split("\t");
@@ -139,7 +139,7 @@ public abstract class Searcher implements Searchable {
 				}
 				i++;
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
