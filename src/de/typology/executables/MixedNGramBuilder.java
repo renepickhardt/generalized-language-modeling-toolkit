@@ -47,10 +47,10 @@ public class MixedNGramBuilder {
 			// splitAndTrain(outputPath, normalizedOutputPath);
 			// }
 
-			String prefix = Config.get().sampleRate + "Split"
+			String prefix = "Sam" + Config.get().sampleRate + "Split"
 					+ Config.get().splitDataRatio + "Test"
 					+ Config.get().splitTestRatio;
-			Config.get().testingPath = outputPath + "testSam" + prefix
+			Config.get().testingPath = outputPath + "test" + prefix
 					+ "/test.file";
 			Config.get().indexPath = outputPath + "training" + prefix
 					+ "/typoEdgesIndex/";
