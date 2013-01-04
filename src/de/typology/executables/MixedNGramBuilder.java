@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import de.typology.evaluation.NGramEvaluator;
-import de.typology.evaluation.TypologyEvaluator;
 import de.typology.lexerParser.DataSetSplitter;
 import de.typology.lexerParser.EnronMain;
 import de.typology.nGramBuilder.NGramBuilder;
@@ -56,8 +55,17 @@ public class MixedNGramBuilder {
 					+ "/typoEdgesIndex/";
 
 			Config.get().dataSet = "dgttm-" + language + "-";
+			//
+			// TreeIndexer tti = new TreeIndexer();
+			// tti.run(outputPath + "training" + prefix +
+			// "/typoEdgesNormalized/");
+			// TreeTypologySearcher tts = new TreeTypologySearcher(5, 10, 12);
+			// for (int n = 2; n < 6; n++) {
+			// tts.setTestParameter(n, 10, 12);
+			// tts.run();
+			// }
 
-			TypologyEvaluator.main(args);
+			// TypologyEvaluator.main(args);
 
 			Config.get().indexPath = outputPath + "training" + prefix
 					+ "/nGramsIndex/";
@@ -137,6 +145,5 @@ public class MixedNGramBuilder {
 		String indexNGrams = trainingPath
 				+ Config.get().nGramsNotAggregatedPath + "Index/";
 		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
-
 	}
 }

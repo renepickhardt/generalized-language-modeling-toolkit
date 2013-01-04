@@ -155,6 +155,7 @@ public abstract class Searcher implements Searchable {
 	@Override
 	public void run() {
 		BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
+		System.out.println(Config.get().testingPath);
 		try {
 			String line = "";
 			long start = System.currentTimeMillis();

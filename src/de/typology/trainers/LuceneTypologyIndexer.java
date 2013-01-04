@@ -18,7 +18,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class LuceneTypologyIndexer {
@@ -29,7 +28,7 @@ public class LuceneTypologyIndexer {
 	 * @author rpickhardt, Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
-		run(Config.get().normalizedEdges, Config.get().indexPath);
+		// run(Config.get().normalizedEdges, Config.get().indexPath);
 	}
 
 	/**

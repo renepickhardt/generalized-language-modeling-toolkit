@@ -6,8 +6,6 @@ import java.io.IOException;
 import de.typology.lexerParser.DataSetSplitter;
 import de.typology.lexerParser.WikipediaMain;
 import de.typology.nGramBuilder.NGramBuilder;
-import de.typology.trainers.LuceneNGramIndexer;
-import de.typology.trainers.LuceneTypologyIndexer;
 import de.typology.utils.Config;
 
 public class WikiNGramBuilder {
@@ -91,17 +89,17 @@ public class WikiNGramBuilder {
 
 		NGramBuilder.run(trainingPath, trainingFile);
 
-		String normalizedEdges = trainingPath
-				+ Config.get().typologyEdgesPathNotAggregated + "Normalized/";
-		String indexEdges = trainingPath
-				+ Config.get().typologyEdgesPathNotAggregated + "Index/";
-		LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
-
-		String normalizedNGrams = trainingPath
-				+ Config.get().nGramsNotAggregatedPath + "Normalized/";
-		String indexNGrams = trainingPath
-				+ Config.get().nGramsNotAggregatedPath + "Index/";
-		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
+		// String normalizedEdges = trainingPath
+		// + Config.get().typologyEdgesPathNotAggregated + "Normalized/";
+		// String indexEdges = trainingPath
+		// + Config.get().typologyEdgesPathNotAggregated + "Index/";
+		// LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
+		//
+		// String normalizedNGrams = trainingPath
+		// + Config.get().nGramsNotAggregatedPath + "Normalized/";
+		// String indexNGrams = trainingPath
+		// + Config.get().nGramsNotAggregatedPath + "Index/";
+		// LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
 	}
 
 }

@@ -18,7 +18,7 @@ public class TreeIndexer {
 	private String line;
 	private String[] lineSplit;
 	private Float edgeCount;
-	private static HashMap<Integer, HashMap<String, SuggestTree<Float>>> treeMapMap;
+	public static HashMap<Integer, HashMap<String, SuggestTree<Float>>> treeMapMap;
 	private HashMap<String, SuggestTree<Float>> treeMap;
 	private HashMap<String, Float> edgeMap;
 	private Comparator<Float> comparator;
@@ -50,8 +50,7 @@ public class TreeIndexer {
 				+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
 	}
 
-	public HashMap<Integer, HashMap<String, SuggestTree<Float>>> run(
-			String normalizedTypologyEdgesPath) throws IOException {
+	public void run(String normalizedTypologyEdgesPath) throws IOException {
 		long startTime = System.currentTimeMillis();
 		treeMapMap = new HashMap<Integer, HashMap<String, SuggestTree<Float>>>();
 		for (int edgeType = 1; edgeType < 6; edgeType++) {
@@ -62,7 +61,7 @@ public class TreeIndexer {
 		long endTime = System.currentTimeMillis();
 		IOHelper.strongLog((endTime - startTime) / 1000
 				+ " seconds for indexing " + normalizedTypologyEdgesPath);
-		return treeMapMap;
+		return;
 	}
 
 	public TreeIndexer() {

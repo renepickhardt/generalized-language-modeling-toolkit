@@ -2,10 +2,8 @@ package de.typology.evaluation;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import de.typology.predictors.TreeTypologySearcher;
-import de.typology.trainers.SuggestTree;
 import de.typology.trainers.TreeIndexer;
 import de.typology.utils.Config;
 
@@ -14,32 +12,32 @@ public class TestTreeSampleEffectsEvaluator {
 
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
 		// TODO change wikiType
 		wikiType = "enwiki";
-		//part1BuildTrees();
+		// part1BuildTrees();
 		part2runTests();
 	}
 
-	//	private static void part1PrepareIndices() {
-	//		for (int sampleRate = 98; sampleRate > 98; sampleRate -= 5) {
-	//			Config.get().sampleRate = sampleRate;
-	//			Config.get().sampleSplitData = true;
-	//			try {
-	//				String parsedEnglishWiki = Config.get().outputDirectory
-	//						+ "wiki/" + wikiType + "/normalized.txt";
-	//				String outputDirectory = Config.get().outputDirectory + "wiki/"
-	//						+ wikiType + "/";
-	//				WikiNGramBuilder.splitAndTrain(outputDirectory,
-	//						parsedEnglishWiki);
-	//			} catch (IOException e) {
-	//				// TODO Auto-generated catch block
-	//				e.printStackTrace();
-	//			}
-	//		}
-	//	}
+	// private static void part1PrepareIndices() {
+	// for (int sampleRate = 98; sampleRate > 98; sampleRate -= 5) {
+	// Config.get().sampleRate = sampleRate;
+	// Config.get().sampleSplitData = true;
+	// try {
+	// String parsedEnglishWiki = Config.get().outputDirectory
+	// + "wiki/" + wikiType + "/normalized.txt";
+	// String outputDirectory = Config.get().outputDirectory + "wiki/"
+	// + wikiType + "/";
+	// WikiNGramBuilder.splitAndTrain(outputDirectory,
+	// parsedEnglishWiki);
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// }
+	// }
 
 	private static void part2runTests() throws IOException {
 		File dir = new File(Config.get().outputDirectory + "wiki/" + wikiType
@@ -58,25 +56,30 @@ public class TestTreeSampleEffectsEvaluator {
 				String suffix = file.getName().replace("training", "");
 				Config.get().testingPath = file.getParent() + "/test" + suffix
 						+ "/test.file";
-				Config.get().normalizedEdges=file.getAbsolutePath()+"/typoEdgesNormalized/";
-				Config.get().normalizedNGrams=file.getAbsolutePath()+"/nGramsNormalized/";
+				Config.get().normalizedEdges = file.getAbsolutePath()
+						+ "/typoEdgesNormalized/";
+				Config.get().normalizedNGrams = file.getAbsolutePath()
+						+ "/nGramsNormalized/";
 
+				// typology tests
+				TreeIndexer tti = new TreeIndexer();
+				tti.run(Config.get().normalizedEdges);
 
-				// typology tests 
-				TreeIndexer tti=new TreeIndexer();
-				HashMap <Integer,HashMap<String,SuggestTree<Float>>> treeMapMap= tti.run(Config.get().normalizedEdges);
-				TreeTypologySearcher tts = new	TreeTypologySearcher(5, topK, joinLength,treeMapMap); 
-				for (int n = 2;n < 6; n++) 	{
+				TreeTypologySearcher tts = new TreeTypologySearcher(5, topK,
+						joinLength);
+				for (int n = 2; n < 6; n++) {
+
 					tts.setTestParameter(n, topK, joinLength);
 					tts.run();
 				}
-				//				//ngram tests
-				//				treeMapMap= tti.run(Config.get().normalizedNGrams);
-				//				TreeNGramSearcher tns = new	TreeNGramSearcher(5, topK, joinLength,treeMapMap); 
-				//				for (int n = 2;n < 6; n++) 	{
-				//					tns.setTestParameter(n, topK, joinLength);
-				//					tns.run();
-				//				}
+				// //ngram tests
+				// treeMapMap= tti.run(Config.get().normalizedNGrams);
+				// TreeNGramSearcher tns = new TreeNGramSearcher(5, topK,
+				// joinLength,treeMapMap);
+				// for (int n = 2;n < 6; n++) {
+				// tns.setTestParameter(n, topK, joinLength);
+				// tns.run();
+				// }
 			}
 		}
 	}
