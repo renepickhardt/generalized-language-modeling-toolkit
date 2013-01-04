@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
+
 import de.typology.interfaces.Searchable;
 import de.typology.utils.Algo;
 import de.typology.utils.Config;
@@ -153,7 +155,7 @@ public abstract class TreeSearcher implements Searchable {
 					continue;
 				}
 
-				String query = line;
+				String query = this.prepareQuery(words, this.n);
 				String match = words[words.length - 1];
 
 				IOHelper.logResult(query + "  \tMATCH: " + match);
@@ -192,15 +194,13 @@ public abstract class TreeSearcher implements Searchable {
 
 	@Override
 	public String prepareQuery(String[] words, int n) {
-		//do nothing....
-		//			String query = "";
-		//			int l = words.length;
-		//			for (int i = l - n; i < l - 1; i++) {
-		//				query = query + QueryParser.escape(words[i]) + " ";
-		//			}
-		//			query = query.substring(0, query.length() - 1);
-		//			return query;
-		return null;
+		String query = "";
+		int l = words.length;
+		for (int i = l - n; i < l - 1; i++) {
+			query = query + QueryParser.escape(words[i]) + " ";
+		}
+		query = query.substring(0, query.length() - 1);
+		return query;
 	}
 
 }

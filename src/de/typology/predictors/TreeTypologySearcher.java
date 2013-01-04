@@ -2,7 +2,9 @@ package de.typology.predictors;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import de.typology.trainers.SuggestTree;
@@ -95,8 +97,19 @@ public class TreeTypologySearcher extends TreeSearcher {
 			}
 			edge++;
 		}
-
 		return result;
+		//		//cut down result list
+		//		HashMap<String, Float> resultCut = new HashMap<String, Float>();
+		//		ValueComparator bvc =  new ValueComparator(result);
+		//		TreeMap<String,Float> resultTop=new TreeMap<String, Float>(bvc);
+		//		for(Entry<String, Float> e: result.entrySet()){
+		//			resultTop.put(e.getKey(), e.getValue());
+		//		}
+		//		for(int join=0;join<12&&join<resultTop.size();join++) {
+		//			Entry<String, Float> e=resultTop.pollFirstEntry();
+		//			resultCut.put(e.getKey(),e.getValue());
+		//		}
+		//		return resultCut;
 	}
 
 	@Override
@@ -112,4 +125,21 @@ public class TreeTypologySearcher extends TreeSearcher {
 		return name;
 	}
 
+}
+class ValueComparator implements Comparator<String> {
+
+	Map<String, Float> base;
+	public ValueComparator(Map<String, Float> base) {
+		this.base = base;
+	}
+
+	// Note: this comparator imposes orderings that are inconsistent with equals.    
+	@Override
+	public int compare(String a, String b) {
+		if (this.base.get(a) >= this.base.get(b)) {
+			return -1;
+		} else {
+			return 1;
+		} // returning 0 would merge keys
+	}
 }
