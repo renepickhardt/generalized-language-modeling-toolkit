@@ -3,6 +3,7 @@ package de.typology.evaluation;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.predictors.TreeNGramSearcher;
 import de.typology.predictors.TreeTypologySearcher;
 import de.typology.trainers.TreeIndexer;
 import de.typology.utils.Config;
@@ -71,14 +72,14 @@ public class TestTreeSampleEffectsEvaluator {
 					tts.setTestParameter(n, topK, joinLength);
 					tts.run();
 				}
-				//				// //ngram tests
-				//				tti.run(Config.get().normalizedNGrams);
-				//				TreeNGramSearcher tns = new TreeNGramSearcher(5, topK,
-				//						joinLength);
-				//				for (int n = 2;n < 6; n++) {
-				//					tns.setTestParameter(n, topK, joinLength);
-				//					tns.run();
-				//				}
+				// //ngram tests
+				tti.run(Config.get().normalizedNGrams);
+				TreeNGramSearcher tns = new TreeNGramSearcher(5, topK,
+						joinLength);
+				for (int n = 2;n < 6; n++) {
+					tns.setTestParameter(n, topK, joinLength);
+					tns.run();
+				}
 			}
 		}
 	}
