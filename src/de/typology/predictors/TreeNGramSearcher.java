@@ -24,8 +24,8 @@ public class TreeNGramSearcher extends TreeSearcher {
 		TreeIndexer tti = new TreeIndexer();
 		tti.run(Config.get().normalizedNGrams);
 		TreeNGramSearcher tns = new TreeNGramSearcher(5, 5, 12);
-		tns.query("1991 1992 auf 1994", "a", "aus");
-		HashMap<String, Float> result = tns.search("1991 1992 auf 1994", "a",
+		tns.query("1991 1992 1993 1994", "a", "als");
+		HashMap<String, Float> result = tns.search("1991 1992 1993 1994", "a",
 				"");
 		for (Entry<String, Float> e : result.entrySet()) {
 			System.out.println(e.getKey() + " " + e.getValue());
@@ -40,13 +40,12 @@ public class TreeNGramSearcher extends TreeSearcher {
 		if (terms == null) {
 			return null;
 		}
-
 		for (int i = 0; i < terms.length; i++) {
 			trees = new ArrayList<SuggestTree<Float>>();
 			// get list of trees
 			String t1 = terms[0].substring(0, 1);
-			String t2 = terms[1].substring(0, 1);
-			if (prefix.length() != 0) {
+			if (i >0) {
+				String t2 = terms[i-1].substring(0, 1);
 				if (TreeIndexer.treeMapMap.get(i + 2).containsKey(t1)) {
 					trees.add(TreeIndexer.treeMapMap.get(i + 2).get(t1));
 				} else {
@@ -62,6 +61,13 @@ public class TreeNGramSearcher extends TreeSearcher {
 							trees.add(TreeIndexer.treeMapMap.get(i + 2).get(
 									"other"));
 						}
+					}
+				}
+			}else{
+				for (Entry<String, SuggestTree<Float>> entry : TreeIndexer.treeMapMap
+						.get(i+2).entrySet()) {
+					if (entry.getKey().startsWith(t1)) {
+						trees.add(entry.getValue());
 					}
 				}
 			}
@@ -128,7 +134,7 @@ public class TreeNGramSearcher extends TreeSearcher {
 		if (Config.get().useWeights) {
 			name = name.concat("weighted-");
 		}
-		name = name.concat("typo-" + this.n + "-joinLengh-" + this.joinLength
+		name = name.concat("nGram-" + this.n + "-joinLengh-" + this.joinLength
 				+ "-" + Config.get().sampleRate + Config.get().splitDataRatio
 				+ ".log");
 		// TODO Auto-generated method stub

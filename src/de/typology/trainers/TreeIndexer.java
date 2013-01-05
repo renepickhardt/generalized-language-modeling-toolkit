@@ -14,7 +14,7 @@ import de.typology.utils.IOHelper;
 
 public class TreeIndexer {
 	private BufferedReader reader;
-	private int joinLength = 6;
+	private int joinLength = 12;
 	private String line;
 	private String[] lineSplit;
 	private Float edgeCount;

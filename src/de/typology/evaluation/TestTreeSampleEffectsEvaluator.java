@@ -3,6 +3,7 @@ package de.typology.evaluation;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.predictors.TreeNGramSearcher;
 import de.typology.predictors.TreeTypologySearcher;
 import de.typology.trainers.TreeIndexer;
 import de.typology.utils.Config;
@@ -16,7 +17,7 @@ public class TestTreeSampleEffectsEvaluator {
 	 */
 	public static void main(String[] args) throws IOException {
 		// TODO change wikiType
-		wikiType = "enwiki";
+		wikiType = "dewiki";
 		// part1BuildTrees();
 		part2runTests();
 	}
@@ -68,18 +69,17 @@ public class TestTreeSampleEffectsEvaluator {
 				TreeTypologySearcher tts = new TreeTypologySearcher(5, topK,
 						joinLength);
 				for (int n = 2; n < 6; n++) {
-
 					tts.setTestParameter(n, topK, joinLength);
 					tts.run();
 				}
 				// //ngram tests
-				// treeMapMap= tti.run(Config.get().normalizedNGrams);
-				// TreeNGramSearcher tns = new TreeNGramSearcher(5, topK,
-				// joinLength,treeMapMap);
-				// for (int n = 2;n < 6; n++) {
-				// tns.setTestParameter(n, topK, joinLength);
-				// tns.run();
-				// }
+				tti.run(Config.get().normalizedNGrams);
+				TreeNGramSearcher tns = new TreeNGramSearcher(5, topK,
+						joinLength);
+				for (int n = 2;n < 6; n++) {
+					tns.setTestParameter(n, topK, joinLength);
+					tns.run();
+				}
 			}
 		}
 	}
