@@ -3,13 +3,7 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-<<<<<<< HEAD
 import de.typology.nGramBuilder.NGramFromGoogleBuilder;
-=======
-import de.typology.googleNGrams.NGramMergerMain;
-import de.typology.googleNGrams.NGramParserMain;
-import de.typology.nGramBuilder.NGramNormalizer;
->>>>>>> refs/remotes/origin/socketTree
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -27,7 +21,7 @@ public class GoogleNGramBuilder {
 	public static void main(String[] args) throws IOException {
 		// parse and normalize google ngram data:
 		IOHelper.log("start building ngrams");
-		NGramNormalizer ngn = new NGramNormalizer();
+		//	NGramNormalizer ngn = new NGramNormalizer();
 		File dir = new File(Config.get().googleInputDirectory);
 		new File(Config.get().outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
