@@ -127,8 +127,8 @@ public class NGramBuilder {
 		sek = (endTime - startTime) / 1000;
 		IOHelper.strongLog(sek + " seconds to: count most frequent letters");
 
-		// wrap everyting into a cool programm that runs through all the data
-		// sets that we have an creates the appropreate output
+		// wrap everything into a cool program that runs through all the data
+		// sets that we have an creates the appropriate output
 
 		for (int n = Config.get().nGramLength; n >= 2; n--) {
 			new File(trainingPath + Config.get().nGramsNotAggregatedPath + "/"
@@ -146,7 +146,7 @@ public class NGramBuilder {
 			if (Config.get().createSecondLevelNGramChunks) {
 				ngcc.createSecondLevelChunks(trainingPath
 						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
-						+ n + "gc");
+								+ n + "gc");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -156,7 +156,7 @@ public class NGramBuilder {
 				Aggregator a = new Aggregator();
 				a.aggregateNGrams(trainingPath
 						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
-						+ n + "gc", 3);
+								+ n + "gc", 3);
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -177,7 +177,7 @@ public class NGramBuilder {
 				NGramDistribution ngd = new NGramDistribution();
 				ngd.countDistribution(trainingPath
 						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
-						+ n + "gs");
+								+ n + "gs");
 				endTime = System.currentTimeMillis();
 				sek = (endTime - startTime) / 1000;
 				IOHelper.strongLog(sek
@@ -288,29 +288,6 @@ public class NGramBuilder {
 				e.printStackTrace();
 			}
 		}
-
-		if (Config.get().normalizeEdges) {
-			try {
-				String input = trainingPath
-						+ Config.get().typologyEdgesPathNotAggregated + "/";
-				String output = trainingPath
-						+ Config.get().typologyEdgesPathNotAggregated
-						+ "Normalized/";
-				EdgeNormalizer ngn = new EdgeNormalizer();
-				IOHelper.strongLog("normalizing edges from " + input
-						+ " and storing updated edges at " + output);
-				double time = ngn.normalize(input, output);
-				IOHelper.strongLog("time for normalizing edges from " + input
-						+ " : " + time);
-			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
 	}
 
 	// TODO: need to generalize this function if it should fit in more general

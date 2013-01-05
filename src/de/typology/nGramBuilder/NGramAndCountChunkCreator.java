@@ -2,19 +2,18 @@ package de.typology.nGramBuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class NGramChunkCreator extends ChunkCreator {
-	NGramChunkCreator() {
+public class NGramAndCountChunkCreator extends ChunkCreator {
+	NGramAndCountChunkCreator() {
 		super();
 	}
 
-	NGramChunkCreator(String[] mostFrequentLetters) {
+	NGramAndCountChunkCreator(String[] mostFrequentLetters) {
 		super(mostFrequentLetters);
 	}
 
@@ -34,7 +33,6 @@ public class NGramChunkCreator extends ChunkCreator {
 		String line = "";
 		int cnt = 0;
 
-		new File(trainingPath + Config.get().nGramsNotAggregatedPath + "/" + n).mkdirs();
 		HashMap<String, BufferedWriter> writers = IOHelper.createWriter(
 				trainingPath + Config.get().nGramsNotAggregatedPath + "/" + n,
 				mostFrequentLetters, extension);
@@ -42,15 +40,14 @@ public class NGramChunkCreator extends ChunkCreator {
 		try {
 			while ((line = br.readLine()) != null) {
 				cnt++;
-				String[] tokens = line.split(" ");
+				String[] tokens = line.split("\t");
 				for (int i = n; i < tokens.length; i++) {
 					boolean first = true;
 					BufferedWriter bw = null;
 					try {
-
-						for (int j = i - n; j < i; j++) {
+						for (int j = i - n; j <= i; j++) {
 							if (first) {
-								String token = tokens[i - n];
+								String token = tokens[j];
 								String key = null;
 								key = token.substring(0, 1);
 								bw = writers.get(key);
@@ -61,14 +58,14 @@ public class NGramChunkCreator extends ChunkCreator {
 								first = false;
 							}
 							bw.write(tokens[j]);
-							if (j < i - 1) {
+							if (j < i) {
 								bw.write("\t");
 							}
 						}
 					} catch (IndexOutOfBoundsException e) {
 						continue;
 					}
-					bw.write("\t#1\n");
+					bw.write("\n");
 				}
 				if (cnt % 50000 == 0) {
 					IOHelper.log("processed " + cnt + " articles into chunks:");

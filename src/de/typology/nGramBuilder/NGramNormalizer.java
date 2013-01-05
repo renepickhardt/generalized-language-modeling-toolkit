@@ -29,7 +29,7 @@ public class NGramNormalizer {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws NumberFormatException,
-			IOException {
+	IOException {
 		NGramNormalizer ngn = new NGramNormalizer();
 		IOHelper.strongLog("normalizing ngrams from "
 				+ Config.get().nGramsInput + " and storing updated ngrams at "
@@ -90,12 +90,12 @@ public class NGramNormalizer {
 					} else {
 						this.nMinusOneGrams.put(this.nMinusOneGram,
 								this.nMinusOneGrams.get(this.nMinusOneGram)
-										+ this.nGramCount);
+								+ this.nGramCount);
 					}
 				}
 				this.reader.close();
 
-				// normalize edge counts
+				// normalize ngram counts
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
 
 				String fileName = file.getName();
@@ -140,10 +140,38 @@ public class NGramNormalizer {
 				}
 				this.reader.close();
 				this.writer.close();
-				file.delete();
+				//file.delete();
 			}
 		}
 		long endTime = System.currentTimeMillis();
 		return (endTime - startTime) / 1000;
 	}
+	public double removeNGrams(String inputPath, String outputPath) throws IOException{
+		long startTime = System.currentTimeMillis();
+		new File(outputPath).mkdir();
+		for (int nGramType = 2; nGramType < 6; nGramType++) {
+			this.files = IOHelper.getDirectory(new File(inputPath + nGramType));
+			this.outputPathWithNGramType = outputPath + nGramType + "/";
+			new File(this.outputPathWithNGramType).mkdir();
+			for (File file : this.files) {
+				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
+				String fileName = file.getName();
+				this.writer = IOHelper.openWriteFile(
+						this.outputPathWithNGramType + fileName,
+						32 * 1024 * 1024);
+				while ((this.line = this.reader.readLine()) != null) {
+					this.lineSplit = this.line.split("\t");
+					if (this.lineSplit.length != nGramType + 1) {
+						continue;
+					}
+					this.writer.write(this.line+"\n");
+				}
+				this.reader.close();
+				this.writer.close();
+			}
+		}
+		long endTime = System.currentTimeMillis();
+		return (endTime - startTime) / 1000;
+	}
+
 }
