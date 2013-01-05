@@ -29,7 +29,7 @@ public class NGramNormalizer {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws NumberFormatException,
-			IOException {
+	IOException {
 		NGramNormalizer ngn = new NGramNormalizer();
 		IOHelper.strongLog("normalizing ngrams from "
 				+ Config.get().nGramsInput + " and storing updated ngrams at "
@@ -90,7 +90,7 @@ public class NGramNormalizer {
 					} else {
 						this.nMinusOneGrams.put(this.nMinusOneGram,
 								this.nMinusOneGrams.get(this.nMinusOneGram)
-										+ this.nGramCount);
+								+ this.nGramCount);
 					}
 				}
 				this.reader.close();
@@ -140,7 +140,7 @@ public class NGramNormalizer {
 				}
 				this.reader.close();
 				this.writer.close();
-				file.delete();
+				//	file.delete();
 			}
 		}
 		long endTime = System.currentTimeMillis();

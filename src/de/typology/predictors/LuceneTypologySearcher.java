@@ -25,12 +25,9 @@ import de.typology.utils.Config;
  */
 public class LuceneTypologySearcher extends Searcher {
 
-	private boolean useWeights;
-
 	public LuceneTypologySearcher(int N, int k, int joinLength) {
 		super(N, k, joinLength);
 
-		this.useWeights = true;
 		this.openWeights();
 		this.index = new ArrayList<IndexSearcher>();
 		try {
@@ -77,10 +74,16 @@ public class LuceneTypologySearcher extends Searcher {
 				int rank = 1;
 				for (ScoreDoc scoreDoc : results.scoreDocs) {
 					Document doc = this.index.get(edge).doc(scoreDoc.doc);
-
-					String key = doc.get("tgt");
-					Float value = Float.parseFloat(doc.get("cnt"));
-
+					String key = null;
+					Float value = null;
+					try {
+						key = doc.get("tgt");
+						value = Float.parseFloat(doc.get("cnt"));
+					} catch (Exception e) {
+						System.out
+								.println("cant retrieve data from lucene index");
+						continue;
+					}
 					if (key.equals(match)) {
 						this.learningWeights[prefix.length()][edge + 1] += 1 / (float) rank;
 					}
@@ -97,7 +100,7 @@ public class LuceneTypologySearcher extends Searcher {
 					// + res);
 
 					float weight = 1;
-					if (this.useWeights) {
+					if (Config.get().useWeights) {
 						weight = this.usedWeights[prefix.length()][edge + 1];
 					}
 					if (result.containsKey(key)) {
@@ -120,8 +123,8 @@ public class LuceneTypologySearcher extends Searcher {
 
 	@Override
 	public String getFileName() {
-		String name = "";
-		if (this.useWeights) {
+		String name = Config.get().dataSet + "-";
+		if (Config.get().useWeights) {
 			name = name.concat("weighted-");
 		}
 		name = name.concat("typo-" + this.N + "-joinLengh-" + this.joinLength

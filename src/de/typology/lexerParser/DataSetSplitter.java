@@ -38,6 +38,29 @@ public class DataSetSplitter {
 				Config.get().memoryLimitForWritingFiles);
 	}
 
+	/**
+	 * Takes a given input file and provides a 3 way split. The file can be
+	 * sampled via the sampleRatio. A high sample ratio means that a large
+	 * portion of the file is being thrown away
+	 * 
+	 * There the splitDataRatio specifies the percentage of the file that is
+	 * used as training data. The rest will be used as test and learing data.
+	 * 
+	 * The last parameter splitTestRatio is usually set to 50 and means that the
+	 * test data is also devided again into learning and testing data
+	 * 
+	 * the splits should be (not tested!) at least ngrams of the length
+	 * specified in config.txt. The method is thus not making systematic errors
+	 * 
+	 * @param inputFile
+	 *            potentially large text file that needs to be split
+	 * @param testFile
+	 *            filename with path where test data are to be stored
+	 * @param trainingFile
+	 *            filename with path where training data are to be stored
+	 * @param learningFile
+	 *            filename with path where learning data are to be stored
+	 */
 	public static void run(String inputFile, String testFile,
 			String trainingFile, String learningFile) {
 		DataSetSplitter dss = new DataSetSplitter(testFile, trainingFile,
