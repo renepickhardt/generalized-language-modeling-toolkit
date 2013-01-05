@@ -67,7 +67,7 @@ public class FileSystemSorter {
 			String outFileName = fullQualifiedFileName.replaceFirst(
 					fileExtension, aggregatedFileExtension);
 
-			String sortCommand = "LC_COLLATE=C sort -t$\'t\' -k1 -k3gr \""
+			String sortCommand = "LC_COLLATE=C sort -t$\'t\' -k1 -k3gr -S3G \""
 					+ sourcePath + "/tmp.file\" --output=\"" + outFileName
 					+ "\"";
 
