@@ -2,7 +2,6 @@ package de.typology.nGramBuilder;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -34,7 +33,6 @@ public class NGramChunkCreator extends ChunkCreator {
 		String line = "";
 		int cnt = 0;
 
-		new File(trainingPath + Config.get().nGramsNotAggregatedPath + "/" + n).mkdirs();
 		HashMap<String, BufferedWriter> writers = IOHelper.createWriter(
 				trainingPath + Config.get().nGramsNotAggregatedPath + "/" + n,
 				mostFrequentLetters, extension);
