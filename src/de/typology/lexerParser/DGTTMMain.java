@@ -20,7 +20,7 @@ public class DGTTMMain {
 
 	public static void run(String dgttmInputPath, String parsedOutputPath,
 			String normalizedOutputPath, String dgttmLanguage)
-			throws IOException {
+					throws IOException {
 		long startTime = System.currentTimeMillis();
 		IOHelper.log("getting file list");
 		fileList = IOHelper.getDirectory(new File(dgttmInputPath));

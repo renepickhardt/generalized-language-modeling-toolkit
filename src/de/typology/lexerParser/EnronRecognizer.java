@@ -67,7 +67,11 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 	// Keywords to token mapping
 	private static Map<String, EnronToken> keywords;
 
-	static {
+
+
+	public EnronRecognizer(File f) {
+		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
+
 		keywords = new HashMap<String, EnronToken>();
 
 		keywords.put("Message-ID", MESSAGEID);
@@ -89,10 +93,6 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		keywords.put("X-Folder", XFOLDER);
 		keywords.put("X-Origin", XORIGIN);
 		keywords.put("X-FileName", XFILENAME);
-	}
-
-	public EnronRecognizer(File f) {
-		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 	}
 
 	// Extract lexeme from buffer

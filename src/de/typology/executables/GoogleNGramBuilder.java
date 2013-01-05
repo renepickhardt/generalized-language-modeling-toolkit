@@ -3,7 +3,13 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
+<<<<<<< HEAD
 import de.typology.nGramBuilder.NGramFromGoogleBuilder;
+=======
+import de.typology.googleNGrams.NGramMergerMain;
+import de.typology.googleNGrams.NGramParserMain;
+import de.typology.nGramBuilder.NGramNormalizer;
+>>>>>>> refs/remotes/origin/socketTree
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -21,12 +27,14 @@ public class GoogleNGramBuilder {
 	public static void main(String[] args) throws IOException {
 		// parse and normalize google ngram data:
 		IOHelper.log("start building ngrams");
+		NGramNormalizer ngn = new NGramNormalizer();
 		File dir = new File(Config.get().googleInputDirectory);
 		new File(Config.get().outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
-			IOHelper.log(f.getAbsolutePath()+":");
+			IOHelper.log(f.getAbsolutePath() + ":");
 			// PARSE NGRAMS!
 			String googleTyp = f.getName();
+
 			//			String outPath = Config.get().outputDirectory + "google/"
 			//					+ googleTyp + "/";
 			//			String mergedGoogle = outPath+ "merged/";
@@ -36,8 +44,9 @@ public class GoogleNGramBuilder {
 			//				NGramParserMain.run(mergedGoogle,
 			//						outPath);
 			//			}
-			//"/home/martin/out/google/ger/","/home/martin/out/google/ger/normalized/1/1gram-normalized.txt"
+
 			NGramFromGoogleBuilder.run(Config.get().outputDirectory+"/google/"+googleTyp+"/", Config.get().outputDirectory+"/google/"+googleTyp+"/"+"normalized/1/1gram-normalized.txt");
+
 		}
 	}
 }

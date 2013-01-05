@@ -3,10 +3,9 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.lexerParser.DGTTMMain;
+import de.typology.evaluation.NGramEvaluator;
 import de.typology.lexerParser.DataSetSplitter;
 import de.typology.lexerParser.EnronMain;
-import de.typology.lexerParser.ReutersMain;
 import de.typology.nGramBuilder.NGramBuilder;
 import de.typology.trainers.LuceneNGramIndexer;
 import de.typology.trainers.LuceneTypologyIndexer;
@@ -39,17 +38,39 @@ public class MixedNGramBuilder {
 			new File(outputPath).mkdirs();
 			parsedOutputPath = outputPath + "parsed.txt";
 			normalizedOutputPath = outputPath + "normalized.txt";
-			if (Config.get().parseData) {
-				DGTTMMain.run(Config.get().dgttmInputDirectory,
-						parsedOutputPath, normalizedOutputPath, language);
-			}
-			if (Config.get().sampleSplitData) {
-				splitAndTrain(outputPath, normalizedOutputPath);
-			}
+			// if (Config.get().parseData) {
+			// DGTTMMain.run(Config.get().dgttmInputDirectory,
+			// parsedOutputPath, normalizedOutputPath, language);
+			// }
+			// if (Config.get().sampleSplitData) {
+			// splitAndTrain(outputPath, normalizedOutputPath);
+			// }
+
+			String prefix = "Sam" + Config.get().sampleRate + "Split"
+					+ Config.get().splitDataRatio + "Test"
+					+ Config.get().splitTestRatio;
+			Config.get().testingPath = outputPath + "test" + prefix
+					+ "/test.file";
+			Config.get().indexPath = outputPath + "training" + prefix
+					+ "/typoEdgesIndex/";
+
+			Config.get().dataSet = "dgttm-" + language + "-";
 			//
+			// TreeIndexer tti = new TreeIndexer();
+			// tti.run(outputPath + "training" + prefix +
+			// "/typoEdgesNormalized/");
+			// TreeTypologySearcher tts = new TreeTypologySearcher(5, 10, 12);
+			// for (int n = 2; n < 6; n++) {
+			// tts.setTestParameter(n, 10, 12);
+			// tts.run();
+			// }
+
 			// TypologyEvaluator.main(args);
-			//
-			// NGramEvaluator.main(args);
+
+			Config.get().indexPath = outputPath + "training" + prefix
+					+ "/nGramsIndex/";
+
+			NGramEvaluator.main(args);
 		}
 
 		new File(Config.get().outputDirectory + "enron/").mkdirs();
@@ -68,44 +89,46 @@ public class MixedNGramBuilder {
 		// TypologyEvaluator.main(args);
 		//
 		// NGramEvaluator.main(args);
-
-		new File(Config.get().outputDirectory + "reuters/").mkdirs();
-		outputDirectory = Config.get().outputDirectory + "reuters/";
-		new File(outputDirectory).mkdirs();
-		parsedOutputPath = outputDirectory + "parsed.txt";
-		normalizedOutputPath = outputDirectory + "normalized.txt";
-		if (Config.get().parseData) {
-			ReutersMain.run(Config.get().reutersInputDirectory,
-					parsedOutputPath, normalizedOutputPath);
-		}
-		if (Config.get().sampleSplitData) {
-			splitAndTrain(outputDirectory, normalizedOutputPath);
-		}
 		//
-		// TypologyEvaluator.main(args);
-		//
-		// NGramEvaluator.main(args);
+		// new File(Config.get().outputDirectory + "reuters/").mkdirs();
+		// outputDirectory = Config.get().outputDirectory + "reuters/";
+		// new File(outputDirectory).mkdirs();
+		// parsedOutputPath = outputDirectory + "parsed.txt";
+		// normalizedOutputPath = outputDirectory + "normalized.txt";
+		// if (Config.get().parseData) {
+		// ReutersMain.run(Config.get().reutersInputDirectory,
+		// parsedOutputPath, normalizedOutputPath);
+		// }
+		// if (Config.get().sampleSplitData) {
+		// splitAndTrain(outputDirectory, normalizedOutputPath);
+		// }
+		// //
+		// // TypologyEvaluator.main(args);
+		// //
+		// // NGramEvaluator.main(args);
 
 	}
 
-	public static void splitAndTrain(String outputPath,
-			String normalizedOutputPath) throws IOException {
+	public static void splitAndTrain(String outputPath, String fileToBeSplit)
+			throws IOException {
 		// DATA SPLIT create paths and direcotries for training and test
 		// data
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
-				+ Config.get().splitDataRatio;
+				+ Config.get().splitDataRatio + "Test"
+				+ Config.get().splitTestRatio;
 		String testPath = outputPath + "test" + ratePathSuffix + "/";
 		String trainingPath = outputPath + "training" + ratePathSuffix + "/";
 		String learningPath = outputPath + "learning" + ratePathSuffix + "/";
 		new File(trainingPath).mkdirs();
 		new File(testPath).mkdirs();
+		new File(learningPath).mkdirs();
 
 		String testFile = testPath + "test.file";
 		String trainingFile = trainingPath + "training.file";
 		String learningFile = learningPath + "learning.file";
 
 		if (Config.get().sampleSplitData) {
-			DataSetSplitter.run(normalizedOutputPath, testFile, trainingFile,
+			DataSetSplitter.run(fileToBeSplit, testFile, trainingFile,
 					learningFile);
 		}
 
@@ -122,6 +145,5 @@ public class MixedNGramBuilder {
 		String indexNGrams = trainingPath
 				+ Config.get().nGramsNotAggregatedPath + "Index/";
 		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
-
 	}
 }

@@ -3,19 +3,11 @@ package de.typology.predictors;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.FieldValueFilter;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.util.Version;
 
 import de.typology.interfaces.Searchable;
 import de.typology.utils.Algo;
@@ -23,32 +15,22 @@ import de.typology.utils.Config;
 import de.typology.utils.EvalHelper;
 import de.typology.utils.IOHelper;
 
-public abstract class Searcher implements Searchable {
+public abstract class TreeSearcher implements Searchable {
 
 	// @Override
 	// abstract public HashMap<String, Float> search(String q, String prefix,
 	// String match);
-
-	protected ArrayList<IndexSearcher> index;
-	protected Sort sort;
-	protected QueryParser queryParser;
-	protected FieldValueFilter fieldValueFilter;
 	protected float[][] learningWeights;
 	protected float[][] usedWeights;
 	protected int joinLength;
 	protected int k;
-	protected int N;
+	protected int n;
 
-	public Searcher(int n, int k, int joinLength) {
+	public TreeSearcher(int n, int k, int joinLength) {
 		this.k = k;
-		this.N = n;
+		this.n = n;
 		this.joinLength = joinLength;
-		SortField sortField = new SortField("cnt", SortField.Type.FLOAT, true);
-		this.sort = new Sort(sortField);
-		Analyzer analyzer = new KeywordAnalyzer();
-		this.queryParser = new QueryParser(Version.LUCENE_40, "src", analyzer);
-		this.queryParser.setLowercaseExpandedTerms(false);
-		this.fieldValueFilter = new FieldValueFilter("cnt");
+
 		this.learningWeights = new float[100][Config.get().nGramLength];
 		for (int i = 0; i < 100; i++) {
 			for (int j = 0; j < Config.get().nGramLength; j++) {
@@ -67,7 +49,6 @@ public abstract class Searcher implements Searchable {
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(result,
 				this.k);
-		;
 		int topkCnt = 0;
 
 		for (Float score : topkSuggestions.descendingKeySet()) {
@@ -117,16 +98,16 @@ public abstract class Searcher implements Searchable {
 
 	public void openWeights() {
 		this.usedWeights = new float[100][Config.get().nGramLength];
-		try {
 
-			for (int i = 0; i < 100; i++) {
-				for (int j = 0; j < Config.get().nGramLength; j++) {
-					this.usedWeights[i][j] = 1;
-				}
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < Config.get().nGramLength; j++) {
+				this.usedWeights[i][j] = 1;
 			}
-			BufferedReader br = IOHelper.openReadFile("learntWeights"
-					+ this.getFileName());
-			String line = "";
+		}
+		BufferedReader br = IOHelper.openReadFile("learntWeights"
+				+ this.getFileName());
+		String line = "";
+		try {
 			int i = 0;
 			while ((line = br.readLine()) != null) {
 				String[] values = line.split("\t");
@@ -139,7 +120,7 @@ public abstract class Searcher implements Searchable {
 				}
 				i++;
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -147,7 +128,7 @@ public abstract class Searcher implements Searchable {
 
 	@Override
 	public void setTestParameter(int n, int topK, int joinLength) {
-		this.N = n;
+		this.n = n;
 		this.k = topK;
 		this.joinLength = joinLength;
 	};
@@ -155,7 +136,6 @@ public abstract class Searcher implements Searchable {
 	@Override
 	public void run() {
 		BufferedReader br = IOHelper.openReadFile(Config.get().testingPath);
-		System.out.println(Config.get().testingPath);
 		try {
 			String line = "";
 			long start = System.currentTimeMillis();
@@ -167,16 +147,16 @@ public abstract class Searcher implements Searchable {
 			// + Config.get().splitDataRatio + ".log." + start);
 			IOHelper.setResultFile(this.getFileName());
 			IOHelper.log("!!!!!!!!!! EVAL " + this.getClass().getName()
-					+ " : N = " + this.N);
+					+ " : N = " + this.n);
 			while ((line = br.readLine()) != null) {
 				String[] words = line.split("\\ ");
 
-				if (EvalHelper.badLine(words, this.N)) {
+				if (EvalHelper.badLine(words, this.n)) {
 					continue;
 				}
 
-				String query = this.prepareQuery(words, this.N);
-				String match = QueryParser.escape(words[words.length - 1]);
+				String query = this.prepareQuery(words, this.n);
+				String match = words[words.length - 1];
 
 				IOHelper.logResult(query + "  \tMATCH: " + match);
 				for (int j = 0; j < match.length() - 1; j++) {

@@ -46,8 +46,6 @@ public class LuceneNGramSearcher extends Searcher {
 		}
 	}
 
-	// not sure:<
-
 	// docs at:
 	// http://www.ibm.com/developerworks/library/os-apache-lucenesearch/
 	// http://stackoverflow.com/questions/468405/how-to-incorporate-multiple-fields-in-queryparser
@@ -102,10 +100,14 @@ public class LuceneNGramSearcher extends Searcher {
 					// + " \tPREDICTS: " + key + "\t SCORE: " + value
 					// + res);
 
+					float weight = 1;
+					if (Config.get().useWeights) {
+						weight = this.usedWeights[prefix.length()][i + 1];
+					}
 					if (result.containsKey(key)) {
-						result.put(key, value + result.get(key));
+						result.put(key, weight * value + result.get(key));
 					} else {
-						result.put(key, value);
+						result.put(key, weight * value);
 					}
 				}
 
@@ -121,17 +123,9 @@ public class LuceneNGramSearcher extends Searcher {
 
 	// >
 
-	// TODO: update this! to be correct: see EvalHelper probably good idea a
-	// prepareQuery function in the interface
-	// query format at least
-	// input: w0 w1 w2 w3
-	// output: {"w3", "w2 w3", "w1 w2 w3", "w0 w1 w2 w3"}
-	// private String[] prepareQuery(String q) {
-	// }
-
 	@Override
 	public String getFileName() {
-		String name = "";
+		String name = Config.get().dataSet + "-";
 		if (Config.get().weightedPredictions) {
 			name = name.concat("weighted-");
 		}
@@ -142,6 +136,13 @@ public class LuceneNGramSearcher extends Searcher {
 		return name;
 	}
 
+	// TODO: update this! to be correct: see EvalHelper probably good idea a
+	// prepareQuery function in the interface
+	// query format at least
+	// input: w0 w1 w2 w3
+	// output: {"w3", "w2 w3", "w1 w2 w3", "w0 w1 w2 w3"}
+	// private String[] prepareQuery(String q) {
+	// }
 	public String[] getQueryNGrams(String q) {
 		String[] words = q.split(" ");
 		int l = words.length - 1;

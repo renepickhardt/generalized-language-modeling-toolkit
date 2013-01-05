@@ -25,6 +25,7 @@ public class Config extends Properties {
 	// CONTROLL PARAMETERS
 	public boolean parseData;
 	public boolean sampleSplitData;
+	public boolean useWeights;
 
 	// STEP 0 GLOBAL CONFIGS
 	public boolean loadIndexToRAM;
@@ -103,6 +104,7 @@ public class Config extends Properties {
 	// used in de.typology.utils/LineCounter
 	public String lineCountInput;
 	public String lineCountStats;
+	public String dataSet;
 
 	private static final long serialVersionUID = -4439565094382127683L;
 

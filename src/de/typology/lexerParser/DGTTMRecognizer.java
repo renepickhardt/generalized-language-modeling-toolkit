@@ -54,14 +54,8 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	// Keywords to token mapping
 	private static Map<String, DGTTMToken> keywords;
 	private static Map<String, String> tuvs;
-	static {
-		keywords = new HashMap<String, DGTTMToken>();
-		keywords.put("body", BODY);
-		keywords.put("seg", SEG);
-		keywords.put("/body", CLOSEDBODY);
-		keywords.put("/tuv", CLOSEDTUV);
-		keywords.put("/seg", CLOSEDSEG);
-	}
+
+
 	static {
 		tuvs = new HashMap<String, String>();
 		tuvs.put("EN", "tuv lang=\"EN-GB\"");
@@ -85,6 +79,12 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		keywords=new HashMap<String, DGTTMToken>();
+		keywords.put("body", BODY);
+		keywords.put("seg", SEG);
+		keywords.put("/body", CLOSEDBODY);
+		keywords.put("/tuv", CLOSEDTUV);
+		keywords.put("/seg", CLOSEDSEG);
 		// set language specific header
 		keywords.put(tuvs.get(dgttmLanguage), TUV);
 	}

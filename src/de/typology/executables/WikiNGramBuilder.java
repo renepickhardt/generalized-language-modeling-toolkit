@@ -6,8 +6,6 @@ import java.io.IOException;
 import de.typology.lexerParser.DataSetSplitter;
 import de.typology.lexerParser.WikipediaMain;
 import de.typology.nGramBuilder.NGramBuilder;
-import de.typology.trainers.LuceneNGramIndexer;
-import de.typology.trainers.LuceneTypologyIndexer;
 import de.typology.utils.Config;
 
 public class WikiNGramBuilder {
@@ -56,42 +54,52 @@ public class WikiNGramBuilder {
 		}
 	}
 
-	public static void splitAndTrain(String outputPath,
-			String normalizedOutputPath) throws IOException {
+	/**
+	 * 
+	 * @param outputPath
+	 *            path where splitted files and trained ngrams as well as
+	 *            indices will be stored
+	 * @param fileToBeSplit
+	 *            path and filename of file that needs to be split e.g. parsed
+	 *            rawdata
+	 * @throws IOException
+	 */
+	public static void splitAndTrain(String outputPath, String fileToBeSplit)
+			throws IOException {
 		// DATA SPLIT create paths and direcotries for training and test
 		// data
 		String ratePathSuffix = "Sam" + Config.get().sampleRate + "Split"
-				+ Config.get().splitDataRatio;
+				+ Config.get().splitDataRatio + "Test"
+				+ Config.get().splitTestRatio;
 		String testPath = outputPath + "test" + ratePathSuffix + "/";
 		String trainingPath = outputPath + "training" + ratePathSuffix + "/";
 		String learningPath = outputPath + "learning" + ratePathSuffix + "/";
 		new File(trainingPath).mkdirs();
 		new File(testPath).mkdirs();
-		new File(learningPath).mkdir();
+		new File(learningPath).mkdirs();
 
 		String testFile = testPath + "test.file";
 		String trainingFile = trainingPath + "training.file";
 		String learningFile = learningPath + "learning.file";
 
 		if (Config.get().sampleSplitData) {
-			DataSetSplitter.run(normalizedOutputPath, testFile, trainingFile,
+			DataSetSplitter.run(fileToBeSplit, testFile, trainingFile,
 					learningFile);
-
 		}
 
 		NGramBuilder.run(trainingPath, trainingFile);
 
-		String normalizedEdges = trainingPath
-				+ Config.get().typologyEdgesPathNotAggregated + "Normalized/";
-		String indexEdges = trainingPath
-				+ Config.get().typologyEdgesPathNotAggregated + "Index/";
-		LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
-
-		String normalizedNGrams = trainingPath
-				+ Config.get().nGramsNotAggregatedPath + "Normalized/";
-		String indexNGrams = trainingPath
-				+ Config.get().nGramsNotAggregatedPath + "Index/";
-		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
+		// String normalizedEdges = trainingPath
+		// + Config.get().typologyEdgesPathNotAggregated + "Normalized/";
+		// String indexEdges = trainingPath
+		// + Config.get().typologyEdgesPathNotAggregated + "Index/";
+		// LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
+		//
+		// String normalizedNGrams = trainingPath
+		// + Config.get().nGramsNotAggregatedPath + "Normalized/";
+		// String indexNGrams = trainingPath
+		// + Config.get().nGramsNotAggregatedPath + "Index/";
+		// LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
 	}
 
 }
