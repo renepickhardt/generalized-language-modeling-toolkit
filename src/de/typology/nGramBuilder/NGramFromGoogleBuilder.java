@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import de.typology.stats.NGramDistribution;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -22,14 +21,7 @@ public class NGramFromGoogleBuilder {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		//		Config.get().createNGramChunks=false;
-		//		Config.get().createSecondLevelNGramChunks=false;
-		//		Config.get().aggregateNGramChunks=false;
-
-
-		NGramFromGoogleBuilder.run("/home/martin/out/google/test/","/home/martin/out/google/test/normalized/1/1gram-normalized.txt");
-
-
+		NGramFromGoogleBuilder.run("/home/martin/out/google/ger/","/home/martin/out/google/ger/normalized/1/1gram-normalized.txt");
 	}
 	public static void run(String trainingPath, String trainingFile) throws IOException {
 		long startTime = System.currentTimeMillis();
@@ -86,19 +78,19 @@ public class NGramFromGoogleBuilder {
 				IOHelper.strongLog(sek
 						+ " seconds to: finnish sorting aggregated ngrams");
 			}
-			
+
 			//the ngram counts are to damn high!
 
-//			if (Config.get().generateNGramDistribution) {
-//				NGramDistribution ngd = new NGramDistribution();
-//				ngd.countDistribution(trainingPath
-//						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
-//								+ n + "gs");
-//				endTime = System.currentTimeMillis();
-//				sek = (endTime - startTime) / 1000;
-//				IOHelper.strongLog(sek
-//						+ " seconds to: finnish creating distribution for ngrams");
-//			}
+			//			if (Config.get().generateNGramDistribution) {
+			//				NGramDistribution ngd = new NGramDistribution();
+			//				ngd.countDistribution(trainingPath
+			//						+ Config.get().nGramsNotAggregatedPath + "/" + n, "."
+			//								+ n + "gs");
+			//				endTime = System.currentTimeMillis();
+			//				sek = (endTime - startTime) / 1000;
+			//				IOHelper.strongLog(sek
+			//						+ " seconds to: finnish creating distribution for ngrams");
+			//			}
 
 			new File(trainingPath + Config.get().typologyEdgesPathNotAggregated
 					+ "/" + (n - 1)).mkdirs();
