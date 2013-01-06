@@ -37,13 +37,13 @@ public class TypolgyMySQLSearcher {
 	public static void main(String[] args) {
 		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
 
-		String test = "-";
-		System.out.println(test);
-		System.out.println(test.replaceAll("\\-", "\\\\-"));
-		test = "?";
-		System.out.println(test);
-		System.out.println(test.replaceAll("\\?", "\\\\?"));
-		test = "?";
+		// String test = "-";
+		// System.out.println(test);
+		// System.out.println(test.replaceAll("\\-", "\\\\-"));
+		// test = "?";
+		// System.out.println(test);
+		// System.out.println(test.replaceAll("\\?", "\\\\?"));
+		// test = "?";
 		tmss.run();
 	}
 
@@ -80,7 +80,9 @@ public class TypolgyMySQLSearcher {
 	public void run() {
 		try {
 
-			String testFile = "/var/lib/datasets/out/wikipedia/testGer7095.file";
+			// String testFile =
+			// "/var/lib/datasets/out/wikipedia/testGer7095.file";
+			String testFile = Config.get().testingPath;
 			BufferedReader br = IOHelper.openReadFile(testFile);
 			String line = "";
 			long cnt = 0;

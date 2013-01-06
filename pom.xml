@@ -23,7 +23,7 @@
             <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-                <argLine>-Xmx6024m</argLine>
+                <argLine>-Xmx4024m</argLine>
             </configuration>
         </plugin>
 		</plugins>
