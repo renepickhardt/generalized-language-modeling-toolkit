@@ -255,9 +255,15 @@ public class TypolgyMySQLSearcher {
 		if (!this.tabelNames.contains(tableName)) {
 			tableName = i + "esother";
 		}
-		String query = "select * from " + tableName + " where source =\""
-				+ source + "\" and target like \"" + prefix
-				+ "\" order by score desc limit " + joinLength;
+		String query = "";
+		if (pfl > 0) {
+			query = "select * from " + tableName + " where source =\"" + source
+					+ "\" and target like \"" + prefix
+					+ "\" order by score desc limit " + joinLength;
+		} else {
+			query = "select * from " + tableName + " where source =\"" + source
+					+ "\" order by score desc limit " + joinLength;
+		}
 
 		return query;
 	}

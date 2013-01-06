@@ -1,10 +1,10 @@
-dbUser="setME"
-testName="enwiki55"
+dbUser="importer"
+testName="hybridtypology"
 
 #dbPath="/mnt/vdb/typoeval/mysql/${testName}/" #server
-dbPath /var/lib/mysql/typology/ #local machine
+dbPath=/var/lib/mysql/${testName}/ #local machine
 
-mysql -u ${dbUser} -e "create database ${testName}"
+mysql -u ${dbUser} -e "create database ${testName};"
 
 for file in "$@"
 
@@ -18,8 +18,23 @@ echo $xbase;
 echo $xfext;
 echo $xpref;
 
+
+#create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source(60), score desc);
+#create index ${xfext}${xpref}_1_ix on ${xfext}${xpref} (source(60), target(1), score desc);
+#create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source(60), target(2), score desc);
+#create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source(60), target(3), score desc);
+#create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source(60), target(4), score desc);
+#create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source(60), target(5), score desc);"
+
+
 #create tables and indices
-mysql -u ${dbUser} $testName --local-infile=1 -e "create table ${xfext}${xpref} (source varchar(60),target varchar(60),score float) engine=myisam character set utf8 collate utf8_bin; create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source(60), score desc, target(60));"
+mysql -u ${dbUser} $testName --local-infile=1 -e "create table ${xfext}${xpref} (source varchar(60),target varchar(60),score float) engine=myisam character set utf8 collate utf8_bin;
+create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source(60), score desc);
+create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source(60), target(2));
+create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source(60), target(3));
+create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source(60), target(4));
+create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source(60), target(5));"
+
 
 #disable indices
 myisamchk --keys-used=0 -rq ${dbPath}${xfext}${xpref}
@@ -36,7 +51,7 @@ mysql -u ${dbUser} $testName --local-infile=1 -e "load data local infile '/dev/s
 myisampack ${dbPath}${xfext}${xpref}
 
 #enable index
-myisamchk -rq ${dbPath}${xfext}${xpref} --sort_buffer=3G --sort-index --sort-records=1
+myisamchk -rq ${dbPath}${xfext}${xpref} --sort_buffer=3G #--sort-index --sort-records=1
 
 #and flush index again.
 mysql -u ${dbUser} $testName --local-infile=1 -e "flush tables;"
