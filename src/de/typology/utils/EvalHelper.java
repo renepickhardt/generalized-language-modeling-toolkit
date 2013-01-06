@@ -1,5 +1,7 @@
 package de.typology.utils;
 
+import java.util.Date;
+
 public class EvalHelper {
 
 	public static boolean badLine(String[] words, int n) {
@@ -16,5 +18,31 @@ public class EvalHelper {
 			// }
 		}
 		return false;
+	}
+
+	public static void openAndSetResultLogFile(String type, String weigted,
+			int ModelParameter, int joinLength, int numberOfQueries) {
+		String trainedOnDataSet = "";
+		String trainedOnLang = "";
+		String testedOnDataSet = "";
+		String testedOnLang = "";
+		int Sample = Config.get().sampleRate;
+		int Split = Config.get().splitDataRatio;
+
+		String fileName = "";
+		fileName = fileName + "trainedOn-" + trainedOnDataSet;
+		fileName = fileName + "-" + trainedOnLang;
+		fileName = fileName + "-testedOn-" + testedOnDataSet;
+		fileName = fileName + "-" + testedOnLang;
+		fileName = fileName + "-" + type;
+		fileName = fileName + "-" + weigted;
+		fileName = fileName + "-modelParameter" + ModelParameter;
+		fileName = fileName + "-sam" + Sample;
+		fileName = fileName + "-split" + Split;
+		fileName = fileName + "-joinlength" + joinLength;
+		fileName = fileName + "-nQ" + numberOfQueries;
+		fileName = fileName + ".log";
+		IOHelper.setResultFile(fileName);
+		IOHelper.logResult(new Date(System.currentTimeMillis()));
 	}
 }

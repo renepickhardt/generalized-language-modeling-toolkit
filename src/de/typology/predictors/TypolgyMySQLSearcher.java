@@ -44,14 +44,18 @@ public class TypolgyMySQLSearcher {
 		// System.out.println(test);
 		// System.out.println(test.replaceAll("\\?", "\\\\?"));
 		// test = "?";
-		tmss.run();
+		for (int i = 5; i > 1; i--) {
+			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
+					+ i);
+			tmss.run(i);
+		}
 	}
 
 	public TypolgyMySQLSearcher() {
 		this.user = Config.get().dbUser;
 		this.databaseName = Config.get().dbName;
 
-		this.n = 5;
+		this.n = 3;
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -77,7 +81,8 @@ public class TypolgyMySQLSearcher {
 
 	}
 
-	public void run() {
+	public void run(int n) {
+		this.n = n;
 		try {
 
 			// String testFile =
@@ -87,7 +92,9 @@ public class TypolgyMySQLSearcher {
 			String line = "";
 			long cnt = 0;
 			long start = System.currentTimeMillis();
-			IOHelper.setResultFile("mysql-typo-5-7095.log");
+			// IOHelper.setResultFile("mysql-typo-5-7095.log");
+			EvalHelper.openAndSetResultLogFile("typo", "no", this.n, 10, 10000);
+
 			while ((line = br.readLine()) != null) {
 				/**
 				 * # prepare single queries (log results for learning)
@@ -110,8 +117,11 @@ public class TypolgyMySQLSearcher {
 				String match = words[words.length - 1];
 				// start new experiment with prefixes of various length:
 				IOHelper.logResult(line + "  \t\tMATCH: " + match);
+				int lastRank = Integer.MAX_VALUE;
 				for (int pfl = 0; pfl < match.length(); pfl++) {
 					this.hits = new HashMap<String, Float>();
+
+					// TODO:setLogFile data Array to zero;
 
 					// retrieve lists for every typology edge
 					for (int i = 1; i < this.n; i++) {
@@ -132,24 +142,25 @@ public class TypolgyMySQLSearcher {
 									+ edgeQueryOfTyp[i]);
 							continue;
 						}
-						if (cnt % 999 == 0) {
-							long end = System.currentTimeMillis();
-							System.out.println("queries: " + cnt + " \t time: "
-									+ (end - start) + " \t qps: " + cnt * 1000
-									/ (end - start));
-							System.out.println(line + " \t\tWORD:"
-									+ words[words.length - 1 - i]);
-							this.showResult();
-						}
-						cnt++;
 					}
 					// collected results from all edges now find the topk, log
 					// result and decide if to continue;
-
-					if (1 == this.computeAndLogTop(pfl, match)) {
+					lastRank = this.computeAndLogTop(pfl, match, lastRank);
+					if (1 == lastRank) {
 						break;
 					}
 
+				}
+				cnt++;
+				if (cnt % 999 == 0) {
+					long end = System.currentTimeMillis();
+					System.out.println("queries: " + cnt + " \t time: "
+							+ (end - start) + " \t qps: " + cnt * 1000
+							/ (end - start));
+					this.showResult();
+				}
+				if (cnt > 100000) {
+					return;
 				}
 
 			}
@@ -159,40 +170,49 @@ public class TypolgyMySQLSearcher {
 		}
 	}
 
-	private int computeAndLogTop(int pfl, String match) {
+	private int computeAndLogTop(int pfl, String match, int lastRank) {
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
 				this.hits, 10);
 		int topkCnt = 0;
 
+		// TODO: idea plot KSS distribution as eval
 		for (Float score : topkSuggestions.descendingKeySet()) {
 			for (String suggestion : topkSuggestions.get(score)) {
 				topkCnt++;
 				if (suggestion.equals(match)) {
 					IOHelper.logResult("HIT\tRANK: " + topkCnt
 							+ " \tPREFIXLENGTH: " + pfl + " ");
-					if (topkCnt == 1) {
-						IOHelper.logResult("KSS: " + (match.length() - pfl)
-								+ " ");
+					if (topkCnt < lastRank) {
+						for (int k = Math.min(5, lastRank); k >= topkCnt; k--) {
+							float kss = (float) (match.length() - pfl)
+									/ (float) match.length();
+							IOHelper.logResult("NKSS AT " + k + ": " + kss
+									+ " ");
+							IOHelper.logResult("KSS AT " + k + ": "
+									+ (match.length() - pfl) + " ");
+						}
+						lastRank = topkCnt;
 					}
 					return topkCnt;
 				}
 			}
 		}
 		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + pfl + " ");
-		return -1;
+		return Integer.MAX_VALUE;
 	}
 
 	private void logResult(int edgeTyp, int pfl, String match) {
 		boolean inResults = false;
 		try {
 			float weight = this.getWeight(edgeTyp, pfl);
+
 			while (this.resultSet.next()) {
 				String target = this.resultSet.getString("target");
 				Float score = this.resultSet.getFloat("score");
 				if (target.equals(match)) {
 					inResults = true;
-					// write score to learning file!
+					// TODO: resEdge[edgeTyp] = score;
 				}
 				if (this.hits.containsKey(target)) {
 					this.hits.put(target, this.hits.get(target) + weight
@@ -202,8 +222,9 @@ public class TypolgyMySQLSearcher {
 				}
 			}
 			if (inResults == false) {
-				// write 0 prop to learning file
+				// TODO: resEdge[edgeTyp] = score;
 			}
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
