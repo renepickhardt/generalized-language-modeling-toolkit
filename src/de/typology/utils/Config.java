@@ -23,6 +23,9 @@ import java.util.Properties;
 public class Config extends Properties {
 
 	// CONTROLL PARAMETERS
+	public String dbUser;
+	public String dbName;
+
 	public boolean parseData;
 	public boolean sampleSplitData;
 	public boolean useWeights;
