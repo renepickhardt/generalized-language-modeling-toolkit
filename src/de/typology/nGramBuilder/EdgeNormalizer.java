@@ -15,11 +15,11 @@ public class EdgeNormalizer {
 	private BufferedWriter writer;
 	private String outputPathWithRelType;
 	private ArrayList<File> files;
-	private HashMap<String, Integer> outgoingEdges;
+	private HashMap<String, Long> outgoingEdges;
 
 	private String line;
 	private String[] lineSplit;
-	private int edgeCount;
+	private Long edgeCount;
 
 	/**
 	 * @param args
@@ -28,7 +28,7 @@ public class EdgeNormalizer {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws NumberFormatException,
-			IOException {
+	IOException {
 		EdgeNormalizer ngn = new EdgeNormalizer();
 		IOHelper.strongLog("normalizing edges from " + Config.get().edgeInput
 				+ " and storing updated edges at "
@@ -65,7 +65,7 @@ public class EdgeNormalizer {
 				}
 				// aggregate outgoing edge counts for each node
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
-				this.outgoingEdges = new HashMap<String, Integer>();
+				this.outgoingEdges = new HashMap<String, Long>();
 				while ((this.line = this.reader.readLine()) != null) {
 					// extract information from line
 					// line format: word\tword\t#edgeCount\n
@@ -73,16 +73,15 @@ public class EdgeNormalizer {
 					if (this.lineSplit.length < 3) {
 						continue;
 					}
-					this.edgeCount = Integer
-							.parseInt(this.lineSplit[this.lineSplit.length - 1]
-									.substring(1));
+					this.edgeCount = Long.parseLong(this.lineSplit[this.lineSplit.length - 1]
+							.substring(1));
 					if (!this.outgoingEdges.containsKey(this.lineSplit[0])) {
 						this.outgoingEdges.put(this.lineSplit[0],
 								this.edgeCount);
 					} else {
 						this.outgoingEdges.put(this.lineSplit[0],
 								this.outgoingEdges.get(this.lineSplit[0])
-										+ this.edgeCount);
+								+ this.edgeCount);
 					}
 				}
 				this.reader.close();
@@ -98,9 +97,8 @@ public class EdgeNormalizer {
 					if (this.lineSplit.length < 3) {
 						continue;
 					}
-					this.edgeCount = Integer
-							.parseInt(this.lineSplit[this.lineSplit.length - 1]
-									.substring(1));
+					this.edgeCount = Long.parseLong(this.lineSplit[this.lineSplit.length - 1]
+							.substring(1));
 					if (this.outgoingEdges.containsKey(this.lineSplit[0])) {
 						// write updated edge to new file
 						this.writer.write(this.lineSplit[0] + "\t"

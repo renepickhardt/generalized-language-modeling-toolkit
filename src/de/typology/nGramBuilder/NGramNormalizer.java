@@ -15,12 +15,12 @@ public class NGramNormalizer {
 	private BufferedWriter writer;
 	private String outputPathWithNGramType;
 	private ArrayList<File> files;
-	private HashMap<String, Integer> nMinusOneGrams;
+	private HashMap<String, Long> nMinusOneGrams;
 
 	private String line;
 	private String[] lineSplit;
 	String nMinusOneGram;
-	private int nGramCount;
+	private long nGramCount;
 
 	/**
 	 * @param args
@@ -66,7 +66,7 @@ public class NGramNormalizer {
 				}
 				// aggregate outgoing ngram counts for each node
 				this.reader = IOHelper.openReadFile(file.getAbsolutePath());
-				this.nMinusOneGrams = new HashMap<String, Integer>();
+				this.nMinusOneGrams = new HashMap<String, Long>();
 				while ((this.line = this.reader.readLine()) != null) {
 					// extract information from line
 					// line format: ngram\t#nGramCount\n
