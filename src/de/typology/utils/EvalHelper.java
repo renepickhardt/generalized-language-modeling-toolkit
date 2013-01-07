@@ -9,6 +9,9 @@ public class EvalHelper {
 			return true;
 		}
 		for (int l = 0; l < n; l++) {
+			words[l] = words[l].replaceAll("\\-", "\\\\-");
+			words[l] = words[l].replaceAll("\\_", "\\\\_");
+			words[l] = words[l].replaceAll("\\?", "\\\\?");
 			if (words[l].length() < 1) {
 				return true;
 			}
@@ -22,10 +25,12 @@ public class EvalHelper {
 
 	public static void openAndSetResultLogFile(String type, String weigted,
 			int ModelParameter, int joinLength, int numberOfQueries) {
+		// TODO: pull this data from elsewhere!
 		String trainedOnDataSet = "wiki";
 		String trainedOnLang = "de";
 		String testedOnDataSet = "wiki";
 		String testedOnLang = "de";
+
 		int Sample = Config.get().sampleRate;
 		int Split = Config.get().splitDataRatio;
 

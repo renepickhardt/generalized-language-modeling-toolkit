@@ -4,7 +4,7 @@ testName="hybridngram"
 #dbPath="/mnt/vdb/typoeval/mysql/${testName}/" #server
 dbPath=/var/lib/mysql/${testName}/ #local machine
 
-mysql -u ${dbUser} -e "create database ${testName};"
+#mysql -u ${dbUser} -e "create database ${testName};"
 
 for (( i = 2 ;  i <= 5;  i++  ))
 do
@@ -35,31 +35,31 @@ fi
 if [ $i -eq 3 ];
 then 
 mysql -u ${dbUser} $testName --local-infile=1 -e "create table ${xfext}${xpref} (source1 varchar(60),source2 varchar(60),target varchar(60),score float) engine=myisam character set utf8 collate utf8_bin;
-create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), score desc);
-create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), target(2));
-create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), target(3));
-create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), target(4));
-create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), target(5));"
+create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source1(60), source2(60), score desc);
+create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source1(60), source2(60), target(2));
+create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source1(60), source2(60), target(3));
+create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source1(60), source2(60), target(4));
+create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source1(60), source2(60), target(5));"
 fi
 
 if [ $i -eq 4 ];
 then 
 mysql -u ${dbUser} $testName --local-infile=1 -e "create table ${xfext}${xpref} (source1 varchar(60),source2 varchar(60), source3 varchar(60), target varchar(60),score float) engine=myisam character set utf8 collate utf8_bin;
-create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), score desc);
-create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), target(2));
-create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), target(3));
-create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), target(4));
-create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), target(5));"
+create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), score desc);
+create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), target(2));
+create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), target(3));
+create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), target(4));
+create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), target(5));"
 fi
 
 if [ $i -eq 5 ];
 then 
 mysql -u ${dbUser} $testName --local-infile=1 -e "create table ${xfext}${xpref} (source1 varchar(60),source2 varchar(60), source3 varchar(60), source4 varchar(60), target varchar(60),score float) engine=myisam character set utf8 collate utf8_bin;
-create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60),  source4 varchar(60), score desc);
-create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), source4 varchar(60), target(2));
-create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), source4 varchar(60), target(3));
-create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), source4 varchar(60), target(4));
-create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source1(60), source2 varchar(60), source3 varchar(60), source4 varchar(60), target(5));"
+create index ${xfext}${xpref}_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60),  source4(60), score desc);
+create index ${xfext}${xpref}_2_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), source4(60), target(2));
+create index ${xfext}${xpref}_3_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), source4(60), target(3));
+create index ${xfext}${xpref}_4_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), source4(60), target(4));
+create index ${xfext}${xpref}_5_ix on ${xfext}${xpref} (source1(60), source2(60), source3(60), source4(60), target(5));"
 
 fi
 
@@ -80,7 +80,7 @@ fi
 
 if [ $i -eq 3 ];
 then 
-mysql -u ${dbUser} $testName --local-infile=1 -e "load data local infile '/dev/shm/tmp.typoedges' into table ${xfext}${xpref} fields terminated by '\t' enclosed by '' lines terminated by '\n' (source1, scource2, target, score);"
+mysql -u ${dbUser} $testName --local-infile=1 -e "load data local infile '/dev/shm/tmp.typoedges' into table ${xfext}${xpref} fields terminated by '\t' enclosed by '' lines terminated by '\n' (source1, source2, target, score);"
 fi
 
 if [ $i -eq 4 ];
