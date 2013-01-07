@@ -22,10 +22,10 @@ public class EvalHelper {
 
 	public static void openAndSetResultLogFile(String type, String weigted,
 			int ModelParameter, int joinLength, int numberOfQueries) {
-		String trainedOnDataSet = "";
-		String trainedOnLang = "";
-		String testedOnDataSet = "";
-		String testedOnLang = "";
+		String trainedOnDataSet = "wiki";
+		String trainedOnLang = "de";
+		String testedOnDataSet = "wiki";
+		String testedOnLang = "de";
 		int Sample = Config.get().sampleRate;
 		int Split = Config.get().splitDataRatio;
 

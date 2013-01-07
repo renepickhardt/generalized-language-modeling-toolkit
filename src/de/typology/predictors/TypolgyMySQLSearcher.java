@@ -30,6 +30,9 @@ public class TypolgyMySQLSearcher {
 	private HashMap<String, Float> hits;
 
 	private int n;
+	int joinLength;
+
+	boolean useWeights;
 
 	/**
 	 * @param args
@@ -47,15 +50,17 @@ public class TypolgyMySQLSearcher {
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
 					+ i);
-			tmss.run(i);
+			tmss.run(i, 100000, "no");
 		}
 	}
 
 	public TypolgyMySQLSearcher() {
+		// general:
+		this.n = 5;
+		this.joinLength = 10;
 		this.user = Config.get().dbUser;
 		this.databaseName = Config.get().dbName;
-
-		this.n = 3;
+		this.useWeights = false;
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -78,54 +83,55 @@ public class TypolgyMySQLSearcher {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// typology specific
 
+		// TODO: do I want to create a bunch of prepared statements? (should
+		// really increase runtime)
 	}
 
-	public void run(int n) {
+	public void run(int n, int numberOfQueries, String weights) {
 		this.n = n;
+		if (!weights.equals("no")) {
+			this.useWeights = true;
+		}
 		try {
-
-			// String testFile =
-			// "/var/lib/datasets/out/wikipedia/testGer7095.file";
 			String testFile = Config.get().testingPath;
+			EvalHelper.openAndSetResultLogFile(this.getClass().getName()
+					.replaceAll("MySQLSearcher", "").toLowerCase(), weights,
+					this.n, this.joinLength, numberOfQueries);
+
 			BufferedReader br = IOHelper.openReadFile(testFile);
 			String line = "";
 			long cnt = 0;
 			long start = System.currentTimeMillis();
-			// IOHelper.setResultFile("mysql-typo-5-7095.log");
-			EvalHelper.openAndSetResultLogFile("typo", "no", this.n, 10, 10000);
 
+			// for every line in our test data
 			while ((line = br.readLine()) != null) {
-				/**
-				 * # prepare single queries (log results for learning)
-				 * 
-				 * # merge results from query to get a ranking
-				 * 
-				 * # (apply weights)
-				 * 
-				 * # log results
-				 * 
-				 * # repeat for longer query.
-				 */
-
+				// check if line is suitable to make an experiment
 				String[] words = line.split("\\ ");
 				if (EvalHelper.badLine(words, this.n)) {
 					continue;
 				}
 
+				// create datstructure to hold the mysql query
 				String[] edgeQueryOfTyp = new String[this.n];
 				String match = words[words.length - 1];
+
 				// start new experiment with prefixes of various length:
 				IOHelper.logResult(line + "  \t\tMATCH: " + match);
 				int lastRank = Integer.MAX_VALUE;
 				for (int pfl = 0; pfl < match.length(); pfl++) {
+					// final results will be stored in hits hashmap
 					this.hits = new HashMap<String, Float>();
 
-					// TODO:setLogFile data Array to zero;
+					// if we don't use weights we have to set the array of
+					// scores for HMM learning to 0
+					if (!this.useWeights) {
+						this.resetHMMArray();
+					}
 
-					// retrieve lists for every typology edge
+					// retrieve results lists for every Typology edge
 					for (int i = 1; i < this.n; i++) {
-						// TODO: include joinLength
 						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl);
 						if (edgeQueryOfTyp[i] == null) {
 							continue;
@@ -135,7 +141,7 @@ public class TypolgyMySQLSearcher {
 							this.resultSet = this.statement
 									.executeQuery(edgeQueryOfTyp[i]);
 
-							this.logResult(i, pfl, match);
+							this.logSingleQueryResult(i, pfl, match);
 
 						} catch (Exception e) {
 							System.err.println("error in query: "
@@ -146,6 +152,7 @@ public class TypolgyMySQLSearcher {
 					// collected results from all edges now find the topk, log
 					// result and decide if to continue;
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);
+					// TODO: log pic weights learning method.
 					if (1 == lastRank) {
 						break;
 					}
@@ -157,9 +164,8 @@ public class TypolgyMySQLSearcher {
 					System.out.println("queries: " + cnt + " \t time: "
 							+ (end - start) + " \t qps: " + cnt * 1000
 							/ (end - start));
-					this.showResult();
 				}
-				if (cnt > 100000) {
+				if (cnt > numberOfQueries) {
 					return;
 				}
 
@@ -170,6 +176,23 @@ public class TypolgyMySQLSearcher {
 		}
 	}
 
+	private void resetHMMArray() {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * after all queries have been computed and results are stored in hits
+	 * hashmap this function computes the top k elements
+	 * 
+	 * besides it also logs the results and computes KSS AT K and normalized KSS
+	 * AT K
+	 * 
+	 * @param pfl
+	 * @param match
+	 * @param lastRank
+	 * @return
+	 */
 	private int computeAndLogTop(int pfl, String match, int lastRank) {
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
@@ -194,25 +217,52 @@ public class TypolgyMySQLSearcher {
 						}
 						lastRank = topkCnt;
 					}
+					if (!this.useWeights) {
+						this.updateRankWeights(pfl, 1.0f / topkCnt);
+					}
 					return topkCnt;
 				}
 			}
 		}
 		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + pfl + " ");
+		if (!this.useWeights) {
+			this.updateRankWeights(pfl, 0.0f);
+		}
 		return Integer.MAX_VALUE;
 	}
 
-	private void logResult(int edgeTyp, int pfl, String match) {
+	private void updateRankWeights(int pfl, float mrr) {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * this method addes the results of a single query to the result hashmap
+	 * hits
+	 * 
+	 * it also logs information for HMM weight learning and for renes weight
+	 * learning method
+	 * 
+	 * @param edgeTyp
+	 *            Typ of current query
+	 * @param pfl
+	 *            Prefix length
+	 * @param match
+	 *            correct word that needs to predicted.
+	 */
+	private void logSingleQueryResult(int edgeTyp, int pfl, String match) {
 		boolean inResults = false;
 		try {
 			float weight = this.getWeight(edgeTyp, pfl);
-
 			while (this.resultSet.next()) {
 				String target = this.resultSet.getString("target");
 				Float score = this.resultSet.getFloat("score");
 				if (target.equals(match)) {
 					inResults = true;
 					// TODO: resEdge[edgeTyp] = score;
+					// this.learningWeights[prefix.length()][i + 1] += 1 /
+					// (float) rank;
+
 				}
 				if (this.hits.containsKey(target)) {
 					this.hits.put(target, this.hits.get(target) + weight
@@ -222,7 +272,9 @@ public class TypolgyMySQLSearcher {
 				}
 			}
 			if (inResults == false) {
-				// TODO: resEdge[edgeTyp] = score;
+				// TODO: resEdge[edgeTyp] = 0;
+				// this.learningWeights[prefix.length()][i + 1] += 0;
+
 			}
 
 		} catch (SQLException e) {
@@ -231,37 +283,36 @@ public class TypolgyMySQLSearcher {
 		}
 	}
 
-	// TODO: implement this function
+	/**
+	 * this function can look up and return the weight for a current query
+	 * 
+	 * @param edgeTyp
+	 * @param pfl
+	 * @return
+	 */
 	private float getWeight(int edgeTyp, int pfl) {
-		return (float) 1.0;
-	}
-
-	private void showResult() {
-		try {
-			while (this.resultSet.next()) {
-				String target = this.resultSet.getString("target");
-				Float score = this.resultSet.getFloat("score");
-				System.out.println("t: " + target + " \t s: " + score);
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (!this.useWeights) {
+			return 1.0f;
+		} else {
+			// TODO: implement lookup of HMM or PIC weight lookup
+			// if (){
+			// return 1.0f;
+			// }
+			// else {
+			// return 1.0f;
+			// }
+			return 1.0f;
 		}
-
 	}
 
+	// veryspecific to typology! needs to be exchanged for Language models!
 	private String prepareQuery(String[] words, int i, int pfl) {
-		int joinLength = 10;
 		int l = words.length;
 		String target = words[l - 1];
 		String source = words[l - 1 - i];
 		source.replaceAll("\\-", "\\\\-");
 		source.replaceAll("\\_", "\\\\_");
 		source.replaceAll("\\?", "\\\\?");
-		// if (source.equals("-")) {
-		// System.err.println("deteced hyphen");
-		// return null;
-		// }
 		if (pfl > target.length()) {
 			System.out.println("target: '" + target
 					+ "' to short for prefixlength: " + pfl);
@@ -280,10 +331,10 @@ public class TypolgyMySQLSearcher {
 		if (pfl > 0) {
 			query = "select * from " + tableName + " where source =\"" + source
 					+ "\" and target like \"" + prefix
-					+ "\" order by score desc limit " + joinLength;
+					+ "\" order by score desc limit " + this.joinLength;
 		} else {
 			query = "select * from " + tableName + " where source =\"" + source
-					+ "\" order by score desc limit " + joinLength;
+					+ "\" order by score desc limit " + this.joinLength;
 		}
 
 		return query;
