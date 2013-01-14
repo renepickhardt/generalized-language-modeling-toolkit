@@ -1,6 +1,7 @@
 package de.typology.predictors;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -31,12 +32,13 @@ public abstract class MySQLSearcher {
 
 	protected float[] learnHMMScores;
 	private float[][] learnPicWeights;
-	private int MaxPFL;
+	private float[][] picWeights;
+	private final int MAX_PFL;
 
 	public MySQLSearcher() {
 		super();
 		this.n = 5;
-		this.MaxPFL = 1024;
+		this.MAX_PFL = 1024;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
 		this.databaseName = Config.get().dbName;
@@ -65,22 +67,30 @@ public abstract class MySQLSearcher {
 	public void run(int n, int numberOfQueries, String weights) {
 		this.n = n;
 		this.learnHMMScores = new float[this.n];
-		this.learnPicWeights = new float[this.MaxPFL][this.n];
-		for (int i = 0; i < this.MaxPFL; i++) {
+		this.learnPicWeights = new float[this.MAX_PFL][this.n];
+		for (int i = 0; i < this.MAX_PFL; i++) {
 			for (int j = 0; j < n; j++) {
 				this.learnPicWeights[i][j] = 0.0f;
 			}
 		}
+		String fileName = EvalHelper.gennerateFileName(this.getClass()
+				.getName().replaceAll("de.typology.predictors.", "")
+				.replaceAll("MySQLSearcher", "").toLowerCase(), weights,
+				this.n, this.joinLength, numberOfQueries);
+
+		String testFile = "";
 		if (!weights.equals("no")) {
 			this.useWeights = true;
+			if (weights.equals("pic")) {
+				testFile = Config.get().learningPath;
+				this.openPicWeigths("rawlog/learnPic-" + fileName);
+			}
+		} else {
+			testFile = Config.get().testingPath;
+			this.useWeights = false;
 		}
 		try {
-			String testFile = Config.get().testingPath;
-			EvalHelper.openAndSetResultLogFile(
-					this.getClass().getName()
-							.replaceAll("de.typology.predictors.", "")
-							.replaceAll("MySQLSearcher", "").toLowerCase(),
-					weights, this.n, this.joinLength, numberOfQueries);
+			EvalHelper.openAndSetResultLogFile(fileName);
 
 			BufferedReader br = IOHelper.openReadFile(testFile);
 			String line = "";
@@ -124,6 +134,7 @@ public abstract class MySQLSearcher {
 									.executeQuery(edgeQueryOfTyp[i]);
 
 							this.logSingleQueryResult(i, pfl, match);
+							// this.logSingleQueryWithMultResult(i, pfl, match);
 
 						} catch (Exception e) {
 							System.err.println("error in query: "
@@ -159,9 +170,40 @@ public abstract class MySQLSearcher {
 		}
 	}
 
+	private void openPicWeigths(String fileName) {
+		BufferedReader br = IOHelper
+				.openReadFile(fileName.replace("pic", "no"));
+		String line = "";
+		try {
+			this.picWeights = new float[this.MAX_PFL][this.n];
+			int pfl = 0;
+			while ((line = br.readLine()) != null) {
+				String[] values = line.split("\t");
+				this.picWeights[pfl][0] = 0.0f;
+				float max = 0.0f;
+				for (int i = 1; i < this.n; i++) {
+					this.picWeights[pfl][i] = Float.parseFloat(values[i + 1]);
+					if (this.picWeights[pfl][i] > max) {
+						max = this.picWeights[pfl][i];
+					}
+				}
+				if (max > 0.1f) {
+					for (int i = 1; i < this.n; i++) {
+						this.picWeights[pfl][i] = this.picWeights[pfl][i] / max
+								* 100.0f;
+					}
+				}
+				pfl++;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	private void logPicWeights() {
 		String res = "";
-		for (int i = 0; i < this.MaxPFL; i++) {
+		for (int i = 0; i < this.MAX_PFL; i++) {
 			res = "" + i;
 			for (int j = 0; j < this.n; j++) {
 				res = res + "\t" + this.learnPicWeights[i][j];
@@ -266,8 +308,53 @@ public abstract class MySQLSearcher {
 				if (this.hits.containsKey(target)) {
 					this.hits.put(target, this.hits.get(target) + weight
 							* score);
+
 				} else {
 					this.hits.put(target, weight * score);
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void logSingleQueryWithMultResult(int edgeTyp, int pfl, String match) {
+		try {
+			float weight = this.getWeight(edgeTyp, pfl);
+			HashMap<String, Float> tmp = new HashMap<String, Float>();
+			while (this.resultSet.next()) {
+				String target = this.resultSet.getString("target");
+				Float score = this.resultSet.getFloat("score");
+				// log for weight learning
+				if (target.equals(match)) {
+					this.learnHMMScores[edgeTyp] = score;
+					this.updateRankWeights(pfl, edgeTyp, 1.0f / score);
+				}
+				// if (this.hits.containsKey(target)) {
+				// this.hits.put(target, this.hits.get(target) * weight
+				// * score);
+				//
+				// } else {
+				// this.hits.put(target, weight * score);
+				// }
+
+				if (edgeTyp == 1) {
+					this.hits.put(target, weight * score);
+				}
+				if (edgeTyp > 1) {
+					if (this.hits.containsKey(target)) {
+						tmp.put(target, this.hits.get(target) * weight * score);
+					} else {
+						tmp.put(target, (float) (weight * score * Math.pow(
+								0.00000001, edgeTyp)));
+					}
+				}
+			}
+			if (edgeTyp > 1) {
+				// this.hits = new HashMap<String, Float>();
+				for (String str : tmp.keySet()) {
+					this.hits.put(str, tmp.get(str));
 				}
 			}
 		} catch (SQLException e) {
@@ -294,7 +381,7 @@ public abstract class MySQLSearcher {
 			// else {
 			// return 1.0f;
 			// }
-			return 1.0f;
+			return this.picWeights[pfl][edgeTyp];
 		}
 	}
 

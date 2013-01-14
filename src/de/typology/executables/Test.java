@@ -9,7 +9,7 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		LMMySQLSearcher.main(args);
 		TypolgyMySQLSearcher.main(args);
+		LMMySQLSearcher.main(args);
 	}
 }
