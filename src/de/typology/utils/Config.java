@@ -26,6 +26,11 @@ public class Config extends Properties {
 	public String dbUser;
 	public String dbName;
 
+	public String trainedOnDataSet;
+	public String trainedOnLang;
+	public String testedOnDataSet;
+	public String testedOnLang;
+
 	public boolean parseData;
 	public boolean sampleSplitData;
 	public boolean useWeights;
