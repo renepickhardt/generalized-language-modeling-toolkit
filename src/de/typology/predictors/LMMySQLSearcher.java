@@ -1,6 +1,5 @@
 package de.typology.predictors;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class LMMySQLSearcher extends MySQLSearcher {
@@ -67,7 +66,7 @@ public class LMMySQLSearcher extends MySQLSearcher {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.get().dbName = "hybridngram";
+		// Config.get().dbName = "bigenwiki";
 		LMMySQLSearcher lmss = new LMMySQLSearcher();
 
 		for (int i = 5; i > 1; i--) {

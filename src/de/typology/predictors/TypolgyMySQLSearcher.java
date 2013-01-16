@@ -8,7 +8,7 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.get().dbName = "hybridtypology";
+		Config.get().dbName = "bigenwiki";
 		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "

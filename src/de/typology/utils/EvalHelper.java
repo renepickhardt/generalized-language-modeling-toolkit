@@ -23,13 +23,12 @@ public class EvalHelper {
 		return false;
 	}
 
-	public static void openAndSetResultLogFile(String type, String weigted,
+	public static String gennerateFileName(String type, String weigted,
 			int ModelParameter, int joinLength, int numberOfQueries) {
-		// TODO: pull this data from elsewhere!
-		String trainedOnDataSet = "wiki";
-		String trainedOnLang = "de";
-		String testedOnDataSet = "wiki";
-		String testedOnLang = "de";
+		String trainedOnDataSet = Config.get().trainedOnDataSet;
+		String trainedOnLang = Config.get().trainedOnLang;
+		String testedOnDataSet = Config.get().testedOnDataSet;
+		String testedOnLang = Config.get().testedOnLang;
 
 		int Sample = Config.get().sampleRate;
 		int Split = Config.get().splitDataRatio;
@@ -47,6 +46,11 @@ public class EvalHelper {
 		fileName = fileName + "-joinlength" + joinLength;
 		fileName = fileName + "-nQ" + numberOfQueries;
 		fileName = fileName + ".log";
+		return fileName;
+	}
+
+	public static void openAndSetResultLogFile(String fileName) {
+		// TODO: pull this data from elsewhere!
 		IOHelper.setResultFile(fileName);
 		IOHelper.logResult(new Date(System.currentTimeMillis()));
 	}
