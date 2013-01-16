@@ -42,9 +42,10 @@ public class WikiNGramBuilder {
 						normalizedOutputPath);
 			}
 
-			if (Config.get().sampleSplitData) {
-				splitAndTrain(outputPath, normalizedOutputPath);
-			}
+			//TODO: add if() ...removed it for calculating normalized edges only
+			//if (Config.get().sampleSplitData) {
+			splitAndTrain(outputPath, normalizedOutputPath);
+			//}
 
 			//
 			// TypologyEvaluator.main(args);
