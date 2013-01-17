@@ -31,6 +31,8 @@ public class Config extends Properties {
 	public String testedOnDataSet;
 	public String testedOnLang;
 
+	public String weight;
+
 	public boolean parseData;
 	public boolean sampleSplitData;
 	public boolean useWeights;

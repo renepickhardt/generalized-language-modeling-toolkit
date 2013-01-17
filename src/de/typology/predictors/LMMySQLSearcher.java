@@ -1,5 +1,6 @@
 package de.typology.predictors;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class LMMySQLSearcher extends MySQLSearcher {
@@ -72,7 +73,7 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
 					+ i);
-			lmss.run(i, 100000, "no");
+			lmss.run(i, 100000, Config.get().weight);
 		}
 	}
 
