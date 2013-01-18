@@ -10,7 +10,6 @@ public class ForwardBackward {
 	
 	private int maxProbs = 1000000;
 	
-	private final double smoothing = 0.0000;
 	private final double preSmoothing = 0.001;
 	
 	public ForwardBackward(LogReader reader, int prefixLength) {
@@ -24,18 +23,12 @@ public class ForwardBackward {
 				break;
 			} else {
 				if (entry.length > prefixLength) {
-				// calculate prob sum
-				double sum = 0;
-				for (int j = 0; j < entry[prefixLength].length; j++) {
-					entry[prefixLength][j] += this.preSmoothing;
-					sum += entry[prefixLength][j];
-				}
-				// normalize
-				for (int j = 0; j <entry[prefixLength].length; j++) {
-					entry[prefixLength][j] /= sum;
-				}
-
-				this.emissionProbabilities.add(entry[prefixLength]);
+					// Smooth the probabilities
+					for (int j = 0; j < entry[prefixLength].length; j++) {
+						entry[prefixLength][j] += this.preSmoothing;
+						entry[prefixLength][j] /= (1+2*this.preSmoothing);
+					}
+					this.emissionProbabilities.add(entry[prefixLength]);
 				}
 			}
 		}
@@ -54,7 +47,7 @@ public class ForwardBackward {
 			for (int j = 0; j < fwd[i+1].length; j++) {
 				fwd[i+1][j] = 0; 
 				for (int k = 0; k < fwd[i].length; k++) {
-					fwd[i+1][j] += fwd[i][k] * (this.transitionProbabilities[j]) * (p[j]+this.smoothing);
+					fwd[i+1][j] += fwd[i][k] * (this.transitionProbabilities[j]) * p[j];
 				}
 			}			
 			// calculate prob sum
@@ -79,18 +72,9 @@ public class ForwardBackward {
 			for (int j = 0; j < bwd[i].length; j++) {
 				bwd[i][j] = 0; 
 				for (int k = 0; k < bwd[i+1].length; k++) {
-					bwd[i][j] += (bwd[i+1][k]/sums[i+1]) * (this.transitionProbabilities[j]) * (p[j]+this.smoothing);
+					bwd[i][j] += (bwd[i+1][k]/sums[i+1]) * (this.transitionProbabilities[j]) * p[j];
 				}
 			}			
-//			// calculate prob sum
-//			double sum = 0;
-//			for (int j = 0; j < bwd[i].length; j++) {
-//				sum += bwd[i][j];
-//			}
-//			// normalize
-//			for (int j = 0; j < bwd[i].length; j++) {
-//				bwd[i][j] /= sum;
-//			}
 		}
 		
 		// compute the probability of being in state at given time and the marginal distribution of these probabilities
