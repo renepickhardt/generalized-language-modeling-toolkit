@@ -33,6 +33,7 @@ public abstract class MySQLSearcher {
 	protected float[] learnHMMScores;
 	private float[][] learnPicWeights;
 	private float[][] picWeights;
+	private float[][] HMMWeights;
 	private final int MAX_PFL;
 
 	public MySQLSearcher() {
@@ -68,6 +69,7 @@ public abstract class MySQLSearcher {
 		this.n = n;
 		this.learnHMMScores = new float[this.n];
 		this.learnPicWeights = new float[this.MAX_PFL][this.n];
+		this.HMMWeights = new float[this.MAX_PFL][this.n];
 		for (int i = 0; i < this.MAX_PFL; i++) {
 			for (int j = 0; j < n; j++) {
 				this.learnPicWeights[i][j] = 0.0f;
@@ -81,9 +83,12 @@ public abstract class MySQLSearcher {
 		String testFile = "";
 		if (!weights.equals("no")) {
 			this.useWeights = true;
+			testFile = Config.get().learningPath;
 			if (weights.equals("pic")) {
-				testFile = Config.get().learningPath;
 				this.openPicWeigths("rawlog/learnPic-" + fileName);
+			}
+			if (weights.equals("HMM")) {
+				this.openHMMWeigths("rawlog/HMMWeights-" + fileName);
 			}
 		} else {
 			testFile = Config.get().testingPath;
@@ -165,6 +170,33 @@ public abstract class MySQLSearcher {
 			}
 			this.logPicWeights();
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void openHMMWeigths(String fileName) {
+		BufferedReader br = IOHelper
+				.openReadFile(fileName.replace("pic", "no"));
+		String line = "";
+		try {
+			this.HMMWeights = new float[this.MAX_PFL][this.n];
+			int pfl = 0;
+			while ((line = br.readLine()) != null) {
+				String[] values = line.split("\t");
+				this.HMMWeights[pfl][0] = 0.0f;
+				for (int i = 1; i < this.n; i++) {
+					this.HMMWeights[pfl][i] = Float.parseFloat(values[i + 1]);
+				}
+				pfl++;
+			}
+			while (pfl < this.MAX_PFL) {
+				for (int i = 0; i < this.n; i++) {
+					this.HMMWeights[pfl][i] = 1.0f;
+				}
+				pfl++;
+			}
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -374,14 +406,14 @@ public abstract class MySQLSearcher {
 		if (!this.useWeights) {
 			return 1.0f;
 		} else {
-			// TODO: implement lookup of HMM or PIC weight lookup
-			// if (){
-			// return 1.0f;
-			// }
-			// else {
-			// return 1.0f;
-			// }
-			return this.picWeights[pfl][edgeTyp];
+			if (Config.get().weight.equals("pic")) {
+				return this.picWeights[pfl][edgeTyp];
+			} else if (Config.get().weight.equals("HMM")) {
+				return this.HMMWeights[pfl][edgeTyp];
+			} else {
+				return 1.0f;
+			}
+
 		}
 	}
 
