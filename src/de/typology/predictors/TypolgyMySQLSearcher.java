@@ -46,7 +46,15 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 		}
 		String tableName = i + "es" + source.charAt(0);
 		if (!this.tabelNames.contains(tableName)) {
-			tableName = i + "esother";
+			tableName = i + "n" + source.charAt(0);
+			// really dirty quickfix for bug that table names break op on
+			// import.
+			if (!this.tabelNames.contains(tableName)) {
+				tableName = i + "esother";
+				if (!this.tabelNames.contains(tableName)) {
+					tableName = i + "nother";
+				}
+			}
 		}
 		String query = "";
 		if (pfl > 0) {
