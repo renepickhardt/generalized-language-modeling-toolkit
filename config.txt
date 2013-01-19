@@ -1,0 +1,66 @@
+nGramLength = 5
+DGTTMLanguages = DE,EN,ES,IT,FR
+dgttmInputDirectory = D:/Arbeit/Typology/datasets/JRC-Acquis-2012/unzip/
+enronInputDirectory = D:/Arbeit/Typology/datasets/Enron-Mail/maildir/
+googleInputDirectory  = D:/Arbeit/Typology/datasets/google-ngrams/zip/
+reutersInputDirectory = D:/Arbeit/Typology/datasets/Reuters-CV1-CV2/unzip/
+wikiInputDirectory = D:/Arbeit/Typology/datasets/wikipedia/bz2
+    
+outputDirectory = D:/Arbeit/Typology/out/
+memoryLimitForWritingFiles = 8388608
+
+parseData = true
+sampleSplitData = true
+# 20 means that only 20% of the input data will be thrown away
+sampleRate = 98
+# 90 means that 95% of data will be training data
+splitDataRatio = 10
+splitTestRatio = 50
+
+loadIndexToRAM = true
+weightedPredictions = false
+
+nGramIndexPath = /var/lib/datasets/out/wikipedia/indices/nGramIndexDEGer7095/
+indexPath = /var/lib/datasets/out/wikipedia/indices/typoEdgesDEGer7095/
+
+#hashMapMinSize = 1
+trainingPath = /var/lib/datasets/out/wikipedia/trainingGer7095.file
+testingPath = /var/lib/datasets/out/wikipedia/testGer7095.file
+learningPath = /var/lib/datasets/out/wikipedia/learn7095.file
+
+
+#NgramBuilder FROM trainingsfile
+fileChunkThreashhold = 536870912
+createNGramChunks = true
+createSecondLevelNGramChunks = true
+aggregateNGramChunks = true
+sortNGrams = true
+normalizeNGrams = true
+generateNGramDistribution = true
+createTypologyEdgeChunks = true
+createSecondLevelTypologyEdgeChunks = true
+aggregateTypologyEdgeChunks = true
+sortTypologyEdges = true
+normalizeEdges = true
+generateTypologyEdgeDistribution = true
+nGramKeyFile = keys.txt
+nGramsNotAggregatedPath = nGrams
+nGramsAggregatedPath = aggregatedNGrams
+typologyEdgesPathNotAggregated = typoEdges
+
+
+wikiLinksOutputPath = /var/lib/datasets/out/wikipedia/wikilinks.txt
+wikiLinksHead = ???
+ngramDownloadPath = googlebooks-spa-all-5gram-20090715
+ngramDownloadOutputPath = /var/lib/datasets/out/
+
+
+edgeInput = /var/lib/datasets/out/wikipedia/letteroutputGer7095/aggregated/typoedges/
+normalizedEdges = /var/lib/datasets/out/wikipedia/typoEdgesDENormalizedGer7095/
+nGramsInput = /var/lib/datasets/out/wikipedia/letteroutputGer7095/
+normalizedNGrams = /var/lib/datasets/out/wikipedia/letteroutputGer7095/normalized/
+
+wordCountInput = /var/lib/datasets/out/wikipedia/enwikinormalized.txt
+wordCountStats = /var/lib/datasets/out/stats/wordstats.txt
+lineCountInput = /insert_here
+lineCountStats = /insert_here
