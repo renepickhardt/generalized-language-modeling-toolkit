@@ -13,8 +13,7 @@ public class WeightLearner {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		File baseDir = new File(
-				"/home/rpickhardt/data/source code/git/typology/rawlog/");
+		File baseDir = new File("rawlog/");
 		for (String log : baseDir.list()) {
 			if (log.startsWith("learnHMM-")) {
 				BufferedWriter bw = IOHelper.openWriteFile(baseDir
