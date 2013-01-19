@@ -9,13 +9,13 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 	 */
 	public static void main(String[] args) {
 		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
-		Config.get().weight = "no";
-		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
-					+ i);
-			tmss.run(i, 100000, Config.get().weight);
-		}
-		Config.get().weight = "pic";
+		// Config.get().weight = "no";
+		// for (int i = 5; i > 1; i--) {
+		// IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
+		// + i);
+		// tmss.run(i, 100000, Config.get().weight);
+		// }
+		// Config.get().weight = "pic";
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
 					+ i);

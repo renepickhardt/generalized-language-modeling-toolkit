@@ -176,8 +176,8 @@ public abstract class MySQLSearcher {
 	}
 
 	private void openHMMWeigths(String fileName) {
-		BufferedReader br = IOHelper
-				.openReadFile(fileName.replace("pic", "no"));
+		BufferedReader br = IOHelper.openReadFile(fileName.replace("HMM-",
+				"no-"));
 		String line = "";
 		try {
 			this.HMMWeights = new float[this.MAX_PFL][this.n];
