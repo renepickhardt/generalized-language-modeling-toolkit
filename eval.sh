@@ -24,8 +24,8 @@ SUM=0
 
 #change this if PAK!=5
 #X for accessing arrays with less operations (-1...)
-PARAMETERS=(X 0 0 0 0 0)
-RESULT=(X 0 0 0 0 0)
+PARAMETERS= ( X 0 0 0 0 0 )
+RESULT= ( X 0 0 0 0 0 )
 #read lines and store values into PARAMETERS
 (while read -r line
 do 
@@ -37,7 +37,7 @@ do
 			RESULT[$atk]=$((RESULT[$atk]+PARAMETERS[$atk]))
 			#echo "RESULT[$atk]:${RESULT[$atk]}"
 		done
-		PARAMETERS=(X 0 0 0 0 0 0)
+		PARAMETERS= ( X 0 0 0 0 0 0 )
 	fi
 	for((  atk = 1 ;  atk <= PAK;  atk++  ))
 	do
@@ -72,8 +72,8 @@ SUM=0
 
 #change this if PAK!=5
 #X for accessing arrays with less operations (-1...)
-PARAMETERS=(X 0 0 0 0 0)
-RESULT=(X 0 0 0 0 0)
+PARAMETERS= ( X 0 0 0 0 0 )
+RESULT= ( X 0 0 0 0 0 )
 #read lines and store values into PARAMETERS
 (while read -r line
 do 
@@ -85,7 +85,7 @@ do
 			RESULT[$atk]=`echo ${RESULT[$atk]} + ${PARAMETERS[$atk]} | bc -l`
 			#echo "RESULT[$atk]:${RESULT[$atk]}"
 		done
-		PARAMETERS=(X 0 0 0 0 0)
+		PARAMETERS= ( X 0 0 0 0 0 )
 	fi
 	for((  atk = 1 ;  atk <= PAK;  atk++  ))
 	do
