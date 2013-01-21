@@ -16,7 +16,7 @@ public class WeightLearner {
 	public static void main(String[] args) throws IOException {
 		File baseDir = new File(Config.get().rawLogDir);
 		for (String log : baseDir.list()) {
-			if (log.startsWith("learnHMM-")) {
+			if (log.startsWith("learnHMM-") && log.contains("-no-")) {
 				BufferedWriter bw = IOHelper
 						.openWriteFile(Config.get().rawLogDir
 								+ log.replace("learnHMM", "HMMWeights"));
