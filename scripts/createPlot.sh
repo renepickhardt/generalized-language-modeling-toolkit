@@ -137,6 +137,7 @@ NUMOFPAR=(`echo $nQ | tr '|' ' '`)
 #set regular expression for filtering files and return file name
 REGEX="res.trainedOn-$trainedOnDS-$trainedOnLang-testedOn-$testedOnDS-$testedOnLang-$typ-$weighted-modelParameter$modelParameter-sam$sam-split$split-joinlength$joinlength-nQ$nQ.log"
 NAME=${REGEX//"res."/}
+NAME=${NAME//|/,}
 NAME=${NAME//".log"/}
 NAME=${NAME//".*"/"(all)"}
 
@@ -181,7 +182,6 @@ echo "" | tee -a "$RETURN.plot"
 echo "set output outputName" | tee -a "$RETURN.plot"
 echo "set terminal postscript" | tee -a "$RETURN.plot"
 echo "replot" | tee -a "$RETURN.plot"
-echo "pause -1" | tee -a "$RETURN.plot"
 
 echo "plotted: "$NAME #user information only
 
@@ -194,7 +194,7 @@ PAKFPFL () {
 SUFFIX=".pakfpfl$fixedPFL"
 RETURN=$RETURNDIR$NAME$SUFFIX
 TITLE="precision at k using fixed prefix length=$fixedPFL"
-XLABEL="model length"
+XLABEL="k"
 YLABEL="precision at k"
 #reset old output file
 echo -n "" | tee $RETURN
@@ -270,7 +270,7 @@ KSS () {
 SUFFIX=".kss"
 RETURN=$RETURNDIR$NAME$SUFFIX
 TITLE="average keystroke savings"
-XLABEL="model length"
+XLABEL="k"
 YLABEL="keystroke savings"
 #reset old output file
 echo -n "" | tee $RETURN
@@ -295,7 +295,7 @@ NKSS () {
 SUFFIX=".nkss"
 RETURN=$RETURNDIR$NAME$SUFFIX
 TITLE="average normalized keystroke savings"
-XLABEL="model length"
+XLABEL="k"
 YLABEL="normalized keystroke savings"
 #reset old output file
 echo -n "" | tee $RETURN
