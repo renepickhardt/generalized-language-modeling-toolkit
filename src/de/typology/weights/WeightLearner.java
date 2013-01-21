@@ -23,7 +23,7 @@ public class WeightLearner {
 				File fin = new File(baseDir, log);
 				System.out.println("Learning Weights for: ");
 				System.out.println("\t" + log);
-				for (int prefix = 0; prefix < 10; prefix++) {
+				for (int prefix = 0; prefix < 15; prefix++) {
 					System.out.print(prefix + "\t0.0");
 					bw.write(prefix + "\t0.0");
 					LogReader reader = new LogReader(fin);
