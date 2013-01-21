@@ -112,6 +112,7 @@ public abstract class MySQLSearcher {
 
 				// create datstructure to hold the mysql query
 				String[] edgeQueryOfTyp = new String[this.n];
+				// TODO: replace revert replace hyphon...
 				String match = words[words.length - 1];
 
 				// start new experiment with prefixes of various length:
