@@ -12,10 +12,10 @@
 #prefix length up to PFL
 PFL=5
 #precision at k up to PAK
-PAK=6
+PAK=5
 
 #storage directory for res.*.log files
-LOGDIR="/home/martin/logs/"
+LOGDIR="/home/martin/results/"
 #storage directory for return files
 RETURNDIR="/home/martin/plots/"
 
@@ -161,17 +161,17 @@ echo "set xlabel '$XLABEL'" | tee -a "$RETURN.plot"
 echo "set ylabel '$YLABEL'" | tee -a "$RETURN.plot"
 echo "set title '$TITLE'" | tee -a "$RETURN.plot"
 
-echo "#box format: http://gnuplot.sourceforge.net/demo/fillstyle.html" | tee -a "$RETURN.plot"
-echo "set samples 11" | tee -a "$RETURN.plot"
-echo "set boxwidth 0.5" | tee -a "$RETURN.plot"
+echo "set style data histogram" | tee -a "$RETURN.plot"
+echo "set style histogram cluster gap 1" | tee -a "$RETURN.plot"
 echo "set style fill pattern border" | tee -a "$RETURN.plot"
+echo "set boxwidth 0.8" | tee -a "$RETURN.plot"
 
 echo -n "plot " | tee -a "$RETURN.plot"
 
 for((  i = 0 ;  i < FILECNT;  i++  ))
 do
 	let COLUMN=i+2	
-	echo -n "	source using 1:$COLUMN title '${LABELS[$i]}' with boxes lt -1" | tee -a "$RETURN.plot"
+	echo -n "	source using $COLUMN:xtic(1) title '${LABELS[$i]}' lt -1" | tee -a "$RETURN.plot"
 	if [[ $i -le $FILECNT-2 ]]
 		then	echo ", \\" | tee -a "$RETURN.plot"
 		else	echo "" | tee -a "$RETURN.plot"
@@ -191,8 +191,8 @@ gnuplot $RETURN.plot
 
 #PAK using fixed pfl
 PAKFPFL () {
-PREFIX="pakfpfl$fixedPFL."
-RETURN=$RETURNDIR$PREFIX$NAME
+SUFFIX=".pakfpfl$fixedPFL"
+RETURN=$RETURNDIR$NAME$SUFFIX
 TITLE="precision at k using fixed prefix length=$fixedPFL"
 XLABEL="model length"
 YLABEL="precision at k"
@@ -269,7 +269,7 @@ PLOT
 KSS () {
 SUFFIX=".kss"
 RETURN=$RETURNDIR$NAME$SUFFIX
-TITLE="keystroke savings"
+TITLE="average keystroke savings"
 XLABEL="model length"
 YLABEL="keystroke savings"
 #reset old output file
@@ -294,7 +294,7 @@ PLOT
 NKSS () {
 SUFFIX=".nkss"
 RETURN=$RETURNDIR$NAME$SUFFIX
-TITLE="normalized keystroke savings"
+TITLE="average normalized keystroke savings"
 XLABEL="model length"
 YLABEL="normalized keystroke savings"
 #reset old output file

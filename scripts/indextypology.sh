@@ -6,7 +6,8 @@ dbPath=/var/lib/mysql/${testName}/ #local machine
 
 mysql -u ${dbUser} -e "create database ${testName};"
 
-for file in "$@"
+path="$1*/*"
+for file in $path
 
 do
 xpath=${file%/*} 
