@@ -19,6 +19,7 @@ public class Test {
 	private static void testTypoComplete(String[] args) {
 		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
 		Config.get().weight = "no";
+		Config.get().useWeights = false;
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
 					+ i);
@@ -31,12 +32,14 @@ public class Test {
 			e.printStackTrace();
 		}
 		Config.get().weight = "pic";
+		Config.get().useWeights = true;
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
 					+ i);
 			tmss.run(i, 100000, Config.get().weight);
 		}
 		Config.get().weight = "HMM";
+		Config.get().useWeights = true;
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
 					+ i);
