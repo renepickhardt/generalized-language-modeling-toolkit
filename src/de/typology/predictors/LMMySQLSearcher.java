@@ -59,7 +59,7 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		return query;
 	}
 
-	LMMySQLSearcher() {
+	public LMMySQLSearcher() {
 		super();
 	}
 
@@ -69,16 +69,16 @@ public class LMMySQLSearcher extends MySQLSearcher {
 	public static void main(String[] args) {
 		// Config.get().dbName = "bigenwiki";
 		LMMySQLSearcher lmss = new LMMySQLSearcher();
-//		Config.get().weight = "no";
-//		Config.get().useWeights = false;
-//		for (int i = 5; i > 1; i--) {
-//			IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
-//					+ i);
-//			lmss.run(i, 100000, Config.get().weight);
-//		}
-//
-//		Config.get().weight = "pic";
-//		Config.get().useWeights = true;
+		// Config.get().weight = "no";
+		// Config.get().useWeights = false;
+		// for (int i = 5; i > 1; i--) {
+		// IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
+		// + i);
+		// lmss.run(i, 100000, Config.get().weight);
+		// }
+		//
+		// Config.get().weight = "pic";
+		// Config.get().useWeights = true;
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
 					+ i);
