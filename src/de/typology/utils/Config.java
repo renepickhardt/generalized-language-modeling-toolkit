@@ -25,6 +25,8 @@ public class Config extends Properties {
 	public String dbUser;
 	public String dbName;
 
+	public String rawLogDir;
+
 	public String trainedOnDataSet;
 	public String trainedOnLang;
 	public String testedOnDataSet;

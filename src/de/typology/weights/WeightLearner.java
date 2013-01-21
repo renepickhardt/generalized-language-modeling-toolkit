@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class WeightLearner {
@@ -13,13 +14,12 @@ public class WeightLearner {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		File baseDir = new File("rawlog/");
+		File baseDir = new File(Config.get().rawLogDir);
 		for (String log : baseDir.list()) {
 			if (log.startsWith("learnHMM-")) {
-				BufferedWriter bw = IOHelper.openWriteFile(baseDir
-						.getAbsolutePath()
-						+ "/"
-						+ log.replace("learnHMM", "HMMWeights"));
+				BufferedWriter bw = IOHelper
+						.openWriteFile(Config.get().rawLogDir
+								+ log.replace("learnHMM", "HMMWeights"));
 				File fin = new File(baseDir, log);
 				System.out.println("Learning Weights for: ");
 				System.out.println("\t" + log);
