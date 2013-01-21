@@ -13,7 +13,25 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		testTypoComplete(args);
+		testTypoOnlyWeights(args);
+	}
+
+	private static void testTypoOnlyWeights(String[] args) {
+		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
+		Config.get().weight = "pic";
+		Config.get().useWeights = true;
+		for (int i = 5; i > 1; i--) {
+			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
+					+ i);
+			tmss.run(i, 100000, Config.get().weight);
+		}
+		Config.get().weight = "HMM";
+		Config.get().useWeights = true;
+		for (int i = 5; i > 1; i--) {
+			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
+					+ i);
+			tmss.run(i, 100000, Config.get().weight);
+		}
 	}
 
 	private static void testTypoComplete(String[] args) {
@@ -30,20 +48,6 @@ public class Test {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		Config.get().weight = "pic";
-		Config.get().useWeights = true;
-		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
-					+ i);
-			tmss.run(i, 100000, Config.get().weight);
-		}
-		Config.get().weight = "HMM";
-		Config.get().useWeights = true;
-		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
-					+ i);
-			tmss.run(i, 100000, Config.get().weight);
 		}
 	}
 }
