@@ -14,11 +14,22 @@ public class Test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		frTestWikiOnGoogleComplete(args);
+		// frTestWikiOnGoogleComplete(args);
+		String[] array = { "es" };
+		dgttmComplete(array);
+		String[] brray = { "fr" };
+		dgttmComplete(brray);
+		String[] crray = { "it" };
+		dgttmComplete(crray);
+
 	}
 
 	private static void dgttmComplete(String[] args) {
 		String lang = args[0];
+		Config.get().trainedOnDataSet = "dgttm";
+		Config.get().testedOnDataSet = "dgttm";
+		Config.get().trainedOnLang = lang;
+		Config.get().testedOnLang = lang;
 		Config.get().learningPath = "/home/rpickhardt/out/dgttm/" + lang
 				+ "/learningSam0Split95Test50/learning.file";
 		Config.get().testingPath = "/home/rpickhardt/out/dgttm/" + lang
