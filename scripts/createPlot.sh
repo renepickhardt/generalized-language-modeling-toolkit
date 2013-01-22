@@ -15,9 +15,9 @@ PFL=5
 PAK=5
 
 #storage directory for res.*.log files
-LOGDIR="/home/martin/results/"
+LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
 #storage directory for return files
-RETURNDIR="/home/martin/plots/"
+RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
 
 #format for PARAMETERS:
 #	0		1	2		3	4		5	6	7	8				9	10		11		12		
