@@ -3,12 +3,9 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.evaluation.NGramEvaluator;
 import de.typology.lexerParser.DataSetSplitter;
 import de.typology.lexerParser.EnronMain;
 import de.typology.nGramBuilder.NGramBuilder;
-import de.typology.trainers.LuceneNGramIndexer;
-import de.typology.trainers.LuceneTypologyIndexer;
 import de.typology.utils.Config;
 
 public class MixedNGramBuilder {
@@ -67,10 +64,10 @@ public class MixedNGramBuilder {
 
 			// TypologyEvaluator.main(args);
 
-			Config.get().indexPath = outputPath + "training" + prefix
-					+ "/nGramsIndex/";
-
-			NGramEvaluator.main(args);
+			//			Config.get().indexPath = outputPath + "training" + prefix
+			//					+ "/nGramsIndex/";
+			//
+			//			NGramEvaluator.main(args);
 		}
 
 		new File(Config.get().outputDirectory + "enron/").mkdirs();
@@ -134,16 +131,16 @@ public class MixedNGramBuilder {
 
 		NGramBuilder.run(trainingPath, trainingFile);
 
-		String normalizedEdges = trainingPath
-				+ Config.get().typologyEdgesPathNotAggregated + "Normalized/";
-		String indexEdges = trainingPath
-				+ Config.get().typologyEdgesPathNotAggregated + "Index/";
-		LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
-
-		String normalizedNGrams = trainingPath
-				+ Config.get().nGramsNotAggregatedPath + "Normalized/";
-		String indexNGrams = trainingPath
-				+ Config.get().nGramsNotAggregatedPath + "Index/";
-		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
+		//		String normalizedEdges = trainingPath
+		//				+ Config.get().typologyEdgesPathNotAggregated + "Normalized/";
+		//		String indexEdges = trainingPath
+		//				+ Config.get().typologyEdgesPathNotAggregated + "Index/";
+		//		LuceneTypologyIndexer.run(normalizedEdges, indexEdges);
+		//
+		//		String normalizedNGrams = trainingPath
+		//				+ Config.get().nGramsNotAggregatedPath + "Normalized/";
+		//		String indexNGrams = trainingPath
+		//				+ Config.get().nGramsNotAggregatedPath + "Index/";
+		//		LuceneNGramIndexer.run(normalizedNGrams, indexNGrams);
 	}
 }
