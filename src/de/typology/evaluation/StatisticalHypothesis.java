@@ -40,7 +40,11 @@ public class StatisticalHypothesis {
 			}
 		}
 		for(String file:files){
-			getStatisticalHypothesis(path,file.replace("-lm-", "-typolgy-"), file);
+			if(new File(path+file.replace("-lm-", "-typolgy-")).exists()) {
+				getStatisticalHypothesis(path,file.replace("-lm-", "-typolgy-"), file);
+			}else{
+				IOHelper.strongLog("coudn't find: "+file.replace("-lm-", "-typolgy-"));
+			}
 		}
 	}
 
