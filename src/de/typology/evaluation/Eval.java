@@ -46,9 +46,9 @@ public class Eval {
 
 						for(int k=1;k<6;k++){
 							resultDouble[k]+=parametersDouble[k];
-							System.out.print(parametersDouble[k]+" ");
+							//	System.out.print(parametersDouble[k]+" ");
 						}
-						System.out.println();
+						//System.out.println();
 						for(int i=1;i<parametersDouble.length;i++){
 							parametersDouble[i]=0.0;
 						}
@@ -69,9 +69,9 @@ public class Eval {
 				results.add(parametersDouble.clone());
 				for(int k=1;k<6;k++){
 					resultDouble[k]+=parametersDouble[k];
-					System.out.print(parametersDouble[k]);
+					//	System.out.print(parametersDouble[k]);
 				}
-				System.out.println();
+				//	System.out.println();
 				//print NKSS to res.
 				for(int k=1;k<6;k++){
 					System.out.println("NKSS at k="+k+": "+resultDouble[k]/matchCount);
