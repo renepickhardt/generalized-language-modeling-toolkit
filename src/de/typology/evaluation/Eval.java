@@ -166,7 +166,7 @@ public class Eval {
 				}
 				//System.out.println();
 				for(int k=1;k<6;k++){
-					//	System.out.println("KSS at k="+k+": "+resultLong[k]+"/"+matchCount+"="+(double)resultLong[k]/matchCount);
+					System.out.println("KSS at k="+k+": "+resultLong[k]+"/"+matchCount+"="+(double)resultLong[k]/matchCount);
 					writer.write("KSS at k="+k+": "+(double)resultLong[k]/matchCount+"\n");
 				}
 
@@ -216,7 +216,7 @@ public class Eval {
 				}
 				//print standard deviation to stdev.
 				for(int k=1;k<6;k++){
-					//	System.out.println("Standard deviation for KSS at k="+k+": "+stDev2[k]);
+					System.out.println("Standard deviation for KSS at k="+k+": "+stDev2[k]);
 					writer.write("Standard deviation for KSS  at k="+k+": "+stDev2[k]+"\n");
 				}
 
