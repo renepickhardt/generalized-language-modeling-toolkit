@@ -52,6 +52,8 @@ public class StatisticalHypothesis {
 		BufferedReader reader1;
 		BufferedReader reader2;
 		BufferedWriter[]writers=new BufferedWriter[6];
+		BufferedWriter[]nkssWriters1=new BufferedWriter[6];
+		BufferedWriter[]nkssWriters2=new BufferedWriter[6];
 
 
 		//statistical hypothesis testing
@@ -62,8 +64,12 @@ public class StatisticalHypothesis {
 		//initialze writers
 		File sthyDir=new File(path+"sthy/");
 		sthyDir.mkdirs();
+		File nkss=new File(path+"nkss/");
+		nkss.mkdirs();
 		for(int i=1;i<writers.length;i++){
-			writers[i]= IOHelper.openWriteFile(path+"sthy/"+"sthy."+file1+".minus."+file2+".nkss"+i, 32 * 1024 * 1024);
+			writers[i]= IOHelper.openWriteFile(path+"sthy/"+"sthy."+file1+".minus."+file2+".nkss"+i, 8 * 1024 * 1024);
+			nkssWriters1[i]= IOHelper.openWriteFile(path+"nkss/"+file1+".nkss"+i, 8 * 1024 * 1024);
+			nkssWriters2[i]= IOHelper.openWriteFile(path+"nkss/"+file2+".nkss"+i, 8 * 1024 * 1024);
 		}
 		reader1 = IOHelper.openReadFile(path+file1);
 		reader2 = IOHelper.openReadFile(path+file2);
@@ -88,6 +94,8 @@ public class StatisticalHypothesis {
 							for(int i=1;i<parametersDouble1.length;i++){
 								//writers[i].write(parametersDouble1[i]+"-"+parametersDouble2[i]+"=");
 								writers[i].write(parametersDouble1[i]-parametersDouble2[i]+"\n");
+								nkssWriters1[i].write(parametersDouble1[i]+"\n");
+								nkssWriters2[i].write(parametersDouble2[i]+"\n");
 								//reset parameters
 								parametersDouble1[i]=0.0;
 								parametersDouble2[i]=0.0;
@@ -143,12 +151,18 @@ public class StatisticalHypothesis {
 		if(matchCount1==matchCount2){
 			for(int i=1;i<parametersDouble1.length;i++){
 				writers[i].write(parametersDouble1[i]-parametersDouble2[i]+"\n");
+				nkssWriters1[i].write(parametersDouble1[i]+"\n");
+				nkssWriters2[i].write(parametersDouble2[i]+"\n");
 			}
 		}else{
 			IOHelper.strongLog("matchCount1: "+matchCount1+" != matchCount2: "+matchCount2);
 		}
 		IOHelper.strongLog("evaluation done");
 		for(int i=1;i<writers.length;i++){
+			nkssWriters1[i].flush();
+			nkssWriters1[i].close();
+			nkssWriters2[i].flush();
+			nkssWriters2[i].close();
 			writers[i].flush();
 			writers[i].close();
 		}
