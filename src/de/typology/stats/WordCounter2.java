@@ -51,7 +51,7 @@ public class WordCounter2 {
 			System.out.println("time in sek: "+sek);
 		}
 		for(int i=97;i<123;i++){
-			System.out.println("start counting");
+			System.out.println("start counting "+(char)i);
 			wC.countWords(i,Config.get().wordCountInput);
 			//			System.out.println("counting done, start sorting");
 			//			wC.sortWordMap();
