@@ -9,6 +9,8 @@
 #e.g.:
 #trainedOnDS=wiki trainedOnLang=de testedOnDS=wiki testedOnLang=de typ=typolgy,lm weighted=no modelParameter=2,5 sam=0 split=95 joinlength=10 nQ=100000 metrics=KSS ./createPlot.sh
 
+#trainedOnDS=wiki trainedOnLang=de testedOnDS=wiki testedOnLang=de typ=typolgy,lm weighted=no modelParameter=2,5 sam=0 split=95 joinlength=10 nQ=100000 fixedk=2 metrics=NKSSFIXEDK ./createPlot.sh
+
 #prefix length up to PFL
 PFL=5
 #precision at k up to PAK
@@ -139,7 +141,7 @@ NUMOFPAR=(`echo $nQ | tr '|' ' '`)
 #set regular expression for filtering files and return file name
 REGEX="res.trainedOn-$trainedOnDS-$trainedOnLang-testedOn-$testedOnDS-$testedOnLang-$typ-$weighted-modelParameter$modelParameter-sam$sam-split$split-joinlength$joinlength-nQ$nQ.log"
 NAME=${REGEX//"res."/}
-NAME=${NAME//|/_}
+NAME=${NAME//|/-}
 NAME=${NAME//(/}
 NAME=${NAME//)/}
 NAME=${NAME//".log"/}
@@ -320,6 +322,40 @@ done
 PLOT
 }
 
+NKSSFIXEDK () {
+SUFFIX=".nkssfk$fixedK"
+RETURN=$RETURNDIR$NAME$SUFFIX
+TITLE="average normalized keystroke savings using fixed k=$fixedK"
+XLABEL="model length"
+YLABEL="normalized keystroke savings"
+#reset old output file
+echo -n "" | tee $RETURN
+echo "retrieves NKSS"
+for((  modelLength = 2 ;  modelLength <= 5;  modelLength++  ))
+do
+echo -n $modelLength" " | tee -a $RETURN
+for FILE in ${HITS[@]}
+do
+	TEMPFILE=${FILE/*modelParameter/}
+	TEMPFILE=${TEMPFILE/-*/}
+	# write prefixes
+	echo $TEMPFILE
+	if [[ $TEMPFILE == $modelLength ]]
+	then
+		CNT=`grep "NKSS at k=$fixedK" $FILE`
+		echo
+		CNT=${CNT[0]//NKSS at k=$fixedK: /}
+		echo -n $CNT" " | tee -a $RETURN
+	else
+		echo -n 0.0" " | tee -a $RETURN
+	fi
+done
+echo "" | tee -a $RETURN
+done
+PLOT
+}
+
+
 FILES=()
 #adding .log-files to FILES
 for FILE in $LOGDIR*.log
@@ -370,10 +406,12 @@ fi
 #either k or pfl have to be defined when using PAK
 if [[ ${#fixedK} == 0 && ${#fixedPFL} == 0 && "$metrics" == *PAK* ]]
 	then echo "either set value for fixedK or fixedPFL for using PAK"
+	exit
 fi
 
 if [[ ${#fixedK} != 0 && ${#fixedPFL} != 0 && "$metrics" == *PAK* ]]
 	then echo "either set value for fixedK or fixedPFL for using PAK"
+	exit
 fi
 
 #matching metrics
@@ -393,7 +431,10 @@ if [[ "$metrics" == *[^N]KSS* || "$metrics" == KSS* ]]
 	then KSS
 fi
 
-if [[ "$metrics" == *NKSS* ]]
-	then NKSS
+if [[ "$metrics" == *NKSS* && ${#fixedK} != 0 ]]
+	then NKSSFIXEDK
 fi
 
+if [[ "$metrics" == *NKSS* && ${#fixedK} == 0 ]]
+	then NKSS
+fi
