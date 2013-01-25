@@ -139,7 +139,7 @@ NUMOFPAR=(`echo $nQ | tr '|' ' '`)
 #set regular expression for filtering files and return file name
 REGEX="res.trainedOn-$trainedOnDS-$trainedOnLang-testedOn-$testedOnDS-$testedOnLang-$typ-$weighted-modelParameter$modelParameter-sam$sam-split$split-joinlength$joinlength-nQ$nQ.log"
 NAME=${REGEX//"res."/}
-NAME=${NAME//|/-}
+NAME=${NAME//|/_}
 NAME=${NAME//(/}
 NAME=${NAME//)/}
 NAME=${NAME//".log"/}
