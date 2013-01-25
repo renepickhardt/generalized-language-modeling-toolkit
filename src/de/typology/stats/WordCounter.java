@@ -34,12 +34,12 @@ public class WordCounter {
 		long startTime = System.currentTimeMillis();
 		long endTime = 0;
 		long sek = 0;
-		String filePathCut = Config.get().wordCountInput.substring(0,
-				Config.get().wordCountInput.length() - 4);
+
+		String filePathCut = new File(Config.get().wordCountInput).getParent();
 
 		WordCounter wC = new WordCounter(Config.get().wordCountInput,
 				filePathCut + "words.txt", filePathCut
-						+ "wordsdistribution.txt", Config.get().wordCountStats);
+				+ "wordsdistribution.txt", Config.get().wordCountStats);
 		System.out.println(Config.get().wordCountInput + ": ");
 		System.out.println("start counting");
 		wC.countWords();
@@ -56,7 +56,7 @@ public class WordCounter {
 
 	public WordCounter(String input, String wordsOutput,
 			String wordsDistributionOutput, String statsOutput)
-			throws IOException {
+					throws IOException {
 		this.reader = IOHelper.openReadFile(input);
 		this.wordsWriter = IOHelper.openWriteFile(wordsOutput);
 		this.wordsDistributionWriter = IOHelper
