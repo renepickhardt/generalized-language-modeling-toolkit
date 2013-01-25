@@ -79,51 +79,51 @@ public class Eval {
 				}
 
 
-				//calculate standard deviation:
-				Double[] stDevPowTwo={0.0,0.0,0.0,0.0,0.0,0.0};
-				Double[] arithMean={0.0,0.0,0.0,0.0,0.0,0.0};
-				int[] cntNotZero={0,0,0,0,0,0};
-				//count entries that are not zero
-				for(Double[] result:results) {
-					for(int k=1;k<6;k++){
-						if(result[k]>0.0){
-							cntNotZero[k]+=1;
-						}
-
-					}
-				}
-				//calculate arithmetic mean
-				for(Double[] result:results) {
-					for(int k=1;k<6;k++){
-						arithMean[k]+=result[k];
-					}
-				}
-				for(int k=1;k<6;k++){
-					arithMean[k]/=cntNotZero[k];
-				}
-
-				//calculate numerator
-				for(Double[] result:results) {
-					for(int k=1;k<6;k++){
-						if(result[k]>0.0){
-							stDevPowTwo[k]+=Math.pow(result[k]-arithMean[k], 2);
-						}
-					}
-				}
-				//divide by count
-				for(int k=1;k<6;k++){
-					stDevPowTwo[k]=stDevPowTwo[k]/=cntNotZero[k];
-				}
-				//calculate square root
-				Double[] stDev=new Double[6];
-				for(int k=1;k<6;k++){
-					stDev[k]=Math.sqrt(stDevPowTwo[k]);
-				}
-				//print standard deviation to stdev.
-				for(int k=1;k<6;k++){
-					System.out.println("Standard deviation for NKSS at k="+k+": "+stDev[k]);
-					writer.write("Standard deviation for NKSS  at k="+k+": "+stDev[k]+"\n");
-				}
+				//				//calculate standard deviation:
+				//				Double[] stDevPowTwo={0.0,0.0,0.0,0.0,0.0,0.0};
+				//				Double[] arithMean={0.0,0.0,0.0,0.0,0.0,0.0};
+				//				int[] cntNotZero={0,0,0,0,0,0};
+				//				//count entries that are not zero
+				//				for(Double[] result:results) {
+				//					for(int k=1;k<6;k++){
+				//						if(result[k]>0.0){
+				//							cntNotZero[k]+=1;
+				//						}
+				//
+				//					}
+				//				}
+				//				//calculate arithmetic mean
+				//				for(Double[] result:results) {
+				//					for(int k=1;k<6;k++){
+				//						arithMean[k]+=result[k];
+				//					}
+				//				}
+				//				for(int k=1;k<6;k++){
+				//					arithMean[k]/=cntNotZero[k];
+				//				}
+				//
+				//				//calculate numerator
+				//				for(Double[] result:results) {
+				//					for(int k=1;k<6;k++){
+				//						if(result[k]>0.0){
+				//							stDevPowTwo[k]+=Math.pow(result[k]-arithMean[k], 2);
+				//						}
+				//					}
+				//				}
+				//				//divide by count
+				//				for(int k=1;k<6;k++){
+				//					stDevPowTwo[k]=stDevPowTwo[k]/=cntNotZero[k];
+				//				}
+				//				//calculate square root
+				//				Double[] stDev=new Double[6];
+				//				for(int k=1;k<6;k++){
+				//					stDev[k]=Math.sqrt(stDevPowTwo[k]);
+				//				}
+				//				//print standard deviation to stdev.
+				//				for(int k=1;k<6;k++){
+				//					System.out.println("Standard deviation for NKSS at k="+k+": "+stDev[k]);
+				//					writer.write("Standard deviation for NKSS  at k="+k+": "+stDev[k]+"\n");
+				//				}
 
 				reader.close();
 
@@ -170,55 +170,55 @@ public class Eval {
 					writer.write("KSS at k="+k+": "+(double)resultLong[k]/matchCount+"\n");
 				}
 
-				//calculate standard deviation:
-				Double[] stDevPowTwo2={0.0,0.0,0.0,0.0,0.0,0.0};
-				Double[] arithMean2={0.0,0.0,0.0,0.0,0.0,0.0};
-				int[] cntNotZero2={0,0,0,0,0,0};
-				//count entries that are not zero
-				for(Long[] result:resultsLong) {
-					for(int k=1;k<6;k++){
-						if(result[k]>0.0){
-							cntNotZero2[k]+=1;
-						}
-
-					}
-				}
-				//calculate arithmetic mean
-				for(Long[] result:resultsLong) {
-					for(int k=1;k<6;k++){
-						arithMean2[k]+=result[k];
-					}
-				}
-				for(int k=1;k<6;k++){
-					//System.out.println(arithMean2[k]+"/="+cntNotZero2[k]+"="+(arithMean2[k]/=cntNotZero2[k]));
-					arithMean2[k]/=cntNotZero2[k];
-				}
-
-				//calculate numerator
-				for(Long[] result:resultsLong) {
-					for(int k=1;k<6;k++){
-						if(result[k]>0.0){
-							//	System.out.println(k+"=("+result[k]+"-"+arithMean2[k]+")²="+Math.pow(result[k]-arithMean2[k],2));
-							stDevPowTwo2[k]+=Math.pow(result[k]-arithMean2[k], 2);
-						}
-					}
-				}
-				//divide by count
-				for(int k=1;k<6;k++){
-					//	System.out.println(stDevPowTwo2[k]+"/="+cntNotZero2[k]+"="+stDevPowTwo2[k]/cntNotZero2[k]);
-					stDevPowTwo2[k]=stDevPowTwo2[k]/=cntNotZero2[k];
-				}
-				//calculate square root
-				Double[] stDev2=new Double[6];
-				for(int k=1;k<6;k++){
-					//	System.out.println(k+"=sqrt("+stDevPowTwo2[k]+")="+Math.sqrt(stDevPowTwo2[k]));
-					stDev2[k]=Math.sqrt(stDevPowTwo2[k]);
-				}
-				//print standard deviation to stdev.
-				for(int k=1;k<6;k++){
-					System.out.println("Standard deviation for KSS at k="+k+": "+stDev2[k]);
-					writer.write("Standard deviation for KSS  at k="+k+": "+stDev2[k]+"\n");
-				}
+				//				//calculate standard deviation:
+				//				Double[] stDevPowTwo2={0.0,0.0,0.0,0.0,0.0,0.0};
+				//				Double[] arithMean2={0.0,0.0,0.0,0.0,0.0,0.0};
+				//				int[] cntNotZero2={0,0,0,0,0,0};
+				//				//count entries that are not zero
+				//				for(Long[] result:resultsLong) {
+				//					for(int k=1;k<6;k++){
+				//						if(result[k]>0.0){
+				//							cntNotZero2[k]+=1;
+				//						}
+				//
+				//					}
+				//				}
+				//				//calculate arithmetic mean
+				//				for(Long[] result:resultsLong) {
+				//					for(int k=1;k<6;k++){
+				//						arithMean2[k]+=result[k];
+				//					}
+				//				}
+				//				for(int k=1;k<6;k++){
+				//					//System.out.println(arithMean2[k]+"/="+cntNotZero2[k]+"="+(arithMean2[k]/=cntNotZero2[k]));
+				//					arithMean2[k]/=cntNotZero2[k];
+				//				}
+				//
+				//				//calculate numerator
+				//				for(Long[] result:resultsLong) {
+				//					for(int k=1;k<6;k++){
+				//						if(result[k]>0.0){
+				//							//	System.out.println(k+"=("+result[k]+"-"+arithMean2[k]+")²="+Math.pow(result[k]-arithMean2[k],2));
+				//							stDevPowTwo2[k]+=Math.pow(result[k]-arithMean2[k], 2);
+				//						}
+				//					}
+				//				}
+				//				//divide by count
+				//				for(int k=1;k<6;k++){
+				//					//	System.out.println(stDevPowTwo2[k]+"/="+cntNotZero2[k]+"="+stDevPowTwo2[k]/cntNotZero2[k]);
+				//					stDevPowTwo2[k]=stDevPowTwo2[k]/=cntNotZero2[k];
+				//				}
+				//				//calculate square root
+				//				Double[] stDev2=new Double[6];
+				//				for(int k=1;k<6;k++){
+				//					//	System.out.println(k+"=sqrt("+stDevPowTwo2[k]+")="+Math.sqrt(stDevPowTwo2[k]));
+				//					stDev2[k]=Math.sqrt(stDevPowTwo2[k]);
+				//				}
+				//				//print standard deviation to stdev.
+				//				for(int k=1;k<6;k++){
+				//					System.out.println("Standard deviation for KSS at k="+k+": "+stDev2[k]);
+				//					writer.write("Standard deviation for KSS  at k="+k+": "+stDev2[k]+"\n");
+				//				}
 
 
 				reader.close();
