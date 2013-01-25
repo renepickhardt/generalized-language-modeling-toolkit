@@ -7,7 +7,7 @@
 #leaving out a parameter --> wildcard
 
 #e.g.:
-#trainedOnDS=wiki trainedOnLang=de testedOnDS=wiki testedOnLang=de typ=typology,lm weighted=no modelParameter=2,5 sam=70 split=95 joinlength=10 nQ=100000 metrics=KSS ./createPlot.sh
+#trainedOnDS=wiki trainedOnLang=de testedOnDS=wiki testedOnLang=de typ=typolgy,lm weighted=no modelParameter=2,5 sam=0 split=95 joinlength=10 nQ=100000 metrics=KSS ./createPlot.sh
 
 #prefix length up to PFL
 PFL=5
@@ -16,8 +16,10 @@ PAK=5
 
 #storage directory for res.*.log files
 LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
+#LOGDIR="/home/martin/results/"
 #storage directory for return files
 RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
+#RETURNDIR="/home/martin/plots/"
 
 #format for PARAMETERS:
 #	0		1	2		3	4		5	6	7	8				9	10		11		12		
@@ -137,7 +139,9 @@ NUMOFPAR=(`echo $nQ | tr '|' ' '`)
 #set regular expression for filtering files and return file name
 REGEX="res.trainedOn-$trainedOnDS-$trainedOnLang-testedOn-$testedOnDS-$testedOnLang-$typ-$weighted-modelParameter$modelParameter-sam$sam-split$split-joinlength$joinlength-nQ$nQ.log"
 NAME=${REGEX//"res."/}
-NAME=${NAME//|/,}
+NAME=${NAME//|/-}
+NAME=${NAME//(/}
+NAME=${NAME//)/}
 NAME=${NAME//".log"/}
 NAME=${NAME//".*"/"(all)"}
 
@@ -184,7 +188,7 @@ echo "set terminal postscript" | tee -a "$RETURN.plot"
 echo "replot" | tee -a "$RETURN.plot"
 
 echo "plotted: "$NAME #user information only
-
+echo "pause -1 \"Hit return to continue\"" | tee -a "$RETURN.plot"
 cd $RETURNDIR
 gnuplot $RETURN.plot
 }
