@@ -3,6 +3,7 @@ package de.typology.googleNGrams;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class NGramMergerMain {
@@ -14,6 +15,7 @@ public class NGramMergerMain {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
+		NGramMergerMain.run(Config.get().googleInputDirectory, Config.get().outputDirectory+"google/");
 	}
 
 	public static void run(String googleInputPath, String outputPath)

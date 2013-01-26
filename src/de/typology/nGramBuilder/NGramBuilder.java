@@ -130,7 +130,7 @@ public class NGramBuilder {
 		// wrap everyting into a cool programm that runs through all the data
 		// sets that we have an creates the appropreate output
 
-		for (int n = Config.get().nGramLength; n >= 2; n--) {
+		for (int n = Config.get().nGramLength; n >= 1; n--) {
 			new File(trainingPath + Config.get().nGramsNotAggregatedPath + "/"
 					+ n).mkdirs();
 

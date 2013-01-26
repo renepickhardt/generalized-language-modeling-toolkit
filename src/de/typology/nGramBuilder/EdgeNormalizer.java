@@ -28,7 +28,7 @@ public class EdgeNormalizer {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws NumberFormatException,
-			IOException {
+	IOException {
 		EdgeNormalizer ngn = new EdgeNormalizer();
 		IOHelper.strongLog("normalizing edges from " + Config.get().edgeInput
 				+ " and storing updated edges at "
@@ -59,7 +59,7 @@ public class EdgeNormalizer {
 			this.outputPathWithRelType = outputPath + relType + "/";
 			new File(this.outputPathWithRelType).mkdir();
 			for (File file : this.files) {
-				if (file.getName().contains("distribution")) {
+				if (file.getName().contains("distribution")||file.getName().contains("stats")) {
 					IOHelper.log("skipping " + file.getAbsolutePath());
 					continue;
 				}
@@ -82,7 +82,7 @@ public class EdgeNormalizer {
 					} else {
 						this.outgoingEdges.put(this.lineSplit[0],
 								this.outgoingEdges.get(this.lineSplit[0])
-										+ this.edgeCount);
+								+ this.edgeCount);
 					}
 				}
 				this.reader.close();

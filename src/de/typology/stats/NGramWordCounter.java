@@ -34,34 +34,34 @@ public class NGramWordCounter {
 	public static void main(String[] args) throws IOException {
 
 		files = IOHelper.getDirectory(new File(Config.get().wordCountInput));
+		String filePathCut = new File(Config.get().wordCountInput).getParent();
+		long wordCount=0;
 		for (File file : files) {
 			long startTime = System.currentTimeMillis();
 			long endTime = 0;
 			long sek = 0;
-			String filePathCut = file.getAbsolutePath().substring(0,
-					file.getAbsolutePath().length() - 4);
-
 			NGramWordCounter wC = new NGramWordCounter(file.getAbsolutePath(),
 					filePathCut + "words.txt", filePathCut
-							+ "wordsdistribution.txt",
+					+ "wordsdistribution.txt",
 					Config.get().wordCountStats);
 			System.out.println(file.getAbsolutePath() + ": ");
 			System.out.println("start counting");
-			wC.countWords();
-			System.out.println("counting done, start sorting");
-			wC.sortWordMap();
-			System.out.println("sorting done, start writing to file");
-			wC.printWordsAndDistribution();
+			wordCount+=wC.countWords();
+			//			System.out.println("counting done, start sorting");
+			//			wC.sortWordMap();
+			//			System.out.println("sorting done, start writing to file");
+			//			wC.printWordsAndDistribution();
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;
-			wC.printStats(file, sek);
+			//	wC.printStats(file, sek);
 			System.out.println("done");
+			System.out.println("unique words: "+wordCount);
 		}
 	}
 
 	public NGramWordCounter(String input, String wordsOutput,
 			String wordsDistributionOutput, String statsOutput)
-			throws IOException {
+					throws IOException {
 		this.reader = IOHelper.openReadFile(input);
 		this.wordsWriter = IOHelper.openWriteFile(wordsOutput);
 		this.wordsDistributionWriter = IOHelper
@@ -98,7 +98,7 @@ public class NGramWordCounter {
 		}
 	};
 
-	public void countWords() throws IOException {
+	public long countWords() throws IOException {
 		this.wordMap = new HashMap<String, Integer>();
 
 		while ((this.line = this.reader.readLine()) != null) {
@@ -106,17 +106,20 @@ public class NGramWordCounter {
 			String[] words = Arrays.copyOfRange(splitLine, 0,
 					splitLine.length - 1);
 			String countWithRhomb = splitLine[splitLine.length - 1];
-			int count = Integer.parseInt(countWithRhomb.substring(1,
-					countWithRhomb.length()));
-			for (String word : words) {
-				if (this.wordMap.containsKey(word)) {
-					this.wordMap.put(word, this.wordMap.get(word) + count);
-				} else {
-					this.wordMap.put(word, count);
+			if(countWithRhomb.length()>1){
+				int count = Integer.parseInt(countWithRhomb.substring(1,
+						countWithRhomb.length()));
+				for (String word : words) {
+					if (this.wordMap.containsKey(word)) {
+						this.wordMap.put(word, this.wordMap.get(word) + count);
+					} else {
+						this.wordMap.put(word, count);
+					}
 				}
 			}
 		}
 		this.reader.close();
+		return this.wordMap.size();
 	}
 
 	public void sortWordMap() {

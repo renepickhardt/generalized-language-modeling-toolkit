@@ -60,7 +60,7 @@ public class NGramNormalizer {
 			this.outputPathWithNGramType = outputPath + nGramType + "/";
 			new File(this.outputPathWithNGramType).mkdir();
 			for (File file : this.files) {
-				if (file.getName().contains("distribution")) {
+				if (file.getName().contains("distribution")||file.getName().contains("stats")) {
 					IOHelper.log("skipping " + file.getAbsolutePath());
 					continue;
 				}

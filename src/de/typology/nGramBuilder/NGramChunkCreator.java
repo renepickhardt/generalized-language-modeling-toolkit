@@ -41,11 +41,10 @@ public class NGramChunkCreator extends ChunkCreator {
 			while ((line = br.readLine()) != null) {
 				cnt++;
 				String[] tokens = line.split(" ");
-				for (int i = n; i < tokens.length; i++) {
+				for (int i = n; i <= tokens.length; i++) {
 					boolean first = true;
 					BufferedWriter bw = null;
 					try {
-
 						for (int j = i - n; j < i; j++) {
 							if (first) {
 								String token = tokens[i - n];
