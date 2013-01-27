@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import de.typology.stats.NGramDistribution;
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class NGramParserMain {
@@ -39,6 +41,14 @@ public class NGramParserMain {
 			IOHelper.log("start cleanup");
 			ngn.normalize();
 			IOHelper.log("cleanup done");
+			if (Config.get().generateNGramDistribution) {
+				NGramDistribution ngd = new NGramDistribution();
+				ngd.countDistribution(outputPath+"normalized/", ".txt");
+				endTime = System.currentTimeMillis();
+				sek = (endTime - startTime) / 1000;
+				IOHelper.strongLog(sek
+						+ " seconds to: finnish creating distribution for ngrams");
+			}
 			IOHelper.log("generate indicator file");
 			endTime = System.currentTimeMillis();
 			sek = (endTime - startTime) / 1000;

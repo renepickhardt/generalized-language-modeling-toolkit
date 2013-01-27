@@ -17,7 +17,7 @@ public class NGramDistribution {
 				fileExtension, this.getClass().getName() + "countDistribution");
 
 		int lCnt = 0;
-		int n = 1000000;
+		int n = 40000000;
 		long[] count = new long[n];
 		long totalCount=0;
 		long uniqueWords=0;

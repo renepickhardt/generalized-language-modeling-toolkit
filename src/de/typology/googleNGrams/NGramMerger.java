@@ -46,74 +46,78 @@ public class NGramMerger {
 		ArrayList<File> fileList = IOHelper.getDirectory(new File(input));
 
 		for (File file : fileList) {
-			System.out.println("unzip " + file + " -d " + input);
-			SystemHelper.runUnixCommand("unzip " + file + " -d " + input);
-			System.out.println("merge file");
-			reader = IOHelper.openReadFile(file.getAbsolutePath().substring(0,
-					file.getAbsolutePath().length() - 4));
+			//TODO: remove if(..."1gram")
+			if(file.getName().contains("1gram")){
+				System.out.println(file.getName());
+				System.out.println("unzip " + file + " -d " + input);
+				SystemHelper.runUnixCommand("unzip " + file + " -d " + input);
+				System.out.println("merge file");
+				reader = IOHelper.openReadFile(file.getAbsolutePath().substring(0,
+						file.getAbsolutePath().length() - 4));
 
-			writer = new BufferedWriter(new FileWriter(output,/* append */true));
+				writer = new BufferedWriter(new FileWriter(output,/* append */true));
 
-			// read first line
-			line = reader.readLine();
-			if (line != null) {
-				lineSplit = line.split("\\s");
-				currentNgram = Arrays.copyOfRange(lineSplit, 0,
-						lineSplit.length - 4);
-				count = 1;
-			} else {
-				continue;
-			}
-			// read following lines
-			while ((line = reader.readLine()) != null) {
-				lineSplit = line.split("\\s");
-				if (lineSplit.length > 4) {
-					if (Arrays.equals(currentNgram, Arrays.copyOfRange(
-							lineSplit, 0, lineSplit.length - 4))) {
-						// same ngram
-						count += Integer
-								.parseInt(lineSplit[lineSplit.length - 3]);
-					} else {
-						// new ngram
+				// read first line
+				line = reader.readLine();
+				if (line != null) {
+					lineSplit = line.split("\\s");
+					currentNgram = Arrays.copyOfRange(lineSplit, 0,
+							lineSplit.length - 4);
+					count = 1;
+				} else {
+					continue;
+				}
+				// read following lines
+				while ((line = reader.readLine()) != null) {
+					lineSplit = line.split("\\s");
+					if (lineSplit.length > 4) {
+						if (Arrays.equals(currentNgram, Arrays.copyOfRange(
+								lineSplit, 0, lineSplit.length - 4))) {
+							// same ngram
+							count += Integer
+									.parseInt(lineSplit[lineSplit.length - 3]);
+						} else {
+							// new ngram
 
-						// write current ngram + count
-						for (int i = 0; i < currentNgram.length - 1; i++) {
-							writer.write(currentNgram[i] + " ");
+							// write current ngram + count
+							for (int i = 0; i < currentNgram.length - 1; i++) {
+								writer.write(currentNgram[i] + " ");
+							}
+							writer.write(currentNgram[currentNgram.length - 1]);
+							writer.write("\t");
+							writer.write(String.valueOf(count));
+							writer.write("\n");
+							writer.flush();
+
+							// set currentNgram and reset count
+							currentNgram = Arrays.copyOfRange(lineSplit, 0,
+									lineSplit.length - 4);
+							count = Integer
+									.parseInt(lineSplit[lineSplit.length - 3]);
 						}
-						writer.write(currentNgram[currentNgram.length - 1]);
-						writer.write("\t");
-						writer.write(String.valueOf(count));
-						writer.write("\n");
-						writer.flush();
-
-						// set currentNgram and reset count
-						currentNgram = Arrays.copyOfRange(lineSplit, 0,
-								lineSplit.length - 4);
-						count = Integer
-								.parseInt(lineSplit[lineSplit.length - 3]);
 					}
 				}
-			}
-			// write current ngram (last ngram in file)
-			for (int i = 0; i < currentNgram.length - 1; i++) {
-				writer.write(currentNgram[i] + " ");
-			}
-			writer.write(currentNgram[currentNgram.length - 1]);
-			writer.write("\t");
-			writer.write(String.valueOf(count));
-			writer.write("\n");
-			writer.flush();
+				// write current ngram (last ngram in file)
+				for (int i = 0; i < currentNgram.length - 1; i++) {
+					writer.write(currentNgram[i] + " ");
+				}
+				writer.write(currentNgram[currentNgram.length - 1]);
+				writer.write("\t");
+				writer.write(String.valueOf(count));
+				writer.write("\n");
+				writer.flush();
 
-			// remove extracted .zip file
-			System.out.println("rm "
-					+ file.getAbsolutePath().substring(0,
-							file.getAbsolutePath().length() - 4));
+				// remove extracted .zip file
+				System.out.println("rm "
+						+ file.getAbsolutePath().substring(0,
+								file.getAbsolutePath().length() - 4));
 
-			SystemHelper.runUnixCommand("rm "
-					+ file.getAbsolutePath().substring(0,
-							file.getAbsolutePath().length() - 4));
-			reader.close();
-			writer.close();
+				SystemHelper.runUnixCommand("rm "
+						+ file.getAbsolutePath().substring(0,
+								file.getAbsolutePath().length() - 4));
+				reader.close();
+				writer.close();
+			}
 		}
 	}
 }
