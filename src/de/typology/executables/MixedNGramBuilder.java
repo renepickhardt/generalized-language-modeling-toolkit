@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import de.typology.lexerParser.DGTTMMain;
 import de.typology.lexerParser.DataSetSplitter;
+import de.typology.lexerParser.EnronMain;
 import de.typology.nGramBuilder.NGramBuilder;
 import de.typology.utils.Config;
 
@@ -43,15 +44,15 @@ public class MixedNGramBuilder {
 			splitAndTrain(outputPath, normalizedOutputPath);
 			//	}
 
-			String prefix = "Sam" + Config.get().sampleRate + "Split"
-					+ Config.get().splitDataRatio + "Test"
-					+ Config.get().splitTestRatio;
-			Config.get().testingPath = outputPath + "test" + prefix
-					+ "/test.file";
-			Config.get().indexPath = outputPath + "training" + prefix
-					+ "/typoEdgesIndex/";
-
-			Config.get().dataSet = "dgttm-" + language + "-";
+			//			String prefix = "Sam" + Config.get().sampleRate + "Split"
+			//					+ Config.get().splitDataRatio + "Test"
+			//					+ Config.get().splitTestRatio;
+			//			Config.get().testingPath = outputPath + "test" + prefix
+			//					+ "/test.file";
+			//			Config.get().indexPath = outputPath + "training" + prefix
+			//					+ "/typoEdgesIndex/";
+			//
+			//			Config.get().dataSet = "dgttm-" + language + "-";
 
 			//
 			// TreeIndexer tti = new TreeIndexer();
@@ -71,18 +72,18 @@ public class MixedNGramBuilder {
 			//			NGramEvaluator.main(args);
 		}
 		//
-		//		new File(Config.get().outputDirectory + "enron/").mkdirs();
-		//		outputDirectory = Config.get().outputDirectory + "enron/";
-		//		new File(outputDirectory).mkdirs();
-		//		parsedOutputPath = outputDirectory + "parsed.txt";
-		//		normalizedOutputPath = outputDirectory + "normalized.txt";
-		//		if (Config.get().parseData) {
-		//			EnronMain.run(Config.get().enronInputDirectory, parsedOutputPath,
-		//					normalizedOutputPath);
-		//		}
-		//		if (Config.get().sampleSplitData) {
-		//			splitAndTrain(outputDirectory, normalizedOutputPath);
-		//		}
+		new File(Config.get().outputDirectory + "enron/").mkdirs();
+		outputDirectory = Config.get().outputDirectory + "enron/";
+		new File(outputDirectory).mkdirs();
+		parsedOutputPath = outputDirectory + "parsed.txt";
+		normalizedOutputPath = outputDirectory + "normalized.txt";
+		if (Config.get().parseData) {
+			EnronMain.run(Config.get().enronInputDirectory, parsedOutputPath,
+					normalizedOutputPath);
+		}
+		//	if (Config.get().sampleSplitData) {
+		splitAndTrain(outputDirectory, normalizedOutputPath);
+		//}
 		//
 		// TypologyEvaluator.main(args);
 		//
