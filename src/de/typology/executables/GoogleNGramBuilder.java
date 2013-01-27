@@ -36,13 +36,13 @@ public class GoogleNGramBuilder {
 			String finalGoogle = outPath + "final/";
 			new File(mergedGoogle).mkdirs();
 			new File(finalGoogle).mkdirs();
-			if (Config.get().parseData) {
-				// TODO combine GoogleNGramNormalizer and GoogleNGramBuilder
-				NGramMergerMain.run(f.getAbsolutePath(), mergedGoogle);
-				NGramParserMain.run(mergedGoogle, outPath);
-				// TODO: extract typology edges
+			//if (Config.get().parseData) {
+			// TODO combine GoogleNGramNormalizer and GoogleNGramBuilder
+			NGramMergerMain.run(f.getAbsolutePath(), mergedGoogle);
+			NGramParserMain.run(mergedGoogle, outPath);
+			// TODO: extract typology edges
 
-			}
+			//	}
 		}
 	}
 }
