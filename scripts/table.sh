@@ -11,10 +11,10 @@
 
 
 #storage directory for res.*.log files
-LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
+LOGDIR="/var/lib/datasets/results/"
 #LOGDIR="/home/martin/results/"
 #storage directory for return files
-RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
+RETURNDIR="/var/lib/datasets/plots/"
 #RETURNDIR="/home/martin/plots/"
 
 if [[ ${#pfl} == 0 || ${#k} == 0 || ${#weight} == 0 || ${#modelParameter} == 0 ]]
@@ -52,8 +52,10 @@ echo "\hline" | tee -a "$RETURN"
 
 CALC () {
 #echo -n "( CNTTYPO / $CNTLM  - 1 ) * 100"
-RESULT=`echo \($CNTTYPO/$CNTLM-1\)*100 | bc -l`
-echo -n "$RESULT" | tee -a "$RETURN"
+
+RESULT=`echo "($CNTTYPO/$CNTLM-1)*100" | bc -l`
+echo -n " $RESULT" | awk '{ printf "%.1f", $0 }' | tee -a "$RETURN"
+#echo -n " $RESULT" | tee -a "$RETURN"
 }
 
 PRINTLN () {
