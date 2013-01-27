@@ -17,11 +17,11 @@ PFL=5
 PAK=5
 
 #storage directory for res.*.log files
-LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
-#LOGDIR="/home/martin/results/"
+#LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
+LOGDIR="/home/martin/results/"
 #storage directory for return files
-RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
-#RETURNDIR="/home/martin/plots/"
+#RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
+RETURNDIR="/home/martin/plots/"
 
 #format for PARAMETERS:
 #	0		1	2		3	4		5	6	7	8				9	10		11		12		
@@ -178,7 +178,12 @@ echo -n "plot " | tee -a "$RETURN.plot"
 for((  i = 0 ;  i < FILECNT;  i++  ))
 do
 	let COLUMN=i+2	
-	echo -n "	source using $COLUMN:xtic(1) title '${LABELS[$i]}' lt -1" | tee -a "$RETURN.plot"
+	if [[ "$metrics" == *NKSS* && ${#fixedK} != 0 || "$metrics" == *MRR* && ${#fixedPFL} != 0 || "$metrics" == *PAK* && ${#fixedK} != 0 && ${#fixedPFL} != 0 ]]
+		then 
+		echo -n "	source using $COLUMN:xtic(1) title '${LABELS[$i]// modelParameter?/}' lt -1" | tee -a "$RETURN.plot"
+		else 
+		echo -n "	source using $COLUMN:xtic(1) title '${LABELS[$i]}' lt -1" | tee -a "$RETURN.plot"
+	fi
 	if [[ $i -le $FILECNT-2 ]]
 		then	echo ", \\" | tee -a "$RETURN.plot"
 		else	echo "" | tee -a "$RETURN.plot"
@@ -247,6 +252,39 @@ done
 PLOT
 }
 
+PAKFKFPFL () {
+TEMPPFL="fpfl$fixedPFL"
+SUFFIX=".pakfk$fixedKf$TEMPPFL"
+RETURN=$RETURNDIR$NAME$SUFFIX
+TITLE="precision at k using fixed k=$fixedK and fixed prefix length=$fixedPFL"
+XLABEL="model length"
+YLABEL="precision at k"
+#reset old output file
+echo -n "" | tee $RETURN
+echo "retrieves PAKFKFPFL"
+for((  modelLength = 2 ;  modelLength <= 5;  modelLength++  ))
+do
+tempLine="$modelLength "
+for FILE in ${HITS[@]}
+do
+	TEMPFILE=${FILE/*modelParameter/}
+	TEMPFILE=${TEMPFILE/-*/}
+	# write prefixes
+	echo $TEMPFILE
+	if [[ $TEMPFILE == $modelLength ]]
+	then
+		CNT=`grep "Precision at k=$fixedK with pfl=$fixedPFL" $FILE`
+		CNT=${CNT[0]//Precision at k=$fixedK with pfl=$fixedPFL: /}
+		tempLine=$tempLine$CNT" "
+	#comment out the else branch for building correct collumns	
+	else	tempLine=$tempLine"0.0 "
+fi
+done
+echo $tempLine | tee -a $RETURN
+done
+PLOT
+}
+
 MRR () {
 SUFFIX=".mrr"
 RETURN=$RETURNDIR$NAME$SUFFIX
@@ -269,6 +307,38 @@ do
 	echo "" | tee -a $RETURN
 done
 
+PLOT
+}
+
+MRRFPFL () {
+SUFFIX=".mrrfpfl$fixedPFL"
+RETURN=$RETURNDIR$NAME$SUFFIX
+TITLE="mean reciprocal rank with fixed prefix length=$fixedPFL"
+XLABEL="model length"
+YLABEL="normalized keystroke savings"
+#reset old output file
+echo -n "" | tee $RETURN
+echo "retrieves MRRFPFL"
+for((  modelLength = 2 ;  modelLength <= 5;  modelLength++  ))
+do
+tempLine="$modelLength "
+for FILE in ${HITS[@]}
+do
+	TEMPFILE=${FILE/*modelParameter/}
+	TEMPFILE=${TEMPFILE/-*/}
+	# write prefixes
+	echo $TEMPFILE
+	if [[ $TEMPFILE == $modelLength ]]
+	then
+		CNT=`grep "MRR with pfl=$fixedPFL" $FILE`
+		CNT=${CNT[0]//MRR with pfl=$fixedPFL: /}
+		tempLine=$tempLine$CNT" "
+	#comment out the else branch for building correct collumns	
+	else	tempLine=$tempLine"0.0 "
+fi
+done
+echo $tempLine | tee -a $RETURN
+done
 PLOT
 }
 
@@ -333,7 +403,7 @@ echo -n "" | tee $RETURN
 echo "retrieves NKSS"
 for((  modelLength = 2 ;  modelLength <= 5;  modelLength++  ))
 do
-echo -n $modelLength" " | tee -a $RETURN
+tempLine="$modelLength "
 for FILE in ${HITS[@]}
 do
 	TEMPFILE=${FILE/*modelParameter/}
@@ -343,14 +413,13 @@ do
 	if [[ $TEMPFILE == $modelLength ]]
 	then
 		CNT=`grep "NKSS at k=$fixedK" $FILE`
-		echo
 		CNT=${CNT[0]//NKSS at k=$fixedK: /}
-		echo -n $CNT" " | tee -a $RETURN
-	else
-		echo -n 0.0" " | tee -a $RETURN
-	fi
+		tempLine=$tempLine$CNT" "
+	#comment out the else branch for building correct collumns	
+	else	tempLine=$tempLine"0.0 "
+fi
 done
-echo "" | tee -a $RETURN
+echo $tempLine | tee -a $RETURN
 done
 PLOT
 }
@@ -395,6 +464,7 @@ do
 	fi
 done
 
+
 #exit if no files were matched
 if [[ $FILECNT == 0 ]]
 	then
@@ -409,12 +479,12 @@ if [[ ${#fixedK} == 0 && ${#fixedPFL} == 0 && "$metrics" == *PAK* ]]
 	exit
 fi
 
+#matching metrics
 if [[ ${#fixedK} != 0 && ${#fixedPFL} != 0 && "$metrics" == *PAK* ]]
-	then echo "either set value for fixedK or fixedPFL for using PAK"
+	then PAKFKFPFL
 	exit
 fi
 
-#matching metrics
 if [[ ${#fixedK} != 0 && ${#fixedPFL} == 0 && "$metrics" == *PAK* ]]
 	then PAKFK
 fi
@@ -423,7 +493,11 @@ if [[ ${#fixedK} == 0 && ${#fixedPFL} != 0 && "$metrics" == *PAK* ]]
 	then PAKFPFL
 fi
 
-if [[ "$metrics" == *MRR* ]]
+if [[ "$metrics" == *MRR* && ${#fixedPFL} != 0 ]]
+	then MRRFPFL
+fi
+
+if [[ "$metrics" == *MRR* && ${#fixedPFL} == 0 ]]
 	then MRR
 fi
 
