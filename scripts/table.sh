@@ -11,11 +11,11 @@
 
 
 #storage directory for res.*.log files
-#LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
-LOGDIR="/home/martin/results/"
+LOGDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/results/"
+#LOGDIR="/home/martin/results/"
 #storage directory for return files
-#RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
-RETURNDIR="/home/martin/plots/"
+RETURNDIR="/media/07d76f7e-d27d-441b-b2ae-ea25d79bc3fa/typology/plots/"
+#RETURNDIR="/home/martin/plots/"
 
 if [[ ${#pfl} == 0 || ${#k} == 0 || ${#weight} == 0 || ${#modelParameter} == 0 ]]
 	then echo "set values for k, pfl, modelParameter and weight"
@@ -47,11 +47,11 @@ echo -n "" | tee "$RETURN"
 echo "\begin{table*}[bth]" | tee -a "$RETURN"
 echo "\begin{center}" | tee -a "$RETURN"
 echo "\begin{tabular}{lllll}" | tee -a "$RETURN"
-echo "Corpus & Language sub-corpora & Unique words & Total words & n-grams \\\\" | tee -a "$RETURN"
+echo "Corpus & MRR & Precision at k & NKSS \\\\" | tee -a "$RETURN"
 echo "\hline" | tee -a "$RETURN"
 
 CALC () {
-echo -n "( CNTTYPO / $CNTLM  - 1 ) * 100"
+#echo -n "( CNTTYPO / $CNTLM  - 1 ) * 100"
 RESULT=`echo \($CNTTYPO/$CNTLM-1\)*100 | bc -l`
 echo -n "$RESULT" | tee -a "$RETURN"
 }
@@ -145,7 +145,6 @@ echo "\label{tab:corporaStats}" | tee -a "$RETURN"
 echo "\caption{Statistics of our evaluation corpora}" | tee -a "$RETURN"
 echo "\end{center}" | tee -a "$RETURN"
 echo "\end{table*}" | tee -a "$RETURN"
-
 
 
 
