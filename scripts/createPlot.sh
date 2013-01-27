@@ -254,7 +254,7 @@ PLOT
 
 PAKFKFPFL () {
 TEMPPFL="fpfl$fixedPFL"
-SUFFIX=".pakfk$fixedKf$TEMPPFL"
+SUFFIX=".pakfk$fixedK$TEMPPFL"
 RETURN=$RETURNDIR$NAME$SUFFIX
 TITLE="precision at k using fixed k=$fixedK and fixed prefix length=$fixedPFL"
 XLABEL="model length"
