@@ -153,6 +153,28 @@ echo $FILETYPO
 echo $FILELM
 PRINTLN
 fi
+if [[ $LANG == "en" ]]
+then
+TYP1="enron-"
+TYP2="wiki-"
+CORPUS="$TYP1$TYP2$LANG"
+FILETYPO=$LOGDIR$PF1$TYP1$LANG$PF2$TYP2$LANG$TYPO$weight$PF3$modelParameter$PF4
+FILELM=$LOGDIR$PF1$TYP1$LANG$PF2$TYP2$LANG$LM$weight$PF3$modelParameter$PF4
+echo $FILETYPO
+echo $FILELM
+PRINTLN
+fi
+if [[ $LANG == "en" ]]
+then
+TYP1="google-"
+TYP2="enron-"
+CORPUS="$TYP1$TYP2$LANG"
+FILETYPO=$LOGDIR$PF1$TYP1$LANG$PF2$TYP2$LANG$TYPO$weight$PF3$modelParameter$PF4
+FILELM=$LOGDIR$PF1$TYP1$LANG$PF2$TYP2$LANG$LM$weight$PF3$modelParameter$PF4
+echo $FILETYPO
+echo $FILELM
+PRINTLN
+fi
 
 done
 
