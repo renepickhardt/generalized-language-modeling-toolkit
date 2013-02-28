@@ -1,4 +1,4 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
 public enum ReutersToken {
 	STRING, UPPERCASE, OTHER, WS, LINESEPARATOR, EOF,

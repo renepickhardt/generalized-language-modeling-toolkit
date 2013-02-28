@@ -1,14 +1,14 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
-import static de.typology.lexerParser.WikipediaToken.CLOSEDSQUAREDBRACKET;
-import static de.typology.lexerParser.WikipediaToken.CLOSEDTEXT;
-import static de.typology.lexerParser.WikipediaToken.CLOSEDTITLE;
-import static de.typology.lexerParser.WikipediaToken.LINK;
-import static de.typology.lexerParser.WikipediaToken.OTHER;
-import static de.typology.lexerParser.WikipediaToken.SQUAREDBRACKET;
-import static de.typology.lexerParser.WikipediaToken.TEXT;
-import static de.typology.lexerParser.WikipediaToken.TITLE;
-import static de.typology.lexerParser.WikipediaToken.VERTICALBAR;
+import static de.typology.parser.WikipediaToken.CLOSEDSQUAREDBRACKET;
+import static de.typology.parser.WikipediaToken.CLOSEDTEXT;
+import static de.typology.parser.WikipediaToken.CLOSEDTITLE;
+import static de.typology.parser.WikipediaToken.LINK;
+import static de.typology.parser.WikipediaToken.OTHER;
+import static de.typology.parser.WikipediaToken.SQUAREDBRACKET;
+import static de.typology.parser.WikipediaToken.TEXT;
+import static de.typology.parser.WikipediaToken.TITLE;
+import static de.typology.parser.WikipediaToken.VERTICALBAR;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

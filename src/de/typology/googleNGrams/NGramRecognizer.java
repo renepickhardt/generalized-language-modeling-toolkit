@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 
-import de.typology.lexerParser.RecognitionException;
+import de.typology.parser.RecognitionException;
 import de.typology.utils.IOHelper;
 
 /**

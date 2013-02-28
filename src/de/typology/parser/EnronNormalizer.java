@@ -1,4 +1,4 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

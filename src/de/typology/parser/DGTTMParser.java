@@ -1,21 +1,21 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
-import static de.typology.lexerParser.DGTTMToken.BODY;
-import static de.typology.lexerParser.DGTTMToken.BRACES;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDBODY;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDBRACES;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDTUV;
-import static de.typology.lexerParser.DGTTMToken.COLON;
-import static de.typology.lexerParser.DGTTMToken.COMMA;
-import static de.typology.lexerParser.DGTTMToken.EXCLAMATIONMARK;
-import static de.typology.lexerParser.DGTTMToken.FULLSTOP;
-import static de.typology.lexerParser.DGTTMToken.HYPHEN;
-import static de.typology.lexerParser.DGTTMToken.QUESTIONMARK;
-import static de.typology.lexerParser.DGTTMToken.QUOTATIONMARK;
-import static de.typology.lexerParser.DGTTMToken.SEMICOLON;
-import static de.typology.lexerParser.DGTTMToken.STRING;
-import static de.typology.lexerParser.DGTTMToken.TUV;
-import static de.typology.lexerParser.DGTTMToken.WS;
+import static de.typology.parser.DGTTMToken.BODY;
+import static de.typology.parser.DGTTMToken.BRACES;
+import static de.typology.parser.DGTTMToken.CLOSEDBODY;
+import static de.typology.parser.DGTTMToken.CLOSEDBRACES;
+import static de.typology.parser.DGTTMToken.CLOSEDTUV;
+import static de.typology.parser.DGTTMToken.COLON;
+import static de.typology.parser.DGTTMToken.COMMA;
+import static de.typology.parser.DGTTMToken.EXCLAMATIONMARK;
+import static de.typology.parser.DGTTMToken.FULLSTOP;
+import static de.typology.parser.DGTTMToken.HYPHEN;
+import static de.typology.parser.DGTTMToken.QUESTIONMARK;
+import static de.typology.parser.DGTTMToken.QUOTATIONMARK;
+import static de.typology.parser.DGTTMToken.SEMICOLON;
+import static de.typology.parser.DGTTMToken.STRING;
+import static de.typology.parser.DGTTMToken.TUV;
+import static de.typology.parser.DGTTMToken.WS;
 
 import java.io.File;
 import java.io.IOException;

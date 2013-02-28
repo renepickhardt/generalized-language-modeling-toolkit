@@ -1,39 +1,36 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
-import static de.typology.lexerParser.DGTTMToken.AND;
-import static de.typology.lexerParser.DGTTMToken.BODY;
-import static de.typology.lexerParser.DGTTMToken.BRACES;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDBODY;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDBRACES;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDSEG;
-import static de.typology.lexerParser.DGTTMToken.CLOSEDTUV;
-import static de.typology.lexerParser.DGTTMToken.COLON;
-import static de.typology.lexerParser.DGTTMToken.COMMA;
-import static de.typology.lexerParser.DGTTMToken.EOF;
-import static de.typology.lexerParser.DGTTMToken.EXCLAMATIONMARK;
-import static de.typology.lexerParser.DGTTMToken.FULLSTOP;
-import static de.typology.lexerParser.DGTTMToken.HYPHEN;
-import static de.typology.lexerParser.DGTTMToken.LINESEPARATOR;
-import static de.typology.lexerParser.DGTTMToken.OTHER;
-import static de.typology.lexerParser.DGTTMToken.QUESTIONMARK;
-import static de.typology.lexerParser.DGTTMToken.QUOTATIONMARK;
-import static de.typology.lexerParser.DGTTMToken.SEG;
-import static de.typology.lexerParser.DGTTMToken.SEMICOLON;
-import static de.typology.lexerParser.DGTTMToken.STRING;
-import static de.typology.lexerParser.DGTTMToken.TUV;
-import static de.typology.lexerParser.DGTTMToken.WS;
+import static de.typology.parser.ReutersToken.AND;
+import static de.typology.parser.ReutersToken.BRACES;
+import static de.typology.parser.ReutersToken.CLOSEDBRACES;
+import static de.typology.parser.ReutersToken.CLOSEDP;
+import static de.typology.parser.ReutersToken.CLOSEDTEXT;
+import static de.typology.parser.ReutersToken.CLOSEDTITLE;
+import static de.typology.parser.ReutersToken.COLON;
+import static de.typology.parser.ReutersToken.COMMA;
+import static de.typology.parser.ReutersToken.EOF;
+import static de.typology.parser.ReutersToken.EXCLAMATIONMARK;
+import static de.typology.parser.ReutersToken.FULLSTOP;
+import static de.typology.parser.ReutersToken.HYPHEN;
+import static de.typology.parser.ReutersToken.LINESEPARATOR;
+import static de.typology.parser.ReutersToken.OTHER;
+import static de.typology.parser.ReutersToken.P;
+import static de.typology.parser.ReutersToken.QUESTIONMARK;
+import static de.typology.parser.ReutersToken.QUOTATIONMARK;
+import static de.typology.parser.ReutersToken.SEMICOLON;
+import static de.typology.parser.ReutersToken.STRING;
+import static de.typology.parser.ReutersToken.TEXT;
+import static de.typology.parser.ReutersToken.TITLE;
+import static de.typology.parser.ReutersToken.WS;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import de.typology.utils.IOHelper;
 
 /**
  * @author Martin Koerner
@@ -42,9 +39,9 @@ import java.util.Map;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class DGTTMRecognizer implements Iterator<DGTTMToken> {
+public class ReutersRecognizer implements Iterator<ReutersToken> {
 
-	private DGTTMToken token = null; // last token recognized
+	private ReutersToken token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
@@ -52,41 +49,21 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	private int index = 0; // length of lexeme
 
 	// Keywords to token mapping
-	private static Map<String, DGTTMToken> keywords;
-	private static Map<String, String> tuvs;
-
+	private static Map<String, ReutersToken> keywords;
 
 	static {
-		tuvs = new HashMap<String, String>();
-		tuvs.put("EN", "tuv lang=\"EN-GB\"");
-		tuvs.put("DE", "tuv lang=\"DE-DE\"");
-		tuvs.put("ES", "tuv lang=\"ES-ES\"");
-		tuvs.put("FR", "tuv lang=\"FR-FR\"");
-		tuvs.put("IT", "tuv lang=\"IT-IT\"");
-		// add new languages here
+		keywords = new HashMap<String, ReutersToken>();
+		keywords.put("p", P);
+		keywords.put("title", TITLE);
+		keywords.put("text", TEXT);
+
+		keywords.put("/p", CLOSEDP);
+		keywords.put("/title", CLOSEDTITLE);
+		keywords.put("/text", CLOSEDTEXT);
 	}
 
-	public DGTTMRecognizer(File f, String dgttmLanguage) {
-		Reader r;
-		try {
-			r = new InputStreamReader(new FileInputStream(f.getAbsolutePath()),
-					"UnicodeLittle");
-			this.reader = new BufferedReader(r);
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		keywords=new HashMap<String, DGTTMToken>();
-		keywords.put("body", BODY);
-		keywords.put("seg", SEG);
-		keywords.put("/body", CLOSEDBODY);
-		keywords.put("/tuv", CLOSEDTUV);
-		keywords.put("/seg", CLOSEDSEG);
-		// set language specific header
-		keywords.put(tuvs.get(dgttmLanguage), TUV);
+	public ReutersRecognizer(File f) {
+		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 	}
 
 	// Extract lexeme from buffer
@@ -109,7 +86,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	// Read one more char.
 	// Add previous char, if any, to the buffer.
 	//
-	private void read() {
+	private void read() throws IOException {
 		if (this.eof) {
 			throw new IllegalStateException();
 		}
@@ -121,12 +98,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 				// reset buffer if token gets too big (very unlikely to happen)
 			}
 		}
-		try {
-			this.lookahead = this.reader.read();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.lookahead = this.reader.read();
 	}
 
 	// Recognize a token
@@ -134,24 +106,17 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		this.reset();
 
 		// Recognize newline
-		if (this.lookahead == 13) {
-			this.token = LINESEPARATOR;
-			this.read();
-			if (this.lookahead == 10) {
-				this.token = LINESEPARATOR;
-				this.read();
-			}
-			return;
-		}
-		// Recognize newline
 		if (this.lookahead == 10) {
 			this.token = LINESEPARATOR;
 			this.read();
 			return;
 		}
 		// Recognize whitespace
-		if (Character.isWhitespace(this.lookahead) || this.lookahead == ' ') {
-			this.read();
+		if (Character.isWhitespace(this.lookahead)) {
+			do {
+				this.read();
+			} while (Character.isWhitespace(this.lookahead));// removes multiple
+																// spaces
 			this.token = WS;
 			return;
 		}
@@ -169,7 +134,6 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			this.token = COMMA;
 			return;
 		}
-
 		// Recognize semicolon
 		if (this.lookahead == ';') {
 			this.read();
@@ -182,6 +146,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			this.token = COLON;
 			return;
 		}
+
 		// recognize quotation mark
 		if (this.lookahead == 39) {// 39='
 			this.read();
@@ -203,14 +168,14 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		}
 
 		// Recognize exclamation mark
-		if (this.lookahead == '!' || this.lookahead == '¡') {
+		if (this.lookahead == '!') {
 			this.read();
 			this.token = EXCLAMATIONMARK;
 			return;
 		}
 
 		// Recognize question mark
-		if (this.lookahead == '?' || this.lookahead == '¿') {
+		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
 			return;
@@ -266,6 +231,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		if (this.lookahead == '<') {
 			do {
 				this.read();
+
 			} while (this.lookahead != '>');
 			this.read();
 			String label = (String) this.getLexeme().subSequence(1,
@@ -330,9 +296,9 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	}
 
 	@Override
-	public DGTTMToken next() {
+	public ReutersToken next() {
 		if (this.hasNext()) {
-			DGTTMToken result = this.token;
+			ReutersToken result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -348,7 +314,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			DGTTMToken t = this.next();
+			ReutersToken t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}

@@ -3,10 +3,10 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.lexerParser.DGTTMMain;
-import de.typology.lexerParser.DataSetSplitter;
-import de.typology.lexerParser.EnronMain;
 import de.typology.nGramBuilder.NGramBuilder;
+import de.typology.parser.DGTTMMain;
+import de.typology.parser.DataSetSplitter;
+import de.typology.parser.EnronMain;
 import de.typology.utils.Config;
 
 public class MixedNGramBuilder {

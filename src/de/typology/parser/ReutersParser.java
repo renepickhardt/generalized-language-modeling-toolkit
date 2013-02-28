@@ -1,21 +1,21 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
-import static de.typology.lexerParser.ReutersToken.BRACES;
-import static de.typology.lexerParser.ReutersToken.CLOSEDBRACES;
-import static de.typology.lexerParser.ReutersToken.CLOSEDP;
-import static de.typology.lexerParser.ReutersToken.CLOSEDTEXT;
-import static de.typology.lexerParser.ReutersToken.COLON;
-import static de.typology.lexerParser.ReutersToken.COMMA;
-import static de.typology.lexerParser.ReutersToken.EXCLAMATIONMARK;
-import static de.typology.lexerParser.ReutersToken.FULLSTOP;
-import static de.typology.lexerParser.ReutersToken.HYPHEN;
-import static de.typology.lexerParser.ReutersToken.P;
-import static de.typology.lexerParser.ReutersToken.QUESTIONMARK;
-import static de.typology.lexerParser.ReutersToken.QUOTATIONMARK;
-import static de.typology.lexerParser.ReutersToken.SEMICOLON;
-import static de.typology.lexerParser.ReutersToken.STRING;
-import static de.typology.lexerParser.ReutersToken.TEXT;
-import static de.typology.lexerParser.ReutersToken.WS;
+import static de.typology.parser.ReutersToken.BRACES;
+import static de.typology.parser.ReutersToken.CLOSEDBRACES;
+import static de.typology.parser.ReutersToken.CLOSEDP;
+import static de.typology.parser.ReutersToken.CLOSEDTEXT;
+import static de.typology.parser.ReutersToken.COLON;
+import static de.typology.parser.ReutersToken.COMMA;
+import static de.typology.parser.ReutersToken.EXCLAMATIONMARK;
+import static de.typology.parser.ReutersToken.FULLSTOP;
+import static de.typology.parser.ReutersToken.HYPHEN;
+import static de.typology.parser.ReutersToken.P;
+import static de.typology.parser.ReutersToken.QUESTIONMARK;
+import static de.typology.parser.ReutersToken.QUOTATIONMARK;
+import static de.typology.parser.ReutersToken.SEMICOLON;
+import static de.typology.parser.ReutersToken.STRING;
+import static de.typology.parser.ReutersToken.TEXT;
+import static de.typology.parser.ReutersToken.WS;
 
 import java.io.File;
 import java.io.FileNotFoundException;

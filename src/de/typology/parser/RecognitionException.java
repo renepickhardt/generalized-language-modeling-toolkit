@@ -1,4 +1,4 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
 /**
  * @author Martin Koerner

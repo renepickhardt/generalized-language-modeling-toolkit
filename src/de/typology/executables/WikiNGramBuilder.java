@@ -3,9 +3,9 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.lexerParser.DataSetSplitter;
-import de.typology.lexerParser.WikipediaMain;
 import de.typology.nGramBuilder.NGramBuilder;
+import de.typology.parser.DataSetSplitter;
+import de.typology.parser.WikipediaMain;
 import de.typology.utils.Config;
 
 public class WikiNGramBuilder {

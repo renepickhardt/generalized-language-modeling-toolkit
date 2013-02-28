@@ -1,4 +1,4 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
 import java.io.File;
 import java.io.IOException;

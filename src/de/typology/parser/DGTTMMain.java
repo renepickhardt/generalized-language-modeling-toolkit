@@ -1,4 +1,4 @@
-package de.typology.lexerParser;
+package de.typology.parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import de.typology.utils.IOHelper;
 
-public class EnronMain {
+public class DGTTMMain {
 	private static ArrayList<File> fileList;
 
 	/**
@@ -18,25 +18,27 @@ public class EnronMain {
 	public static void main(String[] args) throws IOException {
 	}
 
-	public static void run(String enronInputPath, String parsedOutputPath,
-			String normalizedOutputPath) throws IOException {
+	public static void run(String dgttmInputPath, String parsedOutputPath,
+			String normalizedOutputPath, String dgttmLanguage)
+					throws IOException {
 		long startTime = System.currentTimeMillis();
 		IOHelper.log("getting file list");
-		fileList = IOHelper.getDirectory(new File(enronInputPath));
+		fileList = IOHelper.getDirectory(new File(dgttmInputPath));
 
-		EnronParser parser = new EnronParser(fileList, parsedOutputPath);
+		DGTTMParser parser = new DGTTMParser(fileList, parsedOutputPath,
+				dgttmLanguage);
 		IOHelper.log("start parsing");
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
-		EnronNormalizer wn = new EnronNormalizer(parsedOutputPath,
+		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
 				normalizedOutputPath);
 		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;
-		IOHelper.strongLog("done normalizing: " + enronInputPath + ", time: "
+		IOHelper.strongLog("done normalizing: " + dgttmInputPath + ", time: "
 				+ time + " seconds");
 	}
 }
