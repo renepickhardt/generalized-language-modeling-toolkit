@@ -21,6 +21,13 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
+	// new:
+
+	public int maxFiles;
+	public int minCountPerFile;
+
+	// old:
+
 	// CONTROLL PARAMETERS
 	public String dbUser;
 	public String dbName;
