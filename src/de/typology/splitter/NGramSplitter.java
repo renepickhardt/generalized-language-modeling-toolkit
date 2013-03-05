@@ -7,6 +7,7 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class NGramSplitter extends Splitter {
+	private String extension;
 
 	public NGramSplitter(String indexPath, String inputPath) {
 		super(indexPath, inputPath, "ngrams");
@@ -16,7 +17,7 @@ public class NGramSplitter extends Splitter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "enwiki";
+		String dataSet = "testwiki";
 		NGramSplitter ngs = new NGramSplitter(Config.get().outputDirectory
 				+ dataSet + "/index.txt", Config.get().outputDirectory
 				+ dataSet + "/normalized.txt");
@@ -29,7 +30,8 @@ public class NGramSplitter extends Splitter {
 		BufferedWriter writer;
 		for (int sequenceLength = 1; sequenceLength <= maxSequenceLength; sequenceLength++) {
 			IOHelper.log("splitting into " + sequenceLength + "grams");
-			this.initialize(sequenceLength + "gs_split");
+			this.extension = sequenceLength + "gs";
+			this.initialize(this.extension);
 			while ((sequence = this.getSequence(sequenceLength)) != null) {
 				writer = this.getWriter(sequence[0]);
 				try {
@@ -42,6 +44,11 @@ public class NGramSplitter extends Splitter {
 				}
 			}
 			this.reset();
+			System.out.println(this.outputDirectory.getAbsolutePath() + "/"
+					+ this.extension);
+			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
+					+ this.extension);
+
 		}
 	}
 }

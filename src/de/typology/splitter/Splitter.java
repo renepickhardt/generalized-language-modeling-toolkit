@@ -13,8 +13,11 @@ import de.typology.utils.IOHelper;
 public abstract class Splitter {
 	private String inputPath;
 	protected File outputDirectory;
-	private HashMap<String, String> wordIndex;
+	public HashMap<String, String> wordIndex;
 	private BufferedReader reader;
+
+	private Aggregator aggregator;
+	private Sorter sorter;
 
 	private HashMap<String, BufferedWriter> writers;
 
@@ -25,13 +28,14 @@ public abstract class Splitter {
 
 	protected Splitter(String indexPath, String inputPath,
 			String outputDirectoryName) {
-		this.inputPath = inputPath;
 		IndexBuilder ib = new IndexBuilder();
 		this.wordIndex = ib.deserializeIndex(indexPath);
+		this.inputPath = inputPath;
 		this.outputDirectory = new File(new File(inputPath).getParent() + "/"
 				+ outputDirectoryName);
 		this.outputDirectory.mkdir();
-
+		this.aggregator = new Aggregator();
+		this.sorter = new Sorter();
 	}
 
 	protected void initialize(String extension) {
@@ -42,11 +46,11 @@ public abstract class Splitter {
 		this.writers = new HashMap<String, BufferedWriter>();
 		for (Entry<String, String> word : this.wordIndex.entrySet()) {
 			if (!this.writers.containsKey(word.getValue())) {
-				this.writers.put(
-						word.getValue(),
-						IOHelper.openWriteFile(currentOutputDirectory + "/"
-								+ word.getValue() + "." + extension,
-								Config.get().memoryLimitForWritingFiles));
+				this.writers.put(word.getValue(), IOHelper.openWriteFile(
+						currentOutputDirectory + "/" + word.getValue() + "."
+								+ extension + "_split",
+						Config.get().memoryLimitForWritingFiles
+								/ Config.get().maxFiles));
 			}
 		}
 	}
@@ -78,6 +82,13 @@ public abstract class Splitter {
 		}
 		this.linePointer++;
 		return sequence;
+	}
+
+	protected void sortAndAggregate(String inputPath) {
+		this.sorter.sortSplitDirectory(inputPath, "_split", "_splitSort");
+		this.aggregator.aggregateDirectory(inputPath, "_splitSort",
+				"_aggregate");
+		this.sorter.sortCountDirectory(inputPath, "_aggregate", "");
 	}
 
 	protected void reset() {

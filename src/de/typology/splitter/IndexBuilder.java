@@ -3,9 +3,7 @@ package de.typology.splitter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,20 +25,20 @@ public class IndexBuilder {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String dataSet = "enwiki";
+		String dataSet = "testwiki";
 		IndexBuilder ib = new IndexBuilder();
 		ib.buildIndex(Config.get().outputDirectory + dataSet
 				+ "/normalized.txt", Config.get().outputDirectory + dataSet
 				+ "/index.txt");
-		for (Entry<String, String> word : ib.wordIndex.entrySet()) {
-			System.out.println(word.getKey() + " --> " + word.getValue());
-		}
-		ib.wordIndex = null;
-		ib.deserializeIndex(Config.get().outputDirectory + dataSet
-				+ "/index.txt");
-		for (Entry<String, String> word : ib.wordIndex.entrySet()) {
-			System.out.println(word.getKey() + " --> " + word.getValue());
-		}
+		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
+		// System.out.println(word.getKey() + " --> " + word.getValue());
+		// }
+		// ib.wordIndex = null;
+		// ib.deserializeIndex(Config.get().outputDirectory + dataSet
+		// + "/index.txt");
+		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
+		// System.out.println(word.getKey() + " --> " + word.getValue());
+		// }
 	}
 
 	private void buildMap(String input) {
@@ -240,9 +238,8 @@ public class IndexBuilder {
 		IOHelper.log("deserializing word index");
 		this.wordIndex = new HashMap<String, String>();
 		try {
-			FileInputStream file = new FileInputStream(indexPath);
-			InputStreamReader isr = new InputStreamReader(file);
-			BufferedReader br = new BufferedReader(isr);
+			BufferedReader br = IOHelper.openReadFile(indexPath,
+					1024 * 1024 * 8);
 			String line;
 			String[] lineSplit;
 			while ((line = br.readLine()) != null) {

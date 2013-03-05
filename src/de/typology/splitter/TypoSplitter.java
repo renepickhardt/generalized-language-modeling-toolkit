@@ -7,6 +7,7 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class TypoSplitter extends Splitter {
+	private String extension;
 
 	public TypoSplitter(String indexPath, String inputPath) {
 		super(indexPath, inputPath, "typos");
@@ -25,11 +26,14 @@ public class TypoSplitter extends Splitter {
 
 	@Override
 	public void split(int maxSequenceLength) {
+		int edgeType;
 		String[] sequence;
 		BufferedWriter writer;
 		for (int sequenceLength = 1; sequenceLength <= maxSequenceLength; sequenceLength++) {
-			IOHelper.log("splitting into " + (sequenceLength - 1) + "es");
-			this.initialize(sequenceLength - 1 + "es_split");
+			edgeType = sequenceLength - 1;
+			this.extension = edgeType + "es";
+			IOHelper.log("splitting into " + this.extension);
+			this.initialize(this.extension);
 			while ((sequence = this.getSequence(sequenceLength)) != null) {
 				writer = this.getWriter(sequence[0]);
 				try {
@@ -41,6 +45,8 @@ public class TypoSplitter extends Splitter {
 				}
 			}
 			this.reset();
+			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
+					+ this.extension);
 		}
 	}
 }
