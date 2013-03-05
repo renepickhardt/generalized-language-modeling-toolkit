@@ -18,6 +18,7 @@ public abstract class Splitter {
 
 	private Aggregator aggregator;
 	private Sorter sorter;
+	private CountNormalizer countNormalizer;
 
 	private HashMap<String, BufferedWriter> writers;
 
@@ -36,6 +37,7 @@ public abstract class Splitter {
 		this.outputDirectory.mkdir();
 		this.aggregator = new Aggregator();
 		this.sorter = new Sorter();
+		this.countNormalizer = new CountNormalizer();
 	}
 
 	protected void initialize(String extension) {
@@ -88,7 +90,8 @@ public abstract class Splitter {
 		this.sorter.sortSplitDirectory(inputPath, "_split", "_splitSort");
 		this.aggregator.aggregateDirectory(inputPath, "_splitSort",
 				"_aggregate");
-		this.sorter.sortCountDirectory(inputPath, "_aggregate", "");
+		this.sorter.sortCountDirectory(inputPath, "_aggregate", "_countSort");
+		this.countNormalizer.normalizeDirectory(inputPath, "_countSort", "");
 	}
 
 	protected void reset() {

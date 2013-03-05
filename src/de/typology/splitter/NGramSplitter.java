@@ -44,8 +44,6 @@ public class NGramSplitter extends Splitter {
 				}
 			}
 			this.reset();
-			System.out.println(this.outputDirectory.getAbsolutePath() + "/"
-					+ this.extension);
 			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
 					+ this.extension);
 

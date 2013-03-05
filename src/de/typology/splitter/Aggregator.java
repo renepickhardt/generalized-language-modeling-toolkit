@@ -9,7 +9,6 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class Aggregator {
-	protected File outputDirectory;
 	private BufferedReader reader;
 	private BufferedWriter writer;
 
@@ -51,7 +50,15 @@ public class Aggregator {
 			this.writer = IOHelper.openWriteFile(inputFile.getAbsolutePath()
 					.replace(inputExtension, outputExtension), 1024 * 1024 * 8);
 			try {
+				// initializing current and previous
 				this.currentLine = this.reader.readLine();
+				if (this.currentLine.equals("null1")) {
+					IOHelper.log("skipping empty file: " + inputFile.getName());
+					this.reader.close();
+					this.writer.close();
+					// inputFile.delete();
+					return;
+				}
 				this.previousLine = this.currentLine;
 				this.lineCount = 1;
 				while ((this.currentLine = this.reader.readLine()) != null) {
@@ -72,7 +79,7 @@ public class Aggregator {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			inputFile.delete();
+			// inputFile.delete();
 		}
 	}
 }
