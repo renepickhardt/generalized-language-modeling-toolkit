@@ -25,10 +25,10 @@ public class IndexBuilder {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String dataSet = "testwiki";
+		String dataSet = "wiki/testwiki/";
+		String outputDirectory = Config.get().outputDirectory + dataSet;
 		IndexBuilder ib = new IndexBuilder();
-		ib.buildIndex(Config.get().outputDirectory + dataSet
-				+ "/normalized.txt", Config.get().outputDirectory + dataSet
+		ib.buildIndex(outputDirectory + "/normalized.txt", outputDirectory
 				+ "/index.txt");
 		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
 		// System.out.println(word.getKey() + " --> " + word.getValue());
@@ -214,7 +214,7 @@ public class IndexBuilder {
 					// store words in wordIndex and index file
 					for (String tempWord : tempWordList) {
 						this.wordIndex.put(tempWord, fileCount.toString());
-						bw.write(tempWord + " " + fileCount + "\n");
+						bw.write(tempWord + "\t" + fileCount + "\n");
 					}
 					// reset for next file
 					tempWordList = new ArrayList<String>();
