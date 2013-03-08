@@ -28,8 +28,8 @@ public class IndexBuilder {
 		String dataSet = "wiki/enwiki/";
 		String outputDirectory = Config.get().outputDirectory + dataSet;
 		IndexBuilder ib = new IndexBuilder();
-		ib.buildIndex(outputDirectory + "/normalized.txt", outputDirectory
-				+ "/index.txt");
+		ib.buildIndex(outputDirectory + "normalized.txt", outputDirectory
+				+ "index.txt");
 		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
 		// System.out.println(word.getKey() + " --> " + word.getValue());
 		// }
