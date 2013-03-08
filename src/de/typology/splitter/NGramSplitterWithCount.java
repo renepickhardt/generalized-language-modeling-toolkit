@@ -13,7 +13,7 @@ public class NGramSplitterWithCount extends NGramSplitter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "wiki/testwiki/";
+		String dataSet = "google/testgoogle/";
 		String outputDirectory = Config.get().outputDirectory + dataSet;
 		NGramSplitterWithCount ngswc = new NGramSplitterWithCount(
 				outputDirectory, "index.txt", "normalized.txt");

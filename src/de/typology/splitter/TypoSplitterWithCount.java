@@ -13,7 +13,7 @@ public class TypoSplitterWithCount extends TypoSplitter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "wiki/testwiki/";
+		String dataSet = "google/testgoogle/";
 		String outputDirectory = Config.get().outputDirectory + dataSet;
 		TypoSplitterWithCount tswc = new TypoSplitterWithCount(outputDirectory,
 				"index.txt", "normalized.txt");

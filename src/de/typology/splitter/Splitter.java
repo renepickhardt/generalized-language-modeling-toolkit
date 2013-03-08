@@ -14,7 +14,7 @@ public abstract class Splitter {
 	private String directory;
 	private String inputName;
 	protected File outputDirectory;
-	public HashMap<String, String> wordIndex;
+	private HashMap<String, String> wordIndex;
 	protected BufferedReader reader;
 
 	private Aggregator aggregator;
@@ -24,9 +24,11 @@ public abstract class Splitter {
 	private HashMap<String, BufferedWriter> writers;
 
 	// variables for managing sliding window
-	protected int linePointer;
-	protected String line;
-	protected String[] lineSplit = new String[0];
+	private int linePointer;
+	private String line;
+	private String[] lineSplit = new String[0];
+
+	// sequence and sequenceCount are used by split()
 	protected String[] sequence;
 	protected int sequenceCount;
 
