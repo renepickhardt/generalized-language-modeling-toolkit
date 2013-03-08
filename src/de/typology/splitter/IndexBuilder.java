@@ -25,7 +25,7 @@ public class IndexBuilder {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String dataSet = "wiki/testwiki/";
+		String dataSet = "wiki/enwiki/";
 		String outputDirectory = Config.get().outputDirectory + dataSet;
 		IndexBuilder ib = new IndexBuilder();
 		ib.buildIndex(outputDirectory + "/normalized.txt", outputDirectory

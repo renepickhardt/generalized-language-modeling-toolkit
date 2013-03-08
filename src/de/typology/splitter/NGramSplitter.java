@@ -17,7 +17,7 @@ public class NGramSplitter extends Splitter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "wiki/testwiki/";
+		String dataSet = "wiki/enwiki/";
 		String outputDirectory = Config.get().outputDirectory + dataSet;
 		NGramSplitter ngs = new NGramSplitter(outputDirectory, "index.txt",
 				"normalized.txt");
