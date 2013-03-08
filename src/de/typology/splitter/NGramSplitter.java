@@ -9,36 +9,35 @@ import de.typology.utils.IOHelper;
 public class NGramSplitter extends Splitter {
 	private String extension;
 
-	public NGramSplitter(String indexPath, String inputPath) {
-		super(indexPath, inputPath, "ngrams");
+	public NGramSplitter(String directory, String indexName, String inputName) {
+		super(directory, indexName, inputName, "ngrams");
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "testwiki";
-		NGramSplitter ngs = new NGramSplitter(Config.get().outputDirectory
-				+ dataSet + "/index.txt", Config.get().outputDirectory
-				+ dataSet + "/normalized.txt");
+		String dataSet = "wiki/testwiki/";
+		String outputDirectory = Config.get().outputDirectory + dataSet;
+		NGramSplitter ngs = new NGramSplitter(outputDirectory, "index.txt",
+				"normalized.txt");
 		ngs.split(5);
 	}
 
 	@Override
 	public void split(int maxSequenceLength) {
-		String[] sequence;
 		BufferedWriter writer;
 		for (int sequenceLength = 1; sequenceLength <= maxSequenceLength; sequenceLength++) {
 			IOHelper.log("splitting into " + sequenceLength + "grams");
 			this.extension = sequenceLength + "gs";
-			this.initialize(this.extension);
-			while ((sequence = this.getSequence(sequenceLength)) != null) {
-				writer = this.getWriter(sequence[0]);
+			this.initialize(this.extension, sequenceLength);
+			while (this.getNextSequence(sequenceLength)) {
+				writer = this.getWriter(this.sequence[0]);
 				try {
-					for (String word : sequence) {
+					for (String word : this.sequence) {
 						writer.write(word + "\t");
 					}
-					writer.write("\n");
+					writer.write(this.sequenceCount + "\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

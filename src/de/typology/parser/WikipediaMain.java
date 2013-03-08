@@ -22,9 +22,9 @@ public class WikipediaMain {
 		// Config.get().outputDirectory + "barwiki/parsed.txt",
 		// Config.get().outputDirectory + "barwiki/normalized.txt");
 
-		run("/home/martin/typology/datasets/wiki/enwiki-20130204-pages-articles.xml.bz2",
-				Config.get().outputDirectory + "enwiki/parsed.txt",
-				Config.get().outputDirectory + "enwiki/normalized.txt");
+		run(dir + "/enwiki-20130204-pages-articles.xml.bz2", outputDirectory
+				+ "enwiki/parsed.txt", outputDirectory
+				+ "enwiki/normalized.txt");
 	}
 
 	public static void run(String wikiInputPath, String parsedOutputPath,

@@ -11,10 +11,11 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public abstract class Splitter {
-	private String inputPath;
+	private String directory;
+	private String inputName;
 	protected File outputDirectory;
 	public HashMap<String, String> wordIndex;
-	private BufferedReader reader;
+	protected BufferedReader reader;
 
 	private Aggregator aggregator;
 	private Sorter sorter;
@@ -23,16 +24,20 @@ public abstract class Splitter {
 	private HashMap<String, BufferedWriter> writers;
 
 	// variables for managing sliding window
-	private int linePointer;
-	private String line;
-	private String[] lineSplit = new String[0];
+	protected int linePointer;
+	protected String line;
+	protected String[] lineSplit = new String[0];
+	protected String[] sequence;
+	protected int sequenceCount;
 
-	protected Splitter(String indexPath, String inputPath,
+	protected Splitter(String directory, String indexName, String inputName,
 			String outputDirectoryName) {
+		this.directory = directory;
+		this.inputName = inputName;
 		IndexBuilder ib = new IndexBuilder();
-		this.wordIndex = ib.deserializeIndex(indexPath);
-		this.inputPath = inputPath;
-		this.outputDirectory = new File(new File(inputPath).getParent() + "/"
+		this.wordIndex = ib.deserializeIndex(directory + indexName);
+
+		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName);
 		this.outputDirectory.mkdir();
 		this.aggregator = new Aggregator();
@@ -40,8 +45,17 @@ public abstract class Splitter {
 		this.countNormalizer = new CountNormalizer();
 	}
 
-	protected void initialize(String extension) {
-		this.reader = IOHelper.openReadFile(this.inputPath);
+	/**
+	 * Initializing the reader and writers
+	 * 
+	 * int sequenceLength is not used but necessary for overriding the method
+	 * later with initializingWithLength()
+	 * 
+	 * @param extension
+	 * @param sequenceLength
+	 */
+	protected void initialize(String extension, int sequenceLength) {
+		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 		currentOutputDirectory.mkdir();
@@ -57,8 +71,38 @@ public abstract class Splitter {
 		}
 	}
 
-	protected String[] getSequence(int sequenceLength) {
-		String[] sequence = new String[sequenceLength];
+	/**
+	 * This method is used when having ngrams as an input
+	 * 
+	 * @param extension
+	 * @param sequenceLength
+	 */
+	protected void initializeWithLength(String extension, int sequenceLength) {
+		this.reader = IOHelper.openReadFile(this.directory + sequenceLength
+				+ "/" + this.inputName);
+		File currentOutputDirectory = new File(
+				this.outputDirectory.getAbsoluteFile() + "/" + extension);
+		currentOutputDirectory.mkdir();
+		this.writers = new HashMap<String, BufferedWriter>();
+		for (Entry<String, String> word : this.wordIndex.entrySet()) {
+			if (!this.writers.containsKey(word.getValue())) {
+				this.writers.put(word.getValue(), IOHelper.openWriteFile(
+						currentOutputDirectory + "/" + word.getValue() + "."
+								+ extension + "_split",
+						Config.get().memoryLimitForWritingFiles
+								/ Config.get().maxFiles));
+			}
+		}
+	}
+
+	/**
+	 * this method assumes that there is no count at the end of a line
+	 * 
+	 * @param sequenceLength
+	 * @return
+	 */
+	protected boolean getNextSequence(int sequenceLength) {
+		this.sequence = new String[sequenceLength];
 		if (this.linePointer + sequenceLength > this.lineSplit.length) {
 			while (true) {
 				// repeat until end of file or finding a line that is long
@@ -66,11 +110,13 @@ public abstract class Splitter {
 				try {
 					this.line = this.reader.readLine();
 					if (this.line == null) {
-						return null;
+						// reached end of file
+						return false;
 					} else {
 						this.lineSplit = this.line.split("\\s");
 						if (this.lineSplit.length >= sequenceLength) {
 							this.linePointer = 0;
+							this.sequenceCount = 1;
 							break;
 						}
 					}
@@ -80,10 +126,49 @@ public abstract class Splitter {
 			}
 		}
 		for (int i = 0; i < sequenceLength; i++) {
-			sequence[i] = this.lineSplit[this.linePointer + i];
+			this.sequence[i] = this.lineSplit[this.linePointer + i];
 		}
 		this.linePointer++;
-		return sequence;
+		return true;
+	}
+
+	/**
+	 * this method assumes that there is a count at the end of a line
+	 * 
+	 * @param sequenceLength
+	 * @return
+	 */
+	protected boolean getNextSequenceWithCount(int sequenceLength) {
+		this.sequence = new String[sequenceLength];
+		// this.lineSplit.length-1 to leave out the count
+		if (this.linePointer + sequenceLength > this.lineSplit.length - 1) {
+			while (true) {
+				// repeat until end of file or finding a line that is long
+				// enough
+				try {
+					this.line = this.reader.readLine();
+					if (this.line == null) {
+						// reached end of file
+						return false;
+					} else {
+						this.lineSplit = this.line.split("\\s");
+						if (this.lineSplit.length > sequenceLength) {
+							this.linePointer = 0;
+							this.sequenceCount = Integer
+									.parseInt(this.lineSplit[this.lineSplit.length - 1]);
+							break;
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		for (int i = 0; i < sequenceLength; i++) {
+			this.sequence[i] = this.lineSplit[this.linePointer + i];
+		}
+		this.linePointer++;
+		return true;
 	}
 
 	protected void sortAndAggregate(String inputPath) {
@@ -95,7 +180,6 @@ public abstract class Splitter {
 	}
 
 	protected void reset() {
-		this.reader = IOHelper.openReadFile(this.inputPath);
 		for (Entry<String, BufferedWriter> writer : this.writers.entrySet()) {
 			try {
 				writer.getValue().close();
