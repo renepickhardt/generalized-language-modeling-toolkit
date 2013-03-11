@@ -63,7 +63,7 @@ public class CountNormalizer {
 					}
 					this.reader.close();
 					this.writer.close();
-					// inputFile.delete();
+					inputFile.delete();
 					return;
 				}
 
@@ -96,7 +96,7 @@ public class CountNormalizer {
 				e.printStackTrace();
 			}
 
-			// inputFile.delete();
+			inputFile.delete();
 		}
 	}
 

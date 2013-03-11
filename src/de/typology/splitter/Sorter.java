@@ -40,7 +40,7 @@ public class Sorter {
 			// execute command
 			this.executeCommand(sortCommand);
 
-			// inputFile.delete();
+			inputFile.delete();
 		}
 		// note: when sorting an empty file, new file contains "null1"
 	}
@@ -84,7 +84,7 @@ public class Sorter {
 			// execute command
 			this.executeCommand(sortCommand);
 
-			// inputFile.delete();
+			inputFile.delete();
 		}
 		// note: when sorting an empty file, new file contains "null1"
 	}

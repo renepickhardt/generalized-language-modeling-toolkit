@@ -84,7 +84,7 @@ public class Aggregator {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			// inputFile.delete();
+			inputFile.delete();
 		}
 	}
 
