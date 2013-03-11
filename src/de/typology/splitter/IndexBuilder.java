@@ -63,8 +63,8 @@ public class IndexBuilder {
 				for (String word : words) {
 
 					// cut down word to make wordMap smaller
-					if (word.length() > 2) {
-						word = word.substring(0, 1);
+					if (word.length() > 4) {
+						word = word.substring(0, 3);
 					}
 
 					if (this.wordMap.containsKey(word)) {
