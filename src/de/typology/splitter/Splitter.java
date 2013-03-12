@@ -63,8 +63,8 @@ public abstract class Splitter {
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
-		int fileCount = 0;
-		for (String word : this.wordIndex) {
+
+		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
 			this.writers.put(
 					fileCount,
 					IOHelper.openWriteFile(
@@ -72,7 +72,6 @@ public abstract class Splitter {
 									+ extension + "_split",
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxFiles));
-			fileCount++;
 		}
 	}
 
@@ -89,8 +88,7 @@ public abstract class Splitter {
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
-		int fileCount = 0;
-		for (String word : this.wordIndex) {
+		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
 			this.writers.put(
 					fileCount,
 					IOHelper.openWriteFile(
@@ -98,7 +96,6 @@ public abstract class Splitter {
 									+ extension + "_split",
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxFiles));
-			fileCount++;
 		}
 	}
 

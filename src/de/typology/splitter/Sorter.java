@@ -93,7 +93,12 @@ public class Sorter {
 		BufferedReader br = IOHelper.openReadFile(inputPath);
 		int columnNumber = 0;
 		try {
-			columnNumber = br.readLine().split("\t").length;
+			String line = br.readLine();
+			if (line != null) {
+				columnNumber = line.split("\t").length;
+			} else {
+				columnNumber = 0;
+			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
