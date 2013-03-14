@@ -17,7 +17,7 @@ public class TypoSplitter extends Splitter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "wiki/testwiki/";
+		String dataSet = "wiki/enwiki/";
 		String outputDirectory = Config.get().outputDirectory + dataSet;
 		TypoSplitter ts = new TypoSplitter(outputDirectory, "index.txt",
 				"normalized.txt");
