@@ -5,18 +5,18 @@ import de.typology.utils.Config;
 public class TypoSplitterWithCount extends TypoSplitter {
 
 	public TypoSplitterWithCount(String directory, String indexName,
-			String inputName) {
-		super(directory, indexName, inputName);
+			String statsName, String inputName) {
+		super(directory, indexName, statsName, inputName);
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "google/testgoogle/";
-		String outputDirectory = Config.get().outputDirectory + dataSet;
+		String outputDirectory = Config.get().outputDirectory
+				+ Config.get().inputDataSet;
 		TypoSplitterWithCount tswc = new TypoSplitterWithCount(outputDirectory,
-				"index.txt", "normalized.txt");
+				"index.txt", "stats", "normalized.txt");
 		tswc.split(5);
 	}
 

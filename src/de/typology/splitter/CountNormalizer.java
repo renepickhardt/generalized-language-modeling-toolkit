@@ -29,17 +29,17 @@ public class CountNormalizer {
 
 	}
 
-	public void normalizeDirectory(String inputPath, String inputExtension,
-			String outputExtension) {
+	public void normalizeDirectory(String statsPath, String inputPath,
+			String inputExtension, String outputExtension) {
 		File[] files = new File(inputPath).listFiles();
 		for (File file : files) {
-			this.normalizeFile(file.getAbsolutePath(), inputExtension,
-					outputExtension);
+			this.normalizeFile(statsPath, file.getAbsolutePath(),
+					inputExtension, outputExtension);
 		}
 	}
 
-	public void normalizeFile(String inputPath, String inputExtension,
-			String outputExtension) {
+	public void normalizeFile(String statsPath, String inputPath,
+			String inputExtension, String outputExtension) {
 		if (inputPath.endsWith(inputExtension)) {
 			File inputFile = new File(inputPath);
 			this.reader = IOHelper.openReadFile(inputPath, 1024 * 1024 * 8);
@@ -55,13 +55,31 @@ public class CountNormalizer {
 				}
 				this.currentLineSplit = this.currentLine.split("\t");
 
-				// leave out 1grams and 0edges (still copying into new file)
+				// leave out 1grams and 0edges
 				if (this.currentLineSplit.length < 3
 						|| inputPath.contains(".0")) {
-					this.writer.write(this.currentLine + "\n");
-					while ((this.currentLine = this.reader.readLine()) != null) {
-						this.writer.write(this.currentLine + "\n");
+
+					// get total count from stats file
+					BufferedReader statsReader = IOHelper.openReadFile(
+							statsPath, 1024 * 1024 * 8);
+					Long totalCount = 0L;
+					String tempLine;
+					while ((tempLine = statsReader.readLine()) != null) {
+						if (tempLine.startsWith("total words: ")) {
+							totalCount = Long.parseLong(tempLine.replace(
+									"total words: ", ""));
+						}
 					}
+					do {
+						this.currentLineSplit = this.currentLine.split("\t");
+						this.headCount = Long
+								.parseLong(this.currentLineSplit[this.currentLineSplit.length - 1]);
+						for (int i = 0; i < this.currentLineSplit.length - 1; i++) {
+							this.writer.write(this.currentLineSplit[i] + "\t");
+						}
+						this.writer.write((double) this.headCount / totalCount
+								+ "\n");
+					} while ((this.currentLine = this.reader.readLine()) != null);
 					this.reader.close();
 					this.writer.close();
 					inputFile.delete();
