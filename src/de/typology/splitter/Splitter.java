@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import de.typology.utils.BinarySearch;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -14,14 +15,14 @@ public abstract class Splitter {
 	private String directory;
 	private String inputName;
 	protected File outputDirectory;
-	private HashMap<String, String> wordIndex;
+	private String[] wordIndex;
 	protected BufferedReader reader;
 
 	private Aggregator aggregator;
 	private Sorter sorter;
 	private CountNormalizer countNormalizer;
 
-	private HashMap<String, BufferedWriter> writers;
+	private HashMap<Integer, BufferedWriter> writers;
 
 	// variables for managing sliding window
 	private int linePointer;
@@ -61,15 +62,16 @@ public abstract class Splitter {
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 		currentOutputDirectory.mkdir();
-		this.writers = new HashMap<String, BufferedWriter>();
-		for (Entry<String, String> word : this.wordIndex.entrySet()) {
-			if (!this.writers.containsKey(word.getValue())) {
-				this.writers.put(word.getValue(), IOHelper.openWriteFile(
-						currentOutputDirectory + "/" + word.getValue() + "."
-								+ extension + "_split",
-						Config.get().memoryLimitForWritingFiles
-								/ Config.get().maxFiles));
-			}
+		this.writers = new HashMap<Integer, BufferedWriter>();
+
+		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+			this.writers.put(
+					fileCount,
+					IOHelper.openWriteFile(
+							currentOutputDirectory + "/" + fileCount + "."
+									+ extension + "_split",
+							Config.get().memoryLimitForWritingFiles
+									/ Config.get().maxFiles));
 		}
 	}
 
@@ -85,15 +87,15 @@ public abstract class Splitter {
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 		currentOutputDirectory.mkdir();
-		this.writers = new HashMap<String, BufferedWriter>();
-		for (Entry<String, String> word : this.wordIndex.entrySet()) {
-			if (!this.writers.containsKey(word.getValue())) {
-				this.writers.put(word.getValue(), IOHelper.openWriteFile(
-						currentOutputDirectory + "/" + word.getValue() + "."
-								+ extension + "_split",
-						Config.get().memoryLimitForWritingFiles
-								/ Config.get().maxFiles));
-			}
+		this.writers = new HashMap<Integer, BufferedWriter>();
+		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+			this.writers.put(
+					fileCount,
+					IOHelper.openWriteFile(
+							currentOutputDirectory + "/" + fileCount + "."
+									+ extension + "_split",
+							Config.get().memoryLimitForWritingFiles
+									/ Config.get().maxFiles));
 		}
 	}
 
@@ -182,7 +184,7 @@ public abstract class Splitter {
 	}
 
 	protected void reset() {
-		for (Entry<String, BufferedWriter> writer : this.writers.entrySet()) {
+		for (Entry<Integer, BufferedWriter> writer : this.writers.entrySet()) {
 			try {
 				writer.getValue().close();
 			} catch (IOException e) {
@@ -192,7 +194,8 @@ public abstract class Splitter {
 	}
 
 	protected BufferedWriter getWriter(String key) {
-		return this.writers.get(this.wordIndex.get(key));
+		return this.writers.get(BinarySearch.rank(key, this.wordIndex));
+
 	}
 
 	protected abstract void split(int maxSequenceLength);

@@ -50,6 +50,7 @@ public class CountNormalizer {
 				if ((this.currentLine = this.reader.readLine()) == null) {
 					this.reader.close();
 					this.writer.close();
+					inputFile.delete();
 					return;
 				}
 				this.currentLineSplit = this.currentLine.split("\t");
@@ -63,7 +64,7 @@ public class CountNormalizer {
 					}
 					this.reader.close();
 					this.writer.close();
-					// inputFile.delete();
+					inputFile.delete();
 					return;
 				}
 
@@ -91,12 +92,11 @@ public class CountNormalizer {
 
 				this.reader.close();
 				this.writer.close();
+				inputFile.delete();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			// inputFile.delete();
 		}
 	}
 

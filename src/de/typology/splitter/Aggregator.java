@@ -52,15 +52,12 @@ public class Aggregator {
 			try {
 				// initializing currentLine and currentLineCount
 				if (!this.setLineAndCount()) {
+					IOHelper.log("skipping empty file: " + inputFile.getName());
+					this.reader.close();
+					this.writer.close();
+					inputFile.delete();
 					return;
 				}
-				// if (this.currentLine.equals("null1")) {
-				// IOHelper.log("skipping empty file: " + inputFile.getName());
-				// this.reader.close();
-				// this.writer.close();
-				// // inputFile.delete();
-				// return;
-				// }
 
 				// initialize previousLine and lineCount
 				this.previousLine = this.currentLine;
@@ -81,10 +78,11 @@ public class Aggregator {
 
 				this.reader.close();
 				this.writer.close();
+				inputFile.delete();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			// inputFile.delete();
+
 		}
 	}
 
@@ -97,7 +95,7 @@ public class Aggregator {
 				tempLineSplit = tempLine.split("\t");
 				// tempLineSplit.length-1 to exclude the count
 				for (int i = 0; i < tempLineSplit.length - 1; i++) {
-					this.currentLine.concat(tempLineSplit[i] + "\t");
+					this.currentLine += tempLineSplit[i] + "\t";
 				}
 				this.currentLineCount = Integer
 						.parseInt(tempLineSplit[tempLineSplit.length - 1]);
