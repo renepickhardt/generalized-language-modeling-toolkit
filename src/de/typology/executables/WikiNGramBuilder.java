@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import de.typology.nGramBuilder.NGramBuilder;
-import de.typology.parser.DataSetSplitter;
+import de.typology.parser.DataSetSplitterOld;
 import de.typology.parser.WikipediaMain;
 import de.typology.utils.Config;
 
@@ -84,7 +84,7 @@ public class WikiNGramBuilder {
 		String learningFile = learningPath + "learning.file";
 
 		if (Config.get().sampleSplitData) {
-			DataSetSplitter.run(fileToBeSplit, testFile, trainingFile,
+			DataSetSplitterOld.run(fileToBeSplit, testFile, trainingFile,
 					learningFile);
 		}
 

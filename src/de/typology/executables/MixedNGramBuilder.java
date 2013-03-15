@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import de.typology.nGramBuilder.NGramBuilder;
 import de.typology.parser.DGTTMMain;
-import de.typology.parser.DataSetSplitter;
+import de.typology.parser.DataSetSplitterOld;
 import de.typology.parser.EnronMain;
 import de.typology.utils.Config;
 
@@ -127,7 +127,7 @@ public class MixedNGramBuilder {
 		String learningFile = learningPath + "learning.file";
 
 		if (Config.get().sampleSplitData) {
-			DataSetSplitter.run(fileToBeSplit, testFile, trainingFile,
+			DataSetSplitterOld.run(fileToBeSplit, testFile, trainingFile,
 					learningFile);
 		}
 
