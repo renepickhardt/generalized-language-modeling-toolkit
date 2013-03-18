@@ -14,6 +14,7 @@ import de.typology.utils.IOHelper;
 public abstract class Splitter {
 	private String directory;
 	private String inputName;
+	private String statsPath;
 	protected File outputDirectory;
 	private String[] wordIndex;
 	protected BufferedReader reader;
@@ -33,10 +34,11 @@ public abstract class Splitter {
 	protected String[] sequence;
 	protected int sequenceCount;
 
-	protected Splitter(String directory, String indexName, String inputName,
-			String outputDirectoryName) {
+	protected Splitter(String directory, String indexName, String statsName,
+			String inputName, String outputDirectoryName) {
 		this.directory = directory;
 		this.inputName = inputName;
+		this.statsPath = directory + statsName;
 		IndexBuilder ib = new IndexBuilder();
 		this.wordIndex = ib.deserializeIndex(directory + indexName);
 
@@ -61,9 +63,12 @@ public abstract class Splitter {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
+
+		// delete old files
+		IOHelper.deleteDirectory(currentOutputDirectory);
+
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
-
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
 			this.writers.put(
 					fileCount,
@@ -86,6 +91,10 @@ public abstract class Splitter {
 				+ "/" + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
+
+		// delete old files
+		IOHelper.deleteDirectory(currentOutputDirectory);
+
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
@@ -117,7 +126,7 @@ public abstract class Splitter {
 						// reached end of file
 						return false;
 					} else {
-						this.lineSplit = this.line.split("\\s");
+						this.lineSplit = this.line.split("\\s+");
 						if (this.lineSplit.length >= sequenceLength) {
 							this.linePointer = 0;
 							this.sequenceCount = 1;
@@ -180,7 +189,8 @@ public abstract class Splitter {
 		this.aggregator.aggregateDirectory(inputPath, "_splitSort",
 				"_aggregate");
 		this.sorter.sortCountDirectory(inputPath, "_aggregate", "_countSort");
-		this.countNormalizer.normalizeDirectory(inputPath, "_countSort", "");
+		this.countNormalizer.normalizeDirectory(this.statsPath, inputPath,
+				"_countSort", "");
 	}
 
 	protected void reset() {

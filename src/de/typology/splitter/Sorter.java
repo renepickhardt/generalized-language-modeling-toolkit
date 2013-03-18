@@ -66,20 +66,16 @@ public class Sorter {
 			int columnNumber = this.getColumnNumber(inputPath);
 			String sortCommand = "sort --buffer-size=3G ";
 
-			// don't sort for last word (with "< columnNumber - 1")
-			for (int column = 1; column < columnNumber - 1; column++) {
-				sortCommand += "--key=" + column + "," + column + " ";
+			// 0edges are only sorted by count
+			if (!inputPath.contains(".0")) {
+				// don't sort for last word (with "< columnNumber - 1") ...
+				for (int column = 1; column < columnNumber - 1; column++) {
+					sortCommand += "--key=" + column + "," + column + " ";
+				}
 			}
-
-			// instead sort for count (nr --> numerics, reverse)
+			// ... instead sort for count (nr --> numerics, reverse)
 			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";
 			sortCommand += "--output=" + outputPath + " " + inputPath;
-
-			// don't sort 1grams (this would sort by count only since the only
-			// word is ignored)
-			if (columnNumber < 3) {
-				sortCommand = "cp " + inputPath + " " + outputPath;
-			}
 
 			// execute command
 			this.executeCommand(sortCommand);

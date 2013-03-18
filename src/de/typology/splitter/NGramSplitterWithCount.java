@@ -5,18 +5,18 @@ import de.typology.utils.Config;
 public class NGramSplitterWithCount extends NGramSplitter {
 
 	public NGramSplitterWithCount(String directory, String indexName,
-			String inputName) {
-		super(directory, indexName, inputName);
+			String statsName, String inputName) {
+		super(directory, indexName, statsName, inputName);
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "google/testgoogle/";
-		String outputDirectory = Config.get().outputDirectory + dataSet;
+		String outputDirectory = Config.get().outputDirectory
+				+ Config.get().inputDataSet;
 		NGramSplitterWithCount ngswc = new NGramSplitterWithCount(
-				outputDirectory, "index.txt", "normalized.txt");
+				outputDirectory, "index.txt", "stats", "normalized.txt");
 		ngswc.split(5);
 	}
 

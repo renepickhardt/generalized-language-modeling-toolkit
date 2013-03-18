@@ -22,13 +22,13 @@ import de.typology.utils.IOHelper;
  * 
  */
 
-public class DataSetSplitter {
+public class DataSetSplitterOld {
 
 	private BufferedWriter testDataWriter;
 	private BufferedWriter trainingDataWriter;
 	private BufferedWriter learningDataWriter;
 
-	public DataSetSplitter(String testFile, String trainingFile,
+	public DataSetSplitterOld(String testFile, String trainingFile,
 			String learningFile) {
 		this.testDataWriter = IOHelper.openWriteFile(testFile,
 				Config.get().memoryLimitForWritingFiles);
@@ -63,7 +63,7 @@ public class DataSetSplitter {
 	 */
 	public static void run(String inputFile, String testFile,
 			String trainingFile, String learningFile) {
-		DataSetSplitter dss = new DataSetSplitter(testFile, trainingFile,
+		DataSetSplitterOld dss = new DataSetSplitterOld(testFile, trainingFile,
 				learningFile);
 		BufferedReader br = IOHelper.openReadFile(inputFile);
 		String line = "";

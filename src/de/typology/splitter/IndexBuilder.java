@@ -16,7 +16,6 @@ import de.typology.utils.IOHelper;
 public class IndexBuilder {
 	private TreeMap<String, Long> wordMap;
 	private String[] wordIndex;
-	private BufferedReader reader;
 	private final Comparator<String> comparator = new Comparator<String>() {
 		@Override
 		public int compare(String s1, String s2) {
@@ -29,11 +28,11 @@ public class IndexBuilder {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String dataSet = "wiki/enwiki/";
-		String outputDirectory = Config.get().outputDirectory + dataSet;
+		String outputDirectory = Config.get().outputDirectory
+				+ Config.get().inputDataSet;
 		IndexBuilder ib = new IndexBuilder();
 		ib.buildIndex(outputDirectory + "normalized.txt", outputDirectory
-				+ "index.txt");
+				+ "index.txt", outputDirectory + "stats.txt");
 		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
 		// System.out.println(word.getKey() + " --> " + word.getValue());
 		// }
@@ -47,25 +46,25 @@ public class IndexBuilder {
 
 	private void buildMap(String input) {
 		IOHelper.log("building word map");
-		this.reader = IOHelper.openReadFile(input);
+		BufferedReader reader = IOHelper.openReadFile(input);
 		// declare a comparator for wordMap
 
 		this.wordMap = new TreeMap<String, Long>(this.comparator);
 		String line;
 		Long lineCount = 0L;
 		try {
-			while ((line = this.reader.readLine()) != null) {
+			while ((line = reader.readLine()) != null) {
 				lineCount++;
 				if (lineCount % 10000 == 0) {
 					IOHelper.log("lines: " + lineCount);
 				}
-				String[] words = line.split("\\s");
+				String[] words = line.split("\\s+");
 				for (String word : words) {
 
 					// cut down word to make wordMap smaller
-					if (word.length() > 3) {
-						word = word.substring(0, 2);
-					}
+					// if (word.length() > 3) {
+					// word = word.substring(0, 2);
+					// }
 
 					if (this.wordMap.containsKey(word)) {
 						this.wordMap.put(word, this.wordMap.get(word) + 1);
@@ -74,7 +73,7 @@ public class IndexBuilder {
 					}
 				}
 			}
-			this.reader.close();
+			reader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -83,12 +82,12 @@ public class IndexBuilder {
 		// }
 	}
 
-	public void buildIndex(String inputPath, String indexPath) {
+	public void buildIndex(String inputPath, String indexPath, String statsPath) {
 
 		// build WordMap
 		this.buildMap(inputPath);
 
-		IOHelper.log("building word index");
+		IOHelper.strongLog("building word index");
 		// read config
 		int maxFiles = Config.get().maxFiles;
 		int minCountPerFile = Config.get().minCountPerFile;
@@ -97,7 +96,19 @@ public class IndexBuilder {
 		for (Entry<String, Long> word : this.wordMap.entrySet()) {
 			totalCount += word.getValue();
 		}
-		IOHelper.log("total words count: " + totalCount);
+		// write stats
+
+		BufferedWriter statsWriter = IOHelper.openWriteFile(statsPath,
+				1024 * 1024 * 8);
+		try {
+			statsWriter.write(inputPath + ":\n");
+			statsWriter.write("total words: " + totalCount + "\n");
+			statsWriter.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		IOHelper.log("total words: " + totalCount);
 
 		// calculate max count per file
 		Long maxCountPerFile = totalCount / maxFiles;
@@ -106,24 +117,34 @@ public class IndexBuilder {
 		}
 
 		// build index
-		BufferedWriter bw = IOHelper.openWriteFile(indexPath, 1024 * 1024 * 8);
+		BufferedWriter indexWriter = IOHelper.openWriteFile(indexPath,
+				1024 * 1024 * 8);
 		Long currentFileCount = 0L;
 		int fileCount = 0;
 		Iterator<Map.Entry<String, Long>> wordMapIterator = this.wordMap
 				.entrySet().iterator();
 		try {
+			Entry<String, Long> word;
+			// set first file
+			if (wordMapIterator.hasNext()) {
+				word = wordMapIterator.next();
+				indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
+				currentFileCount = word.getValue();
+				fileCount++;
+			}
 			while (wordMapIterator.hasNext()) {
 				// get next word
-				Entry<String, Long> word = wordMapIterator.next();
-				currentFileCount += word.getValue();
-				if (currentFileCount >= maxCountPerFile) {
-					bw.write(word.getKey() + "\t" + fileCount + "\n");
-					currentFileCount = 0L;
+				word = wordMapIterator.next();
+				if (currentFileCount + word.getValue() > maxCountPerFile) {
+					indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
+					currentFileCount = word.getValue();
 					fileCount++;
+				} else {
+					currentFileCount += word.getValue();
 				}
 			}
-			bw.flush();
-			bw.close();
+			indexWriter.flush();
+			indexWriter.close();
 		} catch (IOException e) {
 			File indexFile = new File(indexPath);
 			if (indexFile.exists()) {
@@ -135,7 +156,7 @@ public class IndexBuilder {
 	}
 
 	public String[] deserializeIndex(String indexPath) {
-		IOHelper.log("deserializing word index");
+		IOHelper.strongLog("deserializing word index");
 		// count total number of lines
 		int lineCount = 0;
 		try {

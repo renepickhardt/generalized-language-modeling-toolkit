@@ -9,18 +9,19 @@ import de.typology.utils.IOHelper;
 public class TypoSplitter extends Splitter {
 	private String extension;
 
-	public TypoSplitter(String directory, String indexName, String inputName) {
-		super(directory, indexName, inputName, "typos");
+	public TypoSplitter(String directory, String indexName, String statsName,
+			String inputName) {
+		super(directory, indexName, statsName, inputName, "typos");
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String dataSet = "wiki/enwiki/";
-		String outputDirectory = Config.get().outputDirectory + dataSet;
+		String outputDirectory = Config.get().outputDirectory
+				+ Config.get().inputDataSet;
 		TypoSplitter ts = new TypoSplitter(outputDirectory, "index.txt",
-				"normalized.txt");
+				"stats.txt", "normalized.txt");
 		ts.split(5);
 	}
 
@@ -31,7 +32,7 @@ public class TypoSplitter extends Splitter {
 		for (int sequenceLength = 1; sequenceLength <= maxSequenceLength; sequenceLength++) {
 			edgeType = sequenceLength - 1;
 			this.extension = edgeType + "es";
-			IOHelper.log("splitting into " + this.extension);
+			IOHelper.strongLog("splitting into " + this.extension);
 			this.initialize(this.extension, sequenceLength);
 			while (this.getNextSequence(sequenceLength)) {
 				writer = this.getWriter(this.sequence[0]);
