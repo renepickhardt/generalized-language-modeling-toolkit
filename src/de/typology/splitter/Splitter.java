@@ -15,10 +15,12 @@ public abstract class Splitter {
 	private String directory;
 	private String inputName;
 	private String statsPath;
+	private String indexPath;
 	protected File outputDirectory;
 	private String[] wordIndex;
 	protected BufferedReader reader;
 
+	private SecondLevelSplitter secondLevelSplitter;
 	private Aggregator aggregator;
 	private Sorter sorter;
 	private CountNormalizer countNormalizer;
@@ -39,12 +41,14 @@ public abstract class Splitter {
 		this.directory = directory;
 		this.inputName = inputName;
 		this.statsPath = directory + statsName;
+		this.indexPath = directory + indexName;
 		IndexBuilder ib = new IndexBuilder();
 		this.wordIndex = ib.deserializeIndex(directory + indexName);
 
 		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName);
 		this.outputDirectory.mkdir();
+		this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
 		this.sorter = new Sorter();
 		this.countNormalizer = new CountNormalizer();
@@ -185,6 +189,8 @@ public abstract class Splitter {
 	}
 
 	protected void sortAndAggregate(String inputPath) {
+		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
+				inputPath, "_split", "_split");
 		this.sorter.sortSplitDirectory(inputPath, "_split", "_splitSort");
 		this.aggregator.aggregateDirectory(inputPath, "_splitSort",
 				"_aggregate");

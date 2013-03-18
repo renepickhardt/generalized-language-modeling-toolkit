@@ -26,6 +26,7 @@ public class Config extends Properties {
 	public int maxFiles;
 	public int minCountPerFile;
 	public String inputDataSet;
+	public int fileSizeThreashhold;
 
 	// old:
 
