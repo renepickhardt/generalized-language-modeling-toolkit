@@ -13,8 +13,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.TreeMap;
 
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.IntsRef;
@@ -24,6 +22,8 @@ import org.apache.lucene.util.fst.FST.BytesReader;
 import org.apache.lucene.util.fst.PositiveIntOutputs;
 import org.apache.lucene.util.fst.Util;
 import org.apache.lucene.util.fst.Util.MinResult;
+
+import de.typology.utils.IOHelper;
 
 public class FSTTest {
 
@@ -60,36 +60,43 @@ public class FSTTest {
 		// order of strings ae, ab, acd, abc, bef, agh, bfg, ch
 		IntsRef scratch = new IntsRef();
 
-		BufferedReader br = openReadFile("/var/lib/datasets/rawdata/wikipedia/normalized.txt");
+		long cnt = 0;
+		int ecnt = 0;
 		String line = "";
-		HashMap<String, Long> map = new HashMap<String, Long>();
-		int cnt = 1;
-		while ((line = br.readLine()) != null) {
-			String[] tokens = line.split("\\s");
-			for (String token : tokens) {
-				if (map.containsKey(token)) {
-					map.put(token, map.get(token) + 1);
-				} else {
-					map.put(token, (long) 1);
+		String key = "";
+		for (int i = 1; i < 700; i++) {
+			BufferedReader br = openReadFile("/var/lib/datasets/5grams/" + i
+					+ ".5gs");
+			while ((line = br.readLine()) != null) {
+				try {
+					String[] tokens = line.split("\\s");
+					if (tokens.length < 6) {
+						continue;
+					}
+					key = tokens[0] + " " + tokens[1] + " " + tokens[2] + " "
+							+ tokens[3] + " " + tokens[4];
+					Long value = (long) (Float.parseFloat(tokens[5]) * 10000000);
+					builder.add(Util.toIntsRef(new BytesRef(key), scratch),
+							Long.MAX_VALUE - value);
+					cnt++;
+					if (cnt % 500000 == 0) {
+						IOHelper.log(cnt + " terms added to a trie");
+					}
+				} catch (Exception e) {
+					IOHelper.log("trying to add: " + line
+							+ " as normalized token:" + key);
+					IOHelper.log(cnt
+							+ " items added to trie and crashed with following stack trace:");
+					e.printStackTrace();
+					ecnt++;
+					if (ecnt > 10) {
+						i = 1000;
+						break;
+					}
 				}
-			}
-			if (cnt++ % 1000 == 0) {
-				System.out.println(cnt - 1 + "\t articles processed");
-			}
-			if (cnt > 500000) {
-				break;
-			}
-		}
-		System.out.println(map.size());
 
-		TreeMap<String, Long> tm = new TreeMap<String, Long>();
-		for (String key : map.keySet()) {
-			tm.put(key, map.get(key));
-		}
-
-		for (String key : tm.keySet()) {
-			builder.add(Util.toIntsRef(new BytesRef(key), scratch),
-					Long.MAX_VALUE - tm.get(key));
+			}
+			IOHelper.log(i + " files processed and indexed to a trie");
 		}
 		return builder.finish();
 	}
