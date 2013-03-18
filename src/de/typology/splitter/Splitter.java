@@ -42,8 +42,9 @@ public abstract class Splitter {
 		this.inputName = inputName;
 		this.statsPath = directory + statsName;
 		this.indexPath = directory + indexName;
+		System.out.println(this.indexPath);
 		IndexBuilder ib = new IndexBuilder();
-		this.wordIndex = ib.deserializeIndex(directory + indexName);
+		this.wordIndex = ib.deserializeIndex(this.indexPath);
 
 		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName);
