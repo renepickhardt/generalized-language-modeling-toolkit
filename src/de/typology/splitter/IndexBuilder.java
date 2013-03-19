@@ -79,23 +79,6 @@ public class IndexBuilder {
 
 					// Print Maximum available memory
 					IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
-					runtime.gc();
-
-					IOHelper.log("##### Heap utilization statistics [MB] #####");
-
-					// Print used memory
-					IOHelper.log("Used Memory:\t"
-							+ (runtime.totalMemory() - runtime.freeMemory())
-							/ mb);
-
-					// Print free memory
-					IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
-
-					// Print total available memory
-					IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
-
-					// Print Maximum available memory
-					IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
 				}
 				String[] words = line.split("\\s+");
 				for (String word : words) {
