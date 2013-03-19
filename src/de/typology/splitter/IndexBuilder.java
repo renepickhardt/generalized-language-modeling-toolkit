@@ -79,6 +79,7 @@ public class IndexBuilder {
 
 					// Print Maximum available memory
 					IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
+					runtime.gc();
 				}
 				String[] words = line.split("\\s+");
 				for (String word : words) {
