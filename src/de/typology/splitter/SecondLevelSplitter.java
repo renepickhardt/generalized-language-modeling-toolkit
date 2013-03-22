@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import de.typology.utils.BinarySearch;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -103,10 +102,11 @@ public class SecondLevelSplitter {
 		String fileExtension = fileNameSplit[1];
 		this.writers = new HashMap<Integer, BufferedWriter>();
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+			// s stands for sub file
 			this.writers.put(
 					fileCount,
 					IOHelper.openWriteFile(
-							file.getParent() + "/" + fileNumber + "-"
+							file.getParent() + "/" + fileNumber + "s"
 									+ fileCount + "." + fileExtension,
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxFiles));

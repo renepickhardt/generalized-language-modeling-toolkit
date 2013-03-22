@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import de.typology.utils.BinarySearch;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
