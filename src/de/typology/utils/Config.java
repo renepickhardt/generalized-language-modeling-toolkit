@@ -23,7 +23,7 @@ import java.util.Properties;
 public class Config extends Properties {
 	// new:
 
-	public int maxFiles;
+	public int maxCountDivider;
 	public int minCountPerFile;
 	public String inputDataSet;
 	public int fileSizeThreashhold;

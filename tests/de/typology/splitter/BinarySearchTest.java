@@ -38,7 +38,7 @@ public class BinarySearchTest {
 		Resetter.reset("testDataset/");
 
 		// modify configuration parameters
-		Config.get().maxFiles = 9;
+		Config.get().maxCountDivider = 9;
 		Config.get().minCountPerFile = 2;
 		Config.get().fileSizeThreashhold = 100;
 

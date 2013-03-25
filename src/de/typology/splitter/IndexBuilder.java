@@ -111,7 +111,7 @@ public class IndexBuilder {
 
 		IOHelper.strongLog("building word index");
 		// read config
-		int maxFiles = Config.get().maxFiles;
+		int maxCountDivider = Config.get().maxCountDivider;
 		int minCountPerFile = Config.get().minCountPerFile;
 		// summarize all word counts
 		Long totalCount = 0L;
@@ -132,8 +132,9 @@ public class IndexBuilder {
 		}
 		IOHelper.log("total words: " + totalCount);
 
-		// calculate max count per file
-		Long maxCountPerFile = totalCount / maxFiles;
+		// calculate max count per file (+1 to always round up)
+		Long maxCountPerFile = totalCount / maxCountDivider;
+		System.out.println(maxCountPerFile);
 		if (maxCountPerFile < minCountPerFile) {
 			maxCountPerFile = (long) minCountPerFile;
 		}

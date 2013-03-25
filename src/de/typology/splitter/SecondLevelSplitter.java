@@ -109,7 +109,7 @@ public class SecondLevelSplitter {
 							file.getParent() + "/" + fileNumber + "s"
 									+ fileCount + "." + fileExtension,
 							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxFiles));
+									/ Config.get().maxCountDivider));
 		}
 	}
 

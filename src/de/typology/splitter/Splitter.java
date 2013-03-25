@@ -79,7 +79,7 @@ public abstract class Splitter {
 							currentOutputDirectory + "/" + fileCount + "."
 									+ extension + "_split",
 							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxFiles));
+									/ Config.get().maxCountDivider));
 		}
 	}
 
@@ -107,7 +107,7 @@ public abstract class Splitter {
 							currentOutputDirectory + "/" + fileCount + "."
 									+ extension + "_split",
 							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxFiles));
+									/ Config.get().maxCountDivider));
 		}
 	}
 
