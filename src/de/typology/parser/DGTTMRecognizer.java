@@ -55,7 +55,6 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	private static Map<String, DGTTMToken> keywords;
 	private static Map<String, String> tuvs;
 
-
 	static {
 		tuvs = new HashMap<String, String>();
 		tuvs.put("EN", "tuv lang=\"EN-GB\"");
@@ -79,7 +78,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		keywords=new HashMap<String, DGTTMToken>();
+		keywords = new HashMap<String, DGTTMToken>();
 		keywords.put("body", BODY);
 		keywords.put("seg", SEG);
 		keywords.put("/body", CLOSEDBODY);
@@ -203,14 +202,14 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		}
 
 		// Recognize exclamation mark
-		if (this.lookahead == '!' || this.lookahead == '¡') {
+		if (this.lookahead == '!') {
 			this.read();
 			this.token = EXCLAMATIONMARK;
 			return;
 		}
 
 		// Recognize question mark
-		if (this.lookahead == '?' || this.lookahead == '¿') {
+		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
 			return;

@@ -307,15 +307,9 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 			this.token = EXCLAMATIONMARK;
 			return;
 		}
-		// Recognize exclamation mark
-		if (this.lookahead == '¡') {
-			this.read();
-			this.token = EXCLAMATIONMARK;
-			return;
-		}
 
 		// Recognize question mark
-		if (this.lookahead == '?' || this.lookahead == '¿') {
+		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
 			return;
