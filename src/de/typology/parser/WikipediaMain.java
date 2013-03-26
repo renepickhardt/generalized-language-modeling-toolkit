@@ -17,14 +17,12 @@ public class WikipediaMain {
 		File dir = new File(Config.get().wikiInputDirectory);
 		String outputDirectory = Config.get().outputDirectory + "wiki/";
 		new File(outputDirectory).mkdirs();
-		//
-		// run("/home/martin/typology/datasets/wiki/barwiki-20130227-pages-articles.xml.bz2",
-		// Config.get().outputDirectory + "barwiki/parsed.txt",
-		// Config.get().outputDirectory + "barwiki/normalized.txt");
-
-		run(dir + "/enwiki-20130204-pages-articles.xml.bz2", outputDirectory
-				+ "enwiki/parsed.txt", outputDirectory
-				+ "enwiki/normalized.txt");
+		for (File file : dir.listFiles()) {
+			String dataSet = file.getName().split("-")[0];
+			run(file.getAbsolutePath(), outputDirectory + dataSet
+					+ "/parsed.txt", outputDirectory + dataSet
+					+ "/normalized.txt");
+		}
 	}
 
 	public static void run(String wikiInputPath, String parsedOutputPath,

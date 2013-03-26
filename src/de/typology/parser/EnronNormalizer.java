@@ -48,6 +48,10 @@ public class EnronNormalizer {
 				this.line = this.line.replaceAll("!+", "!");
 				this.line = this.line.replaceAll("\\?+", "\\?");
 
+				// remove some unwanted signs
+				this.line = this.line.replaceAll("\\?", "");
+				this.line = this.line.replaceAll("-", "");
+
 				String[] strings = this.line.split("\\s");
 				this.stringCount = 0;
 				this.atCount = 0;

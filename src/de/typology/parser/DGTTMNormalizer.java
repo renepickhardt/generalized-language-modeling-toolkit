@@ -43,6 +43,10 @@ public class DGTTMNormalizer {
 				this.line = this.line.replaceAll("!+", "!");
 				this.line = this.line.replaceAll("\\?+", "\\?");
 
+				// remove some unwanted signs
+				this.line = this.line.replaceAll("\\?", "");
+				this.line = this.line.replaceAll("-", "");
+
 				if (!this.line.isEmpty()) {
 					this.writer.write(this.line);
 					this.writer.write('\n');

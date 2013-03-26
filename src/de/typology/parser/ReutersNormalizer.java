@@ -49,6 +49,10 @@ public class ReutersNormalizer {
 				this.line = this.line.replaceAll("pos;", "'");
 				this.line = this.line.replaceAll("Reuters Limited .*", "");
 
+				// remove some unwanted signs
+				this.line = this.line.replaceAll("\\?", "");
+				this.line = this.line.replaceAll("-", "");
+
 				String[] strings = this.line.split("\\s");
 				this.stringCount = 0;
 				this.numberCount = 0;

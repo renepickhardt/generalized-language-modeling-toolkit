@@ -51,6 +51,10 @@ public class WikipediaNormalizer {
 
 				line = line.replaceAll(" +", " ");
 
+				// remove some unwanted signs
+				line = line.replaceAll("\\?", "");
+				line = line.replaceAll("-", "");
+
 				if (!line.isEmpty()) {
 					this.writer.write(line);
 					this.writer.write('\n');
