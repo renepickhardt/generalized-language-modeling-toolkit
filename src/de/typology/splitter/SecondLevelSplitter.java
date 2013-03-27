@@ -142,8 +142,8 @@ public class SecondLevelSplitter {
 		}
 
 		for (String fileToMerge : filesToMerge) {
-			System.out.println("cat " + inputPath + "/" + fileToMerge + "-* > "
-					+ inputPath + "/" + fileToMerge + fileExtension);
+			IOHelper.log("merge " + fileToMerge + "-* into " + fileToMerge
+					+ fileExtension);
 			SystemHelper.runUnixCommand("cat " + inputPath + "/" + fileToMerge
 					+ "-* > " + inputPath + "/" + fileToMerge + fileExtension);
 		}
