@@ -1,10 +1,12 @@
 package de.typology.splitter;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class TypoSplitter extends Splitter {
 	private String extension;
@@ -47,6 +49,21 @@ public class TypoSplitter extends Splitter {
 			this.reset();
 			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
 					+ this.extension);
+		}
+	}
+
+	@Override
+	protected void mergeSmallestType(String inputPath) {
+		File[] files = new File(inputPath).listFiles();
+		if (files[0].getName().endsWith(".0es")) {
+			IOHelper.log("merge all .0es");
+			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+					+ inputPath + "/all.0es");
+			for (File file : files) {
+				if (!file.getName().equals("all.0es")) {
+					file.delete();
+				}
+			}
 		}
 	}
 }

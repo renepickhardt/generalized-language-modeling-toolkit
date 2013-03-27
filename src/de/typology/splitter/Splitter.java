@@ -196,6 +196,8 @@ public abstract class Splitter {
 		this.sorter.sortCountDirectory(inputPath, "_aggregate", "_countSort");
 		this.countNormalizer.normalizeDirectory(this.statsPath, inputPath,
 				"_countSort", "");
+		this.secondLevelSplitter.mergeDirectory(inputPath);
+		this.mergeSmallestType(inputPath);
 	}
 
 	protected void reset() {
@@ -214,5 +216,7 @@ public abstract class Splitter {
 	}
 
 	protected abstract void split(int maxSequenceLength);
+
+	protected abstract void mergeSmallestType(String inputPath);
 
 }

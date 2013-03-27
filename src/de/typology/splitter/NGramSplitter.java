@@ -1,10 +1,12 @@
 package de.typology.splitter;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class NGramSplitter extends Splitter {
 	private String extension;
@@ -46,6 +48,21 @@ public class NGramSplitter extends Splitter {
 			this.reset();
 			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
 					+ this.extension);
+		}
+	}
+
+	@Override
+	protected void mergeSmallestType(String inputPath) {
+		File[] files = new File(inputPath).listFiles();
+		if (files[0].getName().endsWith(".1gs")) {
+			IOHelper.log("merge all .1gs");
+			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+					+ inputPath + "/all.1gs");
+			for (File file : files) {
+				if (!file.getName().equals("all.1gs")) {
+					file.delete();
+				}
+			}
 		}
 	}
 }

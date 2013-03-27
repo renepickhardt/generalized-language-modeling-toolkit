@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class Sorter {
 
@@ -34,13 +36,15 @@ public class Sorter {
 					outputExtension);
 
 			// build sort command
-			String sortCommand = "sort --buffer-size=3G --output=" + outputPath
+			String sortCommand = "sort --buffer-size=1G --output=" + outputPath
 					+ " " + inputPath;
 
 			// execute command
-			this.executeCommand(sortCommand);
+			SystemHelper.runUnixCommand(sortCommand);
 
-			inputFile.delete();
+			if (Config.get().deleteTemporaryFiles) {
+				inputFile.delete();
+			}
 		}
 		// note: when sorting an empty file, new file contains "null1"
 	}
@@ -64,7 +68,7 @@ public class Sorter {
 
 			// build sort command
 			int columnNumber = this.getColumnNumber(inputPath);
-			String sortCommand = "sort --buffer-size=3G ";
+			String sortCommand = "sort --buffer-size=1G ";
 
 			// 0edges are only sorted by count
 			if (!inputPath.contains(".0")) {
@@ -78,9 +82,11 @@ public class Sorter {
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 
 			// execute command
-			this.executeCommand(sortCommand);
+			SystemHelper.runUnixCommand(sortCommand);
 
-			inputFile.delete();
+			if (Config.get().deleteTemporaryFiles) {
+				inputFile.delete();
+			}
 		}
 		// note: when sorting an empty file, new file contains "null1"
 	}
@@ -100,16 +106,5 @@ public class Sorter {
 			e.printStackTrace();
 		}
 		return columnNumber;
-	}
-
-	private void executeCommand(String command) {
-		Runtime rt = Runtime.getRuntime();
-		try {
-			rt.exec(new String[] { "bash", "-c", command }).waitFor();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 }

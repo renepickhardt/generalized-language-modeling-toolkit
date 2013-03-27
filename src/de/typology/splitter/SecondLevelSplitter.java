@@ -5,10 +5,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class SecondLevelSplitter {
 	private String[] wordIndex;
@@ -108,7 +110,7 @@ public class SecondLevelSplitter {
 			this.writers.put(
 					fileCount,
 					IOHelper.openWriteFile(
-							file.getParent() + "/" + fileNumber + "s"
+							file.getParent() + "/" + fileNumber + "-"
 									+ fileCount + "." + fileExtension,
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxCountDivider));
@@ -123,6 +125,36 @@ public class SecondLevelSplitter {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public void mergeDirectory(String inputPath) {
+		File[] files = new File(inputPath).listFiles();
+		HashSet<String> filesToMerge = new HashSet<String>();
+		String fileNameCut;
+		String fileExtension = "." + files[0].getName().split("\\.")[1];
+
+		for (File file : files) {
+			if (file.getName().contains("-")) {
+				fileNameCut = file.getName().split("-")[0];
+				if (!filesToMerge.contains(fileNameCut)) {
+					filesToMerge.add(fileNameCut);
+				}
+			}
+		}
+
+		for (String fileToMerge : filesToMerge) {
+			System.out.println("cat " + inputPath + "/" + fileToMerge + "-* > "
+					+ inputPath + "/" + fileToMerge + fileExtension);
+			SystemHelper.runUnixCommand("cat " + inputPath + "/" + fileToMerge
+					+ "-* > " + inputPath + "/" + fileToMerge + fileExtension);
+		}
+		if (Config.get().deleteTemporaryFiles) {
+			for (File file : files) {
+				if (file.getName().contains("-")) {
+					file.delete();
+				}
+			}
 		}
 	}
 }

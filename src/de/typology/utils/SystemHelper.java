@@ -13,12 +13,13 @@ public class SystemHelper {
 	public static void runUnixCommand(String cmd) {
 		Process p;
 		try {
-			p = Runtime.getRuntime().exec(cmd);
+			p = Runtime.getRuntime()
+					.exec(new String[] { "/bin/sh", "-c", cmd });
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
 			String s = "";
 			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
+				IOHelper.log(s);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
