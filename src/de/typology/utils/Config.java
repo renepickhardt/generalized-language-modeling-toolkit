@@ -27,6 +27,9 @@ public class Config extends Properties {
 	public int minCountPerFile;
 	public String inputDataSet;
 	public int fileSizeThreashhold;
+	public boolean splitData;
+	public boolean buildNGrams;
+	public boolean buildTypoEdges;
 
 	// old:
 
