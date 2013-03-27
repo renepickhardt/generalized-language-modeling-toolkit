@@ -31,7 +31,6 @@ public class Config extends Properties {
 	public boolean buildNGrams;
 	public boolean buildTypoEdges;
 
-	public boolean deleteTemporaryFiles;
 	public int modelLength;
 
 	// old:

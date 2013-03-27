@@ -80,9 +80,7 @@ public class SecondLevelSplitter {
 				this.closeWriters();
 
 				// delete old file
-				if (Config.get().deleteTemporaryFiles) {
-					file.delete();
-				}
+				file.delete();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -149,11 +147,9 @@ public class SecondLevelSplitter {
 			SystemHelper.runUnixCommand("cat " + inputPath + "/" + fileToMerge
 					+ "-* > " + inputPath + "/" + fileToMerge + fileExtension);
 		}
-		if (Config.get().deleteTemporaryFiles) {
-			for (File file : files) {
-				if (file.getName().contains("-")) {
-					file.delete();
-				}
+		for (File file : files) {
+			if (file.getName().contains("-")) {
+				file.delete();
 			}
 		}
 	}

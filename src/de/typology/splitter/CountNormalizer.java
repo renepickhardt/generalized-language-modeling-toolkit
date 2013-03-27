@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class CountNormalizer {
@@ -51,9 +50,7 @@ public class CountNormalizer {
 				if ((this.currentLine = this.reader.readLine()) == null) {
 					this.reader.close();
 					this.writer.close();
-					if (Config.get().deleteTemporaryFiles) {
-						inputFile.delete();
-					}
+					inputFile.delete();
 					return;
 				}
 				this.currentLineSplit = this.currentLine.split("\t");
@@ -85,9 +82,7 @@ public class CountNormalizer {
 					} while ((this.currentLine = this.reader.readLine()) != null);
 					this.reader.close();
 					this.writer.close();
-					if (Config.get().deleteTemporaryFiles) {
-						inputFile.delete();
-					}
+					inputFile.delete();
 					return;
 				}
 
@@ -115,9 +110,7 @@ public class CountNormalizer {
 
 				this.reader.close();
 				this.writer.close();
-				if (Config.get().deleteTemporaryFiles) {
-					inputFile.delete();
-				}
+				inputFile.delete();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

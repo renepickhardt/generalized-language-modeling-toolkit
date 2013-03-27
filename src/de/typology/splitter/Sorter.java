@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
@@ -42,9 +41,7 @@ public class Sorter {
 			// execute command
 			SystemHelper.runUnixCommand(sortCommand);
 
-			if (Config.get().deleteTemporaryFiles) {
-				inputFile.delete();
-			}
+			inputFile.delete();
 		}
 		// note: when sorting an empty file, new file contains "null1"
 	}
@@ -84,9 +81,7 @@ public class Sorter {
 			// execute command
 			SystemHelper.runUnixCommand(sortCommand);
 
-			if (Config.get().deleteTemporaryFiles) {
-				inputFile.delete();
-			}
+			inputFile.delete();
 		}
 		// note: when sorting an empty file, new file contains "null1"
 	}
