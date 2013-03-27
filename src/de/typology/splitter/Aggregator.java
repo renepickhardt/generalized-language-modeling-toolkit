@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class Aggregator {
@@ -78,7 +79,9 @@ public class Aggregator {
 
 				this.reader.close();
 				this.writer.close();
-				inputFile.delete();
+				if (Config.get().deleteTemporaryFiles) {
+					inputFile.delete();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

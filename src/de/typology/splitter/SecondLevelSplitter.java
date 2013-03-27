@@ -78,7 +78,9 @@ public class SecondLevelSplitter {
 				this.closeWriters();
 
 				// delete old file
-				file.delete();
+				if (Config.get().deleteTemporaryFiles) {
+					file.delete();
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -25,7 +25,7 @@ public class ReutersMain {
 		fileList = IOHelper.getDirectory(new File(reutersInputPath));
 
 		ReutersParser parser = new ReutersParser(fileList, parsedOutputPath);
-		IOHelper.log("start parsing");
+		IOHelper.log("start parsing: " + reutersInputPath);
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");

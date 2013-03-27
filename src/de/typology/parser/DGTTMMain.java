@@ -20,14 +20,14 @@ public class DGTTMMain {
 
 	public static void run(String dgttmInputPath, String parsedOutputPath,
 			String normalizedOutputPath, String dgttmLanguage)
-					throws IOException {
+			throws IOException {
 		long startTime = System.currentTimeMillis();
 		IOHelper.log("getting file list");
 		fileList = IOHelper.getDirectory(new File(dgttmInputPath));
 
 		DGTTMParser parser = new DGTTMParser(fileList, parsedOutputPath,
 				dgttmLanguage);
-		IOHelper.log("start parsing");
+		IOHelper.log("start parsing: " + dgttmInputPath);
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");

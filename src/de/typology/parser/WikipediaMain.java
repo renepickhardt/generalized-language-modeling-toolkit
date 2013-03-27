@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class WikipediaMain {
 
@@ -34,20 +35,20 @@ public class WikipediaMain {
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaParser parser = new WikipediaParser(recognizer,
 				parsedOutputPath);
-		System.out.println("start parsing");
+		IOHelper.log("start parsing: " + wikiInputPath);
 		parser.parse();
-		System.out.println("parsing done");
-		System.out.println("start cleanup");
+		IOHelper.log("parsing done");
+		IOHelper.log("start cleanup");
 		WikipediaNormalizer wn = new WikipediaNormalizer(parsedOutputPath,
 				normalizedOutputPath);
 		wn.normalize();
-		System.out.println("cleanup done");
-		System.out.println("generate indicator file");
+		IOHelper.log("cleanup done");
+		IOHelper.log("generate indicator file");
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;
 		File done = new File(normalizedOutputPath + "IsDone." + time + "s");
 		done.createNewFile();
-		System.out.println("done");
+		IOHelper.log("done");
 
 	}
 

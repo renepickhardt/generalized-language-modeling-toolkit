@@ -25,7 +25,7 @@ public class EnronMain {
 		fileList = IOHelper.getDirectory(new File(enronInputPath));
 
 		EnronParser parser = new EnronParser(fileList, parsedOutputPath);
-		IOHelper.log("start parsing");
+		IOHelper.log("start parsing: " + enronInputPath);
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
