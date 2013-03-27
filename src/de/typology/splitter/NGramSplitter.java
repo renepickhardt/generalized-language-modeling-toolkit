@@ -56,7 +56,7 @@ public class NGramSplitter extends Splitter {
 		File[] files = new File(inputPath).listFiles();
 		if (files[0].getName().endsWith(".1gs")) {
 			IOHelper.log("merge all .1gs");
-			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+			SystemHelper.runUnixCommand("cat " + files[0].getParent() + "/* > "
 					+ inputPath + "/all.1gs");
 			for (File file : files) {
 				if (!file.getName().equals("all.1gs")) {

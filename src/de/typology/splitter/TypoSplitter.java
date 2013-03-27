@@ -57,7 +57,7 @@ public class TypoSplitter extends Splitter {
 		File[] files = new File(inputPath).listFiles();
 		if (files[0].getName().endsWith(".0es")) {
 			IOHelper.log("merge all .0es");
-			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+			SystemHelper.runUnixCommand("cat " + files[0].getParent() + "/* > "
 					+ inputPath + "/all.0es");
 			for (File file : files) {
 				if (!file.getName().equals("all.0es")) {
