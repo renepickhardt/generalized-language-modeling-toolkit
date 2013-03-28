@@ -1,8 +1,5 @@
 package de.typology.executables;
 
-import java.io.IOException;
-
-import de.typology.parser.WikipediaMain;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.IndexBuilder;
 import de.typology.splitter.NGramSplitter;
@@ -11,24 +8,13 @@ import de.typology.utils.Config;
 
 public class Builder {
 
-	public void build(String inputPath, String outputPath) {
-		String parsedFileName = "parsed.txt";
-		String normalizedFileName = "normalized.txt";
+	public void build(String outputPath) {
+
 		String indexFileName = "index.txt";
 		String statsFileName = "stats.txt";
 		String trainingFileName = "training.txt";
 		String learningFileName = "learning.txt";
 		String testingFileName = "testing.txt";
-
-		if (Config.get().parseData) {
-			try {
-				WikipediaMain.run(inputPath, outputPath + parsedFileName,
-						outputPath + normalizedFileName);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 
 		if (Config.get().splitData) {
 			DataSetSplitter dss = new DataSetSplitter();

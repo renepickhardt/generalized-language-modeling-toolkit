@@ -61,7 +61,7 @@ public class Config extends Properties {
 	public String googleInputDirectory;
 	public String reutersInputDirectory;
 	public String wikiInputDirectory;
-	public String DGTTMLanguages;
+	public String dgttmLanguages;
 
 	public String outputDirectory;
 	public int memoryLimitForWritingFiles;

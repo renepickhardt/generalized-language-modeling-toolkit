@@ -3,6 +3,7 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
+import de.typology.parser.WikipediaMain;
 import de.typology.utils.Config;
 
 public class WikiBuilder extends Builder {
@@ -28,12 +29,24 @@ public class WikiBuilder extends Builder {
 
 		File dir = new File(Config.get().wikiInputDirectory);
 		String outputDirectory = Config.get().outputDirectory + "wiki/";
+		String parsedFileName = "parsed.txt";
+		String normalizedFileName = "normalized.txt";
 		new File(outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
 			String wikiTyp = f.getName().split("-")[0];
 			String outputPath = outputDirectory + wikiTyp + "/";
 			new File(outputPath).mkdirs();
-			wb.build(f.getAbsolutePath(), outputPath);
+
+			if (Config.get().parseData) {
+				try {
+					WikipediaMain.run(f.getAbsolutePath(), outputPath
+							+ parsedFileName, outputPath + normalizedFileName);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			wb.build(outputPath);
 		}
 	}
 }
