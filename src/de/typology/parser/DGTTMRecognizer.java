@@ -57,11 +57,11 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 
 	static {
 		tuvs = new HashMap<String, String>();
-		tuvs.put("EN", "tuv lang=\"EN-GB\"");
-		tuvs.put("DE", "tuv lang=\"DE-DE\"");
-		tuvs.put("ES", "tuv lang=\"ES-ES\"");
-		tuvs.put("FR", "tuv lang=\"FR-FR\"");
-		tuvs.put("IT", "tuv lang=\"IT-IT\"");
+		tuvs.put("en", "tuv lang=\"EN-GB\"");
+		tuvs.put("de", "tuv lang=\"DE-DE\"");
+		tuvs.put("es", "tuv lang=\"ES-ES\"");
+		tuvs.put("fr", "tuv lang=\"FR-FR\"");
+		tuvs.put("it", "tuv lang=\"IT-IT\"");
 		// add new languages here
 	}
 
