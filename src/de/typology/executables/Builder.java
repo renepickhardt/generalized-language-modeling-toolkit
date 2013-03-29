@@ -23,7 +23,7 @@ public class Builder {
 					outputPath + testingFileName);
 		}
 
-		if (Config.get().buildNGrams || Config.get().buildTypoEdges) {
+		if (Config.get().buildIndex) {
 			IndexBuilder ib = new IndexBuilder();
 			ib.buildIndex(outputPath + trainingFileName, outputPath
 					+ indexFileName, outputPath + statsFileName);
