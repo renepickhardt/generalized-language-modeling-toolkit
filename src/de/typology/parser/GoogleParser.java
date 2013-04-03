@@ -1,16 +1,16 @@
-package de.typology.googleNGrams;
+package de.typology.parser;
 
-import static de.typology.googleNGrams.NGramToken.COLON;
-import static de.typology.googleNGrams.NGramToken.COMMA;
-import static de.typology.googleNGrams.NGramToken.EXCLAMATIONMARK;
-import static de.typology.googleNGrams.NGramToken.FULLSTOP;
-import static de.typology.googleNGrams.NGramToken.HYPHEN;
-import static de.typology.googleNGrams.NGramToken.LINESEPARATOR;
-import static de.typology.googleNGrams.NGramToken.QUESTIONMARK;
-import static de.typology.googleNGrams.NGramToken.QUOTATIONMARK;
-import static de.typology.googleNGrams.NGramToken.SEMICOLON;
-import static de.typology.googleNGrams.NGramToken.STRING;
-import static de.typology.googleNGrams.NGramToken.WS;
+import static de.typology.parser.GoogleToken.COLON;
+import static de.typology.parser.GoogleToken.COMMA;
+import static de.typology.parser.GoogleToken.EXCLAMATIONMARK;
+import static de.typology.parser.GoogleToken.FULLSTOP;
+import static de.typology.parser.GoogleToken.HYPHEN;
+import static de.typology.parser.GoogleToken.LINESEPARATOR;
+import static de.typology.parser.GoogleToken.QUESTIONMARK;
+import static de.typology.parser.GoogleToken.QUOTATIONMARK;
+import static de.typology.parser.GoogleToken.SEMICOLON;
+import static de.typology.parser.GoogleToken.STRING;
+import static de.typology.parser.GoogleToken.WS;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -24,15 +24,15 @@ import de.typology.utils.IOHelper;
  * 
  * @author Martin Koerner
  */
-public class NGramParser {
-	private NGramRecognizer recognizer;
+public class GoogleParser {
+	private GoogleRecognizer recognizer;
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
-	private NGramToken current;
+	private GoogleToken current;
 	private Writer writer;
 
-	public NGramParser(NGramRecognizer recognizer, String parsedGoogleOutputPath) {
+	public GoogleParser(GoogleRecognizer recognizer, String parsedGoogleOutputPath) {
 		this.recognizer = recognizer;
 		this.writer = IOHelper.openWriteFile(parsedGoogleOutputPath,
 				32 * 1024 * 1024);

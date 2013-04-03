@@ -1,24 +1,23 @@
-package de.typology.googleNGrams;
+package de.typology.parser;
 
-import static de.typology.googleNGrams.NGramToken.COLON;
-import static de.typology.googleNGrams.NGramToken.COMMA;
-import static de.typology.googleNGrams.NGramToken.EOF;
-import static de.typology.googleNGrams.NGramToken.EXCLAMATIONMARK;
-import static de.typology.googleNGrams.NGramToken.FULLSTOP;
-import static de.typology.googleNGrams.NGramToken.HYPHEN;
-import static de.typology.googleNGrams.NGramToken.LINESEPARATOR;
-import static de.typology.googleNGrams.NGramToken.OTHER;
-import static de.typology.googleNGrams.NGramToken.QUESTIONMARK;
-import static de.typology.googleNGrams.NGramToken.QUOTATIONMARK;
-import static de.typology.googleNGrams.NGramToken.SEMICOLON;
-import static de.typology.googleNGrams.NGramToken.STRING;
-import static de.typology.googleNGrams.NGramToken.WS;
+import static de.typology.parser.GoogleToken.COLON;
+import static de.typology.parser.GoogleToken.COMMA;
+import static de.typology.parser.GoogleToken.EOF;
+import static de.typology.parser.GoogleToken.EXCLAMATIONMARK;
+import static de.typology.parser.GoogleToken.FULLSTOP;
+import static de.typology.parser.GoogleToken.HYPHEN;
+import static de.typology.parser.GoogleToken.LINESEPARATOR;
+import static de.typology.parser.GoogleToken.OTHER;
+import static de.typology.parser.GoogleToken.QUESTIONMARK;
+import static de.typology.parser.GoogleToken.QUOTATIONMARK;
+import static de.typology.parser.GoogleToken.SEMICOLON;
+import static de.typology.parser.GoogleToken.STRING;
+import static de.typology.parser.GoogleToken.WS;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 
-import de.typology.parser.RecognitionException;
 import de.typology.utils.IOHelper;
 
 /**
@@ -26,16 +25,16 @@ import de.typology.utils.IOHelper;
  * 
  * @author Martin Koerner
  */
-public class NGramRecognizer implements Iterator<NGramToken> {
+public class GoogleRecognizer implements Iterator<GoogleToken> {
 
-	private NGramToken token = null; // last token recognized
+	private GoogleToken token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
 	private int[] buffer = new int[10000]; // lexeme buffer
 	private int index = 0; // length of lexeme
 
-	public NGramRecognizer(String input) {
+	public GoogleRecognizer(String input) {
 		this.reader = IOHelper.openReadFile(input);
 	}
 
@@ -205,9 +204,9 @@ public class NGramRecognizer implements Iterator<NGramToken> {
 	}
 
 	@Override
-	public NGramToken next() {
+	public GoogleToken next() {
 		if (this.hasNext()) {
-			NGramToken result = this.token;
+			GoogleToken result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -223,7 +222,7 @@ public class NGramRecognizer implements Iterator<NGramToken> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			NGramToken t = this.next();
+			GoogleToken t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}

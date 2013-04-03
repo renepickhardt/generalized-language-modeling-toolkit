@@ -1,6 +1,6 @@
-package de.typology.googleNGrams;
+package de.typology.parser;
 
-public enum NGramToken {
+public enum GoogleToken {
 	STRING, OTHER, WS, LINESEPARATOR, EOF,
 	//
 	FULLSTOP, COMMA, SEMICOLON, COLON, HYPHEN, EXCLAMATIONMARK, QUESTIONMARK, QUOTATIONMARK,

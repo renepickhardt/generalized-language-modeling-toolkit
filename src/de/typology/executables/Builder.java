@@ -40,4 +40,9 @@ public class Builder {
 			ts.split(Config.get().modelLength);
 		}
 	}
+
+	public void buildFromNGrams(String outputpath) {
+		// no splitting since there are only ngrams
+		// no index building; use index from another file instead
+	}
 }

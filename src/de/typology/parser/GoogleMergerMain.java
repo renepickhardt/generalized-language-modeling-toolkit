@@ -1,4 +1,4 @@
-package de.typology.googleNGrams;
+package de.typology.parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.io.IOException;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class NGramMergerMain {
+public class GoogleMergerMain {
 
 	/**
 	 * @param args
@@ -15,7 +15,16 @@ public class NGramMergerMain {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) throws IOException {
-		NGramMergerMain.run(Config.get().googleInputDirectory, Config.get().outputDirectory+"google/");
+		File dir = new File(Config.get().googleInputDirectory);
+		String outputDirectory = Config.get().outputDirectory + "google/";
+		new File(outputDirectory).mkdirs();
+		for (File file : dir.listFiles()) {
+			String dataSet = file.getName();
+			new File(outputDirectory + dataSet).mkdirs();
+			System.out.println(file.getAbsolutePath());
+			GoogleMergerMain.run(file.getAbsolutePath(), outputDirectory
+					+ dataSet + "/");
+		}
 	}
 
 	public static void run(String googleInputPath, String outputPath)
@@ -29,7 +38,7 @@ public class NGramMergerMain {
 			long endTime = 0;
 			long sek = 0;
 			IOHelper.log("start merging: " + file.getAbsolutePath());
-			NGramMerger merger = new NGramMerger();
+			GoogleMerger merger = new GoogleMerger();
 			String mergedOutputSub = file.getAbsolutePath().substring(
 					file.getAbsolutePath().length() - 1,
 					file.getAbsolutePath().length());

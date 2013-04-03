@@ -1,4 +1,4 @@
-package de.typology.googleNGrams;
+package de.typology.parser;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,13 +16,15 @@ import de.typology.utils.IOHelper;
  * 
  * @author Martin Koerner
  */
-public class NGramNormalizer {
+public class GoogleNormalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
 	private String line;
+	private int nGramCount;
 
-	public NGramNormalizer(String input, String output) {
+	public GoogleNormalizer(String input, String output, int nGramCount) {
+		this.nGramCount = nGramCount;
 		this.reader = IOHelper.openReadFile(input);
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
@@ -42,8 +44,6 @@ public class NGramNormalizer {
 				this.line = this.line.replaceAll(" '", "'");
 				this.line = this.line.replaceAll(" \\?", "\\?");
 				this.line = this.line.replaceAll(" !", "!");
-				this.line = this.line.replaceAll(" ¿", "¿");
-				this.line = this.line.replaceAll(" ¡", "¡");
 
 				this.line = this.line.replaceAll("\\.+", ".");
 				this.line = this.line.replaceAll(",+", ",");
@@ -53,8 +53,6 @@ public class NGramNormalizer {
 				this.line = this.line.replaceAll("'+", "'");
 				this.line = this.line.replaceAll("!+", "!");
 				this.line = this.line.replaceAll("\\?+", "\\?");
-				this.line = this.line.replaceAll("¿+", "¿");
-				this.line = this.line.replaceAll("¡+", "¡");
 				while (true) {
 					if (this.line.startsWith(".")
 							|| this.line.startsWith(",")
@@ -63,9 +61,7 @@ public class NGramNormalizer {
 							// || this.line.startsWith("-")
 							|| this.line.startsWith("'")
 							|| this.line.startsWith("?")
-							|| this.line.startsWith("!")
-							|| this.line.startsWith("¿")
-							|| this.line.startsWith("¡")) {
+							|| this.line.startsWith("!")) {
 						this.line = this.line.substring(1, this.line.length());
 					} else {
 						break;
@@ -75,14 +71,16 @@ public class NGramNormalizer {
 					this.line = this.line.substring(1, this.line.length());
 				}
 
-				// change format from w1 ... w3\tcount\n to w1\t...w3\t#count\n
+				// remove some unwanted signs
+				this.line = this.line.replaceAll("\\?", "");
+				this.line = this.line.replaceAll("-", "");
+
 				String[] splitLine = this.line.split("\\s");
-				if (splitLine.length > 1) {
+				if (splitLine.length == this.nGramCount + 1) {
 					for (String word : Arrays.copyOfRange(splitLine, 0,
 							splitLine.length - 1)) {
 						this.writer.write(word + "\t");
 					}
-					this.writer.write("#");
 					this.writer.write(splitLine[splitLine.length - 1]);
 					this.writer.write("\n");
 					this.writer.flush();

@@ -9,7 +9,7 @@ import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
 public class NGramSplitter extends Splitter {
-	private String extension;
+	protected String extension;
 
 	public NGramSplitter(String directory, String indexName, String statsName,
 			String inputName) {

@@ -1,6 +1,10 @@
 package de.typology.splitter;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class TypoSplitterWithCount extends TypoSplitter {
 
@@ -18,6 +22,29 @@ public class TypoSplitterWithCount extends TypoSplitter {
 		TypoSplitterWithCount tswc = new TypoSplitterWithCount(outputDirectory,
 				"index.txt", "stats", "normalized.txt");
 		tswc.split(5);
+	}
+
+	@Override
+	public void split(int sequenceLength) {
+		int edgeType;
+		BufferedWriter writer;
+		edgeType = sequenceLength - 1;
+		this.extension = edgeType + "es";
+		IOHelper.strongLog("splitting into " + this.extension);
+		this.initialize(this.extension, sequenceLength);
+		while (this.getNextSequence(sequenceLength)) {
+			writer = this.getWriter(this.sequence[0]);
+			try {
+				writer.write(this.sequence[0] + "\t");
+				writer.write(this.sequence[this.sequence.length - 1] + "\t");
+				writer.write(this.sequenceCount + "\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		this.reset();
+		this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
+				+ this.extension);
 	}
 
 	@Override

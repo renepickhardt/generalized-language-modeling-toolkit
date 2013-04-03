@@ -1,4 +1,4 @@
-package de.typology.googleNGrams;
+package de.typology.parser;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.io.Writer;
 
 import de.typology.utils.Config;
 
-public class NGramDownloadBuilder {
+public class GoogleDownloadBuilder {
 
 	/**
 	 * output example:
