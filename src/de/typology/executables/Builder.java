@@ -3,7 +3,9 @@ package de.typology.executables;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.IndexBuilder;
 import de.typology.splitter.NGramSplitter;
+import de.typology.splitter.NGramSplitterWithCount;
 import de.typology.splitter.TypoSplitter;
+import de.typology.splitter.TypoSplitterWithCount;
 import de.typology.utils.Config;
 
 public class Builder {
@@ -41,8 +43,29 @@ public class Builder {
 		}
 	}
 
-	public void buildFromNGrams(String outputpath) {
+	public void buildFromNGrams(String outputPath) {
+		String indexFileName = "index.txt";
+		String statsFileName = "stats.txt";
+		String trainingFileName;
+		NGramSplitterWithCount ngs;
 		// no splitting since there are only ngrams
 		// no index building; use index from another file instead
+		if (Config.get().buildNGrams) {
+			for (int i = 1; i <= Config.get().modelLength; i++) {
+				trainingFileName = i + "gram-normalized.txt";
+				ngs = new NGramSplitterWithCount(outputPath, indexFileName,
+						statsFileName, trainingFileName);
+				ngs.split(i);
+			}
+		}
+		if (Config.get().buildTypoEdges) {
+			for (int i = 1; i <= Config.get().modelLength; i++) {
+				trainingFileName = i + "gram-normalized.txt";
+				TypoSplitterWithCount ts = new TypoSplitterWithCount(
+						outputPath, indexFileName, statsFileName,
+						trainingFileName);
+				ts.split(i);
+			}
+		}
 	}
 }
