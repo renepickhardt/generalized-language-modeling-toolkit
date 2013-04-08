@@ -120,8 +120,7 @@ public class IndexBuilder {
 		}
 		// write stats
 
-		BufferedWriter statsWriter = IOHelper.openWriteFile(statsPath,
-				1024 * 1024 * 8);
+		BufferedWriter statsWriter = IOHelper.openWriteFile(statsPath);
 		try {
 			statsWriter.write(inputPath + ":\n");
 			statsWriter.write("total words: " + totalCount + "\n");
@@ -140,8 +139,7 @@ public class IndexBuilder {
 		}
 
 		// build index
-		BufferedWriter indexWriter = IOHelper.openWriteFile(indexPath,
-				1024 * 1024 * 8);
+		BufferedWriter indexWriter = IOHelper.openWriteFile(indexPath);
 		Long currentFileCount = 0L;
 		int fileCount = 0;
 		Iterator<Map.Entry<String, Long>> wordMapIterator = this.wordMap

@@ -28,6 +28,7 @@ public class Config extends Properties {
 	public String inputDataSet;
 	public int fileSizeThreashhold;
 	public boolean splitData;
+	public boolean buildStats;
 	public boolean buildIndex;
 	public boolean buildNGrams;
 	public boolean buildTypoEdges;
