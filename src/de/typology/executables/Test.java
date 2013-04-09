@@ -35,7 +35,6 @@ public class Test {
 		Config.get().testingPath = "/home/rpickhardt/out/dgttm/" + lang
 				+ "/testSam0Split95Test50/test.file";
 
-		Config.get().dbName = lang + "dgttmtypo";
 		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
 		Config.get().weight = "no";
 		Config.get().useWeights = false;

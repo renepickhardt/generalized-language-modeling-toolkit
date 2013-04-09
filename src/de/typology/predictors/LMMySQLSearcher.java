@@ -1,12 +1,47 @@
 package de.typology.predictors;
 
+import de.typology.splitter.BinarySearch;
+import de.typology.splitter.IndexBuilder;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class LMMySQLSearcher extends MySQLSearcher {
+	public LMMySQLSearcher(String databaseName) {
+		super(databaseName);
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		IndexBuilder ib = new IndexBuilder();
+		String databaseName = Config.get().trainedOnDataSet + "_"
+				+ Config.get().trainedOnLang + "_ngram";
+		String indexPath = Config.get().outputDirectory + "/"
+				+ Config.get().trainedOnDataSet + "/"
+				+ Config.get().trainedOnLang + "/index.txt";
+		String[] wordIndex = ib.deserializeIndex(indexPath);
+		LMMySQLSearcher lmss = new LMMySQLSearcher(databaseName);
+		// Config.get().weight = "no";
+		// Config.get().useWeights = false;
+		// for (int i = 5; i > 1; i--) {
+		// IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
+		// + i);
+		// lmss.run(i, 100000, Config.get().weight);
+		// }
+		//
+		// Config.get().weight = "pic";
+		// Config.get().useWeights = true;
+		for (int i = 5; i > 1; i--) {
+			IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
+					+ i);
+			lmss.run(i, 100000, Config.get().weight, wordIndex);
+		}
+	}
 
 	@Override
-	protected String prepareQuery(String[] words, int i, int pfl) {
+	protected String prepareQuery(String[] words, int i, int pfl,
+			String[] wordIndex) {
 		int l = words.length;
 		String target = words[l - 1];
 		String source = words[l - 1 - i];
@@ -20,15 +55,21 @@ public class LMMySQLSearcher extends MySQLSearcher {
 			System.out.println("deteced hyphen");
 			return null;
 		}
-		int tablePrefix = i + 1;
-		String tableName = tablePrefix + "n" + source.charAt(0);
-		if (!this.tabelNames.contains(tableName)) {
-			tableName = tablePrefix + "nother";
-		}
+		// int tablePrefix = i + 1;
+		// String tableName = tablePrefix + "n" + source.charAt(0);
+		// if (!this.tabelNames.contains(tableName)) {
+		// tableName = tablePrefix + "nother";
+		// }
+		String tablePrefix = i + "gs";
+		String tableName = tablePrefix + "_"
+				+ BinarySearch.rankWithAll(source, wordIndex);
 		String query = "";
 
 		// create source statements
 		String sourcepart = "";
+		if (i == 0) {
+			sourcepart = " where target = * ";
+		}
 		if (i == 1) {
 			sourcepart = " where source1 = \"" + words[l - 2] + "\" ";
 		}
@@ -58,32 +99,4 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		}
 		return query;
 	}
-
-	public LMMySQLSearcher() {
-		super();
-	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// Config.get().dbName = "bigenwiki";
-		LMMySQLSearcher lmss = new LMMySQLSearcher();
-		// Config.get().weight = "no";
-		// Config.get().useWeights = false;
-		// for (int i = 5; i > 1; i--) {
-		// IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
-		// + i);
-		// lmss.run(i, 100000, Config.get().weight);
-		// }
-		//
-		// Config.get().weight = "pic";
-		// Config.get().useWeights = true;
-		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
-					+ i);
-			lmss.run(i, 100000, Config.get().weight);
-		}
-	}
-
 }

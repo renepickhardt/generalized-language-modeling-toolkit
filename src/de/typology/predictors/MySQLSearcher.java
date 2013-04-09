@@ -36,14 +36,15 @@ public abstract class MySQLSearcher {
 	private float[][] HMMWeights;
 	private final int MAX_PFL;
 
-	public MySQLSearcher() {
-		super();
+	public MySQLSearcher(String databaseName) {
 		this.n = 5;
 		this.MAX_PFL = 1024;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
-		this.databaseName = Config.get().dbName;
+		this.databaseName = databaseName;
 		this.useWeights = false;
+		IOHelper.log("dbName: " + this.databaseName);
+		IOHelper.log("userName: " + this.user);
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			this.connect = DriverManager
@@ -65,7 +66,8 @@ public abstract class MySQLSearcher {
 		}
 	}
 
-	public void run(int n, int numberOfQueries, String weights) {
+	public void run(int n, int numberOfQueries, String weights,
+			String[] wordIndex) {
 		this.n = n;
 		this.learnHMMScores = new float[this.n];
 		this.learnPicWeights = new float[this.MAX_PFL][this.n];
@@ -130,7 +132,8 @@ public abstract class MySQLSearcher {
 
 					// retrieve results lists for every Typology edge
 					for (int i = 1; i < this.n; i++) {
-						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl);
+						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
+								wordIndex);
 						if (edgeQueryOfTyp[i] == null) {
 							continue;
 						}
@@ -418,5 +421,6 @@ public abstract class MySQLSearcher {
 		}
 	}
 
-	protected abstract String prepareQuery(String[] words, int i, int pfl);
+	protected abstract String prepareQuery(String[] words, int i, int pfl,
+			String[] index);
 }

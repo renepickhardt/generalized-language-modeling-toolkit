@@ -1,9 +1,5 @@
 package de.typology.splitter;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import de.typology.utils.Config;
 
 public class BinarySearch {
 
@@ -11,60 +7,54 @@ public class BinarySearch {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//
-		// System.out.println("$ads: " + BinarySearch.rank("$ads", test) +
-		// "=0");
-		// System.out.println("00: " + BinarySearch.rank("00", test) + "=0");
-		// System.out.println("aabc: " + BinarySearch.rank("aabc", test) +
-		// "=0");
 
-		String outputDirectory = Config.get().outputDirectory
-				+ Config.get().inputDataSet;
-		IndexBuilder ib = new IndexBuilder();
-		String[] index = ib.deserializeIndex(outputDirectory + "index.txt");
-		String[] result;
-		String key;
-		String prefix;
-		// key = "A";
-		// result = BinarySearch.rankPrefix(key, index);
-		// System.out.println(key + ":");
+		// String outputDirectory = Config.get().outputDirectory
+		// + Config.get().inputDataSet;
+		// IndexBuilder ib = new IndexBuilder();
+		// String[] index = ib.deserializeIndex(outputDirectory + "index.txt");
+		// String[] result;
+		// String key;
+		// String prefix;
+		// // key = "A";
+		// // result = BinarySearch.rankPrefix(key, index);
+		// // System.out.println(key + ":");
+		// // for (String s : result) {
+		// // System.out.println(s);
+		// // }
+		// System.out.println("----");
+		// key = "";
+		// prefix = "";
+		// result = BinarySearch.rank(key, prefix, ".5gs", outputDirectory
+		// + "ngrams/5gs/", index);
+		// System.out.println(key + "-" + prefix + ":");
 		// for (String s : result) {
 		// System.out.println(s);
 		// }
-		System.out.println("----");
-		key = "";
-		prefix = "";
-		result = BinarySearch.rank(key, prefix, "s", ".5gs", outputDirectory
-				+ "ngrams/5gs/", index);
-		System.out.println(key + "-" + prefix + ":");
-		for (String s : result) {
-			System.out.println(s);
-		}
-		System.out.println("----");
-		key = "da";
-		prefix = "";
-		result = BinarySearch.rank(key, prefix, "s", ".5gs", outputDirectory
-				+ "ngrams/5gs/", index);
-		System.out.println(key + "-" + prefix + ":");
-		for (String s : result) {
-			System.out.println(s);
-		}
-		System.out.println("----");
-		prefix = "A";
-		result = BinarySearch.rank(key, prefix, "s", ".5gs", outputDirectory
-				+ "ngrams/5gs/", index);
-		System.out.println(key + "-" + prefix + ":");
-		for (String s : result) {
-			System.out.println(s);
-		}
-		System.out.println("----");
-		key = "";
-		result = BinarySearch.rank(key, prefix, "s", ".5gs", outputDirectory
-				+ "ngrams/5gs/", index);
-		System.out.println(key + "-" + prefix + ":");
-		for (String s : result) {
-			System.out.println(s);
-		}
+		// System.out.println("----");
+		// key = "da";
+		// prefix = "";
+		// result = BinarySearch.rank(key, prefix, ".5gs", outputDirectory
+		// + "ngrams/5gs/", index);
+		// System.out.println(key + "-" + prefix + ":");
+		// for (String s : result) {
+		// System.out.println(s);
+		// }
+		// System.out.println("----");
+		// prefix = "A";
+		// result = BinarySearch.rank(key, prefix, ".5gs", outputDirectory
+		// + "ngrams/5gs/", index);
+		// System.out.println(key + "-" + prefix + ":");
+		// for (String s : result) {
+		// System.out.println(s);
+		// }
+		// System.out.println("----");
+		// key = "";
+		// result = BinarySearch.rank(key, prefix, ".5gs", outputDirectory
+		// + "ngrams/5gs/", index);
+		// System.out.println(key + "-" + prefix + ":");
+		// for (String s : result) {
+		// System.out.println(s);
+		// }
 
 	}
 
@@ -106,6 +96,7 @@ public class BinarySearch {
 		int[] result;
 		// prefix is empty
 		if (prefix.length() == 0) {
+			// return all files
 			result = new int[index.length];
 			for (int i = 0; i < index.length; i++) {
 				result[i] = i;
@@ -139,61 +130,15 @@ public class BinarySearch {
 	 * <p>
 	 * 
 	 */
-	public static String[] rank(String key, String prefix, String separator,
-			String extension, String directory, String[] index) {
-		String[] result;
-		File file;
-		ArrayList<String> tempResult;
+	public static String rankWithAll(String key, String[] index) {
+		String result;
 		if (key.length() == 0) {
 			// search for prefix only (e.g. 1grams)
-			int[] prefixRanks = BinarySearch.rankPrefix(prefix, index);
-			tempResult = new ArrayList<String>();
-
-			for (int firstPart : prefixRanks) {
-
-				file = new File(directory + firstPart + extension);
-				if (file.exists()) {
-					tempResult.add(file.getName());
-				} else {
-					// second for loop catches all second split files
-					for (int secondPart = 0; secondPart < index.length; secondPart++) {
-						file = new File(directory + firstPart + separator
-								+ secondPart + extension);
-						if (file.exists()) {
-							tempResult.add(file.getName());
-						}
-					}
-				}
-			}
+			result = "all";
 		} else {
 			// search for key and prefix
-
-			// first search for key
-			String firstPart = String.valueOf(BinarySearch.rank(key, index));
-			file = new File(directory + firstPart + extension);
-			if (file.exists()) {
-				// there is no second split on this file
-				result = new String[1];
-				result[0] = firstPart + extension;
-				return result;
-			} else {
-				// either there is a second split or file doesn't exist at all
-				int[] prefixRanks = BinarySearch.rankPrefix(prefix, index);
-				tempResult = new ArrayList<String>();
-				for (int secondPart : prefixRanks) {
-					file = new File(directory + firstPart + separator
-							+ secondPart + extension);
-					if (file.exists()) {
-						tempResult.add(file.getName());
-					}
-				}
-			}
-		}
-		result = new String[tempResult.size()];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = tempResult.get(i);
+			result = String.valueOf(BinarySearch.rank(key, index));
 		}
 		return result;
-
 	}
 }

@@ -39,7 +39,6 @@ public class Config extends Properties {
 
 	// CONTROLL PARAMETERS
 	public String dbUser;
-	public String dbName;
 
 	public String rawLogDir;
 

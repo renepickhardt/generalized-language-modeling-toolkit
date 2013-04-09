@@ -1,5 +1,7 @@
 package de.typology.predictors;
 
+import de.typology.splitter.BinarySearch;
+import de.typology.splitter.IndexBuilder;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -8,7 +10,14 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher();
+		IndexBuilder ib = new IndexBuilder();
+		String databaseName = Config.get().trainedOnDataSet + "_"
+				+ Config.get().trainedOnLang + "_typo";
+		String indexPath = Config.get().outputDirectory + "/"
+				+ Config.get().trainedOnDataSet + "/"
+				+ Config.get().trainedOnLang + "/index.txt";
+		String[] wordIndex = ib.deserializeIndex(indexPath);
+		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher(databaseName);
 		// Config.get().weight = "no";
 		// for (int i = 5; i > 1; i--) {
 		// IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
@@ -19,21 +28,27 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
 					+ i);
-			tmss.run(i, 100000, Config.get().weight);
+			tmss.run(i, 100000, Config.get().weight, wordIndex);
 		}
 	}
 
-	public TypolgyMySQLSearcher() {
+	public TypolgyMySQLSearcher(String databaseName) {
 		// general:
-		super();
+		super(databaseName);
 	}
 
-	// veryspecific to typology! needs to be exchanged for Language models!
+	// very specific to typology! needs to be exchanged for Language models!
 	@Override
-	protected String prepareQuery(String[] words, int i, int pfl) {
+	protected String prepareQuery(String[] words, int i, int pfl,
+			String[] wordIndex) {
 		int l = words.length;
 		String target = words[l - 1];
-		String source = words[l - 1 - i];
+		String source;
+		if (i == 0) {
+			source = "*";
+		} else {
+			source = words[l - 1 - i];
+		}
 		if (pfl > target.length()) {
 			System.out.println("target: '" + target
 					+ "' to short for prefixlength: " + pfl);
@@ -44,18 +59,9 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 			System.out.println("deteced hyphen");
 			return null;
 		}
-		String tableName = i + "es" + source.charAt(0);
-		if (!this.tabelNames.contains(tableName)) {
-			tableName = i + "n" + source.charAt(0);
-			// really dirty quickfix for bug that table names break op on
-			// import.
-			if (!this.tabelNames.contains(tableName)) {
-				tableName = i + "esother";
-				if (!this.tabelNames.contains(tableName)) {
-					tableName = i + "nother";
-				}
-			}
-		}
+		String tablePrefix = i + "es";
+		String tableName = tablePrefix + "_"
+				+ BinarySearch.rankWithAll(source, wordIndex);
 		String query = "";
 		if (pfl > 0) {
 			query = "select * from " + tableName + " where source =\"" + source
