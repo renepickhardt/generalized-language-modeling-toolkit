@@ -55,17 +55,16 @@ public class LMMySQLSearcher extends MySQLSearcher {
 			System.out.println("deteced hyphen");
 			return null;
 		}
-		// int tablePrefix = i + 1;
+		int tablePrefix = i + 1;
 		// String tableName = tablePrefix + "n" + source.charAt(0);
 		// if (!this.tabelNames.contains(tableName)) {
 		// tableName = tablePrefix + "nother";
 		// }
-		String tablePrefix = i + "gs";
 		String tableName;
 		if (i == 0) {
-			tableName = tablePrefix + "_all";
+			tableName = tablePrefix + "gs_all";
 		} else {
-			tableName = tablePrefix + "_"
+			tableName = tablePrefix + "gs_"
 					+ BinarySearch.rank(source, wordIndex);
 		}
 		String query = "";
