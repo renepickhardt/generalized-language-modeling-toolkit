@@ -61,8 +61,13 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		// tableName = tablePrefix + "nother";
 		// }
 		String tablePrefix = i + "gs";
-		String tableName = tablePrefix + "_"
-				+ BinarySearch.rankWithAll(source, wordIndex);
+		String tableName;
+		if (i == 0) {
+			tableName = tablePrefix + "_all";
+		} else {
+			tableName = tablePrefix + "_"
+					+ BinarySearch.rank(source, wordIndex);
+		}
 		String query = "";
 
 		// create source statements

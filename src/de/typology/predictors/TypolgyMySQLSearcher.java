@@ -60,8 +60,13 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 			return null;
 		}
 		String tablePrefix = i + "es";
-		String tableName = tablePrefix + "_"
-				+ BinarySearch.rankWithAll(source, wordIndex);
+		String tableName;
+		if (i == 0) {
+			tableName = tablePrefix + "_all";
+		} else {
+			tableName = tablePrefix + "_"
+					+ BinarySearch.rank(source, wordIndex);
+		}
 		String query = "";
 		if (pfl > 0) {
 			query = "select * from " + tableName + " where source =\"" + source
