@@ -81,11 +81,13 @@ public abstract class MySQLSearcher {
 				.getName().replaceAll("de.typology.predictors.", "")
 				.replaceAll("MySQLSearcher", "").toLowerCase(), weights,
 				this.n, this.joinLength, numberOfQueries);
-
+		System.out.println(fileName);
 		String testFile = "";
 		if (!weights.equals("no")) {
 			this.useWeights = true;
-			testFile = Config.get().learningPath;
+			testFile = Config.get().outputDirectory
+					+ Config.get().testedOnDataSet + "/"
+					+ Config.get().testedOnLang + "/testing.txt";
 			if (weights.equals("pic")) {
 				this.openPicWeigths("rawlog/learnPic-" + fileName);
 			}
@@ -93,7 +95,9 @@ public abstract class MySQLSearcher {
 				this.openHMMWeigths("rawlog/HMMWeights-" + fileName);
 			}
 		} else {
-			testFile = Config.get().testingPath;
+			testFile = Config.get().outputDirectory
+					+ Config.get().testedOnDataSet + "/"
+					+ Config.get().testedOnLang + "/learning.txt";
 			this.useWeights = false;
 		}
 		try {
