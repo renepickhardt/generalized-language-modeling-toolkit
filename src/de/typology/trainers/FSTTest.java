@@ -81,7 +81,19 @@ public class FSTTest {
 					cnt++;
 					if (cnt % 500000 == 0) {
 						IOHelper.log(cnt + " terms added to a trie");
+						IOHelper.log("\t" + Runtime.getRuntime().freeMemory()
+								+ " free memory before running GC");
+						Runtime.getRuntime().gc();
+						IOHelper.log("\t" + Runtime.getRuntime().freeMemory()
+								+ " free memory after running GC");
 					}
+				} catch (UnsupportedOperationException e) {
+					IOHelper.log("trying to add: " + line
+							+ " as normalized token:" + key);
+					IOHelper.log(cnt
+							+ " items added to trie and crashed with following stack trace:");
+					e.printStackTrace();
+					continue;
 				} catch (Exception e) {
 					IOHelper.log("trying to add: " + line
 							+ " as normalized token:" + key);
