@@ -87,7 +87,7 @@ public abstract class MySQLSearcher {
 			this.useWeights = true;
 			testFile = Config.get().outputDirectory
 					+ Config.get().testedOnDataSet + "/"
-					+ Config.get().testedOnLang + "/testing.txt";
+					+ Config.get().testedOnLang + "/testing-splitted.txt";
 			if (weights.equals("pic")) {
 				this.openPicWeigths("rawlog/learnPic-" + fileName);
 			}
@@ -97,7 +97,7 @@ public abstract class MySQLSearcher {
 		} else {
 			testFile = Config.get().outputDirectory
 					+ Config.get().testedOnDataSet + "/"
-					+ Config.get().testedOnLang + "/learning.txt";
+					+ Config.get().testedOnLang + "/learning-splitted.txt";
 			this.useWeights = false;
 		}
 		try {

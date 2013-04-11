@@ -20,10 +20,10 @@ public class Builder {
 		String testingFileName = "testing.txt";
 
 		if (Config.get().splitData) {
-			DataSetSplitter dss = new DataSetSplitter();
-			dss.split(outputPath + "normalized.txt", outputPath
-					+ trainingFileName, outputPath + learningFileName,
-					outputPath + testingFileName);
+			DataSetSplitter dss = new DataSetSplitter(outputPath,
+					indexFileName, statsFileName, "normalized.txt");
+			dss.split(trainingFileName, learningFileName, testingFileName,
+					Config.get().modelLength);
 		}
 		// TODO: add stats
 

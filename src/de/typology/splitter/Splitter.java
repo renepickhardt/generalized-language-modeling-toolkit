@@ -218,4 +218,8 @@ public abstract class Splitter {
 
 	protected abstract void mergeSmallestType(String inputPath);
 
+	public void initializeForSequenceSplit(String fileName) {
+		this.reader = IOHelper.openReadFile(this.directory + fileName);
+	}
+
 }
