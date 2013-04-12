@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
+
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -45,7 +47,7 @@ public abstract class Splitter {
 		this.wordIndex = ib.deserializeIndex(this.indexPath);
 
 		this.outputDirectory = new File(this.directory + "/"
-				+ outputDirectoryName);
+				+ outputDirectoryName + "-normalized");
 		this.outputDirectory.mkdir();
 		this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
@@ -187,16 +189,45 @@ public abstract class Splitter {
 	}
 
 	protected void sortAndAggregate(String inputPath) {
+		File normalizedNGrams = new File(inputPath);
+		File parentDir = normalizedNGrams.getParentFile();
+		File absoluteNGramsParent = new File(parentDir.getParentFile()
+				.getAbsolutePath()
+				+ "/"
+				+ parentDir.getName().replace("-normalized", "-absolute"));
+		File absoluteNGrams = new File(absoluteNGramsParent.getAbsolutePath()
+				+ "/" + normalizedNGrams.getName());
+		absoluteNGramsParent.mkdir();
+		absoluteNGrams.mkdir();
+		System.out.println(absoluteNGrams.getAbsolutePath());
 		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
-				inputPath, "_split", "_split");
-		this.sorter.sortSplitDirectory(inputPath, "_split", "_splitSort");
-		this.aggregator.aggregateDirectory(inputPath, "_splitSort",
-				"_aggregate");
-		this.sorter.sortCountDirectory(inputPath, "_aggregate", "_countSort");
-		this.countNormalizer.normalizeDirectory(this.statsPath, inputPath,
-				"_countSort", "");
-		this.secondLevelSplitter.mergeDirectory(inputPath);
-		this.mergeSmallestType(inputPath);
+				normalizedNGrams.getAbsolutePath(), "_split", "_split");
+		this.sorter.sortSplitDirectory(normalizedNGrams.getAbsolutePath(),
+				"_split", "_splitSort");
+		this.aggregator.aggregateDirectory(normalizedNGrams.getAbsolutePath(),
+				"_splitSort", "_aggregate");
+		this.sorter.sortCountDirectory(normalizedNGrams.getAbsolutePath(),
+				"_aggregate", "_countSort");
+		try {
+			FileUtils.copyDirectory(normalizedNGrams, absoluteNGrams);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.countNormalizer.normalizeDirectory(this.statsPath,
+				normalizedNGrams.getAbsolutePath(), "_countSort", "");
+
+		this.secondLevelSplitter.mergeDirectory(normalizedNGrams
+				.getAbsolutePath());
+		this.mergeSmallestType(normalizedNGrams.getAbsolutePath());
+
+		// rename absoulte ngram files
+		for (File file : absoluteNGrams.listFiles()) {
+			file.renameTo(new File(file.getAbsolutePath().replace("_countSort",
+					"")));
+		}
+		this.secondLevelSplitter.mergeDirectory(absoluteNGrams
+				.getAbsolutePath());
+		this.mergeSmallestType(absoluteNGrams.getAbsolutePath());
 	}
 
 	protected void reset() {
