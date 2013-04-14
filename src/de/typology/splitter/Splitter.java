@@ -199,7 +199,6 @@ public abstract class Splitter {
 				+ "/" + normalizedNGrams.getName());
 		absoluteNGramsParent.mkdir();
 		absoluteNGrams.mkdir();
-		System.out.println(absoluteNGrams.getAbsolutePath());
 		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
 				normalizedNGrams.getAbsolutePath(), "_split", "_split");
 		this.sorter.sortSplitDirectory(normalizedNGrams.getAbsolutePath(),

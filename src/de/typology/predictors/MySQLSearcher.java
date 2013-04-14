@@ -43,8 +43,8 @@ public abstract class MySQLSearcher {
 		this.user = Config.get().dbUser;
 		this.databaseName = databaseName;
 		this.useWeights = false;
-		IOHelper.log("dbName: " + this.databaseName);
-		IOHelper.log("userName: " + this.user);
+		IOHelper.strongLog("dbName: " + this.databaseName);
+		IOHelper.strongLog("userName: " + this.user);
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 			this.connect = DriverManager
@@ -81,8 +81,9 @@ public abstract class MySQLSearcher {
 				.getName().replaceAll("de.typology.predictors.", "")
 				.replaceAll("MySQLSearcher", "").toLowerCase(), weights,
 				this.n, this.joinLength, numberOfQueries);
-		System.out.println(fileName);
+		IOHelper.strongLog("log-file name: " + fileName);
 		String testFile = "";
+		IOHelper.strongLog("weights: " + weights);
 		if (!weights.equals("no")) {
 			this.useWeights = true;
 			testFile = Config.get().outputDirectory
@@ -100,6 +101,7 @@ public abstract class MySQLSearcher {
 					+ Config.get().testedOnLang + "/learning-splitted.txt";
 			this.useWeights = false;
 		}
+		IOHelper.strongLog("testFile: " + testFile);
 		try {
 			EvalHelper.openAndSetResultLogFile(fileName);
 

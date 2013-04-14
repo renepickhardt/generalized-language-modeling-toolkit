@@ -26,8 +26,7 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 		// }
 		// Config.get().weight = "pic";
 		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
-					+ i);
+			IOHelper.strongLog("model parameter: " + i);
 			tmss.run(i, 100000, Config.get().weight, wordIndex);
 		}
 	}
