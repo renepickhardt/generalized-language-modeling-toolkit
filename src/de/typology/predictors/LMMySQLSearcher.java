@@ -33,8 +33,7 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		// Config.get().weight = "pic";
 		// Config.get().useWeights = true;
 		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("google ngrams tested on wiki ngramModel model parameter: "
-					+ i);
+			IOHelper.strongLog("model parameter: " + i);
 			lmss.run(i, 100000, Config.get().weight, wordIndex);
 		}
 	}
