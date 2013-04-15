@@ -1,4 +1,4 @@
-dbUser="importer"
+dbUser="rene"
 echo $1
 inputPath=${1/\/typos*/}
 dbLang=${inputPath##*/}
@@ -11,8 +11,8 @@ echo $dbType
 dbName=$dbType"_"$dbLang"_typo"
 echo $dbName
 #exit 1
-#dbPath="/mnt/vdb/typoeval/mysql/${dbName}/" #server
-dbPath=/var/lib/mysql/${dbName}/ #local machine
+dbPath="/mnt/vdb/typoeval/mysql/${dbName}/" #server
+#dbPath=/var/lib/mysql/${dbName}/ #local machine
 
 mysql -u ${dbUser} -e "drop database ${dbName};"
 mysql -u ${dbUser} -e "create database ${dbName};"
