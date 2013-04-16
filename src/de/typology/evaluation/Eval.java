@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class Eval {
 
@@ -226,7 +227,7 @@ public class Eval {
 				writer.close();
 			}
 		}
-		System.out.println("run this:");
-		System.out.println(path+"eval.sh "+args[1]);
+		SystemHelper.runUnixCommand("cd "+ path);
+		SystemHelper.runUnixCommand("./eval.sh "+args[1]);
 	}
 }
