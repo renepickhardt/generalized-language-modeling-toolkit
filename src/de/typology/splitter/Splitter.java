@@ -44,7 +44,7 @@ public abstract class Splitter {
 		this.statsPath = directory + statsName;
 		this.indexPath = directory + indexName;
 		IndexBuilder ib = new IndexBuilder();
-		if (indexName != null) {
+		if (!indexName.isEmpty()) {
 			this.wordIndex = ib.deserializeIndex(this.indexPath);
 		}
 
