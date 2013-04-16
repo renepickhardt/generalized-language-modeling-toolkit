@@ -5,7 +5,7 @@ import de.typology.splitter.IndexBuilder;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class TypolgyMySQLSearcher extends MySQLSearcher {
+public class TypologyMySQLSearcher extends MySQLSearcher {
 	/**
 	 * @param args
 	 */
@@ -17,7 +17,7 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 				+ Config.get().trainedOnDataSet + "/"
 				+ Config.get().trainedOnLang + "/index.txt";
 		String[] wordIndex = ib.deserializeIndex(indexPath);
-		TypolgyMySQLSearcher tmss = new TypolgyMySQLSearcher(databaseName);
+		TypologyMySQLSearcher tmss = new TypologyMySQLSearcher(databaseName);
 		// Config.get().weight = "no";
 		// for (int i = 5; i > 1; i--) {
 		// IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
@@ -31,7 +31,7 @@ public class TypolgyMySQLSearcher extends MySQLSearcher {
 		}
 	}
 
-	public TypolgyMySQLSearcher(String databaseName) {
+	public TypologyMySQLSearcher(String databaseName) {
 		// general:
 		super(databaseName);
 	}
