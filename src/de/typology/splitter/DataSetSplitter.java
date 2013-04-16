@@ -30,7 +30,7 @@ public class DataSetSplitter {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		DataSetSplitter dss = new DataSetSplitter(outputDirectory, "index.txt",
+		DataSetSplitter dss = new DataSetSplitter(outputDirectory, null,
 				"stats.txt", "normalized.txt");
 		dss.split("training.txt", "learning.txt", "testing.txt", 5);
 
