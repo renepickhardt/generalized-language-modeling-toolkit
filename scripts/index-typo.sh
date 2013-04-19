@@ -52,7 +52,7 @@ for file in $path
   myisampack ${dbPath}${tablename}
 
   #enable index
-  myisamchk -rq ${dbPath}${tablename} --sort_buffer=3G #--sort-index --sort-records=1
+  myisamchk -rq ${dbPath}${tablename} --tmpdir="/mnt/vdb/tmp" --sort_buffer=3G #--sort-index --sort-records=1
 
   #and flush index again.
   mysql -u ${dbUser} $dbName --local-infile=1 -e "flush tables;"
