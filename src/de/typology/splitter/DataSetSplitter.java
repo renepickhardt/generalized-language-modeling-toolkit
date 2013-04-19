@@ -1,5 +1,6 @@
 package de.typology.splitter;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -73,49 +74,49 @@ public class DataSetSplitter {
 			String testingFileName, int sequenceLength) {
 		IOHelper.strongLog("splitting into training, testing and learning file: "
 				+ this.directory + this.inputName);
-		// BufferedReader reader = IOHelper.openReadFile(this.directory
-		// + this.inputName);
-		// BufferedWriter trainingDataWriter = IOHelper.openWriteFile(
-		// this.directory + trainingFileName,
-		// Config.get().memoryLimitForWritingFiles);
-		// BufferedWriter learningDataWriter = IOHelper.openWriteFile(
-		// this.directory + learningFileName,
-		// Config.get().memoryLimitForWritingFiles);
-		// BufferedWriter testingDataWriter = IOHelper.openWriteFile(
-		// this.directory + testingFileName,
-		// Config.get().memoryLimitForWritingFiles);
-		// int rand;
-		// String line;
-		// try {
-		// while ((line = reader.readLine()) != null) {
-		// rand = (int) (Math.random() * 100);
-		// if (rand >= Config.get().sampleRate) {
-		// // keep data
-		// rand = (int) (Math.random() * 100);
-		// if (rand >= Config.get().splitDataRatio) {
-		// // store data in testing or learning file
-		// rand = (int) (Math.random() * 100);
-		// if (rand >= Config.get().splitTestRatio) {
-		// learningDataWriter.write(line + "\n");
-		// } else {
-		// testingDataWriter.write(line + "\n");
-		// }
-		// } else {
-		// // store data in training file
-		// trainingDataWriter.write(line + "\n");
-		// }
-		// }
-		// }
-		// trainingDataWriter.close();
-		// learningDataWriter.close();
-		// testingDataWriter.close();
-		this.splitIntoSequences(learningFileName, sequenceLength);
-		this.splitIntoSequences(testingFileName, sequenceLength);
-		IOHelper.strongLog("splitting done");
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// this.e.printStackTrace();
-		// }
+		BufferedReader reader = IOHelper.openReadFile(this.directory
+				+ this.inputName);
+		BufferedWriter trainingDataWriter = IOHelper.openWriteFile(
+				this.directory + trainingFileName,
+				Config.get().memoryLimitForWritingFiles);
+		BufferedWriter learningDataWriter = IOHelper.openWriteFile(
+				this.directory + learningFileName,
+				Config.get().memoryLimitForWritingFiles);
+		BufferedWriter testingDataWriter = IOHelper.openWriteFile(
+				this.directory + testingFileName,
+				Config.get().memoryLimitForWritingFiles);
+		int rand;
+		String line;
+		try {
+			while ((line = reader.readLine()) != null) {
+				rand = (int) (Math.random() * 100);
+				if (rand >= Config.get().sampleRate) {
+					// keep data
+					rand = (int) (Math.random() * 100);
+					if (rand >= Config.get().splitDataRatio) {
+						// store data in testing or learning file
+						rand = (int) (Math.random() * 100);
+						if (rand >= Config.get().splitTestRatio) {
+							learningDataWriter.write(line + "\n");
+						} else {
+							testingDataWriter.write(line + "\n");
+						}
+					} else {
+						// store data in training file
+						trainingDataWriter.write(line + "\n");
+					}
+				}
+			}
+			trainingDataWriter.close();
+			learningDataWriter.close();
+			testingDataWriter.close();
+			this.splitIntoSequences(learningFileName, sequenceLength);
+			this.splitIntoSequences(testingFileName, sequenceLength);
+			IOHelper.strongLog("splitting done");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void splitIntoSequences(String fileName, int sequenceLength) {
@@ -132,10 +133,7 @@ public class DataSetSplitter {
 			sequenceCount++;
 		}
 
-		System.out.println(sequenceCount);
 		long skipDistance = sequenceCount / Config.get().numberOfQueries;
-		System.out.println(skipDistance);
-
 		this.splitter.initializeForSequenceSplit(fileName);
 		int sequence = 0;
 		int query = 0;
@@ -156,13 +154,11 @@ public class DataSetSplitter {
 				break;
 			}
 		}
-		System.out.println(query);
 		try {
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		System.out.println(skipDistance);
 	}
 }
