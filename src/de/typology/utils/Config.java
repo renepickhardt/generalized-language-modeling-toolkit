@@ -34,6 +34,7 @@ public class Config extends Properties {
 	public boolean buildTypoEdges;
 
 	public int modelLength;
+	public int numberOfQueries;
 
 	// old:
 

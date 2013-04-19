@@ -27,7 +27,8 @@ public class TypologyMySQLSearcher extends MySQLSearcher {
 		// Config.get().weight = "pic";
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("model parameter: " + i);
-			tmss.run(i, 100000, Config.get().weight, wordIndex);
+			tmss.run(i, Config.get().numberOfQueries, Config.get().weight,
+					wordIndex);
 		}
 	}
 

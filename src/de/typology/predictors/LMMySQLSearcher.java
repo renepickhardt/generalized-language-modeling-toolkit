@@ -34,7 +34,8 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		// Config.get().useWeights = true;
 		for (int i = 5; i > 1; i--) {
 			IOHelper.strongLog("model parameter: " + i);
-			lmss.run(i, 100000, Config.get().weight, wordIndex);
+			lmss.run(i, Config.get().numberOfQueries, Config.get().weight,
+					wordIndex);
 		}
 	}
 

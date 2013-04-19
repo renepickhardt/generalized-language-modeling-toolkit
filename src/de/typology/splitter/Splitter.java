@@ -114,6 +114,10 @@ public abstract class Splitter {
 		}
 	}
 
+	public void initializeForSequenceSplit(String fileName) {
+		this.reader = IOHelper.openReadFile(this.directory + fileName);
+	}
+
 	/**
 	 * this method assumes that there is no count at the end of a line
 	 * 
@@ -249,9 +253,5 @@ public abstract class Splitter {
 	protected abstract void split(int maxSequenceLength);
 
 	protected abstract void mergeSmallestType(String inputPath);
-
-	public void initializeForSequenceSplit(String fileName) {
-		this.reader = IOHelper.openReadFile(this.directory + fileName);
-	}
 
 }
