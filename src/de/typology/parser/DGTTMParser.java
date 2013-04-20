@@ -120,6 +120,7 @@ public class DGTTMParser {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			this.recognizer.close();
 		}
 		try {
 			this.writer.close();
