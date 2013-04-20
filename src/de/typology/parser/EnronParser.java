@@ -141,11 +141,11 @@ public class EnronParser {
 			}
 			this.write("\n");
 			this.write("<ENDOFMAIL>");// marks end of the file
-			this.writer.flush();
 			this.write("\n");
+			this.writer.flush();
+			this.recognizer.close();
 		}
 		this.writer.close();
-		this.recognizer.close();
 	}
 
 	public void read() throws IOException {
