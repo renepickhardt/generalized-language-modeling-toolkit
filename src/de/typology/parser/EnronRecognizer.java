@@ -67,8 +67,6 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 	// Keywords to token mapping
 	private static Map<String, EnronToken> keywords;
 
-
-
 	public EnronRecognizer(File f) {
 		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 
@@ -329,6 +327,15 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 			return result;
 		} else {
 			throw new IllegalStateException();
+		}
+	}
+
+	public void close() {
+		try {
+			this.reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

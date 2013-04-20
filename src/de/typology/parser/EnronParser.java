@@ -145,6 +145,7 @@ public class EnronParser {
 			this.write("\n");
 		}
 		this.writer.close();
+		this.recognizer.close();
 	}
 
 	public void read() throws IOException {
