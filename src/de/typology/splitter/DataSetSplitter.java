@@ -122,18 +122,36 @@ public class DataSetSplitter {
 	private void splitIntoSequences(String fileName, int sequenceLength) {
 		String[] fileNameSplit = fileName.split("\\.");
 		String newFileName = fileNameSplit[0] + "-splitted." + fileNameSplit[1];
+		// get total count from stats file
+
 		BufferedWriter writer = IOHelper.openWriteFile(this.directory
 				+ newFileName, Config.get().memoryLimitForWritingFiles);
 		IOHelper.strongLog("splitting " + fileName + " into sequences");
 		this.splitter.initializeForSequenceSplit(fileName);
+		long sequenceCount = 0L;
 		while (this.splitter.getNextSequence(sequenceLength)) {
-			try {
-				for (String word : this.splitter.sequence) {
-					writer.write(word + " ");
+			sequenceCount++;
+		}
+
+		long skipDistance = sequenceCount / Config.get().numberOfQueries;
+		this.splitter.initializeForSequenceSplit(fileName);
+		int sequence = 0;
+		int query = 0;
+		while (this.splitter.getNextSequence(sequenceLength)) {
+			if (sequence % skipDistance == 0) {
+				query++;
+				try {
+					for (String word : this.splitter.sequence) {
+						writer.write(word + " ");
+					}
+					writer.write("\n");
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				writer.write("\n");
-			} catch (IOException e) {
-				e.printStackTrace();
+			}
+			sequence++;
+			if (query >= Config.get().numberOfQueries) {
+				break;
 			}
 		}
 		try {
@@ -141,5 +159,6 @@ public class DataSetSplitter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
 	}
 }
