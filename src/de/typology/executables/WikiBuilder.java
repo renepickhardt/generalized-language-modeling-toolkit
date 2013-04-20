@@ -35,6 +35,8 @@ public class WikiBuilder extends Builder {
 		new File(outputDirectory).mkdirs();
 		for (File f : dir.listFiles()) {
 			String wikiTyp = f.getName().split("-")[0];
+			wikiTyp = wikiTyp.replace("wiki", "");
+			System.out.println(wikiTyp);
 			String outputPath = outputDirectory + wikiTyp + "/";
 			IOHelper.strongLog("start building: " + outputPath);
 			new File(outputPath).mkdirs();
