@@ -131,6 +131,10 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 		return this.current;
 	}
 
+	public void close() {
+		this.tokenizer.close();
+	}
+
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();

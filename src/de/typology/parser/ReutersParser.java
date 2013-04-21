@@ -111,7 +111,7 @@ public class ReutersParser {
 				}
 			}
 			this.write("\n");// new line after page
-			this.writer.flush();
+			this.recognizer.close();
 		}
 		this.writer.close();
 	}

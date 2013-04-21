@@ -32,7 +32,8 @@ public class GoogleParser {
 	private GoogleToken current;
 	private Writer writer;
 
-	public GoogleParser(GoogleRecognizer recognizer, String parsedGoogleOutputPath) {
+	public GoogleParser(GoogleRecognizer recognizer,
+			String parsedGoogleOutputPath) {
 		this.recognizer = recognizer;
 		this.writer = IOHelper.openWriteFile(parsedGoogleOutputPath,
 				32 * 1024 * 1024);
@@ -76,6 +77,7 @@ public class GoogleParser {
 				this.write("\n");
 			}
 		}
+		this.recognizer.close();
 		this.writer.close();
 	}
 
