@@ -29,7 +29,7 @@ public class NGramSplitterWithCount extends NGramSplitter {
 		BufferedWriter writer;
 		IOHelper.strongLog("splitting into " + sequenceLength + "grams");
 		this.extension = sequenceLength + "gs";
-		this.initialize(this.extension, sequenceLength);
+		this.initialize(this.extension);
 		while (this.getNextSequence(sequenceLength)) {
 			writer = this.getWriter(this.sequence[0]);
 			try {
@@ -52,7 +52,7 @@ public class NGramSplitterWithCount extends NGramSplitter {
 	}
 
 	@Override
-	protected void initialize(String extension, int sequenceLength) {
-		this.initializeWithLength(extension, sequenceLength);
+	protected void initialize(String extension) {
+		this.initializeWithLength(extension);
 	}
 }

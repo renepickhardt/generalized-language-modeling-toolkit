@@ -31,7 +31,7 @@ public class TypoSplitterWithCount extends TypoSplitter {
 		edgeType = sequenceLength - 1;
 		this.extension = edgeType + "es";
 		IOHelper.strongLog("splitting into " + this.extension);
-		this.initialize(this.extension, sequenceLength);
+		this.initialize(this.extension);
 		while (this.getNextSequence(sequenceLength)) {
 			writer = this.getWriter(this.sequence[0]);
 			try {
@@ -53,7 +53,7 @@ public class TypoSplitterWithCount extends TypoSplitter {
 	}
 
 	@Override
-	protected void initialize(String extension, int sequenceLength) {
-		this.initializeWithLength(extension, sequenceLength);
+	protected void initialize(String extension) {
+		this.initializeWithLength(extension);
 	}
 }

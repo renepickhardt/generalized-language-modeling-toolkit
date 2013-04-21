@@ -66,7 +66,7 @@ public abstract class Splitter {
 	 * @param extension
 	 * @param sequenceLength
 	 */
-	protected void initialize(String extension, int sequenceLength) {
+	protected void initialize(String extension) {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
@@ -93,7 +93,7 @@ public abstract class Splitter {
 	 * @param extension
 	 * @param sequenceLength
 	 */
-	protected void initializeWithLength(String extension, int sequenceLength) {
+	protected void initializeWithLength(String extension) {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);

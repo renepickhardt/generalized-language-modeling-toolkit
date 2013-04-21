@@ -31,6 +31,7 @@ public class Config extends Properties {
 	public boolean buildStats;
 	public boolean buildIndex;
 	public boolean buildNGrams;
+	public boolean buildGLMEdges;
 	public boolean buildTypoEdges;
 
 	public int modelLength;
