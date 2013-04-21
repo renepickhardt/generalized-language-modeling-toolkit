@@ -91,6 +91,11 @@ for (( i = 1 ;  i <= 5;  i++  ))
     mysql -u ${dbUser} $dbName --local-infile=1 -e "flush tables;"
 
     #import data
+    if [ $i -eq 1 ];
+      then
+      mysql -u ${dbUser} $dbName --local-infile=1 -e "load data local infile '$file' into table ${tablename} fields terminated by '\t' enclosed by '' lines terminated by '\n' (target, score);"
+    fi
+
     if [ $i -eq 2 ];
       then
       mysql -u ${dbUser} $dbName --local-infile=1 -e "load data local infile '$file' into table ${tablename} fields terminated by '\t' enclosed by '' lines terminated by '\n' (source1, target, score);"

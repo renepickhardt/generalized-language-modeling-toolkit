@@ -547,6 +547,15 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 		}
 	}
 
+	public void close() {
+		try {
+			this.reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();

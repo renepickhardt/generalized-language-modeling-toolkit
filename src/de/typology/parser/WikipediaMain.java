@@ -20,6 +20,7 @@ public class WikipediaMain {
 		new File(outputDirectory).mkdirs();
 		for (File file : dir.listFiles()) {
 			String dataSet = file.getName().split("-")[0];
+			dataSet = dataSet.replace("wiki", "");
 			new File(outputDirectory + dataSet).mkdirs();
 			run(file.getAbsolutePath(), outputDirectory + dataSet
 					+ "/parsed.txt", outputDirectory + dataSet
