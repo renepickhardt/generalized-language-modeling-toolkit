@@ -23,7 +23,7 @@ public class NGramSplitter extends Splitter {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		NGramSplitter ngs = new NGramSplitter(outputDirectory, "index.txt",
-				"stats.txt", "normalized.txt");
+				"stats.txt", "training.txt");
 		ngs.split(5);
 	}
 
@@ -33,7 +33,7 @@ public class NGramSplitter extends Splitter {
 		for (int sequenceLength = 1; sequenceLength <= maxSequenceLength; sequenceLength++) {
 			IOHelper.strongLog("splitting into " + sequenceLength + "grams");
 			this.extension = sequenceLength + "gs";
-			this.initialize(this.extension, sequenceLength);
+			this.initialize(this.extension);
 			while (this.getNextSequence(sequenceLength)) {
 				writer = this.getWriter(this.sequence[0]);
 				try {

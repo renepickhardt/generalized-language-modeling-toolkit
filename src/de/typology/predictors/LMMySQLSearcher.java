@@ -70,27 +70,26 @@ public class LMMySQLSearcher extends MySQLSearcher {
 		String query = "";
 
 		// create source statements
-		String sourcepart = "";
+		String sourcepart = " where ";
 		if (i == 0) {
-			sourcepart = " where target = * ";
+			sourcepart += "true";
 		}
 		if (i == 1) {
-			sourcepart = " where source1 = \"" + words[l - 2] + "\" ";
+			sourcepart += "source1 = \"" + words[l - 2] + "\"";
 		}
 		if (i == 2) {
-			sourcepart = " where source1 = \"" + words[l - 3]
-					+ "\" AND source2 = \"" + words[l - 2] + "\" ";
+			sourcepart += "source1 = \"" + words[l - 3] + "\" AND source2 = \""
+					+ words[l - 2] + "\"";
 		}
 		if (i == 3) {
-			sourcepart = " where source1 = \"" + words[l - 4]
-					+ "\" AND source2 = \"" + words[l - 3]
-					+ "\" AND source3 = \"" + words[l - 2] + "\" ";
+			sourcepart += "source1 = \"" + words[l - 4] + "\" AND source2 = \""
+					+ words[l - 3] + "\" AND source3 = \"" + words[l - 2]
+					+ "\"";
 		}
 		if (i == 4) {
-			sourcepart = " where source1 = \"" + words[l - 5]
-					+ "\" AND source2 = \"" + words[l - 4]
-					+ "\" AND source3 = \"" + words[l - 3]
-					+ "\" AND source4 = \"" + words[l - 2] + "\" ";
+			sourcepart += "source1 = \"" + words[l - 5] + "\" AND source2 = \""
+					+ words[l - 4] + "\" AND source3 = \"" + words[l - 3]
+					+ "\" AND source4 = \"" + words[l - 2] + "\"";
 		}
 
 		if (pfl > 0) {
@@ -101,6 +100,7 @@ public class LMMySQLSearcher extends MySQLSearcher {
 			query = "select * from " + tableName + sourcepart
 					+ " order by score desc limit " + this.joinLength;
 		}
+		System.out.println(query);
 		return query;
 	}
 }

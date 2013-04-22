@@ -23,7 +23,7 @@ public class TypoSplitter extends Splitter {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		TypoSplitter ts = new TypoSplitter(outputDirectory, "index.txt",
-				"stats.txt", "normalized.txt");
+				"stats.txt", "training.txt");
 		ts.split(5);
 	}
 
@@ -35,7 +35,7 @@ public class TypoSplitter extends Splitter {
 			edgeType = sequenceLength - 1;
 			this.extension = edgeType + "es";
 			IOHelper.strongLog("splitting into " + this.extension);
-			this.initialize(this.extension, sequenceLength);
+			this.initialize(this.extension);
 			while (this.getNextSequence(sequenceLength)) {
 				writer = this.getWriter(this.sequence[0]);
 				try {

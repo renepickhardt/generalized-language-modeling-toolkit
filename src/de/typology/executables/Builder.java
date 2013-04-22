@@ -1,6 +1,7 @@
 package de.typology.executables;
 
 import de.typology.splitter.DataSetSplitter;
+import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
 import de.typology.splitter.NGramSplitter;
 import de.typology.splitter.NGramSplitterWithCount;
@@ -43,6 +44,11 @@ public class Builder {
 			TypoSplitter ts = new TypoSplitter(outputPath, indexFileName,
 					statsFileName, trainingFileName);
 			ts.split(Config.get().modelLength);
+		}
+		if (Config.get().buildGLMEdges) {
+			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
+					statsFileName, trainingFileName);
+			glms.split(Config.get().modelLength);
 		}
 	}
 
