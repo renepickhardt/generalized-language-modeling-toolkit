@@ -45,9 +45,9 @@ public class TypologyMySQLSearcher extends MySQLSearcher {
 		String target = words[l - 1];
 		String source;
 		if (i == 0) {
-			source = "*";
+			source = "true";
 		} else {
-			source = words[l - 1 - i];
+			source = "source =\"" + words[l - 1 - i] + "\"";
 		}
 		if (pfl > target.length()) {
 			System.out.println("target: '" + target
@@ -65,18 +65,19 @@ public class TypologyMySQLSearcher extends MySQLSearcher {
 			tableName = tablePrefix + "_all";
 		} else {
 			tableName = tablePrefix + "_"
-					+ BinarySearch.rank(source, wordIndex);
+					+ BinarySearch.rank(words[l - 1 - i], wordIndex);
+
 		}
 		String query = "";
 		if (pfl > 0) {
-			query = "select * from " + tableName + " where source =\"" + source
-					+ "\" and target like \"" + prefix
+			query = "select * from " + tableName + " where " + source
+					+ " and target like \"" + prefix
 					+ "\" order by score desc limit " + this.joinLength;
 		} else {
-			query = "select * from " + tableName + " where source =\"" + source
-					+ "\" order by score desc limit " + this.joinLength;
+			query = "select * from " + tableName + " where " + source
+					+ " order by score desc limit " + this.joinLength;
 		}
-
+		System.out.println(query);
 		return query;
 	}
 }

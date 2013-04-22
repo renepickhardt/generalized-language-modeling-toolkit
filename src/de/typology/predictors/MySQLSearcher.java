@@ -137,7 +137,7 @@ public abstract class MySQLSearcher {
 					}
 
 					// retrieve results lists for every Typology edge
-					for (int i = 1; i < this.n; i++) {
+					for (int i = 0; i < this.n; i++) {
 						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
 								wordIndex);
 						if (edgeQueryOfTyp[i] == null) {
