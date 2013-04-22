@@ -100,7 +100,6 @@ public class LMMySQLSearcher extends MySQLSearcher {
 			query = "select * from " + tableName + sourcepart
 					+ " order by score desc limit " + this.joinLength;
 		}
-		System.out.println(query);
 		return query;
 	}
 }
