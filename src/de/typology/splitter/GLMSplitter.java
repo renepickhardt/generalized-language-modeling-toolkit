@@ -18,7 +18,7 @@ public class GLMSplitter extends Splitter {
 
 	public GLMSplitter(String directory, String indexName, String statsName,
 			String inputName) {
-		super(directory, indexName, statsName, inputName, "gedges");
+		super(directory, indexName, statsName, inputName, "glm");
 	}
 
 	/**
