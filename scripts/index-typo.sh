@@ -34,7 +34,7 @@ for file in $path
     echo "xpref: "$xpref;
 
     #create tables and indices
-    if [ i$ -eq 0 ];
+    if [ $i -eq 0 ];
     then
       mysql -u ${dbUser} $dbName --local-infile=1 -e "create table ${tablename} (target varchar(60),score float) engine=myisam character set utf8 collate utf8_bin;
       create index ${tablename}_ix on ${tablename} (target(1), score desc);
