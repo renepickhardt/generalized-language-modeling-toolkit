@@ -52,16 +52,20 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		String target = words[l - 1];
 		String source;
 		int leadingZeros = 0;
-		if (sequence == 0) {
+		if (sequence == 1) {
 			source = "true";
 		} else {
+			if (sequence % 2 == 0) {
+				// no target in sequence (e.g. 110)
+				return null;
+			}
 			if (Integer.bitCount(sequence) == this.k
 					|| Integer.bitCount(sequence) == Integer.toBinaryString(
 							sequence).length()
 					&& Integer.bitCount(sequence) <= this.k) {
 				source = "";
 				String sequenceBinary = Integer.toBinaryString(sequence);
-				while (sequenceBinary.length() < this.n - 1) {
+				while (sequenceBinary.length() < this.n) {
 					sequenceBinary = "0" + sequenceBinary;
 					leadingZeros++;
 				}
@@ -70,7 +74,8 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 				char[] sequenceChars = sequenceBinary.toCharArray();
 
 				// sequencePointer points at sequenceCut
-				for (int i = 0; i < sequenceChars.length; i++) {
+				// length - 1 to leave out target
+				for (int i = 0; i < sequenceChars.length - 1; i++) {
 					if (Character.getNumericValue(sequenceChars[i]) == 1) {
 						if (source.length() == 0) {
 							source += "source" + (i - leadingZeros) + " =\""
@@ -82,8 +87,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 					}
 				}
 			} else {
-				// dummy sql query?
-				source = "false";
+				return null;
 			}
 		}
 		if (pfl > target.length()) {
@@ -96,13 +100,11 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 			System.out.println("deteced hyphen");
 			return null;
 		}
-		// + "1" since sequence=(n-1)^2 to leave out target
-		String tablePrefix = Integer.toBinaryString(sequence) + "1";
 		String tableName;
-		if (sequence == 0) {
+		if (sequence == 1) {
 			tableName = "1_all";
 		} else {
-			tableName = tablePrefix + "_"
+			tableName = Integer.toBinaryString(sequence) + "_"
 					+ BinarySearch.rank(words[leadingZeros], wordIndex);
 
 		}

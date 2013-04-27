@@ -69,10 +69,10 @@ public abstract class NewMySQLSearcher {
 	public void run(int n, int numberOfQueries, String weights,
 			String[] wordIndex) {
 		this.n = n;
-		this.learnHMMScores = new float[(int) Math.pow(this.n - 1, 2)];
-		this.learnPicWeights = new float[this.MAX_PFL][(int) Math.pow(
-				this.n - 1, 2)];
-		this.HMMWeights = new float[this.MAX_PFL][(int) Math.pow(this.n - 1, 2)];
+		this.learnHMMScores = new float[(int) Math.pow(this.n, 2)];
+		this.learnPicWeights = new float[this.MAX_PFL][(int) Math
+				.pow(this.n, 2)];
+		this.HMMWeights = new float[this.MAX_PFL][(int) Math.pow(this.n, 2)];
 		for (int i = 0; i < this.MAX_PFL; i++) {
 			for (int j = 0; j < n; j++) {
 				this.learnPicWeights[i][j] = 0.0f;
@@ -137,7 +137,8 @@ public abstract class NewMySQLSearcher {
 						this.resetHMMArray();
 					}
 
-					for (int i = 0; i < Math.pow(this.n - 1, 2); i++) {
+					// this.n - 1 to leave out target
+					for (int i = 0; i < Math.pow(this.n, 2); i++) {
 						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
 								wordIndex);
 						if (edgeQueryOfTyp[i] == null) {
@@ -168,7 +169,7 @@ public abstract class NewMySQLSearcher {
 
 				}
 				cnt++;
-				if (cnt % 9 == 0) {
+				if (cnt % 999 == 0) {
 					long end = System.currentTimeMillis();
 					System.out.println("queries: " + cnt + " \t time: "
 							+ (end - start) + " \t qps: " + cnt * 1000

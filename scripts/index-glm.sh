@@ -3,7 +3,7 @@ modelLength=5
 topK=5
 
 echo $1
-inputPath=${1/\/gedges*/}
+inputPath=${1/\/glm*/}
 dbLang=${inputPath##*/}
 inputPath=${inputPath%/*}
 dbType=${inputPath##*/}

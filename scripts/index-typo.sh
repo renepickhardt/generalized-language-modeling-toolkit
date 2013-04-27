@@ -58,7 +58,7 @@ for file in $path
     mysql -u ${dbUser} $dbName --local-infile=1 -e "flush tables;"
 
     #import data
-    if [ i$ -eq 0 ];
+    if [ $i -eq 0 ];
     then
       mysql -u ${dbUser} $dbName --local-infile=1 -e "load data local infile '$file' into table ${tablename} fields terminated by '\t' enclosed by '' lines terminated by '\n' (@dummy, target, score);"
     else
