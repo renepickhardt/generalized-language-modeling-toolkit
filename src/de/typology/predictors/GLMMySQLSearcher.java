@@ -21,7 +21,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		String[] wordIndex = ib.deserializeIndex(indexPath);
 
 		// k is used in prepareQuery
-		int k = 3;
+		int k = 2;
 
 		GLMMySQLSearcher glmmss = new GLMMySQLSearcher(databaseName, k);
 		// Config.get().weight = "no";
@@ -117,6 +117,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 			query = "select * from " + tableName + " where " + source
 					+ " order by score desc limit " + this.joinLength;
 		}
+		// System.out.println(query);
 		return query;
 	}
 }
