@@ -21,7 +21,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		String[] wordIndex = ib.deserializeIndex(indexPath);
 
 		// k is used in prepareQuery
-		int k = 2;
+		int k = 5;
 
 		GLMMySQLSearcher glmmss = new GLMMySQLSearcher(databaseName, k);
 		// Config.get().weight = "no";
@@ -65,11 +65,10 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 					&& Integer.bitCount(sequence) <= this.k) {
 				source = "";
 				String sequenceBinary = Integer.toBinaryString(sequence);
-				while (sequenceBinary.length() < this.n) {
+				while (sequenceBinary.length() < Config.get().modelLength) {
 					sequenceBinary = "0" + sequenceBinary;
 					leadingZeros++;
 				}
-
 				// convert binary sequence type into char[] for iteration
 				char[] sequenceChars = sequenceBinary.toCharArray();
 
@@ -117,7 +116,6 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 			query = "select * from " + tableName + " where " + source
 					+ " order by score desc limit " + this.joinLength;
 		}
-		// System.out.println(query);
 		return query;
 	}
 }
