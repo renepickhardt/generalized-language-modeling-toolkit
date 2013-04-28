@@ -27,6 +27,7 @@ public abstract class NewMySQLSearcher {
 	protected HashSet<String> tabelNames;
 	private HashMap<String, Float> hits;
 	protected int n;
+	protected int k;
 	protected int joinLength;
 	protected boolean useWeights;
 
@@ -36,7 +37,8 @@ public abstract class NewMySQLSearcher {
 	private float[][] HMMWeights;
 	private final int MAX_PFL;
 
-	public NewMySQLSearcher(String databaseName) {
+	public NewMySQLSearcher(String databaseName, int k) {
+		this.k = k;
 		this.n = 5;
 		this.MAX_PFL = 1024;
 		this.joinLength = 10;
@@ -80,8 +82,9 @@ public abstract class NewMySQLSearcher {
 		}
 		String fileName = EvalHelper.gennerateFileName(this.getClass()
 				.getName().replaceAll("de.typology.predictors.", "")
-				.replaceAll("MySQLSearcher", "").toLowerCase(), weights,
-				this.n, this.joinLength, numberOfQueries);
+				.replaceAll("MySQLSearcher", "").toLowerCase()
+				+ "k" + this.k, weights, this.n, this.joinLength,
+				numberOfQueries);
 		IOHelper.strongLog("log-file name: " + fileName);
 		String testFile = "";
 		IOHelper.strongLog("weights: " + weights);
