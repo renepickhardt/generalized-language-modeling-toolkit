@@ -71,10 +71,10 @@ public abstract class NewMySQLSearcher {
 	public void run(int n, int numberOfQueries, String weights,
 			String[] wordIndex) {
 		this.n = n;
-		this.learnHMMScores = new float[(int) Math.pow(this.n, 2)];
+		this.learnHMMScores = new float[(int) Math.pow(2, this.n)];
 		this.learnPicWeights = new float[this.MAX_PFL][(int) Math
-				.pow(this.n, 2)];
-		this.HMMWeights = new float[this.MAX_PFL][(int) Math.pow(this.n, 2)];
+				.pow(2, this.n)];
+		this.HMMWeights = new float[this.MAX_PFL][(int) Math.pow(2, this.n)];
 		for (int i = 0; i < this.MAX_PFL; i++) {
 			for (int j = 0; j < n; j++) {
 				this.learnPicWeights[i][j] = 0.0f;
@@ -123,7 +123,7 @@ public abstract class NewMySQLSearcher {
 				}
 
 				// create datstructure to hold the mysql query
-				String[] edgeQueryOfTyp = new String[(int) Math.pow(this.n, 2)];
+				String[] edgeQueryOfTyp = new String[(int) Math.pow(2, this.n)];
 				// TODO: replace revert replace hyphon...
 				String match = words[words.length - 1];
 
@@ -140,8 +140,7 @@ public abstract class NewMySQLSearcher {
 						this.resetHMMArray();
 					}
 
-					// this.n - 1 to leave out target
-					for (int i = 0; i < Math.pow(this.n, 2); i++) {
+					for (int i = 0; i < Math.pow(2, this.n); i++) {
 						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
 								wordIndex);
 						if (edgeQueryOfTyp[i] == null) {
