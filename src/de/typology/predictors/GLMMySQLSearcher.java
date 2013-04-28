@@ -41,8 +41,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 
 	public GLMMySQLSearcher(String databaseName, int k) {
 		// general:
-		super(databaseName);
-		this.k = k;
+		super(databaseName, k);
 	}
 
 	@Override
