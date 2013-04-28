@@ -21,7 +21,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		String[] wordIndex = ib.deserializeIndex(indexPath);
 
 		// k is used in prepareQuery
-		int k = 5;
+		int k = 2;
 
 		GLMMySQLSearcher glmmss = new GLMMySQLSearcher(databaseName, k);
 		// Config.get().weight = "no";
