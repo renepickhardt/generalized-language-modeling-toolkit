@@ -6,7 +6,6 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class GLMMySQLSearcher extends NewMySQLSearcher {
-	int k;
 
 	/**
 	 * @param args
