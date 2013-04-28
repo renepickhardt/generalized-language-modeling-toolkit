@@ -22,7 +22,7 @@ import java.util.Properties;
  */
 public class Config extends Properties {
 	// new:
-
+	public int GLMType;
 	public int maxCountDivider;
 	public int minCountPerFile;
 	public String inputDataSet;
