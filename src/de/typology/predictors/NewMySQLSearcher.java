@@ -39,7 +39,7 @@ public abstract class NewMySQLSearcher {
 
 	public NewMySQLSearcher(String databaseName, int k) {
 		this.k = k;
-		this.n = 5;
+		this.n = Config.get().modelLength;
 		this.MAX_PFL = 1024;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
