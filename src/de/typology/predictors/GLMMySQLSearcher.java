@@ -53,6 +53,11 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		if (sequence == 1) {
 			source = "true";
 		} else {
+
+			// TODO: remove this:
+			if (sequence == 1) {
+				return null;
+			}
 			if (sequence % 2 == 0) {
 				// no target in sequence (e.g. 110)
 				return null;
