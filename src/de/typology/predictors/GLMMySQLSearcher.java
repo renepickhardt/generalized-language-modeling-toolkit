@@ -52,7 +52,10 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		int leadingZeros = 0;
 		if (sequence == 1) {
 			source = "true";
+			// TODO:remove this:
+			return null;
 		} else {
+
 			if (sequence % 2 == 0) {
 				// no target in sequence (e.g. 110)
 				return null;
@@ -114,6 +117,7 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 			query = "select * from " + tableName + " where " + source
 					+ " order by score desc limit " + this.joinLength;
 		}
+		System.out.println(query);
 		return query;
 	}
 }
