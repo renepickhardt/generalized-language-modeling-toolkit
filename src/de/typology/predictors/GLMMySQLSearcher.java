@@ -117,7 +117,6 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 			query = "select * from " + tableName + " where " + source
 					+ " order by score desc limit " + this.joinLength;
 		}
-		System.out.println(query);
 		return query;
 	}
 }
