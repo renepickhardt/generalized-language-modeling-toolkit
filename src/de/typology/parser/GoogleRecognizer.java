@@ -1,18 +1,18 @@
 package de.typology.parser;
 
-import static de.typology.parser.GoogleToken.COLON;
-import static de.typology.parser.GoogleToken.COMMA;
-import static de.typology.parser.GoogleToken.EOF;
-import static de.typology.parser.GoogleToken.EXCLAMATIONMARK;
-import static de.typology.parser.GoogleToken.FULLSTOP;
-import static de.typology.parser.GoogleToken.HYPHEN;
-import static de.typology.parser.GoogleToken.LINESEPARATOR;
-import static de.typology.parser.GoogleToken.OTHER;
-import static de.typology.parser.GoogleToken.QUESTIONMARK;
-import static de.typology.parser.GoogleToken.QUOTATIONMARK;
-import static de.typology.parser.GoogleToken.SEMICOLON;
-import static de.typology.parser.GoogleToken.STRING;
-import static de.typology.parser.GoogleToken.WS;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EOF;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.WS;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -25,9 +25,9 @@ import de.typology.utils.IOHelper;
  * 
  * @author Martin Koerner
  */
-public class GoogleRecognizer implements Iterator<GoogleToken> {
+public class GoogleRecognizer implements Iterator<Token> {
 
-	private GoogleToken token = null; // last token recognized
+	private Token token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
@@ -204,9 +204,9 @@ public class GoogleRecognizer implements Iterator<GoogleToken> {
 	}
 
 	@Override
-	public GoogleToken next() {
+	public Token next() {
 		if (this.hasNext()) {
-			GoogleToken result = this.token;
+			Token result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -231,7 +231,7 @@ public class GoogleRecognizer implements Iterator<GoogleToken> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			GoogleToken t = this.next();
+			Token t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}

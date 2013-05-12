@@ -1,21 +1,21 @@
 package de.typology.parser;
 
-import static de.typology.parser.DGTTMToken.BODY;
-import static de.typology.parser.DGTTMToken.BRACES;
-import static de.typology.parser.DGTTMToken.CLOSEDBODY;
-import static de.typology.parser.DGTTMToken.CLOSEDBRACES;
-import static de.typology.parser.DGTTMToken.CLOSEDTUV;
-import static de.typology.parser.DGTTMToken.COLON;
-import static de.typology.parser.DGTTMToken.COMMA;
-import static de.typology.parser.DGTTMToken.EXCLAMATIONMARK;
-import static de.typology.parser.DGTTMToken.FULLSTOP;
-import static de.typology.parser.DGTTMToken.HYPHEN;
-import static de.typology.parser.DGTTMToken.QUESTIONMARK;
-import static de.typology.parser.DGTTMToken.QUOTATIONMARK;
-import static de.typology.parser.DGTTMToken.SEMICOLON;
-import static de.typology.parser.DGTTMToken.STRING;
-import static de.typology.parser.DGTTMToken.TUV;
-import static de.typology.parser.DGTTMToken.WS;
+import static de.typology.parser.Token.BODY;
+import static de.typology.parser.Token.CLOSEDBODY;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.CLOSEDTUV;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.TUV;
+import static de.typology.parser.Token.WS;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +36,7 @@ public class DGTTMParser {
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
-	private DGTTMToken current;
+	private Token current;
 	// private DGTTMToken previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
@@ -100,9 +100,9 @@ public class DGTTMParser {
 								if (this.current == EXCLAMATIONMARK) {
 									this.write(this.lexeme);
 								}
-								if (this.current == BRACES) {
+								if (this.current == ROUNDBRACKET) {
 									while (this.recognizer.hasNext()
-											&& this.current != CLOSEDBRACES
+											&& this.current != CLOSEDROUNDBRACKET
 											&& this.current != CLOSEDTUV) {
 										this.current = this.recognizer.next();
 									}

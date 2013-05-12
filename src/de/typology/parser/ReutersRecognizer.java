@@ -1,27 +1,27 @@
 package de.typology.parser;
 
-import static de.typology.parser.ReutersToken.AND;
-import static de.typology.parser.ReutersToken.BRACES;
-import static de.typology.parser.ReutersToken.CLOSEDBRACES;
-import static de.typology.parser.ReutersToken.CLOSEDP;
-import static de.typology.parser.ReutersToken.CLOSEDTEXT;
-import static de.typology.parser.ReutersToken.CLOSEDTITLE;
-import static de.typology.parser.ReutersToken.COLON;
-import static de.typology.parser.ReutersToken.COMMA;
-import static de.typology.parser.ReutersToken.EOF;
-import static de.typology.parser.ReutersToken.EXCLAMATIONMARK;
-import static de.typology.parser.ReutersToken.FULLSTOP;
-import static de.typology.parser.ReutersToken.HYPHEN;
-import static de.typology.parser.ReutersToken.LINESEPARATOR;
-import static de.typology.parser.ReutersToken.OTHER;
-import static de.typology.parser.ReutersToken.P;
-import static de.typology.parser.ReutersToken.QUESTIONMARK;
-import static de.typology.parser.ReutersToken.QUOTATIONMARK;
-import static de.typology.parser.ReutersToken.SEMICOLON;
-import static de.typology.parser.ReutersToken.STRING;
-import static de.typology.parser.ReutersToken.TEXT;
-import static de.typology.parser.ReutersToken.TITLE;
-import static de.typology.parser.ReutersToken.WS;
+import static de.typology.parser.Token.AND;
+import static de.typology.parser.Token.CLOSEDP;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.CLOSEDTEXT;
+import static de.typology.parser.Token.CLOSEDTITLE;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EOF;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.P;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.TEXT;
+import static de.typology.parser.Token.TITLE;
+import static de.typology.parser.Token.WS;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,9 +39,9 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class ReutersRecognizer implements Iterator<ReutersToken> {
+public class ReutersRecognizer implements Iterator<Token> {
 
-	private ReutersToken token = null; // last token recognized
+	private Token token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
@@ -49,10 +49,10 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 	private int index = 0; // length of lexeme
 
 	// Keywords to token mapping
-	private static Map<String, ReutersToken> keywords;
+	private static Map<String, Token> keywords;
 
 	static {
-		keywords = new HashMap<String, ReutersToken>();
+		keywords = new HashMap<String, Token>();
 		keywords.put("p", P);
 		keywords.put("title", TITLE);
 		keywords.put("text", TEXT);
@@ -247,14 +247,14 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 		// Recognize braces open
 		if (this.lookahead == '(') {
 			this.read();
-			this.token = BRACES;
+			this.token = ROUNDBRACKET;
 			return;
 		}
 
 		// Recognize braces close
 		if (this.lookahead == ')') {
 			this.read();
-			this.token = CLOSEDBRACES;
+			this.token = CLOSEDROUNDBRACKET;
 			return;
 		}
 
@@ -296,9 +296,9 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 	}
 
 	@Override
-	public ReutersToken next() {
+	public Token next() {
 		if (this.hasNext()) {
-			ReutersToken result = this.token;
+			Token result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -323,7 +323,7 @@ public class ReutersRecognizer implements Iterator<ReutersToken> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			ReutersToken t = this.next();
+			Token t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}

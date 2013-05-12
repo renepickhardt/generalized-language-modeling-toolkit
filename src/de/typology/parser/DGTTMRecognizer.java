@@ -1,27 +1,27 @@
 package de.typology.parser;
 
-import static de.typology.parser.DGTTMToken.AND;
-import static de.typology.parser.DGTTMToken.BODY;
-import static de.typology.parser.DGTTMToken.BRACES;
-import static de.typology.parser.DGTTMToken.CLOSEDBODY;
-import static de.typology.parser.DGTTMToken.CLOSEDBRACES;
-import static de.typology.parser.DGTTMToken.CLOSEDSEG;
-import static de.typology.parser.DGTTMToken.CLOSEDTUV;
-import static de.typology.parser.DGTTMToken.COLON;
-import static de.typology.parser.DGTTMToken.COMMA;
-import static de.typology.parser.DGTTMToken.EOF;
-import static de.typology.parser.DGTTMToken.EXCLAMATIONMARK;
-import static de.typology.parser.DGTTMToken.FULLSTOP;
-import static de.typology.parser.DGTTMToken.HYPHEN;
-import static de.typology.parser.DGTTMToken.LINESEPARATOR;
-import static de.typology.parser.DGTTMToken.OTHER;
-import static de.typology.parser.DGTTMToken.QUESTIONMARK;
-import static de.typology.parser.DGTTMToken.QUOTATIONMARK;
-import static de.typology.parser.DGTTMToken.SEG;
-import static de.typology.parser.DGTTMToken.SEMICOLON;
-import static de.typology.parser.DGTTMToken.STRING;
-import static de.typology.parser.DGTTMToken.TUV;
-import static de.typology.parser.DGTTMToken.WS;
+import static de.typology.parser.Token.AND;
+import static de.typology.parser.Token.BODY;
+import static de.typology.parser.Token.CLOSEDBODY;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.CLOSEDSEG;
+import static de.typology.parser.Token.CLOSEDTUV;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EOF;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEG;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.TUV;
+import static de.typology.parser.Token.WS;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,9 +42,9 @@ import java.util.Map;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class DGTTMRecognizer implements Iterator<DGTTMToken> {
+public class DGTTMRecognizer implements Iterator<Token> {
 
-	private DGTTMToken token = null; // last token recognized
+	private Token token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
@@ -52,7 +52,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	private int index = 0; // length of lexeme
 
 	// Keywords to token mapping
-	private static Map<String, DGTTMToken> keywords;
+	private static Map<String, Token> keywords;
 	private static Map<String, String> tuvs;
 
 	static {
@@ -78,7 +78,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		keywords = new HashMap<String, DGTTMToken>();
+		keywords = new HashMap<String, Token>();
 		keywords.put("body", BODY);
 		keywords.put("seg", SEG);
 		keywords.put("/body", CLOSEDBODY);
@@ -280,14 +280,14 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 		// Recognize braces open
 		if (this.lookahead == '(') {
 			this.read();
-			this.token = BRACES;
+			this.token = ROUNDBRACKET;
 			return;
 		}
 
 		// Recognize braces close
 		if (this.lookahead == ')') {
 			this.read();
-			this.token = CLOSEDBRACES;
+			this.token = CLOSEDROUNDBRACKET;
 			return;
 		}
 
@@ -314,24 +314,17 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 
 	@Override
 	public boolean hasNext() {
-		if (this.token != null) {
-			return true;
-		}
 		if (this.eof) {
 			return false;
+		} else {
+			return true;
 		}
-		try {
-			this.lex();
-		} catch (IOException e) {
-			throw new RecognitionException(e);
-		}
-		return true;
 	}
 
 	@Override
-	public DGTTMToken next() {
+	public Token next() {
 		if (this.hasNext()) {
-			DGTTMToken result = this.token;
+			Token result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -356,7 +349,7 @@ public class DGTTMRecognizer implements Iterator<DGTTMToken> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			DGTTMToken t = this.next();
+			Token t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}

@@ -1,22 +1,22 @@
 package de.typology.parser;
 
-import static de.typology.parser.EnronToken.AT;
-import static de.typology.parser.EnronToken.BRACES;
-import static de.typology.parser.EnronToken.CLOSEDBRACES;
-import static de.typology.parser.EnronToken.COLON;
-import static de.typology.parser.EnronToken.COMMA;
-import static de.typology.parser.EnronToken.EQUALITYSIGN;
-import static de.typology.parser.EnronToken.EXCLAMATIONMARK;
-import static de.typology.parser.EnronToken.FULLSTOP;
-import static de.typology.parser.EnronToken.HEADER;
-import static de.typology.parser.EnronToken.HYPHEN;
-import static de.typology.parser.EnronToken.LINESEPARATOR;
-import static de.typology.parser.EnronToken.QUESTIONMARK;
-import static de.typology.parser.EnronToken.QUOTATIONMARK;
-import static de.typology.parser.EnronToken.SEMICOLON;
-import static de.typology.parser.EnronToken.SLASH;
-import static de.typology.parser.EnronToken.STRING;
-import static de.typology.parser.EnronToken.WS;
+import static de.typology.parser.Token.AT;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EQUALITYSIGN;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HEADER;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.SLASH;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.WS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,8 +38,8 @@ public class EnronParser {
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
-	private EnronToken current;
-	private EnronToken previous;
+	private Token current;
+	private Token previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
 
@@ -131,9 +131,9 @@ public class EnronParser {
 				if (this.current == QUOTATIONMARK) {
 					this.write("'");
 				}
-				if (this.current == BRACES) {
+				if (this.current == ROUNDBRACKET) {
 					while (this.recognizer.hasNext()
-							&& this.current != CLOSEDBRACES) {
+							&& this.current != CLOSEDROUNDBRACKET) {
 						this.current = this.recognizer.next();
 					}
 				}

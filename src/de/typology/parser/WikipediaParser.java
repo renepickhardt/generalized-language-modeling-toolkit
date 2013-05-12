@@ -1,38 +1,38 @@
 package de.typology.parser;
 
-import static de.typology.parser.WikipediaToken.ASTERISK;
-import static de.typology.parser.WikipediaToken.AUDIO;
-import static de.typology.parser.WikipediaToken.BRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDBRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDCURLYBRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDELEMENT;
-import static de.typology.parser.WikipediaToken.CLOSEDREF;
-import static de.typology.parser.WikipediaToken.CLOSEDSQUAREDBRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDTEXT;
-import static de.typology.parser.WikipediaToken.COLON;
-import static de.typology.parser.WikipediaToken.COMMA;
-import static de.typology.parser.WikipediaToken.CURLYBRACKET;
-import static de.typology.parser.WikipediaToken.EHH;
-import static de.typology.parser.WikipediaToken.ELEMENT;
-import static de.typology.parser.WikipediaToken.EQUALITYSIGN;
-import static de.typology.parser.WikipediaToken.EXCLAMATIONMARK;
-import static de.typology.parser.WikipediaToken.FULLSTOP;
-import static de.typology.parser.WikipediaToken.GREATERTHAN;
-import static de.typology.parser.WikipediaToken.HH;
-import static de.typology.parser.WikipediaToken.HYPHEN;
-import static de.typology.parser.WikipediaToken.LINESEPARATOR;
-import static de.typology.parser.WikipediaToken.LINK;
-import static de.typology.parser.WikipediaToken.OTHER;
-import static de.typology.parser.WikipediaToken.QUESTIONMARK;
-import static de.typology.parser.WikipediaToken.QUOTATIONMARK;
-import static de.typology.parser.WikipediaToken.REF;
-import static de.typology.parser.WikipediaToken.SEMICOLON;
-import static de.typology.parser.WikipediaToken.SQUAREDBRACKET;
-import static de.typology.parser.WikipediaToken.STRING;
-import static de.typology.parser.WikipediaToken.TEXT;
-import static de.typology.parser.WikipediaToken.UNDERSCORE;
-import static de.typology.parser.WikipediaToken.VERTICALBAR;
-import static de.typology.parser.WikipediaToken.WS;
+import static de.typology.parser.Token.ASTERISK;
+import static de.typology.parser.Token.AUDIO;
+import static de.typology.parser.Token.CLOSEDCURLYBRACKET;
+import static de.typology.parser.Token.CLOSEDELEMENT;
+import static de.typology.parser.Token.CLOSEDREF;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.CLOSEDSQUAREDBRACKET;
+import static de.typology.parser.Token.CLOSEDTEXT;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.CURLYBRACKET;
+import static de.typology.parser.Token.EHH;
+import static de.typology.parser.Token.ELEMENT;
+import static de.typology.parser.Token.EQUALITYSIGN;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.GREATERTHAN;
+import static de.typology.parser.Token.HH;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.LINK;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.REF;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.SQUAREDBRACKET;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.TEXT;
+import static de.typology.parser.Token.UNDERSCORE;
+import static de.typology.parser.Token.VERTICALBAR;
+import static de.typology.parser.Token.WS;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,9 +55,9 @@ public class WikipediaParser {
 	private int verticalBarCount;
 	// private String link;
 	private String linkLabel;
-	private WikipediaToken label;
-	private WikipediaToken current;
-	private WikipediaToken previous;
+	private Token label;
+	private Token current;
+	private Token previous;
 	private Writer writer;
 	private HashSet<String> disambiguations;
 
@@ -185,15 +185,15 @@ public class WikipediaParser {
 					}
 
 					// Recognize (...)
-					if (this.current == BRACKET) {
+					if (this.current == ROUNDBRACKET) {
 						this.bracketCount = 1;
 						while (this.bracketCount != 0
 								&& this.current != CLOSEDTEXT) {
 							this.read();
-							if (this.current == BRACKET) {
+							if (this.current == ROUNDBRACKET) {
 								this.bracketCount++;
 							}
-							if (this.current == CLOSEDBRACKET) {
+							if (this.current == CLOSEDROUNDBRACKET) {
 								this.bracketCount--;
 							}
 						}

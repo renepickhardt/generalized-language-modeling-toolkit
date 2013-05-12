@@ -1,43 +1,43 @@
 package de.typology.parser;
 
-import static de.typology.parser.EnronToken.ASTERISK;
-import static de.typology.parser.EnronToken.AT;
-import static de.typology.parser.EnronToken.BCC;
-import static de.typology.parser.EnronToken.BRACES;
-import static de.typology.parser.EnronToken.CC;
-import static de.typology.parser.EnronToken.CLOSEDBRACES;
-import static de.typology.parser.EnronToken.COLON;
-import static de.typology.parser.EnronToken.COMMA;
-import static de.typology.parser.EnronToken.CONTENTTRANSFERENCODING;
-import static de.typology.parser.EnronToken.CONTENTTYPE;
-import static de.typology.parser.EnronToken.DATE;
-import static de.typology.parser.EnronToken.EOF;
-import static de.typology.parser.EnronToken.EQUALITYSIGN;
-import static de.typology.parser.EnronToken.EXCLAMATIONMARK;
-import static de.typology.parser.EnronToken.FROM;
-import static de.typology.parser.EnronToken.FULLSTOP;
-import static de.typology.parser.EnronToken.HEADER;
-import static de.typology.parser.EnronToken.HYPHEN;
-import static de.typology.parser.EnronToken.LINESEPARATOR;
-import static de.typology.parser.EnronToken.MESSAGEID;
-import static de.typology.parser.EnronToken.MIMEVERSION;
-import static de.typology.parser.EnronToken.OTHER;
-import static de.typology.parser.EnronToken.QUESTIONMARK;
-import static de.typology.parser.EnronToken.QUOTATIONMARK;
-import static de.typology.parser.EnronToken.SEMICOLON;
-import static de.typology.parser.EnronToken.SLASH;
-import static de.typology.parser.EnronToken.STRING;
-import static de.typology.parser.EnronToken.SUBJECT;
-import static de.typology.parser.EnronToken.TO;
-import static de.typology.parser.EnronToken.VERTICALBAR;
-import static de.typology.parser.EnronToken.WS;
-import static de.typology.parser.EnronToken.XBCC;
-import static de.typology.parser.EnronToken.XCC;
-import static de.typology.parser.EnronToken.XFILENAME;
-import static de.typology.parser.EnronToken.XFOLDER;
-import static de.typology.parser.EnronToken.XFROM;
-import static de.typology.parser.EnronToken.XORIGIN;
-import static de.typology.parser.EnronToken.XTO;
+import static de.typology.parser.Token.ASTERISK;
+import static de.typology.parser.Token.AT;
+import static de.typology.parser.Token.BCC;
+import static de.typology.parser.Token.CC;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.CONTENTTRANSFERENCODING;
+import static de.typology.parser.Token.CONTENTTYPE;
+import static de.typology.parser.Token.DATE;
+import static de.typology.parser.Token.EOF;
+import static de.typology.parser.Token.EQUALITYSIGN;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FROM;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HEADER;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.MESSAGEID;
+import static de.typology.parser.Token.MIMEVERSION;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.SLASH;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.SUBJECT;
+import static de.typology.parser.Token.TO;
+import static de.typology.parser.Token.VERTICALBAR;
+import static de.typology.parser.Token.WS;
+import static de.typology.parser.Token.XBCC;
+import static de.typology.parser.Token.XCC;
+import static de.typology.parser.Token.XFILENAME;
+import static de.typology.parser.Token.XFOLDER;
+import static de.typology.parser.Token.XFROM;
+import static de.typology.parser.Token.XORIGIN;
+import static de.typology.parser.Token.XTO;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,9 +55,9 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class EnronRecognizer implements Iterator<EnronToken> {
+public class EnronRecognizer implements Iterator<Token> {
 
-	private EnronToken token = null; // last token recognized
+	private Token token = null; // last token recognized
 	private boolean eof = false; // reached end of file
 	private Reader reader = null; // input stream
 	private int lookahead = 0; // lookahead, if any
@@ -65,12 +65,12 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 	private int index = 0; // length of lexeme
 
 	// Keywords to token mapping
-	private static Map<String, EnronToken> keywords;
+	private static Map<String, Token> keywords;
 
 	public EnronRecognizer(File f) {
 		this.reader = IOHelper.openReadFile(f.getAbsolutePath());
 
-		keywords = new HashMap<String, EnronToken>();
+		keywords = new HashMap<String, Token>();
 
 		keywords.put("Message-ID", MESSAGEID);
 		keywords.put("Date", DATE);
@@ -256,14 +256,14 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 		// Recognize braces open
 		if (this.lookahead == '(') {
 			this.read();
-			this.token = BRACES;
+			this.token = ROUNDBRACKET;
 			return;
 		}
 
 		// Recognize braces close
 		if (this.lookahead == ')') {
 			this.read();
-			this.token = CLOSEDBRACES;
+			this.token = CLOSEDROUNDBRACKET;
 			return;
 		}
 
@@ -320,9 +320,9 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 	}
 
 	@Override
-	public EnronToken next() {
+	public Token next() {
 		if (this.hasNext()) {
-			EnronToken result = this.token;
+			Token result = this.token;
 			this.token = null;
 			return result;
 		} else {
@@ -347,7 +347,7 @@ public class EnronRecognizer implements Iterator<EnronToken> {
 	// Stress test: lex until end-of-file
 	public void lexall() {
 		while (this.hasNext()) {
-			EnronToken t = this.next();
+			Token t = this.next();
 			System.out.println(t + " : " + this.getLexeme());
 		}
 	}
