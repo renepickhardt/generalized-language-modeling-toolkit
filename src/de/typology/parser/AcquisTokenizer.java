@@ -4,6 +4,7 @@ import static de.typology.parser.Token.BODY;
 import static de.typology.parser.Token.CLOSEDBODY;
 import static de.typology.parser.Token.CLOSEDSEG;
 import static de.typology.parser.Token.CLOSEDTUV;
+import static de.typology.parser.Token.OTHER;
 import static de.typology.parser.Token.SEG;
 import static de.typology.parser.Token.TUV;
 
@@ -66,7 +67,20 @@ public class AcquisTokenizer extends Tokenizer {
 	@Override
 	public void lex() {
 		super.lex();
-
+		if (this.token == Token.LESSTHAN) {
+			do {
+				this.read();
+			} while (this.lookahead != '>');
+			this.read();
+			String label = (String) this.getLexeme().subSequence(1,
+					this.getLexeme().length() - 1);
+			if (keywords.containsKey(label)) {
+				this.token = keywords.get(label);
+			} else {
+				this.token = OTHER;
+			}
+			return;
+		}
 		super.lexGeneral();
 	}
 

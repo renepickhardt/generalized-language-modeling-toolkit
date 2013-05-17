@@ -33,7 +33,7 @@ import de.typology.utils.IOHelper;
  * 
  */
 public class AcquisParser {
-	private AcquisTokenizer recognizer;
+	private AcquisTokenizer tokenizer;
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
@@ -53,19 +53,19 @@ public class AcquisParser {
 
 	public void parse() {
 		for (File f : this.fileList) {
-			this.recognizer = new AcquisTokenizer(f, this.dgttmLanguage);
+			this.tokenizer = new AcquisTokenizer(f, this.dgttmLanguage);
 			// writer.write(f.toString());
 			// writer.write("\n");
 			this.reset();
-			while (this.recognizer.hasNext()) {
+			while (this.tokenizer.hasNext()) {
 				this.read();
 				if (this.current == BODY) {
-					while (this.recognizer.hasNext()
+					while (this.tokenizer.hasNext()
 							&& this.current != CLOSEDBODY) {
 						// inside a textblock
 						this.read();
 						if (this.current == TUV) {
-							while (this.recognizer.hasNext()
+							while (this.tokenizer.hasNext()
 									&& this.current != CLOSEDTUV) {
 								this.read();
 								if (this.current == STRING) {
@@ -103,10 +103,10 @@ public class AcquisParser {
 									this.write(this.lexeme);
 								}
 								if (this.current == ROUNDBRACKET) {
-									while (this.recognizer.hasNext()
+									while (this.tokenizer.hasNext()
 											&& this.current != CLOSEDROUNDBRACKET
 											&& this.current != CLOSEDTUV) {
-										this.current = this.recognizer.next();
+										this.read();
 									}
 								}
 							}
@@ -116,13 +116,7 @@ public class AcquisParser {
 				}
 			}
 			this.write("\n");// new line after file
-			try {
-				this.writer.flush();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			this.recognizer.close();
+			this.tokenizer.close();
 		}
 		try {
 			this.writer.close();
@@ -133,10 +127,11 @@ public class AcquisParser {
 	}
 
 	public void read() {
-		if (this.recognizer.hasNext()) {
+		if (this.tokenizer.hasNext()) {
 			// this.previous = this.current;
-			this.current = this.recognizer.next();
-			this.lexeme = this.recognizer.getLexeme();
+			this.tokenizer.lex();
+			this.current = this.tokenizer.next();
+			this.lexeme = this.tokenizer.getLexeme();
 		} else {
 			throw new IllegalStateException();
 		}
@@ -149,9 +144,9 @@ public class AcquisParser {
 	}
 
 	public void skip() {
-		if (this.recognizer.hasNext()) {
+		if (this.tokenizer.hasNext()) {
 			// this.previous = this.current;
-			this.current = this.recognizer.next();
+			this.current = this.tokenizer.next();
 		} else {
 			throw new IllegalStateException();
 		}

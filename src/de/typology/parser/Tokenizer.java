@@ -85,11 +85,27 @@ public class Tokenizer implements Iterator<Token> {
 	// Recognize a token
 	protected void lex() {
 		this.reset();
-
 		// Recognize end of file
 		if (this.lookahead == -1) {
 			this.eof = true;
 			this.token = EOF;
+			return;
+		}
+
+		// Recognize newline
+		if (this.lookahead == 13) {
+			this.token = LINESEPARATOR;
+			this.read();
+			if (this.lookahead == 10) {
+				this.token = LINESEPARATOR;
+				this.read();
+			}
+			return;
+		}
+		// Recognize newline
+		if (this.lookahead == 10) {
+			this.token = LINESEPARATOR;
+			this.read();
 			return;
 		}
 
