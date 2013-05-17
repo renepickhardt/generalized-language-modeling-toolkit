@@ -3,7 +3,7 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.parser.DGTTMMain;
+import de.typology.parser.AcquisMain;
 import de.typology.parser.EnronMain;
 import de.typology.utils.Config;
 
@@ -31,8 +31,8 @@ public class MixedBuilder extends Builder {
 		String parsedFileName;
 		String normalizedFileName;
 
-		// build dgttm
-		outputDirectory = Config.get().outputDirectory + "dgttm/";
+		// build acquis
+		outputDirectory = Config.get().outputDirectory + "acquis/";
 		parsedFileName = "parsed.txt";
 		normalizedFileName = "normalized.txt";
 		String[] languages = Config.get().dgttmLanguages.split(",");
@@ -44,7 +44,7 @@ public class MixedBuilder extends Builder {
 
 			if (Config.get().parseData) {
 				try {
-					DGTTMMain.run(Config.get().dgttmInputDirectory, outputPath
+					AcquisMain.run(Config.get().dgttmInputDirectory, outputPath
 							+ parsedFileName, outputPath + normalizedFileName,
 							language);
 				} catch (IOException e) {

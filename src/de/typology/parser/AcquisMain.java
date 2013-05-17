@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import de.typology.utils.IOHelper;
 
-public class DGTTMMain {
+public class AcquisMain {
 	private static ArrayList<File> fileList;
 
 	/**
@@ -25,13 +25,13 @@ public class DGTTMMain {
 		IOHelper.log("getting file list");
 		fileList = IOHelper.getDirectory(new File(dgttmInputPath));
 
-		DGTTMParser parser = new DGTTMParser(fileList, parsedOutputPath,
+		AcquisParser parser = new AcquisParser(fileList, parsedOutputPath,
 				dgttmLanguage);
 		IOHelper.log("start parsing: " + dgttmInputPath);
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
-		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
+		AcquisNormalizer wn = new AcquisNormalizer(parsedOutputPath,
 				normalizedOutputPath);
 		wn.normalize();
 		IOHelper.log("cleanup done");

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 /**
@@ -31,8 +32,8 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class DGTTMParser {
-	private DGTTMRecognizer recognizer;
+public class AcquisParser {
+	private AcquisTokenizer recognizer;
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
@@ -42,16 +43,17 @@ public class DGTTMParser {
 	private ArrayList<File> fileList;
 	private String dgttmLanguage;
 
-	public DGTTMParser(ArrayList<File> fileList, String output,
+	public AcquisParser(ArrayList<File> fileList, String output,
 			String dgttmLanguage) {
 		this.dgttmLanguage = dgttmLanguage;
 		this.fileList = fileList;
-		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
+		this.writer = IOHelper.openWriteFile(output,
+				Config.get().memoryLimitForWritingFiles);
 	}
 
 	public void parse() {
 		for (File f : this.fileList) {
-			this.recognizer = new DGTTMRecognizer(f, this.dgttmLanguage);
+			this.recognizer = new AcquisTokenizer(f, this.dgttmLanguage);
 			// writer.write(f.toString());
 			// writer.write("\n");
 			this.reset();

@@ -1,5 +1,6 @@
 package de.typology.parser;
 
+import static de.typology.parser.Token.AND;
 import static de.typology.parser.Token.ASTERISK;
 import static de.typology.parser.Token.CLOSEDCURLYBRACKET;
 import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
@@ -212,7 +213,7 @@ public class Tokenizer implements Iterator<Token> {
 		if (this.lookahead == '&') {
 			this.read();
 			// remove &amp;
-			while (this.lookahead == 'a') {
+			if (this.lookahead == 'a') {
 				this.read();
 				if (this.lookahead == 'm') {
 					this.read();
@@ -220,6 +221,25 @@ public class Tokenizer implements Iterator<Token> {
 						this.read();
 						if (this.lookahead == ';') {
 							this.read();
+							this.token = AND;
+							return;
+						}
+					}
+				}
+			}
+			if (this.lookahead == 'q') {
+				this.read();
+				if (this.lookahead == 'u') {
+					this.read();
+					if (this.lookahead == 'o') {
+						this.read();
+						if (this.lookahead == 't') {
+							this.read();
+							if (this.lookahead == ';') {
+								this.read();
+								this.token = QUOTATIONMARK;
+								return;
+							}
 						}
 					}
 				}
