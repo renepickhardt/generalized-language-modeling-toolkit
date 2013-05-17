@@ -8,6 +8,7 @@ import static de.typology.parser.Token.COMMA;
 import static de.typology.parser.Token.EXCLAMATIONMARK;
 import static de.typology.parser.Token.FULLSTOP;
 import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
 import static de.typology.parser.Token.P;
 import static de.typology.parser.Token.QUESTIONMARK;
 import static de.typology.parser.Token.QUOTATIONMARK;
@@ -99,8 +100,9 @@ public class ReutersParser {
 								if (this.current == ROUNDBRACKET) {
 									while (this.recognizer.hasNext()
 											&& this.current != CLOSEDROUNDBRACKET
-											&& this.current != CLOSEDP) {
-										this.skip();
+											&& this.current != CLOSEDP
+											&& this.current != LINESEPARATOR) {
+										this.read();
 									}
 								}
 
@@ -118,18 +120,10 @@ public class ReutersParser {
 
 	public void read() throws IOException {
 		if (this.recognizer.hasNext()) {
+			this.recognizer.lex();
 			// this.previous = this.current;
 			this.current = this.recognizer.next();
 			this.lexeme = this.recognizer.getLexeme();
-		} else {
-			throw new IllegalStateException();
-		}
-	}
-
-	public void skip() {
-		if (this.recognizer.hasNext()) {
-			// this.previous = this.current;
-			this.current = this.recognizer.next();
 		} else {
 			throw new IllegalStateException();
 		}
