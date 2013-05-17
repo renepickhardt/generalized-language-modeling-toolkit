@@ -134,13 +134,13 @@ public class WikipediaTokenizer extends Tokenizer {
 	}
 
 	@Override
-	public void lex() {
+	public boolean lex() {
 		super.lex();
 		// Recognize -- as HH
 		if (this.token == Token.HYPHEN && this.lookahead == '-') {
 			this.read();
 			this.token = HH;
-			return;
+			return true;
 		}
 		// Recognize !-->
 		if (this.token == Token.EXCLAMATIONMARK && this.lookahead == '-') {
@@ -148,12 +148,13 @@ public class WikipediaTokenizer extends Tokenizer {
 			if (this.lookahead == '-') {
 				this.read();
 				this.token = EHH;
-				return;
+				return true;
 			}
 			this.token = OTHER;
-			return;
+			return true;
 
 		}
 		super.lexGeneral();
+		return true;
 	}
 }

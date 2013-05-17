@@ -143,15 +143,6 @@ public class AcquisParser {
 		// this.previous = null;
 	}
 
-	public void skip() {
-		if (this.tokenizer.hasNext()) {
-			// this.previous = this.current;
-			this.current = this.tokenizer.next();
-		} else {
-			throw new IllegalStateException();
-		}
-	}
-
 	public void write(String s) {
 		try {
 			this.writer.write(s);

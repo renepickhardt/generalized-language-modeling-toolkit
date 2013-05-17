@@ -2,6 +2,7 @@ package de.typology.parser;
 
 import static de.typology.parser.Token.AND;
 import static de.typology.parser.Token.ASTERISK;
+import static de.typology.parser.Token.AT;
 import static de.typology.parser.Token.CLOSEDCURLYBRACKET;
 import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
 import static de.typology.parser.Token.CLOSEDSQUAREDBRACKET;
@@ -83,13 +84,13 @@ public class Tokenizer implements Iterator<Token> {
 	}
 
 	// Recognize a token
-	protected void lex() {
+	protected boolean lex() {
 		this.reset();
 		// Recognize end of file
 		if (this.lookahead == -1) {
 			this.eof = true;
 			this.token = EOF;
-			return;
+			return true;
 		}
 
 		// Recognize newline
@@ -100,130 +101,136 @@ public class Tokenizer implements Iterator<Token> {
 				this.token = LINESEPARATOR;
 				this.read();
 			}
-			return;
+			return true;
 		}
 		// Recognize newline
 		if (this.lookahead == 10) {
 			this.token = LINESEPARATOR;
 			this.read();
-			return;
+			return true;
 		}
 
 		// Recognize newline
 		if (this.lookahead == '\r') {
+			this.token = LINESEPARATOR;
 			this.read();
 			if (this.lookahead == '\n') {
 				this.token = LINESEPARATOR;
 				this.read();
-				return;
+				return true;
 			}
-			this.token = OTHER;
-			return;
+			return true;
 		}
-
 		// Recognize newline
 		if (this.lookahead == '\n') {
 			this.token = LINESEPARATOR;
 			this.read();
-			return;
+			return true;
 		}
 		// Recognize whitespace
 		if (Character.isWhitespace(this.lookahead)) {
 			this.read();
 			this.token = WS;
-			return;
+			return true;
 		}
 
 		// Recognize fullstop
 		if (this.lookahead == '.') {
 			this.read();
 			this.token = FULLSTOP;
-			return;
+			return true;
 		}
 
 		// Recognize comma
 		if (this.lookahead == ',') {
 			this.read();
 			this.token = COMMA;
-			return;
+			return true;
 		}
 		// Recognize semicolon
 		if (this.lookahead == ';') {
 			this.read();
 			this.token = SEMICOLON;
-			return;
+			return true;
 		}
 		// Recognize colon
 		if (this.lookahead == ':') {
 			this.read();
 			this.token = COLON;
-			return;
+			return true;
 		}
 
 		// recognize quotation mark
 		if (this.lookahead == 39) {// 39='
 			this.read();
 			this.token = QUOTATIONMARK;
-			return;
+			return true;
 		}
 
 		// Recognize underscore
 		if (this.lookahead == '_') {
 			this.read();
 			this.token = UNDERSCORE;
-			return;
+			return true;
 		}
 		// Recognize hyphen
 		if (this.lookahead == '-') {
 			this.read();
 			this.token = HYPHEN;
-			return;
+			return true;
 		}
 		// Recognize dash
 		if (this.lookahead == '-') {
 			this.read();
 			this.token = DASH;
-			return;
+			return true;
 		}
 
 		// Recognize exclamation mark
 		if (this.lookahead == '!') {
 			this.read();
 			this.token = EXCLAMATIONMARK;
-			return;
+			return true;
 		}
 
 		// Recognize question mark
 		if (this.lookahead == '?') {
 			this.read();
 			this.token = QUESTIONMARK;
-			return;
+			return true;
 		}
 
 		// Recognize vertical bar
 		if (this.lookahead == '|') {
 			this.read();
 			this.token = VERTICALBAR;
-			return;
+			return true;
 		}
 
 		// Recognize slash
 		if (this.lookahead == '/') {
 			this.read();
 			this.token = SLASH;
-			return;
+			return true;
 		}
 		// Recognize asterisk
 		if (this.lookahead == '*') {
 			this.read();
 			this.token = ASTERISK;
-			return;
+			return true;
 		}
 		// Recognize equality sign
 		if (this.lookahead == '=') {
 			this.read();
 			this.token = EQUALITYSIGN;
-			return;
+			return true;
+		}
+
+		// recognize @
+		if (this.lookahead == '@') {
+			this.read();
+			this.token = AT;
+			return true;
 		}
 
 		if (this.lookahead == '&') {
@@ -238,7 +245,7 @@ public class Tokenizer implements Iterator<Token> {
 						if (this.lookahead == ';') {
 							this.read();
 							this.token = AND;
-							return;
+							return true;
 						}
 					}
 				}
@@ -254,7 +261,7 @@ public class Tokenizer implements Iterator<Token> {
 							if (this.lookahead == ';') {
 								this.read();
 								this.token = QUOTATIONMARK;
-								return;
+								return true;
 							}
 						}
 					}
@@ -271,11 +278,11 @@ public class Tokenizer implements Iterator<Token> {
 						this.buffer[0] = '<';
 						this.index++;
 						this.token = LESSTHAN;
-						return;
+						return true;
 					}
 				}
 				this.token = OTHER;
-				return;
+				return true;
 			}
 			// Recognize and chance &gt; to >
 			if (this.lookahead == 'g') {
@@ -288,11 +295,11 @@ public class Tokenizer implements Iterator<Token> {
 						this.buffer[0] = '>';
 						this.index++;
 						this.token = GREATERTHAN;
-						return;
+						return true;
 					}
 				}
 				this.token = OTHER;
-				return;
+				return true;
 			}
 
 			// // Recognize &nbsp; = whitespace
@@ -307,13 +314,13 @@ public class Tokenizer implements Iterator<Token> {
 							if (this.lookahead == ';') {
 								this.token = WS;
 								this.read();
-								return;
+								return true;
 							}
 						}
 					}
 				}
 				this.token = OTHER;
-				return;
+				return true;
 			}
 			// Recognize &quot; = " (as other)
 			if (this.lookahead == 'q') {
@@ -327,72 +334,73 @@ public class Tokenizer implements Iterator<Token> {
 							if (this.lookahead == ';') {
 								this.token = OTHER;
 								this.read();
-								return;
+								return true;
 							}
 						}
 					}
 				}
 				this.token = OTHER;
-				return;
+				return true;
 			}
 
 			this.token = OTHER;
-			return;
+			return true;
 		}
 
 		// Recognize squared bracket open
 		if (this.lookahead == '[') {
 			this.read();
 			this.token = SQUAREDBRACKET;
-			return;
+			return true;
 		}
 
 		// Recognize squared bracket close
 		if (this.lookahead == ']') {
 			this.read();
 			this.token = CLOSEDSQUAREDBRACKET;
-			return;
+			return true;
 		}
 
 		// Recognize round bracket open
 		if (this.lookahead == '(') {
 			this.read();
 			this.token = ROUNDBRACKET;
-			return;
+			return true;
 		}
 
 		// Recognize round bracket close
 		if (this.lookahead == ')') {
 			this.read();
 			this.token = CLOSEDROUNDBRACKET;
-			return;
+			return true;
 		}
 		// Recognize curly bracket open
 		if (this.lookahead == '{') {
 			this.read();
 			this.token = CURLYBRACKET;
-			return;
+			return true;
 		}
 
 		// Recognize curly bracket close
 		if (this.lookahead == '}') {
 			this.read();
 			this.token = CLOSEDCURLYBRACKET;
-			return;
+			return true;
 		}
 		// Recognize lower than sign
 		if (this.lookahead == '<') {
 			this.read();
 			this.token = LESSTHAN;
-			return;
+			return true;
 		}
 
 		// Recognize curly bracket close
 		if (this.lookahead == '>') {
 			this.read();
 			this.token = GREATERTHAN;
-			return;
+			return true;
 		}
+		return false;
 	}
 
 	protected void lexGeneral() {

@@ -3,7 +3,6 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.parser.AcquisMain;
 import de.typology.parser.EnronMain;
 import de.typology.utils.Config;
 
@@ -31,31 +30,31 @@ public class MixedBuilder extends Builder {
 		String parsedFileName;
 		String normalizedFileName;
 
-		// build acquis
-		outputDirectory = Config.get().outputDirectory + "acquis/";
-		parsedFileName = "parsed.txt";
-		normalizedFileName = "normalized.txt";
-		String[] languages = Config.get().dgttmLanguages.split(",");
-		new File(outputDirectory).mkdirs();
-
-		for (String language : languages) {
-			String outputPath = outputDirectory + language + "/";
-			new File(outputPath).mkdirs();
-
-			if (Config.get().parseData) {
-				try {
-					AcquisMain.run(Config.get().dgttmInputDirectory, outputPath
-							+ parsedFileName, outputPath + normalizedFileName,
-							language);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			mb.build(outputPath);
-		}
+		// // build acquis
+		// outputDirectory = Config.get().outputDirectory + "acquis/";
+		// parsedFileName = "parsed.txt";
+		// normalizedFileName = "normalized.txt";
+		// String[] languages = Config.get().dgttmLanguages.split(",");
+		// new File(outputDirectory).mkdirs();
+		//
+		// for (String language : languages) {
+		// String outputPath = outputDirectory + language + "/";
+		// new File(outputPath).mkdirs();
+		//
+		// if (Config.get().parseData) {
+		// try {
+		// AcquisMain.run(Config.get().dgttmInputDirectory, outputPath
+		// + parsedFileName, outputPath + normalizedFileName,
+		// language);
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// mb.build(outputPath);
+		// }
 
 		// build enron
-		outputDirectory = Config.get().outputDirectory + "enron/";
+		outputDirectory = Config.get().outputDirectory + "enron/en/";
 		parsedFileName = "parsed.txt";
 		normalizedFileName = "normalized.txt";
 		new File(outputDirectory).mkdirs();

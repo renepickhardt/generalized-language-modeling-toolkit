@@ -15,10 +15,11 @@ public class GoogleRecognizer extends Tokenizer {
 
 	// Recognize a token
 	@Override
-	public void lex() {
+	public boolean lex() {
 
 		super.lex();
 		super.lexGeneral();
+		return true;
 	}
 
 }

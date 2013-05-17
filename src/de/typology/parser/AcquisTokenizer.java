@@ -65,7 +65,7 @@ public class AcquisTokenizer extends Tokenizer {
 
 	// Recognize a token
 	@Override
-	public void lex() {
+	public boolean lex() {
 		super.lex();
 		if (this.token == Token.LESSTHAN) {
 			do {
@@ -79,9 +79,10 @@ public class AcquisTokenizer extends Tokenizer {
 			} else {
 				this.token = OTHER;
 			}
-			return;
+			return true;
 		}
 		super.lexGeneral();
+		return true;
 	}
 
 }

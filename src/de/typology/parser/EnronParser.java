@@ -34,7 +34,7 @@ import de.typology.utils.IOHelper;
  * 
  */
 public class EnronParser {
-	private EnronRecognizer recognizer;
+	private EnronTokenizer recognizer;
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
@@ -52,7 +52,7 @@ public class EnronParser {
 
 	public void parse() throws IOException {
 		for (File f : this.fileList) {
-			this.recognizer = new EnronRecognizer(f);
+			this.recognizer = new EnronTokenizer(f);
 			this.write(f.toString());
 			this.write("\n");
 			this.lastLineWasAHeader = false;
@@ -63,7 +63,7 @@ public class EnronParser {
 				if (this.current == HEADER) {
 					while (this.current != LINESEPARATOR
 							&& this.recognizer.hasNext()) {
-						this.skip();
+						this.read();
 					}
 					this.lastLineWasAHeader = true;
 				}
@@ -73,7 +73,7 @@ public class EnronParser {
 						&& this.previous == LINESEPARATOR && this.current == WS) {
 					while (this.current != LINESEPARATOR
 							&& this.recognizer.hasNext()) {
-						this.skip();
+						this.read();
 					}
 				}
 
@@ -81,7 +81,7 @@ public class EnronParser {
 				if (this.current == HYPHEN && this.previous == LINESEPARATOR) {
 					while (this.current != LINESEPARATOR
 							&& this.recognizer.hasNext()) {
-						this.current = this.recognizer.next();
+						this.read();
 					}
 				}
 
@@ -134,7 +134,7 @@ public class EnronParser {
 				if (this.current == ROUNDBRACKET) {
 					while (this.recognizer.hasNext()
 							&& this.current != CLOSEDROUNDBRACKET) {
-						this.current = this.recognizer.next();
+						this.read();
 					}
 				}
 
@@ -148,20 +148,12 @@ public class EnronParser {
 		this.writer.close();
 	}
 
-	public void read() throws IOException {
+	public void read() {
 		if (this.recognizer.hasNext()) {
+			this.recognizer.lex();
 			this.previous = this.current;
 			this.current = this.recognizer.next();
 			this.lexeme = this.recognizer.getLexeme();
-		} else {
-			throw new IllegalStateException();
-		}
-	}
-
-	public void skip() {
-		if (this.recognizer.hasNext()) {
-			this.previous = this.current;
-			this.current = this.recognizer.next();
 		} else {
 			throw new IllegalStateException();
 		}
