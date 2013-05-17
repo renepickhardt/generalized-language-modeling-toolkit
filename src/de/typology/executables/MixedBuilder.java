@@ -36,7 +36,7 @@ public class MixedBuilder extends Builder {
 		outputDirectory = Config.get().outputDirectory + "acquis/";
 		parsedFileName = "parsed.txt";
 		normalizedFileName = "normalized.txt";
-		String[] languages = Config.get().dgttmLanguages.split(",");
+		String[] languages = Config.get().acquisLanguages.split(",");
 		new File(outputDirectory).mkdirs();
 
 		for (String language : languages) {
@@ -45,9 +45,9 @@ public class MixedBuilder extends Builder {
 
 			if (Config.get().parseData) {
 				try {
-					AcquisMain.run(Config.get().dgttmInputDirectory, outputPath
-							+ parsedFileName, outputPath + normalizedFileName,
-							language);
+					AcquisMain.run(Config.get().acquisInputDirectory,
+							outputPath + parsedFileName, outputPath
+									+ normalizedFileName, language);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

@@ -38,14 +38,14 @@ public class AcquisParser {
 	boolean lastLineWasAHeader;
 	boolean isString;
 	private Token current;
-	// private DGTTMToken previous;
+	// private Token previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
-	private String dgttmLanguage;
+	private String acquisLanguage;
 
 	public AcquisParser(ArrayList<File> fileList, String output,
-			String dgttmLanguage) {
-		this.dgttmLanguage = dgttmLanguage;
+			String acquisLanguage) {
+		this.acquisLanguage = acquisLanguage;
 		this.fileList = fileList;
 		this.writer = IOHelper.openWriteFile(output,
 				Config.get().memoryLimitForWritingFiles);
@@ -53,7 +53,7 @@ public class AcquisParser {
 
 	public void parse() {
 		for (File f : this.fileList) {
-			this.tokenizer = new AcquisTokenizer(f, this.dgttmLanguage);
+			this.tokenizer = new AcquisTokenizer(f, this.acquisLanguage);
 			// writer.write(f.toString());
 			// writer.write("\n");
 			this.reset();

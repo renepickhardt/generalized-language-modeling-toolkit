@@ -40,7 +40,7 @@ public class AcquisTokenizer extends Tokenizer {
 		// add new languages here
 	}
 
-	public AcquisTokenizer(File f, String dgttmLanguage) {
+	public AcquisTokenizer(File f, String acquisLanguage) {
 		Reader r;
 		try {
 			r = new InputStreamReader(new FileInputStream(f.getAbsolutePath()),
@@ -60,7 +60,7 @@ public class AcquisTokenizer extends Tokenizer {
 		keywords.put("/tuv", CLOSEDTUV);
 		keywords.put("/seg", CLOSEDSEG);
 		// set language specific header
-		keywords.put(tuvs.get(dgttmLanguage), TUV);
+		keywords.put(tuvs.get(acquisLanguage), TUV);
 	}
 
 	// Recognize a token
