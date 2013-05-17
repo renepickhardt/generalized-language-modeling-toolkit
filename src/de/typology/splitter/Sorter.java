@@ -86,7 +86,7 @@ public class Sorter {
 		// note: when sorting an empty file, new file contains "null1"
 	}
 
-	private int getColumnNumber(String inputPath) {
+	protected int getColumnNumber(String inputPath) {
 		BufferedReader br = IOHelper.openReadFile(inputPath);
 		int columnNumber = 0;
 		try {
