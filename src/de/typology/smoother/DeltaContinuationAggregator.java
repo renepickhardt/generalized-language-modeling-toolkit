@@ -46,12 +46,14 @@ public class DeltaContinuationAggregator {
 	protected int currentTargetCount;
 
 	// current continuation String (e.g. 1+1001)
-	protected String currentContinuation;
+	protected String nextContinuation;
+	protected boolean hasNextContinuation;
 	// number of different continuation Strings
 	protected int currentContinuationCount;
 
 	// current delta String (e.g. 1001+1)
-	protected String currentDelta;
+	protected String nextDelta;
+	protected boolean hasNextDelta;
 	// number of different delta Strings
 	protected int currentDeltaCount;
 
@@ -116,32 +118,106 @@ public class DeltaContinuationAggregator {
 				this.initialize(sequenceBinary, targetFile.getName());
 
 				// initialize currentContinuation, currentDelta, and counts
-				boolean hasNextContinuation = this.getNextContinuation();
-				boolean hasNextDelta = this.getNextDelta();
-				this.resetCounts();
-				boolean wasEqualPreviously = false;
+				this.currentTarget = null;
+				this.currentContinuationCount = 0;
+				this.currentDeltaCount = 0;
+				this.getNextContinuation();
+				this.getNextDelta();
+				boolean progressOnContinuation = true;
+				boolean progressOnDelta = true;
+
 				// go on until done with both files
-				while (hasNextContinuation || hasNextDelta) {
+				while (this.hasNextContinuation || this.hasNextDelta) {
 					// go on as long both files contain words
-					while (hasNextContinuation && hasNextDelta) {
-						if (this.currentContinuation == this.currentDelta) {
-							this.currentContinuationCount++;
-							this.currentDeltaCount++;
-							hasNextContinuation = this.getNextContinuation();
-							hasNextDelta = this.getNextDelta();
-							wasEqualPreviously = true;
+					while (this.hasNextContinuation && this.hasNextDelta) {
+						if (this.currentTarget == null) {
+							// set target as smallest value
+							if (this.nextContinuation.compareTo(this.nextDelta) < 0) {
+								// continuation is smaller
+								this.currentTarget = this.nextContinuation;
+							} else {
+								// delta is smaller or equal
+								this.currentTarget = this.nextDelta;
+							}
 						}
 
-						// currentContinuation<currentDelta --> write current
-						// continuation as target
-						if (this.currentContinuation
-								.compareTo(this.currentDelta) < 0) {
-							if (wasEqualPreviously) {
-								// TODO:write continuation and delta
-							} else {
-								// TODO:write continuation and 0
-							}
+						if (this.nextContinuation.compareTo(this.currentTarget) == 0) {
+							this.currentContinuationCount++;
+							this.getNextContinuation();
+							progressOnContinuation = true;
 
+						} else {
+							progressOnContinuation = false;
+						}
+
+						if (this.nextDelta.compareTo(this.currentTarget) == 0) {
+							this.currentDeltaCount++;
+							this.getNextDelta();
+							progressOnDelta = true;
+						} else {
+							progressOnDelta = false;
+						}
+
+						if (progressOnContinuation == false
+								&& progressOnDelta == false) {
+							// print target
+							if (this.nextContinuation
+									.compareTo(this.currentTarget) == 0
+									&& this.nextDelta
+											.compareTo(this.currentTarget) == 0) {
+								this.writeContinuationAndDelta();
+							} else {
+								if (this.nextContinuation
+										.compareTo(this.currentTarget) == 0) {
+									this.writeContinuation();
+								} else {
+									if (this.nextDelta
+											.compareTo(this.currentTarget) == 0) {
+										this.writeDelta();
+									} else {
+										throw new IllegalStateException();
+									}
+								}
+							}
+						}
+
+					}
+					// only continuation left
+					if (this.hasNextContinuation) {
+						if (this.currentTarget == null) {
+							// set target
+							this.currentTarget = this.nextContinuation;
+						}
+						if (this.nextContinuation.compareTo(this.currentTarget) == 0) {
+							this.currentContinuationCount++;
+							this.getNextContinuation();
+							progressOnContinuation = true;
+
+						} else {
+							progressOnContinuation = false;
+						}
+						if (progressOnContinuation == false) {
+							// print target
+							this.writeContinuation();
+						}
+					}
+					// only delta left
+					if (this.hasNextDelta) {
+						if (this.currentTarget == null) {
+							// set target
+							this.currentTarget = this.nextDelta;
+						}
+						if (this.nextDelta.compareTo(this.currentTarget) == 0) {
+							this.currentDeltaCount++;
+							this.getNextDelta();
+							progressOnDelta = true;
+
+						} else {
+							progressOnDelta = false;
+						}
+						if (progressOnDelta == false) {
+							// print target
+							this.writeDelta();
 						}
 					}
 				}
@@ -199,42 +275,54 @@ public class DeltaContinuationAggregator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// this.binaryTargetFormat = null;
-		// this.binaryContinuationFormat = null;
-		// this.binaryDeltaFormat = null;
-		// this.currentContinuation = null;
-		// this.currentContinuationCount = 0;
-	}
-
-	private void resetCounts() {
 		this.currentContinuationCount = 0;
 		this.currentDeltaCount = 0;
 		this.currentTargetCount = 0;
 	}
 
-	private boolean getNextContinuation() {
+	private void getNextContinuation() {
 		try {
-			if ((this.currentContinuation = this.continuationReader.readLine()) == null) {
-				return false;
+			if ((this.nextContinuation = this.continuationReader.readLine()) == null) {
+				this.hasNextContinuation = false;
 			} else {
-				return true;
+				// TODO: remove first word
+				this.hasNextContinuation = true;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
 		}
 	}
 
-	private boolean getNextDelta() {
+	private void getNextDelta() {
 		try {
-			if ((this.currentDelta = this.deltaReader.readLine()) == null) {
-				return false;
+			if ((this.nextDelta = this.deltaReader.readLine()) == null) {
+				this.hasNextDelta = false;
 			} else {
-				return true;
+				// TODO: remove last word (don't forget the count)
+				this.hasNextDelta = true;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
 		}
 	}
+
+	private void writeContinuationAndDelta() {
+		// TODO:add calculation & writing
+		this.currentContinuationCount = 0;
+		this.currentDeltaCount = 0;
+		this.currentTarget = null;
+	}
+
+	private void writeContinuation() {
+		// TODO:add calculation & writing
+		this.currentContinuationCount = 0;
+		this.currentTarget = null;
+	}
+
+	private void writeDelta() {
+		// TODO:add calculation & writing
+		this.currentDeltaCount = 0;
+		this.currentTarget = null;
+	}
+
 }
