@@ -31,7 +31,8 @@ public class Config extends Properties {
 	public boolean buildStats;
 	public boolean buildIndex;
 	public boolean buildNGrams;
-	public boolean buildGLMEdges;
+	public boolean buildGLM;
+	public boolean buildZeroGLM;
 	public boolean buildTypoEdges;
 
 	public int modelLength;
@@ -68,6 +69,7 @@ public class Config extends Properties {
 
 	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
+	public int memoryLimitForReadingFiles;
 	public int nGramLength;
 
 	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
