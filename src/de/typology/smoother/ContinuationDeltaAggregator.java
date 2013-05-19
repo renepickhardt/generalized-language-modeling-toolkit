@@ -131,8 +131,6 @@ public class ContinuationDeltaAggregator {
 				this.currentDeltaCount = 0;
 				this.getNextContinuation();
 				this.getNextDelta();
-				boolean progressOnContinuation = true;
-				boolean progressOnDelta = true;
 
 				// go on until done with both files
 				while (this.hasNextContinuation || this.hasNextDelta) {
