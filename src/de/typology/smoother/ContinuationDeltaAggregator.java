@@ -97,6 +97,7 @@ public class ContinuationDeltaAggregator {
 			// convert sequence type into binary representation
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
 
+			IOHelper.strongLog("aggregating " + sequenceBinary);
 			this.binaryTargetFormat = sequenceBinary;
 			this.binaryContinuationFormat = "1" + this.binaryTargetFormat;
 			this.binaryDeltaFormat = this.binaryTargetFormat + "1";

@@ -113,13 +113,15 @@ public class ContinuationSplitter extends Splitter {
 		this.outputDirectory = new File(this.outputDirectory.getAbsolutePath()
 				.replace("-normalized", "-continuation"));
 		// leave out unigrams since they get calculated from bigrams
+		// leave out 10 since continuation(0)=|distinct words|
 		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 
-			// leave out even sequences since they don't contain a target
-			if (sequenceDecimal % 2 == 0) {
-				continue;
-			}
+			// optional: leave out even sequences since they don't contain a
+			// target
+			// if (sequenceDecimal % 2 == 0) {
+			// continue;
+			// }
 
 			// convert sequence type into binary representation
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
@@ -131,9 +133,13 @@ public class ContinuationSplitter extends Splitter {
 
 			// iterate over glm files
 			while (this.getNextLine()) {
-
-				// get writer fitting the second(!) word
-				BufferedWriter writer = this.getWriter(this.lineSplit[1]);
+				BufferedWriter writer;
+				if (Integer.bitCount(sequenceDecimal) == 1) {
+					writer = this.getWriter(this.lineSplit[0]);
+				} else {
+					// get writer fitting the second(!) word
+					writer = this.getWriter(this.lineSplit[1]);
+				}
 				try {
 					// write actual sequence
 					writer.write(this.line + "\n");
