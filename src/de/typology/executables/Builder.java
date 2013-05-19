@@ -2,6 +2,7 @@ package de.typology.executables;
 
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
+import de.typology.splitter.GLMZeroBuilder;
 import de.typology.splitter.IndexBuilder;
 import de.typology.splitter.NGramSplitter;
 import de.typology.splitter.NGramSplitterWithCount;
@@ -45,10 +46,15 @@ public class Builder {
 					statsFileName, trainingFileName);
 			ts.split(Config.get().modelLength);
 		}
-		if (Config.get().buildGLMEdges) {
+		if (Config.get().buildGLM) {
 			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
 					statsFileName, trainingFileName);
 			glms.split(Config.get().modelLength);
+		}
+		if (Config.get().buildZeroGLM) {
+			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
+					+ "glm-absolute/");
+			glmzb.build();
 		}
 	}
 
