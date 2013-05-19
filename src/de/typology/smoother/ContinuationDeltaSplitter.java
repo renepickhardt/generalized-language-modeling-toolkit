@@ -11,7 +11,7 @@ import de.typology.splitter.Splitter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class ContinuationSplitter extends Splitter {
+public class ContinuationDeltaSplitter extends Splitter {
 	/**
 	 * This class provides a method for splitting and sorting ngrams by the
 	 * second, third, fourth...(, first) word in order to calculate the novel
@@ -25,7 +25,7 @@ public class ContinuationSplitter extends Splitter {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		ContinuationSplitter cs = new ContinuationSplitter(outputDirectory,
+		ContinuationDeltaSplitter cs = new ContinuationDeltaSplitter(outputDirectory,
 				"index.txt", "stats.txt", "training.txt");
 		cs.split(5);
 
@@ -35,9 +35,9 @@ public class ContinuationSplitter extends Splitter {
 	private File[] inputFiles;
 	private int filePointer;
 
-	private ContinuationSorter continuationSorter;
+	private ContinuationDeltaSorter continuationSorter;
 
-	protected ContinuationSplitter(String directory, String indexName,
+	protected ContinuationDeltaSplitter(String directory, String indexName,
 			String statsName, String inputName) {
 		super(directory, indexName, statsName, inputName, "glm");
 		try {
@@ -46,7 +46,7 @@ public class ContinuationSplitter extends Splitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.continuationSorter = new ContinuationSorter();
+		this.continuationSorter = new ContinuationDeltaSorter();
 		// TODO Auto-generated constructor stub
 	}
 
