@@ -13,12 +13,12 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public abstract class Splitter {
-	private String directory;
-	private String inputName;
-	private String statsPath;
-	private String indexPath;
+	protected String directory;
+	protected String inputName;
+	protected String statsPath;
+	protected String indexPath;
 	protected File outputDirectory;
-	private String[] wordIndex;
+	protected String[] wordIndex;
 	protected BufferedReader reader;
 
 	private SecondLevelSplitter secondLevelSplitter;
@@ -26,12 +26,12 @@ public abstract class Splitter {
 	private Sorter sorter;
 	private CountNormalizer countNormalizer;
 
-	private HashMap<Integer, BufferedWriter> writers;
+	protected HashMap<Integer, BufferedWriter> writers;
 
 	// variables for managing sliding window
 	private int linePointer;
-	private String line;
-	private String[] lineSplit = new String[0];
+	protected String line;
+	protected String[] lineSplit = new String[0];
 
 	// sequence and sequenceCount are used by split()
 	protected String[] sequence;
