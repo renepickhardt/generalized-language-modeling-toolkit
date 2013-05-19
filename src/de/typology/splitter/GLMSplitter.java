@@ -37,10 +37,11 @@ public class GLMSplitter extends Splitter {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 
-			// leave out even sequences since they don't contain a target
-			if (sequenceDecimal % 2 == 0) {
-				continue;
-			}
+			// optional: leave out even sequences since they don't contain a
+			// target
+			// if (sequenceDecimal % 2 == 0) {
+			// continue;
+			// }
 
 			// convert sequence type into binary representation
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
