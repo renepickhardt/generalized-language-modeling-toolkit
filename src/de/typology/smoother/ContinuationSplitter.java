@@ -37,7 +37,7 @@ public class ContinuationSplitter extends Splitter {
 
 	private ContinuationSorter continuationSorter;
 
-	protected ContinuationSplitter(String directory, String indexName,
+	public ContinuationSplitter(String directory, String indexName,
 			String statsName, String inputName) {
 		super(directory, indexName, statsName, inputName, "glm");
 		try {
@@ -109,7 +109,7 @@ public class ContinuationSplitter extends Splitter {
 	}
 
 	@Override
-	protected void split(int maxSequenceLength) {
+	public void split(int maxSequenceLength) {
 		this.outputDirectory = new File(this.outputDirectory.getAbsolutePath()
 				.replace("-normalized", "-continuation"));
 		// leave out unigrams since they get calculated from bigrams

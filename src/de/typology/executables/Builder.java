@@ -1,5 +1,7 @@
 package de.typology.executables;
 
+import de.typology.smoother.ContinuationDeltaAggregator;
+import de.typology.smoother.ContinuationSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.GLMZeroBuilder;
@@ -55,6 +57,14 @@ public class Builder {
 			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
 					+ "glm-absolute/");
 			glmzb.build();
+		}
+		if (Config.get().aggregateContinuationDelta) {
+			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
+					"index.txt", "stats.txt", "training.txt");
+			cs.split(Config.get().modelLength);
+			ContinuationDeltaAggregator cda = new ContinuationDeltaAggregator(
+					outputPath, "glm-aggregate");
+			cda.aggregate(Config.get().modelLength);
 		}
 	}
 

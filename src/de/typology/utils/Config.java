@@ -34,6 +34,7 @@ public class Config extends Properties {
 	public boolean buildGLM;
 	public boolean buildZeroGLM;
 	public boolean buildTypoEdges;
+	public boolean aggregateContinuationDelta;
 
 	public int modelLength;
 	public int numberOfQueries;
