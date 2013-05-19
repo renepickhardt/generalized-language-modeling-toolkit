@@ -88,9 +88,11 @@ public class GLMSplitter extends Splitter {
 
 	@Override
 	protected void mergeSmallestType(String inputPath) {
-		File[] files = new File(inputPath).listFiles();
-		if (files[0].getName().endsWith(".1")) {
-			String fileExtension = files[0].getName().split("\\.")[1];
+		File inputFile = new File(inputPath);
+		if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1) {
+			File[] files = inputFile.listFiles();
+
+			String fileExtension = inputFile.getName();
 			IOHelper.log("merge all " + fileExtension);
 			SystemHelper.runUnixCommand("cat " + files[0].getParent() + "/* > "
 					+ inputPath + "/all." + fileExtension);
