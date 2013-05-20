@@ -50,6 +50,16 @@ public abstract class Splitter {
 
 		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName + "-normalized");
+		try {
+			IOHelper.strongLog("deleting old glm-normalized directory");
+			FileUtils.deleteDirectory(this.outputDirectory);
+			IOHelper.strongLog("deleting old glm-absolute directory");
+			FileUtils.deleteDirectory(new File(this.outputDirectory
+					.getAbsolutePath().replace("-normalized", "-absolute")));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		this.outputDirectory.mkdir();
 		this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
@@ -70,13 +80,6 @@ public abstract class Splitter {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
-
-		// delete old files
-		try {
-			FileUtils.deleteDirectory(currentOutputDirectory);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
@@ -101,9 +104,6 @@ public abstract class Splitter {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
-
-		// delete old files
-		IOHelper.deleteDirectory(currentOutputDirectory);
 
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
@@ -207,8 +207,7 @@ public abstract class Splitter {
 				+ parentDir.getName().replace("-normalized", "-absolute"));
 		File absoluteNGrams = new File(absoluteNGramsParent.getAbsolutePath()
 				+ "/" + normalizedNGrams.getName());
-		absoluteNGramsParent.mkdir();
-		absoluteNGrams.mkdir();
+		absoluteNGrams.mkdirs();
 		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
 				normalizedNGrams.getAbsolutePath(), "_split", "_split");
 		this.sorter.sortSplitDirectory(normalizedNGrams.getAbsolutePath(),

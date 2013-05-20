@@ -102,6 +102,8 @@ public class ContinuationDeltaAggregator {
 			this.mergeSmallestType(this.outputDirectory + sequenceBinaryMod);
 		}
 		// special case: |sequenceBinary|==maxSequenceLength
+		// at the moment: do nothing, since there is nothing to aggregate
+		// possible option: copy folders from glm-absolute
 	}
 
 	private void initialize(String binaryTargetFormat, String currentFileName) {
