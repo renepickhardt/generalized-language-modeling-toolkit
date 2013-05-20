@@ -40,7 +40,8 @@ public class ContinuationSorter extends Sorter {
 
 			// build sort command
 			int columnNumber = this.getColumnNumber(inputPath);
-			String sortCommand = "sort --buffer-size=1G ";
+			// LANG=C to sort utf-8 correctly
+			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
 			// 0edges are only sorted by count
 			if (!inputPath.contains(".0")) {
