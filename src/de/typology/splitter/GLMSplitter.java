@@ -1,7 +1,10 @@
 package de.typology.splitter;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
@@ -17,6 +20,21 @@ public class GLMSplitter extends Splitter {
 	public GLMSplitter(String directory, String indexName, String statsName,
 			String inputName) {
 		super(directory, indexName, statsName, inputName, "glm");
+		try {
+			// TODO:This should be placed somewhere else (inside Splitter is
+			// currently not possible)
+			IOHelper.strongLog("deleting old glm-normalized directory");
+			FileUtils.deleteDirectory(this.outputDirectory);
+			IOHelper.strongLog("deleting old glm-absolute directory");
+			File absoluteDirectory = new File(this.outputDirectory
+					.getAbsolutePath().replace("-normalized", "-absolute"));
+			FileUtils.deleteDirectory(absoluteDirectory);
+			this.outputDirectory.mkdir();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**

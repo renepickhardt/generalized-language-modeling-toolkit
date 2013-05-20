@@ -50,16 +50,6 @@ public abstract class Splitter {
 
 		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName + "-normalized");
-		try {
-			IOHelper.strongLog("deleting old glm-normalized directory");
-			FileUtils.deleteDirectory(this.outputDirectory);
-			IOHelper.strongLog("deleting old glm-absolute directory");
-			FileUtils.deleteDirectory(new File(this.outputDirectory
-					.getAbsolutePath().replace("-normalized", "-absolute")));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		this.outputDirectory.mkdir();
 		this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
