@@ -67,13 +67,10 @@ public class Sorter {
 			int columnNumber = this.getColumnNumber(inputPath);
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
-			// 0edges are only sorted by count
-			// if (!inputPath.contains(".0")) {
-			// // don't sort for last word (with "< columnNumber - 1") ...
-			// for (int column = 1; column < columnNumber - 1; column++) {
-			// sortCommand += "--key=" + column + "," + column + " ";
-			// }
-			// }
+			// don't sort for last word (with "< columnNumber - 1") ...
+			for (int column = 1; column < columnNumber - 1; column++) {
+				sortCommand += "--key=" + column + "," + column + " ";
+			}
 
 			// ... instead sort for count (nr --> numerics, reverse)
 			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";

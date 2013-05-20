@@ -10,7 +10,6 @@ import org.apache.commons.io.FileUtils;
 import de.typology.splitter.Splitter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
-import de.typology.utils.SystemHelper;
 
 public class ContinuationSplitter extends Splitter {
 	/**
@@ -159,20 +158,21 @@ public class ContinuationSplitter extends Splitter {
 
 	@Override
 	protected void mergeSmallestType(String inputPath) {
-		File inputFile = new File(inputPath);
-		if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1) {
-			File[] files = inputFile.listFiles();
-
-			String fileExtension = inputFile.getName();
-			IOHelper.log("merge all " + fileExtension);
-			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
-					+ inputPath + "/all." + fileExtension);
-			for (File file : files) {
-				if (!file.getName().equals("all." + fileExtension)) {
-					file.delete();
-				}
-			}
-		}
+		// File inputFile = new File(inputPath);
+		// if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1)
+		// {
+		// File[] files = inputFile.listFiles();
+		//
+		// String fileExtension = inputFile.getName();
+		// IOHelper.log("merge all " + fileExtension);
+		// SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+		// + inputPath + "/all." + fileExtension);
+		// for (File file : files) {
+		// if (!file.getName().equals("all." + fileExtension)) {
+		// file.delete();
+		// }
+		// }
+		// }
 	}
 
 }

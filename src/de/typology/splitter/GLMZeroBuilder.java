@@ -64,7 +64,7 @@ public class GLMZeroBuilder {
 							// non special case: 11,101,110...
 							currentCut = "";
 							for (int i = 1; i < lineSplit.length - 1; i++) {
-								currentCut += lineSplit[1] + "\t";
+								currentCut += lineSplit[i] + "\t";
 							}
 
 							if (cut.equals("")) {
@@ -129,7 +129,7 @@ public class GLMZeroBuilder {
 	}
 
 	protected void mergeSmallestType() {
-		if (Integer.bitCount(Integer.parseInt(this.outputType, 2)) == 1) {
+		if (Integer.bitCount(Integer.parseInt(this.outputType, 2)) == 0) {
 			File[] files = this.currentOutputDirectory.listFiles();
 			IOHelper.log("merge all " + this.outputType);
 			System.out.println("cat " + this.currentOutputDirectory + "/* > "

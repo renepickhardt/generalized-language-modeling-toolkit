@@ -72,7 +72,11 @@ public abstract class Splitter {
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 
 		// delete old files
-		IOHelper.deleteDirectory(currentOutputDirectory);
+		try {
+			FileUtils.deleteDirectory(currentOutputDirectory);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
