@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import de.typology.splitter.Splitter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class ContinuationSplitter extends Splitter {
 	/**
@@ -114,7 +115,7 @@ public class ContinuationSplitter extends Splitter {
 				.replace("-normalized", "-continuation"));
 		// leave out unigrams since they get calculated from bigrams
 		// leave out 10 since continuation(0)=|distinct words|
-		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
+		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 
 			// optional: leave out even sequences since they don't contain a
@@ -128,7 +129,7 @@ public class ContinuationSplitter extends Splitter {
 
 			// naming and initialization
 			this.extension = sequenceBinary;
-			IOHelper.strongLog("splitting into " + this.extension);
+			IOHelper.log("splitting into " + this.extension);
 			this.initialize(this.extension);
 
 			// iterate over glm files
@@ -151,12 +152,27 @@ public class ContinuationSplitter extends Splitter {
 			this.continuationSorter.sortSecondCloumnDirectory(
 					this.outputDirectory.getAbsolutePath() + "/"
 							+ this.extension, "_split", "");
+			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
+					+ this.extension);
 		}
 	}
 
 	@Override
 	protected void mergeSmallestType(String inputPath) {
-		// leave out unigrams since they get calculated from bigrams
+		File inputFile = new File(inputPath);
+		if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1) {
+			File[] files = inputFile.listFiles();
+
+			String fileExtension = inputFile.getName();
+			IOHelper.log("merge all " + fileExtension);
+			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+					+ inputPath + "/all." + fileExtension);
+			for (File file : files) {
+				if (!file.getName().equals("all." + fileExtension)) {
+					file.delete();
+				}
+			}
+		}
 	}
 
 }

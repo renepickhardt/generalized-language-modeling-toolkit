@@ -48,7 +48,7 @@ public class GLMSplitter extends Splitter {
 
 			// naming and initialization
 			this.extension = sequenceBinary;
-			IOHelper.strongLog("splitting into " + this.extension);
+			IOHelper.log("splitting into " + this.extension);
 			this.initialize(this.extension);
 
 			// iterate over corpus
@@ -95,7 +95,7 @@ public class GLMSplitter extends Splitter {
 
 			String fileExtension = inputFile.getName();
 			IOHelper.log("merge all " + fileExtension);
-			SystemHelper.runUnixCommand("cat " + files[0].getParent() + "/* > "
+			SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
 					+ inputPath + "/all." + fileExtension);
 			for (File file : files) {
 				if (!file.getName().equals("all." + fileExtension)) {

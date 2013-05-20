@@ -53,15 +53,17 @@ public class Builder {
 					statsFileName, trainingFileName);
 			glms.split(Config.get().modelLength);
 		}
-		if (Config.get().buildZeroGLM) {
-			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
-					+ "glm-absolute/");
-			glmzb.build();
-		}
-		if (Config.get().aggregateContinuationDelta) {
+		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
 					"index.txt", "stats.txt", "training.txt");
 			cs.split(Config.get().modelLength);
+		}
+		if (Config.get().buildZeroGLM) {
+			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
+					+ "glm-continuation/", "glm-absolute");
+			glmzb.build();
+		}
+		if (Config.get().aggregateContinuationDelta) {
 			ContinuationDeltaAggregator cda = new ContinuationDeltaAggregator(
 					outputPath, "glm-aggregate");
 			cda.aggregate(Config.get().modelLength);

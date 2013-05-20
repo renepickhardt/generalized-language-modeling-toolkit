@@ -43,13 +43,14 @@ public class ContinuationSorter extends Sorter {
 			// LANG=C to sort utf-8 correctly
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
-			// 0edges are only sorted by count
-			if (!inputPath.contains(".0")) {
-				// don't sort for last column (columnnumber - 1) just yet
-				for (int column = 2; column < columnNumber; column++) {
-					sortCommand += "--key=" + column + "," + column + " ";
-				}
-			}
+			// // 0edges are only sorted by count
+			// if (!inputPath.contains(".0")) {
+			// // don't sort for last column (columnnumber - 1) just yet
+			// for (int column = 2; column < columnNumber; column++) {
+			// sortCommand += "--key=" + column + "," + column + " ";
+			// }
+			// }
+
 			// sort for count (nr --> numerics, reverse)
 			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";
 			// sort for first line
