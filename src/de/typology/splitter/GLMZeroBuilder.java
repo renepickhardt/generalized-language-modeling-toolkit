@@ -95,7 +95,8 @@ public class GLMZeroBuilder {
 					e.printStackTrace();
 				}
 			}
-			this.mergeSmallestType();
+			this.mergeSmallestType(this.currentOutputDirectory
+					.getAbsolutePath());
 		}
 	}
 
@@ -128,17 +129,19 @@ public class GLMZeroBuilder {
 				+ outputFileName, Config.get().memoryLimitForWritingFiles);
 	}
 
-	protected void mergeSmallestType() {
-		if (Integer.bitCount(Integer.parseInt(this.outputType, 2)) == 0) {
-			File[] files = this.currentOutputDirectory.listFiles();
-			IOHelper.log("merge all " + this.outputType);
-			System.out.println("cat " + this.currentOutputDirectory + "/* > "
-					+ this.currentOutputDirectory + "/all." + this.outputType);
-			SystemHelper.runUnixCommand("cat " + this.currentOutputDirectory
-					+ "/* > " + this.currentOutputDirectory + "/all."
-					+ this.outputType);
+	protected void mergeSmallestType(String inputPath) {
+		File inputFile = new File(inputPath);
+		if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 0) {
+			File[] files = inputFile.listFiles();
+
+			String fileExtension = inputFile.getName();
+			IOHelper.log("merge all " + fileExtension);
+
+			SystemHelper.runUnixCommand("cat " + inputPath
+					+ "/*| awk '{a+=$1;}END{print a}' > " + inputPath + "/all."
+					+ fileExtension);
 			for (File file : files) {
-				if (!file.getName().equals("all." + this.outputType)) {
+				if (!file.getName().equals("all." + fileExtension)) {
 					file.delete();
 				}
 			}
