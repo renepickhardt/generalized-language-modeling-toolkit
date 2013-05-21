@@ -91,6 +91,9 @@ public class ContinuationSplitter extends Splitter {
 			if ((this.line = this.reader.readLine()) == null) {
 				this.filePointer++;
 				if (this.filePointer < this.inputFiles.length) {
+					if (this.filePointer > 0) {
+						this.reader.close();
+					}
 					this.reader = IOHelper
 							.openReadFile(this.inputFiles[this.filePointer]
 									.getAbsolutePath());
