@@ -229,6 +229,7 @@ public abstract class Splitter {
 	}
 
 	protected void reset() {
+		System.out.println("close writers");
 		for (Entry<Integer, BufferedWriter> writer : this.writers.entrySet()) {
 			try {
 				writer.getValue().close();
