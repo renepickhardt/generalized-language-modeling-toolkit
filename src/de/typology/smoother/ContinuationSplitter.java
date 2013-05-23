@@ -16,10 +16,10 @@ public class ContinuationSplitter extends Splitter {
 	 * This class provides a method for splitting and sorting ngrams by the
 	 * second, third, fourth...(, first) word in order to calculate the novel
 	 * continuation probability used in Kneser-Ney interpolation.
-	 * 
+	 *
 	 * The index for file splitting is applied to the second word (instead of
 	 * the first word as in the "normal" splitter).
-	 * 
+	 *
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -132,8 +132,8 @@ public class ContinuationSplitter extends Splitter {
 			this.initialize(this.extension);
 
 			// iterate over glm files
+		  BufferedWriter writer;
 			while (this.getNextLine()) {
-				BufferedWriter writer;
 				if (Integer.bitCount(sequenceDecimal) == 1) {
 					writer = this.getWriter(this.lineSplit[0]);
 				} else {
@@ -148,6 +148,7 @@ public class ContinuationSplitter extends Splitter {
 				}
 			}
 			this.reset();
+      this.writer.close();
 			this.continuationSorter.sortSecondCloumnDirectory(
 					this.outputDirectory.getAbsolutePath() + "/"
 							+ this.extension, "_split", "");
