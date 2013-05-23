@@ -59,7 +59,6 @@ public class ContinuationSplitter extends Splitter {
 		this.filePointer = 0;
 		this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
 				.getAbsolutePath());
-		System.out.println("opened " + this.reader);
 		File currentOutputDirectory = new File(this.outputDirectory
 				.getAbsolutePath().replace("-normalized", "-continuation")
 				+ "/" + extension);
@@ -75,7 +74,6 @@ public class ContinuationSplitter extends Splitter {
 
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
-		System.out.println("open writers");
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
 			this.writers.put(
 					fileCount,
@@ -91,14 +89,11 @@ public class ContinuationSplitter extends Splitter {
 		try {
 			if ((this.line = this.reader.readLine()) == null) {
 				this.filePointer++;
-
-				System.out.println("close " + this.reader);
 				this.reader.close();
 				if (this.filePointer < this.inputFiles.length) {
 					this.reader = IOHelper
 							.openReadFile(this.inputFiles[this.filePointer]
 									.getAbsolutePath());
-					System.out.println("opened " + this.reader);
 					return this.getNextLine();
 				} else {
 					return false;

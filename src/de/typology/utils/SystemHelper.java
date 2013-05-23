@@ -21,6 +21,7 @@ public class SystemHelper {
 			while ((s = stdInput.readLine()) != null) {
 				IOHelper.log(s);
 			}
+			stdInput.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
