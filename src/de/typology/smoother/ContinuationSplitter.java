@@ -41,6 +41,24 @@ public class ContinuationSplitter extends Splitter {
 				System.out.println(r.getValue());
 			}
 			System.out.println("bwh size: " + cs.bwh.size());
+			int mb = 1024 * 1024;
+			// Getting the runtime reference from system
+			Runtime runtime = Runtime.getRuntime();
+
+			IOHelper.log("##### Heap utilization statistics [MB] #####");
+
+			// Print used memory
+			IOHelper.log("Used Memory:\t"
+					+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
+
+			// Print free memory
+			IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
+
+			// Print total available memory
+			IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
+
+			// Print Maximum available memory
+			IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
 		}
 		System.out.println("reader");
 		for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
