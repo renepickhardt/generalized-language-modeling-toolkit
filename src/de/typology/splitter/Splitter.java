@@ -13,6 +13,9 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public abstract class Splitter {
+	public HashMap<BufferedReader, String> brh;
+	public HashMap<BufferedWriter, String> bwh;
+
 	protected String directory;
 	protected String inputName;
 	protected String statsPath;
@@ -231,6 +234,10 @@ public abstract class Splitter {
 	protected void reset() {
 		for (Entry<Integer, BufferedWriter> writer : this.writers.entrySet()) {
 			try {
+				if (this.bwh.containsKey(writer.getValue())) {
+					System.out.println("test");
+					this.bwh.remove(writer.getValue());
+				}
 				writer.getValue().close();
 			} catch (IOException e) {
 				e.printStackTrace();

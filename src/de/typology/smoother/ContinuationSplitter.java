@@ -1,9 +1,11 @@
 package de.typology.smoother;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 
@@ -27,7 +29,17 @@ public class ContinuationSplitter extends Splitter {
 				+ Config.get().inputDataSet;
 		ContinuationSplitter cs = new ContinuationSplitter(outputDirectory,
 				"index.txt", "stats.txt", "training.txt");
+		cs.brh = new HashMap<BufferedReader, String>();
+		cs.bwh = new HashMap<BufferedWriter, String>();
 		cs.split(5);
+		System.out.println("reader");
+		for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
+			System.out.println(r.getValue());
+		}
+		System.out.println("writer");
+		for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
+			System.out.println(r.getValue());
+		}
 
 	}
 
@@ -59,6 +71,9 @@ public class ContinuationSplitter extends Splitter {
 		this.filePointer = 0;
 		this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
 				.getAbsolutePath());
+		this.brh.put(this.reader,
+				this.inputFiles[this.filePointer].getAbsolutePath());
+
 		File currentOutputDirectory = new File(this.outputDirectory
 				.getAbsolutePath().replace("-normalized", "-continuation")
 				+ "/" + extension);
@@ -71,17 +86,28 @@ public class ContinuationSplitter extends Splitter {
 			e.printStackTrace();
 		}
 		currentOutputDirectory.mkdirs();
-
-		currentOutputDirectory.mkdir();
-		this.writers = new HashMap<Integer, BufferedWriter>();
-		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
-			this.writers.put(
-					fileCount,
-					IOHelper.openWriteFile(
+		try {
+			currentOutputDirectory.mkdir();
+			this.writers = new HashMap<Integer, BufferedWriter>();
+			for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+				this.writers.put(fileCount, IOHelper.openWriteFile(
+						currentOutputDirectory + "/" + fileCount + "."
+								+ extension + "_split",
+						Config.get().memoryLimitForWritingFiles
+								/ Config.get().maxCountDivider));
+				if (!this.bwh.containsKey(this.writers.get(fileCount))) {
+					this.bwh.put(this.writers.get(fileCount),
 							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "_split",
-							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxCountDivider));
+									+ extension + "_split");
+				}
+			}
+		} catch (Exception e) {
+			for (Entry<BufferedReader, String> r : this.brh.entrySet()) {
+				System.out.println(r.getValue());
+			}
+			for (Entry<BufferedWriter, String> r : this.bwh.entrySet()) {
+				System.out.println(r.getValue());
+			}
 		}
 	}
 
@@ -89,11 +115,24 @@ public class ContinuationSplitter extends Splitter {
 		try {
 			if ((this.line = this.reader.readLine()) == null) {
 				this.filePointer++;
+
+				if (this.brh.containsKey(this.reader)) {
+					this.brh.remove(this.reader);
+				}
+
 				this.reader.close();
 				if (this.filePointer < this.inputFiles.length) {
+
 					this.reader = IOHelper
 							.openReadFile(this.inputFiles[this.filePointer]
 									.getAbsolutePath());
+
+					if (!this.brh.containsKey(this.reader)) {
+						this.brh.put(this.reader,
+								this.inputFiles[this.filePointer]
+										.getAbsolutePath());
+					}
+
 					return this.getNextLine();
 				} else {
 					return false;
@@ -143,6 +182,9 @@ public class ContinuationSplitter extends Splitter {
 				try {
 					// write actual sequence
 					writer.write(this.line + "\n");
+					if (!this.bwh.containsKey(writer)) {
+						this.bwh.put(writer, "from ContSplitter: temp BWriter");
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

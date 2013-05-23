@@ -59,6 +59,7 @@ public class ContinuationSorter extends Sorter {
 				p = Runtime.getRuntime().exec(
 						new String[] { "/bin/sh", "-c", sortCommand });
 				p.waitFor();
+				p.destroy();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
