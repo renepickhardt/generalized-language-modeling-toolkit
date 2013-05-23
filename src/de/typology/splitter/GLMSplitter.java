@@ -96,6 +96,13 @@ public class GLMSplitter extends Splitter {
 					e.printStackTrace();
 				}
 			}
+			// close reader
+			try {
+				this.reader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			// reset writers
 			this.reset();
 			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
