@@ -1,9 +1,9 @@
 package de.typology.smoother;
 
 import java.io.File;
+import java.io.IOException;
 
 import de.typology.splitter.Sorter;
-import de.typology.utils.SystemHelper;
 
 public class ContinuationSorter extends Sorter {
 
@@ -54,7 +54,13 @@ public class ContinuationSorter extends Sorter {
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 
 			// execute command
-			SystemHelper.runUnixCommand(sortCommand);
+			try {
+				Runtime.getRuntime().exec(
+						new String[] { "/bin/sh", "-c", sortCommand });
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			inputFile.delete();
 		}
