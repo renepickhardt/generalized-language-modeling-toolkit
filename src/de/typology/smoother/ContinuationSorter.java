@@ -54,11 +54,14 @@ public class ContinuationSorter extends Sorter {
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 
 			// execute command
+			Process p;
 			try {
-				Runtime.getRuntime().exec(
+				p = Runtime.getRuntime().exec(
 						new String[] { "/bin/sh", "-c", sortCommand });
+				p.waitFor();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
