@@ -31,7 +31,17 @@ public class ContinuationSplitter extends Splitter {
 				"index.txt", "stats.txt", "training.txt");
 		cs.brh = new HashMap<BufferedReader, String>();
 		cs.bwh = new HashMap<BufferedWriter, String>();
-		cs.split(5);
+		try {
+			cs.split(5);
+		} catch (Exception e) {
+			for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
+				System.out.println(r.getValue());
+			}
+			for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
+				System.out.println(r.getValue());
+			}
+			System.out.println("bwh size: " + cs.bwh.size());
+		}
 		System.out.println("reader");
 		for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
 			System.out.println(r.getValue());
@@ -86,27 +96,20 @@ public class ContinuationSplitter extends Splitter {
 			e.printStackTrace();
 		}
 		currentOutputDirectory.mkdirs();
-		try {
-			currentOutputDirectory.mkdir();
-			this.writers = new HashMap<Integer, BufferedWriter>();
-			for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
-				this.writers.put(fileCount, IOHelper.openWriteFile(
-						currentOutputDirectory + "/" + fileCount + "."
-								+ extension + "_split",
-						Config.get().memoryLimitForWritingFiles
-								/ Config.get().maxCountDivider));
-				if (!this.bwh.containsKey(this.writers.get(fileCount))) {
-					this.bwh.put(this.writers.get(fileCount),
+		currentOutputDirectory.mkdir();
+		this.writers = new HashMap<Integer, BufferedWriter>();
+		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+			this.writers.put(
+					fileCount,
+					IOHelper.openWriteFile(
 							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "_split");
-				}
-			}
-		} catch (Exception e) {
-			for (Entry<BufferedReader, String> r : this.brh.entrySet()) {
-				System.out.println(r.getValue());
-			}
-			for (Entry<BufferedWriter, String> r : this.bwh.entrySet()) {
-				System.out.println(r.getValue());
+									+ extension + "_split",
+							Config.get().memoryLimitForWritingFiles
+									/ Config.get().maxCountDivider));
+			if (!this.bwh.containsKey(this.writers.get(fileCount))) {
+				this.bwh.put(this.writers.get(fileCount),
+						currentOutputDirectory + "/" + fileCount + "."
+								+ extension + "_split");
 			}
 		}
 	}
