@@ -40,6 +40,7 @@ public class ContinuationSplitter extends Splitter {
 			for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
 				System.out.println(r.getValue());
 			}
+			System.out.println("brh size: " + cs.brh.size());
 			System.out.println("bwh size: " + cs.bwh.size());
 			int mb = 1024 * 1024;
 			// Getting the runtime reference from system
