@@ -235,7 +235,6 @@ public abstract class Splitter {
 		for (Entry<Integer, BufferedWriter> writer : this.writers.entrySet()) {
 			try {
 				if (this.bwh.containsKey(writer.getValue())) {
-					System.out.println("test");
 					this.bwh.remove(writer.getValue());
 				}
 				writer.getValue().close();
