@@ -1,5 +1,10 @@
 package de.typology.executables;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import de.typology.smoother.ContinuationDeltaAggregator;
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.splitter.DataSetSplitter;
@@ -12,6 +17,7 @@ import de.typology.splitter.TypoSplitter;
 import de.typology.splitter.TypoSplitterWithCount;
 import de.typology.stats.StatsBuilder;
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class Builder {
 
@@ -51,12 +57,45 @@ public class Builder {
 		if (Config.get().buildGLM) {
 			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
 					statsFileName, trainingFileName);
+			glms.brh = new HashMap<BufferedReader, String>();
+			glms.bwh = new HashMap<BufferedWriter, String>();
 			glms.split(Config.get().modelLength);
 		}
 		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
 					"index.txt", "stats.txt", "training.txt");
-			cs.split(Config.get().modelLength);
+			cs.brh = new HashMap<BufferedReader, String>();
+			cs.bwh = new HashMap<BufferedWriter, String>();
+			try {
+				cs.split(Config.get().modelLength);
+			} catch (Exception e) {
+				for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
+					System.out.println(r.getValue());
+				}
+				for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
+					System.out.println(r.getValue());
+				}
+				System.out.println("brh size: " + cs.brh.size());
+				System.out.println("bwh size: " + cs.bwh.size());
+				int mb = 1024 * 1024;
+				// Getting the runtime reference from system
+				Runtime runtime = Runtime.getRuntime();
+
+				IOHelper.log("##### Heap utilization statistics [MB] #####");
+
+				// Print used memory
+				IOHelper.log("Used Memory:\t"
+						+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
+
+				// Print free memory
+				IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
+
+				// Print total available memory
+				IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
+
+				// Print Maximum available memory
+				IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
+			}
 		}
 		if (Config.get().buildZeroGLM) {
 			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
