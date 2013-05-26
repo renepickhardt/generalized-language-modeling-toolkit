@@ -18,10 +18,10 @@ This project contains the following functions (follow the links for further info
   + typo edges
   + general language models (1, 10, 11, 101, 111, 1001, 1010, 1011, ...)
 + [Kneser-Ney smoothing](src/de/typology/smoother) (work in progress)
-+ [Store](src/de/typology/scripts) language models in a MySQL database and build indices
++ [Store](sscripts) language models in a MySQL database and build indices
 + [Evaluate](src/de/typology/evaluation) language models
-+ [Aggregate evaluation results](src/de/typology/scripts)
-+ [Plot aggregated evaluation results](src/de/typology/scripts)
++ [Aggregate evaluation results](scripts)
++ [Plot aggregated evaluation results](scripts)
 
 ##Execution
 Information about the execution can be found [here](src/de/typology/executables).
