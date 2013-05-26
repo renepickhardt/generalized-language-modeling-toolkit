@@ -55,6 +55,8 @@ public class WikipediaNormalizer {
 				line = line.replaceAll("\\?", "");
 				line = line.replaceAll("-", "");
 
+				line = line.replaceAll(" +", " ");
+
 				if (!line.isEmpty()) {
 					this.writer.write(line);
 					this.writer.write('\n');
