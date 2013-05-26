@@ -1,8 +1,10 @@
 package de.typology.splitter;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 
@@ -45,6 +47,8 @@ public class GLMSplitter extends Splitter {
 				+ Config.get().inputDataSet;
 		GLMSplitter ts = new GLMSplitter(outputDirectory, "index.txt",
 				"stats.txt", "training.txt");
+		ts.brh = new HashMap<BufferedReader, String>();
+		ts.bwh = new HashMap<BufferedWriter, String>();
 		ts.split(5);
 	}
 
@@ -86,12 +90,18 @@ public class GLMSplitter extends Splitter {
 				}
 				// get accurate writer
 				BufferedWriter writer = this.getWriter(sequenceCut[0]);
+				String lineToPrint = "";
 				try {
 					// write actual sequence
 					for (String sequenceCutWord : sequenceCut) {
-						writer.write(sequenceCutWord + "\t");
+						lineToPrint += sequenceCutWord + "\t";
 					}
-					writer.write(this.sequenceCount + "\n");
+					lineToPrint += this.sequenceCount + "\n";
+					if (lineToPrint.startsWith("\t")) {
+						IOHelper.log("too short: \"" + lineToPrint + "\"");
+					} else {
+						writer.write(lineToPrint);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
