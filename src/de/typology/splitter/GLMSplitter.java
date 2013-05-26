@@ -98,8 +98,8 @@ public class GLMSplitter extends Splitter {
 					}
 					lineToPrint += this.sequenceCount + "\n";
 					if (lineToPrint.startsWith("\t")) {
-						IOHelper.log("too short: \"" + lineToPrint + "\"");
-						writer.write(lineToPrint);
+						IOHelper.log("too short at:" + this.linePointer
+								+ " text:\"" + this.line + "\"");
 					} else {
 						writer.write(lineToPrint);
 					}

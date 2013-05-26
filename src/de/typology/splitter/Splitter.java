@@ -32,7 +32,7 @@ public abstract class Splitter {
 	protected HashMap<Integer, BufferedWriter> writers;
 
 	// variables for managing sliding window
-	private int linePointer;
+	protected int linePointer;
 	protected String line;
 	protected String[] lineSplit = new String[0];
 
