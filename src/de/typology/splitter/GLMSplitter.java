@@ -99,6 +99,7 @@ public class GLMSplitter extends Splitter {
 					lineToPrint += this.sequenceCount + "\n";
 					if (lineToPrint.startsWith("\t")) {
 						IOHelper.log("too short: \"" + lineToPrint + "\"");
+						writer.write(lineToPrint);
 					} else {
 						writer.write(lineToPrint);
 					}
