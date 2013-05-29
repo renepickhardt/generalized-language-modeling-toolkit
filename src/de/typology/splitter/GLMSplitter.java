@@ -49,76 +49,107 @@ public class GLMSplitter extends Splitter {
 				"stats.txt", "training.txt");
 		ts.brh = new HashMap<BufferedReader, String>();
 		ts.bwh = new HashMap<BufferedWriter, String>();
-		ts.split(5);
+		// System.out.println("typo:");
+		// ts.splitTypo(5);
+		// System.out.println("lm:");
+		// ts.splitLM(5);
+		System.out.println("glm:");
+		ts.splitGLM(5);
 	}
 
-	@Override
-	public void split(int maxSequenceLength) {
+	public void splitTypo(int maxSequenceLength) {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 
+			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+			if (Integer.bitCount(sequenceDecimal) <= 2
+					&& sequenceBinary.startsWith("1")
+					&& sequenceBinary.endsWith("1")) {
+				this.split(sequenceDecimal);
+			}
+		}
+	}
+
+	public void splitLM(int maxSequenceLength) {
+		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+				maxSequenceLength); sequenceDecimal++) {
+
+			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+			if (Integer.bitCount(sequenceDecimal) == sequenceBinary.length()) {
+				this.split(sequenceDecimal);
+			}
+		}
+	}
+
+	public void splitGLM(int maxSequenceLength) {
+		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+				maxSequenceLength); sequenceDecimal++) {
 			// optional: leave out even sequences since they don't contain a
 			// target
 			// if (sequenceDecimal % 2 == 0) {
 			// continue;
 			// }
+			this.split(sequenceDecimal);
+		}
+	}
 
-			// convert sequence type into binary representation
-			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+	@Override
+	public void split(int sequenceDecimal) {
 
-			// naming and initialization
-			this.extension = sequenceBinary;
-			IOHelper.log("splitting into " + this.extension);
-			this.initialize(this.extension);
+		// convert sequence type into binary representation
+		String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
 
-			// iterate over corpus
-			while (this.getNextSequence(sequenceBinary.length())) {
-				// get actual sequence length (e.g.: 11011=4)
-				String[] sequenceCut = new String[Integer
-						.bitCount(sequenceDecimal)];
+		// naming and initialization
+		this.extension = sequenceBinary;
+		IOHelper.log("splitting into " + this.extension);
+		this.initialize(this.extension);
 
-				// convert binary sequence type into char[] for iteration
-				char[] sequenceChars = sequenceBinary.toCharArray();
+		// iterate over corpus
+		while (this.getNextSequence(sequenceBinary.length())) {
+			// get actual sequence length (e.g.: 11011=4)
+			String[] sequenceCut = new String[Integer.bitCount(sequenceDecimal)];
 
-				// sequencePointer points at sequenceCut
-				int sequencePointer = 0;
-				for (int i = 0; i < sequenceChars.length; i++) {
-					if (Character.getNumericValue(sequenceChars[i]) == 1) {
-						sequenceCut[sequencePointer] = this.sequence[i];
-						sequencePointer++;
-					}
-				}
-				// get accurate writer
-				BufferedWriter writer = this.getWriter(sequenceCut[0]);
-				String lineToPrint = "";
-				try {
-					// write actual sequence
-					for (String sequenceCutWord : sequenceCut) {
-						lineToPrint += sequenceCutWord + "\t";
-					}
-					lineToPrint += this.sequenceCount + "\n";
-					if (lineToPrint.startsWith("\t")) {
-						IOHelper.log("too short at:" + this.linePointer
-								+ " text:\"" + this.line + "\"");
-					} else {
-						writer.write(lineToPrint);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+			// convert binary sequence type into char[] for iteration
+			char[] sequenceChars = sequenceBinary.toCharArray();
+
+			// sequencePointer points at sequenceCut
+			int sequencePointer = 0;
+			for (int i = 0; i < sequenceChars.length; i++) {
+				if (Character.getNumericValue(sequenceChars[i]) == 1) {
+					sequenceCut[sequencePointer] = this.sequence[i];
+					sequencePointer++;
 				}
 			}
-			// close reader
+			// get accurate writer
+			BufferedWriter writer = this.getWriter(sequenceCut[0]);
+			String lineToPrint = "";
 			try {
-				this.reader.close();
+				// write actual sequence
+				for (String sequenceCutWord : sequenceCut) {
+					lineToPrint += sequenceCutWord + "\t";
+				}
+				lineToPrint += this.sequenceCount + "\n";
+				if (lineToPrint.startsWith("\t")) {
+					IOHelper.log("too short at:" + this.linePointer
+							+ " text:\"" + this.line + "\"");
+				} else {
+					writer.write(lineToPrint);
+				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			// reset writers
-			this.reset();
-			this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
-					+ this.extension);
 		}
+		// close reader
+		try {
+			this.reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// reset writers
+		this.reset();
+		this.sortAndAggregate(this.outputDirectory.getAbsolutePath() + "/"
+				+ this.extension);
 	}
 
 	@Override

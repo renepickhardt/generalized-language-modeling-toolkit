@@ -73,7 +73,14 @@ public abstract class Splitter {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
-
+		if (currentOutputDirectory.exists()) {
+			try {
+				FileUtils.deleteDirectory(currentOutputDirectory);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
@@ -249,7 +256,7 @@ public abstract class Splitter {
 
 	}
 
-	protected abstract void split(int maxSequenceLength);
+	protected abstract void split(int sequenceDecimal);
 
 	protected abstract void mergeSmallestType(String inputPath);
 
