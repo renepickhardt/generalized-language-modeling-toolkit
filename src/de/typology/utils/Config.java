@@ -21,26 +21,11 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
-	// new:
 	public int GLMType;
-	public int maxCountDivider;
-	public int minCountPerFile;
 	public String inputDataSet;
-	public int fileSizeThreashhold;
-	public boolean splitData;
-	public boolean buildStats;
-	public boolean buildIndex;
-	public boolean buildNGrams;
-	public boolean buildGLM;
-	public boolean buildContinuationGLM;
-	public boolean buildZeroGLM;
-	public boolean buildTypoEdges;
-	public boolean aggregateContinuationDelta;
 
 	public int modelLength;
 	public int numberOfQueries;
-
-	// old:
 
 	// CONTROLL PARAMETERS
 	public String dbUser;
@@ -53,13 +38,20 @@ public class Config extends Properties {
 	public String testedOnLang;
 
 	public String weight;
-
-	public boolean parseData;
-	public boolean sampleSplitData;
 	public boolean useWeights;
 
+	public boolean parseData;
+	public boolean splitData;
+	public boolean buildStats;
+	public boolean buildIndex;
+	public boolean buildNGrams;
+	public boolean buildGLM;
+	public boolean buildContinuationGLM;
+	public boolean buildZeroGLM;
+	public boolean buildTypoEdges;
+	public boolean aggregateContinuationDelta;
+
 	// STEP 0 GLOBAL CONFIGS
-	public boolean loadIndexToRAM;
 	public boolean weightedPredictions;
 
 	public String acquisInputDirectory;
@@ -69,9 +61,12 @@ public class Config extends Properties {
 	public String wikiInputDirectory;
 	public String acquisLanguages;
 
+	public int fileSizeThreashhold;
 	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
 	public int memoryLimitForReadingFiles;
+	public int maxCountDivider;
+	public int minCountPerFile;
 	public int nGramLength;
 
 	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
