@@ -24,7 +24,7 @@ public abstract class Splitter {
 	protected String[] wordIndex;
 	protected BufferedReader reader;
 
-	private SecondLevelSplitter secondLevelSplitter;
+	// private SecondLevelSplitter secondLevelSplitter;
 	private Aggregator aggregator;
 	private Sorter sorter;
 	private CountNormalizer countNormalizer;
@@ -54,7 +54,7 @@ public abstract class Splitter {
 		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName + "-normalized");
 		this.outputDirectory.mkdir();
-		this.secondLevelSplitter = new SecondLevelSplitter();
+		// this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
 		this.sorter = new Sorter();
 		this.countNormalizer = new CountNormalizer();
@@ -201,8 +201,8 @@ public abstract class Splitter {
 		File absoluteNGrams = new File(absoluteNGramsParent.getAbsolutePath()
 				+ "/" + normalizedNGrams.getName());
 		absoluteNGrams.mkdirs();
-		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
-				normalizedNGrams.getAbsolutePath(), "_split", "_split");
+		// this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
+		// normalizedNGrams.getAbsolutePath(), "_split", "_split");
 		this.sorter.sortSplitDirectory(normalizedNGrams.getAbsolutePath(),
 				"_split", "_splitSort");
 		this.aggregator.aggregateDirectory(normalizedNGrams.getAbsolutePath(),
@@ -217,8 +217,8 @@ public abstract class Splitter {
 		this.countNormalizer.normalizeDirectory(this.statsPath,
 				normalizedNGrams.getAbsolutePath(), "_countSort", "");
 
-		this.secondLevelSplitter.mergeDirectory(normalizedNGrams
-				.getAbsolutePath());
+		// this.secondLevelSplitter.mergeDirectory(normalizedNGrams
+		// .getAbsolutePath());
 		this.mergeSmallestType(normalizedNGrams.getAbsolutePath());
 
 		// rename absoulte ngram files
@@ -226,8 +226,8 @@ public abstract class Splitter {
 			file.renameTo(new File(file.getAbsolutePath().replace("_countSort",
 					"")));
 		}
-		this.secondLevelSplitter.mergeDirectory(absoluteNGrams
-				.getAbsolutePath());
+		// this.secondLevelSplitter.mergeDirectory(absoluteNGrams
+		// .getAbsolutePath());
 		this.mergeSmallestType(absoluteNGrams.getAbsolutePath());
 	}
 
