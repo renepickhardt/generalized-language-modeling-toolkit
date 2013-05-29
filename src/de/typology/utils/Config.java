@@ -21,11 +21,6 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
-	public int GLMType;
-	public String inputDataSet;
-
-	public int modelLength;
-	public int numberOfQueries;
 
 	// CONTROLL PARAMETERS
 	public String dbUser;
@@ -51,6 +46,13 @@ public class Config extends Properties {
 	public boolean buildTypoEdges;
 	public boolean aggregateContinuationDelta;
 
+	// DEBUGGING
+	public String inputDataSet;
+
+	public String trainingPath;
+	public String testingPath;
+	public String learningPath;
+
 	// STEP 0 GLOBAL CONFIGS
 	public boolean weightedPredictions;
 
@@ -67,7 +69,10 @@ public class Config extends Properties {
 	public int memoryLimitForReadingFiles;
 	public int maxCountDivider;
 	public int minCountPerFile;
-	public int nGramLength;
+	public int modelLength;
+	public int GLMType;
+
+	public int numberOfQueries;
 
 	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
 	public int sampleRate; // \in [0, 100] 0 means no data from input will be
@@ -77,53 +82,9 @@ public class Config extends Properties {
 	public int splitTestRatio; // \in [0, 100] 0 means all data is stored in
 	// test file. 100 means all data is stored in (smaller) learning file
 
-	// OPTIONAL only used in standalone scripts
-	public String trainingPath;
-	public String testingPath;
-	public String learningPath;
-
-	// STEP3 ngrams & typology edges
-	public boolean createNGramChunks;
-	public boolean createSecondLevelNGramChunks;
-	public boolean aggregateNGramChunks;
-	public boolean sortNGrams;
-	public boolean generateNGramDistribution;
-	public boolean normalizeNGrams;
-	// same flags for typology edge creating as for ngram building
-	public boolean createTypologyEdgeChunks;
-	public boolean createSecondLevelTypologyEdgeChunks;
-	public boolean aggregateTypologyEdgeChunks;
-	public boolean sortTypologyEdges;
-	public boolean generateTypologyEdgeDistribution;
-	public boolean normalizeEdges;
-
-	// INPUT
-	// should be the output of step1
-
-	// temporary files
-	public int fileChunkThreashhold;
-	public String nGramKeyFile;
-	public String nGramsNotAggregatedPath;
-	public String typologyEdgesPathNotAggregated;
-
-	// COULD NOT REALLY MATCH
+	// OTHER VARIABLES...
 	public String wikiLinksOutputPath;
 	public String wikiLinksHead;
-
-	// STEP 3 BUILDING NGRAMS TYPOEDGES AND SPLIT THE DATA SET
-	// used in de.typology.nGramBuilder
-	// OUTPUT
-	public String nGramsAggregatedPath;
-
-	// used in de.typology.trainers
-	public String edgeInput;
-	public String normalizedEdges;
-
-	public String nGramsInput;
-	public String normalizedNGrams;
-
-	public String indexPath;
-	public String nGramIndexPath;
 
 	// used in de.typology.utils/WordCounter
 	public String wordCountInput;
