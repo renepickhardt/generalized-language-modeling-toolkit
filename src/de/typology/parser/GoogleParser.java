@@ -1,16 +1,16 @@
 package de.typology.parser;
 
-import static de.typology.parser.GoogleToken.COLON;
-import static de.typology.parser.GoogleToken.COMMA;
-import static de.typology.parser.GoogleToken.EXCLAMATIONMARK;
-import static de.typology.parser.GoogleToken.FULLSTOP;
-import static de.typology.parser.GoogleToken.HYPHEN;
-import static de.typology.parser.GoogleToken.LINESEPARATOR;
-import static de.typology.parser.GoogleToken.QUESTIONMARK;
-import static de.typology.parser.GoogleToken.QUOTATIONMARK;
-import static de.typology.parser.GoogleToken.SEMICOLON;
-import static de.typology.parser.GoogleToken.STRING;
-import static de.typology.parser.GoogleToken.WS;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.WS;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -29,7 +29,7 @@ public class GoogleParser {
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
-	private GoogleToken current;
+	private Token current;
 	private Writer writer;
 
 	public GoogleParser(GoogleRecognizer recognizer,

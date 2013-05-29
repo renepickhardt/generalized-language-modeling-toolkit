@@ -1,33 +1,8 @@
 package de.typology.parser;
 
-import static de.typology.parser.WikipediaToken.ASTERISK;
-import static de.typology.parser.WikipediaToken.BRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDBRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDCURLYBRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDSQUAREDBRACKET;
-import static de.typology.parser.WikipediaToken.COLON;
-import static de.typology.parser.WikipediaToken.COMMA;
-import static de.typology.parser.WikipediaToken.CURLYBRACKET;
-import static de.typology.parser.WikipediaToken.EHH;
-import static de.typology.parser.WikipediaToken.EOF;
-import static de.typology.parser.WikipediaToken.EQUALITYSIGN;
-import static de.typology.parser.WikipediaToken.EXCLAMATIONMARK;
-import static de.typology.parser.WikipediaToken.FULLSTOP;
-import static de.typology.parser.WikipediaToken.GREATERTHAN;
-import static de.typology.parser.WikipediaToken.HH;
-import static de.typology.parser.WikipediaToken.HYPHEN;
-import static de.typology.parser.WikipediaToken.LESSTHAN;
-import static de.typology.parser.WikipediaToken.LINESEPARATOR;
-import static de.typology.parser.WikipediaToken.OTHER;
-import static de.typology.parser.WikipediaToken.QUESTIONMARK;
-import static de.typology.parser.WikipediaToken.QUOTATIONMARK;
-import static de.typology.parser.WikipediaToken.SEMICOLON;
-import static de.typology.parser.WikipediaToken.SLASH;
-import static de.typology.parser.WikipediaToken.SQUAREDBRACKET;
-import static de.typology.parser.WikipediaToken.STRING;
-import static de.typology.parser.WikipediaToken.UNDERSCORE;
-import static de.typology.parser.WikipediaToken.VERTICALBAR;
-import static de.typology.parser.WikipediaToken.WS;
+import static de.typology.parser.Token.EHH;
+import static de.typology.parser.Token.HH;
+import static de.typology.parser.Token.OTHER;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -37,9 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 
@@ -50,14 +23,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class WikipediaTokenizer implements Iterator<WikipediaToken> {
-
-	private WikipediaToken token = null; // last token recognized
-	private boolean eof = false; // reached end of file
-	private Reader reader = null; // input stream
-	private int lookahead = 0; // lookahead, if any
-	private int[] buffer = new int[1000]; // lexeme buffer
-	private int index = 0; // length of lexeme
+public class WikipediaTokenizer extends Tokenizer {
 	private HashSet<String> disambiguations;
 
 	public WikipediaTokenizer(String wikiInputPath)
@@ -163,409 +129,32 @@ public class WikipediaTokenizer implements Iterator<WikipediaToken> {
 
 	}
 
-	// Extract lexeme from buffer
-	public String getLexeme() {
-		return new String(this.buffer, 0, this.index);
-	}
-
 	public HashSet<String> getdisambiguations() {
 		return this.disambiguations;
 	}
 
-	// Reset state to begin new token
-	private void reset() throws IOException {
-		if (this.eof) {
-			throw new IllegalStateException();
-		}
-		this.index = 0;
-		this.token = null;
-		if (this.lookahead == 0) {
-			this.read();
-		}
-	}
-
-	// Read one more char.
-	// Add previous char, if any, to the buffer.
-	//
-	private void read() throws IOException {
-		if (this.eof) {
-			throw new IllegalStateException();
-		}
-		if (this.lookahead != 0) {
-			this.buffer[this.index] = this.lookahead;
-			this.index++;
-			if (this.index == 1000) {
-				this.index = 0;
-				System.out.println("buffer overflow!");
-				// reset buffer if token gets too big (very unlikely to happen)
-			}
-		}
-		this.lookahead = this.reader.read();
-	}
-
-	// Recognize a token
-	public void lex() throws IOException {
-		this.reset();
-
-		// Recognize newline
-		if (this.lookahead == '\r') {
-			this.read();
-			if (this.lookahead == '\n') {
-				this.token = LINESEPARATOR;
-				this.read();
-				return;
-			}
-			this.token = OTHER;
-			return;
-		}
-
-		// Recognize newline
-		if (this.lookahead == '\n') {
-			this.token = LINESEPARATOR;
-			this.read();
-			return;
-		}
-		// Recognize whitespace
-		if (Character.isWhitespace(this.lookahead)) {
-			this.read();
-			this.token = WS;
-			return;
-		}
-
-		// Recognize fullstop
-		if (this.lookahead == '.') {
-			this.read();
-			this.token = FULLSTOP;
-			return;
-		}
-
-		// Recognize comma
-		if (this.lookahead == ',') {
-			this.read();
-			this.token = COMMA;
-			return;
-		}
-		// Recognize semicolon
-		if (this.lookahead == ';') {
-			this.read();
-			this.token = SEMICOLON;
-			return;
-		}
-		// Recognize colon
-		if (this.lookahead == ':') {
-			this.read();
-			this.token = COLON;
-			return;
-		}
-
-		// recognize quotation mark
-		if (this.lookahead == 39) {// 39='
-			this.read();
-			this.token = QUOTATIONMARK;
-			return;
-		}
-
-		// Recognize underscore
-		if (this.lookahead == '_') {
-			this.read();
-			this.token = UNDERSCORE;
-			return;
-		}
-		// Recognize hyphen
-		if (this.lookahead == '-') {
-			this.read();
-			this.token = HYPHEN;
-			// Recognize -- as HH
-			if (this.lookahead == '-') {
-				this.read();
-				this.token = HH;
-			}
-			return;
-		}
-		// Recognize dash (as hyphen)
-		if (this.lookahead == '–') {
-			this.read();
-			this.token = HYPHEN;
-			return;
-		}
-
-		// Recognize exclamation mark
-		if (this.lookahead == '!') {
-			this.read();
-			// Recognize !-->
-			if (this.lookahead == '-') {
-				this.read();
-				if (this.lookahead == '-') {
-					this.read();
-					this.token = EHH;
-					return;
-				}
-				this.token = OTHER;
-				return;
-
-			}
-			this.token = EXCLAMATIONMARK;
-			return;
-		}
-
-		// Recognize question mark
-		if (this.lookahead == '?') {
-			this.read();
-			this.token = QUESTIONMARK;
-			return;
-		}
-
-		// Recognize vertical bar
-		if (this.lookahead == '|') {
-			this.read();
-			this.token = VERTICALBAR;
-			return;
-		}
-
-		// Recognize slash
-		if (this.lookahead == '/') {
-			this.read();
-			this.token = SLASH;
-			return;
-		}
-		// Recognize asterisk
-		if (this.lookahead == '*') {
-			this.read();
-			this.token = ASTERISK;
-			return;
-		}
-		// Recognize equality sign
-		if (this.lookahead == '=') {
-			this.read();
-			this.token = EQUALITYSIGN;
-			return;
-		}
-		// Recognize end of file
-		if (this.lookahead == -1) {
-			this.eof = true;
-			this.token = EOF;
-			return;
-		}
-
-		if (this.lookahead == '&') {
-			this.read();
-			// remove &amp;
-			while (this.lookahead == 'a') {
-				this.read();
-				if (this.lookahead == 'm') {
-					this.read();
-					if (this.lookahead == 'p') {
-						this.read();
-						if (this.lookahead == ';') {
-							this.read();
-						}
-					}
-				}
-			}
-			// Recognize and chance &lt; to <
-			if (this.lookahead == 'l') {
-				this.read();
-				if (this.lookahead == 't') {
-					this.read();
-					if (this.lookahead == ';') {
-						this.read();
-						this.reset();
-						this.buffer[0] = '<';
-						this.index++;
-						this.token = LESSTHAN;
-						return;
-					}
-				}
-				this.token = OTHER;
-				return;
-			}
-			// Recognize and chance &gt; to >
-			if (this.lookahead == 'g') {
-				this.read();
-				if (this.lookahead == 't') {
-					this.read();
-					if (this.lookahead == ';') {
-						this.read();
-						this.reset();
-						this.buffer[0] = '>';
-						this.index++;
-						this.token = GREATERTHAN;
-						return;
-					}
-				}
-				this.token = OTHER;
-				return;
-			}
-
-			// // Recognize &nbsp; = whitespace
-			if (this.lookahead == 'n') {
-				this.read();
-				if (this.lookahead == 'b') {
-					this.read();
-					if (this.lookahead == 's') {
-						this.read();
-						if (this.lookahead == 'p') {
-							this.read();
-							if (this.lookahead == ';') {
-								this.token = WS;
-								this.read();
-								return;
-							}
-						}
-					}
-				}
-				this.token = OTHER;
-				return;
-			}
-			// Recognize &quot; = " (as other)
-			if (this.lookahead == 'q') {
-				this.read();
-				if (this.lookahead == 'u') {
-					this.read();
-					if (this.lookahead == 'o') {
-						this.read();
-						if (this.lookahead == 't') {
-							this.read();
-							if (this.lookahead == ';') {
-								this.token = OTHER;
-								this.read();
-								return;
-							}
-						}
-					}
-				}
-				this.token = OTHER;
-				return;
-			}
-
-			this.token = OTHER;
-			return;
-		}
-
-		// Recognize squared bracket open
-		if (this.lookahead == '[') {
-			this.read();
-			this.token = SQUAREDBRACKET;
-			return;
-		}
-
-		// Recognize squared bracket close
-		if (this.lookahead == ']') {
-			this.read();
-			this.token = CLOSEDSQUAREDBRACKET;
-			return;
-		}
-
-		// Recognize bracket open
-		if (this.lookahead == '(') {
-			this.read();
-			this.token = BRACKET;
-			return;
-		}
-
-		// Recognize bracket close
-		if (this.lookahead == ')') {
-			this.read();
-			this.token = CLOSEDBRACKET;
-			return;
-		}
-		// Recognize curly bracket open
-		if (this.lookahead == '{') {
-			this.read();
-			this.token = CURLYBRACKET;
-			return;
-		}
-
-		// Recognize curly bracket close
-		if (this.lookahead == '}') {
-			this.read();
-			this.token = CLOSEDCURLYBRACKET;
-			return;
-		}
-		// Recognize lower than sign
-		if (this.lookahead == '<') {
-			this.read();
-			this.token = LESSTHAN;
-			return;
-		}
-
-		// Recognize curly bracket close
-		if (this.lookahead == '>') {
-			this.read();
-			this.token = GREATERTHAN;
-			return;
-		}
-
-		// Recognize String
-		if (Character.isLetterOrDigit(this.lookahead)) {
-			do {
-				this.read();
-			} while (!Character.isWhitespace(this.lookahead)
-					&& Character.isLetterOrDigit(this.lookahead));
-
-			this.token = STRING;
-			return;
-		}
-
-		// Recognize other
-		if (!Character.isLetterOrDigit(this.lookahead)) {
-
-			this.read();
-
-			this.token = OTHER;
-			return;
-		}
-
-		throw new RecognitionException("Recognizer giving up at "
-				+ this.lookahead);
-	}
-
 	@Override
-	public boolean hasNext() {
-		if (this.token != null) {
+	public boolean lex() {
+		super.lex();
+		// Recognize -- as HH
+		if (this.token == Token.HYPHEN && this.lookahead == '-') {
+			this.read();
+			this.token = HH;
 			return true;
 		}
-		if (this.eof) {
-			return false;
+		// Recognize !-->
+		if (this.token == Token.EXCLAMATIONMARK && this.lookahead == '-') {
+			this.read();
+			if (this.lookahead == '-') {
+				this.read();
+				this.token = EHH;
+				return true;
+			}
+			this.token = OTHER;
+			return true;
+
 		}
-		try {
-			this.lex();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		super.lexGeneral();
 		return true;
-	}
-
-	@Override
-	public WikipediaToken next() {
-		if (this.hasNext()) {
-			WikipediaToken result = this.token;
-			this.token = null;
-			return result;
-		} else {
-			throw new IllegalStateException();
-		}
-	}
-
-	public void close() {
-		try {
-			this.reader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-
-	// Stress test: lex until end-of-file
-	public void lexall() {
-		while (this.hasNext()) {
-			WikipediaToken t = this.next();
-			System.out.println(t + " : " + this.getLexeme());
-		}
 	}
 }

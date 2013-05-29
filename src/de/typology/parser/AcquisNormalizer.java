@@ -13,13 +13,13 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class DGTTMNormalizer {
+public class AcquisNormalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
 	private String line;
 
-	public DGTTMNormalizer(String input, String output) {
+	public AcquisNormalizer(String input, String output) {
 		this.reader = IOHelper.openReadFile(input);
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 

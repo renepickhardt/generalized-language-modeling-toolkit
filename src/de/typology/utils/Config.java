@@ -62,12 +62,12 @@ public class Config extends Properties {
 	public boolean loadIndexToRAM;
 	public boolean weightedPredictions;
 
-	public String dgttmInputDirectory;
+	public String acquisInputDirectory;
 	public String enronInputDirectory;
 	public String googleInputDirectory;
 	public String reutersInputDirectory;
 	public String wikiInputDirectory;
-	public String dgttmLanguages;
+	public String acquisLanguages;
 
 	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
