@@ -1,21 +1,22 @@
 package de.typology.parser;
 
-import static de.typology.parser.ReutersToken.BRACES;
-import static de.typology.parser.ReutersToken.CLOSEDBRACES;
-import static de.typology.parser.ReutersToken.CLOSEDP;
-import static de.typology.parser.ReutersToken.CLOSEDTEXT;
-import static de.typology.parser.ReutersToken.COLON;
-import static de.typology.parser.ReutersToken.COMMA;
-import static de.typology.parser.ReutersToken.EXCLAMATIONMARK;
-import static de.typology.parser.ReutersToken.FULLSTOP;
-import static de.typology.parser.ReutersToken.HYPHEN;
-import static de.typology.parser.ReutersToken.P;
-import static de.typology.parser.ReutersToken.QUESTIONMARK;
-import static de.typology.parser.ReutersToken.QUOTATIONMARK;
-import static de.typology.parser.ReutersToken.SEMICOLON;
-import static de.typology.parser.ReutersToken.STRING;
-import static de.typology.parser.ReutersToken.TEXT;
-import static de.typology.parser.ReutersToken.WS;
+import static de.typology.parser.Token.CLOSEDP;
+import static de.typology.parser.Token.CLOSEDROUNDBRACKET;
+import static de.typology.parser.Token.CLOSEDTEXT;
+import static de.typology.parser.Token.COLON;
+import static de.typology.parser.Token.COMMA;
+import static de.typology.parser.Token.EXCLAMATIONMARK;
+import static de.typology.parser.Token.FULLSTOP;
+import static de.typology.parser.Token.HYPHEN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.P;
+import static de.typology.parser.Token.QUESTIONMARK;
+import static de.typology.parser.Token.QUOTATIONMARK;
+import static de.typology.parser.Token.ROUNDBRACKET;
+import static de.typology.parser.Token.SEMICOLON;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.TEXT;
+import static de.typology.parser.Token.WS;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,7 +38,7 @@ public class ReutersParser {
 	private String lexeme = new String();
 	boolean lastLineWasAHeader;
 	boolean isString;
-	private ReutersToken current;
+	private Token current;
 	// private ReutersToken previous;
 	private Writer writer;
 	private ArrayList<File> fileList;
@@ -96,11 +97,12 @@ public class ReutersParser {
 								if (this.current == WS) {
 									this.write(" ");
 								}
-								if (this.current == BRACES) {
+								if (this.current == ROUNDBRACKET) {
 									while (this.recognizer.hasNext()
-											&& this.current != CLOSEDBRACES
-											&& this.current != CLOSEDP) {
-										this.skip();
+											&& this.current != CLOSEDROUNDBRACKET
+											&& this.current != CLOSEDP
+											&& this.current != LINESEPARATOR) {
+										this.read();
 									}
 								}
 
@@ -118,18 +120,10 @@ public class ReutersParser {
 
 	public void read() throws IOException {
 		if (this.recognizer.hasNext()) {
+			this.recognizer.lex();
 			// this.previous = this.current;
 			this.current = this.recognizer.next();
 			this.lexeme = this.recognizer.getLexeme();
-		} else {
-			throw new IllegalStateException();
-		}
-	}
-
-	public void skip() {
-		if (this.recognizer.hasNext()) {
-			// this.previous = this.current;
-			this.current = this.recognizer.next();
 		} else {
 			throw new IllegalStateException();
 		}

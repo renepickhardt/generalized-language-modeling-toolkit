@@ -33,9 +33,6 @@ public class WikipediaNormalizer {
 					line = "";
 				}
 				line = line.replaceAll(" +", " ");
-				if (line.startsWith(" ")) {
-					line = line.substring(1, line.length());
-				}
 				line = line.replaceAll(" ,", ",");
 				line = line.replaceAll(" ;", ";");
 				line = line.replaceAll(" \\.", ".");
@@ -54,6 +51,9 @@ public class WikipediaNormalizer {
 				// remove some unwanted signs
 				line = line.replaceAll("\\?", "");
 				line = line.replaceAll("-", "");
+
+				line = line.replaceAll(" +", " ");
+				line = line.replaceAll("^ ", "");
 
 				if (!line.isEmpty()) {
 					this.writer.write(line);

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import de.typology.utils.IOHelper;
 
-public class DGTTMMain {
+public class AcquisMain {
 	private static ArrayList<File> fileList;
 
 	/**
@@ -18,27 +18,27 @@ public class DGTTMMain {
 	public static void main(String[] args) throws IOException {
 	}
 
-	public static void run(String dgttmInputPath, String parsedOutputPath,
-			String normalizedOutputPath, String dgttmLanguage)
+	public static void run(String acquisInputPath, String parsedOutputPath,
+			String normalizedOutputPath, String acquisLanguage)
 			throws IOException {
 		long startTime = System.currentTimeMillis();
 		IOHelper.log("getting file list");
-		fileList = IOHelper.getDirectory(new File(dgttmInputPath));
+		fileList = IOHelper.getDirectory(new File(acquisInputPath));
 
-		DGTTMParser parser = new DGTTMParser(fileList, parsedOutputPath,
-				dgttmLanguage);
-		IOHelper.log("start parsing: " + dgttmInputPath);
+		AcquisParser parser = new AcquisParser(fileList, parsedOutputPath,
+				acquisLanguage);
+		IOHelper.log("start parsing: " + acquisInputPath);
 		parser.parse();
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
-		DGTTMNormalizer wn = new DGTTMNormalizer(parsedOutputPath,
+		AcquisNormalizer wn = new AcquisNormalizer(parsedOutputPath,
 				normalizedOutputPath);
 		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;
-		IOHelper.strongLog("done normalizing: " + dgttmInputPath + ", time: "
+		IOHelper.strongLog("done normalizing: " + acquisInputPath + ", time: "
 				+ time + " seconds");
 	}
 }

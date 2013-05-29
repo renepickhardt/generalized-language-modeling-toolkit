@@ -1,9 +1,11 @@
 package de.typology.smoother;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 
@@ -27,7 +29,46 @@ public class ContinuationSplitter extends Splitter {
 				+ Config.get().inputDataSet;
 		ContinuationSplitter cs = new ContinuationSplitter(outputDirectory,
 				"index.txt", "stats.txt", "training.txt");
-		cs.split(5);
+		cs.brh = new HashMap<BufferedReader, String>();
+		cs.bwh = new HashMap<BufferedWriter, String>();
+		try {
+			cs.split(5);
+		} catch (Exception e) {
+			for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
+				System.out.println(r.getValue());
+			}
+			for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
+				System.out.println(r.getValue());
+			}
+			System.out.println("brh size: " + cs.brh.size());
+			System.out.println("bwh size: " + cs.bwh.size());
+			int mb = 1024 * 1024;
+			// Getting the runtime reference from system
+			Runtime runtime = Runtime.getRuntime();
+
+			IOHelper.log("##### Heap utilization statistics [MB] #####");
+
+			// Print used memory
+			IOHelper.log("Used Memory:\t"
+					+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
+
+			// Print free memory
+			IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
+
+			// Print total available memory
+			IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
+
+			// Print Maximum available memory
+			IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
+		}
+		System.out.println("reader");
+		for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
+			System.out.println(r.getValue());
+		}
+		System.out.println("writer");
+		for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
+			System.out.println(r.getValue());
+		}
 
 	}
 
@@ -59,6 +100,8 @@ public class ContinuationSplitter extends Splitter {
 		this.filePointer = 0;
 		this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
 				.getAbsolutePath());
+		this.brh.put(this.reader,
+				this.inputFiles[this.filePointer].getAbsolutePath());
 
 		File currentOutputDirectory = new File(this.outputDirectory
 				.getAbsolutePath().replace("-normalized", "-continuation")
@@ -72,7 +115,6 @@ public class ContinuationSplitter extends Splitter {
 			e.printStackTrace();
 		}
 		currentOutputDirectory.mkdirs();
-
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
@@ -83,6 +125,11 @@ public class ContinuationSplitter extends Splitter {
 									+ extension + "_split",
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxCountDivider));
+			if (!this.bwh.containsKey(this.writers.get(fileCount))) {
+				this.bwh.put(this.writers.get(fileCount),
+						currentOutputDirectory + "/" + fileCount + "."
+								+ extension + "_split");
+			}
 		}
 	}
 
@@ -90,10 +137,24 @@ public class ContinuationSplitter extends Splitter {
 		try {
 			if ((this.line = this.reader.readLine()) == null) {
 				this.filePointer++;
+
+				if (this.brh.containsKey(this.reader)) {
+					this.brh.remove(this.reader);
+				}
+
+				this.reader.close();
 				if (this.filePointer < this.inputFiles.length) {
+
 					this.reader = IOHelper
 							.openReadFile(this.inputFiles[this.filePointer]
 									.getAbsolutePath());
+
+					if (!this.brh.containsKey(this.reader)) {
+						this.brh.put(this.reader,
+								this.inputFiles[this.filePointer]
+										.getAbsolutePath());
+					}
+
 					return this.getNextLine();
 				} else {
 					return false;
@@ -114,7 +175,7 @@ public class ContinuationSplitter extends Splitter {
 				.replace("-normalized", "-continuation"));
 		// leave out unigrams since they get calculated from bigrams
 		// leave out 10 since continuation(0)=|distinct words|
-		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
+		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 
 			// optional: leave out even sequences since they don't contain a
@@ -128,7 +189,7 @@ public class ContinuationSplitter extends Splitter {
 
 			// naming and initialization
 			this.extension = sequenceBinary;
-			IOHelper.strongLog("splitting into " + this.extension);
+			IOHelper.log("splitting into " + this.extension);
 			this.initialize(this.extension);
 
 			// iterate over glm files
@@ -143,6 +204,9 @@ public class ContinuationSplitter extends Splitter {
 				try {
 					// write actual sequence
 					writer.write(this.line + "\n");
+					if (!this.bwh.containsKey(writer)) {
+						this.bwh.put(writer, "from ContSplitter: temp BWriter");
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -151,12 +215,28 @@ public class ContinuationSplitter extends Splitter {
 			this.continuationSorter.sortSecondCloumnDirectory(
 					this.outputDirectory.getAbsolutePath() + "/"
 							+ this.extension, "_split", "");
+			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
+					+ this.extension);
 		}
 	}
 
 	@Override
 	protected void mergeSmallestType(String inputPath) {
-		// leave out unigrams since they get calculated from bigrams
+		// File inputFile = new File(inputPath);
+		// if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1)
+		// {
+		// File[] files = inputFile.listFiles();
+		//
+		// String fileExtension = inputFile.getName();
+		// IOHelper.log("merge all " + fileExtension);
+		// SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+		// + inputPath + "/all." + fileExtension);
+		// for (File file : files) {
+		// if (!file.getName().equals("all." + fileExtension)) {
+		// file.delete();
+		// }
+		// }
+		// }
 	}
 
 }

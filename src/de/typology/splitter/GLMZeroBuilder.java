@@ -9,10 +9,14 @@ import org.apache.commons.io.FileUtils;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class GLMZeroBuilder {
 	protected File directory;
+	protected File outputDirectory;
+	protected String outputType;
 	protected String currentGLMType;
+	protected File currentOutputDirectory;
 	protected BufferedReader reader;
 	protected BufferedWriter writer;
 
@@ -21,12 +25,15 @@ public class GLMZeroBuilder {
 	 */
 	public static void main(String[] args) {
 		GLMZeroBuilder glmzb = new GLMZeroBuilder(Config.get().outputDirectory
-				+ Config.get().inputDataSet + "glm-absolute/");
+				+ Config.get().inputDataSet + "glm-continuation/",
+				"glm-absolute");
 		glmzb.build();
 	}
 
-	public GLMZeroBuilder(String directoryPath) {
+	public GLMZeroBuilder(String directoryPath, String outputDirectoryName) {
 		this.directory = new File(directoryPath);
+		this.outputDirectory = new File(this.directory.getParent() + "/"
+				+ outputDirectoryName);
 	}
 
 	public void build() {
@@ -57,7 +64,7 @@ public class GLMZeroBuilder {
 							// non special case: 11,101,110...
 							currentCut = "";
 							for (int i = 1; i < lineSplit.length - 1; i++) {
-								currentCut += lineSplit[1] + "\t";
+								currentCut += lineSplit[i] + "\t";
 							}
 
 							if (cut.equals("")) {
@@ -88,6 +95,8 @@ public class GLMZeroBuilder {
 					e.printStackTrace();
 				}
 			}
+			this.mergeSmallestType(this.currentOutputDirectory
+					.getAbsolutePath());
 		}
 	}
 
@@ -108,14 +117,34 @@ public class GLMZeroBuilder {
 
 	public void initialize(File currentFile) {
 		String currentFileHead = currentFile.getName().split("\\.")[0];
-		String outputType = this.currentGLMType.replaceFirst("1", "0");
+		this.outputType = this.currentGLMType.replaceFirst("1", "0");
 
-		String outputFileName = currentFileHead + "." + outputType;
-		File outputDirectory = new File(this.directory + "/" + outputType);
-		outputDirectory.mkdir();
+		String outputFileName = currentFileHead + "." + this.outputType;
+		this.currentOutputDirectory = new File(this.outputDirectory + "/"
+				+ this.outputType);
+		this.currentOutputDirectory.mkdir();
 		this.reader = IOHelper.openReadFile(currentFile.getAbsolutePath(),
 				Config.get().memoryLimitForReadingFiles);
-		this.writer = IOHelper.openWriteFile(outputDirectory + "/"
+		this.writer = IOHelper.openWriteFile(this.currentOutputDirectory + "/"
 				+ outputFileName, Config.get().memoryLimitForWritingFiles);
+	}
+
+	protected void mergeSmallestType(String inputPath) {
+		File inputFile = new File(inputPath);
+		if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 0) {
+			File[] files = inputFile.listFiles();
+
+			String fileExtension = inputFile.getName();
+			IOHelper.log("merge all " + fileExtension);
+
+			SystemHelper.runUnixCommand("cat " + inputPath
+					+ "/*| awk '{a+=$1;}END{print a}' > " + inputPath + "/all."
+					+ fileExtension);
+			for (File file : files) {
+				if (!file.getName().equals("all." + fileExtension)) {
+					file.delete();
+				}
+			}
+		}
 	}
 }

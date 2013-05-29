@@ -13,6 +13,9 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public abstract class Splitter {
+	public HashMap<BufferedReader, String> brh;
+	public HashMap<BufferedWriter, String> bwh;
+
 	protected String directory;
 	protected String inputName;
 	protected String statsPath;
@@ -21,7 +24,7 @@ public abstract class Splitter {
 	protected String[] wordIndex;
 	protected BufferedReader reader;
 
-	private SecondLevelSplitter secondLevelSplitter;
+	// private SecondLevelSplitter secondLevelSplitter;
 	private Aggregator aggregator;
 	private Sorter sorter;
 	private CountNormalizer countNormalizer;
@@ -29,7 +32,7 @@ public abstract class Splitter {
 	protected HashMap<Integer, BufferedWriter> writers;
 
 	// variables for managing sliding window
-	private int linePointer;
+	protected int linePointer;
 	protected String line;
 	protected String[] lineSplit = new String[0];
 
@@ -51,7 +54,7 @@ public abstract class Splitter {
 		this.outputDirectory = new File(this.directory + "/"
 				+ outputDirectoryName + "-normalized");
 		this.outputDirectory.mkdir();
-		this.secondLevelSplitter = new SecondLevelSplitter();
+		// this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
 		this.sorter = new Sorter();
 		this.countNormalizer = new CountNormalizer();
@@ -70,9 +73,6 @@ public abstract class Splitter {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
-
-		// delete old files
-		IOHelper.deleteDirectory(currentOutputDirectory);
 
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
@@ -97,9 +97,6 @@ public abstract class Splitter {
 		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
-
-		// delete old files
-		IOHelper.deleteDirectory(currentOutputDirectory);
 
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
@@ -203,10 +200,9 @@ public abstract class Splitter {
 				+ parentDir.getName().replace("-normalized", "-absolute"));
 		File absoluteNGrams = new File(absoluteNGramsParent.getAbsolutePath()
 				+ "/" + normalizedNGrams.getName());
-		absoluteNGramsParent.mkdir();
-		absoluteNGrams.mkdir();
-		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
-				normalizedNGrams.getAbsolutePath(), "_split", "_split");
+		absoluteNGrams.mkdirs();
+		// this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
+		// normalizedNGrams.getAbsolutePath(), "_split", "_split");
 		this.sorter.sortSplitDirectory(normalizedNGrams.getAbsolutePath(),
 				"_split", "_splitSort");
 		this.aggregator.aggregateDirectory(normalizedNGrams.getAbsolutePath(),
@@ -221,8 +217,8 @@ public abstract class Splitter {
 		this.countNormalizer.normalizeDirectory(this.statsPath,
 				normalizedNGrams.getAbsolutePath(), "_countSort", "");
 
-		this.secondLevelSplitter.mergeDirectory(normalizedNGrams
-				.getAbsolutePath());
+		// this.secondLevelSplitter.mergeDirectory(normalizedNGrams
+		// .getAbsolutePath());
 		this.mergeSmallestType(normalizedNGrams.getAbsolutePath());
 
 		// rename absoulte ngram files
@@ -230,14 +226,17 @@ public abstract class Splitter {
 			file.renameTo(new File(file.getAbsolutePath().replace("_countSort",
 					"")));
 		}
-		this.secondLevelSplitter.mergeDirectory(absoluteNGrams
-				.getAbsolutePath());
+		// this.secondLevelSplitter.mergeDirectory(absoluteNGrams
+		// .getAbsolutePath());
 		this.mergeSmallestType(absoluteNGrams.getAbsolutePath());
 	}
 
 	protected void reset() {
 		for (Entry<Integer, BufferedWriter> writer : this.writers.entrySet()) {
 			try {
+				if (this.bwh.containsKey(writer.getValue())) {
+					this.bwh.remove(writer.getValue());
+				}
 				writer.getValue().close();
 			} catch (IOException e) {
 				e.printStackTrace();

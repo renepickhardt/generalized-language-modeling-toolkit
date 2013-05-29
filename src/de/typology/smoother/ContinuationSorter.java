@@ -1,9 +1,9 @@
 package de.typology.smoother;
 
 import java.io.File;
+import java.io.IOException;
 
 import de.typology.splitter.Sorter;
-import de.typology.utils.SystemHelper;
 
 public class ContinuationSorter extends Sorter {
 
@@ -40,14 +40,12 @@ public class ContinuationSorter extends Sorter {
 
 			// build sort command
 			int columnNumber = this.getColumnNumber(inputPath);
-			String sortCommand = "sort --buffer-size=1G ";
+			// LANG=C to sort utf-8 correctly
+			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
-			// 0edges are only sorted by count
-			if (!inputPath.contains(".0")) {
-				// don't sort for last column (columnnumber - 1) just yet
-				for (int column = 2; column < columnNumber; column++) {
-					sortCommand += "--key=" + column + "," + column + " ";
-				}
+			// don't sort for last column (columnnumber - 1) just yet
+			for (int column = 2; column < columnNumber; column++) {
+				sortCommand += "--key=" + column + "," + column + " ";
 			}
 			// sort for count (nr --> numerics, reverse)
 			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";
@@ -56,7 +54,17 @@ public class ContinuationSorter extends Sorter {
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 
 			// execute command
-			SystemHelper.runUnixCommand(sortCommand);
+			Process p;
+			try {
+				p = Runtime.getRuntime().exec(
+						new String[] { "/bin/sh", "-c", sortCommand });
+				p.waitFor();
+				p.destroy();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
 			inputFile.delete();
 		}

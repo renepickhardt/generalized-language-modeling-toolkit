@@ -1,12 +1,15 @@
 package de.typology.splitter;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+
+import org.apache.commons.io.FileUtils;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
-import de.typology.utils.SystemHelper;
 
 /**
  * 
@@ -19,6 +22,21 @@ public class GLMSplitter extends Splitter {
 	public GLMSplitter(String directory, String indexName, String statsName,
 			String inputName) {
 		super(directory, indexName, statsName, inputName, "glm");
+		try {
+			// TODO:This should be placed somewhere else (inside Splitter is
+			// currently not possible)
+			IOHelper.strongLog("deleting old glm-normalized directory");
+			FileUtils.deleteDirectory(this.outputDirectory);
+			IOHelper.strongLog("deleting old glm-absolute directory");
+			File absoluteDirectory = new File(this.outputDirectory
+					.getAbsolutePath().replace("-normalized", "-absolute"));
+			FileUtils.deleteDirectory(absoluteDirectory);
+			this.outputDirectory.mkdir();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -29,6 +47,8 @@ public class GLMSplitter extends Splitter {
 				+ Config.get().inputDataSet;
 		GLMSplitter ts = new GLMSplitter(outputDirectory, "index.txt",
 				"stats.txt", "training.txt");
+		ts.brh = new HashMap<BufferedReader, String>();
+		ts.bwh = new HashMap<BufferedWriter, String>();
 		ts.split(5);
 	}
 
@@ -48,7 +68,7 @@ public class GLMSplitter extends Splitter {
 
 			// naming and initialization
 			this.extension = sequenceBinary;
-			IOHelper.strongLog("splitting into " + this.extension);
+			IOHelper.log("splitting into " + this.extension);
 			this.initialize(this.extension);
 
 			// iterate over corpus
@@ -70,15 +90,29 @@ public class GLMSplitter extends Splitter {
 				}
 				// get accurate writer
 				BufferedWriter writer = this.getWriter(sequenceCut[0]);
+				String lineToPrint = "";
 				try {
 					// write actual sequence
 					for (String sequenceCutWord : sequenceCut) {
-						writer.write(sequenceCutWord + "\t");
+						lineToPrint += sequenceCutWord + "\t";
 					}
-					writer.write(this.sequenceCount + "\n");
+					lineToPrint += this.sequenceCount + "\n";
+					if (lineToPrint.startsWith("\t")) {
+						IOHelper.log("too short at:" + this.linePointer
+								+ " text:\"" + this.line + "\"");
+					} else {
+						writer.write(lineToPrint);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			}
+			// close reader
+			try {
+				this.reader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			// reset writers
 			this.reset();
@@ -89,19 +123,20 @@ public class GLMSplitter extends Splitter {
 
 	@Override
 	protected void mergeSmallestType(String inputPath) {
-		File inputFile = new File(inputPath);
-		if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1) {
-			File[] files = inputFile.listFiles();
-
-			String fileExtension = inputFile.getName();
-			IOHelper.log("merge all " + fileExtension);
-			SystemHelper.runUnixCommand("cat " + files[0].getParent() + "/* > "
-					+ inputPath + "/all." + fileExtension);
-			for (File file : files) {
-				if (!file.getName().equals("all." + fileExtension)) {
-					file.delete();
-				}
-			}
-		}
+		// File inputFile = new File(inputPath);
+		// if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1)
+		// {
+		// File[] files = inputFile.listFiles();
+		//
+		// String fileExtension = inputFile.getName();
+		// IOHelper.log("merge all " + fileExtension);
+		// SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
+		// + inputPath + "/all." + fileExtension);
+		// for (File file : files) {
+		// if (!file.getName().equals("all." + fileExtension)) {
+		// file.delete();
+		// }
+		// }
+		// }
 	}
 }

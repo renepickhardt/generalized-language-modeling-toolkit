@@ -1,14 +1,14 @@
 package de.typology.parser;
 
-import static de.typology.parser.WikipediaToken.CLOSEDSQUAREDBRACKET;
-import static de.typology.parser.WikipediaToken.CLOSEDTEXT;
-import static de.typology.parser.WikipediaToken.CLOSEDTITLE;
-import static de.typology.parser.WikipediaToken.LINK;
-import static de.typology.parser.WikipediaToken.OTHER;
-import static de.typology.parser.WikipediaToken.SQUAREDBRACKET;
-import static de.typology.parser.WikipediaToken.TEXT;
-import static de.typology.parser.WikipediaToken.TITLE;
-import static de.typology.parser.WikipediaToken.VERTICALBAR;
+import static de.typology.parser.Token.CLOSEDSQUAREDBRACKET;
+import static de.typology.parser.Token.CLOSEDTEXT;
+import static de.typology.parser.Token.CLOSEDTITLE;
+import static de.typology.parser.Token.LINK;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.SQUAREDBRACKET;
+import static de.typology.parser.Token.TEXT;
+import static de.typology.parser.Token.TITLE;
+import static de.typology.parser.Token.VERTICALBAR;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,8 +31,8 @@ public class WikipediaLinkExtractor {
 	private String title;
 	private String link;
 	private String linkLabel;
-	private WikipediaToken label;
-	private WikipediaToken current;
+	private Token label;
+	private Token current;
 	private int bracketCount;
 	private int verticalBarCount;
 
