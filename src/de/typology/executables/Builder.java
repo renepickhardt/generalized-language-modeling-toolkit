@@ -59,7 +59,7 @@ public class Builder {
 					statsFileName, trainingFileName);
 			glms.brh = new HashMap<BufferedReader, String>();
 			glms.bwh = new HashMap<BufferedWriter, String>();
-			glms.split(Config.get().modelLength);
+			glms.splitGLM(Config.get().modelLength);
 		}
 		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
