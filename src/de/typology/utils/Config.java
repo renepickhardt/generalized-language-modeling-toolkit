@@ -46,6 +46,8 @@ public class Config extends Properties {
 	public boolean buildTypoEdges;
 	public boolean aggregateContinuationDelta;
 
+	public boolean deleteTempFiles;
+
 	// DEBUGGING
 	public String inputDataSet;
 

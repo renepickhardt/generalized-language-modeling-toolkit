@@ -91,6 +91,8 @@ public class ContinuationDeltaAggregator {
 	public void aggregate(int maxSequenceLength) {
 		IOHelper.strongLog("aggregating continuation and delta values of "
 				+ this.directory + " into " + this.outputDirectory);
+		IOHelper.strongLog("DELETE TEMP FILES IS: "
+				+ Config.get().deleteTempFiles);
 
 		// regular cases: |sequenceBinary|<maxSequenceLength
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
@@ -100,10 +102,39 @@ public class ContinuationDeltaAggregator {
 			String sequenceBinaryMod = sequenceBinary.replaceFirst("1", "0");
 			this.aggregateNMinusOne(sequenceBinaryMod);
 			this.mergeSmallestType(this.outputDirectory + sequenceBinaryMod);
+			// remove files that have been aggregated
+			if (Config.get().deleteTempFiles) {
+				if (sequenceBinary.length() != 1) {
+					try {
+						FileUtils.deleteDirectory(new File(this.directory
+								+ "glm-absolute/" + sequenceBinary + "/"));
+						//
+						if (Integer.bitCount(sequenceDecimal) != 1) {
+							FileUtils
+									.deleteDirectory(new File(this.directory
+											+ "glm-absolute/"
+											+ sequenceBinaryMod + "/"));
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		if (Config.get().deleteTempFiles) {
+			IOHelper.strongLog("deleting glm-continuation");
+			try {
+				FileUtils.deleteDirectory(new File(this.directory
+						+ "glm-continuation/"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		// special case: |sequenceBinary|==maxSequenceLength
 		// at the moment: do nothing, since there is nothing to aggregate
-		// possible option: copy folders from glm-absolute
+
 	}
 
 	private void initialize(String binaryTargetFormat, String currentFileName) {
@@ -329,7 +360,7 @@ public class ContinuationDeltaAggregator {
 		}
 	}
 
-	private void writeTarget() {
+	protected void writeTarget() {
 		// TODO:add calculation & writing
 		try {
 			this.targetWriter.write(this.currentTarget
