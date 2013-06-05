@@ -21,18 +21,17 @@ public class GLMSplitter extends Splitter {
 
 	public GLMSplitter(String directory, String indexName, String statsName,
 			String inputName) {
-		super(directory, indexName, statsName, inputName, "glm");
+		super(directory, indexName, statsName, inputName, "");
 		try {
 			// TODO:This should be placed somewhere else (inside Splitter is
 			// currently not possible)
-			IOHelper.strongLog("deleting old glm-normalized directory");
+			IOHelper.strongLog("deleting old normalized directory");
 			FileUtils.deleteDirectory(this.outputDirectory);
-			IOHelper.strongLog("deleting old glm-absolute directory");
+			IOHelper.strongLog("deleting old absolute directory");
 			File absoluteDirectory = new File(this.outputDirectory
-					.getAbsolutePath().replace("-normalized", "-absolute"));
+					.getAbsolutePath().replace("normalized", "absolute"));
 			FileUtils.deleteDirectory(absoluteDirectory);
 			this.outputDirectory.mkdir();
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

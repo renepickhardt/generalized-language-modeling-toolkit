@@ -8,6 +8,7 @@ import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
 
+import de.typology.splitter.GLMCounter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
@@ -27,7 +28,7 @@ public class ContinuationDeltaAggregator {
 	public static void main(String[] args) {
 		ContinuationDeltaAggregator dca = new ContinuationDeltaAggregator(
 				Config.get().outputDirectory + Config.get().inputDataSet,
-				"glm-aggregate");
+				"aggregate");
 		dca.aggregate(5);
 	}
 
@@ -102,31 +103,40 @@ public class ContinuationDeltaAggregator {
 			String sequenceBinaryMod = sequenceBinary.replaceFirst("1", "0");
 			this.aggregateNMinusOne(sequenceBinaryMod);
 			this.mergeSmallestType(this.outputDirectory + sequenceBinaryMod);
-			// remove files that have been aggregated
-			if (Config.get().deleteTempFiles) {
-				if (sequenceBinary.length() != 1) {
-					try {
-						FileUtils.deleteDirectory(new File(this.directory
-								+ "glm-absolute/" + sequenceBinary + "/"));
-						//
-						if (Integer.bitCount(sequenceDecimal) != 1) {
-							FileUtils
-									.deleteDirectory(new File(this.directory
-											+ "glm-absolute/"
-											+ sequenceBinaryMod + "/"));
+		}
+		// count absolute files
+		GLMCounter glmc = new GLMCounter(this.directory, "absolute",
+				"count-absolute");
+		glmc.countAbsolute();
+		// remove files that have been aggregated
+		if (Config.get().deleteTempFiles) {
+			for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
+					maxSequenceLength - 1); sequenceDecimal++) {
+				String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+				String sequenceBinaryMod = sequenceBinary
+						.replaceFirst("1", "0");
+				if (Config.get().deleteTempFiles) {
+					if (sequenceBinary.length() != 1) {
+						try {
+							FileUtils.deleteDirectory(new File(this.directory
+									+ "absolute/" + sequenceBinary + "/"));
+							//
+							if (Integer.bitCount(sequenceDecimal) != 1) {
+								FileUtils.deleteDirectory(new File(
+										this.directory + "absolute/"
+												+ sequenceBinaryMod + "/"));
+							}
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 				}
 			}
-		}
-		if (Config.get().deleteTempFiles) {
-			IOHelper.strongLog("deleting glm-continuation");
+			IOHelper.strongLog("deleting continuation");
 			try {
 				FileUtils.deleteDirectory(new File(this.directory
-						+ "glm-continuation/"));
+						+ "continuation/"));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -139,7 +149,7 @@ public class ContinuationDeltaAggregator {
 
 	private void initialize(String binaryTargetFormat, String currentFileName) {
 
-		File continuationFile = new File(this.directory + "glm-continuation/"
+		File continuationFile = new File(this.directory + "continuation/"
 				+ this.binaryContinuationFormat + "/" + currentFileName + "."
 				+ this.binaryContinuationFormat);
 		// handle case where continuationFile doesn't exist
@@ -155,7 +165,7 @@ public class ContinuationDeltaAggregator {
 			this.continationFileExists = false;
 		}
 
-		File deltaFile = new File(this.directory + "glm-absolute/"
+		File deltaFile = new File(this.directory + "absolute/"
 				+ this.binaryDeltaFormat + "/" + currentFileName + "."
 				+ this.binaryDeltaFormat);
 
@@ -222,10 +232,9 @@ public class ContinuationDeltaAggregator {
 		this.binaryDeltaFormat = this.binaryTargetFormat + "1";
 
 		// build the union of the continuation and delta directory
-		File[] continuationFiles = new File(this.directory
-				+ "glm-continuation/" + this.binaryContinuationFormat)
-				.listFiles();
-		File[] deltaFiles = new File(this.directory + "glm-absolute/"
+		File[] continuationFiles = new File(this.directory + "continuation/"
+				+ this.binaryContinuationFormat).listFiles();
+		File[] deltaFiles = new File(this.directory + "absolute/"
 				+ this.binaryDeltaFormat).listFiles();
 		HashSet<String> targetFiles = new HashSet<String>();
 		for (File file : continuationFiles) {

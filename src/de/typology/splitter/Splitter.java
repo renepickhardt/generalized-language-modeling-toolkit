@@ -51,8 +51,12 @@ public abstract class Splitter {
 			this.wordIndex = ib.deserializeIndex(this.indexPath);
 		}
 
-		this.outputDirectory = new File(this.directory + "/"
-				+ outputDirectoryName + "-normalized");
+		if (outputDirectoryName.length() == 0) {
+			this.outputDirectory = new File(this.directory + "/" + "normalized");
+		} else {
+			this.outputDirectory = new File(this.directory + "/"
+					+ outputDirectoryName + "-normalized");
+		}
 		this.outputDirectory.mkdir();
 		this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
@@ -204,7 +208,7 @@ public abstract class Splitter {
 		File absoluteNGramsParent = new File(parentDir.getParentFile()
 				.getAbsolutePath()
 				+ "/"
-				+ parentDir.getName().replace("-normalized", "-absolute"));
+				+ parentDir.getName().replace("normalized", "absolute"));
 		File absoluteNGrams = new File(absoluteNGramsParent.getAbsolutePath()
 				+ "/" + normalizedNGrams.getName());
 		absoluteNGrams.mkdirs();

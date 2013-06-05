@@ -25,8 +25,7 @@ public class GLMZeroBuilder {
 	 */
 	public static void main(String[] args) {
 		GLMZeroBuilder glmzb = new GLMZeroBuilder(Config.get().outputDirectory
-				+ Config.get().inputDataSet + "glm-continuation/",
-				"glm-absolute");
+				+ Config.get().inputDataSet + "continuation/", "absolute");
 		glmzb.build();
 	}
 

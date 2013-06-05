@@ -80,9 +80,9 @@ public class ContinuationSplitter extends Splitter {
 
 	public ContinuationSplitter(String directory, String indexName,
 			String statsName, String inputName) {
-		super(directory, indexName, statsName, inputName, "glm");
+		super(directory, indexName, statsName, inputName, "");
 		try {
-			FileUtils.deleteDirectory(new File(directory + "glm-continuation"));
+			FileUtils.deleteDirectory(new File(directory + "continuation"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -93,7 +93,7 @@ public class ContinuationSplitter extends Splitter {
 
 	@Override
 	protected void initialize(String extension) {
-		String absoluteGLMPath = this.directory + "/glm-absolute/" + extension;
+		String absoluteGLMPath = this.directory + "/absolute/" + extension;
 		File absoluteGLMDirectory = new File(absoluteGLMPath);
 		this.inputFiles = absoluteGLMDirectory.listFiles();
 
@@ -104,8 +104,9 @@ public class ContinuationSplitter extends Splitter {
 				this.inputFiles[this.filePointer].getAbsolutePath());
 
 		File currentOutputDirectory = new File(this.outputDirectory
-				.getAbsolutePath().replace("-normalized", "-continuation")
-				+ "/" + extension);
+				.getAbsolutePath().replace("normalized", "continuation")
+				+ "/"
+				+ extension);
 
 		// delete old files
 		try {
@@ -172,7 +173,7 @@ public class ContinuationSplitter extends Splitter {
 	@Override
 	public void split(int maxSequenceLength) {
 		this.outputDirectory = new File(this.outputDirectory.getAbsolutePath()
-				.replace("-normalized", "-continuation"));
+				.replace("normalized", "continuation"));
 		// leave out unigrams since they get calculated from bigrams
 		// leave out 10 since continuation(0)=|distinct words|
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,

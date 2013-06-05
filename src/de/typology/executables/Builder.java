@@ -99,12 +99,12 @@ public class Builder {
 		}
 		if (Config.get().buildZeroGLM) {
 			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
-					+ "glm-continuation/", "glm-absolute");
+					+ "continuation/", "absolute");
 			glmzb.build();
 		}
 		if (Config.get().aggregateContinuationDelta) {
 			ContinuationDeltaAggregator cda = new ContinuationDeltaAggregator(
-					outputPath, "glm-aggregate");
+					outputPath, "aggregate");
 			cda.aggregate(Config.get().modelLength);
 		}
 	}
