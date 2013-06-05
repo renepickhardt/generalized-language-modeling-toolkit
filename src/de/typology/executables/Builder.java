@@ -5,7 +5,7 @@ import java.io.BufferedWriter;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import de.typology.smoother.ContinuationDeltaAggregator;
+import de.typology.smoother.ContinuationDiscountAggregator;
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
@@ -103,7 +103,7 @@ public class Builder {
 			glmzb.build();
 		}
 		if (Config.get().aggregateContinuationDelta) {
-			ContinuationDeltaAggregator cda = new ContinuationDeltaAggregator(
+			ContinuationDiscountAggregator cda = new ContinuationDiscountAggregator(
 					outputPath, "aggregate");
 			cda.aggregate(Config.get().modelLength);
 		}
