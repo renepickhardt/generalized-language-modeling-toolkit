@@ -1,9 +1,9 @@
 package de.typology.smoother;
 
 import java.io.File;
-import java.io.IOException;
 
 import de.typology.splitter.Sorter;
+import de.typology.utils.SystemHelper;
 
 public class ContinuationSorter extends Sorter {
 
@@ -39,32 +39,20 @@ public class ContinuationSorter extends Sorter {
 					outputExtension);
 
 			// build sort command
-			int columnNumber = this.getColumnNumber(inputPath);
+			int columnNumber = Integer.bitCount(Integer.parseInt(inputFile
+					.getName().split("\\.")[1].split("_")[0], 2));
 			// LANG=C to sort utf-8 correctly
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
-			// don't sort for last column (columnnumber - 1) just yet
-			for (int column = 2; column < columnNumber; column++) {
+			for (int column = 2; column <= columnNumber; column++) {
 				sortCommand += "--key=" + column + "," + column + " ";
 			}
-			// sort for count (nr --> numerics, reverse)
-			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";
 			// sort for first line
 			sortCommand += "--key=1,1 ";
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 
 			// execute command
-			Process p;
-			try {
-				p = Runtime.getRuntime().exec(
-						new String[] { "/bin/sh", "-c", sortCommand });
-				p.waitFor();
-				p.destroy();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			SystemHelper.runUnixCommand(sortCommand);
 
 			inputFile.delete();
 		}

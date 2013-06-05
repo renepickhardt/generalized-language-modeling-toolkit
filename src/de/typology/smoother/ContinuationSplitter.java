@@ -1,11 +1,9 @@
 package de.typology.smoother;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 
@@ -28,85 +26,52 @@ public class ContinuationSplitter extends Splitter {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		ContinuationSplitter cs = new ContinuationSplitter(outputDirectory,
-				"index.txt", "stats.txt", "training.txt");
-		cs.brh = new HashMap<BufferedReader, String>();
-		cs.bwh = new HashMap<BufferedWriter, String>();
-		try {
-			cs.split(5);
-		} catch (Exception e) {
-			for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
-				System.out.println(r.getValue());
-			}
-			for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
-				System.out.println(r.getValue());
-			}
-			System.out.println("brh size: " + cs.brh.size());
-			System.out.println("bwh size: " + cs.bwh.size());
-			int mb = 1024 * 1024;
-			// Getting the runtime reference from system
-			Runtime runtime = Runtime.getRuntime();
-
-			IOHelper.log("##### Heap utilization statistics [MB] #####");
-
-			// Print used memory
-			IOHelper.log("Used Memory:\t"
-					+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
-
-			// Print free memory
-			IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
-
-			// Print total available memory
-			IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
-
-			// Print Maximum available memory
-			IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
-		}
-		System.out.println("reader");
-		for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
-			System.out.println(r.getValue());
-		}
-		System.out.println("writer");
-		for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
-			System.out.println(r.getValue());
-		}
-
+				"absolute", "continuation", "index.txt", "stats.txt",
+				"training.txt", false);
+		cs.split(5);
 	}
 
 	protected String extension;
 	private File[] inputFiles;
 	private int filePointer;
+	private String inputDirectoryName;
+	private String outputDirectoryName;
+	private boolean deleteInputFiles;
 
 	private ContinuationSorter continuationSorter;
 
-	public ContinuationSplitter(String directory, String indexName,
-			String statsName, String inputName) {
+	public ContinuationSplitter(String directory, String inputDirectoryName,
+			String outputDirectoryName, String indexName, String statsName,
+			String inputName, boolean deleteInputFiles) {
 		super(directory, indexName, statsName, inputName, "");
+		this.inputDirectoryName = inputDirectoryName;
+		this.outputDirectoryName = outputDirectoryName;
+		this.deleteInputFiles = deleteInputFiles;
 		try {
-			FileUtils.deleteDirectory(new File(directory + "continuation"));
+			FileUtils
+					.deleteDirectory(new File(directory + outputDirectoryName));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		this.continuationSorter = new ContinuationSorter();
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	protected void initialize(String extension) {
-		String absoluteGLMPath = this.directory + "/absolute/" + extension;
-		File absoluteGLMDirectory = new File(absoluteGLMPath);
-		this.inputFiles = absoluteGLMDirectory.listFiles();
+		String inputGLMPath = this.directory + this.inputDirectoryName + "/"
+				+ extension;
+		File inputGLMDirectory = new File(inputGLMPath);
+		this.inputFiles = inputGLMDirectory.listFiles();
 
 		this.filePointer = 0;
 		this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
 				.getAbsolutePath());
-		this.brh.put(this.reader,
-				this.inputFiles[this.filePointer].getAbsolutePath());
 
 		File currentOutputDirectory = new File(this.outputDirectory
-				.getAbsolutePath().replace("normalized", "continuation")
-				+ "/"
-				+ extension);
+				.getAbsolutePath().replace("normalized",
+						this.outputDirectoryName)
+				+ "/" + extension);
 
 		// delete old files
 		try {
@@ -126,11 +91,6 @@ public class ContinuationSplitter extends Splitter {
 									+ extension + "_split",
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxCountDivider));
-			if (!this.bwh.containsKey(this.writers.get(fileCount))) {
-				this.bwh.put(this.writers.get(fileCount),
-						currentOutputDirectory + "/" + fileCount + "."
-								+ extension + "_split");
-			}
 		}
 	}
 
@@ -139,22 +99,15 @@ public class ContinuationSplitter extends Splitter {
 			if ((this.line = this.reader.readLine()) == null) {
 				this.filePointer++;
 
-				if (this.brh.containsKey(this.reader)) {
-					this.brh.remove(this.reader);
-				}
-
 				this.reader.close();
+				if (this.deleteInputFiles) {
+					this.inputFiles[this.filePointer - 1].delete();
+				}
 				if (this.filePointer < this.inputFiles.length) {
 
 					this.reader = IOHelper
 							.openReadFile(this.inputFiles[this.filePointer]
 									.getAbsolutePath());
-
-					if (!this.brh.containsKey(this.reader)) {
-						this.brh.put(this.reader,
-								this.inputFiles[this.filePointer]
-										.getAbsolutePath());
-					}
 
 					return this.getNextLine();
 				} else {
@@ -173,7 +126,7 @@ public class ContinuationSplitter extends Splitter {
 	@Override
 	public void split(int maxSequenceLength) {
 		this.outputDirectory = new File(this.outputDirectory.getAbsolutePath()
-				.replace("normalized", "continuation"));
+				.replace("normalized", this.outputDirectoryName));
 		// leave out unigrams since they get calculated from bigrams
 		// leave out 10 since continuation(0)=|distinct words|
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
@@ -205,19 +158,27 @@ public class ContinuationSplitter extends Splitter {
 				try {
 					// write actual sequence
 					writer.write(this.line + "\n");
-					if (!this.bwh.containsKey(writer)) {
-						this.bwh.put(writer, "from ContSplitter: temp BWriter");
-					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 			this.reset();
+
 			this.continuationSorter.sortSecondCloumnDirectory(
 					this.outputDirectory.getAbsolutePath() + "/"
 							+ this.extension, "_split", "");
 			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
 					+ this.extension);
+
+		}
+		if (this.deleteInputFiles) {
+			try {
+				FileUtils.deleteDirectory(new File(this.directory + "/"
+						+ this.inputDirectoryName));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

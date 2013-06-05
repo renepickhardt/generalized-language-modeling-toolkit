@@ -22,8 +22,11 @@ public class GLMCounter {
 	public static void main(String[] args) {
 		GLMCounter glmc = new GLMCounter(Config.get().outputDirectory
 				+ Config.get().inputDataSet, "absolute", "counts-absolute");
-		glmc.countAbsolute();
+		glmc.countAbsolute(1);
 		System.out.println(glmc.getAbsoluteCount("1"));
+		glmc = new GLMCounter(Config.get().outputDirectory
+				+ Config.get().inputDataSet, "aggregate", "counts-aggregate");
+		glmc.countAbsolute(2);
 
 	}
 
@@ -43,9 +46,10 @@ public class GLMCounter {
 		this.outputDirectory.mkdir();
 	}
 
-	public void countAbsolute() {
+	public void countAbsolute(int countNumber) {
 		for (File currentInputDirectory : this.inputDirectory.listFiles()) {
-			long count = 0;
+
+			long[] counts = new long[countNumber];
 			try {
 				for (File inputFile : currentInputDirectory.listFiles()) {
 					BufferedReader reader = IOHelper.openReadFile(inputFile
@@ -54,15 +58,21 @@ public class GLMCounter {
 					String[] lineSplit;
 					while ((line = reader.readLine()) != null) {
 						lineSplit = line.split("\t");
-						count += Integer
-								.parseInt(lineSplit[lineSplit.length - 1]);
+						for (int i = 0; i < countNumber; i++) {
+							counts[countNumber - 1 - i] += Integer
+									.parseInt(lineSplit[lineSplit.length - 1
+											- i]);
+						}
 					}
 					reader.close();
 				}
 				BufferedWriter writer = IOHelper
 						.openWriteFile(this.outputDirectory + "/"
 								+ currentInputDirectory.getName() + ".cnt");
-				writer.write(count + "\n");
+				for (int i = 0; i < countNumber - 1; i++) {
+					writer.write(counts[i] + "\t");
+				}
+				writer.write(counts[countNumber - 1] + "\n");
 				writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();

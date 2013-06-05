@@ -16,11 +16,15 @@ public class ExtendedKneserNeyAggregator {
 	// base directory of corpus data, e.g.: .../wiki/de/
 	protected String directory;
 
+	// directories for absolute and aggregate glms
+	protected String absoluteDirectory;
+	protected String aggregateDirectory;
+
 	// output directory
 	protected String outputDirectory;
 
 	// previous file reader
-	protected BufferedReader deltaReader;
+	protected BufferedReader aggregateReader;
 
 	// result writer
 	protected BufferedWriter targetWriter;
@@ -28,6 +32,8 @@ public class ExtendedKneserNeyAggregator {
 	public ExtendedKneserNeyAggregator(String directory,
 			String outputDirectoryName) {
 		this.directory = directory;
+		this.absoluteDirectory = directory + "absolute/";
+		this.aggregateDirectory = directory + "aggregate/";
 		this.outputDirectory = directory + outputDirectoryName + "/";
 		this.calculateDs();
 		// delete old output directory
@@ -59,10 +65,29 @@ public class ExtendedKneserNeyAggregator {
 		this.d3plus = this.d2;
 	}
 
+	/**
+	 * 
+	 * @param maxSequenceLength
+	 *            needs to be greater than 1
+	 */
 	private void calculate(int maxSequenceLength) {
-		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+
+		// case: 1
+		int sequenceDecimal = 1;
+		String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+
+		// case: 2 .. max-1
+		for (sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
 				maxSequenceLength - 1); sequenceDecimal++) {
-			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+			sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+
+		}
+
+		// case: max
+		for (sequenceDecimal = (int) Math.pow(2, maxSequenceLength - 1); sequenceDecimal < Math
+				.pow(2, maxSequenceLength); sequenceDecimal++) {
+			sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+
 		}
 	}
 }

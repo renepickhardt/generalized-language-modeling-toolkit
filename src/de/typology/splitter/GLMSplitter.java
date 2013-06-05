@@ -1,10 +1,8 @@
 package de.typology.splitter;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 
@@ -46,8 +44,6 @@ public class GLMSplitter extends Splitter {
 				+ Config.get().inputDataSet;
 		GLMSplitter ts = new GLMSplitter(outputDirectory, "index.txt",
 				"stats.txt", "training.txt");
-		ts.brh = new HashMap<BufferedReader, String>();
-		ts.bwh = new HashMap<BufferedWriter, String>();
 		// System.out.println("typo:");
 		// ts.splitTypo(5);
 		// System.out.println("lm:");

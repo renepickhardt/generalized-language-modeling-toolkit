@@ -65,7 +65,7 @@ public class ContinuationDiscountAggregator {
 	protected String directory;
 
 	// output directory
-	protected String outputDirectory;
+	protected File tempOutputDirectory;
 
 	// continuation reader
 	protected BufferedReader continuationReader;
@@ -78,32 +78,43 @@ public class ContinuationDiscountAggregator {
 	public ContinuationDiscountAggregator(String directory,
 			String outputDirectoryName) {
 		this.directory = directory;
-		this.outputDirectory = directory + outputDirectoryName + "/";
+		this.tempOutputDirectory = new File(directory + outputDirectoryName
+				+ "-unmerged/");
 		// delete old output directory
-		File outputDirectoryFile = new File(this.outputDirectory);
 		try {
-			FileUtils.deleteDirectory(outputDirectoryFile);
+			FileUtils.deleteDirectory(this.tempOutputDirectory);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		outputDirectoryFile.mkdir();
+		this.tempOutputDirectory.mkdir();
 	}
 
 	public void aggregate(int maxSequenceLength) {
 		IOHelper.strongLog("aggregating continuation and discount values of "
-				+ this.directory + " into " + this.outputDirectory);
+				+ this.directory + " into " + this.tempOutputDirectory);
 		IOHelper.strongLog("DELETE TEMP FILES IS: "
 				+ Config.get().deleteTempFiles);
 
 		// regular cases: |sequenceBinary|<maxSequenceLength
+		// ContinuationSorter cs = new ContinuationSorter();
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength - 1); sequenceDecimal++) {
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-			this.aggregateNMinusOne(sequenceBinary);
+			this.aggregateFiles(sequenceBinary);
+			// cs.sortSecondCloumnDirectory(this.outputDirectory +
+			// sequenceBinary,
 			String sequenceBinaryMod = sequenceBinary.replaceFirst("1", "0");
-			this.aggregateNMinusOne(sequenceBinaryMod);
-			this.mergeSmallestType(this.outputDirectory + sequenceBinaryMod);
+			this.aggregateFiles(sequenceBinaryMod);
+			// cs.sortSecondCloumnDirectory(this.outputDirectory
+			// + sequenceBinaryMod, "_split", "");
+			this.mergeSmallestType(this.tempOutputDirectory + "/"
+					+ sequenceBinaryMod);
 		}
+		// merge and sort aggregate-unmerged
+		ContinuationSplitter csp = new ContinuationSplitter(this.directory,
+				"aggregate-unmerged", "aggregate", "index.txt", "", "",
+				Config.get().deleteTempFiles);
+		csp.split(maxSequenceLength - 1);
 		// count absolute files
 		GLMCounter glmc = new GLMCounter(this.directory, "absolute",
 				"counts-absolute");
@@ -180,11 +191,13 @@ public class ContinuationDiscountAggregator {
 			this.currentDiscountCount = 0;
 			this.discountFileExists = false;
 		}
-		new File(this.outputDirectory + binaryTargetFormat).mkdir();
+		new File(this.tempOutputDirectory + "/" + binaryTargetFormat).mkdir();
 		// open target writer
-		this.targetWriter = IOHelper.openWriteFile(this.outputDirectory
-				+ binaryTargetFormat + "/" + currentFileName + "."
-				+ binaryTargetFormat, Config.get().memoryLimitForWritingFiles);
+		this.targetWriter = IOHelper.openWriteFile(
+				this.tempOutputDirectory.getAbsolutePath() + "/"
+						+ binaryTargetFormat + "/" + currentFileName + "."
+						+ binaryTargetFormat,
+				Config.get().memoryLimitForWritingFiles);
 
 	}
 
@@ -226,7 +239,7 @@ public class ContinuationDiscountAggregator {
 		}
 	}
 
-	private void aggregateNMinusOne(String sequenceBinary) {
+	private void aggregateFiles(String sequenceBinary) {
 
 		IOHelper.log("aggregating " + sequenceBinary);
 		this.binaryTargetFormat = sequenceBinary;

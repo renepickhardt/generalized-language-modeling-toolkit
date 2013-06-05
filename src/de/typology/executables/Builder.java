@@ -1,10 +1,5 @@
 package de.typology.executables;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import de.typology.smoother.ContinuationDiscountAggregator;
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.splitter.DataSetSplitter;
@@ -57,26 +52,15 @@ public class Builder {
 		if (Config.get().buildGLM) {
 			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
 					statsFileName, trainingFileName);
-			glms.brh = new HashMap<BufferedReader, String>();
-			glms.bwh = new HashMap<BufferedWriter, String>();
 			glms.splitGLM(Config.get().modelLength);
 		}
 		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
-					"index.txt", "stats.txt", "training.txt");
-			cs.brh = new HashMap<BufferedReader, String>();
-			cs.bwh = new HashMap<BufferedWriter, String>();
+					"absolute", "continuation", "index.txt", "stats.txt",
+					"training.txt", false);
 			try {
 				cs.split(Config.get().modelLength);
 			} catch (Exception e) {
-				for (Entry<BufferedReader, String> r : cs.brh.entrySet()) {
-					System.out.println(r.getValue());
-				}
-				for (Entry<BufferedWriter, String> r : cs.bwh.entrySet()) {
-					System.out.println(r.getValue());
-				}
-				System.out.println("brh size: " + cs.brh.size());
-				System.out.println("bwh size: " + cs.bwh.size());
 				int mb = 1024 * 1024;
 				// Getting the runtime reference from system
 				Runtime runtime = Runtime.getRuntime();

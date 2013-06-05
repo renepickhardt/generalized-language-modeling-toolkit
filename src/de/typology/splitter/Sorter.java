@@ -1,10 +1,7 @@
 package de.typology.splitter;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 
-import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
 public class Sorter {
@@ -64,16 +61,14 @@ public class Sorter {
 					outputExtension);
 
 			// build sort command
-			int columnNumber = this.getColumnNumber(inputPath);
+			int columnNumber = Integer.bitCount(Integer.parseInt(inputFile
+					.getName().split("\\.")[1].split("_")[0], 2));
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
-			// don't sort for last word (with "< columnNumber - 1") ...
-			for (int column = 1; column < columnNumber - 1; column++) {
+			for (int column = 1; column <= columnNumber; column++) {
 				sortCommand += "--key=" + column + "," + column + " ";
 			}
 
-			// ... instead sort for count (nr --> numerics, reverse)
-			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 
 			// execute command
@@ -84,20 +79,4 @@ public class Sorter {
 		// note: when sorting an empty file, new file contains "null1"
 	}
 
-	protected int getColumnNumber(String inputPath) {
-		BufferedReader br = IOHelper.openReadFile(inputPath);
-		int columnNumber = 0;
-		try {
-			String line = br.readLine();
-			if (line != null) {
-				columnNumber = line.split("\t").length;
-			} else {
-				columnNumber = 0;
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return columnNumber;
-	}
 }
