@@ -13,20 +13,20 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
-public class ContinuationDeltaAggregator {
+public class ContinuationDiscountAggregator {
 
 	/**
-	 * This class provides a method that aggregates and calculates the delta and
-	 * continuation probability based on a higher order glm.
+	 * This class provides a method that aggregates and calculates the number of
+	 * discounted word types (for calculation lambda) and continuation counts
+	 * based on a higher order glm.
 	 * <p>
-	 * TODO: add extended Kneser-Ney smoothing at some point here
 	 * 
 	 * @param args
 	 * 
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) {
-		ContinuationDeltaAggregator dca = new ContinuationDeltaAggregator(
+		ContinuationDiscountAggregator dca = new ContinuationDiscountAggregator(
 				Config.get().outputDirectory + Config.get().inputDataSet,
 				"aggregate");
 		dca.aggregate(5);
@@ -40,10 +40,10 @@ public class ContinuationDeltaAggregator {
 	protected boolean continationFileExists;
 
 	// e.g. 11111 for 4grams or 1011 for typo 2 edges
-	protected String binaryDeltaFormat;
-	protected boolean deltaFileExists;
+	protected String binaryDiscountFormat;
+	protected boolean discountFileExists;
 
-	// target string for which continuation and delta is currently calculated
+	// target string for which continuation and discount is currently calculated
 	protected String currentTarget;
 
 	// target count if used (only, when |target|==max modelLength)
@@ -55,11 +55,11 @@ public class ContinuationDeltaAggregator {
 	// number of different continuation Strings
 	protected int currentContinuationCount;
 
-	// current delta String (e.g. 1001+1)
-	protected String nextDelta;
-	protected boolean hasNextDelta;
-	// number of different delta Strings
-	protected int currentDeltaCount;
+	// current discount String (e.g. 1001+1)
+	protected String nextDiscount;
+	protected boolean hasNextDiscount;
+	// number of different discount Strings
+	protected int currentDiscountCount;
 
 	// base directory of corpus data, e.g.: .../wiki/de/
 	protected String directory;
@@ -69,13 +69,13 @@ public class ContinuationDeltaAggregator {
 
 	// continuation reader
 	protected BufferedReader continuationReader;
-	// delta reader
-	protected BufferedReader deltaReader;
+	// discount reader
+	protected BufferedReader discountReader;
 
 	// target writer
 	protected BufferedWriter targetWriter;
 
-	public ContinuationDeltaAggregator(String directory,
+	public ContinuationDiscountAggregator(String directory,
 			String outputDirectoryName) {
 		this.directory = directory;
 		this.outputDirectory = directory + outputDirectoryName + "/";
@@ -90,7 +90,7 @@ public class ContinuationDeltaAggregator {
 	}
 
 	public void aggregate(int maxSequenceLength) {
-		IOHelper.strongLog("aggregating continuation and delta values of "
+		IOHelper.strongLog("aggregating continuation and discount values of "
 				+ this.directory + " into " + this.outputDirectory);
 		IOHelper.strongLog("DELETE TEMP FILES IS: "
 				+ Config.get().deleteTempFiles);
@@ -106,8 +106,10 @@ public class ContinuationDeltaAggregator {
 		}
 		// count absolute files
 		GLMCounter glmc = new GLMCounter(this.directory, "absolute",
-				"count-absolute");
-		glmc.countAbsolute();
+				"counts-absolute");
+		glmc.countAbsolute(1);
+		glmc = new GLMCounter(this.directory, "aggregate", "counts-aggregate");
+		glmc.countAbsolute(2);
 		// remove files that have been aggregated
 		if (Config.get().deleteTempFiles) {
 			for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
@@ -165,18 +167,18 @@ public class ContinuationDeltaAggregator {
 			this.continationFileExists = false;
 		}
 
-		File deltaFile = new File(this.directory + "absolute/"
-				+ this.binaryDeltaFormat + "/" + currentFileName + "."
-				+ this.binaryDeltaFormat);
+		File discountFile = new File(this.directory + "absolute/"
+				+ this.binaryDiscountFormat + "/" + currentFileName + "."
+				+ this.binaryDiscountFormat);
 
-		// handle case where deltaFile doesn't exist
-		if (deltaFile.exists()) {
-			this.deltaReader = IOHelper.openReadFile(deltaFile
+		// handle case where discountFile doesn't exist
+		if (discountFile.exists()) {
+			this.discountReader = IOHelper.openReadFile(discountFile
 					.getAbsolutePath());
-			this.deltaFileExists = true;
+			this.discountFileExists = true;
 		} else {
-			this.currentDeltaCount = 0;
-			this.deltaFileExists = false;
+			this.currentDiscountCount = 0;
+			this.discountFileExists = false;
 		}
 		new File(this.outputDirectory + binaryTargetFormat).mkdir();
 		// open target writer
@@ -192,14 +194,14 @@ public class ContinuationDeltaAggregator {
 			if (this.continationFileExists) {
 				this.continuationReader.close();
 			}
-			if (this.deltaFileExists) {
-				this.deltaReader.close();
+			if (this.discountFileExists) {
+				this.discountReader.close();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		this.currentContinuationCount = 0;
-		this.currentDeltaCount = 0;
+		this.currentDiscountCount = 0;
 		this.currentTargetCount = 0;
 	}
 
@@ -229,13 +231,13 @@ public class ContinuationDeltaAggregator {
 		IOHelper.log("aggregating " + sequenceBinary);
 		this.binaryTargetFormat = sequenceBinary;
 		this.binaryContinuationFormat = "1" + this.binaryTargetFormat;
-		this.binaryDeltaFormat = this.binaryTargetFormat + "1";
+		this.binaryDiscountFormat = this.binaryTargetFormat + "1";
 
-		// build the union of the continuation and delta directory
+		// build the union of the continuation and discount directory
 		File[] continuationFiles = new File(this.directory + "continuation/"
 				+ this.binaryContinuationFormat).listFiles();
-		File[] deltaFiles = new File(this.directory + "absolute/"
-				+ this.binaryDeltaFormat).listFiles();
+		File[] discountFiles = new File(this.directory + "absolute/"
+				+ this.binaryDiscountFormat).listFiles();
 		HashSet<String> targetFiles = new HashSet<String>();
 		for (File file : continuationFiles) {
 			String fileHead = file.getName().split("\\.")[0];
@@ -243,7 +245,7 @@ public class ContinuationDeltaAggregator {
 				targetFiles.add(fileHead);
 			}
 		}
-		for (File file : deltaFiles) {
+		for (File file : discountFiles) {
 			String fileHead = file.getName().split("\\.")[0];
 			if (!targetFiles.contains(fileHead)) {
 				targetFiles.add(fileHead);
@@ -253,26 +255,27 @@ public class ContinuationDeltaAggregator {
 		for (String targetFile : targetFiles) {
 			this.initialize(this.binaryTargetFormat, targetFile);
 
-			// initialize currentContinuation, currentDelta, and counts
+			// initialize currentContinuation, currentDiscount, and counts
 			this.currentTarget = null;
 			this.currentContinuationCount = 0;
-			this.currentDeltaCount = 0;
+			this.currentDiscountCount = 0;
 			this.getNextContinuation();
-			this.getNextDelta();
+			this.getNextDiscount();
 
 			// go on until done with both files
-			while (this.hasNextContinuation || this.hasNextDelta) {
+			while (this.hasNextContinuation || this.hasNextDiscount) {
 				// go on as long both files contain words
 				while (true) {
-					if (this.hasNextContinuation && this.hasNextDelta) {
+					if (this.hasNextContinuation && this.hasNextDiscount) {
 						if (this.currentTarget == null) {
 							// set target as smallest value
-							if (this.nextContinuation.compareTo(this.nextDelta) < 0) {
+							if (this.nextContinuation
+									.compareTo(this.nextDiscount) < 0) {
 								// continuation is smaller
 								this.currentTarget = this.nextContinuation;
 							} else {
-								// delta is smaller or equal
-								this.currentTarget = this.nextDelta;
+								// discount is smaller or equal
+								this.currentTarget = this.nextDiscount;
 							}
 						}
 
@@ -282,9 +285,9 @@ public class ContinuationDeltaAggregator {
 							continue;
 						}
 
-						if (this.nextDelta.compareTo(this.currentTarget) == 0) {
-							this.currentDeltaCount++;
-							this.getNextDelta();
+						if (this.nextDiscount.compareTo(this.currentTarget) == 0) {
+							this.currentDiscountCount++;
+							this.getNextDiscount();
 							continue;
 						}
 						// print target
@@ -307,22 +310,22 @@ public class ContinuationDeltaAggregator {
 						this.writeTarget();
 					}
 				}
-				// only delta left
-				if (this.hasNextDelta) {
+				// only discount left
+				if (this.hasNextDiscount) {
 					if (this.currentTarget == null) {
 						// set target
-						this.currentTarget = this.nextDelta;
+						this.currentTarget = this.nextDiscount;
 					}
-					if (this.nextDelta.compareTo(this.currentTarget) == 0) {
-						this.currentDeltaCount++;
-						this.getNextDelta();
+					if (this.nextDiscount.compareTo(this.currentTarget) == 0) {
+						this.currentDiscountCount++;
+						this.getNextDiscount();
 					} else {
 						// print target
 						this.writeTarget();
 					}
 				}
 
-				if (!this.hasNextContinuation && !this.hasNextDelta) {
+				if (!this.hasNextContinuation && !this.hasNextDiscount) {
 					this.writeTarget();
 					this.reset();
 				}
@@ -350,19 +353,19 @@ public class ContinuationDeltaAggregator {
 		}
 	}
 
-	private void getNextDelta() {
+	private void getNextDiscount() {
 		try {
-			if (!this.deltaFileExists
-					|| (this.nextDelta = this.deltaReader.readLine()) == null) {
-				this.hasNextDelta = false;
+			if (!this.discountFileExists
+					|| (this.nextDiscount = this.discountReader.readLine()) == null) {
+				this.hasNextDiscount = false;
 			} else {
-				String[] lineSplit = this.nextDelta.split("\t");
-				this.nextDelta = "";
+				String[] lineSplit = this.nextDiscount.split("\t");
+				this.nextDiscount = "";
 				// remove last word and count
 				for (int i = 0; i < lineSplit.length - 2; i++) {
-					this.nextDelta += lineSplit[i] + "\t";
+					this.nextDiscount += lineSplit[i] + "\t";
 				}
-				this.hasNextDelta = true;
+				this.hasNextDiscount = true;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -374,12 +377,12 @@ public class ContinuationDeltaAggregator {
 		try {
 			this.targetWriter.write(this.currentTarget
 					+ this.currentContinuationCount + "\t"
-					+ this.currentDeltaCount + "\n");
+					+ this.currentDiscountCount + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		this.currentContinuationCount = 0;
-		this.currentDeltaCount = 0;
+		this.currentDiscountCount = 0;
 		this.currentTarget = null;
 	}
 }
