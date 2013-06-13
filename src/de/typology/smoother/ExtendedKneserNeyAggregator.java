@@ -19,6 +19,8 @@ public class ExtendedKneserNeyAggregator {
 	// directories for absolute and aggregate glms
 	protected String absoluteDirectory;
 	protected String aggregateDirectory;
+	protected String countAbsoluteDirectory;
+	protected String countAaggregateDirectory;
 
 	// output directory
 	protected String outputDirectory;

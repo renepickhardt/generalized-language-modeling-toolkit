@@ -72,7 +72,6 @@ public class Config extends Properties {
 	public int maxCountDivider;
 	public int minCountPerFile;
 	public int modelLength;
-	public int GLMType;
 
 	public int numberOfQueries;
 
