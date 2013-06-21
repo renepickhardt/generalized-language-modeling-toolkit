@@ -181,6 +181,7 @@ public class IndexBuilder {
 		// count total number of lines
 		int lineCount = 0;
 		try {
+			System.out.println(indexPath);
 			BufferedReader br = IOHelper.openReadFile(indexPath,
 					1024 * 1024 * 8);
 			while (br.readLine() != null) {

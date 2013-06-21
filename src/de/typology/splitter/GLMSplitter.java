@@ -81,9 +81,9 @@ public class GLMSplitter extends Splitter {
 				maxSequenceLength); sequenceDecimal++) {
 			// optional: leave out even sequences since they don't contain a
 			// target
-			// if (sequenceDecimal % 2 == 0) {
-			// continue;
-			// }
+			if (sequenceDecimal % 2 == 0) {
+				continue;
+			}
 			this.split(sequenceDecimal);
 		}
 	}

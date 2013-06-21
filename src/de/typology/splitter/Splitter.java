@@ -23,7 +23,7 @@ public abstract class Splitter {
 
 	private SecondLevelSplitter secondLevelSplitter;
 	private Aggregator aggregator;
-	private Sorter sorter;
+	protected Sorter sorter;
 	private CountNormalizer countNormalizer;
 
 	protected HashMap<Integer, BufferedWriter> writers;

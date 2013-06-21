@@ -11,6 +11,7 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
+@Deprecated
 public class GLMZeroBuilder {
 	protected File directory;
 	protected File outputDirectory;
@@ -21,6 +22,7 @@ public class GLMZeroBuilder {
 	protected BufferedWriter writer;
 
 	/**
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {

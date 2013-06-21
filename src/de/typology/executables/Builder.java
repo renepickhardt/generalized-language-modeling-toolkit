@@ -1,10 +1,8 @@
 package de.typology.executables;
 
-import de.typology.smoother.ContinuationDiscountAggregator;
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
-import de.typology.splitter.GLMZeroBuilder;
 import de.typology.splitter.IndexBuilder;
 import de.typology.splitter.NGramSplitter;
 import de.typology.splitter.NGramSplitterWithCount;
@@ -56,8 +54,8 @@ public class Builder {
 		}
 		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
-					"absolute", "continuation", "index.txt", "stats.txt",
-					"training.txt", false);
+					"absolute", "continuation-unaggregated", "index.txt",
+					"stats.txt", "training.txt", false);
 			try {
 				cs.split(Config.get().modelLength);
 			} catch (Exception e) {
@@ -81,16 +79,21 @@ public class Builder {
 				IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
 			}
 		}
-		if (Config.get().buildZeroGLM) {
-			GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
-					+ "continuation/", "absolute");
-			glmzb.build();
-		}
-		if (Config.get().aggregateContinuationDelta) {
-			ContinuationDiscountAggregator cda = new ContinuationDiscountAggregator(
-					outputPath, "aggregate");
-			cda.aggregate(Config.get().modelLength);
-		}
+		// if (Config.get().buildZeroGLM) {
+		// GLMZeroBuilder glmzb = new GLMZeroBuilder(outputPath
+		// + "continuation/", "absolute");
+		// glmzb.build();
+		// }
+
+		// if (Config.get().aggregateContinuation) {
+		// ContinuationAggregator ca = new ContinuationAggregator(outputPath,
+		// "continuation-unaggregated", "continuation");
+		// ca.aggregate(Config.get().modelLength);
+		// // ContinuationDiscountAggregator cda = new
+		// // ContinuationDiscountAggregator(
+		// // outputPath, "aggregate");
+		// // cda.aggregate(Config.get().modelLength);
+		// }
 	}
 
 	public void buildFromNGrams(String outputPath) {

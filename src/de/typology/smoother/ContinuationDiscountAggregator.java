@@ -13,6 +13,7 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
+@Deprecated
 public class ContinuationDiscountAggregator {
 
 	/**
@@ -79,7 +80,7 @@ public class ContinuationDiscountAggregator {
 			String outputDirectoryName) {
 		this.directory = directory;
 		this.tempOutputDirectory = new File(directory + outputDirectoryName
-				+ "-unmerged/");
+				+ "-unsorted/");
 		// delete old output directory
 		try {
 			FileUtils.deleteDirectory(this.tempOutputDirectory);
@@ -103,12 +104,12 @@ public class ContinuationDiscountAggregator {
 			this.aggregateFiles(sequenceBinary);
 			// cs.sortSecondCloumnDirectory(this.outputDirectory +
 			// sequenceBinary,
-			String sequenceBinaryMod = sequenceBinary.replaceFirst("1", "0");
-			this.aggregateFiles(sequenceBinaryMod);
-			// cs.sortSecondCloumnDirectory(this.outputDirectory
-			// + sequenceBinaryMod, "_split", "");
-			this.mergeSmallestType(this.tempOutputDirectory + "/"
-					+ sequenceBinaryMod);
+			// String sequenceBinaryMod = sequenceBinary.replaceFirst("1", "0");
+			// this.aggregateFiles(sequenceBinaryMod);
+			// // cs.sortSecondCloumnDirectory(this.outputDirectory
+			// // + sequenceBinaryMod, "_split", "");
+			// this.mergeSmallestType(this.tempOutputDirectory + "/"
+			// + sequenceBinaryMod);
 		}
 		// merge and sort aggregate-unmerged
 		ContinuationSplitter csp = new ContinuationSplitter(this.directory,
@@ -126,19 +127,19 @@ public class ContinuationDiscountAggregator {
 			for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
 					maxSequenceLength - 1); sequenceDecimal++) {
 				String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-				String sequenceBinaryMod = sequenceBinary
-						.replaceFirst("1", "0");
+				// String sequenceBinaryMod = sequenceBinary
+				// .replaceFirst("1", "0");
 				if (Config.get().deleteTempFiles) {
 					if (sequenceBinary.length() != 1) {
 						try {
 							FileUtils.deleteDirectory(new File(this.directory
 									+ "absolute/" + sequenceBinary + "/"));
 							//
-							if (Integer.bitCount(sequenceDecimal) != 1) {
-								FileUtils.deleteDirectory(new File(
-										this.directory + "absolute/"
-												+ sequenceBinaryMod + "/"));
-							}
+							// if (Integer.bitCount(sequenceDecimal) != 1) {
+							// FileUtils.deleteDirectory(new File(
+							// this.directory + "absolute/"
+							// + sequenceBinaryMod + "/"));
+							// }
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

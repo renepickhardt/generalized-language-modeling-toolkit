@@ -37,7 +37,7 @@ public class ContinuationSplitter extends Splitter {
 	private String inputDirectoryName;
 	private String outputDirectoryName;
 	private boolean deleteInputFiles;
-
+	private ContinuationAggregator continuationAggregator;
 	private ContinuationSorter continuationSorter;
 
 	public ContinuationSplitter(String directory, String inputDirectoryName,
@@ -55,6 +55,10 @@ public class ContinuationSplitter extends Splitter {
 			e.printStackTrace();
 		}
 		this.continuationSorter = new ContinuationSorter();
+		this.continuationAggregator = new ContinuationAggregator(
+				this.directory, this.outputDirectoryName,
+				this.outputDirectoryName.replace("-unaggregated", ""),
+				indexName);
 	}
 
 	@Override
@@ -134,9 +138,9 @@ public class ContinuationSplitter extends Splitter {
 
 			// optional: leave out even sequences since they don't contain a
 			// target
-			// if (sequenceDecimal % 2 == 0) {
-			// continue;
-			// }
+			if (sequenceDecimal % 2 == 0) {
+				continue;
+			}
 
 			// convert sequence type into binary representation
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
@@ -180,6 +184,9 @@ public class ContinuationSplitter extends Splitter {
 				e.printStackTrace();
 			}
 		}
+		this.continuationAggregator.aggregate(5);
+		// this.sorter.sortCountDirectory(this.directory+this.outputDirectoryName,
+		// inputExtension, outputExtension)
 	}
 
 	@Override
