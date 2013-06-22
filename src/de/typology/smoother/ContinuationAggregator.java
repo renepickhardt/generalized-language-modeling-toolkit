@@ -111,8 +111,6 @@ public class ContinuationAggregator {
 			String lineSplit[] = null;
 			String currentSequence = null;
 			long currentCount = 0;
-			String currentLastWord = null;
-			String[] tempSplit;
 			try {
 				while ((line = this.reader.readLine()) != null) {
 					lineSplit = line.split("\t");
@@ -137,9 +135,7 @@ public class ContinuationAggregator {
 					}
 				}
 				if (currentSequence != null) {
-					tempSplit = currentSequence.split("\t");
-					currentLastWord = tempSplit[tempSplit.length - 1];
-					this.getWriter(currentLastWord).write(
+					this.getWriter(currentSequence.split("\t")[0]).write(
 							currentSequence + currentCount + "\n");
 				}
 				this.reader.close();

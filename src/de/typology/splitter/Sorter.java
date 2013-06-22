@@ -71,7 +71,7 @@ public class Sorter {
 			}
 
 			sortCommand += "--output=" + outputPath + " " + inputPath;
-
+			System.out.println(sortCommand);
 			// execute command
 			SystemHelper.runUnixCommand(sortCommand);
 
