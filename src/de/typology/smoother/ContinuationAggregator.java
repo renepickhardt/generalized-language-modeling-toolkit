@@ -57,19 +57,21 @@ public class ContinuationAggregator {
 		IOHelper.strongLog("DELETE TEMP FILES IS: "
 				+ Config.get().deleteTempFiles);
 
-		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
-				maxSequenceLength - 1); sequenceDecimal++) {
-			// optional: leave out even sequences since they don't contain a
+		// leave out unigrams
+		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
+				maxSequenceLength); sequenceDecimal++) {
+			// leave out even sequences since they don't contain a
 			// target
 			if (sequenceDecimal % 2 == 0) {
 				continue;
 			}
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
 			this.aggregateFiles(sequenceBinary);
+			String outputSequenceBinary = sequenceBinary.replaceFirst("1", "_");
 			// merge and sort current directory
 			this.sorter.sortCountDirectory(
 					this.outputDirectory.getAbsolutePath() + "/"
-							+ sequenceBinary, "_split", "");
+							+ outputSequenceBinary, "-split", "");
 		}
 
 		// // count absolute files
@@ -93,12 +95,12 @@ public class ContinuationAggregator {
 	}
 
 	private void aggregateFiles(String sequenceBinary) {
-		String onePlusSequenceBinary = "1" + sequenceBinary;
-		IOHelper.strongLog("aggregate " + onePlusSequenceBinary);
+		IOHelper.strongLog("aggregate " + sequenceBinary);
+		String outputSequenceBinary = sequenceBinary.replaceFirst("1", "_");
 		File currentInputDirectory = new File(this.inputDirectory + "/"
-				+ onePlusSequenceBinary);
-		File currentOutputDirectory = new File(this.outputDirectory + "/"
 				+ sequenceBinary);
+		File currentOutputDirectory = new File(this.outputDirectory + "/"
+				+ outputSequenceBinary);
 		currentOutputDirectory.mkdir();
 		this.initialize(sequenceBinary);
 
@@ -109,6 +111,8 @@ public class ContinuationAggregator {
 			String lineSplit[] = null;
 			String currentSequence = null;
 			long currentCount = 0;
+			String currentLastWord = null;
+			String[] tempSplit;
 			try {
 				while ((line = this.reader.readLine()) != null) {
 					lineSplit = line.split("\t");
@@ -124,15 +128,18 @@ public class ContinuationAggregator {
 						if (tempSequence.equals(currentSequence)) {
 							currentCount++;
 						} else {
-							this.getWriter(lineSplit[1]).write(
-									currentSequence + currentCount + "\n");
+							this.getWriter(currentSequence.split("\t")[0])
+									.write(currentSequence + currentCount
+											+ "\n");
 							currentSequence = tempSequence;
 							currentCount = 1;
 						}
 					}
 				}
 				if (currentSequence != null) {
-					this.getWriter(lineSplit[1]).write(
+					tempSplit = currentSequence.split("\t");
+					currentLastWord = tempSplit[tempSplit.length - 1];
+					this.getWriter(currentLastWord).write(
 							currentSequence + currentCount + "\n");
 				}
 				this.reader.close();
@@ -145,8 +152,9 @@ public class ContinuationAggregator {
 	}
 
 	protected void initialize(String extension) {
+		String outputExtension = extension.replaceFirst("1", "_");
 		File currentOutputDirectory = new File(
-				this.outputDirectory.getAbsoluteFile() + "/" + extension);
+				this.outputDirectory.getAbsoluteFile() + "/" + outputExtension);
 		if (currentOutputDirectory.exists()) {
 			try {
 				FileUtils.deleteDirectory(currentOutputDirectory);
@@ -158,13 +166,11 @@ public class ContinuationAggregator {
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
-			this.writers.put(
-					fileCount,
-					IOHelper.openWriteFile(
-							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "_split",
-							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxCountDivider));
+			this.writers.put(fileCount, IOHelper.openWriteFile(
+					currentOutputDirectory + "/" + fileCount + "."
+							+ outputExtension + "-split",
+					Config.get().memoryLimitForWritingFiles
+							/ Config.get().maxCountDivider));
 		}
 	}
 

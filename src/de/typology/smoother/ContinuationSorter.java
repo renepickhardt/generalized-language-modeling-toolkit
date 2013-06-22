@@ -37,10 +37,9 @@ public class ContinuationSorter extends Sorter {
 			File inputFile = new File(inputPath);
 			String outputPath = inputPath.replace(inputExtension,
 					outputExtension);
-
 			// build sort command
 			int columnNumber = Integer.bitCount(Integer.parseInt(inputFile
-					.getName().split("\\.")[1].split("_")[0], 2));
+					.getName().split("\\.")[1].split("-")[0], 2));
 			// LANG=C to sort utf-8 correctly
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 

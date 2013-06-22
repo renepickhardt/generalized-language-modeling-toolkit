@@ -11,7 +11,6 @@ public class ExtendedKneserNeyAggregator {
 	private double d1;
 	private double d2;
 	private double d3plus;
-	private String aggregatedFile;
 
 	// base directory of corpus data, e.g.: .../wiki/de/
 	protected String directory;

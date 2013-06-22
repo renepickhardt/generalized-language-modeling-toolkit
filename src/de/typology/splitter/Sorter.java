@@ -61,8 +61,9 @@ public class Sorter {
 					outputExtension);
 
 			// build sort command
-			int columnNumber = Integer.bitCount(Integer.parseInt(inputFile
-					.getName().split("\\.")[1].split("_")[0], 2));
+			int columnNumber = Integer.bitCount(Integer.parseInt(
+					inputFile.getName().replaceAll("_", "0").split("\\.")[1]
+							.split("-")[0], 2));
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
 			for (int column = 1; column <= columnNumber; column++) {
@@ -79,4 +80,41 @@ public class Sorter {
 		// note: when sorting an empty file, new file contains "null1"
 	}
 
+	public void sortRevertCountDirectory(String inputPath,
+			String inputExtension, String outputExtension) {
+		File[] files = new File(inputPath).listFiles();
+		for (File file : files) {
+			this.sortRevertCountFile(file.getAbsolutePath(), inputExtension,
+					outputExtension);
+		}
+	}
+
+	public void sortRevertCountFile(String inputPath, String inputExtension,
+			String outputExtension) {
+		if (inputPath.endsWith(inputExtension)) {
+			// set output file name
+			File inputFile = new File(inputPath);
+			String outputPath = inputPath.replace(inputExtension,
+					outputExtension);
+
+			// build sort command
+			int columnNumber;
+			columnNumber = Integer.bitCount(Integer.parseInt(inputFile
+					.getName().split("\\.")[1].split("-")[0], 2));
+			String sortCommand = "LANG=C sort --buffer-size=1G ";
+
+			// don't sort for count
+			for (int column = columnNumber; column > 0; column--) {
+				sortCommand += "--key=" + column + "," + column + " ";
+			}
+
+			sortCommand += "--output=" + outputPath + " " + inputPath;
+
+			// execute command
+			SystemHelper.runUnixCommand(sortCommand);
+
+			inputFile.delete();
+		}
+		// note: when sorting an empty file, new file contains "null1"
+	}
 }

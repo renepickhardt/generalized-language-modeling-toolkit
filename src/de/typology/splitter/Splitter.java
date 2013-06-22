@@ -47,7 +47,7 @@ public abstract class Splitter {
 		if (!indexName.isEmpty()) {
 			this.wordIndex = ib.deserializeIndex(this.indexPath);
 		}
-
+		// TODO:remove this normalized stuff...
 		if (outputDirectoryName.length() == 0) {
 			this.outputDirectory = new File(this.directory + "/" + "normalized");
 		} else {
@@ -89,7 +89,40 @@ public abstract class Splitter {
 					fileCount,
 					IOHelper.openWriteFile(
 							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "_split",
+									+ extension + "-split",
+							Config.get().memoryLimitForWritingFiles
+									/ Config.get().maxCountDivider));
+		}
+	}
+
+	/**
+	 * Initializing the writers
+	 * 
+	 * int sequenceLength is not used but necessary for overriding the method
+	 * later with initializingWithLength()
+	 * 
+	 * @param extension
+	 * @param sequenceLength
+	 */
+	protected void initializeWriters(String extension) {
+		File currentOutputDirectory = new File(
+				this.outputDirectory.getAbsoluteFile() + "/" + extension);
+		if (currentOutputDirectory.exists()) {
+			try {
+				FileUtils.deleteDirectory(currentOutputDirectory);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		currentOutputDirectory.mkdir();
+		this.writers = new HashMap<Integer, BufferedWriter>();
+		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+			this.writers.put(
+					fileCount,
+					IOHelper.openWriteFile(
+							currentOutputDirectory + "/" + fileCount + "."
+									+ extension + "-split",
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxCountDivider));
 		}
@@ -113,7 +146,7 @@ public abstract class Splitter {
 					fileCount,
 					IOHelper.openWriteFile(
 							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "_split",
+									+ extension + "-split",
 							Config.get().memoryLimitForWritingFiles
 									/ Config.get().maxCountDivider));
 		}
@@ -210,20 +243,20 @@ public abstract class Splitter {
 				+ "/" + normalizedNGrams.getName());
 		absoluteNGrams.mkdirs();
 		this.secondLevelSplitter.secondLevelSplitDirectory(this.indexPath,
-				normalizedNGrams.getAbsolutePath(), "_split", "_split");
+				normalizedNGrams.getAbsolutePath(), "-split", "-split");
 		this.sorter.sortSplitDirectory(normalizedNGrams.getAbsolutePath(),
-				"_split", "_splitSort");
+				"-split", "-splitSort");
 		this.aggregator.aggregateDirectory(normalizedNGrams.getAbsolutePath(),
-				"_splitSort", "_aggregate");
+				"-splitSort", "-aggregate");
 		this.sorter.sortCountDirectory(normalizedNGrams.getAbsolutePath(),
-				"_aggregate", "_countSort");
+				"-aggregate", "-countSort");
 		try {
 			FileUtils.copyDirectory(normalizedNGrams, absoluteNGrams);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		this.countNormalizer.normalizeDirectory(this.statsPath,
-				normalizedNGrams.getAbsolutePath(), "_countSort", "");
+				normalizedNGrams.getAbsolutePath(), "-countSort", "");
 
 		this.secondLevelSplitter.mergeDirectory(normalizedNGrams
 				.getAbsolutePath());
@@ -231,7 +264,7 @@ public abstract class Splitter {
 
 		// rename absoulte ngram files
 		for (File file : absoluteNGrams.listFiles()) {
-			file.renameTo(new File(file.getAbsolutePath().replace("_countSort",
+			file.renameTo(new File(file.getAbsolutePath().replace("-countSort",
 					"")));
 		}
 		this.secondLevelSplitter.mergeDirectory(absoluteNGrams

@@ -44,6 +44,8 @@ public class Config extends Properties {
 	public boolean buildContinuationGLM;
 	public boolean buildTypoEdges;
 	public boolean aggregateContinuation;
+	public boolean revertAbsolute;
+	public boolean aggregateN;
 
 	public boolean deleteTempFiles;
 
