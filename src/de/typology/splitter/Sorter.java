@@ -109,7 +109,6 @@ public class Sorter {
 			}
 
 			sortCommand += "--output=" + outputPath + " " + inputPath;
-
 			// execute command
 			SystemHelper.runUnixCommand(sortCommand);
 

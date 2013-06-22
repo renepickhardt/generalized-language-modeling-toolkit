@@ -2,7 +2,6 @@ package de.typology.executables;
 
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.smoother.NAggregator;
-import de.typology.smoother.RevertSortSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
@@ -81,22 +80,26 @@ public class Builder {
 				IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
 			}
 		}
-		if (Config.get().revertAbsoluteContinuation) {
-			RevertSortSplitter arsAbsolute = new RevertSortSplitter(outputPath,
-					"absolute", "absolute-rev-sort", indexFileName,
-					statsFileName, trainingFileName);
-			arsAbsolute.split(Config.get().modelLength);
-			RevertSortSplitter arsContinuation = new RevertSortSplitter(
-					outputPath, "continuation", "continuation-rev-sort",
-					indexFileName, statsFileName, trainingFileName);
-			arsContinuation.split(Config.get().modelLength);
-		}
 
 		if (Config.get().aggregateN) {
 			NAggregator na = new NAggregator(outputPath, "absolute",
-					"continuation-rev-sort", "ns-rev-sort");
+					"continuation", "ns");
 			na.aggregate(Config.get().modelLength);
 		}
+		// if (Config.get().revertSort) {
+		// RevertSortSplitter arsAbsolute = new RevertSortSplitter(outputPath,
+		// "absolute", "absolute-rev-sort", indexFileName,
+		// statsFileName, trainingFileName);
+		// arsAbsolute.split(Config.get().modelLength);
+		// RevertSortSplitter arsContinuation = new RevertSortSplitter(
+		// outputPath, "continuation", "continuation-rev-sort",
+		// indexFileName, statsFileName, trainingFileName);
+		// arsContinuation.split(Config.get().modelLength);
+		// RevertSortSplitter arsNs = new RevertSortSplitter(outputPath, "ns",
+		// "ns-rev-sort", indexFileName, statsFileName,
+		// trainingFileName);
+		// arsNs.split(Config.get().modelLength);
+		// }
 	}
 
 	public void buildFromNGrams(String outputPath) {

@@ -19,7 +19,7 @@ public class NAggregator {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		NAggregator na = new NAggregator(outputDirectory, "absolute",
-				"continuation-rev-sort", "ns-rev-sort");
+				"continuation", "ns");
 		na.aggregate(5);
 	}
 
