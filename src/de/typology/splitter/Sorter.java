@@ -71,7 +71,6 @@ public class Sorter {
 			}
 
 			sortCommand += "--output=" + outputPath + " " + inputPath;
-			System.out.println(sortCommand);
 			// execute command
 			SystemHelper.runUnixCommand(sortCommand);
 
@@ -99,8 +98,9 @@ public class Sorter {
 
 			// build sort command
 			int columnNumber;
-			columnNumber = Integer.bitCount(Integer.parseInt(inputFile
-					.getName().split("\\.")[1].split("-")[0], 2));
+			columnNumber = Integer.bitCount(Integer.parseInt(
+					inputFile.getName().replaceAll("_", "0").split("\\.")[1]
+							.split("-")[0], 2));
 			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
 			// don't sort for count

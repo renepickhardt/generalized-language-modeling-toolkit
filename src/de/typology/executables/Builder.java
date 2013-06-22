@@ -1,8 +1,8 @@
 package de.typology.executables;
 
-import de.typology.smoother.AbsoluteRevertSortSplitter;
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.smoother.NAggregator;
+import de.typology.smoother.RevertSortSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
@@ -81,11 +81,15 @@ public class Builder {
 				IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
 			}
 		}
-		if (Config.get().revertAbsolute) {
-			AbsoluteRevertSortSplitter ars = new AbsoluteRevertSortSplitter(
-					outputPath, "absolute", "absolute-rev-sort", indexFileName,
+		if (Config.get().revertAbsoluteContinuation) {
+			RevertSortSplitter arsAbsolute = new RevertSortSplitter(outputPath,
+					"absolute", "absolute-rev-sort", indexFileName,
 					statsFileName, trainingFileName);
-			ars.split(Config.get().modelLength);
+			arsAbsolute.split(Config.get().modelLength);
+			RevertSortSplitter arsContinuation = new RevertSortSplitter(
+					outputPath, "continuation", "continuation-rev-sort",
+					indexFileName, statsFileName, trainingFileName);
+			arsContinuation.split(Config.get().modelLength);
 		}
 
 		if (Config.get().aggregateN) {
