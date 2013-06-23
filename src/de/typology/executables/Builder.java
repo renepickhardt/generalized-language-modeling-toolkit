@@ -2,7 +2,6 @@ package de.typology.executables;
 
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.smoother.NAggregator;
-import de.typology.smoother.RevertSortSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
@@ -100,10 +99,10 @@ public class Builder {
 			// outputPath, "continuation", "continuation-rev-sort",
 			// indexFileName, statsFileName, trainingFileName);
 			// arsContinuation.split(Config.get().modelLength);
-			RevertSortSplitter arsNs = new RevertSortSplitter(outputPath,
-					"ns-absolute", "ns-absolute-rev-sort", indexFileName,
-					statsFileName, trainingFileName);
-			arsNs.split(Config.get().modelLength);
+			// RevertSortSplitter arsNs = new RevertSortSplitter(outputPath,
+			// "ns-absolute", "ns-absolute-rev-sort", indexFileName,
+			// statsFileName, trainingFileName);
+			// arsNs.split(Config.get().modelLength);
 		}
 	}
 

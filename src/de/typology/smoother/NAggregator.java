@@ -86,7 +86,7 @@ public class NAggregator {
 			int currentCount = 0;
 
 			// format of ns: 0=N1+,1=N1,2=N2,3=N3+
-			int[] ns = new int[4];
+			long[] ns = new long[4];
 			try {
 
 				while ((line = this.reader.readLine()) != null) {
@@ -111,7 +111,7 @@ public class NAggregator {
 								this.writer.write(ns[i] + "\t");
 							}
 							this.writer.write(ns[ns.length - 1] + "\n");
-							ns = new int[4];
+							ns = new long[4];
 							currentSequence = tempSequence;
 							this.putIntoNs(currentCount, ns);
 						}
@@ -133,7 +133,7 @@ public class NAggregator {
 		}
 	}
 
-	private void putIntoNs(int currentCount, int[] ns) {
+	private void putIntoNs(int currentCount, long[] ns) {
 		ns[0] = ns[0] + currentCount;
 		switch (currentCount) {
 		case 1:

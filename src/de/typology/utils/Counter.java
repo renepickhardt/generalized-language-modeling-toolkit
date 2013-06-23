@@ -64,15 +64,23 @@ public class Counter {
 		return 0;
 	}
 
+	private static long currentCountForDirectory;
+	private static String directoryName;
+
 	public static long countColumnCountsInDirectory(int columnNumberStartZero,
 			String directoryName) {
-		long totalCount = 0;
-		System.out.println(directoryName);
-		for (File file : new File(directoryName).listFiles()) {
-			totalCount += countColumnCounts(columnNumberStartZero,
-					file.getAbsolutePath());
+		if (directoryName.equals(Counter.directoryName)) {
+			return Counter.currentCountForDirectory;
+		} else {
+			long totalCount = 0;
+			for (File file : new File(directoryName).listFiles()) {
+				totalCount += countColumnCounts(columnNumberStartZero,
+						file.getAbsolutePath());
+			}
+			Counter.currentCountForDirectory = totalCount;
+			Counter.directoryName = directoryName;
+			return totalCount;
 		}
-		return totalCount;
 	}
 
 	// derived from:
