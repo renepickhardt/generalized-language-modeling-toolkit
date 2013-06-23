@@ -76,56 +76,6 @@ public class KneserNeyAggregator {
 		IOHelper.strongLog("calcualting kneser-ney weights for "
 				+ this.directory);
 
-		// // lowest level: length=1
-		// int sequenceDecimal = 1;
-		// String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-		// // divide continuation count from 1 by summed continuation count
-		// // write result at new file folder /kneser-ney (append at row of old
-		// // file)
-		// String continuationSequenceBinary = "_" + sequenceBinary;
-		// String currentContinuationPath = this.continuationDirectory
-		// .getAbsolutePath() + "/" + continuationSequenceBinary;
-		// String currentNPath = this.nDirectory.getAbsolutePath() + "/__/";
-		// File currentOutputDirectory = new File(
-		// this.outputDirectory.getAbsolutePath() + "/" + sequenceBinary);
-		// currentOutputDirectory.mkdir();
-		//
-		// long continuationSum = Counter.countColumnCountsInDirectory(0,
-		// currentNPath);
-		// IOHelper.strongLog("calculating " + sequenceBinary);
-		// System.out.println("continuationSum " + continuationSum);
-		// System.out.println("continuationPath: " + currentContinuationPath);
-		// for (File continuationFile : new File(currentContinuationPath)
-		// .listFiles()) {
-		// String fileName = continuationFile.getName().split("\\.")[0];
-		// this.continuationReader = IOHelper.openReadFile(
-		// continuationFile.getAbsolutePath(),
-		// Config.get().memoryLimitForReadingFiles);
-		// this.writer = IOHelper.openWriteFile(currentOutputDirectory
-		// .getAbsolutePath() + "/" + fileName + "." + sequenceBinary);
-		// String continuationLine;
-		// String[] continuationLineSplit;
-		// try {
-		// try {
-		// while ((continuationLine = this.continuationReader
-		// .readLine()) != null) {
-		// continuationLineSplit = continuationLine.split("\t");
-		// double continuationResult = Double
-		// .parseDouble(continuationLineSplit[1])
-		// / continuationSum;
-		// this.writer.write(continuationLineSplit[0] + "\t"
-		// + continuationResult + "\n");
-		// }
-		// } finally {
-		// this.continuationReader.close();
-		// this.writer.close();
-		// }
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength - 1); sequenceDecimal++) {
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);

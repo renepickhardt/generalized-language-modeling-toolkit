@@ -2,6 +2,7 @@ package de.typology.executables;
 
 import de.typology.smoother.ContinuationSplitter;
 import de.typology.smoother.NAggregator;
+import de.typology.smoother.RevertSortSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
@@ -82,24 +83,28 @@ public class Builder {
 		}
 
 		if (Config.get().aggregateN) {
-			NAggregator na = new NAggregator(outputPath, "absolute",
-					"continuation", "ns");
-			na.aggregate(Config.get().modelLength);
+			NAggregator naAbsolute = new NAggregator(outputPath, "absolute",
+					"ns-absolute");
+			naAbsolute.aggregate(Config.get().modelLength);
+			NAggregator naContinuation = new NAggregator(outputPath,
+					"continuation", "ns-continuation");
+			naContinuation.aggregate(Config.get().modelLength);
 		}
-		// if (Config.get().revertSort) {
-		// RevertSortSplitter arsAbsolute = new RevertSortSplitter(outputPath,
-		// "absolute", "absolute-rev-sort", indexFileName,
-		// statsFileName, trainingFileName);
-		// arsAbsolute.split(Config.get().modelLength);
-		// RevertSortSplitter arsContinuation = new RevertSortSplitter(
-		// outputPath, "continuation", "continuation-rev-sort",
-		// indexFileName, statsFileName, trainingFileName);
-		// arsContinuation.split(Config.get().modelLength);
-		// RevertSortSplitter arsNs = new RevertSortSplitter(outputPath, "ns",
-		// "ns-rev-sort", indexFileName, statsFileName,
-		// trainingFileName);
-		// arsNs.split(Config.get().modelLength);
-		// }
+		if (Config.get().revertSort) {
+			// RevertSortSplitter arsAbsolute = new
+			// RevertSortSplitter(outputPath,
+			// "absolute", "absolute-rev-sort", indexFileName,
+			// statsFileName, trainingFileName);
+			// arsAbsolute.split(Config.get().modelLength);
+			// RevertSortSplitter arsContinuation = new RevertSortSplitter(
+			// outputPath, "continuation", "continuation-rev-sort",
+			// indexFileName, statsFileName, trainingFileName);
+			// arsContinuation.split(Config.get().modelLength);
+			RevertSortSplitter arsNs = new RevertSortSplitter(outputPath,
+					"ns-absolute", "ns-absolute-rev-sort", indexFileName,
+					statsFileName, trainingFileName);
+			arsNs.split(Config.get().modelLength);
+		}
 	}
 
 	public void buildFromNGrams(String outputPath) {

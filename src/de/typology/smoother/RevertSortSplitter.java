@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 
@@ -33,8 +32,8 @@ public class RevertSortSplitter extends Splitter {
 	}
 
 	protected String extension;
-	private int filePointer;
-	private File[] inputFiles;
+	// private int filePointer;
+	// private File[] inputFiles;
 	private File inputDirectory;
 
 	public RevertSortSplitter(String directory, String inputDirectoryName,
@@ -59,35 +58,35 @@ public class RevertSortSplitter extends Splitter {
 
 	}
 
-	@Override
-	protected void initialize(String extension) {
-
-		this.filePointer = 0;
-		this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
-				.getAbsolutePath());
-
-		File currentOutputDirectory = new File(
-				this.outputDirectory.getAbsolutePath() + "/" + extension);
-
-		// delete old files
-		try {
-			FileUtils.deleteDirectory(currentOutputDirectory);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		currentOutputDirectory.mkdirs();
-		this.writers = new HashMap<Integer, BufferedWriter>();
-		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
-			this.writers.put(
-					fileCount,
-					IOHelper.openWriteFile(
-							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "-split",
-							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxCountDivider));
-		}
-	}
+	// @Override
+	// protected void initialize(String extension) {
+	//
+	// this.filePointer = 0;
+	// this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
+	// .getAbsolutePath());
+	//
+	// File currentOutputDirectory = new File(
+	// this.outputDirectory.getAbsolutePath() + "/" + extension);
+	//
+	// // delete old files
+	// try {
+	// FileUtils.deleteDirectory(currentOutputDirectory);
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// currentOutputDirectory.mkdirs();
+	// this.writers = new HashMap<Integer, BufferedWriter>();
+	// for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
+	// this.writers.put(
+	// fileCount,
+	// IOHelper.openWriteFile(
+	// currentOutputDirectory + "/" + fileCount + "."
+	// + extension + "-split",
+	// Config.get().memoryLimitForWritingFiles
+	// / Config.get().maxCountDivider));
+	// }
+	// }
 
 	@Override
 	public void split(int maxSequenceLength) {
@@ -101,6 +100,8 @@ public class RevertSortSplitter extends Splitter {
 
 			String currentInputDirectory = this.inputDirectory + "/"
 					+ this.extension;
+			int columnNumber = Integer.bitCount(Integer.parseInt(
+					this.extension.replaceAll("_", "0"), 2));
 			// iterate over glm files
 			for (File inputFile : new File(currentInputDirectory).listFiles()) {
 				BufferedReader inputReader = IOHelper.openReadFile(
@@ -113,8 +114,10 @@ public class RevertSortSplitter extends Splitter {
 						while ((line = inputReader.readLine()) != null) {
 							lineSplit = line.split("\t");
 							// get writer matching the last word
+
 							BufferedWriter writer = this
-									.getWriter(lineSplit[lineSplit.length - 2]);
+									.getWriter(lineSplit[columnNumber > 0 ? columnNumber - 1
+											: 0]);
 							// write sequence
 							for (int i = 0; i < lineSplit.length - 1; i++) {
 								writer.write(lineSplit[i] + "\t");

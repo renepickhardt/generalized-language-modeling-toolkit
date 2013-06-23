@@ -18,25 +18,24 @@ public class NAggregator {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		NAggregator na = new NAggregator(outputDirectory, "absolute",
-				"continuation", "ns");
-		na.aggregate(5);
+		NAggregator naa = new NAggregator(outputDirectory, "absolute",
+				"ns-absolute");
+		NAggregator nac = new NAggregator(outputDirectory, "continuation",
+				"ns-continuation");
+		naa.aggregate(5);
+		nac.aggregate(5);
 	}
 
 	private String directory;
 	private BufferedReader reader;
-	private File absoluteInputDirectory;
-	private File continuationInputDirectory;
+	private File inputDirectory;
 	private File outputDirectory;
 	private BufferedWriter writer;
 
-	public NAggregator(String directory, String absoluteInputDirectoryName,
-			String continuationInputDirectoryName, String outputDirectoryName) {
+	public NAggregator(String directory, String inputDirectoryName,
+			String outputDirectoryName) {
 		this.directory = directory;
-		this.absoluteInputDirectory = new File(directory
-				+ absoluteInputDirectoryName);
-		this.continuationInputDirectory = new File(directory
-				+ continuationInputDirectoryName);
+		this.inputDirectory = new File(directory + inputDirectoryName);
 		this.outputDirectory = new File(directory + outputDirectoryName);
 		// delete old output directory
 		try {
@@ -53,18 +52,9 @@ public class NAggregator {
 		IOHelper.strongLog("DELETE TEMP FILES IS: "
 				+ Config.get().deleteTempFiles);
 		// leave out unigrams
-		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
-				maxSequenceLength); sequenceDecimal++) {
-			// optional: leave out even sequences since they don't contain a
-			// target
-			if (sequenceDecimal % 2 == 0) {
-				continue;
-			}
-			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-			this.aggregateFiles(this.absoluteInputDirectory, sequenceBinary);
-			this.aggregateFiles(this.continuationInputDirectory,
-					sequenceBinary.replaceFirst("1", "_"));
-			// merge and sort current directory
+		for (File inputFile : this.inputDirectory.listFiles()) {
+			this.aggregateFiles(this.inputDirectory,
+					inputFile.getName().split("\\.")[0]);
 		}
 
 		// delete unaggregated continuation directory
@@ -77,14 +67,12 @@ public class NAggregator {
 	private void aggregateFiles(File inputDirectory, String sequenceBinary) {
 		String sequenceBinaryMinusOne = sequenceBinary.substring(0,
 				sequenceBinary.length() - 1) + "_";
-		System.out.println(sequenceBinary + " " + sequenceBinaryMinusOne);
-		IOHelper.strongLog("calculate N for " + sequenceBinaryMinusOne);
+		IOHelper.strongLog("calculate Ns for " + sequenceBinaryMinusOne);
 		File currentInputDirectory = new File(inputDirectory.getAbsolutePath()
 				+ "/" + sequenceBinary);
 		File currentOutputDirectory = new File(this.outputDirectory + "/"
 				+ sequenceBinaryMinusOne);
 		currentOutputDirectory.mkdir();
-		System.out.println(currentInputDirectory);
 		for (File currentFile : currentInputDirectory.listFiles()) {
 			this.reader = IOHelper.openReadFile(currentFile.getAbsolutePath(),
 					Config.get().memoryLimitForReadingFiles);
