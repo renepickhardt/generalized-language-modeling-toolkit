@@ -1,0 +1,59 @@
+package de.typology.smoother;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+
+import de.typology.utils.IOHelper;
+
+public class SlidingWindowReader {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public SlidingWindowReader(String filePath, int memoryLimitForReadingFiles) {
+		System.out.println(filePath);
+		this.reader = IOHelper.openReadFile(filePath,
+				memoryLimitForReadingFiles);
+	}
+
+	private String currentLine;
+	private BufferedReader reader;
+	private int currentLineCount;
+
+	public int getCount(String words) {
+		try {
+			if (this.currentLine == null) {
+				this.currentLine = this.reader.readLine();
+				String[] currentLineSplit = this.currentLine.split("\t");
+				this.currentLineCount = Integer
+						.parseInt(currentLineSplit[currentLineSplit.length - 1]);
+			}
+			if (this.currentLine.startsWith(words)) {
+				return this.currentLineCount;
+			} else {
+				this.currentLine = this.reader.readLine();
+				String[] currentLineSplit = this.currentLine.split("\t");
+				this.currentLineCount = Integer
+						.parseInt(currentLineSplit[currentLineSplit.length - 1]);
+				return this.getCount(words);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		throw new IllegalStateException();
+	}
+
+	public void close() {
+		try {
+			this.reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}

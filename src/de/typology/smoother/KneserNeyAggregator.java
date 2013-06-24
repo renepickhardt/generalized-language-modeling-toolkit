@@ -19,10 +19,15 @@ public class KneserNeyAggregator {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		KneserNeyAggregator kna = new KneserNeyAggregator(outputDirectory,
-				"absolute", "continuation", "ns-absolute", "ns-continuation",
+				"absolute", "_absolute", "absolute_", "_absolute_",
 				"kneser-ney");
 		kna.calculate(5);
+	}
 
+	public String test;
+
+	public void count(String test) {
+		test = test + test;
 	}
 
 	protected String directory;
@@ -36,21 +41,14 @@ public class KneserNeyAggregator {
 
 	protected BufferedReader continuationReader;
 	protected BufferedReader absoluteReader;
-	protected BufferedReader absoluteWithoutLastReader;
-	protected BufferedReader nAbsoluteReader;
-	protected BufferedReader nContinuationReader;
-	protected BufferedReader previousResultReverseSortReader;
+	protected SlidingWindowReader absoluteWithoutLastReader;
+	protected SlidingWindowReader nAbsoluteReader;
+	protected SlidingWindowReader nContinuationReader;
+	protected SlidingWindowReader previousResultReverseSortReader;
 
 	protected BufferedWriter tempResultWriter;
 	protected BufferedWriter reverstSortResultWriter;
 	protected RevertSortSplitter revertSortSplitter;
-
-	protected String currentAbsoluteWithoutLastLine;
-	protected int currentAbsoluteWithoutLastLineCount;
-	protected String currentNAbsoluteLine;
-	protected int currentNAbsoluteLineCount;
-	protected String currentNContinuationLine;
-	protected int currentNContinuationLineCount;
 
 	private double d1plus;
 
@@ -104,16 +102,18 @@ public class KneserNeyAggregator {
 			String currentFileName) {
 		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
 		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
+
 		this.absoluteReader = IOHelper.openReadFile(
 				this.absoluteDirectory.getAbsolutePath() + "/" + sequenceBinary
-						+ "/" + currentFileName + "/" + sequenceBinary,
+						+ "/" + currentFileName + "." + sequenceBinary,
 				memoryLimitForReadingFiles);
-		String binarySequenceWithoutLast = sequenceBinary.substring(0,
+
+		String sequenceBinaryWithoutLast = sequenceBinary.substring(0,
 				sequenceBinary.length() - 2);
-		this.absoluteWithoutLastReader = IOHelper.openReadFile(
+		this.absoluteWithoutLastReader = new SlidingWindowReader(
 				this.absoluteDirectory.getAbsolutePath() + "/"
-						+ binarySequenceWithoutLast + "/" + currentFileName
-						+ "." + binarySequenceWithoutLast,
+						+ sequenceBinaryWithoutLast + "/" + currentFileName
+						+ "." + sequenceBinaryWithoutLast,
 				memoryLimitForReadingFiles);
 	}
 
@@ -122,6 +122,7 @@ public class KneserNeyAggregator {
 			this.absoluteReader.close();
 			this.absoluteWithoutLastReader.close();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -130,13 +131,15 @@ public class KneserNeyAggregator {
 			String currentFileName) {
 		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
 		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
-		String nContinuationSequence = continuationSequence.substring(0,
-				continuationSequence.length() - 1) + "_";
+
 		this.continuationReader = IOHelper.openReadFile(
 				this.continuationDirectory.getAbsolutePath() + "/"
 						+ continuationSequence + "/" + currentFileName + "."
 						+ continuationSequence, memoryLimitForReadingFiles);
-		this.nContinuationReader = IOHelper.openReadFile(
+
+		String nContinuationSequence = continuationSequence.substring(0,
+				continuationSequence.length() - 1) + "_";
+		this.nContinuationReader = new SlidingWindowReader(
 				this.nContinuationDirectory.getAbsolutePath() + "/"
 						+ nContinuationSequence + "/" + currentFileName + "."
 						+ nContinuationSequence, memoryLimitForReadingFiles);
@@ -147,6 +150,7 @@ public class KneserNeyAggregator {
 			this.continuationReader.close();
 			this.nContinuationReader.close();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -155,15 +159,17 @@ public class KneserNeyAggregator {
 			String currentFileName) {
 		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
 		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
+
 		String nAbsoluteSequence = continuationSequence.substring(0,
 				continuationSequence.length() - 2) + "_";
-		String previousResultReverseSortSequence = continuationSequence
-				.substring(1);
-		this.nAbsoluteReader = IOHelper.openReadFile(
+		this.nAbsoluteReader = new SlidingWindowReader(
 				this.nAbsoluteDirectory.getAbsolutePath() + "/"
 						+ nAbsoluteSequence + "/" + currentFileName + "."
 						+ nAbsoluteSequence, memoryLimitForReadingFiles);
-		this.previousResultReverseSortReader = IOHelper.openReadFile(
+
+		String previousResultReverseSortSequence = continuationSequence
+				.substring(1);
+		this.previousResultReverseSortReader = new SlidingWindowReader(
 				this.reverseOutputDirectory.getAbsolutePath() + "/"
 						+ previousResultReverseSortSequence + "/"
 						+ currentFileName + "."
@@ -172,12 +178,8 @@ public class KneserNeyAggregator {
 	}
 
 	private void closeOtherReaders() {
-		try {
-			this.nAbsoluteReader.close();
-			this.previousResultReverseSortReader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		this.nAbsoluteReader.close();
+		this.previousResultReverseSortReader.close();
 	}
 
 	protected void initializeReverseSortWriter(String sequenceBinary,
@@ -232,6 +234,7 @@ public class KneserNeyAggregator {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+			IOHelper.strongLog("calculating sequence " + sequenceBinary);
 			// skip even results (since there is no target)
 			if (sequenceDecimal % 2 == 0) {
 				continue;
@@ -407,62 +410,22 @@ public class KneserNeyAggregator {
 		}
 	}
 
-	private long getAbsoluteWithoutLastCount(String absoluteWordsWithoutLast) {
-		try {
-			if (this.currentAbsoluteWithoutLastLine == null) {
-				this.currentAbsoluteWithoutLastLine = this.absoluteWithoutLastReader
-						.readLine();
-				String[] currentAbsoluteWithoutLastLineSplit = this.currentAbsoluteWithoutLastLine
-						.split("\t");
-				this.currentAbsoluteWithoutLastLineCount = Integer
-						.parseInt(currentAbsoluteWithoutLastLineSplit[currentAbsoluteWithoutLastLineSplit.length - 1]);
-			}
-			if (this.currentAbsoluteWithoutLastLine
-					.startsWith(absoluteWordsWithoutLast)) {
-				return this.currentAbsoluteWithoutLastLineCount;
-			} else {
-				this.currentAbsoluteWithoutLastLine = this.absoluteWithoutLastReader
-						.readLine();
-				String[] currentAbsoluteWithoutLastLineSplit = this.currentAbsoluteWithoutLastLine
-						.split("\t");
-				this.currentAbsoluteWithoutLastLineCount = Integer
-						.parseInt(currentAbsoluteWithoutLastLineSplit[currentAbsoluteWithoutLastLineSplit.length - 1]);
-				return this.getNAbsoluteCount(absoluteWordsWithoutLast);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		throw new IllegalStateException();
-	}
-
-	private int getNAbsoluteCount(String continuationWordsWithoutLast) {
-		try {
-			if (this.currentNAbsoluteLine == null) {
-				this.currentNAbsoluteLine = this.nAbsoluteReader.readLine();
-				String[] currentNAbsoluteLineSplit = this.currentNAbsoluteLine
-						.split("\t");
-				this.currentNAbsoluteLineCount = Integer
-						.parseInt(currentNAbsoluteLineSplit[currentNAbsoluteLineSplit.length - 1]);
-			}
-			if (this.currentNAbsoluteLine
-					.startsWith(continuationWordsWithoutLast)) {
-				return this.currentNAbsoluteLineCount;
-			} else {
-				this.currentNAbsoluteLine = this.nAbsoluteReader.readLine();
-				String[] currentNAbsoluteLineSplit = this.currentNAbsoluteLine
-						.split("\t");
-				this.currentNAbsoluteLineCount = Integer
-						.parseInt(currentNAbsoluteLineSplit[currentNAbsoluteLineSplit.length - 1]);
-				return this.getNAbsoluteCount(continuationWordsWithoutLast);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		throw new IllegalStateException();
+	private void calculateDs() {
+		// TODO calculation
+		this.d1plus = 0.5;
 	}
 
 	private double getD(int continuationCount) {
 		return this.d1plus;
+	}
+
+	private long getAbsoluteWithoutLastCount(String absoluteWordsWithoutLast) {
+		return this.absoluteWithoutLastReader
+				.getCount(absoluteWordsWithoutLast);
+	}
+
+	private int getNAbsoluteCount(String continuationWordsWithoutLast) {
+		return this.nAbsoluteReader.getCount(continuationWordsWithoutLast);
 	}
 
 	private long getNContinuationCount(String continuationWordsWithoutLast,
@@ -471,40 +434,9 @@ public class KneserNeyAggregator {
 			return Counter.countColumnCountsInDirectory(0,
 					currentNContinuationDirectory);
 		} else {
-			try {
-				if (this.currentNContinuationLine == null) {
-					this.currentNContinuationLine = this.nContinuationReader
-							.readLine();
-					String[] currentNContinuationLineSplit = this.currentNContinuationLine
-							.split("\t");
-					this.currentNContinuationLineCount = Integer
-							.parseInt(currentNContinuationLineSplit[currentNContinuationLineSplit.length - 1]);
-				}
-				if (this.currentNContinuationLine
-						.startsWith(continuationWordsWithoutLast)) {
-					return this.currentNContinuationLineCount;
-				} else {
-					this.currentNContinuationLine = this.nContinuationReader
-							.readLine();
-					String[] currentNContinuationLineSplit = this.currentNContinuationLine
-							.split("\t");
-					this.currentNContinuationLineCount = Integer
-							.parseInt(currentNContinuationLineSplit[currentNContinuationLineSplit.length - 1]);
-					return this.getNContinuationCount(
-							continuationWordsWithoutLast,
-							currentNContinuationDirectory);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			throw new IllegalStateException();
-
+			return this.nContinuationReader
+					.getCount(continuationWordsWithoutLast);
 		}
-	}
-
-	private void calculateDs() {
-		// TODO calculation
-		this.d1plus = 1;
 	}
 
 }

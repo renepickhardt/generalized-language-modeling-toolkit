@@ -55,7 +55,7 @@ public class Builder {
 		}
 		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
-					"absolute", "continuation-unaggregated", "index.txt",
+					"absolute", "_absolute-unaggregated", "index.txt",
 					"stats.txt", "training.txt", false);
 			try {
 				cs.split(Config.get().modelLength);
@@ -82,12 +82,12 @@ public class Builder {
 		}
 
 		if (Config.get().aggregateN) {
-			NAggregator naAbsolute = new NAggregator(outputPath, "absolute",
-					"ns-absolute");
-			naAbsolute.aggregate(Config.get().modelLength);
-			NAggregator naContinuation = new NAggregator(outputPath,
-					"continuation", "ns-continuation");
-			naContinuation.aggregate(Config.get().modelLength);
+			NAggregator absolute_Aggregator = new NAggregator(outputPath,
+					"absolute", "absolute_");
+			absolute_Aggregator.aggregate(Config.get().modelLength);
+			NAggregator _absolute_Aggregator = new NAggregator(outputPath,
+					"_absolute", "_absolute_");
+			_absolute_Aggregator.aggregate(Config.get().modelLength);
 		}
 		if (Config.get().revertSort) {
 			// RevertSortSplitter arsAbsolute = new

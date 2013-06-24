@@ -19,9 +19,9 @@ public class NAggregator {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		NAggregator naa = new NAggregator(outputDirectory, "absolute",
-				"ns-absolute");
-		NAggregator nac = new NAggregator(outputDirectory, "continuation",
-				"ns-continuation");
+				"absolute_");
+		NAggregator nac = new NAggregator(outputDirectory, "_absolute",
+				"_absolute_");
 		naa.aggregate(5);
 		nac.aggregate(5);
 	}
