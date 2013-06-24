@@ -11,7 +11,7 @@ import de.typology.splitter.Splitter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class RevertSortSplitter extends Splitter {
+public class SortSplitter extends Splitter {
 	/**
 	 * This class provides a method for splitting and sorting ngrams by the
 	 * second, third, fourth...(, first) word in order to calculate the novel
@@ -25,9 +25,9 @@ public class RevertSortSplitter extends Splitter {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		RevertSortSplitter ars = new RevertSortSplitter(outputDirectory,
-				"absolute", "absolute-rev-sort", "index.txt", "stats.txt",
-				"training.txt");
+		SortSplitter ars = new SortSplitter(outputDirectory, "absolute",
+				"absolute-rev-sort", "index.txt", "stats.txt", "training.txt",
+				true);
 		ars.split(5);
 	}
 
@@ -35,11 +35,13 @@ public class RevertSortSplitter extends Splitter {
 	// private int filePointer;
 	// private File[] inputFiles;
 	private File inputDirectory;
+	private boolean reverse;
 
-	public RevertSortSplitter(String directory, String inputDirectoryName,
+	public SortSplitter(String directory, String inputDirectoryName,
 			String outputDirectoryName, String indexName, String statsName,
-			String inputName) {
+			String inputName, boolean reverse) {
 		super(directory, indexName, statsName, inputName, "");
+		this.reverse = reverse;
 
 		this.inputDirectory = new File(this.directory + inputDirectoryName);
 		// TODO: remove this line when Splitter is fixed (normalized
@@ -57,36 +59,6 @@ public class RevertSortSplitter extends Splitter {
 		this.outputDirectory.mkdir();
 
 	}
-
-	// @Override
-	// protected void initialize(String extension) {
-	//
-	// this.filePointer = 0;
-	// this.reader = IOHelper.openReadFile(this.inputFiles[this.filePointer]
-	// .getAbsolutePath());
-	//
-	// File currentOutputDirectory = new File(
-	// this.outputDirectory.getAbsolutePath() + "/" + extension);
-	//
-	// // delete old files
-	// try {
-	// FileUtils.deleteDirectory(currentOutputDirectory);
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// currentOutputDirectory.mkdirs();
-	// this.writers = new HashMap<Integer, BufferedWriter>();
-	// for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
-	// this.writers.put(
-	// fileCount,
-	// IOHelper.openWriteFile(
-	// currentOutputDirectory + "/" + fileCount + "."
-	// + extension + "-split",
-	// Config.get().memoryLimitForWritingFiles
-	// / Config.get().maxCountDivider));
-	// }
-	// }
 
 	@Override
 	public void split(int maxSequenceLength) {
@@ -113,11 +85,16 @@ public class RevertSortSplitter extends Splitter {
 					try {
 						while ((line = inputReader.readLine()) != null) {
 							lineSplit = line.split("\t");
-							// get writer matching the last word
-
-							BufferedWriter writer = this
-									.getWriter(lineSplit[columnNumber > 0 ? columnNumber - 1
-											: 0]);
+							BufferedWriter writer;
+							if (this.reverse) {
+								// get writer matching the last word
+								writer = this
+										.getWriter(lineSplit[columnNumber > 0 ? columnNumber - 1
+												: 0]);
+							} else {
+								// get writer matching the first word
+								writer = this.getWriter(lineSplit[0]);
+							}
 							// write sequence
 							for (int i = 0; i < lineSplit.length - 1; i++) {
 								writer.write(lineSplit[i] + "\t");
@@ -136,9 +113,15 @@ public class RevertSortSplitter extends Splitter {
 			}
 			this.reset();
 
-			this.sorter.sortRevertCountDirectory(
-					this.outputDirectory.getAbsolutePath() + "/"
-							+ this.extension, "-split", "");
+			if (this.reverse) {
+				this.sorter.sortRevertCountDirectory(
+						this.outputDirectory.getAbsolutePath() + "/"
+								+ this.extension, "-split", "");
+			} else {
+				this.sorter.sortCountDirectory(
+						this.outputDirectory.getAbsolutePath() + "/"
+								+ this.extension, "-split", "");
+			}
 			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
 					+ this.extension);
 

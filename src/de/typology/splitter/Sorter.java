@@ -110,7 +110,6 @@ public class Sorter {
 
 			sortCommand += "--output=" + outputPath + " " + inputPath;
 			// execute command
-			System.out.println(sortCommand);
 			SystemHelper.runUnixCommand(sortCommand);
 
 			inputFile.delete();

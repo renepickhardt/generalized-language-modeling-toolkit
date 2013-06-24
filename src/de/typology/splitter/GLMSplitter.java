@@ -79,10 +79,26 @@ public class GLMSplitter extends Splitter {
 	public void splitGLM(int maxSequenceLength) {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
-			// optional: leave out even sequences since they don't contain a
+			// leave out even sequences since they don't contain a
 			// target
 			if (sequenceDecimal % 2 == 0) {
 				continue;
+			}
+			this.split(sequenceDecimal);
+		}
+	}
+
+	public void splitGLMForKneserNey(int maxSequenceLength) {
+		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+				maxSequenceLength); sequenceDecimal++) {
+			// leave out even sequences since they don't contain a
+			// target
+			if (sequenceDecimal % 2 == 0) {
+				// but keep all sequences with length=maxSequenceLength-1 (we
+				// need them for kneser ney)
+				if (Integer.toBinaryString(sequenceDecimal).length() != maxSequenceLength - 1) {
+					continue;
+				}
 			}
 			this.split(sequenceDecimal);
 		}

@@ -51,7 +51,7 @@ public class Builder {
 		if (Config.get().buildGLM) {
 			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
 					statsFileName, trainingFileName);
-			glms.splitGLM(Config.get().modelLength);
+			glms.splitGLMForKneserNey(Config.get().modelLength);
 		}
 		if (Config.get().buildContinuationGLM) {
 			ContinuationSplitter cs = new ContinuationSplitter(outputPath,

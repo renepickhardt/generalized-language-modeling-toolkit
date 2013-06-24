@@ -20,206 +20,70 @@ public class KneserNeyAggregator {
 				+ Config.get().inputDataSet;
 		KneserNeyAggregator kna = new KneserNeyAggregator(outputDirectory,
 				"absolute", "_absolute", "absolute_", "_absolute_",
-				"kneser-ney");
+				"kneser-ney", "index.txt", "stats.txt");
 		kna.calculate(5);
-	}
-
-	public String test;
-
-	public void count(String test) {
-		test = test + test;
 	}
 
 	protected String directory;
 	protected File absoluteDirectory;
-	protected File continuationDirectory;
-	protected File nAbsoluteDirectory;
-	protected File nContinuationDirectory;
+	protected File _absoluteDirectory;
+	protected File absolute_Directory;
+	protected File _absolute_Directory;
 	protected File outputDirectory;
 	protected File tempResultDirectory;
-	protected File reverseOutputDirectory;
+	protected File tempReverseSortDirectory;
 
-	protected BufferedReader continuationReader;
 	protected BufferedReader absoluteReader;
+	protected BufferedReader _absoluteReader;
+	protected SlidingWindowReader absolute_Reader;
+	protected SlidingWindowReader _absolute_Reader;
 	protected SlidingWindowReader absoluteWithoutLastReader;
-	protected SlidingWindowReader nAbsoluteReader;
-	protected SlidingWindowReader nContinuationReader;
-	protected SlidingWindowReader previousResultReverseSortReader;
+
+	protected SlidingWindowReader tempResultReverseSortReader;
+	protected SlidingWindowReader previousTempResultReverseSortReader;
 
 	protected BufferedWriter tempResultWriter;
-	protected BufferedWriter reverstSortResultWriter;
-	protected RevertSortSplitter revertSortSplitter;
+	protected BufferedWriter reverseSortResultWriter;
+	protected SortSplitter reverseSortSplitter;
+
+	private String indexName;
+	private String statsName;
 
 	private double d1plus;
 
 	public KneserNeyAggregator(String directory, String absoluteDirectoryName,
-			String continuationDirectoryName,
-			String nAbsoluteReverseDirectoryName,
-			String nContinuationDirectoryName, String outputDirectoryName) {
+			String _absoluteDirectoryName, String absolute_DirectoryName,
+			String _absolute_DirectoryName, String outputDirectoryName,
+			String indexName, String statsName) {
+		this.indexName = indexName;
+		this.statsName = statsName;
 		this.directory = directory;
 		this.absoluteDirectory = new File(this.directory
 				+ absoluteDirectoryName);
-		this.continuationDirectory = new File(this.directory
-				+ continuationDirectoryName);
-		this.nAbsoluteDirectory = new File(this.directory
-				+ nAbsoluteReverseDirectoryName);
-		this.nContinuationDirectory = new File(this.directory
-				+ nContinuationDirectoryName);
+		this._absoluteDirectory = new File(this.directory
+				+ _absoluteDirectoryName);
+		this.absolute_Directory = new File(this.directory
+				+ absolute_DirectoryName);
+		this._absolute_Directory = new File(this.directory
+				+ _absolute_DirectoryName);
 		this.outputDirectory = new File(this.directory + outputDirectoryName);
 		this.tempResultDirectory = new File(this.directory
 				+ outputDirectoryName + "-temp");
-		this.reverseOutputDirectory = new File(this.directory
-				+ outputDirectoryName);
-		if (this.outputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.outputDirectory);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		if (this.tempResultDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.tempResultDirectory);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		if (this.reverseOutputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.reverseOutputDirectory);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		this.tempReverseSortDirectory = new File(this.directory
+				+ outputDirectoryName + "-temp-rev");
+
+		try {
+			FileUtils.deleteDirectory(this.outputDirectory);
+			FileUtils.deleteDirectory(this.tempResultDirectory);
+			FileUtils.deleteDirectory(this.tempReverseSortDirectory);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		this.outputDirectory.mkdir();
 		this.tempResultDirectory.mkdir();
-		this.reverseOutputDirectory.mkdir();
+		this.tempReverseSortDirectory.mkdir();
 
 		this.calculateDs();
-	}
-
-	private void initializeAbsoluteReaders(String sequenceBinary,
-			String currentFileName) {
-		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
-		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
-
-		this.absoluteReader = IOHelper.openReadFile(
-				this.absoluteDirectory.getAbsolutePath() + "/" + sequenceBinary
-						+ "/" + currentFileName + "." + sequenceBinary,
-				memoryLimitForReadingFiles);
-
-		String sequenceBinaryWithoutLast = sequenceBinary.substring(0,
-				sequenceBinary.length() - 2);
-		this.absoluteWithoutLastReader = new SlidingWindowReader(
-				this.absoluteDirectory.getAbsolutePath() + "/"
-						+ sequenceBinaryWithoutLast + "/" + currentFileName
-						+ "." + sequenceBinaryWithoutLast,
-				memoryLimitForReadingFiles);
-	}
-
-	private void closeAbsoluteReaders() {
-		try {
-			this.absoluteReader.close();
-			this.absoluteWithoutLastReader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void initializeContinuationReaders(String continuationSequence,
-			String currentFileName) {
-		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
-		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
-
-		this.continuationReader = IOHelper.openReadFile(
-				this.continuationDirectory.getAbsolutePath() + "/"
-						+ continuationSequence + "/" + currentFileName + "."
-						+ continuationSequence, memoryLimitForReadingFiles);
-
-		String nContinuationSequence = continuationSequence.substring(0,
-				continuationSequence.length() - 1) + "_";
-		this.nContinuationReader = new SlidingWindowReader(
-				this.nContinuationDirectory.getAbsolutePath() + "/"
-						+ nContinuationSequence + "/" + currentFileName + "."
-						+ nContinuationSequence, memoryLimitForReadingFiles);
-	}
-
-	private void closeContinuationReaders() {
-		try {
-			this.continuationReader.close();
-			this.nContinuationReader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void initializeOtherReaders(String continuationSequence,
-			String currentFileName) {
-		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
-		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
-
-		String nAbsoluteSequence = continuationSequence.substring(0,
-				continuationSequence.length() - 2) + "_";
-		this.nAbsoluteReader = new SlidingWindowReader(
-				this.nAbsoluteDirectory.getAbsolutePath() + "/"
-						+ nAbsoluteSequence + "/" + currentFileName + "."
-						+ nAbsoluteSequence, memoryLimitForReadingFiles);
-
-		String previousResultReverseSortSequence = continuationSequence
-				.substring(1);
-		this.previousResultReverseSortReader = new SlidingWindowReader(
-				this.reverseOutputDirectory.getAbsolutePath() + "/"
-						+ previousResultReverseSortSequence + "/"
-						+ currentFileName + "."
-						+ previousResultReverseSortSequence,
-				memoryLimitForReadingFiles);
-	}
-
-	private void closeOtherReaders() {
-		this.nAbsoluteReader.close();
-		this.previousResultReverseSortReader.close();
-	}
-
-	protected void initializeReverseSortWriter(String sequenceBinary,
-			String currentFileName) {
-		File currentReverseOutputDirectory = new File(
-				this.reverseOutputDirectory.getAbsolutePath() + "/"
-						+ sequenceBinary);
-		currentReverseOutputDirectory.mkdir();
-		this.reverstSortResultWriter = IOHelper.openWriteFile(
-				currentReverseOutputDirectory.getAbsolutePath() + "/"
-						+ currentFileName + "." + sequenceBinary,
-				Config.get().memoryLimitForWritingFiles);
-	}
-
-	private void closeReverseSortWriter() {
-		try {
-			this.reverstSortResultWriter.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	protected void initializeTempResultWriter(String sequenceBinary,
-			String currentFileName) {
-		File currentTempResultDirectory = new File(
-				this.tempResultDirectory.getAbsolutePath() + "/"
-						+ sequenceBinary);
-		currentTempResultDirectory.mkdir();
-		this.tempResultWriter = IOHelper.openWriteFile(
-				currentTempResultDirectory.getAbsolutePath() + "/"
-						+ currentFileName + "." + sequenceBinary,
-				Config.get().memoryLimitForWritingFiles);
-	}
-
-	private void closeTempResultWriter() {
-		try {
-			this.tempResultWriter.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -234,11 +98,11 @@ public class KneserNeyAggregator {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-			IOHelper.strongLog("calculating sequence " + sequenceBinary);
 			// skip even results (since there is no target)
 			if (sequenceDecimal % 2 == 0) {
 				continue;
 			}
+			IOHelper.strongLog("calculating sequence " + sequenceBinary);
 			boolean sequenceIsMaxLength = sequenceBinary.length() == maxSequenceLength;
 			if (sequenceIsMaxLength) {
 				for (File absoluteFile : new File(this.absoluteDirectory + "/"
@@ -247,7 +111,7 @@ public class KneserNeyAggregator {
 							"\\.")[0];
 					this.initializeAbsoluteReaders(sequenceBinary,
 							absoluteFileName);
-					this.initializeOtherReaders(sequenceBinary,
+					this.initializeAbsolute_Reader(sequenceBinary,
 							absoluteFileName);
 					this.initializeTempResultWriter(sequenceBinary,
 							absoluteFileName);
@@ -288,14 +152,14 @@ public class KneserNeyAggregator {
 										.getD(absoluteCount)
 										/ absoluteWithoutLastCount;
 								double discountValueResult = discountFractionResult
-										* this.getNAbsoluteCount(absoluteWordsWithoutLast);
+										* this.getAbsolute_Count(absoluteWordsWithoutLast);
 								this.tempResultWriter.write(absoluteWords
 										+ firstFractionResult + "\t"
 										+ discountValueResult + "\n");
 							}
 						} finally {
 							this.closeAbsoluteReaders();
-							this.closeOtherReaders();
+							this.closeAbsolute_Reader();
 							this.closeTempResultWriter();
 						}
 					} catch (IOException e) {
@@ -303,110 +167,256 @@ public class KneserNeyAggregator {
 					}
 				}
 			} else {
-				String continuationSequence = "_" + sequenceBinary;
-				for (File continuationFile : new File(
-						this.continuationDirectory + "/" + continuationSequence)
-						.listFiles()) {
-					String continuationFileName = continuationFile.getName()
-							.split("\\.")[0];
-					this.initializeContinuationReaders(continuationSequence,
-							continuationFileName);
-					if (sequenceDecimal == 1) {
-						this.initializeReverseSortWriter(sequenceBinary,
-								continuationFileName);
-					} else {
-						this.initializeOtherReaders(sequenceBinary,
-								continuationFileName);
-						this.initializeTempResultWriter(sequenceBinary,
-								continuationFileName);
+				// sequenceLength>maxLength
+				String _absoluteSequence = "_" + sequenceBinary;
+				for (File _absoluteFile : new File(this._absoluteDirectory
+						+ "/" + _absoluteSequence).listFiles()) {
+					String _absoluteFileName = _absoluteFile.getName().split(
+							"\\.")[0];
+					this.initializeContinuationReaders(_absoluteSequence,
+							_absoluteFileName);
+					if (sequenceDecimal > 1) {
+						this.initializeAbsolute_Reader(sequenceBinary,
+								_absoluteFileName);
 					}
-					String continuationLine;
+					this.initializeTempResultWriter(sequenceBinary,
+							_absoluteFileName);
+
+					String _absoluteLine;
 					try {
 						try {
-							while ((continuationLine = this.continuationReader
+							while ((_absoluteLine = this._absoluteReader
 									.readLine()) != null) {
-								String[] continuationLineSplit = continuationLine
+								String[] _absoluteLineSplit = _absoluteLine
 										.split("\t");
-								String continuationWords = "";
-								for (int i = 0; i < continuationLineSplit.length - 1; i++) {
-									continuationWords += continuationLineSplit[i]
+								String _absoluteWords = "";
+								for (int i = 0; i < _absoluteLineSplit.length - 1; i++) {
+									_absoluteWords += _absoluteLineSplit[i]
 											+ "\t";
 								}
-								String continuationWordsWithoutLast = "";
-								for (int i = 0; i < continuationLineSplit.length - 2; i++) {
-									continuationWordsWithoutLast += continuationLineSplit[i]
+								String _absoluteWordsWithoutLast = "";
+								for (int i = 0; i < _absoluteLineSplit.length - 2; i++) {
+									_absoluteWordsWithoutLast += _absoluteLineSplit[i]
 											+ "\t";
 								}
 
-								int continuationCount = Integer
-										.parseInt(continuationLineSplit[continuationLineSplit.length - 1]);
-								long nContinuationCount = this
-										.getNContinuationCount(
-												continuationWordsWithoutLast,
-												this.nContinuationDirectory
-														.getAbsolutePath()
-														+ "/"
-														+ continuationSequence
-																.substring(
-																		0,
-																		continuationSequence
-																				.length() - 1)
-														+ "_");
+								int _absoluteCount = Integer
+										.parseInt(_absoluteLineSplit[_absoluteLineSplit.length - 1]);
+								long _absolute_Count = this.get_absolute_Count(
+										_absoluteWordsWithoutLast,
+										this._absolute_Directory
+												.getAbsolutePath()
+												+ "/"
+												+ _absoluteSequence.substring(
+														0, _absoluteSequence
+																.length() - 1)
+												+ "_");
 								if (sequenceDecimal == 1) {
 									// calculate first fraction of the equation
-									double kneserNeyResult = continuationCount
-											/ nContinuationCount;
+									double kneserNeyResult = (double) _absoluteCount
+											/ _absolute_Count;
 									// the result is already reverse sorted
 									// since there is only one row
-									this.reverstSortResultWriter
-											.write(continuationWords
-													+ kneserNeyResult + "\n");
+									this.tempResultWriter.write(_absoluteWords
+											+ kneserNeyResult + "\n");
 
 								} else {
 									// calculate first fraction of the
 									// equation
-									double continuationMinusDResult = continuationCount
-											- this.getD(continuationCount);
+									double continuationMinusDResult = _absoluteCount
+											- this.getD(_absoluteCount);
 									if (continuationMinusDResult < 0) {
 										continuationMinusDResult = 0;
 									}
 									double firstFractionResult = continuationMinusDResult
-											/ nContinuationCount;
+											/ _absolute_Count;
 
 									// calculate the discount value
 									double discountFractionResult = this
-											.getD(continuationCount)
-											/ nContinuationCount;
+											.getD(_absoluteCount)
+											/ _absolute_Count;
 									double discountValueResult = discountFractionResult
-											* this.getNAbsoluteCount(continuationWordsWithoutLast);
-									this.tempResultWriter
-											.write(continuationWords
-													+ firstFractionResult
-													+ "\t"
-													+ discountValueResult
-													+ "\n");
+											* this.getAbsolute_Count(_absoluteWordsWithoutLast);
+									this.tempResultWriter.write(_absoluteWords
+											+ firstFractionResult + "\t"
+											+ discountValueResult + "\n");
 								}
 							}
 						} finally {
 							this.closeContinuationReaders();
-							if (sequenceDecimal == 1) {
-								this.closeReverseSortWriter();
-							} else {
-								this.closeOtherReaders();
-								this.closeTempResultWriter();
+							if (sequenceDecimal > 1) {
+								this.closeAbsolute_Reader();
 							}
+							this.closeTempResultWriter();
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
 			}
+		}
 
-			// aggregate temp result and previous result
-			if (sequenceDecimal == 1) {
-				// no aggregation necessary
+		// revert sort temp result
+		SortSplitter revertSortSplitter = new SortSplitter(this.directory,
+				this.tempResultDirectory.getName(),
+				this.tempReverseSortDirectory.getName(), this.indexName,
+				this.statsName, "", true);
+		revertSortSplitter.split(maxSequenceLength);
+
+		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+				maxSequenceLength); sequenceDecimal++) {
+			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+			// skip even results (since there is no target)
+			if (sequenceDecimal % 2 == 0) {
 				continue;
 			}
+			IOHelper.strongLog("calculating sequence " + sequenceBinary);
+			// aggregate revert sort temp result and previous result
+			// TODO:add aggregation here
+		}
+	}
+
+	private void initializeAbsoluteReaders(String sequenceBinary,
+			String currentFileName) {
+		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
+		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
+
+		this.absoluteReader = IOHelper.openReadFile(
+				this.absoluteDirectory.getAbsolutePath() + "/" + sequenceBinary
+						+ "/" + currentFileName + "." + sequenceBinary,
+				memoryLimitForReadingFiles);
+
+		String sequenceBinaryWithoutLast = sequenceBinary.substring(0,
+				sequenceBinary.length() - 1);
+		this.absoluteWithoutLastReader = new SlidingWindowReader(
+				this.absoluteDirectory.getAbsolutePath() + "/"
+						+ sequenceBinaryWithoutLast + "/" + currentFileName
+						+ "." + sequenceBinaryWithoutLast,
+				memoryLimitForReadingFiles);
+	}
+
+	private void closeAbsoluteReaders() {
+		try {
+			this.absoluteReader.close();
+			this.absoluteWithoutLastReader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void initializeContinuationReaders(String continuationSequence,
+			String currentFileName) {
+		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
+		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
+
+		this._absoluteReader = IOHelper.openReadFile(
+				this._absoluteDirectory.getAbsolutePath() + "/"
+						+ continuationSequence + "/" + currentFileName + "."
+						+ continuationSequence, memoryLimitForReadingFiles);
+
+		String nContinuationSequence = continuationSequence.substring(0,
+				continuationSequence.length() - 1) + "_";
+		this._absolute_Reader = new SlidingWindowReader(
+				this._absolute_Directory.getAbsolutePath() + "/"
+						+ nContinuationSequence + "/" + currentFileName + "."
+						+ nContinuationSequence, memoryLimitForReadingFiles);
+	}
+
+	private void closeContinuationReaders() {
+		try {
+			this._absoluteReader.close();
+			this._absolute_Reader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void initializeAbsolute_Reader(String continuationSequence,
+			String currentFileName) {
+		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
+		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 4;
+
+		String absolute_Sequence = continuationSequence.substring(0,
+				continuationSequence.length() - 1) + "_";
+		this.absolute_Reader = new SlidingWindowReader(
+				this.absolute_Directory.getAbsolutePath() + "/"
+						+ absolute_Sequence + "/" + currentFileName + "."
+						+ absolute_Sequence, memoryLimitForReadingFiles);
+
+	}
+
+	private void closeAbsolute_Reader() {
+		this.absolute_Reader.close();
+	}
+
+	private void initializeTempResultReverseSortReader(String sequenceBinary,
+			String currentFileName) {
+		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
+		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 2;
+		this.tempResultReverseSortReader = new SlidingWindowReader(
+				this.tempResultDirectory.getAbsolutePath() + "/"
+						+ sequenceBinary + "/" + currentFileName + "."
+						+ sequenceBinary, memoryLimitForReadingFiles);
+
+		String previousResultReverseSortSequence = sequenceBinary.substring(1);
+		// skip wildcard word in previous result
+		// e.g.: 01 --> 1 or 001 --> 1
+		if (previousResultReverseSortSequence.startsWith("0")) {
+			previousResultReverseSortSequence = previousResultReverseSortSequence
+					.replaceFirst("0*", "");
+		}
+		this.previousTempResultReverseSortReader = new SlidingWindowReader(
+				this.tempResultDirectory.getAbsolutePath() + "/"
+						+ previousResultReverseSortSequence + "/"
+						+ currentFileName + "."
+						+ previousResultReverseSortSequence,
+				memoryLimitForReadingFiles);
+	}
+
+	private void closeTempResultReverseSortReader() {
+		this.tempResultReverseSortReader.close();
+		this.previousTempResultReverseSortReader.close();
+	}
+
+	protected void initializeReverseSortResultWriter(String sequenceBinary,
+			String currentFileName) {
+		File currentReverseOutputDirectory = new File(
+				this.tempReverseSortDirectory.getAbsolutePath() + "/"
+						+ sequenceBinary);
+		currentReverseOutputDirectory.mkdir();
+		this.reverseSortResultWriter = IOHelper.openWriteFile(
+				currentReverseOutputDirectory.getAbsolutePath() + "/"
+						+ currentFileName + "." + sequenceBinary,
+				Config.get().memoryLimitForWritingFiles);
+	}
+
+	private void closeReverseSortResultWriter() {
+		try {
+			this.reverseSortResultWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void initializeTempResultWriter(String sequenceBinary,
+			String currentFileName) {
+		File currentTempResultDirectory = new File(
+				this.tempResultDirectory.getAbsolutePath() + "/"
+						+ sequenceBinary);
+		currentTempResultDirectory.mkdir();
+		this.tempResultWriter = IOHelper.openWriteFile(
+				currentTempResultDirectory.getAbsolutePath() + "/"
+						+ currentFileName + "." + sequenceBinary,
+				Config.get().memoryLimitForWritingFiles);
+	}
+
+	private void closeTempResultWriter() {
+		try {
+			this.tempResultWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -424,19 +434,17 @@ public class KneserNeyAggregator {
 				.getCount(absoluteWordsWithoutLast);
 	}
 
-	private int getNAbsoluteCount(String continuationWordsWithoutLast) {
-		return this.nAbsoluteReader.getCount(continuationWordsWithoutLast);
+	private int getAbsolute_Count(String continuationWordsWithoutLast) {
+		return this.absolute_Reader.getCount(continuationWordsWithoutLast);
 	}
 
-	private long getNContinuationCount(String continuationWordsWithoutLast,
+	private long get_absolute_Count(String continuationWordsWithoutLast,
 			String currentNContinuationDirectory) {
 		if (continuationWordsWithoutLast.isEmpty()) {
 			return Counter.countColumnCountsInDirectory(0,
 					currentNContinuationDirectory);
 		} else {
-			return this.nContinuationReader
-					.getCount(continuationWordsWithoutLast);
+			return this._absolute_Reader.getCount(continuationWordsWithoutLast);
 		}
 	}
-
 }

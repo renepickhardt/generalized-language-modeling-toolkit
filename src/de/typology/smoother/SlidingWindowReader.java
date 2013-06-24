@@ -1,6 +1,7 @@
 package de.typology.smoother;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 
 import de.typology.utils.IOHelper;
@@ -16,11 +17,16 @@ public class SlidingWindowReader {
 	}
 
 	public SlidingWindowReader(String filePath, int memoryLimitForReadingFiles) {
-		System.out.println(filePath);
 		this.reader = IOHelper.openReadFile(filePath,
 				memoryLimitForReadingFiles);
+		File file = new File(filePath);
+		String ending = file.getName().split("\\.")[1].split("-")[0];
+
+		this.sequenceLength = Integer.bitCount(Integer.parseInt(
+				ending.replace("_", "0"), 2));
 	}
 
+	private int sequenceLength;
 	private String currentLine;
 	private BufferedReader reader;
 	private int currentLineCount;
@@ -31,7 +37,7 @@ public class SlidingWindowReader {
 				this.currentLine = this.reader.readLine();
 				String[] currentLineSplit = this.currentLine.split("\t");
 				this.currentLineCount = Integer
-						.parseInt(currentLineSplit[currentLineSplit.length - 1]);
+						.parseInt(currentLineSplit[this.sequenceLength]);
 			}
 			if (this.currentLine.startsWith(words)) {
 				return this.currentLineCount;
@@ -39,7 +45,7 @@ public class SlidingWindowReader {
 				this.currentLine = this.reader.readLine();
 				String[] currentLineSplit = this.currentLine.split("\t");
 				this.currentLineCount = Integer
-						.parseInt(currentLineSplit[currentLineSplit.length - 1]);
+						.parseInt(currentLineSplit[this.sequenceLength]);
 				return this.getCount(words);
 			}
 		} catch (IOException e) {
