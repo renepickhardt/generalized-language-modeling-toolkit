@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 import org.apache.commons.io.FileUtils;
 
@@ -50,6 +51,7 @@ public class KneserNeyAggregator {
 	private String statsName;
 
 	private double d1plus;
+	DecimalFormat decimalFormat = new DecimalFormat("###.######");
 
 	public KneserNeyAggregator(String directory, String absoluteDirectoryName,
 			String _absoluteDirectoryName, String absolute_DirectoryName,
@@ -83,7 +85,6 @@ public class KneserNeyAggregator {
 		this.tempResultDirectory.mkdir();
 		this.tempReverseSortDirectory.mkdir();
 
-		this.calculateDs();
 	}
 
 	/**
@@ -103,10 +104,13 @@ public class KneserNeyAggregator {
 				continue;
 			}
 			IOHelper.strongLog("calculating sequence " + sequenceBinary);
+			String currentAbsolteDirectory = this.absoluteDirectory + "/"
+					+ sequenceBinary;
+			this.calculateDs(currentAbsolteDirectory);
 			boolean sequenceIsMaxLength = sequenceBinary.length() == maxSequenceLength;
 			if (sequenceIsMaxLength) {
-				for (File absoluteFile : new File(this.absoluteDirectory + "/"
-						+ sequenceBinary).listFiles()) {
+				for (File absoluteFile : new File(currentAbsolteDirectory)
+						.listFiles()) {
 					String absoluteFileName = absoluteFile.getName().split(
 							"\\.")[0];
 					this.initializeAbsoluteReaders(sequenceBinary,
@@ -122,6 +126,10 @@ public class KneserNeyAggregator {
 									.readLine()) != null) {
 								String[] absoluteLineSplit = absoluteLine
 										.split("\t");
+								if (absoluteLineSplit[1].equals("<s>")) {
+									// skip <s> <s>
+									continue;
+								}
 								String absoluteWords = "";
 								for (int i = 0; i < absoluteLineSplit.length - 1; i++) {
 									absoluteWords += absoluteLineSplit[i]
@@ -212,13 +220,23 @@ public class KneserNeyAggregator {
 																.length() - 1)
 												+ "_");
 								if (sequenceDecimal == 1) {
+									if (_absoluteWords.startsWith("<s>")) {
+										this.tempResultWriter
+												.write(_absoluteWords + "-99\n");
+										continue;
+									}
 									// calculate first fraction of the equation
 									double kneserNeyResult = (double) _absoluteCount
 											/ _absolute_Count;
 									// the result is already reverse sorted
 									// since there is only one row
-									this.tempResultWriter.write(_absoluteWords
-											+ kneserNeyResult + "\n");
+									System.out.println(_absoluteWords + ": "
+											+ _absoluteCount + " / "
+											+ _absolute_Count);
+									this.tempResultWriter
+											.write(_absoluteWords
+													+ this.getRoundedResult(kneserNeyResult)
+													+ "\n");
 
 								} else {
 									// calculate first fraction of the
@@ -420,8 +438,12 @@ public class KneserNeyAggregator {
 		}
 	}
 
-	private void calculateDs() {
+	private void calculateDs(String directoryPath) {
 		// TODO calculation
+		long n1 = Counter.countCountsInDirectory(1, directoryPath);
+		long n2 = Counter.countCountsInDirectory(2, directoryPath);
+		System.out.println("n1: " + n1);
+		System.out.println("n2: " + n2);
 		this.d1plus = 0.5;
 	}
 
@@ -446,5 +468,9 @@ public class KneserNeyAggregator {
 		} else {
 			return this._absolute_Reader.getCount(continuationWordsWithoutLast);
 		}
+	}
+
+	private String getRoundedResult(double input) {
+		return this.decimalFormat.format(Math.log10(input));
 	}
 }

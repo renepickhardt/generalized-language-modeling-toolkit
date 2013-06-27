@@ -132,7 +132,6 @@ public class ContinuationSplitter extends Splitter {
 		this.outputDirectory = new File(this.outputDirectory.getAbsolutePath()
 				.replace("normalized", this.outputDirectoryName));
 		// leave out unigrams since they get calculated from bigrams
-		// leave out 10 since continuation(0)=|distinct words|
 		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 

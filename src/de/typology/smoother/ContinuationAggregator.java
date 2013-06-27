@@ -118,6 +118,10 @@ public class ContinuationAggregator {
 					for (int i = 1; i < lineSplit.length - 1; i++) {
 						tempSequence += lineSplit[i] + "\t";
 					}
+					if (lineSplit.length == 3 && lineSplit[1].equals("<s>")) {
+						this.getWriter("<s>").write(tempSequence + "0\n");
+						continue;
+					}
 					if (currentSequence == null) {
 						// initialize
 						currentSequence = tempSequence;

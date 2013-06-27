@@ -64,27 +64,16 @@ public class Counter {
 		return 0;
 	}
 
-	private static long currentCountForDirectory;
-	private static String directoryName;
-
 	public static long countColumnCountsInDirectory(int columnNumberStartZero,
 			String directoryName) {
-		if (directoryName.equals(Counter.directoryName)) {
-			return Counter.currentCountForDirectory;
-		} else {
-			long totalCount = 0;
-			for (File file : new File(directoryName).listFiles()) {
-				totalCount += countColumnCounts(columnNumberStartZero,
-						file.getAbsolutePath());
-			}
-			Counter.currentCountForDirectory = totalCount;
-			Counter.directoryName = directoryName;
-			return totalCount;
+		long totalCount = 0;
+		for (File file : new File(directoryName).listFiles()) {
+			totalCount += countColumnCounts(columnNumberStartZero,
+					file.getAbsolutePath());
 		}
+		return totalCount;
 	}
 
-	// derived from:
-	// http://stackoverflow.com/questions/453018/number-of-lines-in-a-file-in-java
 	public static long countColumnCounts(int columnNumberStartZero,
 			String fileName) {
 		long totalCount = 0;
@@ -98,6 +87,40 @@ public class Counter {
 					lineSplit = line.split("\t");
 					totalCount += Long
 							.parseLong(lineSplit[columnNumberStartZero]);
+				}
+			} finally {
+				br.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return totalCount;
+	}
+
+	public static long countCountsInDirectory(int count, String directoryName) {
+		long totalCount = 0;
+		for (File file : new File(directoryName).listFiles()) {
+			totalCount += countCounts(count, file.getAbsolutePath());
+		}
+		return totalCount;
+	}
+
+	public static long countCounts(int count, String fileName) {
+		long totalCount = 0;
+		BufferedReader br = IOHelper.openReadFile(fileName,
+				Config.get().memoryLimitForReadingFiles);
+		try {
+			try {
+				String line;
+				String[] lineSplit;
+				while ((line = br.readLine()) != null) {
+					lineSplit = line.split("\t");
+					long currentCount = Long
+							.parseLong(lineSplit[lineSplit.length - 1]);
+					if (count == currentCount && !lineSplit[1].equals("<s>")) {
+						totalCount += 1;
+					}
 				}
 			} finally {
 				br.close();

@@ -50,6 +50,7 @@ public class Config extends Properties {
 	public boolean deleteTempFiles;
 
 	public boolean addSentenceTags;
+	public boolean addSentenceTagsWithTwoStartTags;
 	// DEBUGGING
 	public String inputDataSet;
 

@@ -91,6 +91,9 @@ public class NAggregator {
 
 				while ((line = this.reader.readLine()) != null) {
 					lineSplit = line.split("\t");
+					if (lineSplit[1].equals("<s>")) {
+						continue;
+					}
 					String tempSequence = "";
 					for (int i = 0; i < lineSplit.length - 2; i++) {
 						tempSequence += lineSplit[i] + "\t";
@@ -107,10 +110,19 @@ public class NAggregator {
 							this.putIntoNs(currentCount, ns);
 						} else {
 							this.writer.write(currentSequence);
-							for (int i = 0; i < ns.length - 1; i++) {
-								this.writer.write(ns[i] + "\t");
+							// set <s> <s> counts to zero
+							if (currentSequence.equals("<s>\t")
+									&& sequenceBinary.startsWith("_")) {
+								for (int i = 0; i < ns.length - 1; i++) {
+									this.writer.write(0 + "\t");
+								}
+								this.writer.write(0 + "\n");
+							} else {
+								for (int i = 0; i < ns.length - 1; i++) {
+									this.writer.write(ns[i] + "\t");
+								}
+								this.writer.write(ns[ns.length - 1] + "\n");
 							}
-							this.writer.write(ns[ns.length - 1] + "\n");
 							ns = new long[4];
 							currentSequence = tempSequence;
 							this.putIntoNs(currentCount, ns);
@@ -119,10 +131,19 @@ public class NAggregator {
 				}
 				if (currentSequence != null) {
 					this.writer.write(currentSequence);
-					for (int i = 0; i < ns.length - 1; i++) {
-						this.writer.write(ns[i] + "\t");
+					// set <s> <s> counts to zero
+					if (currentSequence.equals("<s>\t")
+							&& sequenceBinary.startsWith("_")) {
+						for (int i = 0; i < ns.length - 1; i++) {
+							this.writer.write(0 + "\t");
+						}
+						this.writer.write(0 + "\n");
+					} else {
+						for (int i = 0; i < ns.length - 1; i++) {
+							this.writer.write(ns[i] + "\t");
+						}
+						this.writer.write(ns[ns.length - 1] + "\n");
 					}
-					this.writer.write(ns[ns.length - 1] + "\n");
 				}
 				this.reader.close();
 				this.writer.close();
