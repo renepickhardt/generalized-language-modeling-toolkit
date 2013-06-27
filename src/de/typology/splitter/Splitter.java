@@ -174,6 +174,9 @@ public abstract class Splitter {
 						// reached end of file
 						return false;
 					} else {
+						if (Config.get().addSentenceTags) {
+							this.line = "<s> " + this.line + " </s>";
+						}
 						this.lineSplit = this.line.split("\\s+");
 						if (this.lineSplit.length >= sequenceLength) {
 							this.linePointer = 0;
