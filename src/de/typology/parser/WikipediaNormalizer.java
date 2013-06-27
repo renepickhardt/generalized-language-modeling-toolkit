@@ -35,7 +35,6 @@ public class WikipediaNormalizer extends Normalizer {
 					line = "";
 				}
 				line = line.replaceAll("''+", "");
-				line = this.splitSentences(line, this.locale);
 				line = this.normalizeString(line);
 				if (!line.isEmpty()) {
 					this.writer.write(line);

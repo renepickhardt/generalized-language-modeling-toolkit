@@ -3,7 +3,9 @@ package de.typology.parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class ReutersMain {
@@ -16,6 +18,12 @@ public class ReutersMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
+		File outputDirectory = new File(Config.get().outputDirectory
+				+ "reuters/en/");
+		outputDirectory.mkdirs();
+		ReutersMain.run(Config.get().reutersInputDirectory,
+				outputDirectory.getAbsolutePath() + "/parsed.txt",
+				outputDirectory.getAbsolutePath() + "/normalized.txt");
 	}
 
 	public static void run(String reutersInputPath, String parsedOutputPath,
@@ -30,7 +38,7 @@ public class ReutersMain {
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
 		ReutersNormalizer wn = new ReutersNormalizer(parsedOutputPath,
-				normalizedOutputPath);
+				normalizedOutputPath, Locale.ENGLISH);
 		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");

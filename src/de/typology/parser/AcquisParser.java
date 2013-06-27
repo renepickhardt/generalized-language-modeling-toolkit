@@ -54,8 +54,11 @@ public class AcquisParser {
 	public void parse() {
 		for (File f : this.fileList) {
 			this.tokenizer = new AcquisTokenizer(f, this.acquisLanguage);
-			// writer.write(f.toString());
-			// writer.write("\n");
+			// try {
+			// this.writer.write(f.toString()+"\n");
+			// } catch (IOException e) {
+			// e.printStackTrace();
+			// }
 			this.reset();
 			while (this.tokenizer.hasNext()) {
 				this.read();

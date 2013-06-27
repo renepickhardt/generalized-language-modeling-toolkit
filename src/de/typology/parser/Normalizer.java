@@ -14,6 +14,9 @@ public class Normalizer {
 
 	protected String normalizeString(String input) {
 		String[] punctuationRegExes = { ",", ";", ":", "\\.", "!", "\\?" };
+		// split sentences
+		input = this.splitSentences(input, this.locale);
+
 		// remove some unwanted signs
 		input = input.replaceAll("\\?", "");
 		input = input.replaceAll("-", "");

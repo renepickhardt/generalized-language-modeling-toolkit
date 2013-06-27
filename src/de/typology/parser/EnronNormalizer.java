@@ -3,6 +3,7 @@ package de.typology.parser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Locale;
 
 import de.typology.utils.IOHelper;
 
@@ -13,7 +14,7 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class EnronNormalizer {
+public class EnronNormalizer extends Normalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
@@ -25,7 +26,8 @@ public class EnronNormalizer {
 	double numberStringProportion;
 	double atStringProportion;
 
-	public EnronNormalizer(String input, String output) {
+	public EnronNormalizer(String input, String output, Locale locale) {
+		super(locale);
 		this.reader = IOHelper.openReadFile(input);
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
@@ -35,22 +37,8 @@ public class EnronNormalizer {
 		try {
 			while ((this.line = this.reader.readLine()) != null) {
 				this.originalLine = this.line;
-				this.line = this.line.replaceAll(" +", " ");
-				if (this.line.startsWith(" ")) {
-					this.line = this.line.substring(1, this.line.length());
-				}
-				this.line = this.line.replaceAll(" ,", ",");
-				this.line = this.line.replaceAll(" \\.", ".");
-				this.line = this.line.replaceAll(" !", "!");
-				this.line = this.line.replaceAll(" \\?", "\\?");
-				this.line = this.line.replaceAll(",+", ",");
-				this.line = this.line.replaceAll("\\.\\.+", ".");
-				this.line = this.line.replaceAll("!+", "!");
-				this.line = this.line.replaceAll("\\?+", "\\?");
 
-				// remove some unwanted signs
-				this.line = this.line.replaceAll("\\?", "");
-				this.line = this.line.replaceAll("-", "");
+				this.line = this.normalizeString(this.line);
 
 				String[] strings = this.line.split("\\s");
 				this.stringCount = 0;
@@ -102,7 +90,6 @@ public class EnronNormalizer {
 						}
 					}
 					if (this.originalLine.equals("<ENDOFMAIL>")) {
-						this.writer.write("\n");
 						this.writer.flush();
 					}
 				}
