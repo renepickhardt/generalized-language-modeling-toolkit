@@ -66,6 +66,8 @@ public class Config extends Properties {
 	public String wikiInputDirectory;
 	public String acquisLanguages;
 
+	public boolean splitPunctuation;
+
 	public int fileSizeThreashhold;
 	public String outputDirectory;
 	public int memoryLimitForWritingFiles;
