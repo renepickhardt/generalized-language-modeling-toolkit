@@ -109,15 +109,9 @@ public class NAggregator {
 						if (tempSequence.equals(currentSequence)) {
 							this.putIntoNs(currentCount, ns);
 						} else {
-							this.writer.write(currentSequence);
-							// set <s> <s> counts to zero
-							if (currentSequence.equals("<s>\t")
-									&& sequenceBinary.startsWith("_")) {
-								for (int i = 0; i < ns.length - 1; i++) {
-									this.writer.write(0 + "\t");
-								}
-								this.writer.write(0 + "\n");
-							} else {
+							// skip <fs> counts
+							if (!currentSequence.startsWith("<fs>")) {
+								this.writer.write(currentSequence);
 								for (int i = 0; i < ns.length - 1; i++) {
 									this.writer.write(ns[i] + "\t");
 								}
@@ -130,15 +124,9 @@ public class NAggregator {
 					}
 				}
 				if (currentSequence != null) {
-					this.writer.write(currentSequence);
-					// set <s> <s> counts to zero
-					if (currentSequence.equals("<s>\t")
-							&& sequenceBinary.startsWith("_")) {
-						for (int i = 0; i < ns.length - 1; i++) {
-							this.writer.write(0 + "\t");
-						}
-						this.writer.write(0 + "\n");
-					} else {
+					// skip <fs> counts
+					if (!currentSequence.startsWith("<fs>")) {
+						this.writer.write(currentSequence);
 						for (int i = 0; i < ns.length - 1; i++) {
 							this.writer.write(ns[i] + "\t");
 						}

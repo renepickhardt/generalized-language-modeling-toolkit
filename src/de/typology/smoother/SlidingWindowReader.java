@@ -29,29 +29,41 @@ public class SlidingWindowReader {
 	private int sequenceLength;
 	private String currentLine;
 	private BufferedReader reader;
-	private int currentLineCount;
+	private double currentLineCount;
 
-	public int getCount(String words) {
+	public double getCount(String words) {
 		try {
 			if (this.currentLine == null) {
 				this.currentLine = this.reader.readLine();
 				String[] currentLineSplit = this.currentLine.split("\t");
-				this.currentLineCount = Integer
-						.parseInt(currentLineSplit[this.sequenceLength]);
+				this.currentLineCount = Double
+						.parseDouble(currentLineSplit[this.sequenceLength]);
 			}
 			if (this.currentLine.startsWith(words)) {
 				return this.currentLineCount;
 			} else {
 				this.currentLine = this.reader.readLine();
 				String[] currentLineSplit = this.currentLine.split("\t");
-				this.currentLineCount = Integer
-						.parseInt(currentLineSplit[this.sequenceLength]);
+				this.currentLineCount = Double
+						.parseDouble(currentLineSplit[this.sequenceLength]);
 				return this.getCount(words);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		throw new IllegalStateException();
+	}
+
+	public void printFile() {
+		String line;
+		try {
+			while ((line = this.reader.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void close() {

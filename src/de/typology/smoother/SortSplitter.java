@@ -113,14 +113,14 @@ public class SortSplitter extends Splitter {
 			}
 			this.reset();
 
-			if (this.reverse) {
-				this.sorter.sortRevertCountDirectory(
-						this.outputDirectory.getAbsolutePath() + "/"
-								+ this.extension, "-split", "");
-			} else {
-				this.sorter.sortCountDirectory(
-						this.outputDirectory.getAbsolutePath() + "/"
-								+ this.extension, "-split", "");
+			for (File file : this.outputDirectory.listFiles()) {
+				if (this.reverse) {
+					this.sorter.sortRevertCountDirectory(
+							file.getAbsolutePath(), "-split", "");
+				} else {
+					this.sorter.sortCountDirectory(file.getAbsolutePath(),
+							"-split", "");
+				}
 			}
 			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
 					+ this.extension);
