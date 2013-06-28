@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 import org.apache.commons.io.FileUtils;
 
@@ -25,16 +24,16 @@ public class KneserNeyAggregator {
 		kna.calculate(5);
 	}
 
-	protected String directory;
+	protected File directory;
 	protected File absoluteDirectory;
 	protected File _absoluteDirectory;
 	protected File absolute_Directory;
 	protected File _absolute_Directory;
 	protected File outputDirectory;
 	protected File lowTempResultDirectory;
-	protected File absTempResultDirectory;
+	protected File highTempResultDirectory;
 	protected File lowTempReverseSortDirectory;
-	protected File absTempReverseSortDirectory;
+	protected File highTempReverseSortDirectory;
 
 	protected BufferedReader absoluteReader;
 	protected BufferedReader _absoluteReader;
@@ -42,18 +41,12 @@ public class KneserNeyAggregator {
 	protected SlidingWindowReader _absolute_Reader;
 	protected SlidingWindowReader absoluteWithoutLastReader;
 
-	protected BufferedReader tempResultReverseSortReader;
-	protected SlidingWindowReader previousResultReverseSortReader;
-
 	protected BufferedWriter tempResultWriter;
-	protected BufferedWriter reverseSortResultWriter;
-	protected SortSplitter reverseSortSplitter;
 
 	private String indexName;
 	private String statsName;
 
 	private double d1plus;
-	DecimalFormat decimalFormat = new DecimalFormat("###.######");
 
 	public KneserNeyAggregator(String directory, String absoluteDirectoryName,
 			String _absoluteDirectoryName, String absolute_DirectoryName,
@@ -61,39 +54,43 @@ public class KneserNeyAggregator {
 			String indexName, String statsName) {
 		this.indexName = indexName;
 		this.statsName = statsName;
-		this.directory = directory;
-		this.absoluteDirectory = new File(this.directory
-				+ absoluteDirectoryName);
-		this._absoluteDirectory = new File(this.directory
-				+ _absoluteDirectoryName);
-		this.absolute_Directory = new File(this.directory
-				+ absolute_DirectoryName);
-		this._absolute_Directory = new File(this.directory
-				+ _absolute_DirectoryName);
-		this.outputDirectory = new File(this.directory + outputDirectoryName);
-		this.lowTempResultDirectory = new File(this.directory
-				+ outputDirectoryName + "-low-temp");
-		this.absTempResultDirectory = new File(this.directory
-				+ outputDirectoryName + "-abs-temp");
-		this.lowTempReverseSortDirectory = new File(this.directory
-				+ outputDirectoryName + "-low-temp-rev");
-		this.absTempReverseSortDirectory = new File(this.directory
-				+ outputDirectoryName + "-abs-temp-rev");
+		this.directory = new File(directory);
+		this.absoluteDirectory = new File(this.directory.getAbsolutePath()
+				+ "/" + absoluteDirectoryName);
+		this._absoluteDirectory = new File(this.directory.getAbsolutePath()
+				+ "/" + _absoluteDirectoryName);
+		this.absolute_Directory = new File(this.directory.getAbsolutePath()
+				+ "/" + absolute_DirectoryName);
+		this._absolute_Directory = new File(this.directory.getAbsolutePath()
+				+ "/" + _absolute_DirectoryName);
+		this.outputDirectory = new File(this.directory.getAbsolutePath() + "/"
+				+ outputDirectoryName);
+		this.lowTempResultDirectory = new File(this.directory.getAbsolutePath()
+				+ "/" + outputDirectoryName + "-low-temp");
+		this.highTempResultDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-high-temp");
+		this.lowTempReverseSortDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-low-temp-rev");
+		this.highTempReverseSortDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-high-temp-rev");
 
 		try {
 			FileUtils.deleteDirectory(this.outputDirectory);
 			FileUtils.deleteDirectory(this.lowTempResultDirectory);
-			FileUtils.deleteDirectory(this.absTempResultDirectory);
+			FileUtils.deleteDirectory(this.highTempResultDirectory);
 			FileUtils.deleteDirectory(this.lowTempReverseSortDirectory);
-			FileUtils.deleteDirectory(this.absTempReverseSortDirectory);
+			FileUtils.deleteDirectory(this.highTempReverseSortDirectory);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		this.outputDirectory.mkdir();
 		this.lowTempResultDirectory.mkdir();
-		this.absTempResultDirectory.mkdir();
+		this.highTempResultDirectory.mkdir();
 		this.lowTempReverseSortDirectory.mkdir();
-		this.absTempReverseSortDirectory.mkdir();
+		this.highTempReverseSortDirectory.mkdir();
 
 	}
 
@@ -117,6 +114,7 @@ public class KneserNeyAggregator {
 					+ sequenceBinary);
 			String currentAbsolteDirectory = this.absoluteDirectory + "/"
 					+ sequenceBinary;
+			System.out.println(currentAbsolteDirectory);
 			this.calculateDs(currentAbsolteDirectory);
 			// build absolute results
 			if (sequenceDecimal > 1) {
@@ -255,7 +253,8 @@ public class KneserNeyAggregator {
 									// + _absolute_Count);
 									this.tempResultWriter
 											.write(_absoluteWords
-													+ this.getRoundedResult(kneserNeyResult)
+													+ KneserNeyFormatter
+															.getRoundedResult(kneserNeyResult)
 													+ "\n");
 
 								} else {
@@ -295,100 +294,14 @@ public class KneserNeyAggregator {
 				}
 			}
 		}
+		KneserNeyTempResultCombiner resultCombiner = new KneserNeyTempResultCombiner(
+				this.directory, this.outputDirectory, this.indexName,
+				this.statsName);
+		resultCombiner.combine("-low", "-low", "-temp", "-rev",
+				maxSequenceLength - 1);
+		resultCombiner.combine("-high", "-low", "-temp", "-rev",
+				maxSequenceLength);
 
-		// revert sort low temp result
-		SortSplitter lowTempSortSplitter = new SortSplitter(this.directory,
-				this.lowTempResultDirectory.getName(),
-				this.lowTempReverseSortDirectory.getName(), this.indexName,
-				this.statsName, "", true);
-		lowTempSortSplitter.split(maxSequenceLength);
-		// revert sort abs temp result
-		SortSplitter absTempSortSplitter = new SortSplitter(this.directory,
-				this.absTempResultDirectory.getName(),
-				this.absTempReverseSortDirectory.getName(), this.indexName,
-				this.statsName, "", true);
-		absTempSortSplitter.split(maxSequenceLength);
-
-		// aggregate lower order results
-		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
-				maxSequenceLength - 1); sequenceDecimal++) {
-			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-			// skip even results (since there is no target)
-			if (sequenceDecimal % 2 == 0) {
-				continue;
-			}
-			IOHelper.strongLog("calculating lower order kneser-ney value for sequence "
-					+ sequenceBinary);
-			// aggregate revert sort temp result and previous result
-			File currentTempReverseSortResultDirectory = new File(
-					this.outputDirectory.getAbsolutePath() + "-low-temp-rev/"
-							+ sequenceBinary);
-			File currentReverseSortResultDirectory = new File(
-					this.outputDirectory.getAbsolutePath() + "-low-rev/"
-							+ sequenceBinary);
-
-			// for sequences > 1
-			for (File currentTempResultRevSortFile : currentTempReverseSortResultDirectory
-					.listFiles()) {
-				String currentTempResultRevSortFileName = currentTempResultRevSortFile
-						.getName().split("\\.")[0];
-				currentReverseSortResultDirectory.mkdirs();
-				this.initializeTempResultReverseSortReader(sequenceBinary,
-						currentTempResultRevSortFileName);
-				this.initializeReverseSortResultWriter(sequenceBinary,
-						currentTempResultRevSortFileName);
-				String revSortLine;
-				try {
-					try {
-						while ((revSortLine = this.tempResultReverseSortReader
-								.readLine()) != null) {
-							String[] revSortLineSplit = revSortLine.split("\t");
-							String revSortWordsWithoutFirst = "";
-							for (int i = 1; i < revSortLineSplit.length - 2; i++) {
-								revSortWordsWithoutFirst += revSortLineSplit[i]
-										+ "\t";
-							}
-							String revSortWords = revSortLineSplit[0] + "\t"
-									+ revSortWordsWithoutFirst;
-							double currentFirstFraction = Double
-									.parseDouble(revSortLineSplit[revSortLineSplit.length - 2]);
-							double currentDiscountFraction = Double
-									.parseDouble(revSortLineSplit[revSortLineSplit.length - 1]);
-							double previousResult = this.previousResultReverseSortReader
-									.getCount(revSortWordsWithoutFirst);
-
-							double result = currentFirstFraction
-									+ currentDiscountFraction * previousResult;
-							System.out.println(revSortWords
-									+ currentFirstFraction + "+"
-									+ currentDiscountFraction + "*"
-									+ previousResult);
-							this.reverseSortResultWriter.write(revSortWords
-									+ this.getRoundedResult(Math.log10(result))
-									+ "\n");
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				} finally {
-					this.closeTempResultReverseSortReader();
-					this.closeReverseSortResultWriter();
-				}
-
-			}
-		}
-
-		for (int sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
-				maxSequenceLength - 1); sequenceDecimal++) {
-			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-			// skip even results (since there is no target)
-			if (sequenceDecimal % 2 == 0) {
-				continue;
-			}
-			IOHelper.strongLog("calculating final kneser-ney value for sequence "
-					+ sequenceBinary);
-			// TODO: add aggregation of final values here...
-		}
 		// sort result
 		// SortSplitter sortSplitter = new SortSplitter(this.directory,
 		// this.outputDirectory.getName() + "-rev",
@@ -472,62 +385,6 @@ public class KneserNeyAggregator {
 		this.absolute_Reader.close();
 	}
 
-	private void initializeTempResultReverseSortReader(String sequenceBinary,
-			String currentFileName) {
-		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
-		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 2;
-		File tempResultReverseSortDirectory = new File(
-				this.lowTempResultDirectory.getAbsolutePath() + "-rev");
-		this.tempResultReverseSortReader = IOHelper.openReadFile(
-				tempResultReverseSortDirectory.getAbsolutePath() + "/"
-						+ sequenceBinary + "/" + currentFileName + "."
-						+ sequenceBinary, memoryLimitForReadingFiles);
-
-		String previousResultReverseSortSequence = sequenceBinary.substring(1);
-		// skip wildcard word in previous result
-		// e.g.: 01 --> 1 or 001 --> 1
-		if (previousResultReverseSortSequence.startsWith("0")) {
-			previousResultReverseSortSequence = previousResultReverseSortSequence
-					.replaceFirst("0*", "");
-		}
-		this.previousResultReverseSortReader = new SlidingWindowReader(
-				tempResultReverseSortDirectory.getAbsolutePath() + "/"
-						+ previousResultReverseSortSequence + "/"
-						+ currentFileName + "."
-						+ previousResultReverseSortSequence,
-				memoryLimitForReadingFiles);
-	}
-
-	private void closeTempResultReverseSortReader() {
-		try {
-			this.tempResultReverseSortReader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		this.previousResultReverseSortReader.close();
-	}
-
-	protected void initializeReverseSortResultWriter(String sequenceBinary,
-			String currentFileName) {
-		File currentReverseOutputDirectory = new File(
-				this.outputDirectory.getAbsolutePath() + "-low-rev/"
-						+ sequenceBinary);
-		currentReverseOutputDirectory.mkdir();
-		this.reverseSortResultWriter = IOHelper.openWriteFile(
-				currentReverseOutputDirectory.getAbsolutePath() + "/"
-						+ currentFileName + "." + sequenceBinary,
-				Config.get().memoryLimitForWritingFiles);
-	}
-
-	private void closeReverseSortResultWriter() {
-		try {
-			this.reverseSortResultWriter.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	protected void initializeTempResultWriter(String sequenceBinary,
 			String currentFileName) {
 		File currentTempResultDirectory = new File(
@@ -551,7 +408,7 @@ public class KneserNeyAggregator {
 	protected void initializeTempResultAbsoluteWriter(String sequenceBinary,
 			String currentFileName) {
 		File currentTempResultAbsoluteDirectory = new File(
-				this.absTempResultDirectory.getAbsolutePath() + "/"
+				this.highTempResultDirectory.getAbsolutePath() + "/"
 						+ sequenceBinary);
 		currentTempResultAbsoluteDirectory.mkdir();
 		this.tempResultWriter = IOHelper.openWriteFile(
@@ -609,7 +466,4 @@ public class KneserNeyAggregator {
 		}
 	}
 
-	private String getRoundedResult(double input) {
-		return this.decimalFormat.format(input);
-	}
 }
