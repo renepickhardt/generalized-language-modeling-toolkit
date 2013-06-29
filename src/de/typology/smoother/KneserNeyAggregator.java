@@ -103,6 +103,7 @@ public class KneserNeyAggregator {
 		IOHelper.strongLog("calcualting kneser-ney weights for "
 				+ this.directory);
 
+		long startTime = System.currentTimeMillis();
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
@@ -164,9 +165,9 @@ public class KneserNeyAggregator {
 								double firstFractionResult = absoluteMinusDResult
 										/ absoluteWithoutLastCount;
 
-								// System.out.println(absoluteWords + ": "
-								// + absoluteMinusDResult + "/"
-								// + absoluteWithoutLastCount);
+								System.out.println(absoluteWords + ": "
+										+ absoluteMinusDResult + "/"
+										+ absoluteWithoutLastCount);
 								// calculate the discount value
 								double discountFractionResult = this
 										.getD(absoluteCount)
@@ -248,9 +249,9 @@ public class KneserNeyAggregator {
 											/ _absolute_Count;
 									// the result is already reverse sorted
 									// since there is only one row
-									// System.out.println(_absoluteWords + ": "
-									// + _absoluteCount + " / "
-									// + _absolute_Count);
+									System.out.println(_absoluteWords + ": "
+											+ _absoluteCount + " / "
+											+ _absolute_Count);
 									this.tempResultWriter
 											.write(_absoluteWords
 													+ KneserNeyFormatter
@@ -273,9 +274,9 @@ public class KneserNeyAggregator {
 											.getDNumerator(_absoluteCount,
 													_absoluteWordsWithoutLast)
 											/ _absolute_Count;
-									// System.out.println(_absoluteWords + ": "
-									// + continuationMinusDResult + " / "
-									// + _absolute_Count);
+									System.out.println(_absoluteWords + ": "
+											+ continuationMinusDResult + " / "
+											+ _absolute_Count);
 									this.tempResultWriter.write(_absoluteWords
 											+ firstFractionResult + "\t"
 											+ discountFractionResult + "\n");
@@ -302,12 +303,10 @@ public class KneserNeyAggregator {
 		resultCombiner.combine("-high", "-low", "-temp", "-rev",
 				maxSequenceLength);
 
-		// sort result
-		// SortSplitter sortSplitter = new SortSplitter(this.directory,
-		// this.outputDirectory.getName() + "-rev",
-		// this.outputDirectory.getName(), this.indexName, this.statsName,
-		// "", false);
-		// sortSplitter.split(maxSequenceLength);
+		long endTime = System.currentTimeMillis();
+		long time = (endTime - startTime) / 1000;
+		IOHelper.strongLog("time for calculating kneser-ney of "
+				+ this.directory.getAbsolutePath() + ": " + time + "s");
 	}
 
 	private void initializeAbsoluteReaders(String sequenceBinary,

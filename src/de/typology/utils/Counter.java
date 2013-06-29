@@ -98,6 +98,13 @@ public class Counter {
 		return totalCount;
 	}
 
+	/**
+	 * used for calculating the count of counts in smoothing methods
+	 * 
+	 * @param count
+	 * @param directoryName
+	 * @return
+	 */
 	public static long countCountsInDirectory(int count, String directoryName) {
 		long totalCount = 0;
 		for (File file : new File(directoryName).listFiles()) {
@@ -106,6 +113,13 @@ public class Counter {
 		return totalCount;
 	}
 
+	/**
+	 * used for calculating the count of counts in smoothing methods
+	 * 
+	 * @param count
+	 * @param directoryName
+	 * @return
+	 */
 	public static long countCounts(int count, String fileName) {
 		long totalCount = 0;
 		BufferedReader br = IOHelper.openReadFile(fileName,
@@ -118,7 +132,7 @@ public class Counter {
 					lineSplit = line.split("\t");
 					long currentCount = Long
 							.parseLong(lineSplit[lineSplit.length - 1]);
-					if (count == currentCount && !lineSplit[1].equals("<s>")) {
+					if (count == currentCount && !lineSplit[0].equals("<fs>")) {
 						totalCount += 1;
 					}
 				}

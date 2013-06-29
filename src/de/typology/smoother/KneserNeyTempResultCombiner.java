@@ -37,12 +37,12 @@ public class KneserNeyTempResultCombiner {
 			String tempExtension, String revExtension, int maxSequenceLength) {
 		String outputDirectoryName = this.outputDirectory.getName();
 		// revert sort temp directory
-		SortSplitter lowTempSortSplitter = new SortSplitter(
+		SortSplitter tempSortSplitter = new SortSplitter(
 				this.directory.getAbsolutePath() + "/", outputDirectoryName
 						+ typeExtension + tempExtension, outputDirectoryName
 						+ typeExtension + tempExtension + revExtension,
 				this.indexName, this.statsName, "", true);
-		lowTempSortSplitter.split(maxSequenceLength);
+		tempSortSplitter.split(maxSequenceLength);
 
 		// aggregate lower order results
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
@@ -80,6 +80,13 @@ public class KneserNeyTempResultCombiner {
 						previousTempReverseSortResultParentDirectory);
 			}
 		}
+
+		SortSplitter resultSortSplitter = new SortSplitter(
+				this.directory.getAbsolutePath() + "/", outputDirectoryName
+						+ typeExtension + revExtension, outputDirectoryName
+						+ typeExtension, this.indexName, this.statsName, "",
+				false);
+		resultSortSplitter.split(maxSequenceLength);
 	}
 
 	private void aggregateResults(String sequenceBinary,
@@ -205,8 +212,6 @@ public class KneserNeyTempResultCombiner {
 			String sequenceBinary, String currentFileName) {
 		int memoryLimitForReadingFiles = Config.get().memoryLimitForReadingFiles;
 		memoryLimitForReadingFiles = memoryLimitForReadingFiles / 2;
-		// File tempResultReverseSortDirectory = new File(
-		// this.lowTempResultDirectory.getAbsolutePath() + "-rev");
 		this.tempResultReverseSortReader = IOHelper.openReadFile(
 				tempResultReverseSortDirectory.getAbsolutePath() + "/"
 						+ sequenceBinary + "/" + currentFileName + "."
