@@ -24,46 +24,30 @@ public class SlidingWindowReader {
 
 		this.sequenceLength = Integer.bitCount(Integer.parseInt(
 				ending.replace("_", "0"), 2));
+		try {
+			// read first line
+			this.currentLine = this.reader.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private int sequenceLength;
 	private String currentLine;
 	private BufferedReader reader;
-	private double currentLineCount;
 
 	public double getCount(String words) {
-		try {
-			if (this.currentLine == null) {
+		while (!this.currentLine.startsWith(words)) {
+			try {
 				this.currentLine = this.reader.readLine();
-				String[] currentLineSplit = this.currentLine.split("\t");
-				this.currentLineCount = Double
-						.parseDouble(currentLineSplit[this.sequenceLength]);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			if (this.currentLine.startsWith(words)) {
-				return this.currentLineCount;
-			} else {
-				this.currentLine = this.reader.readLine();
-				String[] currentLineSplit = this.currentLine.split("\t");
-				this.currentLineCount = Double
-						.parseDouble(currentLineSplit[this.sequenceLength]);
-				return this.getCount(words);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		throw new IllegalStateException();
-	}
-
-	public void printFile() {
-		String line;
-		try {
-			while ((line = this.reader.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		String[] currentLineSplit = this.currentLine.split("\t");
+		return Double.parseDouble(currentLineSplit[this.sequenceLength]);
 	}
 
 	public void close() {

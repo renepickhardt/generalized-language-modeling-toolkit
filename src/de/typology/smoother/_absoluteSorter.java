@@ -5,7 +5,7 @@ import java.io.File;
 import de.typology.splitter.Sorter;
 import de.typology.utils.SystemHelper;
 
-public class ContinuationSorter extends Sorter {
+public class _absoluteSorter extends Sorter {
 
 	/**
 	 * This class provides a method for sorting a given file by the second,

@@ -102,8 +102,25 @@ public class KneserNeyAggregator {
 	private void calculate(int maxSequenceLength) {
 		IOHelper.strongLog("calcualting kneser-ney weights for "
 				+ this.directory);
-
 		long startTime = System.currentTimeMillis();
+
+		this.calculateTempResults(maxSequenceLength);
+
+		KneserNeyTempResultCombiner resultCombiner = new KneserNeyTempResultCombiner(
+				this.directory, this.outputDirectory, this.indexName,
+				this.statsName);
+		resultCombiner.combine("-low", "-low", "-temp", "-rev",
+				maxSequenceLength - 1, false);
+		resultCombiner.combine("-high", "-low", "-temp", "-rev",
+				maxSequenceLength, true);
+
+		long endTime = System.currentTimeMillis();
+		long time = (endTime - startTime) / 1000;
+		IOHelper.strongLog("time for calculating kneser-ney of "
+				+ this.directory.getAbsolutePath() + ": " + time + "s");
+	}
+
+	private void calculateTempResults(int maxSequenceLength) {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
@@ -113,12 +130,12 @@ public class KneserNeyAggregator {
 			}
 			IOHelper.strongLog("calculating absolute sequence "
 					+ sequenceBinary);
-			String currentAbsolteDirectory = this.absoluteDirectory + "/"
-					+ sequenceBinary;
-			System.out.println(currentAbsolteDirectory);
-			this.calculateDs(currentAbsolteDirectory);
 			// build absolute results
 			if (sequenceDecimal > 1) {
+				String currentAbsolteDirectory = this.absoluteDirectory + "/"
+						+ sequenceBinary;
+				this.calculateDs(currentAbsolteDirectory);
+				System.out.println(currentAbsolteDirectory);
 				for (File absoluteFile : new File(currentAbsolteDirectory)
 						.listFiles()) {
 					String absoluteFileName = absoluteFile.getName().split(
@@ -165,15 +182,16 @@ public class KneserNeyAggregator {
 								double firstFractionResult = absoluteMinusDResult
 										/ absoluteWithoutLastCount;
 
-								System.out.println(absoluteWords + ": "
-										+ absoluteMinusDResult + "/"
-										+ absoluteWithoutLastCount);
 								// calculate the discount value
 								double discountFractionResult = this
 										.getD(absoluteCount)
 										/ absoluteWithoutLastCount;
 								double discountValueResult = discountFractionResult
 										* this.getAbsolute_Count(absoluteWordsWithoutLast);
+								System.out.println(absoluteWords + ": "
+										+ absoluteCount + "-"
+										+ this.getD(absoluteCount) + "/"
+										+ absoluteWithoutLastCount);
 								this.tempResultWriter.write(absoluteWords
 										+ firstFractionResult + "\t"
 										+ discountValueResult + "\n");
@@ -190,6 +208,9 @@ public class KneserNeyAggregator {
 			}
 			// sequenceLength<maxLength
 			if (sequenceBinary.length() < maxSequenceLength) {
+				String current_absolteDirectory = this._absoluteDirectory
+						+ "/_" + sequenceBinary;
+				this.calculateDs(current_absolteDirectory);
 				IOHelper.strongLog("calculating lower order sequence "
 						+ sequenceBinary);
 				String _absoluteSequence = "_" + sequenceBinary;
@@ -274,9 +295,9 @@ public class KneserNeyAggregator {
 											.getDNumerator(_absoluteCount,
 													_absoluteWordsWithoutLast)
 											/ _absolute_Count;
-									System.out.println(_absoluteWords + ": "
-											+ continuationMinusDResult + " / "
-											+ _absolute_Count);
+									// System.out.println(_absoluteWords + ": "
+									// + continuationMinusDResult + " / "
+									// + _absolute_Count);
 									this.tempResultWriter.write(_absoluteWords
 											+ firstFractionResult + "\t"
 											+ discountFractionResult + "\n");
@@ -295,18 +316,6 @@ public class KneserNeyAggregator {
 				}
 			}
 		}
-		KneserNeyTempResultCombiner resultCombiner = new KneserNeyTempResultCombiner(
-				this.directory, this.outputDirectory, this.indexName,
-				this.statsName);
-		resultCombiner.combine("-low", "-low", "-temp", "-rev",
-				maxSequenceLength - 1);
-		resultCombiner.combine("-high", "-low", "-temp", "-rev",
-				maxSequenceLength);
-
-		long endTime = System.currentTimeMillis();
-		long time = (endTime - startTime) / 1000;
-		IOHelper.strongLog("time for calculating kneser-ney of "
-				+ this.directory.getAbsolutePath() + ": " + time + "s");
 	}
 
 	private void initializeAbsoluteReaders(String sequenceBinary,

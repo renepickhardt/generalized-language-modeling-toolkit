@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -23,6 +25,16 @@ public class KneserNeyTempResultCombiner {
 		this.outputDirectory = outputDirecotry;
 		this.indexName = indexName;
 		this.statsName = statsName;
+		// delete old outputDirectory
+		if (this.outputDirectory.exists()) {
+			try {
+				FileUtils.deleteDirectory(this.outputDirectory);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		this.outputDirectory.mkdir();
 	}
 
 	// /**
@@ -34,7 +46,8 @@ public class KneserNeyTempResultCombiner {
 	// }
 
 	public void combine(String typeExtension, String lowExtension,
-			String tempExtension, String revExtension, int maxSequenceLength) {
+			String tempExtension, String revExtension, int maxSequenceLength,
+			boolean calculateLog) {
 		String outputDirectoryName = this.outputDirectory.getName();
 		// revert sort temp directory
 		SortSplitter tempSortSplitter = new SortSplitter(
@@ -52,8 +65,8 @@ public class KneserNeyTempResultCombiner {
 			if (sequenceDecimal % 2 == 0) {
 				continue;
 			}
-			IOHelper.strongLog("calculating lower order kneser-ney value for sequence "
-					+ sequenceBinary);
+			IOHelper.strongLog("calculating " + typeExtension.substring(1)
+					+ " order kneser-ney value for sequence " + sequenceBinary);
 			// aggregate revert sort temp result and previous result
 			File currentTempReverseSortResultDirectory = new File(
 					this.outputDirectory.getAbsolutePath() + typeExtension
@@ -69,15 +82,15 @@ public class KneserNeyTempResultCombiner {
 								+ sequenceBinary);
 				this.aggregateLowestOrder(sequenceBinary,
 						currentLowTempReverseSortDirectory,
-						currentReverseSortResultDirectory);
+						currentReverseSortResultDirectory, calculateLog);
 			} else {
-				File previousTempReverseSortResultParentDirectory = new File(
+				File previousReverseSortResultParentDirectory = new File(
 						this.outputDirectory.getAbsolutePath() + lowExtension
-								+ tempExtension + revExtension);
+								+ revExtension);
 				this.aggregateResults(sequenceBinary,
 						currentReverseSortResultDirectory,
 						currentTempReverseSortResultDirectory,
-						previousTempReverseSortResultParentDirectory);
+						previousReverseSortResultParentDirectory, calculateLog);
 			}
 		}
 
@@ -92,7 +105,7 @@ public class KneserNeyTempResultCombiner {
 	private void aggregateResults(String sequenceBinary,
 			File currentReverseSortResultDirectory,
 			File currentTempReverseSortResultDirectory,
-			File previousTempReverseSortResultParentDirectory) {
+			File previousReverseSortResultParentDirectory, boolean calculateLog) {
 		// for sequences > 1
 		for (File currentTempResultRevSortFile : currentTempReverseSortResultDirectory
 				.listFiles()) {
@@ -100,12 +113,10 @@ public class KneserNeyTempResultCombiner {
 					.getName().split("\\.")[0];
 			currentReverseSortResultDirectory.mkdirs();
 
-			System.out.println(previousTempReverseSortResultParentDirectory
-					.getAbsolutePath());
 			this.initializeTempResultReverseSortReader(
 					currentTempReverseSortResultDirectory.getParentFile(),
-					previousTempReverseSortResultParentDirectory,
-					sequenceBinary, currentTempResultRevSortFileName);
+					previousReverseSortResultParentDirectory, sequenceBinary,
+					currentTempResultRevSortFileName);
 
 			currentReverseSortResultDirectory.mkdirs();
 			this.reverseSortResultWriter = IOHelper.openWriteFile(
@@ -135,9 +146,13 @@ public class KneserNeyTempResultCombiner {
 
 						double result = currentFirstFraction
 								+ currentDiscountFraction * previousResult;
-						System.out.println(revSortWords + currentFirstFraction
-								+ "+" + currentDiscountFraction + "*"
-								+ previousResult);
+						if (calculateLog) {
+							result = Math.log10(result);
+						}
+						// System.out.println(revSortWords +
+						// currentFirstFraction
+						// + "+" + currentDiscountFraction + "*"
+						// + previousResult);
 						// this.reverseSortResultWriter.write(revSortWords
 						// + KneserNeyFormatter.getRoundedResult(Math
 						// .log10(result)) + "\n");
@@ -162,13 +177,12 @@ public class KneserNeyTempResultCombiner {
 
 	private void aggregateLowestOrder(String sequenceBinary,
 			File currentTempReverseSortResultDirectory,
-			File currentReverseSortResultDirectory) {
+			File currentReverseSortResultDirectory, boolean calculateLog) {
 		// for sequences > 1
 		for (File currentTempResultRevSortFile : currentTempReverseSortResultDirectory
 				.listFiles()) {
 			String currentTempResultRevSortFileName = currentTempResultRevSortFile
 					.getName().split("\\.")[0];
-
 			currentReverseSortResultDirectory.mkdirs();
 			this.tempResultReverseSortReader = IOHelper.openReadFile(
 					currentTempResultRevSortFile.getAbsolutePath(),
@@ -184,12 +198,14 @@ public class KneserNeyTempResultCombiner {
 					while ((revSortLine = this.tempResultReverseSortReader
 							.readLine()) != null) {
 						String[] revSortLineSplit = revSortLine.split("\t");
-						this.reverseSortResultWriter
-								.write(revSortLineSplit[0]
-										+ "\t"
-										+ KneserNeyFormatter.getRoundedResult(Math.log10(Double
-												.parseDouble(revSortLineSplit[1])))
-										+ "\n");
+						double result = Double.parseDouble(revSortLineSplit[1]);
+						if (calculateLog) {
+							result = Math.log10(result);
+						}
+						this.reverseSortResultWriter.write(revSortLineSplit[0]
+								+ "\t"
+								+ KneserNeyFormatter.getRoundedResult(result)
+								+ "\n");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

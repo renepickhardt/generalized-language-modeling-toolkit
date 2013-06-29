@@ -10,7 +10,7 @@ import org.apache.commons.io.FileUtils;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class NAggregator {
+public class Absolute_Aggregator {
 
 	/**
 	 * @param args
@@ -18,10 +18,10 @@ public class NAggregator {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		NAggregator naa = new NAggregator(outputDirectory, "absolute",
-				"absolute_");
-		NAggregator nac = new NAggregator(outputDirectory, "_absolute",
-				"_absolute_");
+		Absolute_Aggregator naa = new Absolute_Aggregator(outputDirectory,
+				"absolute", "absolute_");
+		Absolute_Aggregator nac = new Absolute_Aggregator(outputDirectory,
+				"_absolute", "_absolute_");
 		naa.aggregate(5);
 		nac.aggregate(5);
 	}
@@ -32,7 +32,7 @@ public class NAggregator {
 	private File outputDirectory;
 	private BufferedWriter writer;
 
-	public NAggregator(String directory, String inputDirectoryName,
+	public Absolute_Aggregator(String directory, String inputDirectoryName,
 			String outputDirectoryName) {
 		this.directory = directory;
 		this.inputDirectory = new File(directory + inputDirectoryName);
@@ -67,6 +67,7 @@ public class NAggregator {
 	private void aggregateFiles(File inputDirectory, String sequenceBinary) {
 		String sequenceBinaryMinusOne = sequenceBinary.substring(0,
 				sequenceBinary.length() - 1) + "_";
+
 		IOHelper.strongLog("calculate Ns for " + sequenceBinaryMinusOne);
 		File currentInputDirectory = new File(inputDirectory.getAbsolutePath()
 				+ "/" + sequenceBinary);
@@ -142,18 +143,19 @@ public class NAggregator {
 		}
 	}
 
-	private void putIntoNs(int currentCount, long[] ns) {
-		ns[0] = ns[0] + currentCount;
+	protected void putIntoNs(int currentCount, long[] ns) {
+		ns[0] = ns[0] + 1;
 		switch (currentCount) {
 		case 1:
-			ns[1] = ns[1] + currentCount;
+			ns[1] = ns[1] + 1;
 			break;
 		case 2:
-			ns[2] = ns[2] + currentCount;
+			ns[2] = ns[2] + 1;
 			break;
 		default:
-			ns[3] = ns[3] + currentCount;
+			ns[3] = ns[3] + 1;
 			break;
 		}
 	}
+
 }

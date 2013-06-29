@@ -64,14 +64,26 @@ public class Counter {
 		return 0;
 	}
 
+	private static int columnNumberStartZero;
+	private static String directoryName;
+	private static long currentCountForDirectory;
+
 	public static long countColumnCountsInDirectory(int columnNumberStartZero,
 			String directoryName) {
-		long totalCount = 0;
-		for (File file : new File(directoryName).listFiles()) {
-			totalCount += countColumnCounts(columnNumberStartZero,
-					file.getAbsolutePath());
+		if (columnNumberStartZero == Counter.columnNumberStartZero
+				&& directoryName.equals(Counter.directoryName)) {
+			return Counter.currentCountForDirectory;
+		} else {
+			long totalCount = 0;
+			for (File file : new File(directoryName).listFiles()) {
+				totalCount += countColumnCounts(columnNumberStartZero,
+						file.getAbsolutePath());
+			}
+			Counter.columnNumberStartZero = columnNumberStartZero;
+			Counter.currentCountForDirectory = totalCount;
+			Counter.directoryName = directoryName;
+			return totalCount;
 		}
-		return totalCount;
 	}
 
 	public static long countColumnCounts(int columnNumberStartZero,

@@ -14,7 +14,7 @@ import de.typology.utils.IOHelper;
 import de.typology.utils.SystemHelper;
 
 @Deprecated
-public class ContinuationDiscountAggregator {
+public class _absoluteDiscountAggregator {
 
 	/**
 	 * This class provides a method that aggregates and calculates the number of
@@ -27,7 +27,7 @@ public class ContinuationDiscountAggregator {
 	 * @author Martin Koerner
 	 */
 	public static void main(String[] args) {
-		ContinuationDiscountAggregator dca = new ContinuationDiscountAggregator(
+		_absoluteDiscountAggregator dca = new _absoluteDiscountAggregator(
 				Config.get().outputDirectory + Config.get().inputDataSet,
 				"aggregate");
 		dca.aggregate(5);
@@ -76,7 +76,7 @@ public class ContinuationDiscountAggregator {
 	// target writer
 	protected BufferedWriter targetWriter;
 
-	public ContinuationDiscountAggregator(String directory,
+	public _absoluteDiscountAggregator(String directory,
 			String outputDirectoryName) {
 		this.directory = directory;
 		this.tempOutputDirectory = new File(directory + outputDirectoryName
@@ -112,7 +112,7 @@ public class ContinuationDiscountAggregator {
 			// + sequenceBinaryMod);
 		}
 		// merge and sort aggregate-unmerged
-		ContinuationSplitter csp = new ContinuationSplitter(this.directory,
+		_absoluteSplitter csp = new _absoluteSplitter(this.directory,
 				"aggregate-unmerged", "aggregate", "index.txt", "", "",
 				Config.get().deleteTempFiles);
 		csp.split(maxSequenceLength - 1);

@@ -11,7 +11,7 @@ import de.typology.splitter.Splitter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class ContinuationSplitter extends Splitter {
+public class _absoluteSplitter extends Splitter {
 	/**
 	 * This class provides a method for splitting and sorting ngrams by the
 	 * second, third, fourth...(, first) word in order to calculate the novel
@@ -25,7 +25,7 @@ public class ContinuationSplitter extends Splitter {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		ContinuationSplitter cs = new ContinuationSplitter(outputDirectory,
+		_absoluteSplitter cs = new _absoluteSplitter(outputDirectory,
 				"absolute", "continuation-unaggregated", "index.txt",
 				"stats.txt", "training.txt", false);
 		cs.split(5);
@@ -37,10 +37,10 @@ public class ContinuationSplitter extends Splitter {
 	private String inputDirectoryName;
 	private String outputDirectoryName;
 	private boolean deleteInputFiles;
-	private ContinuationAggregator continuationAggregator;
-	private ContinuationSorter continuationSorter;
+	private _absoluteAggregator _absoluteAggregator;
+	private _absoluteSorter continuationSorter;
 
-	public ContinuationSplitter(String directory, String inputDirectoryName,
+	public _absoluteSplitter(String directory, String inputDirectoryName,
 			String outputDirectoryName, String indexName, String statsName,
 			String inputName, boolean deleteInputFiles) {
 		super(directory, indexName, statsName, inputName, "");
@@ -54,11 +54,10 @@ public class ContinuationSplitter extends Splitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.continuationSorter = new ContinuationSorter();
-		this.continuationAggregator = new ContinuationAggregator(
-				this.directory, this.outputDirectoryName,
-				this.outputDirectoryName.replace("-unaggregated", ""),
-				indexName);
+		this.continuationSorter = new _absoluteSorter();
+		this._absoluteAggregator = new _absoluteAggregator(this.directory,
+				this.outputDirectoryName, this.outputDirectoryName.replace(
+						"-unaggregated", ""), indexName);
 	}
 
 	@Override
@@ -183,7 +182,7 @@ public class ContinuationSplitter extends Splitter {
 				e.printStackTrace();
 			}
 		}
-		this.continuationAggregator.aggregate(5);
+		this._absoluteAggregator.aggregate(5);
 		// this.sorter.sortCountDirectory(this.directory+this.outputDirectoryName,
 		// inputExtension, outputExtension)
 	}

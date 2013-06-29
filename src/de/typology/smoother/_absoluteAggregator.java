@@ -15,7 +15,7 @@ import de.typology.splitter.Sorter;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class ContinuationAggregator {
+public class _absoluteAggregator {
 
 	/**
 	 * @param args
@@ -33,7 +33,7 @@ public class ContinuationAggregator {
 	private String[] wordIndex;
 	private Sorter sorter;
 
-	public ContinuationAggregator(String directory, String inputDirectoryName,
+	public _absoluteAggregator(String directory, String inputDirectoryName,
 			String outputDirectoryName, String indexName) {
 		this.directory = directory;
 		this.inputDirectory = new File(directory + inputDirectoryName);

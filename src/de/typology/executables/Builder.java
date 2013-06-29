@@ -1,7 +1,8 @@
 package de.typology.executables;
 
-import de.typology.smoother.ContinuationSplitter;
-import de.typology.smoother.NAggregator;
+import de.typology.smoother.Absolute_Aggregator;
+import de.typology.smoother._absoluteSplitter;
+import de.typology.smoother._absolute_Aggregator;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
@@ -53,12 +54,12 @@ public class Builder {
 					statsFileName, trainingFileName);
 			glms.splitGLMForKneserNey(Config.get().modelLength);
 		}
-		if (Config.get().buildContinuationGLM) {
-			ContinuationSplitter cs = new ContinuationSplitter(outputPath,
-					"absolute", "_absolute-unaggregated", "index.txt",
-					"stats.txt", "training.txt", false);
+		if (Config.get().build_absoluteGLM) {
+			_absoluteSplitter _absoluteSplitter = new _absoluteSplitter(
+					outputPath, "absolute", "_absolute-unaggregated",
+					"index.txt", "stats.txt", "training.txt", false);
 			try {
-				cs.split(Config.get().modelLength);
+				_absoluteSplitter.split(Config.get().modelLength);
 			} catch (Exception e) {
 				int mb = 1024 * 1024;
 				// Getting the runtime reference from system
@@ -81,12 +82,12 @@ public class Builder {
 			}
 		}
 
-		if (Config.get().aggregateN) {
-			NAggregator absolute_Aggregator = new NAggregator(outputPath,
-					"absolute", "absolute_");
+		if (Config.get().aggregateAbsolute_) {
+			Absolute_Aggregator absolute_Aggregator = new Absolute_Aggregator(
+					outputPath, "absolute", "absolute_");
 			absolute_Aggregator.aggregate(Config.get().modelLength);
-			NAggregator _absolute_Aggregator = new NAggregator(outputPath,
-					"_absolute", "_absolute_");
+			_absolute_Aggregator _absolute_Aggregator = new _absolute_Aggregator(
+					outputPath, "_absolute", "_absolute_");
 			_absolute_Aggregator.aggregate(Config.get().modelLength);
 		}
 		if (Config.get().revertSort) {
