@@ -1,50 +1,17 @@
 package de.typology.smoother;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-
-import org.apache.commons.io.FileUtils;
-
-public class ExtendedKneserNeyAggregator {
+public class ExtendedKneserNeyAggregator extends KneserNeyAggregator {
 	private double d1;
 	private double d2;
 	private double d3plus;
 
-	// base directory of corpus data, e.g.: .../wiki/de/
-	protected String directory;
-
-	// directories for absolute and aggregate glms
-	protected String absoluteDirectory;
-	protected String aggregateDirectory;
-	protected String countAbsoluteDirectory;
-	protected String countAaggregateDirectory;
-
-	// output directory
-	protected String outputDirectory;
-
-	// previous file reader
-	protected BufferedReader aggregateReader;
-
-	// result writer
-	protected BufferedWriter targetWriter;
-
 	public ExtendedKneserNeyAggregator(String directory,
-			String outputDirectoryName) {
-		this.directory = directory;
-		this.absoluteDirectory = directory + "absolute/";
-		this.aggregateDirectory = directory + "aggregate/";
-		this.outputDirectory = directory + outputDirectoryName + "/";
-		this.calculateDs();
-		// delete old output directory
-		File outputDirectoryFile = new File(this.outputDirectory);
-		try {
-			FileUtils.deleteDirectory(outputDirectoryFile);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		outputDirectoryFile.mkdir();
+			String absoluteDirectoryName, String _absoluteDirectoryName,
+			String absolute_DirectoryName, String _absolute_DirectoryName,
+			String outputDirectoryName, String indexName, String statsName) {
+		super(directory, absoluteDirectoryName, _absoluteDirectoryName,
+				absolute_DirectoryName, _absolute_DirectoryName,
+				outputDirectoryName, indexName, statsName);
 	}
 
 	/**
@@ -52,10 +19,6 @@ public class ExtendedKneserNeyAggregator {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
-	}
-
-	private void initialize(String binaryTargetFormat, String currentFileName) {
 
 	}
 
@@ -73,22 +36,20 @@ public class ExtendedKneserNeyAggregator {
 	 */
 	private void calculate(int maxSequenceLength) {
 
-		// case: 1
-		int sequenceDecimal = 1;
-		String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
+	}
 
-		// case: 2 .. max-1
-		for (sequenceDecimal = 2; sequenceDecimal < Math.pow(2,
-				maxSequenceLength - 1); sequenceDecimal++) {
-			sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-
+	@Override
+	protected double getD(int _absoluteCount) {
+		if (_absoluteCount == 1) {
+			return this.d1;
 		}
-
-		// case: max
-		for (sequenceDecimal = (int) Math.pow(2, maxSequenceLength - 1); sequenceDecimal < Math
-				.pow(2, maxSequenceLength); sequenceDecimal++) {
-			sequenceBinary = Integer.toBinaryString(sequenceDecimal);
-
+		if (_absoluteCount == 2) {
+			return this.d2;
 		}
+		if (_absoluteCount >= 3) {
+			return this.d3plus;
+		}
+		// if _absoluteCount==0
+		return 0;
 	}
 }

@@ -175,11 +175,10 @@ public abstract class Splitter {
 						return false;
 					} else {
 						if (Config.get().addSentenceTags) {
+							this.line = "<s> " + this.line + " </s>";
 							if (Config.get().addFakeStartTag) {
 								// <fs> for fake start
-								this.line = "<fs> <s> " + this.line + " </s>";
-							} else {
-								this.line = "<s> " + this.line + " </s>";
+								this.line = "<fs> " + this.line;
 							}
 						}
 						this.lineSplit = this.line.split("\\s+");

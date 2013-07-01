@@ -188,10 +188,10 @@ public class KneserNeyAggregator {
 										/ absoluteWithoutLastCount;
 								double discountValueResult = discountFractionResult
 										* this.getAbsolute_Count(absoluteWordsWithoutLast);
-								System.out.println(absoluteWords + ": "
-										+ absoluteCount + "-"
-										+ this.getD(absoluteCount) + "/"
-										+ absoluteWithoutLastCount);
+								// System.out.println(absoluteWords + ": "
+								// + absoluteCount + "-"
+								// + this.getD(absoluteCount) + "/"
+								// + absoluteWithoutLastCount);
 								this.tempResultWriter.write(absoluteWords
 										+ firstFractionResult + "\t"
 										+ discountValueResult + "\n");
@@ -270,9 +270,9 @@ public class KneserNeyAggregator {
 											/ _absolute_Count;
 									// the result is already reverse sorted
 									// since there is only one row
-									System.out.println(_absoluteWords + ": "
-											+ _absoluteCount + " / "
-											+ _absolute_Count);
+									// System.out.println(_absoluteWords + ": "
+									// + _absoluteCount + " / "
+									// + _absolute_Count);
 									this.tempResultWriter
 											.write(_absoluteWords
 													+ KneserNeyFormatter
