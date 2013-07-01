@@ -26,8 +26,8 @@ public class _absoluteSplitter extends Splitter {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		_absoluteSplitter cs = new _absoluteSplitter(outputDirectory,
-				"absolute", "continuation-unaggregated", "index.txt",
-				"stats.txt", "training.txt", false);
+				"absolute", "_absolute-unaggregated", "index.txt", "stats.txt",
+				"training.txt", false);
 		cs.split(5);
 	}
 

@@ -20,9 +20,9 @@ public class _absoluteAggregator {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-	}
+	// public static void main(String[] args) {
+	// // TODO Auto-generated method stub
+	// }
 
 	private String directory;
 	private BufferedReader reader;
@@ -123,9 +123,16 @@ public class _absoluteAggregator {
 						continue;
 					}
 					if (currentSequence == null) {
-						// initialize
-						currentSequence = tempSequence;
-						currentCount = 1;
+						// <fs> always counts as a different start
+						if (line.startsWith("<fs>\t")) {
+							currentSequence = tempSequence;
+							currentCount = Long
+									.parseLong(lineSplit[lineSplit.length - 1]);
+						} else {
+							// initialize
+							currentSequence = tempSequence;
+							currentCount = 1;
+						}
 					} else {
 						if (tempSequence.equals(currentSequence)) {
 							currentCount++;
@@ -133,8 +140,15 @@ public class _absoluteAggregator {
 							this.getWriter(currentSequence.split("\t")[0])
 									.write(currentSequence + currentCount
 											+ "\n");
-							currentSequence = tempSequence;
-							currentCount = 1;
+							// <fs> always counts as a different start
+							if (line.startsWith("<fs>\t")) {
+								currentSequence = tempSequence;
+								currentCount = Long
+										.parseLong(lineSplit[lineSplit.length - 1]);
+							} else {
+								currentSequence = tempSequence;
+								currentCount = 1;
+							}
 						}
 					}
 				}
