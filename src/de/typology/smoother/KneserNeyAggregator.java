@@ -128,10 +128,10 @@ public class KneserNeyAggregator {
 			if (sequenceDecimal % 2 == 0) {
 				continue;
 			}
-			IOHelper.strongLog("calculating absolute sequence "
-					+ sequenceBinary);
 			// build absolute results
 			if (sequenceDecimal > 1) {
+				IOHelper.strongLog("calculating absolute sequence "
+						+ sequenceBinary);
 				String currentAbsolteDirectory = this.absoluteDirectory + "/"
 						+ sequenceBinary;
 				this.calculateDs(currentAbsolteDirectory);
@@ -208,11 +208,11 @@ public class KneserNeyAggregator {
 			}
 			// sequenceLength<maxLength
 			if (sequenceBinary.length() < maxSequenceLength) {
+				IOHelper.strongLog("calculating lower order sequence "
+						+ sequenceBinary);
 				String current_absolteDirectory = this._absoluteDirectory
 						+ "/_" + sequenceBinary;
 				this.calculateDs(current_absolteDirectory);
-				IOHelper.strongLog("calculating lower order sequence "
-						+ sequenceBinary);
 				String _absoluteSequence = "_" + sequenceBinary;
 				for (File _absoluteFile : new File(this._absoluteDirectory
 						+ "/" + _absoluteSequence).listFiles()) {
@@ -458,7 +458,7 @@ public class KneserNeyAggregator {
 				.getCount(absoluteWordsWithoutLast);
 	}
 
-	private double getAbsolute_Count(String _absoluteWordsWithoutLast) {
+	protected double getAbsolute_Count(String _absoluteWordsWithoutLast) {
 		return this.absolute_Reader.getCount(_absoluteWordsWithoutLast);
 	}
 
@@ -466,8 +466,8 @@ public class KneserNeyAggregator {
 			String current_absolute_Directory) {
 
 		if (_absoluteWordsWithoutLast.isEmpty()) {
-			return Counter
-					.countColumnCountsInDirectory(current_absolute_Directory);
+			return Counter.countColumnCountsInDirectory(0,
+					current_absolute_Directory);
 		} else {
 			return this._absolute_Reader.getCount(_absoluteWordsWithoutLast);
 		}

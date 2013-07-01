@@ -25,7 +25,7 @@ public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 				+ Config.get().inputDataSet;
 		ModifiedKneserNeyAggregator mkna = new ModifiedKneserNeyAggregator(
 				outputDirectory, "absolute", "_absolute", "absolute_",
-				"_absolute_", "kneser-ney", "index.txt", "stats.txt");
+				"_absolute_", "mod-kneser-ney", "index.txt", "stats.txt");
 		mkna.calculate(5);
 
 	}
@@ -59,5 +59,12 @@ public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 		}
 		// if _absoluteCount==0
 		return 0;
+	}
+
+	@Override
+	protected double getDNumerator(int _absoluteCount,
+			String _absoluteWordsWithoutLast) {
+		return this.getD(_absoluteCount)
+				* this.getAbsolute_Count(_absoluteWordsWithoutLast);
 	}
 }
