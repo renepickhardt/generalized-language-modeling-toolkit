@@ -462,9 +462,14 @@ public class KneserNeyAggregator {
 		return this.absolute_Reader.getCount(_absoluteWordsWithoutLast);
 	}
 
+	protected double getAbsolute_Count(String _absoluteWordsWithoutLast,
+			int columnStartZero) {
+		return this.absolute_Reader.getCount(_absoluteWordsWithoutLast,
+				columnStartZero);
+	}
+
 	private double get_absolute_Count(String _absoluteWordsWithoutLast,
 			String current_absolute_Directory) {
-
 		if (_absoluteWordsWithoutLast.isEmpty()) {
 			return Counter.countColumnCountsInDirectory(0,
 					current_absolute_Directory);

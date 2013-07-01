@@ -44,6 +44,9 @@ public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 		this.d1 = 1 - 2 * y * ((double) n2 / (double) n1);
 		this.d2 = 2 - 3 * y * ((double) n3 / (double) n2);
 		this.d3plus = 3 - 4 * y * ((double) n4 / (double) n3);
+		System.out.println("D1: " + this.d1);
+		System.out.println("D2: " + this.d2);
+		System.out.println("D3+: " + this.d3plus);
 	}
 
 	@Override
@@ -64,7 +67,12 @@ public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 	@Override
 	protected double getDNumerator(int _absoluteCount,
 			String _absoluteWordsWithoutLast) {
-		return this.getD(_absoluteCount)
-				* this.getAbsolute_Count(_absoluteWordsWithoutLast);
+		double one = this.getD(1)
+				* this.getAbsolute_Count(_absoluteWordsWithoutLast, 1);
+		double two = this.getD(2)
+				* this.getAbsolute_Count(_absoluteWordsWithoutLast, 2);
+		double threePlus = this.getD(3)
+				* this.getAbsolute_Count(_absoluteWordsWithoutLast, 3);
+		return one + two + threePlus;
 	}
 }

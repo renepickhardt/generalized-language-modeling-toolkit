@@ -50,6 +50,20 @@ public class SlidingWindowReader {
 		return Double.parseDouble(currentLineSplit[this.sequenceLength]);
 	}
 
+	public double getCount(String words, int columnStartWithZero) {
+		while (!this.currentLine.startsWith(words)) {
+			try {
+				this.currentLine = this.reader.readLine();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		String[] currentLineSplit = this.currentLine.split("\t");
+		return Double.parseDouble(currentLineSplit[this.sequenceLength
+				+ columnStartWithZero]);
+	}
+
 	public void close() {
 		try {
 			this.reader.close();
