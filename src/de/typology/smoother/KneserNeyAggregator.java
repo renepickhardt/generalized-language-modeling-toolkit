@@ -99,7 +99,7 @@ public class KneserNeyAggregator {
 	 * @param maxSequenceLength
 	 *            needs to be greater than 1
 	 */
-	private void calculate(int maxSequenceLength) {
+	protected void calculate(int maxSequenceLength) {
 		IOHelper.strongLog("calcualting kneser-ney weights for "
 				+ this.directory);
 		long startTime = System.currentTimeMillis();
@@ -434,7 +434,6 @@ public class KneserNeyAggregator {
 	}
 
 	protected void calculateDs(String directoryPath) {
-		// TODO calculation
 		long n1 = Counter.countCountsInDirectory(1, directoryPath);
 		long n2 = Counter.countCountsInDirectory(2, directoryPath);
 		System.out.println("n1: " + n1);
@@ -467,8 +466,8 @@ public class KneserNeyAggregator {
 			String current_absolute_Directory) {
 
 		if (_absoluteWordsWithoutLast.isEmpty()) {
-			return Counter.countColumnCountsInDirectory(0,
-					current_absolute_Directory);
+			return Counter
+					.countColumnCountsInDirectory(current_absolute_Directory);
 		} else {
 			return this._absolute_Reader.getCount(_absoluteWordsWithoutLast);
 		}

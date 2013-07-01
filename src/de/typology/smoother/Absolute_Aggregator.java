@@ -31,6 +31,7 @@ public class Absolute_Aggregator {
 	private File inputDirectory;
 	private File outputDirectory;
 	private BufferedWriter writer;
+	protected long currentCount;
 
 	public Absolute_Aggregator(String directory, String inputDirectoryName,
 			String outputDirectoryName) {
@@ -87,7 +88,7 @@ public class Absolute_Aggregator {
 			int currentCount = 0;
 
 			// format of ns: 0=N1+,1=N1,2=N2,3=N3+
-			long[] ns = new long[4];
+			this.currentCount=0;
 			try {
 
 				while ((line = this.reader.readLine()) != null) {
@@ -104,34 +105,28 @@ public class Absolute_Aggregator {
 					if (currentSequence == null) {
 						// initialize
 						currentSequence = tempSequence;
-						this.putIntoNs(currentCount, ns);
+						this.setCurrentCount(currentCount);
 
 					} else {
 						if (tempSequence.equals(currentSequence)) {
-							this.putIntoNs(currentCount, ns);
+							this.setCurrentCount(currentCount);
 						} else {
 							// skip <fs> counts
 							if (!currentSequence.startsWith("<fs>")) {
-								this.writer.write(currentSequence);
-								for (int i = 0; i < ns.length - 1; i++) {
-									this.writer.write(ns[i] + "\t");
-								}
-								this.writer.write(ns[ns.length - 1] + "\n");
+								this.writer.write(currentSequence
+										+ this.currentCount + "\n");
 							}
-							ns = new long[4];
+							this.currentCount=0;
 							currentSequence = tempSequence;
-							this.putIntoNs(currentCount, ns);
+							this.setCurrentCount(currentCount);
 						}
 					}
 				}
 				if (currentSequence != null) {
 					// skip <fs> counts
 					if (!currentSequence.startsWith("<fs>")) {
-						this.writer.write(currentSequence);
-						for (int i = 0; i < ns.length - 1; i++) {
-							this.writer.write(ns[i] + "\t");
-						}
-						this.writer.write(ns[ns.length - 1] + "\n");
+						this.writer.write(currentSequence + this.currentCount
+								+ "\n");
 					}
 				}
 				this.reader.close();
@@ -143,19 +138,7 @@ public class Absolute_Aggregator {
 		}
 	}
 
-	protected void putIntoNs(int currentCount, long[] ns) {
-		ns[0] = ns[0] + 1;
-		switch (currentCount) {
-		case 1:
-			ns[1] = ns[1] + 1;
-			break;
-		case 2:
-			ns[2] = ns[2] + 1;
-			break;
-		default:
-			ns[3] = ns[3] + 1;
-			break;
-		}
+	protected void setCurrentCount(int currentCount) {
+		this.currentCount += 1;
 	}
-
 }
