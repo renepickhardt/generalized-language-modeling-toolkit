@@ -2,6 +2,7 @@ package de.typology.smoother;
 
 import de.typology.utils.Config;
 import de.typology.utils.Counter;
+import de.typology.utils.IOHelper;
 
 public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 	private double d1;
@@ -36,17 +37,17 @@ public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 		long n2 = Counter.countCountsInDirectory(2, directoryPath);
 		long n3 = Counter.countCountsInDirectory(3, directoryPath);
 		long n4 = Counter.countCountsInDirectory(4, directoryPath);
-		System.out.println("n1: " + n1);
-		System.out.println("n2: " + n2);
-		System.out.println("n3: " + n3);
-		System.out.println("n4: " + n4);
+		IOHelper.log("n1: " + n1);
+		IOHelper.log("n2: " + n2);
+		IOHelper.log("n3: " + n3);
+		IOHelper.log("n4: " + n4);
 		double y = n1 / ((double) n1 + 2 * n2);
 		this.d1 = 1 - 2 * y * ((double) n2 / (double) n1);
 		this.d2 = 2 - 3 * y * ((double) n3 / (double) n2);
 		this.d3plus = 3 - 4 * y * ((double) n4 / (double) n3);
-		System.out.println("D1: " + this.d1);
-		System.out.println("D2: " + this.d2);
-		System.out.println("D3+: " + this.d3plus);
+		IOHelper.log("D1: " + this.d1);
+		IOHelper.log("D2: " + this.d2);
+		IOHelper.log("D3+: " + this.d3plus);
 	}
 
 	@Override

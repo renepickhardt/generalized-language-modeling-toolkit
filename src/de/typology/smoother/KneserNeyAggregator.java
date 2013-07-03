@@ -436,11 +436,11 @@ public class KneserNeyAggregator {
 	protected void calculateDs(String directoryPath) {
 		long n1 = Counter.countCountsInDirectory(1, directoryPath);
 		long n2 = Counter.countCountsInDirectory(2, directoryPath);
-		System.out.println("n1: " + n1);
-		System.out.println("n2: " + n2);
+		IOHelper.log("n1: " + n1);
+		IOHelper.log("n2: " + n2);
 		// this.d1plus = 0.5;
 		this.d1plus = n1 / ((double) n1 + 2 * n2);
-		System.out.println("D1+: " + this.d1plus);
+		IOHelper.log("D1+: " + this.d1plus);
 	}
 
 	protected double getD(int _absoluteCount) {
