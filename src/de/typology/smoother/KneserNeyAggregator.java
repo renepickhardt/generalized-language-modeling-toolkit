@@ -60,6 +60,8 @@ public class KneserNeyAggregator {
 		this.indexName = indexName;
 		this.statsName = statsName;
 		this.directory = new File(directory);
+		this.outputDirectory = new File(this.directory.getAbsolutePath() + "/"
+				+ outputDirectoryName);
 		this.absoluteDirectory = new File(this.directory.getAbsolutePath()
 				+ "/" + absoluteDirectoryName);
 		this._absoluteDirectory = new File(this.directory.getAbsolutePath()
@@ -68,8 +70,6 @@ public class KneserNeyAggregator {
 				+ "/" + absolute_DirectoryName);
 		this._absolute_Directory = new File(this.directory.getAbsolutePath()
 				+ "/" + _absolute_DirectoryName);
-		this.outputDirectory = new File(this.directory.getAbsolutePath() + "/"
-				+ outputDirectoryName);
 		this.lowDiscountValueTempDirectory = new File(
 				this.directory.getAbsolutePath() + "/" + outputDirectoryName
 						+ "-low-discount-temp");
@@ -95,19 +95,14 @@ public class KneserNeyAggregator {
 						+ "-high-temp-rev");
 
 		try {
-			FileUtils.deleteDirectory(this.outputDirectory);
-			FileUtils.deleteDirectory(this.lowDiscountValueTempDirectory);
-			FileUtils.deleteDirectory(this.lowDiscountValueDirectory);
-			FileUtils.deleteDirectory(this.highDiscountValueTempDirectory);
-			FileUtils.deleteDirectory(this.highDiscountValueDirectory);
-			FileUtils.deleteDirectory(this.lowTempResultDirectory);
-			FileUtils.deleteDirectory(this.highTempResultDirectory);
-			FileUtils.deleteDirectory(this.lowTempReverseSortDirectory);
-			FileUtils.deleteDirectory(this.highTempReverseSortDirectory);
+			for (File file : this.directory.listFiles()) {
+				if (file.getName().startsWith(outputDirectoryName)) {
+					FileUtils.deleteDirectory(file);
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.outputDirectory.mkdir();
 		this.lowDiscountValueTempDirectory.mkdir();
 		this.lowDiscountValueDirectory.mkdir();
 		this.highDiscountValueTempDirectory.mkdir();

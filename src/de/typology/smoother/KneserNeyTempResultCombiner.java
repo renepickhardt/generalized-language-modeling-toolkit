@@ -5,8 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
-
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -25,16 +23,6 @@ public class KneserNeyTempResultCombiner {
 		this.outputDirectory = outputDirecotry;
 		this.indexName = indexName;
 		this.statsName = statsName;
-		// delete old outputDirectory
-		if (this.outputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.outputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		this.outputDirectory.mkdir();
 	}
 
 	// /**
