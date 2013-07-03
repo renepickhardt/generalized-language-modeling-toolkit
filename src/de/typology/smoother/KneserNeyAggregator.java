@@ -440,7 +440,7 @@ public class KneserNeyAggregator {
 		System.out.println("n2: " + n2);
 		// this.d1plus = 0.5;
 		this.d1plus = n1 / ((double) n1 + 2 * n2);
-		System.out.println(this.d1plus);
+		System.out.println("D1+: " + this.d1plus);
 	}
 
 	protected double getD(int _absoluteCount) {

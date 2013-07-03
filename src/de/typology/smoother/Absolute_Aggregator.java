@@ -30,7 +30,7 @@ public class Absolute_Aggregator {
 	private BufferedReader reader;
 	private File inputDirectory;
 	private File outputDirectory;
-	private BufferedWriter writer;
+	protected BufferedWriter writer;
 
 	public Absolute_Aggregator(String directory, String inputDirectoryName,
 			String outputDirectoryName) {
@@ -53,8 +53,10 @@ public class Absolute_Aggregator {
 				+ Config.get().deleteTempFiles);
 		// leave out unigrams
 		for (File inputFile : this.inputDirectory.listFiles()) {
-			this.aggregateFiles(this.inputDirectory,
-					inputFile.getName().split("\\.")[0]);
+			if (inputFile.getName().endsWith("1")) {
+				this.aggregateFiles(this.inputDirectory, inputFile.getName()
+						.split("\\.")[0]);
+			}
 		}
 
 		// delete unaggregated continuation directory
@@ -113,11 +115,7 @@ public class Absolute_Aggregator {
 						} else {
 							// skip <fs> counts
 							if (!currentSequence.startsWith("<fs>")) {
-								this.writer.write(currentSequence);
-								for (int i = 0; i < ns.length - 1; i++) {
-									this.writer.write(ns[i] + "\t");
-								}
-								this.writer.write(ns[ns.length - 1] + "\n");
+								this.writeSequence(currentSequence, ns);
 							}
 							ns = new long[4];
 							currentSequence = tempSequence;
@@ -128,11 +126,7 @@ public class Absolute_Aggregator {
 				if (currentSequence != null) {
 					// skip <fs> counts
 					if (!currentSequence.startsWith("<fs>")) {
-						this.writer.write(currentSequence);
-						for (int i = 0; i < ns.length - 1; i++) {
-							this.writer.write(ns[i] + "\t");
-						}
-						this.writer.write(ns[ns.length - 1] + "\n");
+						this.writeSequence(currentSequence, ns);
 					}
 				}
 				this.reader.close();
@@ -141,6 +135,19 @@ public class Absolute_Aggregator {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
+	}
+
+	protected void writeSequence(String currentSequence, long[] ns) {
+		try {
+			this.writer.write(currentSequence);
+			for (int i = 0; i < ns.length - 1; i++) {
+				this.writer.write(ns[i] + "\t");
+			}
+			this.writer.write(ns[ns.length - 1] + "\n");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
