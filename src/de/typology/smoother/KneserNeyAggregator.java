@@ -30,6 +30,10 @@ public class KneserNeyAggregator {
 	protected File absolute_Directory;
 	protected File _absolute_Directory;
 	protected File outputDirectory;
+	protected File lowDiscountValueTempDirectory;
+	protected File lowDiscountValueDirectory;
+	protected File highDiscountValueTempDirectory;
+	protected File highDiscountValueDirectory;
 	protected File lowTempResultDirectory;
 	protected File highTempResultDirectory;
 	protected File lowTempReverseSortDirectory;
@@ -42,6 +46,7 @@ public class KneserNeyAggregator {
 	protected SlidingWindowReader absoluteWithoutLastReader;
 
 	protected BufferedWriter tempResultWriter;
+	protected BufferedWriter discountValueWriter;
 
 	private String indexName;
 	private String statsName;
@@ -65,6 +70,18 @@ public class KneserNeyAggregator {
 				+ "/" + _absolute_DirectoryName);
 		this.outputDirectory = new File(this.directory.getAbsolutePath() + "/"
 				+ outputDirectoryName);
+		this.lowDiscountValueTempDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-low-discount-temp");
+		this.lowDiscountValueDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-low-discount");
+		this.highDiscountValueTempDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-high-discount-temp");
+		this.highDiscountValueDirectory = new File(
+				this.directory.getAbsolutePath() + "/" + outputDirectoryName
+						+ "-high-discount");
 		this.lowTempResultDirectory = new File(this.directory.getAbsolutePath()
 				+ "/" + outputDirectoryName + "-low-temp");
 		this.highTempResultDirectory = new File(
@@ -79,6 +96,10 @@ public class KneserNeyAggregator {
 
 		try {
 			FileUtils.deleteDirectory(this.outputDirectory);
+			FileUtils.deleteDirectory(this.lowDiscountValueTempDirectory);
+			FileUtils.deleteDirectory(this.lowDiscountValueDirectory);
+			FileUtils.deleteDirectory(this.highDiscountValueTempDirectory);
+			FileUtils.deleteDirectory(this.highDiscountValueDirectory);
 			FileUtils.deleteDirectory(this.lowTempResultDirectory);
 			FileUtils.deleteDirectory(this.highTempResultDirectory);
 			FileUtils.deleteDirectory(this.lowTempReverseSortDirectory);
@@ -87,6 +108,10 @@ public class KneserNeyAggregator {
 			e.printStackTrace();
 		}
 		this.outputDirectory.mkdir();
+		this.lowDiscountValueTempDirectory.mkdir();
+		this.lowDiscountValueDirectory.mkdir();
+		this.highDiscountValueTempDirectory.mkdir();
+		this.highDiscountValueDirectory.mkdir();
 		this.lowTempResultDirectory.mkdir();
 		this.highTempResultDirectory.mkdir();
 		this.lowTempReverseSortDirectory.mkdir();
@@ -144,8 +169,11 @@ public class KneserNeyAggregator {
 							absoluteFileName);
 					this.initializeAbsolute_Reader(sequenceBinary,
 							absoluteFileName);
+					this.initializeTempDiscountValueWriter(sequenceBinary,
+							absoluteFileName, false);
 					this.initializeTempResultAbsoluteWriter(sequenceBinary,
 							absoluteFileName);
+
 					String absoluteLine;
 					try {
 						try {
@@ -184,26 +212,43 @@ public class KneserNeyAggregator {
 
 								// calculate the discount value
 								double discountFractionResult = this
-										.getD(absoluteCount)
+										.getDNumerator(absoluteCount,
+												absoluteWordsWithoutLast)
 										/ absoluteWithoutLastCount;
-								double discountValueResult = discountFractionResult
-										* this.getAbsolute_Count(absoluteWordsWithoutLast);
+								this.discountValueWriter
+										.write(absoluteWordsWithoutLast
+												+ discountFractionResult + "\n");
 								// System.out.println(absoluteWords + ": "
 								// + absoluteCount + "-"
 								// + this.getD(absoluteCount) + "/"
 								// + absoluteWithoutLastCount);
 								this.tempResultWriter.write(absoluteWords
 										+ firstFractionResult + "\t"
-										+ discountValueResult + "\n");
+										+ discountFractionResult + "\n");
 							}
 						} finally {
 							this.closeAbsoluteReaders();
 							this.closeAbsolute_Reader();
+							this.closeTempDiscountValueWriter();
 							this.closeAbsTempResultWriter();
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					// aggregate absolute discount fraction values...
+					String sequenceBinaryWithoutLast = sequenceBinary
+							.substring(0, sequenceBinary.length() - 1);
+					String filePathPartTwo = sequenceBinaryWithoutLast + "/"
+							+ absoluteFileName + "."
+							+ sequenceBinaryWithoutLast;
+					File tempDiscountValueFile = new File(
+							this.highDiscountValueTempDirectory
+									.getAbsolutePath() + "/" + filePathPartTwo);
+					File discountValueFile = new File(
+							this.highDiscountValueDirectory.getAbsolutePath()
+									+ "/" + filePathPartTwo);
+					this.aggregateDiscountValues(tempDiscountValueFile,
+							discountValueFile);
 				}
 			}
 			// sequenceLength<maxLength
@@ -223,8 +268,10 @@ public class KneserNeyAggregator {
 					if (sequenceDecimal > 1) {
 						this.initializeAbsolute_Reader(sequenceBinary,
 								_absoluteFileName);
+						this.initializeTempDiscountValueWriter(sequenceBinary,
+								_absoluteFileName, true);
 					}
-					this.initializeTempResultWriter(sequenceBinary,
+					this.initializeLowResultWriter(sequenceBinary,
 							_absoluteFileName);
 
 					String _absoluteLine;
@@ -295,6 +342,10 @@ public class KneserNeyAggregator {
 											.getDNumerator(_absoluteCount,
 													_absoluteWordsWithoutLast)
 											/ _absolute_Count;
+									this.discountValueWriter
+											.write(_absoluteWordsWithoutLast
+													+ discountFractionResult
+													+ "\n");
 									// System.out.println(_absoluteWords + ": "
 									// + continuationMinusDResult + " / "
 									// + _absolute_Count);
@@ -307,14 +358,67 @@ public class KneserNeyAggregator {
 							this.close_absoluteReaders();
 							if (sequenceDecimal > 1) {
 								this.closeAbsolute_Reader();
+								this.closeTempDiscountValueWriter();
 							}
-							this.closeTempResultWriter();
+							this.closeLowResultWriter();
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					if (sequenceDecimal > 1) {
+						// aggregate absolute discount fraction values...
+						String sequenceBinaryWithoutLast = sequenceBinary
+								.substring(0, sequenceBinary.length() - 1);
+						String filePathPartTwo = sequenceBinaryWithoutLast
+								+ "/" + _absoluteFileName + "."
+								+ sequenceBinaryWithoutLast;
+						File tempDiscountValueFile = new File(
+								this.lowDiscountValueTempDirectory
+										.getAbsolutePath()
+										+ "/"
+										+ filePathPartTwo);
+						File discountValueFile = new File(
+								this.lowDiscountValueDirectory
+										.getAbsolutePath()
+										+ "/"
+										+ filePathPartTwo);
+						this.aggregateDiscountValues(tempDiscountValueFile,
+								discountValueFile);
+					}
 				}
 			}
+		}
+	}
+
+	private void aggregateDiscountValues(File inputFile, File outputFile) {
+		BufferedReader tempDiscountValueReader = IOHelper.openReadFile(
+				inputFile.getAbsolutePath(),
+				Config.get().memoryLimitForReadingFiles);
+
+		outputFile.getParentFile().mkdirs();
+		BufferedWriter discountValueWriter = IOHelper.openWriteFile(
+				outputFile.getAbsolutePath(),
+				Config.get().memoryLimitForWritingFiles);
+		String currentLine;
+		String previousLine = "";
+		try {
+			try {
+				while ((currentLine = tempDiscountValueReader.readLine()) != null) {
+					if (!currentLine.equals(previousLine)) {
+						discountValueWriter.write(currentLine + "\n");
+						previousLine = currentLine;
+					}
+				}
+			} finally {
+				tempDiscountValueReader.close();
+				discountValueWriter.close();
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		if (Config.get().deleteTempFiles) {
+			inputFile.delete();
 		}
 	}
 
@@ -393,9 +497,10 @@ public class KneserNeyAggregator {
 		this.absolute_Reader.close();
 	}
 
-	protected void initializeTempResultWriter(String sequenceBinary,
+	protected void initializeLowResultWriter(String sequenceBinary,
 			String currentFileName) {
-		File currentTempResultDirectory = new File(
+		File currentTempResultDirectory;
+		currentTempResultDirectory = new File(
 				this.lowTempResultDirectory.getAbsolutePath() + "/"
 						+ sequenceBinary);
 		currentTempResultDirectory.mkdir();
@@ -405,9 +510,38 @@ public class KneserNeyAggregator {
 				Config.get().memoryLimitForWritingFiles);
 	}
 
-	private void closeTempResultWriter() {
+	private void closeLowResultWriter() {
 		try {
 			this.tempResultWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void initializeTempDiscountValueWriter(String sequenceBinary,
+			String currentFileName, boolean low) {
+		String sequenceBinaryWithoutLast = sequenceBinary.substring(0,
+				sequenceBinary.length() - 1);
+		File currentDiscountValueDirectory;
+		if (low) {
+			currentDiscountValueDirectory = new File(
+					this.lowDiscountValueTempDirectory.getAbsolutePath() + "/"
+							+ sequenceBinaryWithoutLast);
+		} else {
+			currentDiscountValueDirectory = new File(
+					this.highDiscountValueTempDirectory.getAbsolutePath() + "/"
+							+ sequenceBinaryWithoutLast);
+		}
+		currentDiscountValueDirectory.mkdir();
+		this.discountValueWriter = IOHelper.openWriteFile(
+				currentDiscountValueDirectory.getAbsolutePath() + "/"
+						+ currentFileName + "." + sequenceBinaryWithoutLast,
+				Config.get().memoryLimitForWritingFiles);
+	}
+
+	private void closeTempDiscountValueWriter() {
+		try {
+			this.discountValueWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -423,6 +557,7 @@ public class KneserNeyAggregator {
 				currentTempResultAbsoluteDirectory.getAbsolutePath() + "/"
 						+ currentFileName + "." + sequenceBinary,
 				Config.get().memoryLimitForWritingFiles);
+
 	}
 
 	private void closeAbsTempResultWriter() {
