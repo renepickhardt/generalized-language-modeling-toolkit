@@ -111,7 +111,11 @@ public class KneserNeyAggregator {
 		this.highTempResultDirectory.mkdir();
 		this.lowTempReverseSortDirectory.mkdir();
 		this.highTempReverseSortDirectory.mkdir();
-
+		// // set decimalFormat to override LOCALE values
+		// this.decimalFormat = new DecimalFormat();
+		// DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+		// symbols.setDecimalSeparator('.');
+		// this.decimalFormat.setDecimalFormatSymbols(symbols);
 	}
 
 	/**
@@ -212,14 +216,21 @@ public class KneserNeyAggregator {
 										/ absoluteWithoutLastCount;
 								this.discountValueWriter
 										.write(absoluteWordsWithoutLast
-												+ discountFractionResult + "\n");
+												+ KneserNeyFormatter
+														.getRoundedResult(discountFractionResult)
+												+ "\n");
 								// System.out.println(absoluteWords + ": "
 								// + absoluteCount + "-"
 								// + this.getD(absoluteCount) + "/"
 								// + absoluteWithoutLastCount);
-								this.tempResultWriter.write(absoluteWords
-										+ firstFractionResult + "\t"
-										+ discountFractionResult + "\n");
+								this.tempResultWriter
+										.write(absoluteWords
+												+ KneserNeyFormatter
+														.getRoundedResult(firstFractionResult)
+												+ "\t"
+												+ KneserNeyFormatter
+														.getRoundedResult(discountFractionResult)
+												+ "\n");
 							}
 						} finally {
 							this.closeAbsoluteReaders();
@@ -339,14 +350,20 @@ public class KneserNeyAggregator {
 											/ _absolute_Count;
 									this.discountValueWriter
 											.write(_absoluteWordsWithoutLast
-													+ discountFractionResult
+													+ KneserNeyFormatter
+															.getRoundedResult(discountFractionResult)
 													+ "\n");
 									// System.out.println(_absoluteWords + ": "
 									// + continuationMinusDResult + " / "
 									// + _absolute_Count);
-									this.tempResultWriter.write(_absoluteWords
-											+ firstFractionResult + "\t"
-											+ discountFractionResult + "\n");
+									this.tempResultWriter
+											.write(_absoluteWords
+													+ KneserNeyFormatter
+															.getRoundedResult(firstFractionResult)
+													+ "\t"
+													+ KneserNeyFormatter
+															.getRoundedResult(discountFractionResult)
+													+ "\n");
 								}
 							}
 						} finally {
