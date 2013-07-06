@@ -53,6 +53,8 @@ public class KneserNeyAggregator {
 
 	private double d1plus;
 
+	private KneserNeyFormatter kneserNeyFormatter;
+
 	public KneserNeyAggregator(String directory, String absoluteDirectoryName,
 			String _absoluteDirectoryName, String absolute_DirectoryName,
 			String _absolute_DirectoryName, String outputDirectoryName,
@@ -111,11 +113,7 @@ public class KneserNeyAggregator {
 		this.highTempResultDirectory.mkdir();
 		this.lowTempReverseSortDirectory.mkdir();
 		this.highTempReverseSortDirectory.mkdir();
-		// // set decimalFormat to override LOCALE values
-		// this.decimalFormat = new DecimalFormat();
-		// DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-		// symbols.setDecimalSeparator('.');
-		// this.decimalFormat.setDecimalFormatSymbols(symbols);
+		this.kneserNeyFormatter = new KneserNeyFormatter();
 	}
 
 	/**
@@ -216,7 +214,7 @@ public class KneserNeyAggregator {
 										/ absoluteWithoutLastCount;
 								this.discountValueWriter
 										.write(absoluteWordsWithoutLast
-												+ KneserNeyFormatter
+												+ this.kneserNeyFormatter
 														.getRoundedResult(discountFractionResult)
 												+ "\n");
 								// System.out.println(absoluteWords + ": "
@@ -225,10 +223,10 @@ public class KneserNeyAggregator {
 								// + absoluteWithoutLastCount);
 								this.tempResultWriter
 										.write(absoluteWords
-												+ KneserNeyFormatter
+												+ this.kneserNeyFormatter
 														.getRoundedResult(firstFractionResult)
 												+ "\t"
-												+ KneserNeyFormatter
+												+ this.kneserNeyFormatter
 														.getRoundedResult(discountFractionResult)
 												+ "\n");
 							}
@@ -328,7 +326,7 @@ public class KneserNeyAggregator {
 									// + _absolute_Count);
 									this.tempResultWriter
 											.write(_absoluteWords
-													+ KneserNeyFormatter
+													+ this.kneserNeyFormatter
 															.getRoundedResult(kneserNeyResult)
 													+ "\n");
 
@@ -350,7 +348,7 @@ public class KneserNeyAggregator {
 											/ _absolute_Count;
 									this.discountValueWriter
 											.write(_absoluteWordsWithoutLast
-													+ KneserNeyFormatter
+													+ this.kneserNeyFormatter
 															.getRoundedResult(discountFractionResult)
 													+ "\n");
 									// System.out.println(_absoluteWords + ": "
@@ -358,10 +356,10 @@ public class KneserNeyAggregator {
 									// + _absolute_Count);
 									this.tempResultWriter
 											.write(_absoluteWords
-													+ KneserNeyFormatter
+													+ this.kneserNeyFormatter
 															.getRoundedResult(firstFractionResult)
 													+ "\t"
-													+ KneserNeyFormatter
+													+ this.kneserNeyFormatter
 															.getRoundedResult(discountFractionResult)
 													+ "\n");
 								}

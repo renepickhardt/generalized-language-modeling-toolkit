@@ -16,6 +16,7 @@ public class KneserNeyTempResultCombiner {
 	protected BufferedReader tempResultReverseSortReader;
 	protected SlidingWindowReader previousResultReverseSortReader;
 	protected BufferedWriter reverseSortResultWriter;
+	private KneserNeyFormatter kneserNeyFormatter;
 
 	public KneserNeyTempResultCombiner(File directory, File outputDirecotry,
 			String indexName, String statsName) {
@@ -23,6 +24,7 @@ public class KneserNeyTempResultCombiner {
 		this.outputDirectory = outputDirecotry;
 		this.indexName = indexName;
 		this.statsName = statsName;
+		this.kneserNeyFormatter = new KneserNeyFormatter();
 	}
 
 	// /**
@@ -145,8 +147,8 @@ public class KneserNeyTempResultCombiner {
 						// + KneserNeyFormatter.getRoundedResult(Math
 						// .log10(result)) + "\n");
 						this.reverseSortResultWriter.write(revSortWords
-								+ KneserNeyFormatter.getRoundedResult(result)
-								+ "\n");
+								+ this.kneserNeyFormatter
+										.getRoundedResult(result) + "\n");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -192,8 +194,8 @@ public class KneserNeyTempResultCombiner {
 						}
 						this.reverseSortResultWriter.write(revSortLineSplit[0]
 								+ "\t"
-								+ KneserNeyFormatter.getRoundedResult(result)
-								+ "\n");
+								+ this.kneserNeyFormatter
+										.getRoundedResult(result) + "\n");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
