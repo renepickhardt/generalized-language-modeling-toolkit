@@ -96,6 +96,7 @@ public class KneserNeyAggregator {
 				this.directory.getAbsolutePath() + "/" + outputDirectoryName
 						+ "-high-temp-rev");
 
+		IOHelper.strongLog("delete old output folders");
 		try {
 			for (File file : this.directory.listFiles()) {
 				if (file.getName().startsWith(outputDirectoryName)) {

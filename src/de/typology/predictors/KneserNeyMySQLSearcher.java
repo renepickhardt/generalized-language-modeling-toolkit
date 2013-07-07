@@ -5,7 +5,7 @@ import de.typology.splitter.IndexBuilder;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public class GLMMySQLSearcher extends NewMySQLSearcher {
+public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 
 	/**
 	 * @param args
@@ -13,16 +13,13 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 	public static void main(String[] args) {
 		IndexBuilder ib = new IndexBuilder();
 		String databaseName = Config.get().trainedOnDataSet + "_"
-				+ Config.get().trainedOnLang;
+				+ Config.get().trainedOnLang + "_" + Config.get().dataBaseType;
 		String indexPath = Config.get().outputDirectory + "/"
 				+ Config.get().trainedOnDataSet + "/"
 				+ Config.get().trainedOnLang + "/index.txt";
 		String[] wordIndex = ib.deserializeIndex(indexPath);
 
-		// k is used in prepareQuery
-		int k = 2;
-
-		GLMMySQLSearcher glmmss = new GLMMySQLSearcher(databaseName, k);
+		KneserNeyMySQLSearcher glmmss = new KneserNeyMySQLSearcher(databaseName);
 		// Config.get().weight = "no";
 		// for (int i = 5; i > 1; i--) {
 		// IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
@@ -31,16 +28,18 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 		// }
 		// Config.get().weight = "pic";
 
-		for (int i = 5; i > 1; i--) {
-			IOHelper.strongLog("model parameter: " + i);
-			glmmss.run(i, Config.get().numberOfQueries, Config.get().weight,
-					wordIndex);
+		for (int n = 5; n > 1; n--) {
+			IOHelper.strongLog("model parameter: " + n);
+
+			for (int k = n; k > 1; k--) {
+				glmmss.run(n, k, Config.get().numberOfQueries,
+						Config.get().weight, wordIndex);
+			}
 		}
 	}
 
-	public GLMMySQLSearcher(String databaseName, int k) {
-		// general:
-		super(databaseName, k);
+	public KneserNeyMySQLSearcher(String databaseName) {
+		super(databaseName);
 	}
 
 	@Override
@@ -55,7 +54,6 @@ public class GLMMySQLSearcher extends NewMySQLSearcher {
 			// TODO:remove this:
 			return null;
 		} else {
-
 			if (sequence % 2 == 0) {
 				// no target in sequence (e.g. 110)
 				return null;

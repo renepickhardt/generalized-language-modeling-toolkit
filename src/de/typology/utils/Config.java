@@ -31,6 +31,7 @@ public class Config extends Properties {
 	public String trainedOnLang;
 	public String testedOnDataSet;
 	public String testedOnLang;
+	public String dataBaseType;
 
 	public String weight;
 	public boolean useWeights;

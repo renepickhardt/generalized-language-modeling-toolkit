@@ -1,7 +1,6 @@
 package de.typology.predictors;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -27,23 +26,13 @@ public abstract class NewMySQLSearcher {
 	protected HashSet<String> tabelNames;
 	private HashMap<String, Float> hits;
 	protected int n;
-	protected int k;
 	protected int joinLength;
-	protected boolean useWeights;
 
-	protected float[] learnHMMScores;
-	private float[][] learnPicWeights;
-	private float[][] picWeights;
-	private float[][] HMMWeights;
-	private final int MAX_PFL;
-
-	public NewMySQLSearcher(String databaseName, int k) {
+	public NewMySQLSearcher(String databaseName) {
 		this.n = Config.get().modelLength;
-		this.MAX_PFL = 1024;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
 		this.databaseName = databaseName;
-		this.useWeights = false;
 		IOHelper.strongLog("dbName: " + this.databaseName);
 		IOHelper.strongLog("userName: " + this.user);
 		try {
@@ -67,43 +56,19 @@ public abstract class NewMySQLSearcher {
 		}
 	}
 
-	public void run(int n, int numberOfQueries, String weights,
+	public void run(int n, int k, int numberOfQueries, String weights,
 			String[] wordIndex) {
 		this.n = n;
-		this.learnHMMScores = new float[(int) Math.pow(2, this.n)];
-		this.learnPicWeights = new float[this.MAX_PFL][(int) Math
-				.pow(2, this.n)];
-		this.HMMWeights = new float[this.MAX_PFL][(int) Math.pow(2, this.n)];
-		for (int i = 0; i < this.MAX_PFL; i++) {
-			for (int j = 0; j < n; j++) {
-				this.learnPicWeights[i][j] = 0.0f;
-			}
-		}
+		// TODO: change this fileName
 		String fileName = EvalHelper.gennerateFileName(this.getClass()
 				.getName().replaceAll("de.typology.predictors.", "")
-				.replaceAll("MySQLSearcher", "").toLowerCase()
-				+ "k" + this.k, weights, this.n, this.joinLength,
-				numberOfQueries);
+				.replaceAll("NewMySQLSearcher", "").toLowerCase()
+				+ "k" + k, weights, this.n, this.joinLength, numberOfQueries);
 		IOHelper.strongLog("log-file name: " + fileName);
 		String testFile = "";
 		IOHelper.strongLog("weights: " + weights);
-		if (!weights.equals("no")) {
-			this.useWeights = true;
-			testFile = Config.get().outputDirectory
-					+ Config.get().testedOnDataSet + "/"
-					+ Config.get().testedOnLang + "/testing-splitted.txt";
-			if (weights.equals("pic")) {
-				this.openPicWeigths("rawlog/learnPic-" + fileName);
-			}
-			if (weights.equals("HMM")) {
-				this.openHMMWeigths("rawlog/HMMWeights-" + fileName);
-			}
-		} else {
-			testFile = Config.get().outputDirectory
-					+ Config.get().testedOnDataSet + "/"
-					+ Config.get().testedOnLang + "/learning-splitted.txt";
-			this.useWeights = false;
-		}
+		testFile = Config.get().outputDirectory + Config.get().testedOnDataSet
+				+ "/" + Config.get().testedOnLang + "/learning-splitted.txt";
 		IOHelper.strongLog("testFile: " + testFile);
 		try {
 			EvalHelper.openAndSetResultLogFile(fileName);
@@ -133,12 +98,6 @@ public abstract class NewMySQLSearcher {
 					// final results will be stored in hits hashmap
 					this.hits = new HashMap<String, Float>();
 
-					// if we don't use weights we have to set the array of
-					// scores for HMM learning to 0
-					if (!this.useWeights) {
-						this.resetHMMArray();
-					}
-
 					for (int i = 0; i < Math.pow(2, this.n); i++) {
 						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
 								wordIndex);
@@ -163,7 +122,6 @@ public abstract class NewMySQLSearcher {
 					// collected results from all edges now find the topk, log
 					// result and decide if to continue;
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);
-					// TODO: log pic weights learning method.
 					if (1 == lastRank) {
 						break;
 					}
@@ -176,90 +134,10 @@ public abstract class NewMySQLSearcher {
 							+ (end - start) + " \t qps: " + cnt * 1000
 							/ (end - start));
 				}
-				if (cnt > numberOfQueries) {
-					this.logPicWeights();
-					return;
-				}
 			}
-			this.logPicWeights();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	private void openHMMWeigths(String fileName) {
-		BufferedReader br = IOHelper.openReadFile(fileName.replace("HMM-",
-				"no-"));
-		String line = "";
-		try {
-			this.HMMWeights = new float[this.MAX_PFL][this.n];
-			int pfl = 0;
-			while ((line = br.readLine()) != null) {
-				String[] values = line.split("\t");
-				this.HMMWeights[pfl][0] = 0.0f;
-				for (int i = 1; i < this.n; i++) {
-					this.HMMWeights[pfl][i] = Float.parseFloat(values[i + 1]);
-				}
-				pfl++;
-			}
-			while (pfl < this.MAX_PFL) {
-				for (int i = 0; i < this.n; i++) {
-					this.HMMWeights[pfl][i] = 1.0f;
-				}
-				pfl++;
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void openPicWeigths(String fileName) {
-		BufferedReader br = IOHelper
-				.openReadFile(fileName.replace("pic", "no"));
-		String line = "";
-		try {
-			this.picWeights = new float[this.MAX_PFL][this.n];
-			int pfl = 0;
-			while ((line = br.readLine()) != null) {
-				String[] values = line.split("\t");
-				this.picWeights[pfl][0] = 0.0f;
-				float max = 0.0f;
-				for (int i = 1; i < this.n; i++) {
-					this.picWeights[pfl][i] = Float.parseFloat(values[i + 1]);
-					if (this.picWeights[pfl][i] > max) {
-						max = this.picWeights[pfl][i];
-					}
-				}
-				if (max > 0.1f) {
-					for (int i = 1; i < this.n; i++) {
-						this.picWeights[pfl][i] = this.picWeights[pfl][i] / max
-								* 100.0f;
-					}
-				}
-				pfl++;
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void logPicWeights() {
-		String res = "";
-		for (int i = 0; i < this.MAX_PFL; i++) {
-			res = "" + i;
-			for (int j = 0; j < this.n; j++) {
-				res = res + "\t" + this.learnPicWeights[i][j];
-			}
-			IOHelper.logLearnPic(res);
-		}
-	}
-
-	private void resetHMMArray() {
-		for (int i = 0; i < this.n; i++) {
-			this.learnHMMScores[i] = 0.0f;
 		}
 	}
 
@@ -299,38 +177,17 @@ public abstract class NewMySQLSearcher {
 						}
 						lastRank = topkCnt;
 					}
-					if (!this.useWeights) {
-						this.logHMMWeights(pfl);
-					}
 					return topkCnt;
 				}
 			}
 		}
 		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + pfl + " ");
-		if (!this.useWeights) {
-			this.logHMMWeights(pfl);
-		}
 		return Integer.MAX_VALUE;
-	}
-
-	private void logHMMWeights(int pfl) {
-		String res = "" + pfl;
-		for (int i = 1; i < this.n; i++) {
-			res = res + "\t" + this.learnHMMScores[i];
-		}
-		IOHelper.logLearnHMM(res);
-	}
-
-	private void updateRankWeights(int pfl, int edgeType, float mrr) {
-		this.learnPicWeights[pfl][edgeType] += mrr;
 	}
 
 	/**
 	 * this method addes the results of a single query to the result hashmap
 	 * hits
-	 * 
-	 * it also logs information for HMM weight learning and for renes weight
-	 * learning method
 	 * 
 	 * @param edgeTyp
 	 *            Typ of current query
@@ -341,21 +198,13 @@ public abstract class NewMySQLSearcher {
 	 */
 	private void logSingleQueryResult(int edgeTyp, int pfl, String match) {
 		try {
-			float weight = this.getWeight(edgeTyp, pfl);
 			while (this.resultSet.next()) {
 				String target = this.resultSet.getString("target");
 				Float score = this.resultSet.getFloat("score");
-				// log for weight learning
-				if (target.equals(match)) {
-					this.learnHMMScores[edgeTyp] = score;
-					this.updateRankWeights(pfl, edgeTyp, 1.0f / score);
-				}
 				if (this.hits.containsKey(target)) {
-					this.hits.put(target, this.hits.get(target) + weight
-							* score);
-
+					this.hits.put(target, this.hits.get(target) + score);
 				} else {
-					this.hits.put(target, weight * score);
+					this.hits.put(target, score);
 				}
 			}
 		} catch (SQLException e) {
@@ -366,16 +215,10 @@ public abstract class NewMySQLSearcher {
 
 	private void logSingleQueryWithMultResult(int edgeTyp, int pfl, String match) {
 		try {
-			float weight = this.getWeight(edgeTyp, pfl);
 			HashMap<String, Float> tmp = new HashMap<String, Float>();
 			while (this.resultSet.next()) {
 				String target = this.resultSet.getString("target");
 				Float score = this.resultSet.getFloat("score");
-				// log for weight learning
-				if (target.equals(match)) {
-					this.learnHMMScores[edgeTyp] = score;
-					this.updateRankWeights(pfl, edgeTyp, 1.0f / score);
-				}
 				// if (this.hits.containsKey(target)) {
 				// this.hits.put(target, this.hits.get(target) * weight
 				// * score);
@@ -385,14 +228,14 @@ public abstract class NewMySQLSearcher {
 				// }
 
 				if (edgeTyp == 1) {
-					this.hits.put(target, weight * score);
+					this.hits.put(target, score);
 				}
 				if (edgeTyp > 1) {
 					if (this.hits.containsKey(target)) {
-						tmp.put(target, this.hits.get(target) * weight * score);
+						tmp.put(target, this.hits.get(target) * score);
 					} else {
-						tmp.put(target, (float) (weight * score * Math.pow(
-								0.00000001, edgeTyp)));
+						tmp.put(target,
+								(float) (score * Math.pow(0.00000001, edgeTyp)));
 					}
 				}
 			}
@@ -405,28 +248,6 @@ public abstract class NewMySQLSearcher {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * this function can look up and return the weight for a current query
-	 * 
-	 * @param edgeTyp
-	 * @param pfl
-	 * @return
-	 */
-	private float getWeight(int edgeTyp, int pfl) {
-		if (!this.useWeights) {
-			return 1.0f;
-		} else {
-			if (Config.get().weight.equals("pic")) {
-				return this.picWeights[pfl][edgeTyp];
-			} else if (Config.get().weight.equals("HMM")) {
-				return this.HMMWeights[pfl][edgeTyp];
-			} else {
-				return 1.0f;
-			}
-
 		}
 	}
 
