@@ -58,35 +58,41 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				// no target in sequence (e.g. 110)
 				return null;
 			}
-			if (Integer.bitCount(sequence) == this.k
-					|| Integer.bitCount(sequence) == Integer.toBinaryString(
-							sequence).length()
-					&& Integer.bitCount(sequence) <= this.k) {
-				source = "";
-				String sequenceBinary = Integer.toBinaryString(sequence);
-				while (sequenceBinary.length() < Config.get().modelLength) {
-					sequenceBinary = "0" + sequenceBinary;
-					leadingZeros++;
-				}
-				// convert binary sequence type into char[] for iteration
-				char[] sequenceChars = sequenceBinary.toCharArray();
+			// if (Integer.bitCount(sequence) == this.k
+			// || Integer.bitCount(sequence) == Integer.toBinaryString(
+			// sequence).length()
+			// && Integer.bitCount(sequence) <= this.k) {
+			// source = "";
+			// String sequenceBinary = Integer.toBinaryString(sequence);
+			// while (sequenceBinary.length() < Config.get().modelLength) {
+			// sequenceBinary = "0" + sequenceBinary;
+			// leadingZeros++;
+			// }
+			// // convert binary sequence type into char[] for iteration
+			// char[] sequenceChars = sequenceBinary.toCharArray();
+			//
+			// // sequencePointer points at sequenceCut
+			// // length - 1 to leave out target
+			// for (int i = 0; i < sequenceChars.length - 1; i++) {
+			// if (Character.getNumericValue(sequenceChars[i]) == 1) {
+			// if (source.length() == 0) {
+			// source += "source" + (i - leadingZeros) + " =\""
+			// + words[i] + "\"";
+			// } else {
+			// source += " and source" + (i - leadingZeros)
+			// + " =\"" + words[i] + "\"";
+			// }
+			// }
+			// }
+			// } else {
+			// return null;
+			// }
 
-				// sequencePointer points at sequenceCut
-				// length - 1 to leave out target
-				for (int i = 0; i < sequenceChars.length - 1; i++) {
-					if (Character.getNumericValue(sequenceChars[i]) == 1) {
-						if (source.length() == 0) {
-							source += "source" + (i - leadingZeros) + " =\""
-									+ words[i] + "\"";
-						} else {
-							source += " and source" + (i - leadingZeros)
-									+ " =\"" + words[i] + "\"";
-						}
-					}
-				}
-			} else {
-				return null;
-			}
+			// ------
+			source = "";
+			System.out.println(words.toString() + " ... " + sequence + " ... "
+					+ pfl);
+			// ------
 		}
 		if (pfl > target.length()) {
 			System.out.println("target: '" + target

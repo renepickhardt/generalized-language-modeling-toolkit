@@ -18,7 +18,10 @@ import de.typology.utils.IOHelper;
 
 public abstract class NewMySQLSearcher {
 
-	protected Connection connect = null;
+	protected Connection highDiscountConnection = null;
+	protected Connection highConnection = null;
+	protected Connection lowDiscountConnection = null;
+	protected Connection lowConnection = null;
 	protected Statement statement = null;
 	protected ResultSet resultSet = null;
 	protected String user;
@@ -28,11 +31,11 @@ public abstract class NewMySQLSearcher {
 	protected int n;
 	protected int joinLength;
 
-	public NewMySQLSearcher(String databaseName) {
+	public NewMySQLSearcher(String databaseNamePrefix, String databaseNameSuffix) {
 		this.n = Config.get().modelLength;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
-		this.databaseName = databaseName;
+		this.databaseName = databaseNamePrefix;
 		IOHelper.strongLog("dbName: " + this.databaseName);
 		IOHelper.strongLog("userName: " + this.user);
 		try {
