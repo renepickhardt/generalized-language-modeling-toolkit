@@ -3,9 +3,6 @@ package de.typology.predictors;
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -22,10 +19,8 @@ public abstract class NewMySQLSearcher {
 	protected Connection lowDiscountConnection = null;
 	protected Connection highConnection = null;
 	protected Connection highDiscountConnection = null;
-	protected Statement statement = null;
-	protected ResultSet resultSet = null;
 	protected String user;
-	private HashMap<String, Float> hits;
+	private HashMap<String, Float> totalResultMap;
 	protected int n;
 	protected int joinLength;
 
@@ -101,30 +96,32 @@ public abstract class NewMySQLSearcher {
 				IOHelper.logResult(line + "  \t\tMATCH: " + match);
 				int lastRank = Integer.MAX_VALUE;
 				for (int pfl = 0; pfl < match.length(); pfl++) {
-					TreeMap<String, Double> totalResultMap = new TreeMap<String, Double>();
+					this.totalResultMap = new HashMap<String, Float>();
 					for (int sequenceDecimal = 0; sequenceDecimal < Math.pow(2,
 							this.n); sequenceDecimal++) {
 						if (Integer.bitCount(sequenceDecimal) == k) {
 							// calculate partial result
-							TreeMap<String, Double> tempResultMap = this
+							HashMap<String, Float> tempResultMap = this
 									.calculateResultSet(words, sequenceDecimal,
 											pfl, wordIndex);
 							// add partial result to totalResultMap
-							for (Entry<String, Double> entry : tempResultMap
+							for (Entry<String, Float> entry : tempResultMap
 									.entrySet()) {
-								if (totalResultMap.containsKey(entry.getKey())) {
-									totalResultMap.put(entry.getKey(),
-											totalResultMap.get(entry.getKey())
+								if (this.totalResultMap.containsKey(entry
+										.getKey())) {
+									this.totalResultMap.put(
+											entry.getKey(),
+											this.totalResultMap.get(entry
+													.getKey())
 													+ entry.getValue());
 								} else {
-									totalResultMap.put(entry.getKey(),
+									this.totalResultMap.put(entry.getKey(),
 											entry.getValue());
 								}
 							}
 						}
 					}
 
-					this.logSingleQueryResult(k, pfl, match);
 					// collected results from all edges now find the topk, log
 					// result and decide if to continue;
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);
@@ -162,7 +159,7 @@ public abstract class NewMySQLSearcher {
 	private int computeAndLogTop(int pfl, String match, int lastRank) {
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
-				this.hits, this.joinLength);
+				this.totalResultMap, this.joinLength);
 		int topkCnt = 0;
 
 		// TODO: idea plot KSS distribution as eval
@@ -191,72 +188,6 @@ public abstract class NewMySQLSearcher {
 		return Integer.MAX_VALUE;
 	}
 
-	/**
-	 * this method addes the results of a single query to the result hashmap
-	 * hits
-	 * 
-	 * @param edgeTyp
-	 *            Typ of current query
-	 * @param pfl
-	 *            Prefix length
-	 * @param match
-	 *            correct word that needs to predicted.
-	 */
-	private void logSingleQueryResult(int edgeTyp, int pfl, String match) {
-		try {
-			while (this.resultSet.next()) {
-				String target = this.resultSet.getString("target");
-				Float score = this.resultSet.getFloat("score");
-				if (this.hits.containsKey(target)) {
-					this.hits.put(target, this.hits.get(target) + score);
-				} else {
-					this.hits.put(target, score);
-				}
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private void logSingleQueryWithMultResult(int edgeTyp, int pfl, String match) {
-		try {
-			HashMap<String, Float> tmp = new HashMap<String, Float>();
-			while (this.resultSet.next()) {
-				String target = this.resultSet.getString("target");
-				Float score = this.resultSet.getFloat("score");
-				// if (this.hits.containsKey(target)) {
-				// this.hits.put(target, this.hits.get(target) * weight
-				// * score);
-				//
-				// } else {
-				// this.hits.put(target, weight * score);
-				// }
-
-				if (edgeTyp == 1) {
-					this.hits.put(target, score);
-				}
-				if (edgeTyp > 1) {
-					if (this.hits.containsKey(target)) {
-						tmp.put(target, this.hits.get(target) * score);
-					} else {
-						tmp.put(target,
-								(float) (score * Math.pow(0.00000001, edgeTyp)));
-					}
-				}
-			}
-			if (edgeTyp > 1) {
-				// this.hits = new HashMap<String, Float>();
-				for (String str : tmp.keySet()) {
-					this.hits.put(str, tmp.get(str));
-				}
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	protected abstract TreeMap<String, Double> calculateResultSet(
+	protected abstract HashMap<String, Float> calculateResultSet(
 			String[] words, int sequenceDecimal, int pfl, String[] index);
 }

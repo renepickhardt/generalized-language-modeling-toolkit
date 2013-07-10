@@ -1,7 +1,7 @@
 package de.typology.predictors;
 
 import java.util.Arrays;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 import de.typology.splitter.BinarySearch;
 import de.typology.splitter.IndexBuilder;
@@ -46,9 +46,9 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 	}
 
 	@Override
-	protected TreeMap<String, Double> calculateResultSet(String[] words,
+	protected HashMap<String, Float> calculateResultSet(String[] words,
 			int sequenceDecimal, int pfl, String[] wordIndex) {
-		TreeMap<String, Double> resultMap = new TreeMap<String, Double>();
+		HashMap<String, Float> resultMap = new HashMap<String, Float>();
 		int l = words.length;
 		String target = words[l - 1];
 		String source;
