@@ -1,5 +1,8 @@
 package de.typology.predictors;
 
+import java.sql.ResultSet;
+import java.util.Arrays;
+
 import de.typology.splitter.BinarySearch;
 import de.typology.splitter.IndexBuilder;
 import de.typology.utils.Config;
@@ -43,8 +46,8 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 	}
 
 	@Override
-	protected String prepareQuery(String[] words, int sequence, int pfl,
-			String[] wordIndex) {
+	protected ResultSet calculateResultSet(String[] words, int sequence,
+			int pfl, String[] wordIndex) {
 		int l = words.length;
 		String target = words[l - 1];
 		String source;
@@ -58,40 +61,11 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				// no target in sequence (e.g. 110)
 				return null;
 			}
-			// if (Integer.bitCount(sequence) == this.k
-			// || Integer.bitCount(sequence) == Integer.toBinaryString(
-			// sequence).length()
-			// && Integer.bitCount(sequence) <= this.k) {
-			// source = "";
-			// String sequenceBinary = Integer.toBinaryString(sequence);
-			// while (sequenceBinary.length() < Config.get().modelLength) {
-			// sequenceBinary = "0" + sequenceBinary;
-			// leadingZeros++;
-			// }
-			// // convert binary sequence type into char[] for iteration
-			// char[] sequenceChars = sequenceBinary.toCharArray();
-			//
-			// // sequencePointer points at sequenceCut
-			// // length - 1 to leave out target
-			// for (int i = 0; i < sequenceChars.length - 1; i++) {
-			// if (Character.getNumericValue(sequenceChars[i]) == 1) {
-			// if (source.length() == 0) {
-			// source += "source" + (i - leadingZeros) + " =\""
-			// + words[i] + "\"";
-			// } else {
-			// source += " and source" + (i - leadingZeros)
-			// + " =\"" + words[i] + "\"";
-			// }
-			// }
-			// }
-			// } else {
-			// return null;
-			// }
 
 			// ------
 			source = "";
-			System.out.println(words.toString() + " ... " + sequence + " ... "
-					+ pfl);
+			System.out.println(Arrays.toString(words) + " ... " + sequence
+					+ " ... " + pfl);
 			// ------
 		}
 		if (pfl > target.length()) {
@@ -100,11 +74,8 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 			return null;
 		}
 		String prefix = target.substring(0, pfl) + "%";
-		if (target.equals("-%")) {
-			System.out.println("deteced hyphen");
-			return null;
-		}
 		String tableName;
+
 		if (sequence == 1) {
 			tableName = "1_all";
 		} else {

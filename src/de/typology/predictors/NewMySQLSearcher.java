@@ -18,32 +18,37 @@ import de.typology.utils.IOHelper;
 
 public abstract class NewMySQLSearcher {
 
-	protected Connection highDiscountConnection = null;
-	protected Connection highConnection = null;
-	protected Connection lowDiscountConnection = null;
 	protected Connection lowConnection = null;
+	protected Connection lowDiscountConnection = null;
+	protected Connection highConnection = null;
+	protected Connection highDiscountConnection = null;
 	protected Statement statement = null;
 	protected ResultSet resultSet = null;
 	protected String user;
-	protected String databaseName;
-	protected HashSet<String> tabelNames;
 	private HashMap<String, Float> hits;
 	protected int n;
 	protected int joinLength;
 
-	public NewMySQLSearcher(String databaseNamePrefix, String databaseNameSuffix) {
+	public NewMySQLSearcher(String dataBaseName) {
 		this.n = Config.get().modelLength;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
-		this.databaseName = databaseNamePrefix;
-		IOHelper.strongLog("dbName: " + this.databaseName);
+		IOHelper.strongLog("dbName: " + dataBaseName);
 		IOHelper.strongLog("userName: " + this.user);
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			this.connect = DriverManager
-					.getConnection("jdbc:mysql://localhost/"
-							+ this.databaseName + "?" + "user=" + this.user
-							+ "&password=");
+			String dataBasePrefix = "jdbc:mysql://localhost/";
+			String dataBaseSuffix = "?" + "user=" + this.user + "&password=";
+			this.lowConnection = DriverManager.getConnection(dataBasePrefix
+					+ dataBaseName + "_low" + dataBaseSuffix);
+			this.lowDiscountConnection = DriverManager
+					.getConnection(dataBasePrefix + dataBaseName
+							+ "_low_discount" + dataBaseSuffix);
+			this.highConnection = DriverManager.getConnection(dataBasePrefix
+					+ dataBaseName + "_high" + dataBaseSuffix);
+			this.highDiscountConnection = DriverManager
+					.getConnection(dataBasePrefix + dataBaseName
+							+ "_high_discount" + dataBaseSuffix);
 
 			this.statement = this.connect.createStatement();
 
@@ -89,28 +94,16 @@ public abstract class NewMySQLSearcher {
 					continue;
 				}
 
-				// create datstructure to hold the mysql query
-				String[] edgeQueryOfTyp = new String[(int) Math.pow(2, this.n)];
-				// TODO: replace revert replace hyphon...
 				String match = words[words.length - 1];
 
 				// start new experiment with prefixes of various length:
 				IOHelper.logResult(line + "  \t\tMATCH: " + match);
 				int lastRank = Integer.MAX_VALUE;
 				for (int pfl = 0; pfl < match.length(); pfl++) {
-					// final results will be stored in hits hashmap
-					this.hits = new HashMap<String, Float>();
-
 					for (int i = 0; i < Math.pow(2, this.n); i++) {
-						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
-								wordIndex);
-						if (edgeQueryOfTyp[i] == null) {
-							continue;
-						}
 
 						try {
-							this.resultSet = this.statement
-									.executeQuery(edgeQueryOfTyp[i]);
+							this.resultSet = this.calculateResultSet();
 
 							this.logSingleQueryResult(i, pfl, match);
 							// this.logSingleQueryWithMultResult(i, pfl, match);
@@ -254,6 +247,6 @@ public abstract class NewMySQLSearcher {
 		}
 	}
 
-	protected abstract String prepareQuery(String[] words, int i, int pfl,
-			String[] index);
+	protected abstract ResultSet calculateResultSet(String[] words, int i,
+			int pfl, String[] index);
 }
