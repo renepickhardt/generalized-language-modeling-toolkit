@@ -134,8 +134,13 @@ public class KneserNeyAggregator {
 				this.statsName);
 		resultCombiner.combine("-low", "-low", "-temp", "-rev",
 				maxSequenceLength - 1, false);
-		resultCombiner.combine("-high", "-low", "-temp", "-rev",
-				maxSequenceLength, true);
+		if (Config.get().resultLog10) {
+			resultCombiner.combine("-high", "-low", "-temp", "-rev",
+					maxSequenceLength, true);
+		} else {
+			resultCombiner.combine("-high", "-low", "-temp", "-rev",
+					maxSequenceLength, false);
+		}
 
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;

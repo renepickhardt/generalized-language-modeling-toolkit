@@ -51,6 +51,8 @@ public class Config extends Properties {
 
 	public boolean addSentenceTags;
 	public boolean addFakeStartTag;
+
+	public boolean resultLog10;
 	// DEBUGGING
 	public String inputDataSet;
 
