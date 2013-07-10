@@ -36,6 +36,7 @@ public abstract class Splitter {
 	// sequence and sequenceCount are used by split()
 	protected String[] sequence;
 	protected int sequenceCount;
+	protected boolean isSequenceSplit;
 
 	protected Splitter(String directory, String indexName, String statsName,
 			String inputName, String outputDirectoryName) {
@@ -59,6 +60,9 @@ public abstract class Splitter {
 		this.aggregator = new Aggregator();
 		this.sorter = new Sorter();
 		this.countNormalizer = new CountNormalizer();
+		// this gets overwritten if initializeForSequenceSplit is called
+		this.isSequenceSplit = false;
+
 	}
 
 	/**
@@ -154,6 +158,7 @@ public abstract class Splitter {
 
 	public void initializeForSequenceSplit(String fileName) {
 		this.reader = IOHelper.openReadFile(this.directory + fileName);
+		this.isSequenceSplit = true;
 	}
 
 	/**
@@ -174,11 +179,14 @@ public abstract class Splitter {
 						// reached end of file
 						return false;
 					} else {
-						if (Config.get().addSentenceTags) {
-							this.line = "<s> " + this.line + " </s>";
-							if (Config.get().addFakeStartTag) {
-								// <fs> for fake start
-								this.line = "<fs> " + this.line;
+						// no additional tags if splitting sequences
+						if (!this.isSequenceSplit) {
+							if (Config.get().addSentenceTags) {
+								this.line = "<s> " + this.line + " </s>";
+								if (Config.get().addFakeStartTag) {
+									// <fs> for fake start
+									this.line = "<fs> " + this.line;
+								}
 							}
 						}
 						this.lineSplit = this.line.split("\\s+");
