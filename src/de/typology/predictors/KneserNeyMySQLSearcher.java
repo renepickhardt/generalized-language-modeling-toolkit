@@ -1,7 +1,7 @@
 package de.typology.predictors;
 
-import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.TreeMap;
 
 import de.typology.splitter.BinarySearch;
 import de.typology.splitter.IndexBuilder;
@@ -46,26 +46,27 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 	}
 
 	@Override
-	protected ResultSet calculateResultSet(String[] words, int sequence,
-			int pfl, String[] wordIndex) {
+	protected TreeMap<String, Double> calculateResultSet(String[] words,
+			int sequenceDecimal, int pfl, String[] wordIndex) {
+		TreeMap<String, Double> resultMap = new TreeMap<String, Double>();
 		int l = words.length;
 		String target = words[l - 1];
 		String source;
 		int leadingZeros = 0;
-		if (sequence == 1) {
+		if (sequenceDecimal == 1) {
 			source = "true";
 			// TODO:remove this:
 			return null;
 		} else {
-			if (sequence % 2 == 0) {
+			if (sequenceDecimal % 2 == 0) {
 				// no target in sequence (e.g. 110)
 				return null;
 			}
 
 			// ------
 			source = "";
-			System.out.println(Arrays.toString(words) + " ... " + sequence
-					+ " ... " + pfl);
+			System.out.println(Arrays.toString(words) + " ... "
+					+ sequenceDecimal + " ... " + pfl);
 			// ------
 		}
 		if (pfl > target.length()) {
@@ -76,10 +77,10 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 		String prefix = target.substring(0, pfl) + "%";
 		String tableName;
 
-		if (sequence == 1) {
+		if (sequenceDecimal == 1) {
 			tableName = "1_all";
 		} else {
-			tableName = Integer.toBinaryString(sequence) + "_"
+			tableName = Integer.toBinaryString(sequenceDecimal) + "_"
 					+ BinarySearch.rank(words[leadingZeros], wordIndex);
 
 		}
@@ -92,6 +93,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 			query = "select * from " + tableName + " where " + source
 					+ " order by score desc limit " + this.joinLength;
 		}
-		return query;
+
+		return resultMap;
 	}
 }

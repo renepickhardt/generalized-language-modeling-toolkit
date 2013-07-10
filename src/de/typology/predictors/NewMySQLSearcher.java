@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -49,16 +49,6 @@ public abstract class NewMySQLSearcher {
 			this.highDiscountConnection = DriverManager
 					.getConnection(dataBasePrefix + dataBaseName
 							+ "_high_discount" + dataBaseSuffix);
-
-			this.statement = this.connect.createStatement();
-
-			this.tabelNames = new HashSet<String>();
-			this.resultSet = this.statement.executeQuery("show tables");
-			while (this.resultSet.next()) {
-				String tableName = this.resultSet.getString(1);
-				this.tabelNames.add(tableName);
-			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -76,7 +66,7 @@ public abstract class NewMySQLSearcher {
 		String testFile = "";
 		IOHelper.strongLog("weights: " + weights);
 		testFile = Config.get().outputDirectory + Config.get().testedOnDataSet
-				+ "/" + Config.get().testedOnLang + "/learning-splitted.txt";
+				+ "/" + Config.get().testedOnLang + "/testing-splitted.txt";
 		IOHelper.strongLog("testFile: " + testFile);
 		try {
 			EvalHelper.openAndSetResultLogFile(fileName);
@@ -86,13 +76,24 @@ public abstract class NewMySQLSearcher {
 			long cnt = 0;
 			long start = System.currentTimeMillis();
 
-			// for every line in our test data
+			// for every line in our testing file
 			while ((line = br.readLine()) != null) {
-				// check if line is suitable to make an experiment
 				String[] words = line.split("\\ ");
-				if (EvalHelper.badLine(words, this.n)) {
+
+				// check if line is suitable to make an experiment
+				if (words.length < n) {
 					continue;
 				}
+
+				// remove the first words.length - n words
+				String[] tempWords = new String[n];
+				int offset = words.length - n;
+				int tempWordsPointer = 0;
+				for (int i = offset; i < words.length; i++) {
+					tempWords[tempWordsPointer] = words[i];
+					tempWordsPointer++;
+				}
+				words = tempWords;
 
 				String match = words[words.length - 1];
 
@@ -100,21 +101,30 @@ public abstract class NewMySQLSearcher {
 				IOHelper.logResult(line + "  \t\tMATCH: " + match);
 				int lastRank = Integer.MAX_VALUE;
 				for (int pfl = 0; pfl < match.length(); pfl++) {
-					for (int i = 0; i < Math.pow(2, this.n); i++) {
-
-						try {
-							this.resultSet = this.calculateResultSet();
-
-							this.logSingleQueryResult(i, pfl, match);
-							// this.logSingleQueryWithMultResult(i, pfl, match);
-
-						} catch (Exception e) {
-							System.err.println("error in query: "
-									+ edgeQueryOfTyp[i]);
-							e.printStackTrace();
-
+					TreeMap<String, Double> totalResultMap = new TreeMap<String, Double>();
+					for (int sequenceDecimal = 0; sequenceDecimal < Math.pow(2,
+							this.n); sequenceDecimal++) {
+						if (Integer.bitCount(sequenceDecimal) == k) {
+							// calculate partial result
+							TreeMap<String, Double> tempResultMap = this
+									.calculateResultSet(words, sequenceDecimal,
+											pfl, wordIndex);
+							// add partial result to totalResultMap
+							for (Entry<String, Double> entry : tempResultMap
+									.entrySet()) {
+								if (totalResultMap.containsKey(entry.getKey())) {
+									totalResultMap.put(entry.getKey(),
+											totalResultMap.get(entry.getKey())
+													+ entry.getValue());
+								} else {
+									totalResultMap.put(entry.getKey(),
+											entry.getValue());
+								}
+							}
 						}
 					}
+
+					this.logSingleQueryResult(k, pfl, match);
 					// collected results from all edges now find the topk, log
 					// result and decide if to continue;
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);
@@ -247,6 +257,6 @@ public abstract class NewMySQLSearcher {
 		}
 	}
 
-	protected abstract ResultSet calculateResultSet(String[] words, int i,
-			int pfl, String[] index);
+	protected abstract TreeMap<String, Double> calculateResultSet(
+			String[] words, int sequenceDecimal, int pfl, String[] index);
 }
