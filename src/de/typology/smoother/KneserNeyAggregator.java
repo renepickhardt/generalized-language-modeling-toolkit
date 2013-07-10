@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import de.typology.utils.Config;
 import de.typology.utils.Counter;
 import de.typology.utils.IOHelper;
+import de.typology.utils.SystemHelper;
 
 public class KneserNeyAggregator {
 	/**
@@ -141,7 +142,20 @@ public class KneserNeyAggregator {
 			resultCombiner.combine("-high", "-low", "-temp", "-rev",
 					maxSequenceLength, false);
 		}
-
+		// merge smallest sequence results
+		this.mergeSmallestType(this.lowTempResultDirectory.getAbsolutePath()
+				.replace("-temp", ""));
+		this.mergeSmallestType(this.lowDiscountValueDirectory.getAbsolutePath());
+		this.mergeSmallestType(this.highDiscountValueDirectory
+				.getAbsolutePath());
+		try {
+			// delete high 1 result (because it's wrong...)
+			FileUtils.deleteDirectory(new File(this.highTempResultDirectory
+					.getAbsolutePath().replace("-temp", "") + "/1"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;
 		IOHelper.strongLog("time for calculating kneser-ney of "
@@ -626,6 +640,25 @@ public class KneserNeyAggregator {
 					current_absolute_Directory);
 		} else {
 			return this._absolute_Reader.getCount(_absoluteWordsWithoutLast);
+		}
+	}
+
+	protected void mergeSmallestType(String inputPath) {
+		for (File subDirectory : new File(inputPath).listFiles()) {
+			if (Integer.bitCount(Integer.parseInt(subDirectory.getName(), 2)) == 1) {
+				File[] files = subDirectory.listFiles();
+				String fileExtension = subDirectory.getName();
+				IOHelper.log("merge all " + fileExtension);
+				SystemHelper.runUnixCommand("cat "
+						+ subDirectory.getAbsolutePath() + "/* > "
+						+ subDirectory.getAbsolutePath() + "/all."
+						+ fileExtension);
+				for (File file : files) {
+					if (!file.getName().equals("all." + fileExtension)) {
+						file.delete();
+					}
+				}
+			}
 		}
 	}
 
