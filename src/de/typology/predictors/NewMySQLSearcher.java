@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -18,39 +18,37 @@ import de.typology.utils.IOHelper;
 
 public abstract class NewMySQLSearcher {
 
-	protected Connection connect = null;
+	protected Connection lowConnection = null;
+	protected Connection lowDiscountConnection = null;
+	protected Connection highConnection = null;
+	protected Connection highDiscountConnection = null;
 	protected Statement statement = null;
 	protected ResultSet resultSet = null;
 	protected String user;
-	protected String databaseName;
-	protected HashSet<String> tabelNames;
 	private HashMap<String, Float> hits;
 	protected int n;
 	protected int joinLength;
 
-	public NewMySQLSearcher(String databaseName) {
+	public NewMySQLSearcher(String dataBaseName) {
 		this.n = Config.get().modelLength;
 		this.joinLength = 10;
 		this.user = Config.get().dbUser;
-		this.databaseName = databaseName;
-		IOHelper.strongLog("dbName: " + this.databaseName);
+		IOHelper.strongLog("dbName: " + dataBaseName);
 		IOHelper.strongLog("userName: " + this.user);
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
-			this.connect = DriverManager
-					.getConnection("jdbc:mysql://localhost/"
-							+ this.databaseName + "?" + "user=" + this.user
-							+ "&password=");
-
-			this.statement = this.connect.createStatement();
-
-			this.tabelNames = new HashSet<String>();
-			this.resultSet = this.statement.executeQuery("show tables");
-			while (this.resultSet.next()) {
-				String tableName = this.resultSet.getString(1);
-				this.tabelNames.add(tableName);
-			}
-
+			String dataBasePrefix = "jdbc:mysql://localhost/";
+			String dataBaseSuffix = "?" + "user=" + this.user + "&password=";
+			this.lowConnection = DriverManager.getConnection(dataBasePrefix
+					+ dataBaseName + "_low" + dataBaseSuffix);
+			this.lowDiscountConnection = DriverManager
+					.getConnection(dataBasePrefix + dataBaseName
+							+ "_low_discount" + dataBaseSuffix);
+			this.highConnection = DriverManager.getConnection(dataBasePrefix
+					+ dataBaseName + "_high" + dataBaseSuffix);
+			this.highDiscountConnection = DriverManager
+					.getConnection(dataBasePrefix + dataBaseName
+							+ "_high_discount" + dataBaseSuffix);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -68,7 +66,7 @@ public abstract class NewMySQLSearcher {
 		String testFile = "";
 		IOHelper.strongLog("weights: " + weights);
 		testFile = Config.get().outputDirectory + Config.get().testedOnDataSet
-				+ "/" + Config.get().testedOnLang + "/learning-splitted.txt";
+				+ "/" + Config.get().testedOnLang + "/testing-splitted.txt";
 		IOHelper.strongLog("testFile: " + testFile);
 		try {
 			EvalHelper.openAndSetResultLogFile(fileName);
@@ -78,47 +76,55 @@ public abstract class NewMySQLSearcher {
 			long cnt = 0;
 			long start = System.currentTimeMillis();
 
-			// for every line in our test data
+			// for every line in our testing file
 			while ((line = br.readLine()) != null) {
-				// check if line is suitable to make an experiment
 				String[] words = line.split("\\ ");
-				if (EvalHelper.badLine(words, this.n)) {
+
+				// check if line is suitable to make an experiment
+				if (words.length < n) {
 					continue;
 				}
 
-				// create datstructure to hold the mysql query
-				String[] edgeQueryOfTyp = new String[(int) Math.pow(2, this.n)];
-				// TODO: replace revert replace hyphon...
+				// remove the first words.length - n words
+				String[] tempWords = new String[n];
+				int offset = words.length - n;
+				int tempWordsPointer = 0;
+				for (int i = offset; i < words.length; i++) {
+					tempWords[tempWordsPointer] = words[i];
+					tempWordsPointer++;
+				}
+				words = tempWords;
+
 				String match = words[words.length - 1];
 
 				// start new experiment with prefixes of various length:
 				IOHelper.logResult(line + "  \t\tMATCH: " + match);
 				int lastRank = Integer.MAX_VALUE;
 				for (int pfl = 0; pfl < match.length(); pfl++) {
-					// final results will be stored in hits hashmap
-					this.hits = new HashMap<String, Float>();
-
-					for (int i = 0; i < Math.pow(2, this.n); i++) {
-						edgeQueryOfTyp[i] = this.prepareQuery(words, i, pfl,
-								wordIndex);
-						if (edgeQueryOfTyp[i] == null) {
-							continue;
-						}
-
-						try {
-							this.resultSet = this.statement
-									.executeQuery(edgeQueryOfTyp[i]);
-
-							this.logSingleQueryResult(i, pfl, match);
-							// this.logSingleQueryWithMultResult(i, pfl, match);
-
-						} catch (Exception e) {
-							System.err.println("error in query: "
-									+ edgeQueryOfTyp[i]);
-							e.printStackTrace();
-
+					TreeMap<String, Double> totalResultMap = new TreeMap<String, Double>();
+					for (int sequenceDecimal = 0; sequenceDecimal < Math.pow(2,
+							this.n); sequenceDecimal++) {
+						if (Integer.bitCount(sequenceDecimal) == k) {
+							// calculate partial result
+							TreeMap<String, Double> tempResultMap = this
+									.calculateResultSet(words, sequenceDecimal,
+											pfl, wordIndex);
+							// add partial result to totalResultMap
+							for (Entry<String, Double> entry : tempResultMap
+									.entrySet()) {
+								if (totalResultMap.containsKey(entry.getKey())) {
+									totalResultMap.put(entry.getKey(),
+											totalResultMap.get(entry.getKey())
+													+ entry.getValue());
+								} else {
+									totalResultMap.put(entry.getKey(),
+											entry.getValue());
+								}
+							}
 						}
 					}
+
+					this.logSingleQueryResult(k, pfl, match);
 					// collected results from all edges now find the topk, log
 					// result and decide if to continue;
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);
@@ -251,6 +257,6 @@ public abstract class NewMySQLSearcher {
 		}
 	}
 
-	protected abstract String prepareQuery(String[] words, int i, int pfl,
-			String[] index);
+	protected abstract TreeMap<String, Double> calculateResultSet(
+			String[] words, int sequenceDecimal, int pfl, String[] index);
 }
