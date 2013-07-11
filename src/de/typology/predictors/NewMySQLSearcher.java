@@ -79,9 +79,11 @@ public abstract class NewMySQLSearcher {
 					this.resultLogWriter.write(word + " ");
 				}
 				this.resultLogWriter.write("\t\tMATCH: " + match + "\n");
-				for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2, n); sequenceDecimal++) {
-					for (int pfl = 0; pfl < match.length(); pfl++) {
-						this.totalResultMap = new HashMap<String, Float>();
+				for (int pfl = 0; pfl < match.length(); pfl++) {
+					this.totalResultMap = new HashMap<String, Float>();
+					int lastRank = Integer.MAX_VALUE;
+					for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+							n); sequenceDecimal++) {
 						if (sequenceDecimal % 2 == 0) {
 							// no target in sequence (e.g. 110)
 							continue;
@@ -109,6 +111,13 @@ public abstract class NewMySQLSearcher {
 								}
 							}
 						}
+					}
+					// collected results from all edges now find the topk,
+					// log
+					// result and decide if to continue;
+					lastRank = this.computeAndLogTop(pfl, match, lastRank);
+					if (1 == lastRank) {
+						break;
 					}
 
 				}
@@ -178,13 +187,13 @@ public abstract class NewMySQLSearcher {
 	}
 
 	protected void addToResultMap(ResultSet resultSet,
-			HashMap<String, Float> resultMap) {
+			HashMap<String, Float> resultMap, float discountValue) {
 		try {
 			while (resultSet.next()) {
 				String target = resultSet.getString("target");
 				String count = resultSet.getString("score");
 				System.out.println("target: " + target + "; score: " + count);
-				resultMap.put(target, Float.valueOf(count));
+				resultMap.put(target, discountValue * Float.valueOf(count));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
