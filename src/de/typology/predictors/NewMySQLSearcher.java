@@ -1,11 +1,12 @@
 package de.typology.predictors;
 
 import java.io.BufferedReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -18,66 +19,44 @@ import de.typology.utils.IOHelper;
 
 public abstract class NewMySQLSearcher {
 
-	protected Connection lowConnection = null;
-	protected Connection lowDiscountConnection = null;
-	protected Connection highConnection = null;
-	protected Connection highDiscountConnection = null;
-	protected Statement statement = null;
-	protected ResultSet resultSet = null;
 	protected String user;
-	private HashMap<String, Float> hits;
-	protected int n;
-	protected int joinLength;
+	private HashMap<String, Float> totalResultMap;
+	protected int subResultSize;
+	protected String smoothingType;
+	protected String[] wordIndex;
+	protected BufferedWriter resultLogWriter;
 
-	public NewMySQLSearcher(String dataBaseName) {
-		this.n = Config.get().modelLength;
-		this.joinLength = 10;
+	public NewMySQLSearcher() {
+		this.subResultSize = Config.get().subResultSize;
 		this.user = Config.get().dbUser;
-		IOHelper.strongLog("dbName: " + dataBaseName);
 		IOHelper.strongLog("userName: " + this.user);
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			String dataBasePrefix = "jdbc:mysql://localhost/";
-			String dataBaseSuffix = "?" + "user=" + this.user + "&password=";
-			this.lowConnection = DriverManager.getConnection(dataBasePrefix
-					+ dataBaseName + "_low" + dataBaseSuffix);
-			this.lowDiscountConnection = DriverManager
-					.getConnection(dataBasePrefix + dataBaseName
-							+ "_low_discount" + dataBaseSuffix);
-			this.highConnection = DriverManager.getConnection(dataBasePrefix
-					+ dataBaseName + "_high" + dataBaseSuffix);
-			this.highDiscountConnection = DriverManager
-					.getConnection(dataBasePrefix + dataBaseName
-							+ "_high_discount" + dataBaseSuffix);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
-	public void run(int n, int k, int numberOfQueries, String weights,
-			String[] wordIndex) {
-		this.n = n;
+	public void run(int n, int k, int numberOfQueries, String[] wordIndex) {
+		this.wordIndex = wordIndex;
 		// TODO: change this fileName
-		String fileName = EvalHelper.gennerateFileName(this.getClass()
-				.getName().replaceAll("de.typology.predictors.", "")
-				.replaceAll("NewMySQLSearcher", "").toLowerCase()
-				+ "k" + k, weights, this.n, this.joinLength, numberOfQueries);
+		String fileName = EvalHelper.generateFileName(this.smoothingType, n, k,
+				this.subResultSize, numberOfQueries);
 		IOHelper.strongLog("log-file name: " + fileName);
 		String testFile = "";
-		IOHelper.strongLog("weights: " + weights);
 		testFile = Config.get().outputDirectory + Config.get().testedOnDataSet
 				+ "/" + Config.get().testedOnLang + "/testing-splitted.txt";
 		IOHelper.strongLog("testFile: " + testFile);
+		File resultLogDir = new File(Config.get().outputDirectory
+				+ Config.get().resultLogDirName);
+		resultLogDir.mkdir();
+		this.resultLogWriter = IOHelper.openWriteFile(
+				resultLogDir.getAbsolutePath() + "/" + fileName,
+				Config.get().memoryLimitForWritingFiles);
+
+		BufferedReader testFileReader = IOHelper.openReadFile(testFile);
+		String line = "";
+		long cnt = 0;
+		long start = System.currentTimeMillis();
+
 		try {
-			EvalHelper.openAndSetResultLogFile(fileName);
-
-			BufferedReader br = IOHelper.openReadFile(testFile);
-			String line = "";
-			long cnt = 0;
-			long start = System.currentTimeMillis();
-
 			// for every line in our testing file
-			while ((line = br.readLine()) != null) {
+			while ((line = testFileReader.readLine()) != null) {
 				String[] words = line.split("\\ ");
 
 				// check if line is suitable to make an experiment
@@ -86,47 +65,65 @@ public abstract class NewMySQLSearcher {
 				}
 
 				// remove the first words.length - n words
-				String[] tempWords = new String[n];
 				int offset = words.length - n;
-				int tempWordsPointer = 0;
-				for (int i = offset; i < words.length; i++) {
-					tempWords[tempWordsPointer] = words[i];
-					tempWordsPointer++;
+				String[] wordsWithoutLast = new String[n - 1];
+				int wordsWithoutLastPointer = 0;
+				for (int i = offset; i < words.length - 1; i++) {
+					wordsWithoutLast[wordsWithoutLastPointer] = words[i];
+					wordsWithoutLastPointer++;
 				}
-				words = tempWords;
 
 				String match = words[words.length - 1];
 
 				// start new experiment with prefixes of various length:
-				IOHelper.logResult(line + "  \t\tMATCH: " + match);
-				int lastRank = Integer.MAX_VALUE;
+				for (String word : wordsWithoutLast) {
+					this.resultLogWriter.write(word + " ");
+				}
+				this.resultLogWriter.write("\t\tMATCH: " + match + "\n");
 				for (int pfl = 0; pfl < match.length(); pfl++) {
-					TreeMap<String, Double> totalResultMap = new TreeMap<String, Double>();
-					for (int sequenceDecimal = 0; sequenceDecimal < Math.pow(2,
-							this.n); sequenceDecimal++) {
-						if (Integer.bitCount(sequenceDecimal) == k) {
+					this.totalResultMap = new HashMap<String, Float>();
+					int lastRank = Integer.MAX_VALUE;
+					for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
+							n); sequenceDecimal++) {
+						if (sequenceDecimal % 2 == 0) {
+							// no target in sequence (e.g. 110)
+							continue;
+						}
+						// k+1 for target
+						if (Integer.bitCount(sequenceDecimal) - 1 == k) {
 							// calculate partial result
-							TreeMap<String, Double> tempResultMap = this
-									.calculateResultSet(words, sequenceDecimal,
-											pfl, wordIndex);
+							HashMap<String, Float> subResultMap = this
+									.calculateResultSet(wordsWithoutLast,
+											match, n, sequenceDecimal, pfl,
+											wordIndex);
 							// add partial result to totalResultMap
-							for (Entry<String, Double> entry : tempResultMap
+							for (Entry<String, Float> entry : subResultMap
 									.entrySet()) {
-								if (totalResultMap.containsKey(entry.getKey())) {
-									totalResultMap.put(entry.getKey(),
-											totalResultMap.get(entry.getKey())
+								if (this.totalResultMap.containsKey(entry
+										.getKey())) {
+									this.totalResultMap.put(
+											entry.getKey(),
+											this.totalResultMap.get(entry
+													.getKey())
 													+ entry.getValue());
 								} else {
-									totalResultMap.put(entry.getKey(),
+									this.totalResultMap.put(entry.getKey(),
 											entry.getValue());
 								}
 							}
 						}
 					}
-
-					this.logSingleQueryResult(k, pfl, match);
-					// collected results from all edges now find the topk, log
+					// collected results from all edges now find the topk,
+					// log
 					// result and decide if to continue;
+					System.out.println("results for "
+							+ Arrays.toString(wordsWithoutLast) + " with n="
+							+ n + " and k=" + k + ":");
+					for (Entry<String, Float> e : this.totalResultMap
+							.entrySet()) {
+						System.out.println(e.getKey() + " --> " + e.getValue());
+
+					}
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);
 					if (1 == lastRank) {
 						break;
@@ -141,10 +138,12 @@ public abstract class NewMySQLSearcher {
 							/ (end - start));
 				}
 			}
-		} catch (Exception e) {
+			this.resultLogWriter.close();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 
 	/**
@@ -162,55 +161,48 @@ public abstract class NewMySQLSearcher {
 	private int computeAndLogTop(int pfl, String match, int lastRank) {
 		Algo<String, Float> a = new Algo<String, Float>();
 		TreeMap<Float, Set<String>> topkSuggestions = a.getTopkElements(
-				this.hits, this.joinLength);
+				this.totalResultMap, this.subResultSize);
 		int topkCnt = 0;
 
-		// TODO: idea plot KSS distribution as eval
-		for (Float score : topkSuggestions.descendingKeySet()) {
-			for (String suggestion : topkSuggestions.get(score)) {
-				topkCnt++;
-				if (suggestion.equals(match)) {
-					IOHelper.logResult("HIT\tRANK: " + topkCnt
-							+ " \tPREFIXLENGTH: " + pfl + " ");
-					if (topkCnt < lastRank) {
-						for (int k = Math.min(5, lastRank); k >= topkCnt; k--) {
-							float kss = (float) (match.length() - pfl)
-									/ (float) match.length();
-							IOHelper.logResult("NKSS AT " + k + ": " + kss
-									+ " ");
-							IOHelper.logResult("KSS AT " + k + ": "
-									+ (match.length() - pfl) + " ");
+		try {
+			// TODO: idea plot KSS distribution as eval
+			for (Float score : topkSuggestions.descendingKeySet()) {
+				for (String suggestion : topkSuggestions.get(score)) {
+					topkCnt++;
+					if (suggestion.equals(match)) {
+						this.resultLogWriter.write("HIT\tRANK: " + topkCnt
+								+ " \tPREFIXLENGTH: " + pfl + "\n");
+						if (topkCnt < lastRank) {
+							for (int k = Math.min(5, lastRank); k >= topkCnt; k--) {
+								float kss = (float) (match.length() - pfl)
+										/ (float) match.length();
+								this.resultLogWriter.write("NKSS AT " + k
+										+ ": " + kss + "\n");
+								this.resultLogWriter.write("KSS AT " + k + ": "
+										+ (match.length() - pfl) + "\n");
+							}
+							lastRank = topkCnt;
 						}
-						lastRank = topkCnt;
+						return topkCnt;
 					}
-					return topkCnt;
 				}
 			}
+			this.resultLogWriter.write("NOTHING\tPREFIXLENGTH: " + pfl + "\n");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		IOHelper.logResult("NOTHING\tPREFIXLENGTH: " + pfl + " ");
 		return Integer.MAX_VALUE;
 	}
 
-	/**
-	 * this method addes the results of a single query to the result hashmap
-	 * hits
-	 * 
-	 * @param edgeTyp
-	 *            Typ of current query
-	 * @param pfl
-	 *            Prefix length
-	 * @param match
-	 *            correct word that needs to predicted.
-	 */
-	private void logSingleQueryResult(int edgeTyp, int pfl, String match) {
+	protected void addToResultMap(ResultSet resultSet,
+			HashMap<String, Float> resultMap, float discountValue) {
 		try {
-			while (this.resultSet.next()) {
-				String target = this.resultSet.getString("target");
-				Float score = this.resultSet.getFloat("score");
-				if (this.hits.containsKey(target)) {
-					this.hits.put(target, this.hits.get(target) + score);
-				} else {
-					this.hits.put(target, score);
+			while (resultSet.next()) {
+				String target = resultSet.getString("target");
+				Float count = discountValue * resultSet.getFloat("score");
+				if (!resultMap.containsKey(target)) {
+					resultMap.put(target, count);
 				}
 			}
 		} catch (SQLException e) {
@@ -219,44 +211,7 @@ public abstract class NewMySQLSearcher {
 		}
 	}
 
-	private void logSingleQueryWithMultResult(int edgeTyp, int pfl, String match) {
-		try {
-			HashMap<String, Float> tmp = new HashMap<String, Float>();
-			while (this.resultSet.next()) {
-				String target = this.resultSet.getString("target");
-				Float score = this.resultSet.getFloat("score");
-				// if (this.hits.containsKey(target)) {
-				// this.hits.put(target, this.hits.get(target) * weight
-				// * score);
-				//
-				// } else {
-				// this.hits.put(target, weight * score);
-				// }
-
-				if (edgeTyp == 1) {
-					this.hits.put(target, score);
-				}
-				if (edgeTyp > 1) {
-					if (this.hits.containsKey(target)) {
-						tmp.put(target, this.hits.get(target) * score);
-					} else {
-						tmp.put(target,
-								(float) (score * Math.pow(0.00000001, edgeTyp)));
-					}
-				}
-			}
-			if (edgeTyp > 1) {
-				// this.hits = new HashMap<String, Float>();
-				for (String str : tmp.keySet()) {
-					this.hits.put(str, tmp.get(str));
-				}
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	protected abstract TreeMap<String, Double> calculateResultSet(
-			String[] words, int sequenceDecimal, int pfl, String[] index);
+	protected abstract HashMap<String, Float> calculateResultSet(
+			String[] wordsWithoutLast, String match, int n,
+			int sequenceDecimal, int pfl, String[] index);
 }
