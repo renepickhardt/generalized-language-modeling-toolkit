@@ -32,6 +32,7 @@ public class Config extends Properties {
 	public String testedOnDataSet;
 	public String testedOnLang;
 	public String dataBaseType;
+	public String resultLogDirName;
 
 	public String weight;
 	public boolean useWeights;
@@ -79,6 +80,7 @@ public class Config extends Properties {
 	public int modelLength;
 
 	public int numberOfQueries;
+	public int subResultSize;
 
 	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
 	public int sampleRate; // \in [0, 100] 0 means no data from input will be

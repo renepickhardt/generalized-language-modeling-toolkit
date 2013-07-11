@@ -26,8 +26,6 @@ public class IOHelper {
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
 	private static ArrayList<File> fileList = new ArrayList<File>();
 	private static BufferedWriter resultFile = openAppendFile("rawlog/res.log");
-	private static BufferedWriter learnHMMFile = openAppendFile("rawlog/learnHMM.log");
-	private static BufferedWriter learnPicFile = openAppendFile("rawlog/learnPic.log");;
 
 	/**
 	 * faster access to a buffered reader
@@ -256,41 +254,6 @@ public class IOHelper {
 	 * 
 	 * @param out
 	 */
-	public static void logResult(Object out) {
-		try {
-			resultFile.write(out + "\n");
-			resultFile.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void logLearnHMM(Object out) {
-		try {
-			learnHMMFile.write(out + "\n");
-			learnHMMFile.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void logLearnPic(Object out) {
-		try {
-			learnPicFile.write(out + "\n");
-			learnPicFile.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * function for output that is only displayed in debugmode
-	 * 
-	 * @param out
-	 */
 	public static void logError(Object out) {
 		if (d) {
 			System.err.println(out);
@@ -379,17 +342,4 @@ public class IOHelper {
 		}
 	}
 
-	public static void setResultFile(String name) {
-		try {
-			resultFile.close();
-			resultFile = openAppendFile("rawlog/" + name);
-			learnHMMFile.close();
-			learnHMMFile = openAppendFile("rawlog/learnHMM-" + name);
-			learnPicFile.close();
-			learnPicFile = openAppendFile("rawlog/learnPic-" + name);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }
