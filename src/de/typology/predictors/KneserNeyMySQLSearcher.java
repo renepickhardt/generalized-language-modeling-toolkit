@@ -14,10 +14,10 @@ import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
-	protected Connection lowConnection = null;
-	protected Connection lowDiscountConnection = null;
-	protected Connection highConnection = null;
-	protected Connection highDiscountConnection = null;
+	protected Connection lowConnection;
+	protected Connection lowDiscountConnection;
+	protected Connection highConnection;
+	protected Connection highDiscountConnection;
 
 	/**
 	 * @param args
