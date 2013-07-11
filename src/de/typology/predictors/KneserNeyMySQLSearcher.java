@@ -109,6 +109,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				}
 				float highDiscountResult = highDiscountResultSet
 						.getFloat("score");
+				System.out.println("highDiscount: " + highDiscountResult);
 				highDiscountResultSet.close();
 				highDiscountStatement.close();
 
@@ -127,26 +128,17 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 							.substring(1);
 				}
 
-				String lowQuery;
-				if (sequenceBinaryWithoutTargetRemoveFirst.length() == 0) {
-					// calculate lowest order probability
-
-					lowStatement = this.lowConnection.createStatement();
-					lowQuery = this.getResultQuery(new String[0], matchCut, 0,
-							"");
-
-					return subResultMap;
-				}
-				System.out.println("..."
-						+ sequenceBinaryWithoutTargetRemoveFirst);
-				lowQuery = this
-						.getResultQuery(wordsWithoutLastRemoveFirst, matchCut,
-								n - 1, sequenceBinaryWithoutTargetRemoveFirst);
+				String lowQuery = this.getResultQuery(
+						wordsWithoutLastRemoveFirst, matchCut, n - 1,
+						sequenceBinaryWithoutTargetRemoveFirst);
 				ResultSet lowResultSet = lowStatement.executeQuery(lowQuery);
 				this.addToResultMap(lowResultSet, subResultMap,
 						highDiscountResult);
 				lowResultSet.close();
 				lowStatement.close();
+				if (sequenceBinaryWithoutTargetRemoveFirst.length() == 0) {
+					return subResultMap;
+				}
 
 				while (subResultMap.size() < subResultSize) {
 					Statement lowDiscountStatement = this.lowDiscountConnection
@@ -161,6 +153,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 					}
 					float lowDiscountResult = lowDiscountResultSet
 							.getFloat("score");
+					System.out.println("lowDiscount: " + lowDiscountResult);
 					lowDiscountResultSet.close();
 					lowDiscountStatement.close();
 
@@ -207,7 +200,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 	private String getResultQuery(String[] wordsWithoutLast, String match,
 			int n, String sequenceBinaryWithoutTarget) {
 		String query = "select * from ";
-		if (wordsWithoutLast.length > 0) {
+		if (!sequenceBinaryWithoutTarget.isEmpty()) {
 			int tableName = BinarySearch.rank(wordsWithoutLast[0],
 					this.wordIndex);
 
@@ -244,10 +237,11 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				query += "and target like \"" + match + "%\" ";
 			}
 		} else {
+			query += "1_all ";
 			// no source
 			if (!match.isEmpty()) {
 				// add target
-				query += "1_all where target like \"" + match + "%\" ";
+				query += "where target like \"" + match + "%\" ";
 			}
 		}
 		query += "order by score desc limit " + this.subResultSize;
