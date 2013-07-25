@@ -26,6 +26,7 @@ public class KneserNeyAggregator {
 	}
 
 	protected File directory;
+	protected String outputDirectoryName;
 	protected File absoluteDirectory;
 	protected File _absoluteDirectory;
 	protected File absolute_Directory;
@@ -63,6 +64,7 @@ public class KneserNeyAggregator {
 		this.indexName = indexName;
 		this.statsName = statsName;
 		this.directory = new File(directory);
+		this.outputDirectoryName = outputDirectoryName;
 		this.outputDirectory = new File(this.directory.getAbsolutePath() + "/"
 				+ outputDirectoryName);
 		this.absoluteDirectory = new File(this.directory.getAbsolutePath()
@@ -142,6 +144,7 @@ public class KneserNeyAggregator {
 			resultCombiner.combine("-high", "-low", "-temp", "-rev",
 					maxSequenceLength, false);
 		}
+
 		// merge smallest sequence results
 		this.mergeSmallestType(this.lowTempResultDirectory.getAbsolutePath()
 				.replace("-temp", ""));
@@ -155,6 +158,22 @@ public class KneserNeyAggregator {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		// delete temp files
+		// TODO delete smarter (earlier)
+		if (Config.get().deleteTempFiles) {
+			for (File file : this.directory.listFiles()) {
+				if (file.getName().startsWith(this.outputDirectoryName)
+						&& (file.getName().contains("-temp") || file.getName()
+								.contains("rev"))) {
+					try {
+						FileUtils.deleteDirectory(file);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - startTime) / 1000;
