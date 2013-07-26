@@ -1,8 +1,6 @@
 package de.typology.utils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class SystemHelper {
 
@@ -15,15 +13,13 @@ public class SystemHelper {
 		try {
 			p = Runtime.getRuntime()
 					.exec(new String[] { "/bin/sh", "-c", cmd });
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
-			String s = "";
-			while ((s = stdInput.readLine()) != null) {
-				IOHelper.log(s);
-			}
+			p.waitFor();
+			p.destroy();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 }

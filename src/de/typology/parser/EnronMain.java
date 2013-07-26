@@ -3,7 +3,9 @@ package de.typology.parser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
+import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class EnronMain {
@@ -16,6 +18,12 @@ public class EnronMain {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
+		File outputDirectory = new File(Config.get().outputDirectory
+				+ "enron/en/");
+		outputDirectory.mkdirs();
+		EnronMain.run(Config.get().enronInputDirectory,
+				outputDirectory.getAbsolutePath() + "/parsed.txt",
+				outputDirectory.getAbsolutePath() + "/normalized.txt");
 	}
 
 	public static void run(String enronInputPath, String parsedOutputPath,
@@ -30,7 +38,7 @@ public class EnronMain {
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
 		EnronNormalizer wn = new EnronNormalizer(parsedOutputPath,
-				normalizedOutputPath);
+				normalizedOutputPath, Locale.ENGLISH);
 		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");
@@ -39,4 +47,5 @@ public class EnronMain {
 		IOHelper.strongLog("done normalizing: " + enronInputPath + ", time: "
 				+ time + " seconds");
 	}
+
 }

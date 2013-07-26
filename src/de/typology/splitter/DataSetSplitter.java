@@ -97,8 +97,14 @@ public class DataSetSplitter {
 						// store data in testing or learning file
 						rand = (int) (Math.random() * 100);
 						if (rand >= Config.get().splitTestRatio) {
+							if (Config.get().addSentenceTags) {
+								line = "<s> " + line + " </s>";
+							}
 							learningDataWriter.write(line + "\n");
 						} else {
+							if (Config.get().addSentenceTags) {
+								line = "<s> " + line + " </s>";
+							}
 							testingDataWriter.write(line + "\n");
 						}
 					} else {

@@ -3,6 +3,7 @@ package de.typology.parser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Locale;
 
 import de.typology.utils.IOHelper;
 
@@ -13,7 +14,7 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class ReutersNormalizer {
+public class ReutersNormalizer extends Normalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
@@ -22,7 +23,8 @@ public class ReutersNormalizer {
 	private double numberCount;
 	private double numberStringProportion;
 
-	public ReutersNormalizer(String input, String output) {
+	public ReutersNormalizer(String input, String output, Locale locale) {
+		super(locale);
 		this.reader = IOHelper.openReadFile(input);
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
@@ -31,28 +33,7 @@ public class ReutersNormalizer {
 
 		try {
 			while ((this.line = this.reader.readLine()) != null) {
-				this.line = this.line.replaceAll(" +", " ");
-				if (this.line.startsWith(" ")) {
-					this.line = this.line.substring(1, this.line.length());
-				}
-				this.line = this.line.replaceAll(" ,", ",");
-				this.line = this.line.replaceAll(" ;", ";");
-				this.line = this.line.replaceAll(" \\.", ".");
-				this.line = this.line.replaceAll(" !", "!");
-				this.line = this.line.replaceAll(" \\?", "\\?");
-				this.line = this.line.replaceAll(",+", ",");
-				this.line = this.line.replaceAll(";+", ";");
-				this.line = this.line.replaceAll("\\.+", ".");
-				this.line = this.line.replaceAll("!+", "!");
-				this.line = this.line.replaceAll("\\?+", "\\?");
-				this.line = this.line.replaceAll("-+", "-");
-				this.line = this.line.replaceAll("pos;", "'");
-				this.line = this.line.replaceAll("Reuters Limited .*", "");
-
-				// remove some unwanted signs
-				this.line = this.line.replaceAll("\\?", "");
-				this.line = this.line.replaceAll("-", "");
-
+				this.line = this.normalizeString(this.line);
 				String[] strings = this.line.split("\\s");
 				this.stringCount = 0;
 				this.numberCount = 0;
@@ -66,18 +47,13 @@ public class ReutersNormalizer {
 					}
 				}
 				this.numberStringProportion = this.numberCount
-						/ (strings.length + 1);
+						/ (this.numberCount + this.stringCount);
 				// stringCount + 1 to prevent division by zero
 
 				if (this.numberStringProportion < 0.2 && this.stringCount > 1) {
 					// print strings if less then 25% are numbers and contains
 					// at least one string
-					for (String s : strings) {
-						if (!s.isEmpty()) {
-							this.writer.write(s + " ");
-						}
-					}
-					this.writer.write("\n");
+					this.writer.write(this.line);
 					this.writer.flush();
 				}
 			}

@@ -1,22 +1,23 @@
 package de.typology.parser;
 
-import static de.typology.parser.WikipediaToken.BR;
-import static de.typology.parser.WikipediaToken.CLOSEDELEMENT;
-import static de.typology.parser.WikipediaToken.CLOSEDPAGE;
-import static de.typology.parser.WikipediaToken.CLOSEDREF;
-import static de.typology.parser.WikipediaToken.CLOSEDTEXT;
-import static de.typology.parser.WikipediaToken.CLOSEDTITLE;
-import static de.typology.parser.WikipediaToken.EHH;
-import static de.typology.parser.WikipediaToken.ELEMENT;
-import static de.typology.parser.WikipediaToken.GREATERTHAN;
-import static de.typology.parser.WikipediaToken.LESSTHAN;
-import static de.typology.parser.WikipediaToken.OTHER;
-import static de.typology.parser.WikipediaToken.PAGE;
-import static de.typology.parser.WikipediaToken.REF;
-import static de.typology.parser.WikipediaToken.SLASH;
-import static de.typology.parser.WikipediaToken.STRING;
-import static de.typology.parser.WikipediaToken.TEXT;
-import static de.typology.parser.WikipediaToken.TITLE;
+import static de.typology.parser.Token.BR;
+import static de.typology.parser.Token.CLOSEDELEMENT;
+import static de.typology.parser.Token.CLOSEDPAGE;
+import static de.typology.parser.Token.CLOSEDREF;
+import static de.typology.parser.Token.CLOSEDTEXT;
+import static de.typology.parser.Token.CLOSEDTITLE;
+import static de.typology.parser.Token.EHH;
+import static de.typology.parser.Token.ELEMENT;
+import static de.typology.parser.Token.GREATERTHAN;
+import static de.typology.parser.Token.LESSTHAN;
+import static de.typology.parser.Token.LINESEPARATOR;
+import static de.typology.parser.Token.OTHER;
+import static de.typology.parser.Token.PAGE;
+import static de.typology.parser.Token.REF;
+import static de.typology.parser.Token.SLASH;
+import static de.typology.parser.Token.STRING;
+import static de.typology.parser.Token.TEXT;
+import static de.typology.parser.Token.TITLE;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,19 +30,19 @@ import java.util.Map;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class WikipediaRecognizer implements Iterator<WikipediaToken> {
+public class WikipediaRecognizer implements Iterator<Token> {
 
 	private WikipediaTokenizer tokenizer;
 	private String lexeme;
-	private WikipediaToken current;
-	private WikipediaToken previous;
-	private WikipediaToken label;
+	private Token current;
+	private Token previous;
+	private Token label;
 
 	// Keywords to token mapping
-	private static Map<String, WikipediaToken> keywords;
+	private static Map<String, Token> keywords;
 
 	static {
-		keywords = new HashMap<String, WikipediaToken>();
+		keywords = new HashMap<String, Token>();
 		keywords.put("!--", EHH);
 		keywords.put("page", PAGE);
 		keywords.put("title", TITLE);
@@ -75,6 +76,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 
 	public void read() {
 		if (this.tokenizer.hasNext()) {
+			this.tokenizer.lex();
 			this.lexeme += this.tokenizer.getLexeme();
 			this.previous = this.current;
 			this.current = this.tokenizer.next();
@@ -90,7 +92,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 	}
 
 	@Override
-	public WikipediaToken next() {
+	public Token next() {
 		this.reset();
 		this.read();
 		// Recognize <...>
@@ -116,7 +118,7 @@ public class WikipediaRecognizer implements Iterator<WikipediaToken> {
 					this.label = keywords.get(this.lexeme.substring(1));
 				}
 			}
-			while (this.current != GREATERTHAN) {
+			while (this.current != GREATERTHAN && this.current != LINESEPARATOR) {
 				this.read();
 			}
 			if (this.current == GREATERTHAN) {

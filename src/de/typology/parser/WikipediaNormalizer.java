@@ -3,6 +3,7 @@ package de.typology.parser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Locale;
 
 import de.typology.utils.IOHelper;
 
@@ -13,12 +14,13 @@ import de.typology.utils.IOHelper;
  *         http://101companies.org/index.php/101implementation:javaLexer
  * 
  */
-public class WikipediaNormalizer {
+public class WikipediaNormalizer extends Normalizer {
 
 	private BufferedReader reader;
 	private BufferedWriter writer;
 
-	public WikipediaNormalizer(String input, String output) {
+	public WikipediaNormalizer(String input, String output, Locale locale) {
+		super(locale);
 		this.reader = IOHelper.openReadFile(input);
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 	}
@@ -32,32 +34,10 @@ public class WikipediaNormalizer {
 						|| line.contains("NOTOC")) {
 					line = "";
 				}
-				line = line.replaceAll(" +", " ");
-				if (line.startsWith(" ")) {
-					line = line.substring(1, line.length());
-				}
-				line = line.replaceAll(" ,", ",");
-				line = line.replaceAll(" ;", ";");
-				line = line.replaceAll(" \\.", ".");
-				line = line.replaceAll(" !", "!");
-				line = line.replaceAll(" \\?", "\\?");
-				line = line.replaceAll(",+", ",");
-				line = line.replaceAll(";+", ";");
-				line = line.replaceAll("\\.+", ".");
-				line = line.replaceAll("!+", "!");
-				line = line.replaceAll("\\?+", "\\?");
-
 				line = line.replaceAll("''+", "");
-
-				line = line.replaceAll(" +", " ");
-
-				// remove some unwanted signs
-				line = line.replaceAll("\\?", "");
-				line = line.replaceAll("-", "");
-
+				line = this.normalizeString(line);
 				if (!line.isEmpty()) {
 					this.writer.write(line);
-					this.writer.write('\n');
 					this.writer.flush();
 				}
 			}

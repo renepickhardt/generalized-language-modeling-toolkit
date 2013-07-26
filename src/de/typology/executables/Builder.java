@@ -1,5 +1,8 @@
 package de.typology.executables;
 
+import de.typology.smoother.Absolute_Aggregator;
+import de.typology.smoother._absoluteSplitter;
+import de.typology.smoother._absolute_Aggregator;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
@@ -9,6 +12,7 @@ import de.typology.splitter.TypoSplitter;
 import de.typology.splitter.TypoSplitterWithCount;
 import de.typology.stats.StatsBuilder;
 import de.typology.utils.Config;
+import de.typology.utils.IOHelper;
 
 public class Builder {
 
@@ -45,10 +49,46 @@ public class Builder {
 					statsFileName, trainingFileName);
 			ts.split(Config.get().modelLength);
 		}
-		if (Config.get().buildGLMEdges) {
+		if (Config.get().buildGLM) {
 			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
 					statsFileName, trainingFileName);
-			glms.split(Config.get().modelLength);
+			glms.splitGLMForKneserNey(Config.get().modelLength);
+		}
+		if (Config.get().build_absoluteGLM) {
+			_absoluteSplitter _absoluteSplitter = new _absoluteSplitter(
+					outputPath, "absolute", "_absolute-unaggregated",
+					"index.txt", "stats.txt", "training.txt", false);
+			try {
+				_absoluteSplitter.split(Config.get().modelLength);
+			} catch (Exception e) {
+				int mb = 1024 * 1024;
+				// Getting the runtime reference from system
+				Runtime runtime = Runtime.getRuntime();
+
+				IOHelper.log("##### Heap utilization statistics [MB] #####");
+
+				// Print used memory
+				IOHelper.log("Used Memory:\t"
+						+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
+
+				// Print free memory
+				IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
+
+				// Print total available memory
+				IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
+
+				// Print Maximum available memory
+				IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
+			}
+		}
+
+		if (Config.get().aggregateAbsolute_) {
+			Absolute_Aggregator absolute_Aggregator = new Absolute_Aggregator(
+					outputPath, "absolute", "absolute_");
+			absolute_Aggregator.aggregate(Config.get().modelLength);
+			_absolute_Aggregator _absolute_Aggregator = new _absolute_Aggregator(
+					outputPath, "_absolute", "_absolute_");
+			_absolute_Aggregator.aggregate(Config.get().modelLength);
 		}
 	}
 

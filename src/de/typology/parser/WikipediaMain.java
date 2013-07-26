@@ -2,6 +2,7 @@ package de.typology.parser;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
@@ -41,7 +42,7 @@ public class WikipediaMain {
 		IOHelper.log("parsing done");
 		IOHelper.log("start cleanup");
 		WikipediaNormalizer wn = new WikipediaNormalizer(parsedOutputPath,
-				normalizedOutputPath);
+				normalizedOutputPath, WikipediaMain.getLocale(wikiInputPath));
 		wn.normalize();
 		IOHelper.log("cleanup done");
 		IOHelper.log("generate indicator file");
@@ -53,4 +54,25 @@ public class WikipediaMain {
 
 	}
 
+	public static Locale getLocale(String inputPath) {
+		System.out.println(inputPath);
+		String fileName = new File(inputPath).getName();
+		String type = fileName.split("-")[0];
+		if (type.startsWith("bar")) {
+			return Locale.GERMAN;
+		}
+		if (type.startsWith("de")) {
+			return Locale.GERMAN;
+		}
+		if (type.startsWith("en")) {
+			return Locale.ENGLISH;
+		}
+		if (type.startsWith("it")) {
+			return Locale.ITALIAN;
+		}
+		if (type.startsWith("fr")) {
+			return Locale.FRENCH;
+		}
+		throw new IllegalStateException("Could not match language");
+	}
 }

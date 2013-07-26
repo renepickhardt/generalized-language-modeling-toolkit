@@ -12,7 +12,6 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -145,14 +144,14 @@ public class BinarySearchTest {
 		assertEquals(0, BinarySearch.rank(null, testArray));
 	}
 
-	@Test
-	public void testRankSixParametersNormal() {
-		String[] emptyKeyEmptyPrefixExpected = { "0s6.5gs", "1.5gs", "2.5gs",
-				"3.5gs", "4s7.5gs", "4s8.5gs", "4s10.5gs", "5.5gs", "6s3.5gs",
-				"7s1.5gs", "7s4.5gs", "7s5.5gs", "8.5gs", "9.5gs", "10.5gs" };
-		String[] emptyKeyEmptyPrefixActual = BinarySearch.rank("", "", "s",
-				".5gs", this.outputDirectory + "ngrams/5gs/", this.wordIndex);
-		Assert.assertArrayEquals(emptyKeyEmptyPrefixExpected,
-				emptyKeyEmptyPrefixActual);
-	}
+	// @Test
+	// public void testRankSixParametersNormal() {
+	// String[] emptyKeyEmptyPrefixExpected = { "0s6.5gs", "1.5gs", "2.5gs",
+	// "3.5gs", "4s7.5gs", "4s8.5gs", "4s10.5gs", "5.5gs", "6s3.5gs",
+	// "7s1.5gs", "7s4.5gs", "7s5.5gs", "8.5gs", "9.5gs", "10.5gs" };
+	// String[] emptyKeyEmptyPrefixActual = BinarySearch.rank("", "", "s",
+	// ".5gs", this.outputDirectory + "ngrams/5gs/", this.wordIndex);
+	// Assert.assertArrayEquals(emptyKeyEmptyPrefixExpected,
+	// emptyKeyEmptyPrefixActual);
+	// }
 }

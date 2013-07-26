@@ -5,7 +5,7 @@ import java.io.File;
 import de.typology.splitter.Sorter;
 import de.typology.utils.SystemHelper;
 
-public class ContinuationSorter extends Sorter {
+public class _absoluteSorter extends Sorter {
 
 	/**
 	 * This class provides a method for sorting a given file by the second,
@@ -37,20 +37,15 @@ public class ContinuationSorter extends Sorter {
 			File inputFile = new File(inputPath);
 			String outputPath = inputPath.replace(inputExtension,
 					outputExtension);
-
 			// build sort command
-			int columnNumber = this.getColumnNumber(inputPath);
-			String sortCommand = "sort --buffer-size=1G ";
+			int columnNumber = Integer.bitCount(Integer.parseInt(inputFile
+					.getName().split("\\.")[1].split("-")[0], 2));
+			// LANG=C to sort utf-8 correctly
+			String sortCommand = "LANG=C sort --buffer-size=1G ";
 
-			// 0edges are only sorted by count
-			if (!inputPath.contains(".0")) {
-				// don't sort for last column (columnnumber - 1) just yet
-				for (int column = 2; column < columnNumber; column++) {
-					sortCommand += "--key=" + column + "," + column + " ";
-				}
+			for (int column = 2; column <= columnNumber; column++) {
+				sortCommand += "--key=" + column + "," + column + " ";
 			}
-			// sort for count (nr --> numerics, reverse)
-			sortCommand += "--key=" + columnNumber + "," + columnNumber + "nr ";
 			// sort for first line
 			sortCommand += "--key=1,1 ";
 			sortCommand += "--output=" + outputPath + " " + inputPath;
