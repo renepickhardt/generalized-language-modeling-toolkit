@@ -90,21 +90,6 @@ public class Builder {
 					outputPath, "_absolute", "_absolute_");
 			_absolute_Aggregator.aggregate(Config.get().modelLength);
 		}
-		if (Config.get().revertSort) {
-			// RevertSortSplitter arsAbsolute = new
-			// RevertSortSplitter(outputPath,
-			// "absolute", "absolute-rev-sort", indexFileName,
-			// statsFileName, trainingFileName);
-			// arsAbsolute.split(Config.get().modelLength);
-			// RevertSortSplitter arsContinuation = new RevertSortSplitter(
-			// outputPath, "continuation", "continuation-rev-sort",
-			// indexFileName, statsFileName, trainingFileName);
-			// arsContinuation.split(Config.get().modelLength);
-			// RevertSortSplitter arsNs = new RevertSortSplitter(outputPath,
-			// "ns-absolute", "ns-absolute-rev-sort", indexFileName,
-			// statsFileName, trainingFileName);
-			// arsNs.split(Config.get().modelLength);
-		}
 	}
 
 	public void buildFromNGrams(String outputPath) {
