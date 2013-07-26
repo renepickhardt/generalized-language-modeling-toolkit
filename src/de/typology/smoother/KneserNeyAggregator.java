@@ -21,7 +21,7 @@ public class KneserNeyAggregator {
 				+ Config.get().inputDataSet;
 		KneserNeyAggregator kna = new KneserNeyAggregator(outputDirectory,
 				"absolute", "_absolute", "absolute_", "_absolute_",
-				"kneser-ney", "index.txt", "stats.txt");
+				"kneser-ney", Config.get().indexName, Config.get().statsName);
 		kna.calculate(5);
 	}
 

@@ -110,6 +110,12 @@ public class Config extends Properties {
 
 	public static String ngramDownloadPath;
 	public static String ngramDownloadOutputPath;
+	
+	
+	public String indexName;
+	public String statsName;
+	public String trainingName;
+	
 
 	public Config() {
 		String file = "config.txt";

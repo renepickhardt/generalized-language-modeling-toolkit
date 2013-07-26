@@ -113,7 +113,7 @@ public class _absoluteDiscountAggregator {
 		}
 		// merge and sort aggregate-unmerged
 		_absoluteSplitter csp = new _absoluteSplitter(this.directory,
-				"aggregate-unmerged", "aggregate", "index.txt", "", "",
+				"aggregate-unmerged", "aggregate", Config.get().indexName, "", "",
 				Config.get().deleteTempFiles);
 		csp.split(maxSequenceLength - 1);
 		// count absolute files

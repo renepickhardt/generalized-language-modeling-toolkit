@@ -26,8 +26,8 @@ public class SortSplitter extends Splitter {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		SortSplitter ars = new SortSplitter(outputDirectory, "absolute",
-				"absolute-rev-sort", "index.txt", "stats.txt", "training.txt",
-				true);
+				"absolute-rev-sort", Config.get().indexName,
+				Config.get().statsName, Config.get().trainingName, true);
 		ars.split(5);
 	}
 
@@ -40,7 +40,7 @@ public class SortSplitter extends Splitter {
 	public SortSplitter(String directory, String inputDirectoryName,
 			String outputDirectoryName, String indexName, String statsName,
 			String inputName, boolean reverse) {
-		super(directory, indexName, statsName, inputName, "");
+		super(directory);
 		this.reverse = reverse;
 
 		this.inputDirectory = new File(this.directory + inputDirectoryName);
@@ -60,7 +60,6 @@ public class SortSplitter extends Splitter {
 
 	}
 
-	@Override
 	public void split(int maxSequenceLength) {
 		IOHelper.strongLog("revert sorting " + this.inputDirectory);
 		for (File inputDirectory : this.inputDirectory.listFiles()) {
@@ -122,31 +121,8 @@ public class SortSplitter extends Splitter {
 							"-split", "");
 				}
 			}
-			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
-					+ this.extension);
-
 		}
 		// this.sorter.sortCountDirectory(this.directory+this.outputDirectoryName,
 		// inputExtension, outputExtension)
 	}
-
-	@Override
-	protected void mergeSmallestType(String inputPath) {
-		// File inputFile = new File(inputPath);
-		// if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1)
-		// {
-		// File[] files = inputFile.listFiles();
-		//
-		// String fileExtension = inputFile.getName();
-		// IOHelper.log("merge all " + fileExtension);
-		// SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
-		// + inputPath + "/all." + fileExtension);
-		// for (File file : files) {
-		// if (!file.getName().equals("all." + fileExtension)) {
-		// file.delete();
-		// }
-		// }
-		// }
-	}
-
 }

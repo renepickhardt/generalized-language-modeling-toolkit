@@ -26,7 +26,7 @@ public class ModifiedKneserNeyAggregator extends KneserNeyAggregator {
 				+ Config.get().inputDataSet;
 		ModifiedKneserNeyAggregator mkna = new ModifiedKneserNeyAggregator(
 				outputDirectory, "absolute", "_absolute", "absolute_",
-				"_absolute_", "mod-kneser-ney", "index.txt", "stats.txt");
+				"_absolute_", "mod-kneser-ney", Config.get().indexName, Config.get().statsName);
 		mkna.calculate(5);
 
 	}

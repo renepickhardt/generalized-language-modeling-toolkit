@@ -46,11 +46,11 @@ public class BinarySearchTest {
 		IndexBuilder ib = new IndexBuilder();
 		String outputDirectory = "testDataset/";
 		ib.buildIndex(outputDirectory + "normalized.txt", outputDirectory
-				+ "index.txt", outputDirectory + "stats.txt");
+				+ Config.get().indexName, outputDirectory + Config.get().statsName);
 
 		// build ngrams
-		NGramSplitter ngs = new NGramSplitter(outputDirectory, "index.txt",
-				"stats.txt", "normalized.txt");
+		NGramSplitter ngs = new NGramSplitter(outputDirectory, Config.get().indexName,
+				Config.get().statsName, "normalized.txt");
 		ngs.split(5);
 
 	}
@@ -74,7 +74,7 @@ public class BinarySearchTest {
 				this.outputDirectory + "normalized.txt"));
 		this.ib = new IndexBuilder();
 		this.wordIndex = this.ib.deserializeIndex(this.outputDirectory
-				+ "index.txt");
+				+ Config.get().indexName);
 	}
 
 	/**

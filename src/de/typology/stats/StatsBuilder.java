@@ -21,7 +21,7 @@ public class StatsBuilder {
 		StatsBuilder sb = new StatsBuilder();
 		String outputPath = Config.get().outputDirectory + "google/ger/";
 		sb.buildStats(outputPath + "1gram-normalized.txt", outputPath
-				+ "stats.txt");
+				+ Config.get().statsName);
 	}
 
 	public void buildStats(String inputPath, String outputPath) {

@@ -10,7 +10,7 @@ public class BinarySearch {
 		// String outputDirectory = Config.get().outputDirectory
 		// + Config.get().inputDataSet;
 		// IndexBuilder ib = new IndexBuilder();
-		// String[] index = ib.deserializeIndex(outputDirectory + "index.txt");
+		// String[] index = ib.deserializeIndex(outputDirectory + Config.get().indexName);
 		// String[] result;
 		// String key;
 		// String prefix;

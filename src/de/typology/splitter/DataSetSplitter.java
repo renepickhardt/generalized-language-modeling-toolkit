@@ -30,21 +30,18 @@ public class DataSetSplitter {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		DataSetSplitter dss = new DataSetSplitter(outputDirectory, "",
-				"stats.txt", "normalized.txt");
-		dss.split("training.txt", "learning.txt", "testing.txt", 5);
+		DataSetSplitter dss = new DataSetSplitter(outputDirectory,
+				"normalized.txt");
+		dss.split(Config.get().trainingName, "learning.txt", "testing.txt", 5);
 
 	}
 
-	private Splitter splitter;
 	private String directory;
 	private String inputName;
 	protected File outputDirectory;
 
-	public DataSetSplitter(String directory, String indexName,
-			String statsName, String inputName) {
-		this.splitter = new NGramSplitter(directory, indexName, statsName,
-				inputName);
+	public DataSetSplitter(String directory, String inputName) {
+
 		this.directory = directory;
 		this.inputName = inputName;
 	}
@@ -116,8 +113,6 @@ public class DataSetSplitter {
 			trainingDataWriter.close();
 			learningDataWriter.close();
 			testingDataWriter.close();
-			this.splitIntoSequences(learningFileName, sequenceLength);
-			this.splitIntoSequences(testingFileName, sequenceLength);
 			IOHelper.strongLog("splitting done");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -125,7 +120,11 @@ public class DataSetSplitter {
 		}
 	}
 
-	private void splitIntoSequences(String fileName, int sequenceLength) {
+	public void splitIntoSequences(String fileName, int sequenceLength) {
+
+		Splitter splitter;
+		splitter = new Splitter(this.directory);
+
 		String[] fileNameSplit = fileName.split("\\.");
 		String newFileName = fileNameSplit[0] + "-splitted." + fileNameSplit[1];
 		// get total count from stats file
@@ -133,21 +132,21 @@ public class DataSetSplitter {
 		BufferedWriter writer = IOHelper.openWriteFile(this.directory
 				+ newFileName, Config.get().memoryLimitForWritingFiles);
 		IOHelper.strongLog("splitting " + fileName + " into sequences");
-		this.splitter.initializeForSequenceSplit(fileName);
+		splitter.initializeForSequenceSplit(fileName);
 		long sequenceCount = 0L;
-		while (this.splitter.getNextSequence(sequenceLength)) {
+		while (splitter.getNextSequence(sequenceLength)) {
 			sequenceCount++;
 		}
 
 		long skipDistance = sequenceCount / Config.get().numberOfQueries;
-		this.splitter.initializeForSequenceSplit(fileName);
+		splitter.initializeForSequenceSplit(fileName);
 		int sequence = 0;
 		int query = 0;
-		while (this.splitter.getNextSequence(sequenceLength)) {
+		while (splitter.getNextSequence(sequenceLength)) {
 			if (sequence % skipDistance == 0) {
 				query++;
 				try {
-					for (String word : this.splitter.sequence) {
+					for (String word : splitter.sequence) {
 						writer.write(word + " ");
 					}
 					writer.write("\n");

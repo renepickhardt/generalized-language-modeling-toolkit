@@ -12,9 +12,8 @@ import org.apache.commons.io.FileUtils;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
-public abstract class Splitter {
+public class Splitter {
 	protected String directory;
-	protected String inputName;
 	protected String statsPath;
 	protected String indexPath;
 	protected File outputDirectory;
@@ -38,23 +37,17 @@ public abstract class Splitter {
 	protected int sequenceCount;
 	protected boolean isSequenceSplit;
 
-	protected Splitter(String directory, String indexName, String statsName,
-			String inputName, String outputDirectoryName) {
+	protected Splitter(String directory) {
 		this.directory = directory;
-		this.inputName = inputName;
-		this.statsPath = directory + statsName;
-		this.indexPath = directory + indexName;
+		this.statsPath = directory + Config.get().statsName;
+		this.indexPath = directory + Config.get().indexName;
 		IndexBuilder ib = new IndexBuilder();
-		if (!indexName.isEmpty()) {
+		ib.buildIndex(directory + "/normalized.txt", this.indexPath,
+				this.statsPath);
+		if (!Config.get().indexName.isEmpty()) {
 			this.wordIndex = ib.deserializeIndex(this.indexPath);
 		}
-		// TODO:remove this normalized stuff...
-		if (outputDirectoryName.length() == 0) {
-			this.outputDirectory = new File(this.directory + "/" + "normalized");
-		} else {
-			this.outputDirectory = new File(this.directory + "/"
-					+ outputDirectoryName + "-normalized");
-		}
+		this.outputDirectory = new File(this.directory + "/" + "normalized");
 		this.outputDirectory.mkdir();
 		this.secondLevelSplitter = new SecondLevelSplitter();
 		this.aggregator = new Aggregator();
@@ -75,7 +68,8 @@ public abstract class Splitter {
 	 * @param sequenceLength
 	 */
 	protected void initialize(String extension) {
-		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
+		this.reader = IOHelper.openReadFile(this.directory
+				+ Config.get().trainingName);
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsoluteFile() + "/" + extension);
 		if (currentOutputDirectory.exists()) {
@@ -119,30 +113,6 @@ public abstract class Splitter {
 				e.printStackTrace();
 			}
 		}
-		currentOutputDirectory.mkdir();
-		this.writers = new HashMap<Integer, BufferedWriter>();
-		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
-			this.writers.put(
-					fileCount,
-					IOHelper.openWriteFile(
-							currentOutputDirectory + "/" + fileCount + "."
-									+ extension + "-split",
-							Config.get().memoryLimitForWritingFiles
-									/ Config.get().maxCountDivider));
-		}
-	}
-
-	/**
-	 * This method is used when having ngrams as an input
-	 * 
-	 * @param extension
-	 * @param sequenceLength
-	 */
-	protected void initializeWithLength(String extension) {
-		this.reader = IOHelper.openReadFile(this.directory + this.inputName);
-		File currentOutputDirectory = new File(
-				this.outputDirectory.getAbsoluteFile() + "/" + extension);
-
 		currentOutputDirectory.mkdir();
 		this.writers = new HashMap<Integer, BufferedWriter>();
 		for (int fileCount = 0; fileCount < this.wordIndex.length; fileCount++) {
@@ -208,45 +178,6 @@ public abstract class Splitter {
 		return true;
 	}
 
-	/**
-	 * this method assumes that there is a count at the end of a line
-	 * 
-	 * @param sequenceLength
-	 * @return
-	 */
-	protected boolean getNextSequenceWithCount(int sequenceLength) {
-		this.sequence = new String[sequenceLength];
-		// this.lineSplit.length-1 to leave out the count
-		if (this.linePointer + sequenceLength > this.lineSplit.length - 1) {
-			while (true) {
-				// repeat until end of file or finding a line that is long
-				// enough
-				try {
-					this.line = this.reader.readLine();
-					if (this.line == null) {
-						// reached end of file
-						return false;
-					} else {
-						this.lineSplit = this.line.split("\\s");
-						if (this.lineSplit.length > sequenceLength) {
-							this.linePointer = 0;
-							this.sequenceCount = Integer
-									.parseInt(this.lineSplit[this.lineSplit.length - 1]);
-							break;
-						}
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		for (int i = 0; i < sequenceLength; i++) {
-			this.sequence[i] = this.lineSplit[this.linePointer + i];
-		}
-		this.linePointer++;
-		return true;
-	}
-
 	protected void sortAndAggregate(String inputPath) {
 		File normalizedNGrams = new File(inputPath);
 		File parentDir = normalizedNGrams.getParentFile();
@@ -275,7 +206,6 @@ public abstract class Splitter {
 
 		this.secondLevelSplitter.mergeDirectory(normalizedNGrams
 				.getAbsolutePath());
-		this.mergeSmallestType(normalizedNGrams.getAbsolutePath());
 
 		// rename absoulte ngram files
 		for (File file : absoluteNGrams.listFiles()) {
@@ -284,7 +214,6 @@ public abstract class Splitter {
 		}
 		this.secondLevelSplitter.mergeDirectory(absoluteNGrams
 				.getAbsolutePath());
-		this.mergeSmallestType(absoluteNGrams.getAbsolutePath());
 	}
 
 	protected void reset() {
@@ -301,9 +230,4 @@ public abstract class Splitter {
 		return this.writers.get(BinarySearch.rank(key, this.wordIndex));
 
 	}
-
-	protected abstract void split(int sequenceDecimal);
-
-	protected abstract void mergeSmallestType(String inputPath);
-
 }

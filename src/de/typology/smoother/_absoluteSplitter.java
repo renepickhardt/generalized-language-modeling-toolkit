@@ -26,8 +26,8 @@ public class _absoluteSplitter extends Splitter {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
 		_absoluteSplitter cs = new _absoluteSplitter(outputDirectory,
-				"absolute", "_absolute-unaggregated", "index.txt", "stats.txt",
-				"training.txt", false);
+				"absolute", "_absolute-unaggregated", Config.get().indexName,
+				Config.get().statsName, Config.get().trainingName, false);
 		cs.split(5);
 	}
 
@@ -43,7 +43,7 @@ public class _absoluteSplitter extends Splitter {
 	public _absoluteSplitter(String directory, String inputDirectoryName,
 			String outputDirectoryName, String indexName, String statsName,
 			String inputName, boolean deleteInputFiles) {
-		super(directory, indexName, statsName, inputName, "");
+		super(directory);
 		this.inputDirectoryName = inputDirectoryName;
 		this.outputDirectoryName = outputDirectoryName;
 		this.deleteInputFiles = deleteInputFiles;
@@ -126,7 +126,6 @@ public class _absoluteSplitter extends Splitter {
 		}
 	}
 
-	@Override
 	public void split(int maxSequenceLength) {
 		this.outputDirectory = new File(this.outputDirectory.getAbsolutePath()
 				.replace("normalized", this.outputDirectoryName));
@@ -169,8 +168,6 @@ public class _absoluteSplitter extends Splitter {
 			this.continuationSorter.sortSecondCloumnDirectory(
 					this.outputDirectory.getAbsolutePath() + "/"
 							+ this.extension, "-split", "");
-			this.mergeSmallestType(this.outputDirectory.getAbsolutePath() + "/"
-					+ this.extension);
 
 		}
 		if (this.deleteInputFiles) {
@@ -185,25 +182,6 @@ public class _absoluteSplitter extends Splitter {
 		this._absoluteAggregator.aggregate(5);
 		// this.sorter.sortCountDirectory(this.directory+this.outputDirectoryName,
 		// inputExtension, outputExtension)
-	}
-
-	@Override
-	protected void mergeSmallestType(String inputPath) {
-		// File inputFile = new File(inputPath);
-		// if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1)
-		// {
-		// File[] files = inputFile.listFiles();
-		//
-		// String fileExtension = inputFile.getName();
-		// IOHelper.log("merge all " + fileExtension);
-		// SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
-		// + inputPath + "/all." + fileExtension);
-		// for (File file : files) {
-		// if (!file.getName().equals("all." + fileExtension)) {
-		// file.delete();
-		// }
-		// }
-		// }
 	}
 
 }

@@ -17,9 +17,8 @@ import de.typology.utils.IOHelper;
 public class GLMSplitter extends Splitter {
 	protected String extension;
 
-	public GLMSplitter(String directory, String indexName, String statsName,
-			String inputName) {
-		super(directory, indexName, statsName, inputName, "");
+	public GLMSplitter(String directory) {
+		super(directory);
 		try {
 			// TODO:This should be placed somewhere else (inside Splitter is
 			// currently not possible)
@@ -42,8 +41,7 @@ public class GLMSplitter extends Splitter {
 	public static void main(String[] args) {
 		String outputDirectory = Config.get().outputDirectory
 				+ Config.get().inputDataSet;
-		GLMSplitter ts = new GLMSplitter(outputDirectory, "index.txt",
-				"stats.txt", "training.txt");
+		GLMSplitter ts = new GLMSplitter(outputDirectory);
 		// System.out.println("typo:");
 		// ts.splitTypo(5);
 		// System.out.println("lm:");
@@ -91,21 +89,10 @@ public class GLMSplitter extends Splitter {
 	public void splitGLMForKneserNey(int maxSequenceLength) {
 		for (int sequenceDecimal = 1; sequenceDecimal < Math.pow(2,
 				maxSequenceLength); sequenceDecimal++) {
-			// leave out even sequences since they don't contain a
-			// target
-			// if (sequenceDecimal % 2 == 0) {
-			// // but keep all sequences with length=maxSequenceLength-1 (we
-			// // need them for kneser ney)
-			// if (Integer.toBinaryString(sequenceDecimal).length() !=
-			// maxSequenceLength - 1) {
-			// continue;
-			// }
-			// }
 			this.split(sequenceDecimal);
 		}
 	}
 
-	@Override
 	public void split(int sequenceDecimal) {
 
 		// convert sequence type into binary representation
@@ -164,22 +151,4 @@ public class GLMSplitter extends Splitter {
 				+ this.extension);
 	}
 
-	@Override
-	protected void mergeSmallestType(String inputPath) {
-		// File inputFile = new File(inputPath);
-		// if (Integer.bitCount(Integer.parseInt(inputFile.getName(), 2)) == 1)
-		// {
-		// File[] files = inputFile.listFiles();
-		//
-		// String fileExtension = inputFile.getName();
-		// IOHelper.log("merge all " + fileExtension);
-		// SystemHelper.runUnixCommand("cat " + inputPath + "/* > "
-		// + inputPath + "/all." + fileExtension);
-		// for (File file : files) {
-		// if (!file.getName().equals("all." + fileExtension)) {
-		// file.delete();
-		// }
-		// }
-		// }
-	}
 }

@@ -31,7 +31,7 @@ public class IndexBuilderTest {
 		IndexBuilder ib = new IndexBuilder();
 		String outputDirectory = "testDataset/";
 		ib.buildIndex(outputDirectory + "normalized.txt", outputDirectory
-				+ "index.txt", outputDirectory + "stats.txt");
+				+ Config.get().indexName, outputDirectory + Config.get().statsName);
 	}
 
 	@AfterClass
@@ -45,7 +45,7 @@ public class IndexBuilderTest {
 		this.outputDirectory = "testDataset/";
 		this.ib = new IndexBuilder();
 		this.wordIndex = this.ib.deserializeIndex(this.outputDirectory
-				+ "index.txt");
+				+ Config.get().indexName);
 	}
 
 	@After

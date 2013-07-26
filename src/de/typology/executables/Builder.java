@@ -6,58 +6,54 @@ import de.typology.smoother._absolute_Aggregator;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.GLMSplitter;
 import de.typology.splitter.IndexBuilder;
-import de.typology.splitter.NGramSplitter;
-import de.typology.splitter.NGramSplitterWithCount;
-import de.typology.splitter.TypoSplitter;
-import de.typology.splitter.TypoSplitterWithCount;
-import de.typology.stats.StatsBuilder;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
 public class Builder {
 
-	public void build(String outputPath) {
+	/**
+	 * Takes a normalized input file from Config.get().trainingName and creates
+	 * Generalized Language Models which also include standard Language Models
+	 * 
+	 * @param inputDirectory
+	 */
+	public void build(String inputDirectory) {
 
-		String indexFileName = "index.txt";
-		String statsFileName = "stats.txt";
-		String trainingFileName = "training.txt";
 		String learningFileName = "learning.txt";
 		String testingFileName = "testing.txt";
 
 		if (Config.get().splitData) {
-			// index and stats are empty since they don't exist at the moment
-			DataSetSplitter dss = new DataSetSplitter(outputPath, "", "",
+			DataSetSplitter dss = new DataSetSplitter(inputDirectory,
 					"normalized.txt");
-			dss.split(trainingFileName, learningFileName, testingFileName,
-					Config.get().modelLength);
+			dss.split(Config.get().trainingName, learningFileName,
+					testingFileName, Config.get().modelLength);
+			dss.splitIntoSequences(learningFileName, Config.get().modelLength);
+			dss.splitIntoSequences(testingFileName, Config.get().modelLength);
 		}
 		// TODO: add stats
 
 		if (Config.get().buildIndex) {
 			IndexBuilder ib = new IndexBuilder();
-			ib.buildIndex(outputPath + trainingFileName, outputPath
-					+ indexFileName, outputPath + statsFileName);
+			ib.buildIndex(inputDirectory + Config.get().trainingName,
+					inputDirectory + Config.get().indexName, inputDirectory
+							+ Config.get().statsName);
 		}
 
 		if (Config.get().buildNGrams) {
-			NGramSplitter ngs = new NGramSplitter(outputPath, indexFileName,
-					statsFileName, trainingFileName);
-			ngs.split(Config.get().modelLength);
+			// TODO: add GLMSplitter with Ngramoptions
 		}
 		if (Config.get().buildTypoEdges) {
-			TypoSplitter ts = new TypoSplitter(outputPath, indexFileName,
-					statsFileName, trainingFileName);
-			ts.split(Config.get().modelLength);
+			// TODO: add GLMSplitter with Typooptions
 		}
 		if (Config.get().buildGLM) {
-			GLMSplitter glms = new GLMSplitter(outputPath, indexFileName,
-					statsFileName, trainingFileName);
+			GLMSplitter glms = new GLMSplitter(inputDirectory);
 			glms.splitGLMForKneserNey(Config.get().modelLength);
 		}
 		if (Config.get().build_absoluteGLM) {
 			_absoluteSplitter _absoluteSplitter = new _absoluteSplitter(
-					outputPath, "absolute", "_absolute-unaggregated",
-					"index.txt", "stats.txt", "training.txt", false);
+					inputDirectory, "absolute", "_absolute-unaggregated",
+					Config.get().indexName, Config.get().statsName,
+					Config.get().trainingName, false);
 			try {
 				_absoluteSplitter.split(Config.get().modelLength);
 			} catch (Exception e) {
@@ -84,45 +80,11 @@ public class Builder {
 
 		if (Config.get().aggregateAbsolute_) {
 			Absolute_Aggregator absolute_Aggregator = new Absolute_Aggregator(
-					outputPath, "absolute", "absolute_");
+					inputDirectory, "absolute", "absolute_");
 			absolute_Aggregator.aggregate(Config.get().modelLength);
 			_absolute_Aggregator _absolute_Aggregator = new _absolute_Aggregator(
-					outputPath, "_absolute", "_absolute_");
+					inputDirectory, "_absolute", "_absolute_");
 			_absolute_Aggregator.aggregate(Config.get().modelLength);
-		}
-	}
-
-	public void buildFromNGrams(String outputPath) {
-		String indexFileName = "index.txt";
-		String statsFileName = "stats.txt";
-		String trainingFileName;
-		NGramSplitterWithCount ngs;
-		// no splitting into training/learning/testing since there are only
-		// ngrams
-
-		if (Config.get().buildNGrams) {
-			StatsBuilder sb = new StatsBuilder();
-			sb.buildStats(outputPath + "1gram-normalized.txt", outputPath
-					+ "stats.txt");
-		}
-		// no index building; use index from another file instead
-
-		if (Config.get().buildNGrams) {
-			for (int i = 1; i <= Config.get().modelLength; i++) {
-				trainingFileName = i + "gram-normalized.txt";
-				ngs = new NGramSplitterWithCount(outputPath, indexFileName,
-						statsFileName, trainingFileName);
-				ngs.split(i);
-			}
-		}
-		if (Config.get().buildTypoEdges) {
-			for (int i = 1; i <= Config.get().modelLength; i++) {
-				trainingFileName = i + "gram-normalized.txt";
-				TypoSplitterWithCount ts = new TypoSplitterWithCount(
-						outputPath, indexFileName, statsFileName,
-						trainingFileName);
-				ts.split(i);
-			}
 		}
 	}
 }

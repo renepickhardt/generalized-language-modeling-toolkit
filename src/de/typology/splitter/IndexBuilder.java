@@ -13,6 +13,14 @@ import java.util.TreeMap;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
+/**
+ * takes an inputfile counts the words and builds a balanced partitioned index
+ * so that the language models will be put into files of almost equal size
+ * 
+ * @author mkoerner
+ * 
+ */
+
 public class IndexBuilder {
 	private TreeMap<String, Long> wordMap;
 	private String[] wordIndex;
@@ -32,16 +40,8 @@ public class IndexBuilder {
 				+ Config.get().inputDataSet;
 		IndexBuilder ib = new IndexBuilder();
 		ib.buildIndex(outputDirectory + "normalized.txt", outputDirectory
-				+ "index.txt", outputDirectory + "stats.txt");
-		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
-		// System.out.println(word.getKey() + " --> " + word.getValue());
-		// }
-		// ib.wordIndex = null;
-		// ib.deserializeIndex(Config.get().outputDirectory + dataSet
-		// + "/index.txt");
-		// for (Entry<String, String> word : ib.wordIndex.entrySet()) {
-		// System.out.println(word.getKey() + " --> " + word.getValue());
-		// }
+				+ Config.get().indexName, outputDirectory
+				+ Config.get().statsName);
 	}
 
 	private void buildMap(String input) {
@@ -83,11 +83,6 @@ public class IndexBuilder {
 				String[] words = line.split("\\s+");
 				for (String word : words) {
 
-					// cut down word to make wordMap smaller
-					// if (word.length() > 3) {
-					// word = word.substring(0, 2);
-					// }
-
 					if (this.wordMap.containsKey(word)) {
 						this.wordMap.put(word, this.wordMap.get(word) + 1);
 					} else {
@@ -99,9 +94,6 @@ public class IndexBuilder {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// for (Entry<String, Long> word : this.wordMap.entrySet()) {
-		// System.out.println(word.getKey() + " : " + word.getValue());
-		// }
 	}
 
 	public void buildIndex(String inputPath, String indexPath, String statsPath) {
