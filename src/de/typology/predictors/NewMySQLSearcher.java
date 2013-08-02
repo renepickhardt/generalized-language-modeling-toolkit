@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -116,12 +115,13 @@ public abstract class NewMySQLSearcher {
 					// collected results from all edges now find the topk,
 					// log
 					// result and decide if to continue;
-					System.out.println("results for "
-							+ Arrays.toString(wordsWithoutLast) + " with n="
-							+ n + " and k=" + k + ":");
+					// System.out.println("results for "
+					// + Arrays.toString(wordsWithoutLast) + " with n="
+					// + n + " and k=" + k + ":");
 					for (Entry<String, Float> e : this.totalResultMap
 							.entrySet()) {
-						System.out.println(e.getKey() + " --> " + e.getValue());
+						// System.out.println(e.getKey() + " --> " +
+						// e.getValue());
 
 					}
 					lastRank = this.computeAndLogTop(pfl, match, lastRank);

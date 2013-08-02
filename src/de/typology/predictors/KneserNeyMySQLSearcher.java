@@ -5,7 +5,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import de.typology.splitter.BinarySearch;
@@ -31,21 +30,16 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				+ Config.get().trainedOnLang + "/index.txt";
 		String[] wordIndex = ib.deserializeIndex(indexPath);
 
-		KneserNeyMySQLSearcher glmmss = new KneserNeyMySQLSearcher(databaseName);
-		// Config.get().weight = "no";
-		// for (int i = 5; i > 1; i--) {
-		// IOHelper.strongLog("google ngrams tested on wiki typology model parameter: "
-		// + i);
-		// tmss.run(i, 100000, Config.get().weight);
-		// }
-		// Config.get().weight = "pic";
+		KneserNeyMySQLSearcher knmsqls = new KneserNeyMySQLSearcher(
+				databaseName);
 
 		for (int n = 5; n > 1; n--) {
 			IOHelper.strongLog("model parameter: " + n);
 			for (int k = n - 1; k > 0; k--) {
-				glmmss.run(n, k, Config.get().numberOfQueries, wordIndex);
+				knmsqls.run(n, k, Config.get().numberOfQueries, wordIndex);
 			}
 		}
+		knmsqls.close();
 	}
 
 	public KneserNeyMySQLSearcher(String dataBaseName) {
@@ -74,13 +68,14 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 	protected HashMap<String, Float> calculateResultSet(
 			String[] wordsWithoutLast, String match, int n,
 			int sequenceDecimal, int pfl, String[] wordIndex) {
-		System.out.println("<----");
+		// System.out.println("<----");
 		String matchCut = match.substring(0, pfl);
 		HashMap<String, Float> subResultMap = new HashMap<String, Float>();
 		int subResultSize = Config.get().subResultSize;
 		try {
-			System.out.println(Arrays.toString(wordsWithoutLast) + " seqDec: "
-					+ sequenceDecimal + " pfl: " + pfl);
+			// System.out.println(Arrays.toString(wordsWithoutLast) +
+			// " seqDec: "
+			// + sequenceDecimal + " pfl: " + pfl);
 			String sequenceBinary = Integer.toBinaryString(sequenceDecimal);
 			String sequenceBinaryWithoutTarget = sequenceBinary.substring(0,
 					sequenceBinary.length() - 1);
@@ -109,7 +104,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				}
 				float highDiscountResult = highDiscountResultSet
 						.getFloat("score");
-				System.out.println("highDiscount: " + highDiscountResult);
+				// System.out.println("highDiscount: " + highDiscountResult);
 				highDiscountResultSet.close();
 				highDiscountStatement.close();
 
@@ -118,7 +113,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 				for (int i = 1; i < wordsWithoutLast.length; i++) {
 					wordsWithoutLastRemoveFirst[i - 1] = wordsWithoutLast[i];
 				}
-				System.out.println(sequenceBinaryWithoutTarget);
+				// System.out.println(sequenceBinaryWithoutTarget);
 
 				// remove first and leading zeros
 				String sequenceBinaryWithoutTargetRemoveFirst = sequenceBinaryWithoutTarget
@@ -153,11 +148,10 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 					}
 					float lowDiscountResult = lowDiscountResultSet
 							.getFloat("score");
-					System.out.println("lowDiscount: " + lowDiscountResult);
+					// System.out.println("lowDiscount: " + lowDiscountResult);
 					lowDiscountResultSet.close();
 					lowDiscountStatement.close();
 
-					lowStatement = this.lowConnection.createStatement();
 					wordsWithoutLastRemoveFirst = new String[wordsWithoutLast.length - 1];
 					for (int i = 1; i < wordsWithoutLast.length; i++) {
 						wordsWithoutLastRemoveFirst[i - 1] = wordsWithoutLast[i];
@@ -176,6 +170,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 						return subResultMap;
 					}
 
+					lowStatement = this.lowConnection.createStatement();
 					lowQuery = this.getResultQuery(wordsWithoutLastRemoveFirst,
 							matchCut, n - 1,
 							sequenceBinaryWithoutTargetRemoveFirst);
@@ -193,7 +188,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 			e.printStackTrace();
 		}
 
-		System.out.println("---->");
+		// System.out.println("---->");
 		return subResultMap;
 	}
 
@@ -219,8 +214,8 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 						+ sequenceBinaryWithoutTargetWithLeadingZeros;
 				offset++;
 			}
-			System.out.println("n " + n);
-			System.out.println(sequenceBinaryWithoutTargetWithLeadingZeros);
+			// System.out.println("n " + n);
+			// System.out.println(sequenceBinaryWithoutTargetWithLeadingZeros);
 			for (int i = 0; i < sequenceBinaryWithoutTargetWithLeadingZeros
 					.length(); i++) {
 				if (sequenceBinaryWithoutTargetWithLeadingZeros.charAt(i) == '1') {
@@ -245,7 +240,7 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 			}
 		}
 		query += "order by score desc limit " + this.subResultSize;
-		System.out.println(query);
+		// System.out.println(query);
 		return query;
 	}
 
@@ -274,8 +269,8 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 					+ sequenceBinaryWithoutTargetWithLeadingZeros;
 			offset++;
 		}
-		System.out.println("n " + n);
-		System.out.println(sequenceBinaryWithoutTargetWithLeadingZeros);
+		// System.out.println("n " + n);
+		// System.out.println(sequenceBinaryWithoutTargetWithLeadingZeros);
 		for (int i = 0; i < sequenceBinaryWithoutTargetWithLeadingZeros
 				.length(); i++) {
 			if (sequenceBinaryWithoutTargetWithLeadingZeros.charAt(i) == '1') {
@@ -288,7 +283,18 @@ public class KneserNeyMySQLSearcher extends NewMySQLSearcher {
 			}
 		}
 		query += "order by score desc limit " + this.subResultSize;
-		System.out.println(query);
+		// System.out.println(query);
 		return query;
+	}
+
+	private void close() {
+		try {
+			this.lowConnection.close();
+			this.lowDiscountConnection.close();
+			this.highConnection.close();
+			this.highDiscountConnection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -54,6 +54,12 @@ public class IndexBuilder {
 		Long lineCount = 0L;
 		try {
 			while ((line = reader.readLine()) != null) {
+				if (Config.get().addSentenceTags) {
+					line = "<s> " + line + " </s>";
+					if (Config.get().addFakeStartTag) {
+						line = "<fs> " + line;
+					}
+				}
 				lineCount++;
 				if (lineCount % 10000 == 0) {
 					IOHelper.log("");
