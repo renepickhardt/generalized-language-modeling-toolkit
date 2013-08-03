@@ -142,10 +142,22 @@ public class SecondLevelSplitter {
 		}
 
 		for (String fileToMerge : filesToMerge) {
-			IOHelper.log("merge " + fileToMerge + "-* into " + fileToMerge
-					+ fileExtension);
-			SystemHelper.runUnixCommand("cat " + inputPath + "/" + fileToMerge
-					+ "-* > " + inputPath + "/" + fileToMerge + fileExtension);
+			// wordIndex assures the correct order of concatenation
+			for (String secondLevelType : this.wordIndex) {
+				for (File file : files) {
+					if (file.getName().contains(
+							fileToMerge + "-" + secondLevelType)) {
+						IOHelper.log("merge " + fileToMerge + "-"
+								+ secondLevelType + fileExtension + " into "
+								+ fileToMerge + fileExtension);
+						SystemHelper.runUnixCommand("cat " + inputPath + "/"
+								+ fileToMerge + "-" + secondLevelType
+								+ fileExtension + " > " + inputPath + "/"
+								+ fileToMerge + fileExtension);
+
+					}
+				}
+			}
 		}
 		for (File file : files) {
 			if (file.getName().contains("-")) {
