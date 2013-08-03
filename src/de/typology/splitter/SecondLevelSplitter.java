@@ -153,7 +153,7 @@ public class SecondLevelSplitter {
 								+ fileToMerge + fileExtension);
 						SystemHelper.runUnixCommand("cat " + inputPath + "/"
 								+ fileToMerge + "-" + secondLevelType
-								+ fileExtension + " > " + inputPath + "/"
+								+ fileExtension + " >> " + inputPath + "/"
 								+ fileToMerge + fileExtension);
 
 					}
