@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -141,9 +142,9 @@ public class SecondLevelSplitter {
 			}
 		}
 
+		Arrays.sort(this.wordIndex);
 		for (String fileToMerge : filesToMerge) {
-			// wordIndex assures the correct order of concatenation
-			for (String secondLevelType : this.wordIndex) {
+			for (int secondLevelType = 0; secondLevelType < this.wordIndex.length; secondLevelType++) {
 				for (File file : files) {
 					if (file.getName().contains(
 							fileToMerge + "-" + secondLevelType)) {
