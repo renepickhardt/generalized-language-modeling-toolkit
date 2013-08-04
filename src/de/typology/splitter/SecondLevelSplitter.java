@@ -146,10 +146,8 @@ public class SecondLevelSplitter {
 		for (String fileToMerge : filesToMerge) {
 			for (int secondLevelType = 0; secondLevelType < this.wordIndex.length; secondLevelType++) {
 				for (File file : files) {
-					if (file.getName()
-							.contains(
-									fileToMerge + "-" + secondLevelType
-											+ fileExtension)) {
+					if (file.getName().contains(
+							fileToMerge + "-" + secondLevelType + "\\.")) {
 						IOHelper.log("merge " + fileToMerge + "-"
 								+ secondLevelType + fileExtension + " into "
 								+ fileToMerge + fileExtension);
