@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -164,9 +163,7 @@ public class IOHelper {
 		BufferedWriter br = null;
 		try {
 			return new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(fileName), "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+					new FileOutputStream(fileName)));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -177,9 +174,7 @@ public class IOHelper {
 		BufferedWriter br = null;
 		try {
 			return new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(fileName), "UTF-8"), bufferSize);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+					new FileOutputStream(fileName)), bufferSize);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -196,9 +191,7 @@ public class IOHelper {
 		BufferedWriter br = null;
 		try {
 			return new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(fileName, true), "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+					new FileOutputStream(fileName, true)));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
