@@ -32,7 +32,7 @@ public class Sorter {
 					outputExtension);
 
 			// build sort command
-			String sortCommand = "LANG=C sort --buffer-size=1G --output="
+			String sortCommand = "LANG=C sort --buffer-size=3G --output="
 					+ outputPath + " " + inputPath;
 
 			// execute command
@@ -64,7 +64,7 @@ public class Sorter {
 			int columnNumber = Integer.bitCount(Integer.parseInt(
 					inputFile.getName().replaceAll("_", "0").split("\\.")[1]
 							.split("-")[0], 2));
-			String sortCommand = "LANG=C sort --buffer-size=1G ";
+			String sortCommand = "LANG=C sort --buffer-size=3G ";
 
 			for (int column = 1; column <= columnNumber; column++) {
 				sortCommand += "--key=" + column + "," + column + " ";
@@ -101,7 +101,7 @@ public class Sorter {
 			columnNumber = Integer.bitCount(Integer.parseInt(
 					inputFile.getName().replaceAll("_", "0").split("\\.")[1]
 							.split("-")[0], 2));
-			String sortCommand = "LANG=C sort --buffer-size=1G ";
+			String sortCommand = "LANG=C sort --buffer-size=3G ";
 
 			// don't sort for count
 			for (int column = columnNumber; column > 0; column--) {

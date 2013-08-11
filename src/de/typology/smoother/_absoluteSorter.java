@@ -41,7 +41,7 @@ public class _absoluteSorter extends Sorter {
 			int columnNumber = Integer.bitCount(Integer.parseInt(inputFile
 					.getName().split("\\.")[1].split("-")[0], 2));
 			// LANG=C to sort utf-8 correctly
-			String sortCommand = "LANG=C sort --buffer-size=1G ";
+			String sortCommand = "LANG=C sort --buffer-size=3G ";
 
 			for (int column = 2; column <= columnNumber; column++) {
 				sortCommand += "--key=" + column + "," + column + " ";
