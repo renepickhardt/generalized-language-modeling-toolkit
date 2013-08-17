@@ -16,7 +16,8 @@ public class WikipediaLinkExtractorMain {
 	public static void main(String[] args) throws IOException {
 		// TODO: add traversing through directory
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(
-				Config.get().wikiInputDirectory);
+				Config.get().wikiInputDirectory
+						+ "dewiki-20130219-pages-articles.xml.bz2");
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaLinkExtractor linkExtractor = new WikipediaLinkExtractor(
 				recognizer, Config.get().wikiLinksOutputPath,

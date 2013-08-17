@@ -10,6 +10,7 @@ import static de.typology.parser.Token.TEXT;
 import static de.typology.parser.Token.TITLE;
 import static de.typology.parser.Token.VERTICALBAR;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
@@ -39,6 +40,7 @@ public class WikipediaLinkExtractor {
 	public WikipediaLinkExtractor(WikipediaRecognizer recognizer,
 			String output, String head) throws FileNotFoundException {
 		this.recognizer = recognizer;
+		new File(output).getParentFile().mkdirs();
 		this.writer = IOHelper.openWriteFile(output, 32 * 1024 * 1024);
 		this.head = head;
 	}
