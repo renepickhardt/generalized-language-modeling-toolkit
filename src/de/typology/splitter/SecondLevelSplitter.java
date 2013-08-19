@@ -144,15 +144,17 @@ public class SecondLevelSplitter {
 
 		Arrays.sort(this.wordIndex);
 		for (String fileToMerge : filesToMerge) {
+			IOHelper.log("merge second level split of " + fileToMerge
+					+ fileExtension);
 			for (int secondLevelType = 0; secondLevelType < this.wordIndex.length; secondLevelType++) {
 				for (File file : files) {
 					if (file.getName()
 							.contains(
 									fileToMerge + "-" + secondLevelType
 											+ fileExtension)) {
-						IOHelper.log("merge " + fileToMerge + "-"
-								+ secondLevelType + fileExtension + " into "
-								+ fileToMerge + fileExtension);
+						// IOHelper.log("merge " + fileToMerge + "-"
+						// + secondLevelType + fileExtension + " into "
+						// + fileToMerge + fileExtension);
 						SystemHelper.runUnixCommand("cat " + inputPath + "/"
 								+ fileToMerge + "-" + secondLevelType
 								+ fileExtension + " >> " + inputPath + "/"
