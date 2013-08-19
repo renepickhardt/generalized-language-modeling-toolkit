@@ -1,8 +1,10 @@
 package de.typology.parser;
 
+import static de.typology.parser.Token.CLOSEDID;
 import static de.typology.parser.Token.CLOSEDSQUAREDBRACKET;
 import static de.typology.parser.Token.CLOSEDTEXT;
 import static de.typology.parser.Token.CLOSEDTITLE;
+import static de.typology.parser.Token.ID;
 import static de.typology.parser.Token.LINK;
 import static de.typology.parser.Token.OTHER;
 import static de.typology.parser.Token.SQUAREDBRACKET;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 
 import de.typology.utils.IOHelper;
 
@@ -30,6 +33,7 @@ public class WikipediaLinkExtractor {
 	private String head;
 	private String lexeme;
 	private String title;
+	private String id;
 	private String link;
 	private String linkLabel;
 	private Token label;
@@ -45,7 +49,7 @@ public class WikipediaLinkExtractor {
 		this.head = head;
 	}
 
-	public void extract() throws IOException {
+	public void extractLinks() throws IOException {
 		while (this.recognizer.hasNext()) {
 			this.read();
 			if (this.current == TITLE) {
@@ -135,6 +139,83 @@ public class WikipediaLinkExtractor {
 					}
 				}
 				this.writer.flush();
+			}
+		}
+		this.writer.close();
+	}
+
+	public void extractFiles() throws IOException {
+		while (this.recognizer.hasNext()) {
+			this.read();
+			if (this.current == TITLE) {
+				this.title = new String();
+				while (this.current != CLOSEDTITLE) {
+					if (this.recognizer.hasNext()) {
+						this.current = this.recognizer.next();
+						this.lexeme = this.recognizer.getLexeme();
+						if (this.current == CLOSEDTITLE) {
+							break;
+						} else {
+							this.title += this.lexeme;
+						}
+					} else {
+						throw new IllegalStateException();
+					}
+
+				}
+				while (this.current != ID) {
+					this.read();
+				}
+				while (this.current != CLOSEDID) {
+					if (this.recognizer.hasNext()) {
+						this.current = this.recognizer.next();
+						this.lexeme = this.recognizer.getLexeme();
+						if (this.current == CLOSEDID) {
+							break;
+						} else {
+							this.id = this.lexeme;
+						}
+					} else {
+						throw new IllegalStateException();
+					}
+
+				}
+			}
+			if (this.current == TEXT) {
+				ArrayList<String> fileList = new ArrayList<String>();
+				while (this.current != CLOSEDTEXT) {
+					this.read();
+
+					// Recognize links
+					if (this.current == SQUAREDBRACKET) {
+						this.read();
+						if (this.current == SQUAREDBRACKET) {
+							this.read();
+							if (this.lexeme.equals("Datei")) {
+								this.read();
+								String file = new String();
+								if (this.lexeme.equals(":")) {
+									this.read();
+									while (!this.lexeme.equals("]")
+											&& !this.lexeme.equals("|")) {
+										file += this.lexeme;
+										this.read();
+									}
+									fileList.add(file);
+								}
+							}
+						}
+					}
+				}
+				if (fileList.size() > 0) {
+					String links = this.id + "\t" + this.title;
+					for (String file : fileList) {
+						links += "\t" + file;
+					}
+					links += "\n";
+					this.write(links);
+					this.writer.flush();
+				}
 			}
 		}
 		this.writer.close();

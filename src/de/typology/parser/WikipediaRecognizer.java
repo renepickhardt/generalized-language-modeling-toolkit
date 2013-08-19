@@ -2,6 +2,7 @@ package de.typology.parser;
 
 import static de.typology.parser.Token.BR;
 import static de.typology.parser.Token.CLOSEDELEMENT;
+import static de.typology.parser.Token.CLOSEDID;
 import static de.typology.parser.Token.CLOSEDPAGE;
 import static de.typology.parser.Token.CLOSEDREF;
 import static de.typology.parser.Token.CLOSEDTEXT;
@@ -9,6 +10,7 @@ import static de.typology.parser.Token.CLOSEDTITLE;
 import static de.typology.parser.Token.EHH;
 import static de.typology.parser.Token.ELEMENT;
 import static de.typology.parser.Token.GREATERTHAN;
+import static de.typology.parser.Token.ID;
 import static de.typology.parser.Token.LESSTHAN;
 import static de.typology.parser.Token.LINESEPARATOR;
 import static de.typology.parser.Token.OTHER;
@@ -48,11 +50,14 @@ public class WikipediaRecognizer implements Iterator<Token> {
 		keywords.put("title", TITLE);
 		keywords.put("text", TEXT);
 		keywords.put("ref", REF);
+		keywords.put("id", ID);
+
 		keywords.put("br", BR);
 		keywords.put("/page", CLOSEDPAGE);
 		keywords.put("/title", CLOSEDTITLE);
 		keywords.put("/text", CLOSEDTEXT);
 		keywords.put("/ref", CLOSEDREF);
+		keywords.put("/id", CLOSEDID);
 	}
 
 	public WikipediaRecognizer(WikipediaTokenizer tokenizer) {

@@ -15,16 +15,20 @@ public class WikipediaLinkExtractorMain {
 	 */
 	public static void main(String[] args) throws IOException {
 		// TODO: add traversing through directory
+		// WikipediaTokenizer tokenizer = new WikipediaTokenizer(
+		// Config.get().wikiInputDirectory
+		// + "dewiki-20130219-pages-articles.xml.bz2");
 		WikipediaTokenizer tokenizer = new WikipediaTokenizer(
 				Config.get().wikiInputDirectory
-						+ "dewiki-20130219-pages-articles.xml.bz2");
+						+ "barwiki-20130503-pages-articles.xml.bz2");
 		WikipediaRecognizer recognizer = new WikipediaRecognizer(tokenizer);
 		WikipediaLinkExtractor linkExtractor = new WikipediaLinkExtractor(
 				recognizer, Config.get().wikiLinksOutputPath,
 				Config.get().wikiLinksHead);
 		// head could be something like "en:wiki:"
 		System.out.println("start extracting");
-		linkExtractor.extract();
+		// linkExtractor.extractLinks();
+		linkExtractor.extractFiles();
 		System.out.println("extracting done");
 		System.out.println("generate indicator file");
 		File done = new File(Config.get().wikiLinksOutputPath + "IsDone");

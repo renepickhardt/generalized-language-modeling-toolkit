@@ -36,6 +36,8 @@ public enum Token {
 	//
 	PAGE, REF, BR,
 	//
+	ID, CLOSEDID,
+	//
 	CLOSEDPAGE, CLOSEDREF,
 	//
 	DISAMBIGUATION, TOC,
