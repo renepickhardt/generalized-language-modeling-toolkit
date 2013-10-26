@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.typology.splitterOld.IndexBuilder;
+import de.typology.splitterOld.NGramSplitter;
 import de.typology.testutils.Resetter;
 
 /**
