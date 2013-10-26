@@ -3,9 +3,6 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.parser.AcquisMain;
-import de.typology.parser.EnronMain;
-import de.typology.parser.ReutersMain;
 import de.typology.utils.Config;
 
 public class MixedBuilder extends Builder {
@@ -43,15 +40,6 @@ public class MixedBuilder extends Builder {
 			String outputPath = outputDirectory + language + "/";
 			new File(outputPath).mkdirs();
 
-			if (Config.get().parseData) {
-				try {
-					AcquisMain.run(Config.get().acquisInputDirectory,
-							outputPath + parsedFileName, outputPath
-									+ normalizedFileName, language);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 			mb.build(outputPath);
 		}
 
@@ -61,14 +49,6 @@ public class MixedBuilder extends Builder {
 		normalizedFileName = "normalized.txt";
 		new File(outputDirectory).mkdirs();
 
-		if (Config.get().parseData) {
-			try {
-				EnronMain.run(Config.get().enronInputDirectory, outputDirectory
-						+ parsedFileName, outputDirectory + normalizedFileName);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		mb.build(outputDirectory);
 
 		// build reuters
@@ -77,15 +57,6 @@ public class MixedBuilder extends Builder {
 		normalizedFileName = "normalized.txt";
 		new File(outputDirectory).mkdirs();
 
-		if (Config.get().parseData) {
-			try {
-				ReutersMain.run(Config.get().reutersInputDirectory,
-						outputDirectory + parsedFileName, outputDirectory
-								+ normalizedFileName);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		mb.build(outputDirectory);
 	}
 }

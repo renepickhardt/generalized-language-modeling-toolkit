@@ -37,7 +37,6 @@ public class Config extends Properties {
 	public String weight;
 	public boolean useWeights;
 
-	public boolean parseData;
 	public boolean splitData;
 	public boolean buildStats;
 	public boolean buildIndex;

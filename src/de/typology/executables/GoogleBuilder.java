@@ -3,8 +3,6 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.parser.GoogleMergerMain;
-import de.typology.parser.GoogleParserMain;
 import de.typology.utils.Config;
 
 public class GoogleBuilder extends Builder {
@@ -29,14 +27,6 @@ public class GoogleBuilder extends Builder {
 			String outputPath = outputDirectory + dataSet + "/";
 			File outputFile = new File(outputPath);
 			outputFile.mkdirs();
-			if (Config.get().parseData) {
-				try {
-					GoogleMergerMain.run(f.getAbsolutePath(), outputPath);
-					GoogleParserMain.run(outputPath, outputPath);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 			gb.buildFromNGrams(outputPath);
 		}
 	}

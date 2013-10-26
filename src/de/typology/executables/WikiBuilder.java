@@ -3,7 +3,6 @@ package de.typology.executables;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.parser.WikipediaMain;
 import de.typology.utils.Config;
 import de.typology.utils.IOHelper;
 
@@ -41,14 +40,6 @@ public class WikiBuilder extends Builder {
 			IOHelper.strongLog("start building: " + outputPath);
 			new File(outputPath).mkdirs();
 
-			if (Config.get().parseData) {
-				try {
-					WikipediaMain.run(f.getAbsolutePath(), outputPath
-							+ parsedFileName, outputPath + normalizedFileName);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 			wb.build(outputPath);
 			IOHelper.strongLog("done building: " + outputPath);
 		}
