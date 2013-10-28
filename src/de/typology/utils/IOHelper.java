@@ -12,9 +12,10 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,8 +27,6 @@ public class IOHelper {
 	private static BufferedWriter strongLogFile = openAppendFile("Complet.strong.log");
 	private static ArrayList<File> fileList = new ArrayList<File>();
 	private static BufferedWriter resultFile = openAppendFile("rawlog/res.log");
-	private static BufferedWriter learnHMMFile = openAppendFile("rawlog/learnHMM.log");
-	private static BufferedWriter learnPicFile = openAppendFile("rawlog/learnPic.log");;
 
 	/**
 	 * faster access to a buffered reader
@@ -157,29 +156,29 @@ public class IOHelper {
 	/**
 	 * Faster access to a bufferedWriter
 	 * 
-	 * @param filename
+	 * @param fileName
 	 * @return buffered writer which can be used for output
 	 */
-	public static BufferedWriter openWriteFile(String filename) {
-		FileWriter filestream = null;
+	public static BufferedWriter openWriteFile(String fileName) {
+		BufferedWriter br = null;
 		try {
-			filestream = new FileWriter(filename);
-		} catch (IOException e) {
+			return new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(fileName)));
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			return null;
 		}
-		return new BufferedWriter(filestream);
+		return br;
 	}
 
-	public static BufferedWriter openWriteFile(String filename, int bufferSize) {
-		FileWriter filestream = null;
+	public static BufferedWriter openWriteFile(String fileName, int bufferSize) {
+		BufferedWriter br = null;
 		try {
-			filestream = new FileWriter(filename);
-		} catch (IOException e) {
+			return new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(fileName)), bufferSize);
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			return null;
 		}
-		return new BufferedWriter(filestream, bufferSize);
+		return br;
 	}
 
 	/**
@@ -188,15 +187,15 @@ public class IOHelper {
 	 * @param filename
 	 * @return buffered writer which can be used for output
 	 */
-	public static BufferedWriter openAppendFile(String filename) {
-		FileWriter filestream = null;
+	public static BufferedWriter openAppendFile(String fileName) {
+		BufferedWriter br = null;
 		try {
-			filestream = new FileWriter(filename, true);
-		} catch (IOException e) {
+			return new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(fileName, true)));
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			return null;
 		}
-		return new BufferedWriter(filestream);
+		return br;
 	}
 
 	/**
@@ -245,41 +244,6 @@ public class IOHelper {
 			Date dt = new Date();
 			logFile.write(dt + " - " + out + "\n");
 			logFile.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * function for output that is only displayed in debugmode
-	 * 
-	 * @param out
-	 */
-	public static void logResult(Object out) {
-		try {
-			resultFile.write(out + "\n");
-			resultFile.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void logLearnHMM(Object out) {
-		try {
-			learnHMMFile.write(out + "\n");
-			learnHMMFile.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public static void logLearnPic(Object out) {
-		try {
-			learnPicFile.write(out + "\n");
-			learnPicFile.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -379,17 +343,4 @@ public class IOHelper {
 		}
 	}
 
-	public static void setResultFile(String name) {
-		try {
-			resultFile.close();
-			resultFile = openAppendFile("rawlog/" + name);
-			learnHMMFile.close();
-			learnHMMFile = openAppendFile("rawlog/learnHMM-" + name);
-			learnPicFile.close();
-			learnPicFile = openAppendFile("rawlog/learnPic-" + name);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }
