@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import de.typology.utils.Config;
+
 public class IOHelper {
 	// d = debug mode set true if debugg messages should be displayed
 	private static boolean d = true;

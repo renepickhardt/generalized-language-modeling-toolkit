@@ -1,5 +1,7 @@
 package de.typology.utilsOld;
 
+import de.typology.utils.Config;
+
 public class EvalHelper {
 
 	public static String generateFileName(String smoothingType, int n, int k,

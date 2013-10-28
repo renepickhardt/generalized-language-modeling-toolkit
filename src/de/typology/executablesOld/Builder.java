@@ -11,7 +11,7 @@ import de.typology.splitterOld.NGramSplitterWithCount;
 import de.typology.splitterOld.TypoSplitter;
 import de.typology.splitterOld.TypoSplitterWithCount;
 import de.typology.statsOld.StatsBuilder;
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.IOHelper;
 
 public class Builder {

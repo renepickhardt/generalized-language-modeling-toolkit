@@ -1,6 +1,6 @@
 package de.typology.smootherOld;
 
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.Counter;
 import de.typology.utilsOld.IOHelper;
 

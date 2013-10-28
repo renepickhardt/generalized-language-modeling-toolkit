@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import de.typology.splitterOld.BinarySearch;
 import de.typology.splitterOld.IndexBuilder;
 import de.typology.splitterOld.Sorter;
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.IOHelper;
 
 public class _absoluteAggregator {

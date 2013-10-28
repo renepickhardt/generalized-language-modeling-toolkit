@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.IOHelper;
 
 /**

@@ -11,8 +11,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import de.typology.utils.Config;
 import de.typology.utilsOld.Algo;
-import de.typology.utilsOld.Config;
 import de.typology.utilsOld.EvalHelper;
 import de.typology.utilsOld.IOHelper;
 

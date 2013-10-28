@@ -1,19 +1,11 @@
 package de.typology.splitter;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.util.HashMap;
 
-public class SequencerThread extends Sequencer {
+import de.typology.utils.PatternTransformer;
 
-	public SequencerThread(InputStream inputStream, File outputDirectory,
-			File indexFile, boolean[] pattern) {
-		super(inputStream, outputDirectory, indexFile, pattern);
-	}
+public class SequencerThread extends Sequencer {
 
 	@Override
 	public void run() {
@@ -24,12 +16,8 @@ public class SequencerThread extends Sequencer {
 
 	private HashMap<Integer, BufferedWriter> openWriters() {
 		HashMap<Integer, BufferedWriter> writers = new HashMap<Integer, BufferedWriter>();
-		try {
-			BufferedReader indexReader = new BufferedReader(new FileReader(
-					this.indexFile));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		String stringPattern = PatternTransformer
+				.getStringPattern(this.pattern);
 
 		return writers;
 

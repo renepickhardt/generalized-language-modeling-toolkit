@@ -3,6 +3,8 @@ package de.typology.utilsOld;
 import java.io.File;
 import java.util.ArrayList;
 
+import de.typology.utils.Config;
+
 public class FileTest {
 
 	/**

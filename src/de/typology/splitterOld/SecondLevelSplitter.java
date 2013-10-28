@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.IOHelper;
 import de.typology.utilsOld.SystemHelper;
 

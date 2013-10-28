@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 import de.typology.splitterOld.BinarySearch;
 import de.typology.splitterOld.IndexBuilder;
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.IOHelper;
 
 public class KneserNeyMySQLSearcher extends NewMySQLSearcher {

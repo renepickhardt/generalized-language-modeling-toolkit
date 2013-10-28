@@ -3,7 +3,7 @@ package de.typology.splitterOld;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 import de.typology.utilsOld.IOHelper;
 
 public class NGramSplitterWithCount extends NGramSplitter {

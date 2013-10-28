@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import de.typology.splitterOld.IndexBuilder;
 import de.typology.testutils.Resetter;
-import de.typology.utilsOld.Config;
+import de.typology.utils.Config;
 
 public class IndexBuilderTest {
 	private String outputDirectory;

@@ -13,14 +13,14 @@ import java.io.InputStream;
 public abstract class Sequencer implements Runnable {
 	protected InputStream inputStream;
 	protected File outputDreictory;
-	protected File indexFile;
+	protected String[] index;
 	protected boolean[] pattern;
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
 			File indexFile, boolean[] pattern) {
 		this.inputStream = inputStream;
 		this.outputDreictory = outputDirectory;
-		this.indexFile = indexFile;
+		this.index = this.index;
 		this.pattern = pattern;
 	}
 }

@@ -1,4 +1,4 @@
-package de.typology.utilsOld;
+package de.typology.utils;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
