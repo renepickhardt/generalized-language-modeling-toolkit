@@ -4,7 +4,7 @@
  * @author René Pickhardt
  *
  */
-package de.typology.utils;
+package de.typology.utilsOld;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

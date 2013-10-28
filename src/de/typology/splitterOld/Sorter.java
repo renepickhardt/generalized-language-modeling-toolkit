@@ -2,7 +2,7 @@ package de.typology.splitterOld;
 
 import java.io.File;
 
-import de.typology.utils.SystemHelper;
+import de.typology.utilsOld.SystemHelper;
 
 public class Sorter {
 

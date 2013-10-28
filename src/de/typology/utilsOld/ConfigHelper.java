@@ -9,7 +9,7 @@
  * @author Paul Wagner
  *
  */
-package de.typology.utils;
+package de.typology.utilsOld;
 
 import java.io.FileInputStream;
 import java.util.Properties;

@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
 
 public abstract class Splitter {
 	protected String directory;

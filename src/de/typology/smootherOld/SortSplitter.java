@@ -8,8 +8,8 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
 import de.typology.splitterOld.Splitter;
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
 
 public class SortSplitter extends Splitter {
 	/**

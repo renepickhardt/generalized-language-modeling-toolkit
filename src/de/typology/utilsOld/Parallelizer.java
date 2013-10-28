@@ -1,4 +1,4 @@
-package de.typology.utils;
+package de.typology.utilsOld;
 
 /*
  * Copyright (C) 2004-2005 Matt Conway

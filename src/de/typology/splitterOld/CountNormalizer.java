@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.IOHelper;
 
 public class CountNormalizer {
 	private BufferedReader reader;

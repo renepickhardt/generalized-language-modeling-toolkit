@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
 
 public class WordCounter2 {
 	private BufferedReader reader;

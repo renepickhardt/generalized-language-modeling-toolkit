@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
 
 public class NGramWordCounter {
 	private static ArrayList<File> files;

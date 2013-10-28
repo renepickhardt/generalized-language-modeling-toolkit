@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
 
 public class LineCounter {
 	private BufferedReader reader;

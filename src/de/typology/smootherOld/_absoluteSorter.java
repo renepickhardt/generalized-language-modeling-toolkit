@@ -3,7 +3,7 @@ package de.typology.smootherOld;
 import java.io.File;
 
 import de.typology.splitterOld.Sorter;
-import de.typology.utils.SystemHelper;
+import de.typology.utilsOld.SystemHelper;
 
 public class _absoluteSorter extends Sorter {
 

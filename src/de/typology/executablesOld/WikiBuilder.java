@@ -3,8 +3,8 @@ package de.typology.executablesOld;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
 
 public class WikiBuilder extends Builder {
 

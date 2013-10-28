@@ -11,10 +11,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import de.typology.utils.Algo;
-import de.typology.utils.Config;
-import de.typology.utils.EvalHelper;
-import de.typology.utils.IOHelper;
+import de.typology.utilsOld.Algo;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.EvalHelper;
+import de.typology.utilsOld.IOHelper;
 
 public abstract class NewMySQLSearcher {
 

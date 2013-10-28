@@ -1,4 +1,4 @@
-package de.typology.utils;
+package de.typology.utilsOld;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import de.typology.utils.IOHelper;
-import de.typology.utils.SystemHelper;
+import de.typology.utilsOld.IOHelper;
+import de.typology.utilsOld.SystemHelper;
 
 public class Eval {
 

@@ -20,7 +20,7 @@ import de.typology.splitterOld.BinarySearch;
 import de.typology.splitterOld.IndexBuilder;
 import de.typology.splitterOld.NGramSplitter;
 import de.typology.testutils.Resetter;
-import de.typology.utils.Config;
+import de.typology.utilsOld.Config;
 
 /**
  * @author mkoerner

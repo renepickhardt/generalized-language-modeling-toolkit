@@ -4,9 +4,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
-import de.typology.utils.Config;
-import de.typology.utils.IOHelper;
-import de.typology.utils.SystemHelper;
+import de.typology.utilsOld.Config;
+import de.typology.utilsOld.IOHelper;
+import de.typology.utilsOld.SystemHelper;
 
 public class NGramSplitter extends Splitter {
 	protected String extension;
