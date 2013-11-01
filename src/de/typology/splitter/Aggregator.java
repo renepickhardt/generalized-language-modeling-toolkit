@@ -10,10 +10,16 @@ import java.io.OutputStream;
  * @author Martin Koerner
  * 
  */
-public abstract class Aggregator implements Runnable {
+public class Aggregator implements Runnable {
 	public Aggregator(InputStream inputStream, OutputStream outputStream,
 			char delimiter, int startSortAtColumn) {
 		// TODO: add actual constructor
+
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
 
 	}
 

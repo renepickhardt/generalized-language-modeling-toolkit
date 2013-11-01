@@ -10,10 +10,16 @@ import java.io.OutputStream;
  * @author Martin Koerner
  * 
  */
-public abstract class SequenceModifier implements Runnable {
+public class SequenceModifier implements Runnable {
 	public SequenceModifier(File inputDirectory, OutputStream outputStream,
 			Character delimiter, boolean[] pattern, String outputDirectoryName) {
 		// TODO: add actual constructor
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+
 	}
 
 }
