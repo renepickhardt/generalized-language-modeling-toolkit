@@ -46,6 +46,10 @@ public class WordIndex {
 		}
 	}
 
+	public String[] getIndex() {
+		return this.index;
+	}
+
 	/**
 	 * returns the file in which word should be stored based on this.index
 	 * 
