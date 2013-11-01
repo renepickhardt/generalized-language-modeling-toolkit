@@ -1,4 +1,4 @@
-package de.typology.indexer;
+package de.typology.indexes;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,14 +22,13 @@ import java.util.TreeMap;
  */
 public class WordIndexer {
 
-	File indexFile;
+	private File indexFile;
 
 	public WordIndexer(File indexFile) {
 		this.indexFile = indexFile;
 	}
 
 	private TreeMap<String, Long> buildMap(File InputFile) {
-		// TODO:fix initialize
 		BufferedReader reader;
 		try {
 			reader = new BufferedReader(new FileReader(InputFile));
@@ -97,8 +96,13 @@ public class WordIndexer {
 		return wordMap;
 	}
 
-	public void buildIndex(File inputFile, int maxCountDivider,
-			int minCountPerFile) {
+	/**
+	 * 
+	 * @param inputFile
+	 * @param maxCountDivider
+	 * @return Long: maxCountPerFile
+	 */
+	public long buildIndex(File inputFile, int maxCountDivider) {
 		// build WordMap
 		TreeMap<String, Long> wordMap = this.buildMap(inputFile);
 
@@ -110,9 +114,9 @@ public class WordIndexer {
 
 		// calculate max count per file
 		Long maxCountPerFile = totalCount / maxCountDivider;
-		System.out.println(maxCountPerFile);
-		if (maxCountPerFile < minCountPerFile) {
-			maxCountPerFile = (long) minCountPerFile;
+		// System.out.println("maxCountPerFile: " + maxCountPerFile);
+		if (maxCountPerFile < 1L) {
+			maxCountPerFile = 1L;
 		}
 
 		// build index
@@ -124,17 +128,12 @@ public class WordIndexer {
 			Iterator<Map.Entry<String, Long>> wordMapIterator = wordMap
 					.entrySet().iterator();
 			Entry<String, Long> word;
-			// set first file
-			if (wordMapIterator.hasNext()) {
-				word = wordMapIterator.next();
-				indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
-				currentFileCount = word.getValue();
-				fileCount++;
-			}
+
 			while (wordMapIterator.hasNext()) {
 				// get next word
 				word = wordMapIterator.next();
-				if (currentFileCount + word.getValue() > maxCountPerFile) {
+				if (fileCount == 0
+						|| currentFileCount + word.getValue() > maxCountPerFile) {
 					indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
 					currentFileCount = word.getValue();
 					fileCount++;
@@ -152,40 +151,7 @@ public class WordIndexer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return;
-	}
-
-	public String[] getIndex() {
-		// count total number of lines
-		int lineCount = 0;
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(
-					this.indexFile));
-			while (br.readLine() != null) {
-				lineCount++;
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		String[] index = new String[lineCount];
-		int currentLineCount = 0;
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(
-					this.indexFile));
-			String line;
-			String[] lineSplit;
-			while ((line = br.readLine()) != null) {
-				lineSplit = line.split("\t");
-				index[currentLineCount] = lineSplit[0];
-				currentLineCount++;
-			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return index;
+		return maxCountPerFile;
 	}
 
 }
