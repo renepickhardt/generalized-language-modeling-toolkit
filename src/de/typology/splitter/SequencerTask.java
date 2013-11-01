@@ -5,11 +5,10 @@ import java.util.HashMap;
 
 import de.typology.utils.PatternTransformer;
 
-public class SequencerThread extends Sequencer {
+public class SequencerTask extends Sequencer {
 
 	@Override
 	public void run() {
-
 		HashMap<Integer, BufferedWriter> writers = this.openWriters();
 
 	}

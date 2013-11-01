@@ -12,15 +12,15 @@ import java.io.InputStream;
  */
 public abstract class Sequencer implements Runnable {
 	protected InputStream inputStream;
-	protected File outputDreictory;
+	protected File outputDirectory;
 	protected String[] index;
 	protected boolean[] pattern;
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
-			File indexFile, boolean[] pattern) {
+			String[] index, boolean[] pattern) {
 		this.inputStream = inputStream;
-		this.outputDreictory = outputDirectory;
-		this.index = this.index;
+		this.outputDirectory = outputDirectory;
+		this.index = index;
 		this.pattern = pattern;
 	}
 }
