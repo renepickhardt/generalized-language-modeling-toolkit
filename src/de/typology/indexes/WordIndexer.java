@@ -22,12 +22,6 @@ import java.util.TreeMap;
  */
 public class WordIndexer {
 
-	private File indexOutputFile;
-
-	public WordIndexer(File indexoutputFile) {
-		this.indexOutputFile = indexoutputFile;
-	}
-
 	private TreeMap<String, Long> buildMap(File InputFile) {
 		BufferedReader reader;
 		try {
@@ -102,7 +96,8 @@ public class WordIndexer {
 	 * @param maxCountDivider
 	 * @return Long: maxCountPerFile
 	 */
-	public long buildIndex(File inputFile, int maxCountDivider) {
+	public long buildIndex(File inputFile, File indexOutputFile,
+			int maxCountDivider) {
 		// build WordMap
 		TreeMap<String, Long> wordMap = this.buildMap(inputFile);
 
@@ -122,8 +117,7 @@ public class WordIndexer {
 		// build index
 		BufferedWriter indexWriter;
 		try {
-			indexWriter = new BufferedWriter(new FileWriter(
-					this.indexOutputFile));
+			indexWriter = new BufferedWriter(new FileWriter(indexOutputFile));
 			Long currentFileCount = 0L;
 			int fileCount = 0;
 			Iterator<Map.Entry<String, Long>> wordMapIterator = wordMap
@@ -145,8 +139,8 @@ public class WordIndexer {
 			indexWriter.close();
 		} catch (IOException e) {
 			// make sure that no corrupted index file is stored
-			if (this.indexOutputFile.exists()) {
-				this.indexOutputFile.delete();
+			if (indexOutputFile.exists()) {
+				indexOutputFile.delete();
 			}
 			e.printStackTrace();
 			// TODO Auto-generated catch block

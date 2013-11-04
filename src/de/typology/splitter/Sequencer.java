@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
+
 import de.typology.indexes.WordIndex;
 import de.typology.utils.PatternTransformer;
 
@@ -32,6 +34,7 @@ public class Sequencer implements Runnable {
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
 		this.pattern = pattern;
+
 	}
 
 	public static void main(String[] args) {
@@ -42,7 +45,7 @@ public class Sequencer implements Runnable {
 	public void run() {
 		HashMap<Integer, BufferedWriter> writers = this.openWriters();
 		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(this.inputStream));
+				new InputStreamReader(this.inputStream), 100 * 8 * 1024);
 		String line;
 		try {
 			while ((line = bufferedReader.readLine()) != null) {
@@ -86,17 +89,29 @@ public class Sequencer implements Runnable {
 		long maxMemory = runtime.maxMemory();
 		long availableMemory = maxMemory - usedMemory;
 		// divide availableMemory by 2 to leave enough space for other tasks
-		int bufferSize = (int) (availableMemory / 2)
-				/ this.wordIndex.getIndex().length;
+		int bufferSize = (int) ((int) (availableMemory / 2) / Math.pow(
+				this.wordIndex.getLength(), 2));
 		System.out.println("availableMemory: " + availableMemory);
 		System.out.println("buffersize: " + bufferSize);
 
-		for (int fileCount = 0; fileCount < this.wordIndex.getIndex().length; fileCount++) {
+		File currentOutputDirectory = new File(
+				this.outputDirectory.getAbsolutePath() + "/" + stringPattern
+						+ "-split");
+		// delete old directory
+		if (currentOutputDirectory.exists()) {
+			try {
+				FileUtils.deleteDirectory(currentOutputDirectory);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		currentOutputDirectory.mkdir();
+		for (int fileCount = 0; fileCount < this.wordIndex.getLength(); fileCount++) {
 			try {
 				writers.put(fileCount, new BufferedWriter(new FileWriter(
-						this.outputDirectory.getAbsolutePath() + "/"
-								+ stringPattern + "-split/" + fileCount + "."
-								+ stringPattern), bufferSize));
+						currentOutputDirectory.getAbsolutePath() + "/"
+								+ fileCount + "." + stringPattern), bufferSize));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -114,6 +129,9 @@ public class Sequencer implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
 
+	public boolean[] getPattern() {
+		return this.pattern;
 	}
 }

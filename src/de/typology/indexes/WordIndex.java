@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * A class that is based on the text file produced by WordIndexer.
@@ -11,7 +13,7 @@ import java.io.IOException;
  * @author Martin Koerner
  * 
  */
-public class WordIndex {
+public class WordIndex implements Iterable<String> {
 	protected String[] index;
 
 	public WordIndex(File indexFile) {
@@ -46,8 +48,8 @@ public class WordIndex {
 		}
 	}
 
-	public String[] getIndex() {
-		return this.index;
+	public int getLength() {
+		return this.index.length;
 	}
 
 	/**
@@ -72,6 +74,11 @@ public class WordIndex {
 		// the following return statement is not the standard return result for
 		// binary search
 		return (lo + hi) / 2;
+	}
+
+	@Override
+	public Iterator<String> iterator() {
+		return Arrays.asList(this.index).iterator();
 	}
 
 }

@@ -1,6 +1,7 @@
 package de.typology.indexes;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -27,8 +28,8 @@ public class WordIndexTest {
 		if (this.indexFile.exists()) {
 			this.indexFile.delete();
 		}
-		WordIndexer wi = new WordIndexer(this.indexFile);
-		wi.buildIndex(this.inputFile, 10);
+		WordIndexer wi = new WordIndexer();
+		wi.buildIndex(this.inputFile, this.indexFile, 10);
 	}
 
 	@After
@@ -46,6 +47,19 @@ public class WordIndexTest {
 		assertEquals(0, wi.rank("Z"));
 		assertEquals(10, wi.rank("tempora"));
 		assertEquals(10, wi.rank("z"));
+
+		for (String word : wi) {
+			assertTrue(word.length() > 0);
+		}
+	}
+
+	@Test
+	public void iteratorTest() {
+		WordIndex wi = new WordIndex(this.indexFile);
+
+		for (String word : wi) {
+			assertTrue(word.length() > 0);
+		}
 	}
 
 }
