@@ -22,10 +22,11 @@ public class SplitterTask implements Runnable {
 	protected boolean[] pattern;
 	protected String delimiter;
 	protected boolean deleteTempFiles;
+	int startSortAtColumn;
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String delimiter,
-			boolean deleteTempFiles) {
+			int startSortAtColumn, boolean deleteTempFiles) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;

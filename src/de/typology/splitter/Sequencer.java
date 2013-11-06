@@ -43,6 +43,7 @@ public class Sequencer implements Runnable {
 	@Override
 	public void run() {
 		HashMap<Integer, BufferedWriter> writers = this.openWriters();
+		// TODO: bufferSize calculation
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(this.inputStream));
 		// BufferedReader bufferedReader = new BufferedReader(
@@ -54,15 +55,12 @@ public class Sequencer implements Runnable {
 				int linePointer = 0;
 				while (lineSplit.length - linePointer >= this.pattern.length) {
 					String sequence = "";
-					for (int i = 0; i < this.pattern.length - 1; i++) {
+					for (int i = 0; i < this.pattern.length; i++) {
 						if (this.pattern[i]) {
 							sequence += lineSplit[linePointer + i] + " ";
 						}
 					}
-					if (this.pattern[this.pattern.length - 1]) {
-						sequence += lineSplit[linePointer + this.pattern.length
-								- 1];
-					}
+					sequence = sequence.replaceFirst(" $", "");
 					sequence += "\n";
 
 					// write sequence
@@ -86,14 +84,10 @@ public class Sequencer implements Runnable {
 		String stringPattern = PatternTransformer
 				.getStringPattern(this.pattern);
 
-		// // calculate buffer size for writers
 		// Runtime runtime = Runtime.getRuntime();
-		// // divide totalMemory by 2 to leave enough space for other tasks
-		// int bufferSize = (int) (runtime.totalMemory() / 2
-		// / runtime.availableProcessors() / this.wordIndex.getLength());
-		//
-		// logger.debug("totalMemory: " + runtime.totalMemory());
-		// logger.debug("buffersize: " + bufferSize);
+		// int mb = 1024 * 1024;
+		// logger.debug("totalMemory: " + runtime.totalMemory() / mb);
+		// logger.debug("buffersize: " + bufferSize / mb);
 
 		// System.out.println("");
 		//
@@ -121,6 +115,9 @@ public class Sequencer implements Runnable {
 				this.outputDirectory.getAbsolutePath());
 
 		currentOutputDirectory.mkdir();
+
+		// calculate buffer size for writers
+		// TODO: bufferSize calculation
 		for (int fileCount = 0; fileCount < this.wordIndex.getLength(); fileCount++) {
 			try {
 				writers.put(fileCount, new BufferedWriter(new FileWriter(

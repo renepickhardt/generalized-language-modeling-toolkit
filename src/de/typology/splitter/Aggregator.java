@@ -78,10 +78,11 @@ public class Aggregator implements Runnable {
 			while ((inputLine = inputFileReader.readLine()) != null) {
 				List<String> words = Arrays.asList(inputLine.split("\\s"));
 				if (words.size() == 0) {
-					logger.error("empty row in " + this.inputFile + ": \""
-							+ inputLine + "\"");
-					logger.error("exiting JVM");
-					System.exit(1);
+					// logger.error("empty row in " + this.inputFile + ": \""
+					// + inputLine + "\"");
+					// logger.error("exiting JVM");
+					// System.exit(1);
+					continue;
 				}
 				if (wordMap.containsKey(words)) {
 					// System.out.println();
@@ -110,6 +111,7 @@ public class Aggregator implements Runnable {
 					outputFileWriter.write(words.get(i) + " ");
 				}
 				outputFileWriter.write(words.get(words.size() - 1));
+
 				outputFileWriter
 						.write(this.delimiter + entry.getValue() + "\n");
 			}

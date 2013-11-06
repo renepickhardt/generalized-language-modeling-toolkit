@@ -6,7 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndexer;
-import de.typology.splitter.GLMSplitter;
+import de.typology.splitter.AbsoluteSplitter;
+import de.typology.splitter.SmoothingSplitter;
 import de.typology.utils.Config;
 
 public class Builder {
@@ -20,7 +21,7 @@ public class Builder {
 				+ Config.get().inputDataSet);
 		File inputFile = new File(inputDirectory + "/training.txt");
 		File indexFile = new File(inputDirectory + "/index.txt");
-		File outputDirectory = new File(Config.get().outputDirectory
+		File absoluteOutputDirectory = new File(Config.get().outputDirectory
 				+ Config.get().inputDataSet + "/absolute");
 		if (Config.get().buildIndex) {
 			logger.info("build word index: " + indexFile.getAbsolutePath());
@@ -29,14 +30,27 @@ public class Builder {
 					Config.get().maxCountDivider);
 		}
 		if (Config.get().buildGLM) {
-			GLMSplitter glmSplitter = new GLMSplitter(inputFile, indexFile,
-					outputDirectory, Config.get().maxCountDivider, "\t",
+			AbsoluteSplitter absolteSplitter = new AbsoluteSplitter(inputFile,
+					indexFile, absoluteOutputDirectory,
+					Config.get().maxCountDivider, "\t",
 					Config.get().deleteTempFiles);
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());
-			glmSplitter.splitGLMForSmoothing(Config.get().modelLength);
+			absolteSplitter.splitGLMForSmoothing(Config.get().modelLength);
+		}
+		if (Config.get().build_absoluteGLM) {
+			File _absoluteOutputDirectory = new File(
+					Config.get().outputDirectory + Config.get().inputDataSet
+							+ "/_absolute");
+			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
+					absoluteOutputDirectory, indexFile,
+					_absoluteOutputDirectory, Config.get().maxCountDivider,
+					"\t", Config.get().deleteTempFiles);
+
+			logger.info("split into GLM sequences: "
+					+ inputFile.getAbsolutePath());
+			smoothingSplitter.splitGLMForSmoothing(Config.get().modelLength);
 		}
 		logger.info("done");
 	}
-
 }

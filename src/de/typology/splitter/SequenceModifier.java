@@ -1,7 +1,12 @@
 package de.typology.splitter;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 /**
  * A class for modifying the sequences in InputDirectory based on the given
@@ -11,14 +16,47 @@ import java.io.OutputStream;
  * 
  */
 public class SequenceModifier implements Runnable {
+	private File inputDirectory;
+	private OutputStream outputStream;
+	private String delimiter;
+	private boolean[] pattern;
+
 	public SequenceModifier(File inputDirectory, OutputStream outputStream,
-			Character delimiter, boolean[] pattern, String outputDirectoryName) {
-		// TODO: add actual constructor
+			String delimiter, boolean[] pattern) {
+		this.inputDirectory = inputDirectory;
+		this.outputStream = outputStream;
+		this.delimiter = delimiter;
+		this.pattern = pattern;
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+
+		BufferedWriter outputStreamWriter = new BufferedWriter(
+				new OutputStreamWriter(this.outputStream));
+		try {
+			for (File inputFile : this.inputDirectory.listFiles()) {
+				BufferedReader inputFileReader = new BufferedReader(
+						new FileReader(inputFile));
+				String line;
+				while ((line = inputFileReader.readLine()) != null) {
+					String[] words = line.split(this.delimiter)[0].split("\\s");
+					String modifiedWords = "";
+					for (int i = 0; i < this.pattern.length; i++) {
+						if (this.pattern[i]) {
+							modifiedWords += words[i] + " ";
+						}
+					}
+					modifiedWords = modifiedWords.replaceFirst(" $", "");
+					outputStreamWriter.write(modifiedWords + "\n");
+				}
+				inputFileReader.close();
+			}
+			outputStreamWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 

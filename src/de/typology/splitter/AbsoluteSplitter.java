@@ -23,17 +23,19 @@ import de.typology.utils.PatternTransformer;
  * @author Martin Koerner
  * 
  */
-public class Splitter {
+public class AbsoluteSplitter {
 	private File inputFile;
 	private File indexFile;
 	private File outputDirectory;
 	private String delimiter;
 	protected boolean deleteTempFiles;
 
-	static Logger logger = LogManager.getLogger(Splitter.class.getName());
+	static Logger logger = LogManager.getLogger(AbsoluteSplitter.class
+			.getName());
 
-	public Splitter(File inputFile, File indexFile, File outputDirectory,
-			int maxCountDivider, String delimiter, boolean deleteTempFiles) {
+	public AbsoluteSplitter(File inputFile, File indexFile,
+			File outputDirectory, int maxCountDivider, String delimiter,
+			boolean deleteTempFiles) {
 		this.inputFile = inputFile;
 		this.indexFile = indexFile;
 		this.outputDirectory = outputDirectory;
@@ -57,7 +59,9 @@ public class Splitter {
 		WordIndex wordIndex = new WordIndex(this.indexFile);
 
 		// initialize executerService
-		int cores = Runtime.getRuntime().availableProcessors();
+		// TODO: change the way, the number of threads (4) is handled
+		int cores = 4;
+		// int cores = Runtime.getRuntime().availableProcessors();
 		ExecutorService executorService = Executors.newFixedThreadPool(cores);
 		for (boolean[] pattern : patterns) {
 			logger.info(" split into "
@@ -69,7 +73,7 @@ public class Splitter {
 						this.inputFile);
 				SplitterTask splitterTask = new SplitterTask(
 						inputFileInputStream, this.outputDirectory, wordIndex,
-						pattern, this.delimiter, this.deleteTempFiles);
+						pattern, this.delimiter, 0, this.deleteTempFiles);
 				executorService.execute(splitterTask);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -86,5 +90,55 @@ public class Splitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void splitGLM(int maxModelLength) {
+		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
+			// leave out even sequences since they don't contain a
+			// target
+			if (intPattern % 2 == 0) {
+				continue;
+			}
+			patterns.add(PatternTransformer.getBooleanPattern(intPattern));
+		}
+		this.split(patterns);
+	}
+
+	public void splitGLMForSmoothing(int maxModelLength) {
+		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
+			// // leave out even sequences since they don't contain a
+			// // target
+			// if (intPattern % 2 == 0) {
+			// continue;
+			// }
+			patterns.add(PatternTransformer.getBooleanPattern(intPattern));
+		}
+		this.split(patterns);
+	}
+
+	public void splitLM(int maxModelLength) {
+		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
+			String stringPattern = Integer.toBinaryString(intPattern);
+			if (Integer.bitCount(intPattern) == stringPattern.length()) {
+				patterns.add(PatternTransformer.getBooleanPattern(intPattern));
+			}
+		}
+		this.split(patterns);
+	}
+
+	public void splitTypology(int maxModelLength) {
+		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
+			String stringPattern = Integer.toBinaryString(intPattern);
+			if (Integer.bitCount(intPattern) <= 2
+					&& stringPattern.startsWith("1")
+					&& stringPattern.endsWith("1")) {
+				patterns.add(PatternTransformer.getBooleanPattern(intPattern));
+			}
+		}
+		this.split(patterns);
 	}
 }
