@@ -10,7 +10,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
 import de.typology.utils.PatternTransformer;
@@ -28,6 +29,8 @@ public class Sequencer implements Runnable {
 	protected WordIndex wordIndex;
 	protected boolean[] pattern;
 
+	static Logger logger = LogManager.getLogger(Splitter.class.getName());
+
 	public Sequencer(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern) {
 		this.inputStream = inputStream;
@@ -37,19 +40,17 @@ public class Sequencer implements Runnable {
 
 	}
 
-	public static void main(String[] args) {
-
-	}
-
 	@Override
 	public void run() {
 		HashMap<Integer, BufferedWriter> writers = this.openWriters();
 		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(this.inputStream), 100 * 8 * 1024);
+				new InputStreamReader(this.inputStream));
+		// BufferedReader bufferedReader = new BufferedReader(
+		// new InputStreamReader(this.inputStream), 10 * 8 * 1024);
 		String line;
 		try {
 			while ((line = bufferedReader.readLine()) != null) {
-				String[] lineSplit = line.split("\\s+");
+				String[] lineSplit = line.split("\\s");
 				int linePointer = 0;
 				while (lineSplit.length - linePointer >= this.pattern.length) {
 					String sequence = "";
@@ -60,9 +61,9 @@ public class Sequencer implements Runnable {
 					}
 					if (this.pattern[this.pattern.length - 1]) {
 						sequence += lineSplit[linePointer + this.pattern.length
-								- 1]
-								+ "\n";
+								- 1];
 					}
+					sequence += "\n";
 
 					// write sequence
 					writers.get(this.wordIndex.rank(sequence.split(" ")[0]))
@@ -71,10 +72,12 @@ public class Sequencer implements Runnable {
 					linePointer++;
 				}
 			}
+			bufferedReader.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		this.closeWriters(writers);
 	}
 
@@ -83,35 +86,47 @@ public class Sequencer implements Runnable {
 		String stringPattern = PatternTransformer
 				.getStringPattern(this.pattern);
 
-		// calculate buffer size for writers
-		Runtime runtime = Runtime.getRuntime();
-		long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-		long maxMemory = runtime.maxMemory();
-		long availableMemory = maxMemory - usedMemory;
-		// divide availableMemory by 2 to leave enough space for other tasks
-		int bufferSize = (int) ((int) (availableMemory / 2) / Math.pow(
-				this.wordIndex.getLength(), 2));
-		System.out.println("availableMemory: " + availableMemory);
-		System.out.println("buffersize: " + bufferSize);
+		// // calculate buffer size for writers
+		// Runtime runtime = Runtime.getRuntime();
+		// // divide totalMemory by 2 to leave enough space for other tasks
+		// int bufferSize = (int) (runtime.totalMemory() / 2
+		// / runtime.availableProcessors() / this.wordIndex.getLength());
+		//
+		// logger.debug("totalMemory: " + runtime.totalMemory());
+		// logger.debug("buffersize: " + bufferSize);
+
+		// System.out.println("");
+		//
+		// int mb = 1024 * 1024;
+		//
+		// // Getting the runtime reference from system
+		// Runtime runtime = Runtime.getRuntime();
+		//
+		// System.out.println("##### Heap utilization statistics [MB] #####");
+		//
+		// // Print used memory
+		// System.out.println("Used Memory:\t"
+		// + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+		//
+		// // Print free memory
+		// System.out.println("Free Memory:\t" + runtime.freeMemory() / mb);
+		//
+		// // Print total available memory
+		// System.out.println("Total Memory:\t" + runtime.totalMemory() / mb);
+		//
+		// // Print Maximum available memory
+		// System.out.println("Max Memory:\t" + runtime.maxMemory() / mb);
 
 		File currentOutputDirectory = new File(
 				this.outputDirectory.getAbsolutePath() + "/" + stringPattern
 						+ "-split");
-		// delete old directory
-		if (currentOutputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(currentOutputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+
 		currentOutputDirectory.mkdir();
 		for (int fileCount = 0; fileCount < this.wordIndex.getLength(); fileCount++) {
 			try {
 				writers.put(fileCount, new BufferedWriter(new FileWriter(
 						currentOutputDirectory.getAbsolutePath() + "/"
-								+ fileCount + "." + stringPattern), bufferSize));
+								+ fileCount + "." + stringPattern)));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

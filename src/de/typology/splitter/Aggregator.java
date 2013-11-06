@@ -1,7 +1,17 @@
 package de.typology.splitter;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * A class for aggregating sequences by counting their occurrences. Expects an
@@ -11,16 +21,96 @@ import java.io.OutputStream;
  * 
  */
 public class Aggregator implements Runnable {
-	public Aggregator(InputStream inputStream, OutputStream outputStream,
-			char delimiter, int startSortAtColumn) {
-		// TODO: add actual constructor
+	File inputFile;
+	File outputFile;
+	String delimiter;
+	int startSortAtColumn;
+
+	int length;
+
+	/**
+	 * @param inputStream
+	 * @param outputStream
+	 * @param delimiter
+	 * @param startSortAtColumn
+	 *            : First column is zero
+	 */
+	public Aggregator(File inputFile, File outputFile, String delimiter,
+			int startSortAtColumn) {
+		this.inputFile = inputFile;
+		this.outputFile = outputFile;
+		this.delimiter = delimiter;
+		this.startSortAtColumn = startSortAtColumn;
+
+		// get number of words
+		this.length = Integer.bitCount(Integer.parseInt(this.inputFile
+				.getName().split("\\.")[1], 2));
 
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		try {
+			BufferedReader inputFileReader = new BufferedReader(new FileReader(
+					this.inputFile));
+
+			// this comparator is based on the value of startSortAtColumn
+			Comparator<List<String>> arrayComparator = new Comparator<List<String>>() {
+				@Override
+				public int compare(List<String> strings1, List<String> strings2) {
+					for (int i = Aggregator.this.startSortAtColumn; i < strings1
+							.size(); i++) {
+						if (!strings1.get(i).equals(strings2.get(i))) {
+							return strings1.get(i).compareTo(strings2.get(i));
+						}
+					}
+					return 0;
+				}
+			};
+			SortedMap<List<String>, Long> wordMap = new TreeMap<List<String>, Long>(
+					arrayComparator);
+			String inputLine;
+			while ((inputLine = inputFileReader.readLine()) != null) {
+				List<String> words = Arrays.asList(inputLine.split("\\s"));
+				if (words.size() == 0) {
+					System.out.println("SIZE==0 in " + this.inputFile + ": \""
+							+ inputLine + "\"");
+				}
+				if (wordMap.containsKey(words)) {
+					// System.out.println();
+					// System.out.print("IN: ");
+					// for (String s : words) {
+					// System.out.print(s + " ");
+					// }
+					// System.out.println();
+					wordMap.put(words, wordMap.get(words) + 1L);
+				} else {
+					// System.out.println();
+					// System.out.print("NOT: ");
+					// for (String s : words) {
+					// System.out.print(s + " ");
+					// }
+					// System.out.println();
+					wordMap.put(words, 1L);
+				}
+			}
+			inputFileReader.close();
+			BufferedWriter outputFileWriter = new BufferedWriter(
+					new FileWriter(this.outputFile));
+			for (Entry<List<String>, Long> entry : wordMap.entrySet()) {
+				List<String> words = entry.getKey();
+				for (int i = 0; i < words.size() - 1; i++) {
+					outputFileWriter.write(words.get(i) + " ");
+				}
+				outputFileWriter.write(words.get(words.size() - 1));
+				outputFileWriter
+						.write(this.delimiter + entry.getValue() + "\n");
+			}
+			outputFileWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
-
 }

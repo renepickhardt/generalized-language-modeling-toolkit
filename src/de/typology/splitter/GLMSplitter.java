@@ -8,22 +8,25 @@ import de.typology.utils.PatternTransformer;
 
 public class GLMSplitter extends Splitter {
 
-	public GLMSplitter(File inputFile, File outputDirectory,
-			int maxCountDivider, char delimiter) {
-		super(inputFile, outputDirectory, maxCountDivider, delimiter);
+	public GLMSplitter(File inputFile, File inputDirectory,
+			File outputDirectory, int maxCountDivider, String delimiter) {
+		super(inputFile, inputDirectory, outputDirectory, maxCountDivider,
+				delimiter);
+		// TODO Auto-generated constructor stub
 	}
 
 	public static void main(String[] args) {
 		// TODO: parameters as arguments
-		File outputDirectory = new File(Config.get().outputDirectory
+		File inputDirectory = new File(Config.get().outputDirectory
 				+ Config.get().inputDataSet);
-		File inputFile = new File(outputDirectory.getAbsolutePath()
-				+ "/training.txt");
-		GLMSplitter glmSplitter = new GLMSplitter(inputFile, outputDirectory,
-				1000, '\t');
+		File inputFile = new File(inputDirectory + "/training.txt");
+		File outputDirectory = new File(Config.get().outputDirectory
+				+ Config.get().inputDataSet + "/absolute");
+		GLMSplitter glmSplitter = new GLMSplitter(inputFile, inputDirectory,
+				outputDirectory, 1000, "\t");
 		// System.out.println("GLM");
 		// glmSplitter.splitGLM(Config.get().modelLength);
-		System.out.println("GLMForSmoothing");
+		System.out.println("splitGLMForSmoothing");
 		glmSplitter.splitGLMForSmoothing(Config.get().modelLength);
 		// System.out.println("LM");
 		// glmSplitter.splitLM(Config.get().modelLength);
