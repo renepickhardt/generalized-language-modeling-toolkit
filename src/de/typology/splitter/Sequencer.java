@@ -29,7 +29,7 @@ public class Sequencer implements Runnable {
 	protected WordIndex wordIndex;
 	protected boolean[] pattern;
 
-	static Logger logger = LogManager.getLogger(Splitter.class.getName());
+	static Logger logger = LogManager.getLogger(Sequencer.class.getName());
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern) {
@@ -118,8 +118,7 @@ public class Sequencer implements Runnable {
 		// System.out.println("Max Memory:\t" + runtime.maxMemory() / mb);
 
 		File currentOutputDirectory = new File(
-				this.outputDirectory.getAbsolutePath() + "/" + stringPattern
-						+ "-split");
+				this.outputDirectory.getAbsolutePath());
 
 		currentOutputDirectory.mkdir();
 		for (int fileCount = 0; fileCount < this.wordIndex.getLength(); fileCount++) {

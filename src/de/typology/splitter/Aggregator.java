@@ -13,6 +13,9 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * A class for aggregating sequences by counting their occurrences. Expects an
  * inputStream with a size that is 30% of the allocated main memory.
@@ -25,6 +28,8 @@ public class Aggregator implements Runnable {
 	File outputFile;
 	String delimiter;
 	int startSortAtColumn;
+
+	static Logger logger = LogManager.getLogger(Aggregator.class.getName());
 
 	int length;
 
@@ -73,8 +78,10 @@ public class Aggregator implements Runnable {
 			while ((inputLine = inputFileReader.readLine()) != null) {
 				List<String> words = Arrays.asList(inputLine.split("\\s"));
 				if (words.size() == 0) {
-					System.out.println("SIZE==0 in " + this.inputFile + ": \""
+					logger.error("empty row in " + this.inputFile + ": \""
 							+ inputLine + "\"");
+					logger.error("exiting JVM");
+					System.exit(1);
 				}
 				if (wordMap.containsKey(words)) {
 					// System.out.println();

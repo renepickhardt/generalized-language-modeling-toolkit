@@ -15,7 +15,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
-import de.typology.indexes.WordIndexer;
 import de.typology.utils.PatternTransformer;
 
 /**
@@ -26,20 +25,20 @@ import de.typology.utils.PatternTransformer;
  */
 public class Splitter {
 	private File inputFile;
-	private File inputDirectory;
+	private File indexFile;
 	private File outputDirectory;
-	private int maxCountDivider;
 	private String delimiter;
+	protected boolean deleteTempFiles;
 
 	static Logger logger = LogManager.getLogger(Splitter.class.getName());
 
-	public Splitter(File inputFile, File inputDirectory, File outputDirectory,
-			int maxCountDivider, String delimiter) {
+	public Splitter(File inputFile, File indexFile, File outputDirectory,
+			int maxCountDivider, String delimiter, boolean deleteTempFiles) {
 		this.inputFile = inputFile;
-		this.inputDirectory = inputDirectory;
+		this.indexFile = indexFile;
 		this.outputDirectory = outputDirectory;
-		this.maxCountDivider = maxCountDivider;
 		this.delimiter = delimiter;
+		this.deleteTempFiles = deleteTempFiles;
 		// delete old directory
 		if (outputDirectory.exists()) {
 			try {
@@ -53,29 +52,25 @@ public class Splitter {
 	}
 
 	protected void split(ArrayList<boolean[]> patterns) {
+
+		logger.info("read word index: " + this.indexFile.getAbsolutePath());
+		WordIndex wordIndex = new WordIndex(this.indexFile);
+
 		// initialize executerService
 		int cores = Runtime.getRuntime().availableProcessors();
 		ExecutorService executorService = Executors.newFixedThreadPool(cores);
-
-		// build index file TODO: how to handle index file name?
-		logger.info("build word index");
-		WordIndexer wordIndexer = new WordIndexer();
-		File indexFile = new File(this.inputDirectory + "/index.txt");
-		System.out.println(indexFile.getAbsolutePath());
-		wordIndexer.buildIndex(this.inputFile, indexFile, this.maxCountDivider);
-
-		logger.info("read word index");
-		WordIndex wordIndex = new WordIndex(indexFile);
-
-		// copy sequences into different files
 		for (boolean[] pattern : patterns) {
 			logger.info(" split into "
 					+ PatternTransformer.getStringPattern(pattern)
 					+ " sequences");
-			// open inputFile
-			InputStream inputFileinputStream;
+
 			try {
-				inputFileinputStream = new FileInputStream(this.inputFile);
+				InputStream inputFileInputStream = new FileInputStream(
+						this.inputFile);
+				SplitterTask splitterTask = new SplitterTask(
+						inputFileInputStream, this.outputDirectory, wordIndex,
+						pattern, this.delimiter, this.deleteTempFiles);
+				executorService.execute(splitterTask);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -83,43 +78,13 @@ public class Splitter {
 						+ this.inputFile.getAbsolutePath());
 				return;
 			}
-			// initialize sequencer
-			Sequencer sequencer = new Sequencer(inputFileinputStream,
-					this.outputDirectory, wordIndex, pattern);
-
-			// execute sequencer
-			executorService.execute(sequencer);
 		}
-
 		executorService.shutdown();
 		try {
-			executorService.awaitTermination(Long.MAX_VALUE,
-					TimeUnit.NANOSECONDS);
+			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		executorService = Executors.newFixedThreadPool(cores);
-		// aggregate sequences
-		for (boolean[] pattern : patterns) {
-			File currentSplitDirecotry = new File(
-					this.outputDirectory.getAbsolutePath() + "/"
-							+ PatternTransformer.getStringPattern(pattern)
-							+ "-split");
-			File currentAggregatedDirectory = new File(
-					this.outputDirectory.getAbsolutePath() + "/"
-							+ PatternTransformer.getStringPattern(pattern));
-			currentAggregatedDirectory.mkdir();
-			for (File splitFile : currentSplitDirecotry.listFiles()) {
-				Aggregator aggregator = new Aggregator(splitFile, new File(
-						currentAggregatedDirectory.getAbsolutePath() + "/"
-								+ splitFile.getName()), this.delimiter, 0);
-				executorService.execute(aggregator);
-
-			}
-		}
-
-		executorService.shutdown();
-
 	}
 }
