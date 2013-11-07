@@ -73,7 +73,8 @@ public class AbsoluteSplitter {
 						this.inputFile);
 				SplitterTask splitterTask = new SplitterTask(
 						inputFileInputStream, this.outputDirectory, wordIndex,
-						pattern, this.delimiter, 0, this.deleteTempFiles);
+						pattern, PatternTransformer.getStringPattern(pattern),
+						this.delimiter, 0, this.deleteTempFiles);
 				executorService.execute(splitterTask);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block

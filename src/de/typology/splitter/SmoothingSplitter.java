@@ -58,37 +58,52 @@ public class SmoothingSplitter {
 		int cores = 4;
 		// int cores = Runtime.getRuntime().availableProcessors();
 		ExecutorService executorService = Executors.newFixedThreadPool(cores);
-		// for (boolean[] pattern : patterns) {
-		boolean[] pattern = patterns.get(6);
+		for (boolean[] pattern : patterns) {
+			// boolean[] pattern = patterns.get(14);
 
-		boolean[] newPattern = Arrays.copyOfRange(pattern, 1, pattern.length);
-		boolean[] patternForModifying = pattern.clone();
-		patternForModifying[0] = false;
+			int patternNumberOfColumns = Integer.bitCount(PatternTransformer
+					.getIntPattern(pattern));
+			boolean[] newPattern = Arrays.copyOfRange(pattern, 1,
+					pattern.length);
+			boolean[] patternForModifier = PatternTransformer
+					.getBooleanPatternWithOnes(patternNumberOfColumns);
+			patternForModifier[0] = false;
 
-		PipedInputStream pipedInputStream = new PipedInputStream(8 * 1024);
+			System.out.println();
+			System.out.println(PatternTransformer.getStringPattern(pattern));
+			System.out.println(PatternTransformer.getStringPattern(newPattern));
+			System.out.println(PatternTransformer
+					.getStringPattern(patternForModifier));
+			if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
+				System.out.println("small");
+				continue;
+			}
 
-		SplitterTask splitterTask = new SplitterTask(pipedInputStream,
-				this.outputDirectory, wordIndex, newPattern, this.delimiter, 0,
-				this.deleteTempFiles);
-		executorService.execute(splitterTask);
-		File currentInputDirectory = new File(
-				this.inputDirectory.getAbsolutePath() + "/"
-						+ PatternTransformer.getStringPattern(pattern));
+			PipedInputStream pipedInputStream = new PipedInputStream(8 * 1024);
 
-		try {
-			OutputStream pipedOutputStream = new PipedOutputStream(
-					pipedInputStream);
-			System.out.println(currentInputDirectory.getAbsolutePath());
-			SequenceModifier sequenceModifier = new SequenceModifier(
-					currentInputDirectory, pipedOutputStream, this.delimiter,
-					patternForModifying);
-			executorService.execute(sequenceModifier);
+			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
+					this.outputDirectory, wordIndex, newPattern, "_"
+							+ PatternTransformer.getStringPattern(newPattern),
+					this.delimiter, 0, this.deleteTempFiles);
+			executorService.execute(splitterTask);
+			File currentInputDirectory = new File(
+					this.inputDirectory.getAbsolutePath() + "/"
+							+ PatternTransformer.getStringPattern(pattern));
 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			try {
+				OutputStream pipedOutputStream = new PipedOutputStream(
+						pipedInputStream);
+				System.out.println(currentInputDirectory.getAbsolutePath());
+				SequenceModifier sequenceModifier = new SequenceModifier(
+						currentInputDirectory, pipedOutputStream,
+						this.delimiter, patternForModifier);
+				executorService.execute(sequenceModifier);
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		// }
 		executorService.shutdown();
 		try {
 			executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);

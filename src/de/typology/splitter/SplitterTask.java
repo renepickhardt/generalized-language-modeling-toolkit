@@ -7,7 +7,6 @@ import java.io.InputStream;
 import org.apache.commons.io.FileUtils;
 
 import de.typology.indexes.WordIndex;
-import de.typology.patterns.PatternTransformer;
 
 /**
  * A class for running Sequencer and Aggregator for a given pattern.
@@ -20,17 +19,19 @@ public class SplitterTask implements Runnable {
 	protected File outputDirectory;
 	protected WordIndex wordIndex;
 	protected boolean[] pattern;
+	protected String patternLabel;
 	protected String delimiter;
 	protected boolean deleteTempFiles;
 	int startSortAtColumn;
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
-			WordIndex wordIndex, boolean[] pattern, String delimiter,
-			int startSortAtColumn, boolean deleteTempFiles) {
+			WordIndex wordIndex, boolean[] pattern, String patternLabel,
+			String delimiter, int startSortAtColumn, boolean deleteTempFiles) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
 		this.pattern = pattern;
+		this.patternLabel = patternLabel;
 		this.delimiter = delimiter;
 		this.deleteTempFiles = deleteTempFiles;
 	}
@@ -39,8 +40,7 @@ public class SplitterTask implements Runnable {
 	public void run() {
 		File sequencerOutputDirectory = new File(
 				this.outputDirectory.getAbsolutePath() + "/"
-						+ PatternTransformer.getStringPattern(this.pattern)
-						+ "-split");
+						+ this.patternLabel + "-split");
 		if (sequencerOutputDirectory.exists()) {
 			try {
 				FileUtils.deleteDirectory(sequencerOutputDirectory);
@@ -59,7 +59,7 @@ public class SplitterTask implements Runnable {
 
 		File aggregatedOutputDirectory = new File(
 				this.outputDirectory.getAbsolutePath() + "/"
-						+ PatternTransformer.getStringPattern(this.pattern));
+						+ this.patternLabel);
 		if (aggregatedOutputDirectory.exists()) {
 			try {
 				FileUtils.deleteDirectory(aggregatedOutputDirectory);

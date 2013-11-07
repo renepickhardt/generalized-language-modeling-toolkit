@@ -20,9 +20,9 @@ public class PatternTransformer {
 		System.out.println(Arrays.toString(bool2));
 	}
 
-	public static String getStringPattern(boolean[] pattern) {
+	public static String getStringPattern(boolean[] booleanPattern) {
 		String stringPattern = new String();
-		for (boolean bool : pattern) {
+		for (boolean bool : booleanPattern) {
 			if (bool) {
 				stringPattern += 1;
 			} else {
@@ -48,4 +48,23 @@ public class PatternTransformer {
 		}
 		return booleanPattern;
 	}
+
+	public static boolean[] getBooleanPatternWithOnes(int length) {
+		boolean[] booleanPattern = new boolean[length];
+		for (int i = 0; i < booleanPattern.length; i++) {
+			booleanPattern[i] = true;
+		}
+		return booleanPattern;
+	}
+
+	public static int getIntPattern(boolean[] booleanPattern) {
+		String stringPattern = PatternTransformer
+				.getStringPattern(booleanPattern);
+		if (stringPattern.length() == 0) {
+			return 0;
+		} else {
+			return Integer.parseInt(stringPattern, 2);
+		}
+	}
+
 }
