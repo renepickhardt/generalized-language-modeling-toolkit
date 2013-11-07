@@ -122,7 +122,7 @@ public class Sequencer implements Runnable {
 			try {
 				writers.put(fileCount, new BufferedWriter(new FileWriter(
 						currentOutputDirectory.getAbsolutePath() + "/"
-								+ fileCount + "." + stringPattern)));
+								+ fileCount)));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

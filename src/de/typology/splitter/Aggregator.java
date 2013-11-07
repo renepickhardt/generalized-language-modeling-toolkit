@@ -31,8 +31,6 @@ public class Aggregator implements Runnable {
 
 	static Logger logger = LogManager.getLogger(Aggregator.class.getName());
 
-	int length;
-
 	/**
 	 * @param inputStream
 	 * @param outputStream
@@ -46,10 +44,6 @@ public class Aggregator implements Runnable {
 		this.outputFile = outputFile;
 		this.delimiter = delimiter;
 		this.startSortAtColumn = startSortAtColumn;
-
-		// get number of words
-		this.length = Integer.bitCount(Integer.parseInt(this.inputFile
-				.getName().split("\\.")[1], 2));
 
 	}
 

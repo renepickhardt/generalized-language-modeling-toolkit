@@ -74,18 +74,22 @@ public class SmoothingSplitter {
 			System.out.println(PatternTransformer.getStringPattern(newPattern));
 			System.out.println(PatternTransformer
 					.getStringPattern(patternForModifier));
-			if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
-				System.out.println("small");
-				continue;
-			}
 
 			PipedInputStream pipedInputStream = new PipedInputStream(8 * 1024);
 
-			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
-					this.outputDirectory, wordIndex, newPattern, "_"
-							+ PatternTransformer.getStringPattern(newPattern),
-					this.delimiter, 0, this.deleteTempFiles);
-			executorService.execute(splitterTask);
+			if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
+				LineCounterTask lineCountTask = new LineCounterTask(
+						pipedInputStream, this.outputDirectory,
+						"_" + PatternTransformer.getStringPattern(newPattern),
+						this.delimiter);
+				executorService.execute(lineCountTask);
+			} else {
+				SplitterTask splitterTask = new SplitterTask(pipedInputStream,
+						this.outputDirectory, wordIndex, newPattern,
+						"_" + PatternTransformer.getStringPattern(newPattern),
+						this.delimiter, 0, this.deleteTempFiles);
+				executorService.execute(splitterTask);
+			}
 			File currentInputDirectory = new File(
 					this.inputDirectory.getAbsolutePath() + "/"
 							+ PatternTransformer.getStringPattern(pattern));
