@@ -1,4 +1,4 @@
-package de.typology.utils;
+package de.typology.patterns;
 
 import java.util.Arrays;
 

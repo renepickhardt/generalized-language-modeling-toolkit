@@ -7,7 +7,7 @@ import java.io.InputStream;
 import org.apache.commons.io.FileUtils;
 
 import de.typology.indexes.WordIndex;
-import de.typology.utils.PatternTransformer;
+import de.typology.patterns.PatternTransformer;
 
 /**
  * A class for running Sequencer and Aggregator for a given pattern.

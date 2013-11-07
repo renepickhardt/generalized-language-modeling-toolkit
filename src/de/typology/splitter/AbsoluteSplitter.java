@@ -15,7 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
-import de.typology.utils.PatternTransformer;
+import de.typology.patterns.PatternTransformer;
 
 /**
  * Split
@@ -53,7 +53,7 @@ public class AbsoluteSplitter {
 		outputDirectory.mkdir();
 	}
 
-	protected void split(ArrayList<boolean[]> patterns) {
+	public void split(ArrayList<boolean[]> patterns) {
 
 		logger.info("read word index: " + this.indexFile.getAbsolutePath());
 		WordIndex wordIndex = new WordIndex(this.indexFile);
@@ -90,55 +90,5 @@ public class AbsoluteSplitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	public void splitGLM(int maxModelLength) {
-		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
-		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
-			// leave out even sequences since they don't contain a
-			// target
-			if (intPattern % 2 == 0) {
-				continue;
-			}
-			patterns.add(PatternTransformer.getBooleanPattern(intPattern));
-		}
-		this.split(patterns);
-	}
-
-	public void splitGLMForSmoothing(int maxModelLength) {
-		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
-		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
-			// // leave out even sequences since they don't contain a
-			// // target
-			// if (intPattern % 2 == 0) {
-			// continue;
-			// }
-			patterns.add(PatternTransformer.getBooleanPattern(intPattern));
-		}
-		this.split(patterns);
-	}
-
-	public void splitLM(int maxModelLength) {
-		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
-		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
-			String stringPattern = Integer.toBinaryString(intPattern);
-			if (Integer.bitCount(intPattern) == stringPattern.length()) {
-				patterns.add(PatternTransformer.getBooleanPattern(intPattern));
-			}
-		}
-		this.split(patterns);
-	}
-
-	public void splitTypology(int maxModelLength) {
-		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
-		for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
-			String stringPattern = Integer.toBinaryString(intPattern);
-			if (Integer.bitCount(intPattern) <= 2
-					&& stringPattern.startsWith("1")
-					&& stringPattern.endsWith("1")) {
-				patterns.add(PatternTransformer.getBooleanPattern(intPattern));
-			}
-		}
-		this.split(patterns);
 	}
 }

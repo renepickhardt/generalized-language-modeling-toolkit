@@ -14,7 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
-import de.typology.utils.PatternTransformer;
+import de.typology.patterns.PatternTransformer;
 
 /**
  * A class for splitting a text file (via inputStream) into sequences that are
