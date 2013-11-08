@@ -45,13 +45,10 @@ public class Builder {
 		if (Config.get().build_absoluteGLM) {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
 					.splitGLMForSmoothing(Config.get().modelLength);
-			File _absoluteOutputDirectory = new File(
-					Config.get().outputDirectory + Config.get().inputDataSet
-							+ "/_absolute");
 			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
 					absoluteOutputDirectory, indexFile,
-					_absoluteOutputDirectory, Config.get().maxCountDivider,
-					"\t", Config.get().deleteTempFiles);
+					Config.get().maxCountDivider, "\t",
+					Config.get().deleteTempFiles);
 
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());
