@@ -33,7 +33,7 @@ public class Builder {
 		}
 		if (Config.get().buildGLM) {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
-					.splitGLMForSmoothing(Config.get().modelLength);
+					.getReverseGLMForSmoothingPatterns(Config.get().modelLength);
 			AbsoluteSplitter absolteSplitter = new AbsoluteSplitter(inputFile,
 					indexFile, absoluteOutputDirectory,
 					Config.get().maxCountDivider, "\t",
@@ -44,7 +44,7 @@ public class Builder {
 		}
 		if (Config.get().build_absoluteGLM) {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
-					.splitGLMForSmoothing(Config.get().modelLength);
+					.getReverseGLMForSmoothingPatterns(Config.get().modelLength);
 			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
 					absoluteOutputDirectory, indexFile,
 					Config.get().maxCountDivider, "\t",
