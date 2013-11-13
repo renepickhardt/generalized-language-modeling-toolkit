@@ -57,8 +57,16 @@ public class Aggregator implements Runnable {
 			Comparator<List<String>> arrayComparator = new Comparator<List<String>>() {
 				@Override
 				public int compare(List<String> strings1, List<String> strings2) {
+					// start comparison at "startSortAtColumn"
 					for (int i = Aggregator.this.startSortAtColumn; i < strings1
 							.size(); i++) {
+						if (!strings1.get(i).equals(strings2.get(i))) {
+							return strings1.get(i).compareTo(strings2.get(i));
+						}
+					}
+					// all columns starting at "startSortAtColumn" are equal so
+					// check the columns before "startSortAtColumn"
+					for (int i = 0; i < Aggregator.this.startSortAtColumn; i++) {
 						if (!strings1.get(i).equals(strings2.get(i))) {
 							return strings1.get(i).compareTo(strings2.get(i));
 						}
