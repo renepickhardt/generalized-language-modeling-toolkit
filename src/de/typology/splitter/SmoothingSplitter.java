@@ -111,14 +111,14 @@ public class SmoothingSplitter {
 					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
 			patternForModifier[0] = false;
 
-			System.out.println();
-			System.out.println(PatternTransformer
-					.getStringPattern(inputPattern));
-			System.out.println(inputPatternLabel);
-			System.out.println(PatternTransformer.getStringPattern(newPattern));
-			System.out.println(newPatternLabel);
-			System.out.println(PatternTransformer
-					.getStringPattern(patternForModifier));
+			logger.debug("inputPattern: "
+					+ PatternTransformer.getStringPattern(inputPattern));
+			logger.debug("inputPatternLabel: " + inputPatternLabel);
+			logger.debug("newPattern: "
+					+ PatternTransformer.getStringPattern(newPattern));
+			logger.debug("newPatternLabel: " + newPatternLabel);
+			logger.debug("patternForModifier: "
+					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this._outputDirectory,
 					newPattern, newPatternLabel, patternForModifier, wordIndex);
@@ -177,14 +177,14 @@ public class SmoothingSplitter {
 					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
 			patternForModifier[patternForModifier.length - 1] = false;
 
-			System.out.println();
-			System.out.println(PatternTransformer
-					.getStringPattern(inputPattern));
-			System.out.println(inputPatternLabel);
-			System.out.println(PatternTransformer.getStringPattern(newPattern));
-			System.out.println(newPatternLabel);
-			System.out.println(PatternTransformer
-					.getStringPattern(patternForModifier));
+			logger.debug("inputPattern: "
+					+ PatternTransformer.getStringPattern(inputPattern));
+			logger.debug("inputPatternLabel: " + inputPatternLabel);
+			logger.debug("newPattern: "
+					+ PatternTransformer.getStringPattern(newPattern));
+			logger.debug("newPatternLabel: " + newPatternLabel);
+			logger.debug("patternForModifier: "
+					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this._output_Directory,
 					newPattern, newPatternLabel, patternForModifier, wordIndex);
@@ -225,14 +225,14 @@ public class SmoothingSplitter {
 					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
 			patternForModifier[patternForModifier.length - 1] = false;
 
-			System.out.println();
-			System.out.println(PatternTransformer
-					.getStringPattern(inputPattern));
-			System.out.println(inputPatternLabel);
-			System.out.println(PatternTransformer.getStringPattern(newPattern));
-			System.out.println(newPatternLabel);
-			System.out.println(PatternTransformer
-					.getStringPattern(patternForModifier));
+			logger.debug("inputPattern: "
+					+ PatternTransformer.getStringPattern(inputPattern));
+			logger.debug("inputPatternLabel: " + inputPatternLabel);
+			logger.debug("newPattern: "
+					+ PatternTransformer.getStringPattern(newPattern));
+			logger.debug("newPatternLabel: " + newPatternLabel);
+			logger.debug("patternForModifier: "
+					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this.output_Directory,
 					newPattern, newPatternLabel, patternForModifier, wordIndex);

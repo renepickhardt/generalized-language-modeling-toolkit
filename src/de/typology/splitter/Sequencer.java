@@ -14,7 +14,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
-import de.typology.patterns.PatternTransformer;
 
 /**
  * A class for splitting a text file (via inputStream) into sequences that are
@@ -81,8 +80,6 @@ public class Sequencer implements Runnable {
 
 	private HashMap<Integer, BufferedWriter> openWriters() {
 		HashMap<Integer, BufferedWriter> writers = new HashMap<Integer, BufferedWriter>();
-		String stringPattern = PatternTransformer
-				.getStringPattern(this.pattern);
 
 		// Runtime runtime = Runtime.getRuntime();
 		// int mb = 1024 * 1024;

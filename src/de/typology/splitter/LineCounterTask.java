@@ -9,12 +9,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LineCounterTask implements Runnable {
 	protected InputStream inputStream;
 	protected File outputDirectory;
 	protected String patternLabel;
 	protected String delimiter;
+
+	static Logger logger = LogManager.getLogger(SmoothingSplitter.class
+			.getName());
 
 	public LineCounterTask(InputStream inputStream, File outputDirectory,
 			String patternLabel, String delimiter) {
@@ -37,6 +42,7 @@ public class LineCounterTask implements Runnable {
 			}
 		}
 		outputDirectory.mkdir();
+		logger.info("count lines for: " + outputDirectory.getAbsolutePath());
 
 		BufferedReader inputStreamReader = new BufferedReader(
 				new InputStreamReader(this.inputStream));

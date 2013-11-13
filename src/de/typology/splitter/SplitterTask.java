@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
 
@@ -23,6 +25,9 @@ public class SplitterTask implements Runnable {
 	protected String delimiter;
 	protected boolean deleteTempFiles;
 	int startSortAtColumn;
+
+	static Logger logger = LogManager.getLogger(SmoothingSplitter.class
+			.getName());
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String patternLabel,
@@ -50,6 +55,8 @@ public class SplitterTask implements Runnable {
 			}
 		}
 		sequencerOutputDirectory.mkdir();
+		logger.info("start building: "
+				+ sequencerOutputDirectory.getAbsolutePath());
 
 		// initialize sequencer
 		Sequencer sequencer = new Sequencer(this.inputStream,
@@ -69,6 +76,7 @@ public class SplitterTask implements Runnable {
 			}
 		}
 		aggregatedOutputDirectory.mkdir();
+		logger.info("aggregate into: " + aggregatedOutputDirectory);
 
 		for (File splitFile : sequencerOutputDirectory.listFiles()) {
 			Aggregator aggregator = new Aggregator(splitFile, new File(
