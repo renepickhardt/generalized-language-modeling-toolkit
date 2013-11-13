@@ -34,9 +34,9 @@ public class WordIndexTest {
 
 	@After
 	public void tearDown() throws Exception {
-		// if (this.indexFile.exists()) {
-		// this.indexFile.delete();
-		// }
+		if (this.indexFile.exists()) {
+			this.indexFile.delete();
+		}
 	}
 
 	@Test

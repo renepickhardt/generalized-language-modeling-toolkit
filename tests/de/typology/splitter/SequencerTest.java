@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.typology.indexes.WordIndex;
+import de.typology.indexes.WordIndexer;
 
 public class SequencerTest {
 	File inputFile = new File("testDataset/training.txt");
@@ -34,6 +35,8 @@ public class SequencerTest {
 
 	@Before
 	public void setUp() throws Exception {
+		WordIndexer wordIndexer = new WordIndexer();
+		wordIndexer.buildIndex(this.inputFile, this.indexFile, 10);
 		if (this.sequencerOutputDirectory.exists()) {
 			FileUtils.deleteDirectory(this.sequencerOutputDirectory);
 		}
@@ -44,6 +47,9 @@ public class SequencerTest {
 	public void tearDown() throws Exception {
 		if (this.sequencerOutputDirectory.exists()) {
 			FileUtils.deleteDirectory(this.sequencerOutputDirectory);
+		}
+		if (this.indexFile.exists()) {
+			this.indexFile.delete();
 		}
 	}
 
