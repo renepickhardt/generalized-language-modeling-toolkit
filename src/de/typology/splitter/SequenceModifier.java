@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-import de.typology.patterns.PatternTransformer;
-
 /**
  * A class for modifying the sequences in InputDirectory based on the given
  * Pattern. The modified sequences are returned as outputStream
@@ -52,11 +50,6 @@ public class SequenceModifier implements Runnable {
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
-						System.out.println(line);
-						System.out.println(inputFile.getAbsolutePath());
-						System.out.println(PatternTransformer
-								.getStringPattern(this.pattern));
-						System.out.println(modifiedWords);
 
 					}
 					modifiedWords = modifiedWords.replaceFirst(" $", "");
