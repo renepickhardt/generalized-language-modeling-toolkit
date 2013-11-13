@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class WordIndexerTest {
-	File inputFile = new File("testDataset/normalized.txt");
+	File inputFile = new File("testDataset/training.txt");
 	File indexFile = new File("testDataset/index.txt");
 
 	@BeforeClass
