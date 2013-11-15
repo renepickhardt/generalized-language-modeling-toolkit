@@ -74,13 +74,11 @@ public class SmoothingSplitter {
 		this._output_Directory.mkdir();
 	}
 
-	public void split(ArrayList<boolean[]> patterns) {
+	public void split(ArrayList<boolean[]> patterns, int cores) {
 		// read Index
 		logger.info("read word index: " + this.indexFile.getAbsolutePath());
 		WordIndex wordIndex = new WordIndex(this.indexFile);
 		// initialize executerService
-		// TODO: change the way, the number of threads (4) is handled
-		int cores = 4;
 		// int cores = Runtime.getRuntime().availableProcessors();
 		this.executorService = Executors.newFixedThreadPool(cores);
 
