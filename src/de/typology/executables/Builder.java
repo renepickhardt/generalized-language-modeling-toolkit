@@ -40,7 +40,8 @@ public class Builder {
 					Config.get().deleteTempFiles);
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());
-			absolteSplitter.split(glmForSmoothingPatterns);
+			absolteSplitter.split(glmForSmoothingPatterns,
+					Config.get().numberOfCores);
 		}
 		if (Config.get().build_absoluteGLM) {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
@@ -52,7 +53,8 @@ public class Builder {
 
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());
-			smoothingSplitter.split(glmForSmoothingPatterns);
+			smoothingSplitter.split(glmForSmoothingPatterns,
+					Config.get().numberOfCores);
 		}
 		logger.info("done");
 	}

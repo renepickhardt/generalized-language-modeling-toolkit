@@ -53,14 +53,12 @@ public class AbsoluteSplitter {
 		outputDirectory.mkdir();
 	}
 
-	public void split(ArrayList<boolean[]> patterns) {
+	public void split(ArrayList<boolean[]> patterns, int cores) {
 
 		logger.info("read word index: " + this.indexFile.getAbsolutePath());
 		WordIndex wordIndex = new WordIndex(this.indexFile);
 
 		// initialize executerService
-		// TODO: change the way, the number of threads (4) is handled
-		int cores = 4;
 		// int cores = Runtime.getRuntime().availableProcessors();
 		ExecutorService executorService = Executors.newFixedThreadPool(cores);
 		for (boolean[] pattern : patterns) {

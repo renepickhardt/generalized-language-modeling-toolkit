@@ -23,6 +23,8 @@ import java.util.Properties;
 public class Config extends Properties {
 
 	// CONTROLL PARAMETERS
+	public int numberOfCores;
+
 	public String dbUser;
 
 	public String rawLogDir;
