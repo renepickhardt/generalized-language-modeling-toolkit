@@ -62,7 +62,7 @@ public class AbsoluteSplitter {
 		// int cores = Runtime.getRuntime().availableProcessors();
 		ExecutorService executorService = Executors.newFixedThreadPool(cores);
 		for (boolean[] pattern : patterns) {
-			logger.info(" split into "
+			logger.debug("execute SplitterTask for: "
 					+ PatternTransformer.getStringPattern(pattern)
 					+ " sequences");
 
