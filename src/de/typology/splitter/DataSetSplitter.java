@@ -104,14 +104,12 @@ public class DataSetSplitter {
 							if (Config.get().addSentenceTags) {
 								// TODO make this flexible
 								line = "<s> " + line + " </s>";
-								System.out.println("test");
 							}
 							learningDataWriter.write(line + "\n");
 						} else {
 							if (Config.get().addSentenceTags) {
 								// TODO make this flexible
 								line = "<s> " + line + " </s>";
-								System.out.println("test");
 							}
 							testingDataWriter.write(line + "\n");
 						}
