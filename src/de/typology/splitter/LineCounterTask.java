@@ -18,8 +18,8 @@ public class LineCounterTask implements Runnable {
 	protected String patternLabel;
 	protected String delimiter;
 
-	static Logger logger = LogManager.getLogger(SmoothingSplitter.class
-			.getName());
+	static Logger logger = LogManager
+			.getLogger(LineCounterTask.class.getName());
 
 	public LineCounterTask(InputStream inputStream, File outputDirectory,
 			String patternLabel, String delimiter) {

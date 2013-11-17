@@ -26,8 +26,7 @@ public class SplitterTask implements Runnable {
 	protected boolean deleteTempFiles;
 	int startSortAtColumn;
 
-	static Logger logger = LogManager.getLogger(SmoothingSplitter.class
-			.getName());
+	static Logger logger = LogManager.getLogger(SplitterTask.class.getName());
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String patternLabel,

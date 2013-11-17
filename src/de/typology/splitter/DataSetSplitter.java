@@ -45,7 +45,8 @@ public class DataSetSplitter {
 	private File directory;
 	private String inputName;
 
-	static Logger logger = LogManager.getLogger(Aggregator.class.getName());
+	static Logger logger = LogManager
+			.getLogger(DataSetSplitter.class.getName());
 
 	public DataSetSplitter(File directory, String inputName) {
 
