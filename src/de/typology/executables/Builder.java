@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.splitter.AbsoluteSplitter;
+import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
 import de.typology.utils.Config;
 
@@ -25,6 +26,18 @@ public class Builder {
 		File indexFile = new File(inputDirectory + "/index.txt");
 		File absoluteOutputDirectory = new File(Config.get().outputDirectory
 				+ Config.get().inputDataSet + "/absolute");
+		if (Config.get().splitData) {
+			DataSetSplitter dss = new DataSetSplitter(inputDirectory,
+					"normalized.txt");
+			dss.split("training.txt", "learning.txt", "testing.txt",
+					Config.get().modelLength);
+			// dss.splitIntoSequences(new
+			// File(inputDirectory.getAbsolutePath()+"/learning.txt"),
+			// Config.get().modelLength,Config.get().numberOfQueries);
+			// dss.splitIntoSequences(new
+			// File(inputDirectory.getAbsolutePath()+"/testing.txt"),
+			// Config.get().modelLength,Config.get().numberOfQueries);
+		}
 		if (Config.get().buildIndex) {
 			logger.info("build word index: " + indexFile.getAbsolutePath());
 			WordIndexer wordIndexer = new WordIndexer();

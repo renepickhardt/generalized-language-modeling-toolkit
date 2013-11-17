@@ -12,7 +12,7 @@
 
   <loggers>     
     <root level="trace">
-      <appender-ref ref="Console" level="info"/>
+      <appender-ref ref="Console" level="debug"/>
        <appender-ref ref="MyFile" level="info"/>
     </root>    
   </loggers>
