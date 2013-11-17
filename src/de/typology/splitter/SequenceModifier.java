@@ -50,10 +50,22 @@ public class SequenceModifier implements Runnable {
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
-
 					}
 					modifiedWords = modifiedWords.replaceFirst(" $", "");
-					outputStreamWriter.write(modifiedWords + "\n");
+					// TODO: better solution?
+					if (words[0].equals("<fs>")) {
+						// for kneser-ney smoothing: every sequence that starts
+						// with <fs> counts as a new sequence
+						if (!this.pattern[0]) {
+							for (int i = 0; i < Integer.parseInt(line
+									.split(this.delimiter)[1]); i++) {
+								outputStreamWriter.write(modifiedWords + "\n");
+							}
+						}
+						// if pattern[0]==true: leave out sequence
+					} else {
+						outputStreamWriter.write(modifiedWords + "\n");
+					}
 				}
 				inputFileReader.close();
 			}
