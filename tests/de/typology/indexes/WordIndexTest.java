@@ -29,7 +29,7 @@ public class WordIndexTest {
 			this.indexFile.delete();
 		}
 		WordIndexer wi = new WordIndexer();
-		wi.buildIndex(this.inputFile, this.indexFile, 10);
+		wi.buildIndex(this.inputFile, this.indexFile, 10, "<fs> <s> ", " </s>");
 	}
 
 	@After
@@ -42,11 +42,11 @@ public class WordIndexTest {
 	@Test
 	public void rankTest() {
 		WordIndex wi = new WordIndex(this.indexFile);
-		assertEquals(5, wi.rank("et"));
-		assertEquals(0, wi.rank("A"));
-		assertEquals(0, wi.rank("Z"));
+		assertEquals(7, wi.rank("et"));
+		assertEquals(2, wi.rank("A"));
+		assertEquals(3, wi.rank("Z"));
 		assertEquals(10, wi.rank("tempora"));
-		assertEquals(10, wi.rank("z"));
+		assertEquals(11, wi.rank("z"));
 
 		for (String word : wi) {
 			assertTrue(word.length() > 0);

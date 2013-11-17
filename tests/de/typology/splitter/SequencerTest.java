@@ -36,7 +36,8 @@ public class SequencerTest {
 	@Before
 	public void setUp() throws Exception {
 		WordIndexer wordIndexer = new WordIndexer();
-		wordIndexer.buildIndex(this.inputFile, this.indexFile, 10);
+		wordIndexer.buildIndex(this.inputFile, this.indexFile, 10, "<fs> <s> ",
+				" </s>");
 		if (this.sequencerOutputDirectory.exists()) {
 			FileUtils.deleteDirectory(this.sequencerOutputDirectory);
 		}
@@ -61,61 +62,65 @@ public class SequencerTest {
 		try {
 			InputStream inputStream = new FileInputStream(this.inputFile);
 			Sequencer sequencer = new Sequencer(inputStream,
-					this.sequencerOutputDirectory, wordIndex, pattern);
+					this.sequencerOutputDirectory, wordIndex, pattern,
+					"<fs> <s> ", " </s>");
+
 			sequencer.run();
 
 			// test file contents
-			BufferedReader br0 = new BufferedReader(new FileReader(
-					this.sequencerOutputDirectory.getAbsolutePath() + "/3"));
-			for (int i = 0; i < 6; i++) {
-				assertEquals("dolor", br0.readLine());
+			BufferedReader br8 = new BufferedReader(new FileReader(
+					this.sequencerOutputDirectory.getAbsolutePath() + "/8"));
+			for (int i = 0; i < 7; i++) {
+				assertEquals("ipsum", br8.readLine());
 			}
-			assertNull(br0.readLine());
-			br0.close();
+			assertNull(br8.readLine());
+			br8.close();
 
-			BufferedReader br10 = new BufferedReader(new FileReader(
-					this.sequencerOutputDirectory.getAbsolutePath() + "/10"));
-			assertEquals("tempor", br10.readLine());
-			assertEquals("ut", br10.readLine());
-			assertEquals("voluptua.", br10.readLine());
-			assertNull(br10.readLine());
-			br10.close();
+			BufferedReader br2 = new BufferedReader(new FileReader(
+					this.sequencerOutputDirectory.getAbsolutePath() + "/2"));
+			for (int i = 0; i < 8; i++) {
+				assertEquals("<s>", br2.readLine());
+			}
+			assertNull(br2.readLine());
+			br2.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	@Test
-	public void squencing1101Test() {
-		WordIndex wordIndex = new WordIndex(this.indexFile);
-		boolean[] pattern = { true, true, false, true };
-
-		try {
-			InputStream inputStream = new FileInputStream(this.inputFile);
-			Sequencer sequencer = new Sequencer(inputStream,
-					this.sequencerOutputDirectory, wordIndex, pattern);
-			sequencer.run();
-
-			// test file contents
-			BufferedReader br0 = new BufferedReader(new FileReader(
-					this.sequencerOutputDirectory.getAbsolutePath() + "/3"));
-			for (int i = 0; i < 3; i++) {
-				assertEquals("dolor sit consetetur", br0.readLine());
-			}
-			assertNull(br0.readLine());
-			br0.close();
-
-			BufferedReader br10 = new BufferedReader(new FileReader(
-					this.sequencerOutputDirectory.getAbsolutePath() + "/10"));
-			assertEquals("tempor invidunt labore", br10.readLine());
-			assertEquals("ut labore dolore", br10.readLine());
-			assertNull(br10.readLine());
-			br10.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	// @Test
+	// public void squencing1101Test() {
+	// WordIndex wordIndex = new WordIndex(this.indexFile);
+	// boolean[] pattern = { true, true, false, true };
+	//
+	// try {
+	// InputStream inputStream = new FileInputStream(this.inputFile);
+	// Sequencer sequencer = new Sequencer(inputStream,
+	// this.sequencerOutputDirectory, wordIndex, pattern, "<fs> <s> ",
+	// " </s>");
+	// sequencer.run();
+	//
+	// // test file contents
+	// BufferedReader br0 = new BufferedReader(new FileReader(
+	// this.sequencerOutputDirectory.getAbsolutePath() + "/8"));
+	// for (int i = 0; i < 4; i++) {
+	// assertEquals("ipsum dolor amet,", br0.readLine());
+	// }
+	// assertNull(br0.readLine());
+	// br0.close();
+	//
+	// BufferedReader br10 = new BufferedReader(new FileReader(
+	// this.sequencerOutputDirectory.getAbsolutePath() + "/3"));
+	// for (int i = 0; i < 5; i++) {
+	// assertEquals("Lorem ipsum sit", br10.readLine());
+	// }
+	// assertNull(br10.readLine());
+	// br10.close();
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	// }
 
 }

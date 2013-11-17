@@ -39,9 +39,9 @@ public class WordIndexerTest {
 	@Test
 	public void buildIndexTest() {
 		WordIndexer wi = new WordIndexer();
-		long maxCountPerFile = wi
-				.buildIndex(this.inputFile, this.indexFile, 10);
-		assertEquals(5, maxCountPerFile);
+		long maxCountPerFile = wi.buildIndex(this.inputFile, this.indexFile,
+				10, "<fs> <s> ", " </s>");
+		assertEquals(7, maxCountPerFile);
 	}
 
 }
