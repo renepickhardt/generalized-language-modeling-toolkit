@@ -245,6 +245,7 @@ public class SmoothingSplitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 
 	private void splitType(File currentInputDirectory, File outputDirectory,
@@ -262,7 +263,7 @@ public class SmoothingSplitter {
 			// don't add tags here
 			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
 					outputDirectory, wordIndex, newPattern, newPatternLabel,
-					this.delimiter, 0, this.deleteTempFiles, "", "");
+					this.delimiter, 0, this.deleteTempFiles, "", "", true);
 			this.executorService.execute(splitterTask);
 		}
 

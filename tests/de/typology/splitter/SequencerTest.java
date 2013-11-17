@@ -63,7 +63,7 @@ public class SequencerTest {
 			InputStream inputStream = new FileInputStream(this.inputFile);
 			Sequencer sequencer = new Sequencer(inputStream,
 					this.sequencerOutputDirectory, wordIndex, pattern,
-					"<fs> <s> ", " </s>");
+					"<fs> <s> ", " </s>", "\t", false);
 
 			sequencer.run();
 
@@ -71,7 +71,7 @@ public class SequencerTest {
 			BufferedReader br8 = new BufferedReader(new FileReader(
 					this.sequencerOutputDirectory.getAbsolutePath() + "/8"));
 			for (int i = 0; i < 7; i++) {
-				assertEquals("ipsum", br8.readLine());
+				assertEquals("ipsum\t1", br8.readLine());
 			}
 			assertNull(br8.readLine());
 			br8.close();
@@ -79,7 +79,7 @@ public class SequencerTest {
 			BufferedReader br2 = new BufferedReader(new FileReader(
 					this.sequencerOutputDirectory.getAbsolutePath() + "/2"));
 			for (int i = 0; i < 8; i++) {
-				assertEquals("<s>", br2.readLine());
+				assertEquals("<s>\t1", br2.readLine());
 			}
 			assertNull(br2.readLine());
 			br2.close();

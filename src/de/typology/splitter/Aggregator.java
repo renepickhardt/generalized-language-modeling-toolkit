@@ -78,7 +78,9 @@ public class Aggregator implements Runnable {
 					arrayComparator);
 			String inputLine;
 			while ((inputLine = inputFileReader.readLine()) != null) {
-				List<String> words = Arrays.asList(inputLine.split("\\s"));
+				List<String> words = Arrays.asList(inputLine
+						.split(this.delimiter)[0].split("\\s"));
+				long count = Long.parseLong(inputLine.split(this.delimiter)[1]);
 				if (words.size() == 0) {
 					// logger.error("empty row in " + this.inputFile + ": \""
 					// + inputLine + "\"");
@@ -93,7 +95,7 @@ public class Aggregator implements Runnable {
 					// System.out.print(s + " ");
 					// }
 					// System.out.println();
-					wordMap.put(words, wordMap.get(words) + 1L);
+					wordMap.put(words, wordMap.get(words) + count);
 				} else {
 					// System.out.println();
 					// System.out.print("NOT: ");
@@ -101,7 +103,7 @@ public class Aggregator implements Runnable {
 					// System.out.print(s + " ");
 					// }
 					// System.out.println();
-					wordMap.put(words, 1L);
+					wordMap.put(words, count);
 				}
 			}
 			inputFileReader.close();

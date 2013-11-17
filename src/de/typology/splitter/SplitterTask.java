@@ -28,13 +28,14 @@ public class SplitterTask implements Runnable {
 
 	protected String addBeforeSentence;
 	protected String addAfterSentence;
+	protected boolean withCount;
 
 	static Logger logger = LogManager.getLogger(SplitterTask.class.getName());
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String patternLabel,
 			String delimiter, int startSortAtColumn, boolean deleteTempFiles,
-			String addBeforeSentence, String addAfterSentence) {
+			String addBeforeSentence, String addAfterSentence, boolean withCount) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
@@ -45,6 +46,7 @@ public class SplitterTask implements Runnable {
 		this.deleteTempFiles = deleteTempFiles;
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
+		this.withCount = withCount;
 
 	}
 
@@ -68,7 +70,8 @@ public class SplitterTask implements Runnable {
 		// initialize sequencer
 		Sequencer sequencer = new Sequencer(this.inputStream,
 				sequencerOutputDirectory, this.wordIndex, this.pattern,
-				this.addBeforeSentence, this.addAfterSentence);
+				this.addBeforeSentence, this.addAfterSentence, this.delimiter,
+				this.withCount);
 		// TODO change method name
 		sequencer.run();
 

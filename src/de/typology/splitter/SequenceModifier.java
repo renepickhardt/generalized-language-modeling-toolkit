@@ -52,19 +52,26 @@ public class SequenceModifier implements Runnable {
 						e.printStackTrace();
 					}
 					modifiedWords = modifiedWords.replaceFirst(" $", "");
-					// TODO: better solution?
+					// TODO: better solution?md
 					if (words[0].equals("<fs>")) {
 						// for kneser-ney smoothing: every sequence that starts
 						// with <fs> counts as a new sequence
 						if (!this.pattern[0]) {
-							for (int i = 0; i < Integer.parseInt(line
-									.split(this.delimiter)[1]); i++) {
-								outputStreamWriter.write(modifiedWords + "\n");
+							// set <s> in _1 to zero
+							if (this.inputDirectory.getName().equals("11")
+									&& words[1].equals("<s>")) {
+								outputStreamWriter.write("<s>" + this.delimiter
+										+ "0\n");
+							} else {
+								outputStreamWriter.write(modifiedWords
+										+ this.delimiter
+										+ line.split(this.delimiter)[1] + "\n");
 							}
 						}
 						// if pattern[0]==true: leave out sequence
 					} else {
-						outputStreamWriter.write(modifiedWords + "\n");
+						outputStreamWriter.write(modifiedWords + this.delimiter
+								+ "1\n");
 					}
 				}
 				inputFileReader.close();
@@ -76,5 +83,4 @@ public class SequenceModifier implements Runnable {
 		}
 
 	}
-
 }

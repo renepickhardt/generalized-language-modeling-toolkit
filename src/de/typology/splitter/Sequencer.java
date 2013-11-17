@@ -29,18 +29,22 @@ public class Sequencer implements Runnable {
 	protected boolean[] pattern;
 	protected String addBeforeSentence;
 	protected String addAfterSentence;
+	protected String delimiter;
+	protected boolean withCount;
 
 	static Logger logger = LogManager.getLogger(Sequencer.class.getName());
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String addBeforeSentence,
-			String addAfterSentence) {
+			String addAfterSentence, String delimiter, boolean withCount) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
 		this.pattern = pattern;
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
+		this.delimiter = delimiter;
+		this.withCount = withCount;
 
 	}
 
@@ -55,24 +59,31 @@ public class Sequencer implements Runnable {
 		String line;
 		try {
 			while ((line = bufferedReader.readLine()) != null) {
-				line = this.addBeforeSentence + line + this.addAfterSentence;
-				String[] lineSplit = line.split("\\s");
-				int linePointer = 0;
-				while (lineSplit.length - linePointer >= this.pattern.length) {
-					String sequence = "";
-					for (int i = 0; i < this.pattern.length; i++) {
-						if (this.pattern[i]) {
-							sequence += lineSplit[linePointer + i] + " ";
+				if (this.withCount) {
+					String[] lineSplit = line.split("\\s");
+					writers.get(this.wordIndex.rank(lineSplit[0])).write(
+							line + "\n");
+				} else {
+					line = this.addBeforeSentence + line
+							+ this.addAfterSentence;
+					String[] lineSplit = line.split("\\s");
+					int linePointer = 0;
+					while (lineSplit.length - linePointer >= this.pattern.length) {
+						String sequence = "";
+						for (int i = 0; i < this.pattern.length; i++) {
+							if (this.pattern[i]) {
+								sequence += lineSplit[linePointer + i] + " ";
+							}
 						}
+						sequence = sequence.replaceFirst(" $", "");
+						sequence += this.delimiter + "1\n";
+
+						// write sequence
+						writers.get(this.wordIndex.rank(sequence.split(" ")[0]))
+								.write(sequence);
+
+						linePointer++;
 					}
-					sequence = sequence.replaceFirst(" $", "");
-					sequence += "\n";
-
-					// write sequence
-					writers.get(this.wordIndex.rank(sequence.split(" ")[0]))
-							.write(sequence);
-
-					linePointer++;
 				}
 			}
 			bufferedReader.close();
