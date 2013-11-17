@@ -77,7 +77,7 @@ public class DataSetSplitter {
 	public void split(String trainingFileName, String learningFileName,
 			String testingFileName, int sequenceLength) {
 		logger.info("splitting into training, testing and learning file: "
-				+ this.directory + this.inputName);
+				+ this.directory + "/" + this.inputName);
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(
 					this.directory.getAbsolutePath() + "/" + this.inputName));
