@@ -59,19 +59,19 @@ public class SequenceModifierTest {
 		boolean[] pattern = { true, false, true };
 
 		SequenceModifier sequenceModifier = new SequenceModifier(
-				this.inputDirectory, this.pipedOutputStream, "\n", pattern);
+				this.inputDirectory, this.pipedOutputStream, "\t", pattern);
 		sequenceModifier.run();
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(this.pipedInputStream));
 
 		try {
-			assertEquals("a c", bufferedReader.readLine());
-			assertEquals("d f", bufferedReader.readLine());
-			assertEquals("g i", bufferedReader.readLine());
-			assertEquals("j l", bufferedReader.readLine());
-			assertEquals("m o", bufferedReader.readLine());
-			assertEquals("ä ü", bufferedReader.readLine());
-			assertEquals("p r", bufferedReader.readLine());
+			assertEquals("a c\t1", bufferedReader.readLine());
+			assertEquals("d f\t1", bufferedReader.readLine());
+			assertEquals("g i\t1", bufferedReader.readLine());
+			assertEquals("j l\t1", bufferedReader.readLine());
+			assertEquals("m o\t1", bufferedReader.readLine());
+			assertEquals("ä ü\t1", bufferedReader.readLine());
+			assertEquals("p r\t1", bufferedReader.readLine());
 			assertNull(bufferedReader.readLine());
 			bufferedReader.close();
 		} catch (IOException e) {

@@ -26,12 +26,12 @@ public class AggregatorTest {
 	@Before
 	public void setUp() throws Exception {
 		BufferedWriter br = new BufferedWriter(new FileWriter(this.inputFile));
-		br.write("b y b\n");
-		br.write("c x a\n");
-		br.write("b y a\n");
-		br.write("a z a\n");
-		br.write("c y b\n");
-		br.write("c x a\n");
+		br.write("b y b\t1\n");
+		br.write("c x a\t1\n");
+		br.write("b y a\t1\n");
+		br.write("a z a\t1\n");
+		br.write("c y b\t1\n");
+		br.write("c x a\t1\n");
 		br.close();
 	}
 
