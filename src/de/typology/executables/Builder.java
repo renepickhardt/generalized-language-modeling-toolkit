@@ -42,7 +42,7 @@ public class Builder {
 			logger.info("build word index: " + indexFile.getAbsolutePath());
 			WordIndexer wordIndexer = new WordIndexer();
 			wordIndexer.buildIndex(inputFile, indexFile,
-					Config.get().maxCountDivider);
+					Config.get().maxCountDivider, "<fs> <s> ", " </s>");
 		}
 		if (Config.get().buildGLM) {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
@@ -50,7 +50,7 @@ public class Builder {
 			AbsoluteSplitter absolteSplitter = new AbsoluteSplitter(inputFile,
 					indexFile, absoluteOutputDirectory,
 					Config.get().maxCountDivider, "\t",
-					Config.get().deleteTempFiles);
+					Config.get().deleteTempFiles, "<fs> <s> ", " </s>");
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());
 			absolteSplitter.split(glmForSmoothingPatterns,

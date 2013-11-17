@@ -27,15 +27,20 @@ public class Sequencer implements Runnable {
 	protected File outputDirectory;
 	protected WordIndex wordIndex;
 	protected boolean[] pattern;
+	protected String addBeforeSentence;
+	protected String addAfterSentence;
 
 	static Logger logger = LogManager.getLogger(Sequencer.class.getName());
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
-			WordIndex wordIndex, boolean[] pattern) {
+			WordIndex wordIndex, boolean[] pattern, String addBeforeSentence,
+			String addAfterSentence) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
 		this.pattern = pattern;
+		this.addBeforeSentence = addBeforeSentence;
+		this.addAfterSentence = addAfterSentence;
 
 	}
 
@@ -50,6 +55,7 @@ public class Sequencer implements Runnable {
 		String line;
 		try {
 			while ((line = bufferedReader.readLine()) != null) {
+				line = this.addBeforeSentence + line + this.addAfterSentence;
 				String[] lineSplit = line.split("\\s");
 				int linePointer = 0;
 				while (lineSplit.length - linePointer >= this.pattern.length) {

@@ -29,18 +29,23 @@ public class AbsoluteSplitter {
 	private File outputDirectory;
 	private String delimiter;
 	protected boolean deleteTempFiles;
+	protected String addBeforeSentence;
+	protected String addAfterSentence;
 
 	static Logger logger = LogManager.getLogger(AbsoluteSplitter.class
 			.getName());
 
 	public AbsoluteSplitter(File inputFile, File indexFile,
 			File outputDirectory, int maxCountDivider, String delimiter,
-			boolean deleteTempFiles) {
+			boolean deleteTempFiles, String addBeforeSentence,
+			String addAfterSentence) {
 		this.inputFile = inputFile;
 		this.indexFile = indexFile;
 		this.outputDirectory = outputDirectory;
 		this.delimiter = delimiter;
 		this.deleteTempFiles = deleteTempFiles;
+		this.addBeforeSentence = addBeforeSentence;
+		this.addAfterSentence = addAfterSentence;
 		// delete old directory
 		if (outputDirectory.exists()) {
 			try {
@@ -72,7 +77,8 @@ public class AbsoluteSplitter {
 				SplitterTask splitterTask = new SplitterTask(
 						inputFileInputStream, this.outputDirectory, wordIndex,
 						pattern, PatternTransformer.getStringPattern(pattern),
-						this.delimiter, 0, this.deleteTempFiles);
+						this.delimiter, 0, this.deleteTempFiles,
+						this.addBeforeSentence, this.addAfterSentence);
 				executorService.execute(splitterTask);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
