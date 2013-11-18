@@ -1,17 +1,12 @@
 package de.typology.splitter;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,8 +81,10 @@ public class Aggregator implements Runnable {
 					return 0;
 				}
 			};
-			SortedMap<List<String>, Long> wordMap = new TreeMap<List<String>, Long>(
-					arrayComparator);
+			// SortedMap<List<String>, Long> wordMap = new TreeMap<List<String>,
+			// Long>(
+			// arrayComparator);
+			HashMap<String, Long> wordMap = new HashMap<String, Long>();
 			String inputLine;
 			// TODO remove
 			System.out.println("before reading " + this.inputFile.getName()
@@ -95,10 +92,11 @@ public class Aggregator implements Runnable {
 			this.printMemory();
 			while ((inputLine = inputFileReader.readLine()) != null) {
 
-				List<String> words = Arrays.asList(inputLine
-						.split(this.delimiter)[0].split("\\s"));
+				// List<String> words = Arrays.asList(inputLine
+				// .split(this.delimiter)[0].split("\\s"));
+				String words = inputLine.split(this.delimiter)[0];
 				long count = Long.parseLong(inputLine.split(this.delimiter)[1]);
-				if (words.size() == 0) {
+				if (words.length() == 0) {
 					// logger.error("empty row in " + this.inputFile + ": \""
 					// + inputLine + "\"");
 					// logger.error("exiting JVM");
@@ -126,7 +124,7 @@ public class Aggregator implements Runnable {
 				} catch (ArrayIndexOutOfBoundsException e) {
 					// TODO remove this
 					System.out.println("inputLine: " + inputLine);
-					System.out.println(words.size());
+					System.out.println(words);
 					System.out.println(this.inputFile.getAbsolutePath());
 					e.printStackTrace();
 				}
@@ -136,19 +134,19 @@ public class Aggregator implements Runnable {
 					+ ":");
 			this.printMemory();
 			inputFileReader.close();
-			BufferedWriter outputFileWriter = new BufferedWriter(
-					new FileWriter(this.outputFile));
-			for (Entry<List<String>, Long> entry : wordMap.entrySet()) {
-				List<String> words = entry.getKey();
-				for (int i = 0; i < words.size() - 1; i++) {
-					outputFileWriter.write(words.get(i) + " ");
-				}
-				outputFileWriter.write(words.get(words.size() - 1));
-
-				outputFileWriter
-						.write(this.delimiter + entry.getValue() + "\n");
-			}
-			outputFileWriter.close();
+			// BufferedWriter outputFileWriter = new BufferedWriter(
+			// new FileWriter(this.outputFile));
+			// for (Entry<List<String>, Long> entry : wordMap.entrySet()) {
+			// List<String> words = entry.getKey();
+			// for (int i = 0; i < words.size() - 1; i++) {
+			// outputFileWriter.write(words.get(i) + " ");
+			// }
+			// outputFileWriter.write(words.get(words.size() - 1));
+			//
+			// outputFileWriter
+			// .write(this.delimiter + entry.getValue() + "\n");
+			// }
+			// outputFileWriter.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
