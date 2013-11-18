@@ -58,6 +58,18 @@ public class Aggregator implements Runnable {
 				@Override
 				public int compare(List<String> strings1, List<String> strings2) {
 					// start comparison at "startSortAtColumn"
+					if (strings1.size() != strings2.size()) {
+						System.out.println("ERROR: " + strings1.size() + "!="
+								+ strings2.size());
+						for (int i = 0; i < strings1.size(); i++) {
+							System.out.print(strings1.get(i) + " ");
+						}
+						System.out.println();
+						for (int i = 0; i < strings2.size(); i++) {
+							System.out.print(strings2.get(i) + " ");
+						}
+						System.out.println();
+					}
 					for (int i = Aggregator.this.startSortAtColumn; i < strings1
 							.size(); i++) {
 						if (!strings1.get(i).equals(strings2.get(i))) {
@@ -77,7 +89,12 @@ public class Aggregator implements Runnable {
 			SortedMap<List<String>, Long> wordMap = new TreeMap<List<String>, Long>(
 					arrayComparator);
 			String inputLine;
+			// TODO remove
+			System.out.println("before reading " + this.inputFile.getName()
+					+ ":");
+			this.printMemory();
 			while ((inputLine = inputFileReader.readLine()) != null) {
+
 				List<String> words = Arrays.asList(inputLine
 						.split(this.delimiter)[0].split("\\s"));
 				long count = Long.parseLong(inputLine.split(this.delimiter)[1]);
@@ -88,24 +105,36 @@ public class Aggregator implements Runnable {
 					// System.exit(1);
 					continue;
 				}
-				if (wordMap.containsKey(words)) {
-					// System.out.println();
-					// System.out.print("IN: ");
-					// for (String s : words) {
-					// System.out.print(s + " ");
-					// }
-					// System.out.println();
-					wordMap.put(words, wordMap.get(words) + count);
-				} else {
-					// System.out.println();
-					// System.out.print("NOT: ");
-					// for (String s : words) {
-					// System.out.print(s + " ");
-					// }
-					// System.out.println();
-					wordMap.put(words, count);
+				try {
+					if (wordMap.containsKey(words)) {
+						// System.out.println();
+						// System.out.print("IN: ");
+						// for (String s : words) {
+						// System.out.print(s + " ");
+						// }
+						// System.out.println();
+						wordMap.put(words, wordMap.get(words) + count);
+					} else {
+						// System.out.println();
+						// System.out.print("NOT: ");
+						// for (String s : words) {
+						// System.out.print(s + " ");
+						// }
+						// System.out.println();
+						wordMap.put(words, count);
+					}
+				} catch (ArrayIndexOutOfBoundsException e) {
+					// TODO remove this
+					System.out.println("inputLine: " + inputLine);
+					System.out.println(words.size());
+					System.out.println(this.inputFile.getAbsolutePath());
+					e.printStackTrace();
 				}
 			}
+			// TODO remove
+			System.out.println("after reading " + this.inputFile.getName()
+					+ ":");
+			this.printMemory();
 			inputFileReader.close();
 			BufferedWriter outputFileWriter = new BufferedWriter(
 					new FileWriter(this.outputFile));
@@ -124,6 +153,30 @@ public class Aggregator implements Runnable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private void printMemory() {
+
+		int mb = 1024 * 1024;
+
+		// Getting the runtime reference from system
+		Runtime runtime = Runtime.getRuntime();
+
+		System.out.println("##### Heap utilization statistics [MB] #####");
+
+		// Print used memory
+		System.out.println("Used Memory:\t"
+				+ (runtime.totalMemory() - runtime.freeMemory()) / mb);
+
+		// Print free memory
+		System.out.println("Free Memory:\t" + runtime.freeMemory() / mb);
+
+		// Print total available memory
+		System.out.println("Total Memory:\t" + runtime.totalMemory() / mb);
+
+		// Print Maximum available memory
+		System.out.println("Max Memory:\t" + runtime.maxMemory() / mb);
+		System.out.println("");
 
 	}
 }
