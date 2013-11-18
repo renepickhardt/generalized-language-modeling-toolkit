@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,22 +83,22 @@ public class Aggregator implements Runnable {
 					return 0;
 				}
 			};
-			// SortedMap<List<String>, Long> wordMap = new TreeMap<List<String>,
-			// Long>(
-			// arrayComparator);
-			HashMap<String, Long> wordMap = new HashMap<String, Long>();
+			SortedMap<List<String>, Long> wordMap = new TreeMap<List<String>, Long>(
+					arrayComparator);
+			// HashMap<String, Long> wordMap = new HashMap<String, Long>();
 			String inputLine;
 			// TODO remove
+			System.gc();
 			System.out.println("before reading " + this.inputFile.getName()
 					+ ":");
 			this.printMemory();
 			while ((inputLine = inputFileReader.readLine()) != null) {
 
-				// List<String> words = Arrays.asList(inputLine
-				// .split(this.delimiter)[0].split("\\s"));
-				String words = inputLine.split(this.delimiter)[0];
+				List<String> words = Arrays.asList(inputLine
+						.split(this.delimiter)[0].split("\\s"));
+				// String words = inputLine.split(this.delimiter)[0];
 				long count = Long.parseLong(inputLine.split(this.delimiter)[1]);
-				if (words.length() == 0) {
+				if (words.size() == 0) {
 					// logger.error("empty row in " + this.inputFile + ": \""
 					// + inputLine + "\"");
 					// logger.error("exiting JVM");
@@ -133,6 +135,7 @@ public class Aggregator implements Runnable {
 			System.out.println("after reading " + this.inputFile.getName()
 					+ ":");
 			this.printMemory();
+			System.gc();
 			inputFileReader.close();
 			// BufferedWriter outputFileWriter = new BufferedWriter(
 			// new FileWriter(this.outputFile));
