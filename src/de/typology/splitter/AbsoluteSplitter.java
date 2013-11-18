@@ -3,14 +3,12 @@ package de.typology.splitter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,15 +45,16 @@ public class AbsoluteSplitter {
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
 		// delete old directory
-		if (outputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(outputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		outputDirectory.mkdir();
+		// TODO uncomment
+		// if (outputDirectory.exists()) {
+		// try {
+		// FileUtils.deleteDirectory(outputDirectory);
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
+		// outputDirectory.mkdir();
 	}
 
 	public void split(ArrayList<boolean[]> patterns, int cores) {

@@ -55,25 +55,25 @@ public class SplitterTask implements Runnable {
 		File sequencerOutputDirectory = new File(
 				this.outputDirectory.getAbsolutePath() + "/"
 						+ this.patternLabel + "-split");
-		if (sequencerOutputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(sequencerOutputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		sequencerOutputDirectory.mkdir();
-		logger.info("start building: "
-				+ sequencerOutputDirectory.getAbsolutePath());
-
-		// initialize sequencer
-		Sequencer sequencer = new Sequencer(this.inputStream,
-				sequencerOutputDirectory, this.wordIndex, this.pattern,
-				this.addBeforeSentence, this.addAfterSentence, this.delimiter,
-				this.withCount);
-		// TODO change method name
-		sequencer.run();
+		// if (sequencerOutputDirectory.exists()) {
+		// try {
+		// FileUtils.deleteDirectory(sequencerOutputDirectory);
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
+		// sequencerOutputDirectory.mkdir();
+		// logger.info("start building: "
+		// + sequencerOutputDirectory.getAbsolutePath());
+		//
+		// // initialize sequencer
+		// Sequencer sequencer = new Sequencer(this.inputStream,
+		// sequencerOutputDirectory, this.wordIndex, this.pattern,
+		// this.addBeforeSentence, this.addAfterSentence, this.delimiter,
+		// this.withCount);
+		// // TODO change method name
+		// sequencer.run();
 
 		File aggregatedOutputDirectory = new File(
 				this.outputDirectory.getAbsolutePath() + "/"
