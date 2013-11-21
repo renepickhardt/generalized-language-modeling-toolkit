@@ -1,0 +1,155 @@
+package de.typology.utils;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class Counter {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		System.out.println(Counter.countLinesInDirectory(new File(
+				"/home/martin/glm/out/wiki/bar/absolute/1/")));
+		System.out.println(Counter.countLines(new File(
+				"/home/martin/typoeval/out/wiki/bar/absolute/1/13")));
+
+	}
+
+	public static long countLinesInDirectory(File directory) {
+		long totalCount = 0;
+		for (File file : directory.listFiles()) {
+			totalCount += countLines(file);
+		}
+		return totalCount;
+	}
+
+	// derived from:
+	// http://stackoverflow.com/questions/453018/number-of-lines-in-a-file-in-java
+	public static long countLines(File file) {
+		InputStream is;
+		try {
+			is = new BufferedInputStream(new FileInputStream(file));
+			try {
+				try {
+					byte[] c = new byte[1024];
+					long count = 0;
+					int readChars = 0;
+					boolean empty = true;
+					while ((readChars = is.read(c)) != -1) {
+						empty = false;
+						for (int i = 0; i < readChars; ++i) {
+							if (c[i] == '\n') {
+								++count;
+							}
+						}
+					}
+					return count == 0 && !empty ? 1 : count;
+				} finally {
+					is.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+
+	private static int columnNumberStartZero;
+	private static File directory;
+	private static long currentCountForDirectory;
+
+	public static long countColumnCountsInDirectory(int columnNumberStartZero,
+			File directory) {
+		if (columnNumberStartZero == Counter.columnNumberStartZero
+				&& directory.equals(Counter.directory)) {
+			return Counter.currentCountForDirectory;
+		} else {
+			long totalCount = 0;
+			for (File file : directory.listFiles()) {
+				totalCount += countColumnCounts(columnNumberStartZero, file);
+			}
+			Counter.columnNumberStartZero = columnNumberStartZero;
+			Counter.currentCountForDirectory = totalCount;
+			Counter.directory = directory;
+			return totalCount;
+		}
+	}
+
+	public static long countColumnCounts(int columnNumberStartZero, File file) {
+		long totalCount = 0;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			try {
+				String line;
+				String[] lineSplit;
+				while ((line = br.readLine()) != null) {
+					lineSplit = line.split("\t");
+					totalCount += Long
+							.parseLong(lineSplit[columnNumberStartZero]);
+				}
+			} finally {
+				br.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return totalCount;
+	}
+
+	/**
+	 * used for calculating the count of counts in smoothing methods
+	 * 
+	 * @param count
+	 * @param directory
+	 * @return
+	 */
+	public static long countCountsInDirectory(int count, File directory) {
+		long totalCount = 0;
+		for (File file : directory.listFiles()) {
+			totalCount += countCounts(count, file);
+		}
+		return totalCount;
+	}
+
+	/**
+	 * used for calculating the count of counts in smoothing methods
+	 * 
+	 * @param count
+	 * @param directoryName
+	 * @return
+	 */
+	public static long countCounts(int count, File file) {
+		long totalCount = 0;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			try {
+				String line;
+				String[] lineSplit;
+				while ((line = br.readLine()) != null) {
+					lineSplit = line.split("\t");
+					long currentCount = Long
+							.parseLong(lineSplit[lineSplit.length - 1]);
+					if (count == currentCount && !lineSplit[0].equals("<fs>")) {
+						totalCount += 1;
+					}
+				}
+			} finally {
+				br.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return totalCount;
+	}
+}
