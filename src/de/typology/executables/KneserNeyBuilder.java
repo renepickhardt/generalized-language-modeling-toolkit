@@ -13,9 +13,10 @@ import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
 import de.typology.utils.Config;
 
-public class Builder {
+public class KneserNeyBuilder {
 
-	static Logger logger = LogManager.getLogger(Builder.class.getName());
+	static Logger logger = LogManager.getLogger(KneserNeyBuilder.class
+			.getName());
 
 	public static void main(String[] args) {
 
@@ -68,6 +69,14 @@ public class Builder {
 					+ inputFile.getAbsolutePath());
 			smoothingSplitter.split(glmForSmoothingPatterns,
 					Config.get().numberOfCores);
+		}
+		if (Config.get().buildKneserNey) {
+			// TODO:delete old kneser ney files
+			for (int i = 1; i <= Config.get().modelLength; i++) {
+				// call KneserNeySmoother
+				// KneserNeySmoother kns=new KneserNeySmoother(,
+				// _absoluteDirectory, _absolute_Directory);
+			}
 		}
 		logger.info("done");
 	}
