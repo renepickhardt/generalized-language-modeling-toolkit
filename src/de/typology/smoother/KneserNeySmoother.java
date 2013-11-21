@@ -8,13 +8,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.typology.indexes.WordIndex;
+import de.typology.patterns.PatternTransformer;
 import de.typology.utils.Counter;
 import de.typology.utils.DecimalFormatter;
+import de.typology.utils.SlidingWindowReader;
 
 public class KneserNeySmoother {
 	private double d1plus;
@@ -26,32 +30,51 @@ public class KneserNeySmoother {
 	private File _absoluteDirectory;
 	private File _absolute_Directory;
 	private File absolute_Directory;
-	private File kneserNeyOutputDirectory;
+	private File kneserNeyLowOutputDirectory;
+	private File kneserNeyHighOutputDirectory;
+	private WordIndex wordIndex;
 	private String delimiter;
 	private DecimalFormatter decimalFormatter;
 
 	public KneserNeySmoother(File absoluteDirectory, File _absoluteDirectory,
 			File _absolute_Directory, File absolute_Directory,
-			File kneserNeyOutputDirectory, String delimiter, int decimalPlaces) {
+			File kneserNeyOutputDirectory, WordIndex wordIndex,
+			String delimiter, int decimalPlaces) {
 		this.absoluteDirectory = absoluteDirectory;
 		this._absoluteDirectory = _absoluteDirectory;
 		this._absolute_Directory = _absolute_Directory;
 		this.absolute_Directory = absolute_Directory;
-		this.kneserNeyOutputDirectory = kneserNeyOutputDirectory;
+		this.kneserNeyLowOutputDirectory = new File(
+				kneserNeyOutputDirectory.getAbsolutePath() + "/low");
+		this.kneserNeyHighOutputDirectory = new File(
+				kneserNeyOutputDirectory.getAbsolutePath() + "/high");
 
+		this.wordIndex = wordIndex;
 		this.delimiter = delimiter;
 		this.decimalFormatter = new DecimalFormatter(decimalPlaces);
+	};
 
-		if (this.kneserNeyOutputDirectory.exists()) {
+	public void deleteResults() {
+		if (this.kneserNeyLowOutputDirectory.exists()) {
 			try {
-				FileUtils.deleteDirectory(this.kneserNeyOutputDirectory);
+				FileUtils.deleteDirectory(this.kneserNeyLowOutputDirectory);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		this.kneserNeyOutputDirectory.mkdir();
-	};
+		this.kneserNeyLowOutputDirectory.mkdir();
+
+		if (this.kneserNeyHighOutputDirectory.exists()) {
+			try {
+				FileUtils.deleteDirectory(this.kneserNeyHighOutputDirectory);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		this.kneserNeyHighOutputDirectory.mkdir();
+	}
 
 	public void smoothSimple(ArrayList<boolean[]> patterns) {
 	}
@@ -78,11 +101,28 @@ public class KneserNeySmoother {
 				}
 			}
 
-			this.buildHigherOrder(currentBackoffPatterns);
+			this.buildHigherOrder(pattern, currentBackoffPatterns);
 
 		}
 
-		// this.buildHighestOrder();
+		// get backoff patterns for highest order pattern
+		ArrayList<boolean[]> currentBackoffPatterns = new ArrayList<boolean[]>();
+		boolean[] highestPattern = patterns.get(patterns.size() - 1);
+
+		// remove the first bit completely for the first pattern
+		boolean[] firstBackoffPattern = Arrays.copyOfRange(highestPattern, 1,
+				highestPattern.length);
+		currentBackoffPatterns.add(firstBackoffPattern);
+
+		// leave out the first and last sequence bit
+		for (int j = 1; j < highestPattern.length - 1; j++) {
+			boolean[] backOffPattern = highestPattern.clone();
+			if (backOffPattern[j]) {
+				backOffPattern[j] = false;
+				currentBackoffPatterns.add(backOffPattern);
+			}
+		}
+		this.buildHighestOrder(highestPattern, currentBackoffPatterns);
 	}
 
 	/**
@@ -90,11 +130,18 @@ public class KneserNeySmoother {
 	 */
 	protected void buildLowestOrder() {
 		File currentKneserNeyOutputDirectory = new File(
-				this.kneserNeyOutputDirectory.getAbsolutePath() + "/1");
+				this.kneserNeyLowOutputDirectory.getAbsolutePath() + "/1");
+		// return if already built
+		if (currentKneserNeyOutputDirectory.exists()) {
+			return;
+		}
+		logger.info("build "
+				+ currentKneserNeyOutputDirectory.getAbsolutePath());
+		currentKneserNeyOutputDirectory.mkdir();
 
 		// read value of __
 		File current_absolute_File = new File(
-				this._absolute_Directory.getAbsolutePath() + "__/all");
+				this._absolute_Directory.getAbsolutePath() + "/__/all");
 		long __Value;
 		BufferedReader current_absolute_FileReader;
 		try {
@@ -108,8 +155,9 @@ public class KneserNeySmoother {
 			return;
 		}
 
+		// TODO add threads
 		File current_absoluteDirectory = new File(
-				this._absoluteDirectory.getAbsolutePath() + "/1");
+				this._absoluteDirectory.getAbsolutePath() + "/_1");
 		// read _1 files
 		for (File current_absoluteFile : current_absoluteDirectory.listFiles()) {
 			try {
@@ -120,7 +168,7 @@ public class KneserNeySmoother {
 								currentKneserNeyOutputDirectory
 										.getAbsolutePath()
 										+ "/"
-										+ current_absolute_File.getName()));
+										+ current_absoluteFile.getName()));
 				String line;
 				while ((line = current_absoluteFileReader.readLine()) != null) {
 					String[] lineSplit = line.split(this.delimiter);
@@ -143,16 +191,128 @@ public class KneserNeySmoother {
 	}
 
 	/**
-	 * build smoothed values for all except the highest order patterns
+	 * build smoothed values for all except the lowest and highest order
+	 * patterns
 	 */
-	protected void buildHigherOrder(ArrayList<boolean[]> backoffPatterns) {
+	protected void buildHigherOrder(boolean[] currentPattern,
+			ArrayList<boolean[]> backoffPatterns) {
+		String currentStringPattern = PatternTransformer
+				.getStringPattern(currentPattern);
+		String current_absoluteStringPattern = "_"
+				+ PatternTransformer.getStringPattern(currentPattern);
+		String current_absolute_StringPattern = current_absoluteStringPattern
+				.substring(0, current_absoluteStringPattern.length() - 1) + "_";
+		String currentabsolute_StringPattern = current_absoluteStringPattern
+				.substring(0, currentStringPattern.length() - 1) + "_";
+
+		logger.debug("currentPattern: "
+				+ PatternTransformer.getStringPattern(currentPattern));
+		logger.debug("current_absolutePattern: "
+				+ current_absoluteStringPattern);
+		logger.debug("current_absolute_Pattern: "
+				+ current_absolute_StringPattern);
+		logger.debug("currentabsolute_Pattern: "
+				+ currentabsolute_StringPattern);
+		File currentKneserNeyOutputDirectory = new File(
+				this.kneserNeyLowOutputDirectory.getAbsolutePath() + "/"
+						+ currentStringPattern);
+		// return if already built
+		if (currentKneserNeyOutputDirectory.exists()) {
+			return;
+		}
+		logger.info("build "
+				+ currentKneserNeyOutputDirectory.getAbsolutePath());
+		currentKneserNeyOutputDirectory.mkdir();
+
+		// calculate TempResultPair and store it in HashMap with high order
+		// sequence
+
+		// calculate higher order smoothed value
+
+		File current_absoluteDirectory = new File(
+				this._absoluteDirectory.getAbsolutePath() + "/"
+						+ currentStringPattern);
+
+		HashMap<String, ResultTriple> tempResultMap = new HashMap<String, ResultTriple>();
+		for (File current_absoluteFile : current_absoluteDirectory.listFiles()) {
+			try {
+				BufferedReader current_absoluteFileReader = new BufferedReader(
+						new FileReader(current_absoluteFile));
+				// open readers for high order result and low order weight
+				SlidingWindowReader current_absolute_FileReader = new SlidingWindowReader(
+						new FileReader(
+								this._absolute_Directory.getAbsolutePath()
+										+ "/" + current_absolute_StringPattern
+										+ "/" + current_absoluteFile.getName()));
+				SlidingWindowReader currentAbsolute_FileReader = new SlidingWindowReader(
+						new FileReader(
+								this.absolute_Directory.getAbsolutePath() + "/"
+										+ currentabsolute_StringPattern + "/"
+										+ current_absoluteFile.getName()));
+
+				String _absoluteLine;
+				while ((_absoluteLine = current_absoluteFileReader.readLine()) != null) {
+					ResultTriple resultTriple = new ResultTriple();
+					String[] _absoluteLineSplit = _absoluteLine
+							.split(this.delimiter);
+
+					// calculate higher order result
+					String _absolute_Line = current_absolute_FileReader
+							.getLine(_absoluteLineSplit[0]);
+					String[] _absolute_LineSplit = _absolute_Line
+							.split(this.delimiter);
+
+					int _absoluteValue = Integer
+							.parseInt(_absoluteLineSplit[1]);
+					double d = this.getD(_absoluteValue);
+					int _absolute_Value = Integer
+							.parseInt(_absolute_LineSplit[1]);
+					double highOrderSmoothedDenominator = _absoluteValue - d;
+					if (highOrderSmoothedDenominator < 0) {
+						highOrderSmoothedDenominator = 0;
+					}
+					double smoothedValue = highOrderSmoothedDenominator
+							/ _absolute_Value;
+					resultTriple.setSmoothedValue(smoothedValue);
+
+					// calculate backoff weight
+					String absolute_Line = currentAbsolute_FileReader
+							.getLine(_absoluteLineSplit[0]);
+					String[] absolute_LineSplit = absolute_Line
+							.split(this.delimiter);
+					double backoffWeight = d
+							* Integer.parseInt(absolute_LineSplit[1])
+							/ _absolute_Value;
+					resultTriple.setBackOffWeight(backoffWeight);
+
+					tempResultMap.put(_absoluteLineSplit[0], resultTriple);
+				}
+				current_absoluteFileReader.close();
+				current_absolute_FileReader.close();
+				currentAbsolute_FileReader.close();
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		}
+
+		// prepare sequence to fit lower order backoff patterns
+
+		// get lower order results
+
+		// open readers for low order results
+
+		// aggregate lower order results (arithmetic mean)
 
 	}
 
 	/**
 	 * build smoothed values for the highest order patterns
 	 */
-	protected void buildHighestOrder(ArrayList<boolean[]> backoffPatterns) {
+	protected void buildHighestOrder(boolean[] cuttentPattern,
+			ArrayList<boolean[]> backoffPatterns) {
 
 	}
 

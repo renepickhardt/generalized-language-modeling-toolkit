@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
+import de.typology.smoother.KneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
@@ -23,10 +25,12 @@ public class KneserNeyBuilder {
 		// TODO: parameters as arguments
 		File inputDirectory = new File(Config.get().outputDirectory
 				+ Config.get().inputDataSet);
-		File inputFile = new File(inputDirectory + "/training.txt");
-		File indexFile = new File(inputDirectory + "/index.txt");
-		File absoluteOutputDirectory = new File(Config.get().outputDirectory
-				+ Config.get().inputDataSet + "/absolute");
+		File inputFile = new File(inputDirectory.getAbsolutePath()
+				+ "/training.txt");
+		File indexFile = new File(inputDirectory.getAbsolutePath()
+				+ "/index.txt");
+		File absoluteOutputDirectory = new File(
+				inputDirectory.getAbsolutePath() + "/absolute");
 		if (Config.get().splitData) {
 			DataSetSplitter dss = new DataSetSplitter(inputDirectory,
 					"normalized.txt");
@@ -70,12 +74,25 @@ public class KneserNeyBuilder {
 			smoothingSplitter.split(glmForSmoothingPatterns,
 					Config.get().numberOfCores);
 		}
+		File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
+				+ "/_absolute");
+		File _absolute_Direcory = new File(inputDirectory.getAbsolutePath()
+				+ "/_absolute_");
+		File absolute_Direcory = new File(inputDirectory.getAbsolutePath()
+				+ "/absolute_");
 		if (Config.get().buildKneserNey) {
+			File kneserNeyOutputDirectory = new File(
+					inputDirectory.getAbsolutePath() + "/kneser-ney");
 			// TODO:delete old kneser ney files
+			KneserNeySmoother kns = new KneserNeySmoother(
+					absoluteOutputDirectory, _absoluteDirecory,
+					_absolute_Direcory, absolute_Direcory,
+					kneserNeyOutputDirectory, new WordIndex(indexFile), "\t",
+					Config.get().decimalPlaces);
+			kns.deleteResults();
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				// call KneserNeySmoother
-				// KneserNeySmoother kns=new KneserNeySmoother(,
-				// _absoluteDirectory, _absolute_Directory);
+				kns.smoothComplex(PatternBuilder.getGLMPatterns(i));
 			}
 		}
 		logger.info("done");

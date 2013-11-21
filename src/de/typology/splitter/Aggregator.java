@@ -81,10 +81,10 @@ public class Aggregator implements Runnable {
 					stringComparator);
 			String inputLine;
 			// TODO remove
-			System.gc();
-			System.out.println("before reading " + this.inputFile.getName()
-					+ ":");
-			this.printMemory();
+			// System.gc();
+			// System.out.println("before reading " + this.inputFile.getName()
+			// + ":");
+			// this.printMemory();
 
 			while ((inputLine = inputFileReader.readLine()) != null) {
 
@@ -116,10 +116,10 @@ public class Aggregator implements Runnable {
 				}
 			}
 			// TODO remove
-			System.out.println("after reading " + this.inputFile.getName()
-					+ ":");
-			this.printMemory();
-			System.gc();
+			// System.out.println("after reading " + this.inputFile.getName()
+			// + ":");
+			// this.printMemory();
+			// System.gc();
 
 			inputFileReader.close();
 			BufferedWriter outputFileWriter = new BufferedWriter(

@@ -56,6 +56,7 @@ public class Config extends Properties {
 	public boolean addFakeStartTag;
 
 	public boolean resultLog10;
+	public int decimalPlaces;
 	// DEBUGGING
 	public String inputDataSet;
 
