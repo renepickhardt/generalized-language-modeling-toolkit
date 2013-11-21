@@ -43,9 +43,10 @@ public class Config extends Properties {
 	public boolean buildStats;
 	public boolean buildIndex;
 	public boolean buildNGrams;
+	public boolean buildTypoEdges;
 	public boolean buildGLM;
 	public boolean build_absoluteGLM;
-	public boolean buildTypoEdges;
+	public boolean buildKneserNey;
 	public boolean revertSort;
 	public boolean aggregateAbsolute_;
 
