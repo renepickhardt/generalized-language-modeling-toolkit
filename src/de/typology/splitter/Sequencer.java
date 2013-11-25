@@ -53,7 +53,7 @@ public class Sequencer implements Runnable {
 		HashMap<Integer, BufferedWriter> writers = this.openWriters();
 		// TODO: bufferSize calculation
 		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(this.inputStream));
+				new InputStreamReader(this.inputStream), 100 * 8 * 1024);
 		// BufferedReader bufferedReader = new BufferedReader(
 		// new InputStreamReader(this.inputStream), 10 * 8 * 1024);
 		String line;
@@ -136,7 +136,7 @@ public class Sequencer implements Runnable {
 			try {
 				writers.put(fileCount, new BufferedWriter(new FileWriter(
 						currentOutputDirectory.getAbsolutePath() + "/"
-								+ fileCount)));
+								+ fileCount), 10 * 8 * 1024));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

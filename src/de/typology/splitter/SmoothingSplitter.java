@@ -252,7 +252,7 @@ public class SmoothingSplitter {
 			boolean[] newPattern, String newPatternLabel,
 			boolean[] patternForModifier, WordIndex wordIndex) {
 
-		PipedInputStream pipedInputStream = new PipedInputStream(8 * 1024);
+		PipedInputStream pipedInputStream = new PipedInputStream(100 * 8 * 1024);
 
 		if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
 			LineCounterTask lineCountTask = new LineCounterTask(
