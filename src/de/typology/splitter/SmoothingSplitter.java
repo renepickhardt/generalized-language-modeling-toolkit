@@ -119,7 +119,8 @@ public class SmoothingSplitter {
 					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this._outputDirectory,
-					newPattern, newPatternLabel, patternForModifier, wordIndex);
+					newPattern, newPatternLabel, patternForModifier, wordIndex,
+					true);
 
 		}
 
@@ -185,7 +186,8 @@ public class SmoothingSplitter {
 					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this._output_Directory,
-					newPattern, newPatternLabel, patternForModifier, wordIndex);
+					newPattern, newPatternLabel, patternForModifier, wordIndex,
+					false);
 
 		}
 
@@ -233,7 +235,8 @@ public class SmoothingSplitter {
 					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this.output_Directory,
-					newPattern, newPatternLabel, patternForModifier, wordIndex);
+					newPattern, newPatternLabel, patternForModifier, wordIndex,
+					true);
 
 		}
 
@@ -250,7 +253,8 @@ public class SmoothingSplitter {
 
 	private void splitType(File currentInputDirectory, File outputDirectory,
 			boolean[] newPattern, String newPatternLabel,
-			boolean[] patternForModifier, WordIndex wordIndex) {
+			boolean[] patternForModifier, WordIndex wordIndex,
+			boolean setCountToOne) {
 
 		PipedInputStream pipedInputStream = new PipedInputStream(100 * 8 * 1024);
 
@@ -273,7 +277,7 @@ public class SmoothingSplitter {
 			System.out.println(currentInputDirectory.getAbsolutePath());
 			SequenceModifier sequenceModifier = new SequenceModifier(
 					currentInputDirectory, pipedOutputStream, this.delimiter,
-					patternForModifier);
+					patternForModifier, setCountToOne);
 			this.executorService.execute(sequenceModifier);
 
 		} catch (IOException e) {

@@ -242,7 +242,6 @@ public class KneserNeySmoother {
 		System.out.println(current_absoluteDirectory.getAbsolutePath());
 		for (File current_absoluteFile : current_absoluteDirectory.listFiles()) {
 			try {
-				System.out.println(current_absoluteFile.getName());
 				BufferedReader current_absoluteFileReader = new BufferedReader(
 						new FileReader(current_absoluteFile));
 				// open readers for high order result and low order weight
@@ -251,9 +250,6 @@ public class KneserNeySmoother {
 								this._absolute_Directory.getAbsolutePath()
 										+ "/" + current_absolute_StringPattern
 										+ "/" + current_absoluteFile.getName()));
-				System.out.println(this._absolute_Directory.getAbsolutePath()
-						+ "/" + current_absolute_StringPattern + "/"
-						+ current_absoluteFile.getName());
 				SlidingWindowReader currentAbsolute_FileReader = new SlidingWindowReader(
 						new FileReader(
 								this.absolute_Directory.getAbsolutePath() + "/"
@@ -286,11 +282,11 @@ public class KneserNeySmoother {
 					double d = this.getD(_absoluteValue);
 					int _absolute_Value = Integer
 							.parseInt(_absolute_LineSplit[1]);
-					double highOrderSmoothedDenominator = _absoluteValue - d;
-					if (highOrderSmoothedDenominator < 0) {
-						highOrderSmoothedDenominator = 0;
+					double highOrderSmoothedNumerator = _absoluteValue - d;
+					if (highOrderSmoothedNumerator < 0) {
+						highOrderSmoothedNumerator = 0;
 					}
-					double smoothedValue = highOrderSmoothedDenominator
+					double smoothedValue = highOrderSmoothedNumerator
 							/ _absolute_Value;
 
 					// calculate backoff weight

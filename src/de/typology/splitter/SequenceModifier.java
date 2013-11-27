@@ -20,13 +20,15 @@ public class SequenceModifier implements Runnable {
 	private OutputStream outputStream;
 	private String delimiter;
 	private boolean[] pattern;
+	private boolean setCountToOne;
 
 	public SequenceModifier(File inputDirectory, OutputStream outputStream,
-			String delimiter, boolean[] pattern) {
+			String delimiter, boolean[] pattern, boolean setCountToOne) {
 		this.inputDirectory = inputDirectory;
 		this.outputStream = outputStream;
 		this.delimiter = delimiter;
 		this.pattern = pattern;
+		this.setCountToOne = setCountToOne;
 	}
 
 	@Override
@@ -40,7 +42,8 @@ public class SequenceModifier implements Runnable {
 						new FileReader(inputFile));
 				String line;
 				while ((line = inputFileReader.readLine()) != null) {
-					String[] words = line.split(this.delimiter)[0].split("\\s");
+					String[] lineSplit = line.split(this.delimiter);
+					String[] words = lineSplit[0].split("\\s");
 					String modifiedWords = "";
 					try {
 						for (int i = 0; i < this.pattern.length; i++) {
@@ -70,8 +73,13 @@ public class SequenceModifier implements Runnable {
 						}
 						// if pattern[0]==true: leave out sequence
 					} else {
-						outputStreamWriter.write(modifiedWords + this.delimiter
-								+ "1\n");
+						if (this.setCountToOne) {
+							outputStreamWriter.write(modifiedWords
+									+ this.delimiter + "1\n");
+						} else {
+							outputStreamWriter.write(modifiedWords
+									+ this.delimiter + lineSplit[1] + "\n");
+						}
 					}
 				}
 				inputFileReader.close();
