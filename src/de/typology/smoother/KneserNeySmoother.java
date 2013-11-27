@@ -70,7 +70,6 @@ public class KneserNeySmoother {
 			try {
 				FileUtils.deleteDirectory(this.kneserNeyDirectory);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -160,7 +159,6 @@ public class KneserNeySmoother {
 			__Value = Long.parseLong(current_absolute_FileReader.readLine());
 			current_absolute_FileReader.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return;
 		}
@@ -193,7 +191,6 @@ public class KneserNeySmoother {
 				current_absoluteFileReader.close();
 				currentResultWriter.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -316,11 +313,12 @@ public class KneserNeySmoother {
 				currentHigherTempResultWriter.close();
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 		}
+
+		// TODO run KneserNeyResultAggregator
 
 	}
 
