@@ -35,7 +35,9 @@ public class SlidingWindowReader extends BufferedReader {
 	 * @throws IOException
 	 */
 	public String getLine(String inputString) throws IOException {
-		while (!this.currentLine.startsWith(inputString)) {
+		System.out.println("test x" + inputString + "x");
+		while (this.currentLine == null
+				|| !this.currentLine.startsWith(inputString)) {
 			this.currentLine = this.readLine();
 		}
 		return this.currentLine;

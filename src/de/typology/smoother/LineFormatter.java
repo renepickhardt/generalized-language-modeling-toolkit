@@ -20,4 +20,16 @@ public class LineFormatter {
 		return result;
 	}
 
+	public static String removeWord(String inputString, int removeWordAtPosition) {
+		String[] words = inputString.split("\\s");
+		String result = "";
+		for (int i = 0; i < words.length; i++) {
+			if (i != removeWordAtPosition) {
+				result += words[i] + " ";
+			}
+		}
+		result = result.replaceFirst(" $", "");
+		return result;
+	}
+
 }
