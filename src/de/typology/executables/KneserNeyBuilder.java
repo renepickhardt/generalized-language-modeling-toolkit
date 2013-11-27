@@ -91,7 +91,7 @@ public class KneserNeyBuilder {
 			kns.deleteResults();
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				// call KneserNeySmoother
-				kns.smoothComplex(PatternBuilder.getGLMPatterns(i));
+				kns.smoothComplex(i, Config.get().numberOfCores);
 			}
 		}
 		logger.info("done");

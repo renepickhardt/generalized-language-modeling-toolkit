@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
+import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 import de.typology.utils.Counter;
 import de.typology.utils.DecimalFormatter;
@@ -35,6 +36,7 @@ public class KneserNeySmoother {
 	private File kneserNeyHighTempDirectory;
 	private WordIndex wordIndex;
 	private String delimiter;
+	private int decimalPlaces;
 	private DecimalFormatter decimalFormatter;
 	private boolean deleteTempFiles;
 
@@ -58,6 +60,7 @@ public class KneserNeySmoother {
 
 		this.wordIndex = wordIndex;
 		this.delimiter = delimiter;
+		this.decimalPlaces = decimalPlaces;
 		this.decimalFormatter = new DecimalFormatter(decimalPlaces);
 		this.deleteTempFiles = deleteTempFiles;
 	};
@@ -82,21 +85,24 @@ public class KneserNeySmoother {
 
 	}
 
-	public void smoothSimple(ArrayList<boolean[]> patterns) {
+	public void smoothSimple(int maxModelLength, int cores) {
+		ArrayList<boolean[]> patterns = PatternBuilder
+				.getGLMPatterns(maxModelLength);
 		this.makeDirectories();
 	}
 
 	/**
 	 * 
-	 * @param patterns
-	 *            where patterns.get(1) is the lowest order and
-	 *            patterns.get(patterns.size()) is the highest order pattern
-	 * @param maxSequenceLength
+	 * @param maxModelLength
 	 */
-	public void smoothComplex(ArrayList<boolean[]> patterns) {
+	public void smoothComplex(int maxModelLength, int cores) {
+		ArrayList<boolean[]> patterns = PatternBuilder
+				.getGLMPatterns(maxModelLength);
+
 		this.makeDirectories();
 
 		this.buildLowestOrder();
+
 		for (int i = 1; i < patterns.size(); i++) {
 			// leave out lowest order patterns
 			if (patterns.get(i).length < 2) {
@@ -120,6 +126,7 @@ public class KneserNeySmoother {
 			}
 			if (i == patterns.size() - 1) {
 				this.buildHighestOrder(pattern, currentBackoffPatterns);
+
 			} else {
 				this.buildHigherOrder(pattern, currentBackoffPatterns);
 			}
@@ -315,22 +322,10 @@ public class KneserNeySmoother {
 
 		}
 
-		// prepare sequence to fit lower order backoff patterns
-
-		// get lower order results
-
-		// open readers for low order results
-
-		// aggregate lower order results (arithmetic mean)
-
 	}
 
-	/**
-	 * build smoothed values for the highest order patterns
-	 */
-	protected void buildHighestOrder(boolean[] cuttentPattern,
+	protected void buildHighestOrder(boolean[] currentPattern,
 			ArrayList<boolean[]> backoffPatterns) {
-
 	}
 
 	protected void calculateDs(File directory) {
