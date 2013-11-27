@@ -23,63 +23,83 @@ import de.typology.utils.SlidingWindowReader;
 public class KneserNeySmoother {
 	private double d1plus;
 
-	static Logger logger = LogManager.getLogger(KneserNeySmoother.class
-			.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	private File absoluteDirectory;
 	private File _absoluteDirectory;
 	private File _absolute_Directory;
 	private File absolute_Directory;
-	private File kneserNeyLowOutputDirectory;
-	private File kneserNeyHighOutputDirectory;
+	private File kneserNeyDirectory;
+	private File kneserNeyLowDirectory;
+	private File kneserNeyLowTempDirectory;
+	private File kneserNeyLowSecondColumDirectory;
+	private File kneserNeyHighDirectory;
+	private File kneserNeyHighTempDirectory;
+	private File kneserNeyHighSecondColumDirectory;
 	private WordIndex wordIndex;
 	private String delimiter;
 	private DecimalFormatter decimalFormatter;
+	private boolean deleteTempFiles;
 
 	public KneserNeySmoother(File absoluteDirectory, File _absoluteDirectory,
 			File _absolute_Directory, File absolute_Directory,
 			File kneserNeyOutputDirectory, WordIndex wordIndex,
-			String delimiter, int decimalPlaces) {
+			String delimiter, int decimalPlaces, boolean deleteTempFiles) {
 		this.absoluteDirectory = absoluteDirectory;
 		this._absoluteDirectory = _absoluteDirectory;
 		this._absolute_Directory = _absolute_Directory;
 		this.absolute_Directory = absolute_Directory;
-		this.kneserNeyLowOutputDirectory = new File(
+		this.kneserNeyDirectory = kneserNeyOutputDirectory;
+		this.kneserNeyLowDirectory = new File(
 				kneserNeyOutputDirectory.getAbsolutePath() + "/low");
-		this.kneserNeyHighOutputDirectory = new File(
+		this.kneserNeyLowTempDirectory = new File(
+				kneserNeyOutputDirectory.getAbsolutePath() + "/low-temp");
+		this.kneserNeyLowSecondColumDirectory = new File(
+				kneserNeyOutputDirectory.getAbsolutePath()
+						+ "/low-second-column");
+		this.kneserNeyHighDirectory = new File(
 				kneserNeyOutputDirectory.getAbsolutePath() + "/high");
+		this.kneserNeyHighTempDirectory = new File(
+				kneserNeyOutputDirectory.getAbsolutePath() + "/high-temp");
+		this.kneserNeyHighSecondColumDirectory = new File(
+				kneserNeyOutputDirectory.getAbsolutePath()
+						+ "/high-second-column");
 
 		this.wordIndex = wordIndex;
 		this.delimiter = delimiter;
 		this.decimalFormatter = new DecimalFormatter(decimalPlaces);
+		this.deleteTempFiles = deleteTempFiles;
 	};
 
 	public void deleteResults() {
-		if (this.kneserNeyLowOutputDirectory.exists()) {
+		if (this.kneserNeyDirectory.exists()) {
 			try {
-				FileUtils.deleteDirectory(this.kneserNeyLowOutputDirectory);
+				FileUtils.deleteDirectory(this.kneserNeyDirectory);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		this.kneserNeyLowOutputDirectory.mkdir();
+	}
 
-		if (this.kneserNeyHighOutputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.kneserNeyHighOutputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		this.kneserNeyHighOutputDirectory.mkdir();
+	private void makeDirectories() {
+		this.kneserNeyDirectory.mkdirs();
+		this.kneserNeyLowDirectory.mkdir();
+		this.kneserNeyLowTempDirectory.mkdir();
+		this.kneserNeyLowSecondColumDirectory.mkdir();
+		this.kneserNeyHighDirectory.mkdir();
+		this.kneserNeyHighTempDirectory.mkdir();
+		this.kneserNeyHighSecondColumDirectory.mkdir();
+
 	}
 
 	public void smoothSimple(ArrayList<boolean[]> patterns) {
+		this.makeDirectories();
 	}
 
 	public void smoothComplex(ArrayList<boolean[]> patterns) {
+		this.makeDirectories();
+
 		this.buildLowestOrder();
 		// start at 1 to leave out lowest order and size-1 to leave out highest
 		// order
@@ -130,12 +150,12 @@ public class KneserNeySmoother {
 	 */
 	protected void buildLowestOrder() {
 		File currentKneserNeyOutputDirectory = new File(
-				this.kneserNeyLowOutputDirectory.getAbsolutePath() + "/1");
+				this.kneserNeyLowDirectory.getAbsolutePath() + "/1");
 		// return if already built
 		if (currentKneserNeyOutputDirectory.exists()) {
 			return;
 		}
-		logger.info("build "
+		this.logger.info("build "
 				+ currentKneserNeyOutputDirectory.getAbsolutePath());
 		currentKneserNeyOutputDirectory.mkdir();
 
@@ -205,22 +225,22 @@ public class KneserNeySmoother {
 		String currentabsolute_StringPattern = current_absoluteStringPattern
 				.substring(0, currentStringPattern.length() - 1) + "_";
 
-		logger.debug("currentPattern: "
+		this.logger.debug("currentPattern: "
 				+ PatternTransformer.getStringPattern(currentPattern));
-		logger.debug("current_absolutePattern: "
+		this.logger.debug("current_absolutePattern: "
 				+ current_absoluteStringPattern);
-		logger.debug("current_absolute_Pattern: "
+		this.logger.debug("current_absolute_Pattern: "
 				+ current_absolute_StringPattern);
-		logger.debug("currentabsolute_Pattern: "
+		this.logger.debug("currentabsolute_Pattern: "
 				+ currentabsolute_StringPattern);
 		File currentKneserNeyOutputDirectory = new File(
-				this.kneserNeyLowOutputDirectory.getAbsolutePath() + "/"
+				this.kneserNeyLowDirectory.getAbsolutePath() + "/"
 						+ currentStringPattern);
 		// return if already built
 		if (currentKneserNeyOutputDirectory.exists()) {
 			return;
 		}
-		logger.info("build "
+		this.logger.info("build "
 				+ currentKneserNeyOutputDirectory.getAbsolutePath());
 		currentKneserNeyOutputDirectory.mkdir();
 
@@ -319,11 +339,11 @@ public class KneserNeySmoother {
 	protected void calculateDs(File directory) {
 		long n1 = Counter.countCountsInDirectory(1, directory);
 		long n2 = Counter.countCountsInDirectory(2, directory);
-		logger.info("n1: " + n1);
-		logger.info("n2: " + n2);
+		this.logger.info("n1: " + n1);
+		this.logger.info("n2: " + n2);
 		// this.d1plus = 0.5;
 		this.d1plus = n1 / ((double) n1 + 2 * n2);
-		logger.info("D1+: " + this.d1plus);
+		this.logger.info("D1+: " + this.d1plus);
 	}
 
 	protected double getD(int _absoluteCount) {

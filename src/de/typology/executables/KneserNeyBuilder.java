@@ -83,12 +83,11 @@ public class KneserNeyBuilder {
 		if (Config.get().buildKneserNey) {
 			File kneserNeyOutputDirectory = new File(
 					inputDirectory.getAbsolutePath() + "/kneser-ney");
-			// TODO:delete old kneser ney files
 			KneserNeySmoother kns = new KneserNeySmoother(
 					absoluteOutputDirectory, _absoluteDirecory,
 					_absolute_Direcory, absolute_Direcory,
 					kneserNeyOutputDirectory, new WordIndex(indexFile), "\t",
-					Config.get().decimalPlaces);
+					Config.get().decimalPlaces, Config.get().deleteTempFiles);
 			kns.deleteResults();
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				// call KneserNeySmoother
