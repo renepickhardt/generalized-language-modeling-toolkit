@@ -18,8 +18,7 @@ public class LineCounterTask implements Runnable {
 	protected String patternLabel;
 	protected String delimiter;
 
-	static Logger logger = LogManager
-			.getLogger(LineCounterTask.class.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public LineCounterTask(InputStream inputStream, File outputDirectory,
 			String patternLabel, String delimiter) {
@@ -42,7 +41,8 @@ public class LineCounterTask implements Runnable {
 			}
 		}
 		outputDirectory.mkdir();
-		logger.info("count lines for: " + outputDirectory.getAbsolutePath());
+		this.logger.info("count lines for: "
+				+ outputDirectory.getAbsolutePath());
 
 		BufferedReader inputStreamReader = new BufferedReader(
 				new InputStreamReader(this.inputStream));

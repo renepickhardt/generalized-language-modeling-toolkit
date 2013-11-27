@@ -30,7 +30,7 @@ public class SplitterTask implements Runnable {
 	protected String addAfterSentence;
 	protected boolean withCount;
 
-	static Logger logger = LogManager.getLogger(SplitterTask.class.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String patternLabel,
@@ -64,7 +64,7 @@ public class SplitterTask implements Runnable {
 			}
 		}
 		sequencerOutputDirectory.mkdir();
-		logger.info("start building: "
+		this.logger.info("start building: "
 				+ sequencerOutputDirectory.getAbsolutePath());
 
 		// initialize sequencer
@@ -87,7 +87,7 @@ public class SplitterTask implements Runnable {
 			}
 		}
 		aggregatedOutputDirectory.mkdir();
-		logger.info("aggregate into: " + aggregatedOutputDirectory);
+		this.logger.info("aggregate into: " + aggregatedOutputDirectory);
 
 		for (File splitFile : sequencerOutputDirectory.listFiles()) {
 			Aggregator aggregator = new Aggregator(splitFile, new File(

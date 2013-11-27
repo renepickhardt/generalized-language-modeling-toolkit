@@ -27,8 +27,7 @@ public class SmoothingSplitter {
 	private String delimiter;
 	protected boolean deleteTempFiles;
 
-	static Logger logger = LogManager.getLogger(SmoothingSplitter.class
-			.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 	private ExecutorService executorService;
 
 	public SmoothingSplitter(File inputDirectory, File indexFile,
@@ -76,7 +75,8 @@ public class SmoothingSplitter {
 
 	public void split(ArrayList<boolean[]> patterns, int cores) {
 		// read Index
-		logger.info("read word index: " + this.indexFile.getAbsolutePath());
+		this.logger
+				.info("read word index: " + this.indexFile.getAbsolutePath());
 		WordIndex wordIndex = new WordIndex(this.indexFile);
 		// initialize executerService
 		// int cores = Runtime.getRuntime().availableProcessors();
@@ -109,13 +109,13 @@ public class SmoothingSplitter {
 					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
 			patternForModifier[0] = false;
 
-			logger.debug("inputPattern: "
+			this.logger.debug("inputPattern: "
 					+ PatternTransformer.getStringPattern(inputPattern));
-			logger.debug("inputPatternLabel: " + inputPatternLabel);
-			logger.debug("newPattern: "
+			this.logger.debug("inputPatternLabel: " + inputPatternLabel);
+			this.logger.debug("newPattern: "
 					+ PatternTransformer.getStringPattern(newPattern));
-			logger.debug("newPatternLabel: " + newPatternLabel);
-			logger.debug("patternForModifier: "
+			this.logger.debug("newPatternLabel: " + newPatternLabel);
+			this.logger.debug("patternForModifier: "
 					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this._outputDirectory,
@@ -175,13 +175,13 @@ public class SmoothingSplitter {
 					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
 			patternForModifier[patternForModifier.length - 1] = false;
 
-			logger.debug("inputPattern: "
+			this.logger.debug("inputPattern: "
 					+ PatternTransformer.getStringPattern(inputPattern));
-			logger.debug("inputPatternLabel: " + inputPatternLabel);
-			logger.debug("newPattern: "
+			this.logger.debug("inputPatternLabel: " + inputPatternLabel);
+			this.logger.debug("newPattern: "
 					+ PatternTransformer.getStringPattern(newPattern));
-			logger.debug("newPatternLabel: " + newPatternLabel);
-			logger.debug("patternForModifier: "
+			this.logger.debug("newPatternLabel: " + newPatternLabel);
+			this.logger.debug("patternForModifier: "
 					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this._output_Directory,
@@ -223,13 +223,13 @@ public class SmoothingSplitter {
 					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
 			patternForModifier[patternForModifier.length - 1] = false;
 
-			logger.debug("inputPattern: "
+			this.logger.debug("inputPattern: "
 					+ PatternTransformer.getStringPattern(inputPattern));
-			logger.debug("inputPatternLabel: " + inputPatternLabel);
-			logger.debug("newPattern: "
+			this.logger.debug("inputPatternLabel: " + inputPatternLabel);
+			this.logger.debug("newPattern: "
 					+ PatternTransformer.getStringPattern(newPattern));
-			logger.debug("newPatternLabel: " + newPatternLabel);
-			logger.debug("patternForModifier: "
+			this.logger.debug("newPatternLabel: " + newPatternLabel);
+			this.logger.debug("patternForModifier: "
 					+ PatternTransformer.getStringPattern(patternForModifier));
 
 			this.splitType(currentInputDirectory, this.output_Directory,

@@ -32,7 +32,7 @@ public class Sequencer implements Runnable {
 	protected String delimiter;
 	protected boolean withCount;
 
-	static Logger logger = LogManager.getLogger(Sequencer.class.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String addBeforeSentence,

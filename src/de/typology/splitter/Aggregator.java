@@ -28,7 +28,7 @@ public class Aggregator implements Runnable {
 	String delimiter;
 	int startSortAtColumn;
 
-	static Logger logger = LogManager.getLogger(Aggregator.class.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	/**
 	 * @param inputStream

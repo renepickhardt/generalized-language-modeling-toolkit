@@ -32,8 +32,7 @@ public class AbsoluteSplitter {
 	protected String addBeforeSentence;
 	protected String addAfterSentence;
 
-	static Logger logger = LogManager.getLogger(AbsoluteSplitter.class
-			.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public AbsoluteSplitter(File inputFile, File indexFile,
 			File outputDirectory, int maxCountDivider, String delimiter,
@@ -60,14 +59,15 @@ public class AbsoluteSplitter {
 
 	public void split(ArrayList<boolean[]> patterns, int cores) {
 
-		logger.info("read word index: " + this.indexFile.getAbsolutePath());
+		this.logger
+				.info("read word index: " + this.indexFile.getAbsolutePath());
 		WordIndex wordIndex = new WordIndex(this.indexFile);
 
 		// initialize executerService
 		// int cores = Runtime.getRuntime().availableProcessors();
 		ExecutorService executorService = Executors.newFixedThreadPool(cores);
 		for (boolean[] pattern : patterns) {
-			logger.debug("execute SplitterTask for: "
+			this.logger.debug("execute SplitterTask for: "
 					+ PatternTransformer.getStringPattern(pattern)
 					+ " sequences");
 
@@ -83,7 +83,7 @@ public class AbsoluteSplitter {
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				logger.error("inputFile not found: "
+				this.logger.error("inputFile not found: "
 						+ this.inputFile.getAbsolutePath());
 				return;
 			}

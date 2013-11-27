@@ -13,8 +13,7 @@ public class ModifiedKneserNeySmoother {
 	private double d2;
 	private double d3plus;
 
-	static Logger logger = LogManager.getLogger(ModifiedKneserNeySmoother.class
-			.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	/**
 	 * @param args
@@ -26,17 +25,17 @@ public class ModifiedKneserNeySmoother {
 		long n2 = Counter.countCountsInDirectory(2, directory);
 		long n3 = Counter.countCountsInDirectory(3, directory);
 		long n4 = Counter.countCountsInDirectory(4, directory);
-		logger.info("n1: " + n1);
-		logger.info("n2: " + n2);
-		logger.info("n3: " + n3);
-		logger.info("n4: " + n4);
+		this.logger.info("n1: " + n1);
+		this.logger.info("n2: " + n2);
+		this.logger.info("n3: " + n3);
+		this.logger.info("n4: " + n4);
 		double y = n1 / ((double) n1 + 2 * n2);
 		this.d1 = 1 - 2 * y * ((double) n2 / (double) n1);
 		this.d2 = 2 - 3 * y * ((double) n3 / (double) n2);
 		this.d3plus = 3 - 4 * y * ((double) n4 / (double) n3);
-		logger.info("D1: " + this.d1);
-		logger.info("D2: " + this.d2);
-		logger.info("D3+: " + this.d3plus);
+		this.logger.info("D1: " + this.d1);
+		this.logger.info("D2: " + this.d2);
+		this.logger.info("D3+: " + this.d3plus);
 	}
 
 	// @Override
