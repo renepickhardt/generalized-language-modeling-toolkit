@@ -59,7 +59,8 @@ public class SequenceModifierTest {
 		boolean[] pattern = { true, false, true };
 
 		SequenceModifier sequenceModifier = new SequenceModifier(
-				this.inputDirectory, this.pipedOutputStream, "\t", pattern);
+				this.inputDirectory, this.pipedOutputStream, "\t", pattern,
+				true);
 		sequenceModifier.run();
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(this.pipedInputStream));
