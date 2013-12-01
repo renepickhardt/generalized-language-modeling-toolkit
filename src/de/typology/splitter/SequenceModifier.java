@@ -20,14 +20,17 @@ public class SequenceModifier implements Runnable {
 	private OutputStream outputStream;
 	private String delimiter;
 	private boolean[] pattern;
+	private boolean modifyCount;
 	private boolean setCountToOne;
 
 	public SequenceModifier(File inputDirectory, OutputStream outputStream,
-			String delimiter, boolean[] pattern, boolean setCountToOne) {
+			String delimiter, boolean[] pattern, boolean modifyCount,
+			boolean setCountToOne) {
 		this.inputDirectory = inputDirectory;
 		this.outputStream = outputStream;
 		this.delimiter = delimiter;
 		this.pattern = pattern;
+		this.modifyCount = modifyCount;
 		this.setCountToOne = setCountToOne;
 	}
 
@@ -36,6 +39,7 @@ public class SequenceModifier implements Runnable {
 
 		BufferedWriter outputStreamWriter = new BufferedWriter(
 				new OutputStreamWriter(this.outputStream));
+		System.out.println(this.inputDirectory.getAbsolutePath());
 		try {
 			for (File inputFile : this.inputDirectory.listFiles()) {
 				BufferedReader inputFileReader = new BufferedReader(
@@ -43,44 +47,51 @@ public class SequenceModifier implements Runnable {
 				String line;
 				while ((line = inputFileReader.readLine()) != null) {
 					String[] lineSplit = line.split(this.delimiter);
-					String[] words = lineSplit[0].split("\\s");
-					String modifiedWords = "";
-					try {
-						for (int i = 0; i < this.pattern.length; i++) {
-							if (this.pattern[i]) {
-								modifiedWords += words[i] + " ";
+					if (this.modifyCount) {
+						String[] words = lineSplit[0].split("\\s");
+						String modifiedWords = "";
+						try {
+							for (int i = 0; i < this.pattern.length; i++) {
+								if (this.pattern[i]) {
+									modifiedWords += words[i] + " ";
+								}
 							}
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					modifiedWords = modifiedWords.replaceFirst(" $", "");
-					// TODO: better solution?md
-					if (words[0].equals("<fs>")) {
-						// for kneser-ney smoothing: every sequence that starts
-						// with <fs> counts as a new sequence
-						if (!this.pattern[0]) {
-							// set <s> in _1 to zero
-							if (this.inputDirectory.getName().equals("11")
-									&& words[1].equals("<s>")) {
-								outputStreamWriter.write("<s>" + this.delimiter
-										+ "0\n");
+						modifiedWords = modifiedWords.replaceFirst(" $", "");
+						// TODO: better solution?md
+						if (words[0].equals("<fs>")) {
+							// for kneser-ney smoothing: every sequence that
+							// starts
+							// with <fs> counts as a new sequence
+							if (!this.pattern[0]) {
+								// set <s> in _1 to zero
+								if (this.inputDirectory.getName().equals("11")
+										&& words[1].equals("<s>")) {
+									outputStreamWriter.write("<s>"
+											+ this.delimiter + "0\n");
+								} else {
+									outputStreamWriter.write(modifiedWords
+											+ this.delimiter
+											+ line.split(this.delimiter)[1]
+											+ "\n");
+								}
+							}
+							// if pattern[0]==true: leave out sequence
+						} else {
+							if (this.setCountToOne) {
+								outputStreamWriter.write(modifiedWords
+										+ this.delimiter + "1\n");
 							} else {
 								outputStreamWriter.write(modifiedWords
-										+ this.delimiter
-										+ line.split(this.delimiter)[1] + "\n");
+										+ this.delimiter + lineSplit[1] + "\n");
 							}
 						}
-						// if pattern[0]==true: leave out sequence
 					} else {
-						if (this.setCountToOne) {
-							outputStreamWriter.write(modifiedWords
-									+ this.delimiter + "1\n");
-						} else {
-							outputStreamWriter.write(modifiedWords
-									+ this.delimiter + lineSplit[1] + "\n");
-						}
+						outputStreamWriter.write(line + "\n");
 					}
+
 				}
 				inputFileReader.close();
 			}

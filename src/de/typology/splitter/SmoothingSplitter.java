@@ -277,7 +277,7 @@ public class SmoothingSplitter {
 			System.out.println(currentInputDirectory.getAbsolutePath());
 			SequenceModifier sequenceModifier = new SequenceModifier(
 					currentInputDirectory, pipedOutputStream, this.delimiter,
-					patternForModifier, setCountToOne);
+					patternForModifier, true, setCountToOne);
 			this.executorService.execute(sequenceModifier);
 
 		} catch (IOException e) {

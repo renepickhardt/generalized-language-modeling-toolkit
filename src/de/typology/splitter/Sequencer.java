@@ -22,7 +22,7 @@ import de.typology.indexes.WordIndex;
  * @author Martin Koerner
  * 
  */
-public class Sequencer implements Runnable {
+public class Sequencer {
 	protected InputStream inputStream;
 	protected File outputDirectory;
 	protected WordIndex wordIndex;
@@ -30,13 +30,15 @@ public class Sequencer implements Runnable {
 	protected String addBeforeSentence;
 	protected String addAfterSentence;
 	protected String delimiter;
-	protected boolean withCount;
+	protected boolean completeLine;
+	private int startSortAtColumn;
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public Sequencer(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String addBeforeSentence,
-			String addAfterSentence, String delimiter, boolean withCount) {
+			String addAfterSentence, String delimiter, boolean completeLine,
+			int startSortAtColumn) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
@@ -44,12 +46,12 @@ public class Sequencer implements Runnable {
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
 		this.delimiter = delimiter;
-		this.withCount = withCount;
+		this.completeLine = completeLine;
+		this.startSortAtColumn = startSortAtColumn;
 
 	}
 
-	@Override
-	public void run() {
+	public void splitIntoFiles() {
 		HashMap<Integer, BufferedWriter> writers = this.openWriters();
 		// TODO: bufferSize calculation
 		BufferedReader bufferedReader = new BufferedReader(
@@ -59,13 +61,14 @@ public class Sequencer implements Runnable {
 		String line;
 		try {
 			while ((line = bufferedReader.readLine()) != null) {
-				if (this.withCount) {
+				line = this.addBeforeSentence + line + this.addAfterSentence;
+				if (this.completeLine) {
 					String[] lineSplit = line.split("\\s");
-					writers.get(this.wordIndex.rank(lineSplit[0])).write(
-							line + "\n");
+					writers.get(
+							this.wordIndex
+									.rank(lineSplit[this.startSortAtColumn]))
+							.write(line + "\n");
 				} else {
-					line = this.addBeforeSentence + line
-							+ this.addAfterSentence;
 					String[] lineSplit = line.split("\\s");
 					int linePointer = 0;
 					while (lineSplit.length - linePointer >= this.pattern.length) {
@@ -79,7 +82,9 @@ public class Sequencer implements Runnable {
 						sequence += this.delimiter + "1\n";
 
 						// write sequence
-						writers.get(this.wordIndex.rank(sequence.split(" ")[0]))
+
+						writers.get(
+								this.wordIndex.rank(sequence.split(" ")[this.startSortAtColumn]))
 								.write(sequence);
 
 						linePointer++;

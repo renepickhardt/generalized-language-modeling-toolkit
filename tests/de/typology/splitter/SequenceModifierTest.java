@@ -60,7 +60,7 @@ public class SequenceModifierTest {
 
 		SequenceModifier sequenceModifier = new SequenceModifier(
 				this.inputDirectory, this.pipedOutputStream, "\t", pattern,
-				true);
+				true, true);
 		sequenceModifier.run();
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(this.pipedInputStream));

@@ -113,6 +113,10 @@ public class KneserNeySmoother {
 			// remove the first bit completely for the first pattern
 			boolean[] firstBackoffPattern = Arrays.copyOfRange(pattern, 1,
 					pattern.length);
+			while (!firstBackoffPattern[0] && firstBackoffPattern.length > 1) {
+				firstBackoffPattern = Arrays.copyOfRange(firstBackoffPattern,
+						1, firstBackoffPattern.length);
+			}
 			currentBackoffPatterns.add(firstBackoffPattern);
 
 			// leave out the first and last sequence bit
@@ -127,7 +131,7 @@ public class KneserNeySmoother {
 				this.buildHighestOrder(pattern, currentBackoffPatterns);
 
 			} else {
-				this.buildHigherOrder(pattern, currentBackoffPatterns);
+				this.buildHigherOrder(pattern, currentBackoffPatterns, cores);
 			}
 
 		}
@@ -201,7 +205,7 @@ public class KneserNeySmoother {
 	 * patterns
 	 */
 	protected void buildHigherOrder(boolean[] currentPattern,
-			ArrayList<boolean[]> backoffPatterns) {
+			ArrayList<boolean[]> backoffPatterns, int cores) {
 		String currentStringPattern = PatternTransformer
 				.getStringPattern(currentPattern);
 		String current_absoluteStringPattern = "_"
@@ -318,7 +322,13 @@ public class KneserNeySmoother {
 
 		}
 
-		// TODO run KneserNeyResultAggregator
+		KneserNeyResultAggregator knra = new KneserNeyResultAggregator(
+				this.kneserNeyLowDirectory, this.kneserNeyLowTempDirectory,
+				this.wordIndex, this.delimiter, this.decimalPlaces,
+				this.deleteTempFiles);
+		knra.aggregate(currentPattern, backoffPatterns, cores);
+
+		// TODO aggregate results
 
 	}
 

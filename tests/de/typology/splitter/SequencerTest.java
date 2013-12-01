@@ -63,9 +63,9 @@ public class SequencerTest {
 			InputStream inputStream = new FileInputStream(this.inputFile);
 			Sequencer sequencer = new Sequencer(inputStream,
 					this.sequencerOutputDirectory, wordIndex, pattern,
-					"<fs> <s> ", " </s>", "\t", false);
+					"<fs> <s> ", " </s>", "\t", false, 0);
 
-			sequencer.run();
+			sequencer.splitIntoFiles();
 
 			// test file contents
 			BufferedReader br8 = new BufferedReader(new FileReader(

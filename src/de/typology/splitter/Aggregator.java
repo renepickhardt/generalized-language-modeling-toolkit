@@ -10,7 +10,9 @@ import java.security.InvalidParameterException;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,11 +24,36 @@ import org.apache.logging.log4j.Logger;
  * @author Martin Koerner
  * 
  */
-public class Aggregator implements Runnable {
+public class Aggregator {
 	File inputFile;
 	File outputFile;
 	String delimiter;
 	int startSortAtColumn;
+
+	// this comparator is based on the value of startSortAtColumn
+	private Comparator<String> stringComparator = new Comparator<String>() {
+		@Override
+		public int compare(String string1, String string2) {
+			if (Aggregator.this.startSortAtColumn == 0) {
+				return string1.compareTo(string2);
+			} else {
+				if (Aggregator.this.startSortAtColumn == 1) {
+					int result = string1
+							.substring(string1.indexOf(' ') + 1)
+							.compareTo(
+									string2.substring(string2.indexOf(' ') + 1));
+					if (result != 0) {
+						return result;
+					} else {
+						return string1.compareTo(string2);
+					}
+				} else {
+					throw new InvalidParameterException(
+							"startSortAtColumn greater than 1 is not implemented");
+				}
+			}
+		}
+	};
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
@@ -46,39 +73,13 @@ public class Aggregator implements Runnable {
 
 	}
 
-	@Override
-	public void run() {
+	public void aggregateCounts() {
 		try {
 			BufferedReader inputFileReader = new BufferedReader(new FileReader(
 					this.inputFile));
 
-			// this comparator is based on the value of startSortAtColumn
-			Comparator<String> stringComparator = new Comparator<String>() {
-				@Override
-				public int compare(String string1, String string2) {
-					if (Aggregator.this.startSortAtColumn == 0) {
-						return string1.compareTo(string2);
-					} else {
-						if (Aggregator.this.startSortAtColumn == 1) {
-							int result = string1.substring(
-									string1.indexOf(' ') + 1)
-									.compareTo(
-											string2.substring(string2
-													.indexOf(' ') + 1));
-							if (result != 0) {
-								return result;
-							} else {
-								return string1.compareTo(string2);
-							}
-						} else {
-							throw new InvalidParameterException(
-									"startSortAtColumn greater than 1 is not implemented");
-						}
-					}
-				}
-			};
 			SortedMap<String, Long> wordMap = new TreeMap<String, Long>(
-					stringComparator);
+					this.stringComparator);
 			String inputLine;
 			// TODO remove
 			// System.gc();
@@ -130,6 +131,49 @@ public class Aggregator implements Runnable {
 
 				outputFileWriter
 						.write(this.delimiter + entry.getValue() + "\n");
+			}
+			outputFileWriter.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void aggregateWithoutCounts() {
+		try {
+			BufferedReader inputFileReader = new BufferedReader(new FileReader(
+					this.inputFile));
+
+			SortedSet<String> wordSet = new TreeSet<String>(
+					this.stringComparator);
+			String inputLine;
+			// TODO remove
+			// System.gc();
+			// System.out.println("before reading " + this.inputFile.getName()
+			// + ":");
+			// this.printMemory();
+
+			while ((inputLine = inputFileReader.readLine()) != null) {
+
+				// System.out.println();
+				// System.out.print("NOT: ");
+				// for (String s : words) {
+				// System.out.print(s + " ");
+				// }
+				// System.out.println();
+				wordSet.add(inputLine);
+			}
+			// TODO remove
+			// System.out.println("after reading " + this.inputFile.getName()
+			// + ":");
+			// this.printMemory();
+			// System.gc();
+
+			inputFileReader.close();
+			BufferedWriter outputFileWriter = new BufferedWriter(
+					new FileWriter(this.outputFile));
+			for (String line : wordSet) {
+				outputFileWriter.write(line + "\n");
 			}
 			outputFileWriter.close();
 		} catch (IOException e) {

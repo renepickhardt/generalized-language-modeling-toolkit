@@ -17,25 +17,26 @@ import de.typology.indexes.WordIndex;
  * 
  */
 public class SplitterTask implements Runnable {
-	protected InputStream inputStream;
-	protected File outputDirectory;
-	protected WordIndex wordIndex;
-	protected boolean[] pattern;
-	protected String patternLabel;
-	protected String delimiter;
-	int startSortAtColumn;
-	protected boolean deleteTempFiles;
+	private InputStream inputStream;
+	private File outputDirectory;
+	private WordIndex wordIndex;
+	private boolean[] pattern;
+	private String patternLabel;
+	private String delimiter;
+	private int startSortAtColumn;
+	private boolean deleteTempFiles;
 
-	protected String addBeforeSentence;
-	protected String addAfterSentence;
-	protected boolean withCount;
+	private String addBeforeSentence;
+	private String addAfterSentence;
+	private boolean completeLine;
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public SplitterTask(InputStream inputStream, File outputDirectory,
 			WordIndex wordIndex, boolean[] pattern, String patternLabel,
 			String delimiter, int startSortAtColumn, boolean deleteTempFiles,
-			String addBeforeSentence, String addAfterSentence, boolean withCount) {
+			String addBeforeSentence, String addAfterSentence,
+			boolean completeLine) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
@@ -46,7 +47,7 @@ public class SplitterTask implements Runnable {
 		this.deleteTempFiles = deleteTempFiles;
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
-		this.withCount = withCount;
+		this.completeLine = completeLine;
 
 	}
 
@@ -71,9 +72,8 @@ public class SplitterTask implements Runnable {
 		Sequencer sequencer = new Sequencer(this.inputStream,
 				sequencerOutputDirectory, this.wordIndex, this.pattern,
 				this.addBeforeSentence, this.addAfterSentence, this.delimiter,
-				this.withCount);
-		// TODO change method name
-		sequencer.run();
+				this.completeLine, this.startSortAtColumn);
+		sequencer.splitIntoFiles();
 
 		File aggregatedOutputDirectory = new File(
 				this.outputDirectory.getAbsolutePath() + "/"
@@ -92,9 +92,13 @@ public class SplitterTask implements Runnable {
 		for (File splitFile : sequencerOutputDirectory.listFiles()) {
 			Aggregator aggregator = new Aggregator(splitFile, new File(
 					aggregatedOutputDirectory.getAbsolutePath() + "/"
-							+ splitFile.getName()), this.delimiter, 0);
-			// TODO change method name
-			aggregator.run();
+							+ splitFile.getName()), this.delimiter,
+					this.startSortAtColumn);
+			if (this.completeLine) {
+				aggregator.aggregateWithoutCounts();
+			} else {
+				aggregator.aggregateCounts();
+			}
 		}
 
 		// delete sequencerOutputDirectory
