@@ -10,6 +10,8 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -48,10 +50,25 @@ public class KneserNeyResultAggregator {
 	}
 
 	public void aggregate(boolean[] currentPattern,
-			ArrayList<boolean[]> backoffPatterns, int cores) {
+			ArrayList<Integer> removeBitPositions, int cores) {
 		ExecutorService executorService;
 		int currentTempDirNumber = 1;
-		for (boolean[] backoffPattern : backoffPatterns) {
+		for (int removeBitPosition : removeBitPositions) {
+
+			// build backoffPattern
+			boolean[] backoffPattern;
+			if (removeBitPosition == 0) {
+				backoffPattern = Arrays.copyOfRange(currentPattern, 1,
+						currentPattern.length);
+				while (!backoffPattern[0] && backoffPattern.length > 1) {
+					backoffPattern = Arrays.copyOfRange(backoffPattern, 1,
+							backoffPattern.length);
+				}
+			} else {
+				backoffPattern = currentPattern.clone();
+				backoffPattern[removeBitPosition] = false;
+			}
+
 			File currentLowOrderResultDirectory = new File(
 					this.lowOrderResultDirectory.getAbsolutePath()
 							+ "/"
@@ -66,7 +83,8 @@ public class KneserNeyResultAggregator {
 			currentTempResultDirectory.mkdir();
 
 			if (backoffPattern.length == currentPattern.length - 1) {
-				// lower order pattern with first word missing
+				// aggregate results for lower order pattern with first word
+				// missing
 				File currentTempResult2ndDirectory = new File(
 						currentTempResultDirectory.getAbsolutePath() + "-2nd");
 				currentTempResult2ndDirectory.mkdir();
@@ -217,10 +235,67 @@ public class KneserNeyResultAggregator {
 				}
 			} else {
 				// lower order pattern with same length as currentPattern
+				for (File currentTempResultFile : currentTempResultDirectory
+						.listFiles()) {
+					// load low order lines into HashSet
+					HashMap<String, Double> lowerOrderResultMap = new HashMap<String, Double>();
+					File currentLowOrderResultFile = new File(
+							currentLowOrderResultDirectory.getAbsolutePath()
+									+ "/" + currentTempResultFile.getName());
+					try {
+						BufferedReader currentLowOrderResultReader = new BufferedReader(
+								new FileReader(currentLowOrderResultFile));
+						String line;
+						while ((line = currentLowOrderResultReader.readLine()) != null) {
+							String[] lineSplit = line.split(this.delimiter);
+							lowerOrderResultMap.put(lineSplit[0],
+									Double.parseDouble(lineSplit[1]));
+						}
+						currentLowOrderResultReader.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					File previousTempResultFile = new File(
+							this.tempResultDirectory.getAbsolutePath()
+									+ "/"
+									+ PatternTransformer
+											.getStringPattern(currentPattern)
+									+ "-" + (currentTempDirNumber - 1));
+					if (!previousTempResultFile.exists()) {
+						this.logger.error("previous result not found: "
+								+ previousTempResultFile.getAbsolutePath());
+						System.exit(1);
+					}
+					try {
+						BufferedReader previousTempResultReader = new BufferedReader(
+								new FileReader(previousTempResultFile));
+						BufferedWriter aggregatedResultWriter = new BufferedWriter(
+								new FileWriter(currentTempResultFile));
+						String previousLine;
+						while ((previousLine = previousTempResultReader
+								.readLine()) != null) {
+							double lowerOrderResult = lowerOrderResultMap
+									.get(LineFormatter.removeWord(
+											previousLine.split(this.delimiter)[0],
+											removeBitPosition));
+							aggregatedResultWriter.write(previousLine
+									+ this.delimiter + lowerOrderResult + "\n");
+
+						}
+						previousTempResultReader.close();
+						aggregatedResultWriter.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+
 			}
 
 		}
 		// aggregate result files?
 	}
-
 }

@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -107,31 +106,23 @@ public class KneserNeySmoother {
 			if (patterns.get(i).length < 2) {
 				continue;
 			}
-			ArrayList<boolean[]> currentBackoffPatterns = new ArrayList<boolean[]>();
+			ArrayList<Integer> currentRemoveBitPositions = new ArrayList<Integer>();
 			boolean[] pattern = patterns.get(i);
 
 			// remove the first bit completely for the first pattern
-			boolean[] firstBackoffPattern = Arrays.copyOfRange(pattern, 1,
-					pattern.length);
-			while (!firstBackoffPattern[0] && firstBackoffPattern.length > 1) {
-				firstBackoffPattern = Arrays.copyOfRange(firstBackoffPattern,
-						1, firstBackoffPattern.length);
-			}
-			currentBackoffPatterns.add(firstBackoffPattern);
+			currentRemoveBitPositions.add(0);
 
 			// leave out the first and last sequence bit
 			for (int j = 1; j < pattern.length - 1; j++) {
-				boolean[] backOffPattern = pattern.clone();
-				if (backOffPattern[j]) {
-					backOffPattern[j] = false;
-					currentBackoffPatterns.add(backOffPattern);
+				if (pattern[j]) {
+					currentRemoveBitPositions.add(j);
 				}
 			}
 			if (i == patterns.size() - 1) {
-				this.buildHighestOrder(pattern, currentBackoffPatterns);
+				// this.buildHighestOrder(pattern, currentRemoveBitPositions);
 
 			} else {
-				this.buildHigherOrder(pattern, currentBackoffPatterns, cores);
+				this.buildHigherOrder(pattern, currentRemoveBitPositions, cores);
 			}
 
 		}
@@ -205,7 +196,7 @@ public class KneserNeySmoother {
 	 * patterns
 	 */
 	protected void buildHigherOrder(boolean[] currentPattern,
-			ArrayList<boolean[]> backoffPatterns, int cores) {
+			ArrayList<Integer> removeBitPositions, int cores) {
 		String currentStringPattern = PatternTransformer
 				.getStringPattern(currentPattern);
 		String current_absoluteStringPattern = "_"
@@ -326,7 +317,7 @@ public class KneserNeySmoother {
 				this.kneserNeyLowDirectory, this.kneserNeyLowTempDirectory,
 				this.wordIndex, this.delimiter, this.decimalPlaces,
 				this.deleteTempFiles);
-		knra.aggregate(currentPattern, backoffPatterns, cores);
+		knra.aggregate(currentPattern, removeBitPositions, cores);
 
 		// TODO aggregate results
 

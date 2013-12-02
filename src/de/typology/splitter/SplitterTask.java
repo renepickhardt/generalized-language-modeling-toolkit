@@ -48,7 +48,6 @@ public class SplitterTask implements Runnable {
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
 		this.completeLine = completeLine;
-
 	}
 
 	@Override
@@ -95,9 +94,9 @@ public class SplitterTask implements Runnable {
 							+ splitFile.getName()), this.delimiter,
 					this.startSortAtColumn);
 			if (this.completeLine) {
-				aggregator.aggregateWithoutCounts();
-			} else {
 				aggregator.aggregateCounts();
+			} else {
+				aggregator.aggregateWithoutCounts();
 			}
 		}
 

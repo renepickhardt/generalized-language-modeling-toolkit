@@ -88,9 +88,9 @@ public class Aggregator {
 			// this.printMemory();
 
 			while ((inputLine = inputFileReader.readLine()) != null) {
-
-				String words = inputLine.split(this.delimiter)[0];
-				long count = Long.parseLong(inputLine.split(this.delimiter)[1]);
+				String[] inputLineSplit = inputLine.split(this.delimiter);
+				String words = inputLineSplit[0];
+				long count = Long.parseLong(inputLineSplit[1]);
 				if (words.length() == 0) {
 					// logger.error("empty row in " + this.inputFile + ": \""
 					// + inputLine + "\"");
@@ -99,20 +99,8 @@ public class Aggregator {
 					continue;
 				}
 				if (wordMap.containsKey(words)) {
-					// System.out.println();
-					// System.out.print("IN: ");
-					// for (String s : words) {
-					// System.out.print(s + " ");
-					// }
-					// System.out.println();
 					wordMap.put(words, wordMap.get(words) + count);
 				} else {
-					// System.out.println();
-					// System.out.print("NOT: ");
-					// for (String s : words) {
-					// System.out.print(s + " ");
-					// }
-					// System.out.println();
 					wordMap.put(words, count);
 				}
 			}
@@ -127,10 +115,8 @@ public class Aggregator {
 					new FileWriter(this.outputFile));
 			for (Entry<String, Long> entry : wordMap.entrySet()) {
 				String words = entry.getKey();
-				outputFileWriter.write(words);
-
-				outputFileWriter
-						.write(this.delimiter + entry.getValue() + "\n");
+				outputFileWriter.write(words + this.delimiter
+						+ entry.getValue() + "\n");
 			}
 			outputFileWriter.close();
 		} catch (IOException e) {
@@ -154,21 +140,8 @@ public class Aggregator {
 			// this.printMemory();
 
 			while ((inputLine = inputFileReader.readLine()) != null) {
-
-				// System.out.println();
-				// System.out.print("NOT: ");
-				// for (String s : words) {
-				// System.out.print(s + " ");
-				// }
-				// System.out.println();
 				wordSet.add(inputLine);
 			}
-			// TODO remove
-			// System.out.println("after reading " + this.inputFile.getName()
-			// + ":");
-			// this.printMemory();
-			// System.gc();
-
 			inputFileReader.close();
 			BufferedWriter outputFileWriter = new BufferedWriter(
 					new FileWriter(this.outputFile));
