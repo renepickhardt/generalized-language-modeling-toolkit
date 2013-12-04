@@ -187,7 +187,7 @@ public class SmoothingSplitter {
 
 			this.splitType(currentInputDirectory, this._output_Directory,
 					newPattern, newPatternLabel, patternForModifier, wordIndex,
-					true);
+					false);
 
 		}
 

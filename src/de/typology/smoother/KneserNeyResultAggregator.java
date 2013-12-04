@@ -106,7 +106,8 @@ public class KneserNeyResultAggregator {
 						this.tempResultDirectory, this.wordIndex,
 						currentPattern,
 						currentTempResult2ndDirectory.getName(),
-						this.delimiter, 1, this.deleteTempFiles, "", "", true);
+						this.delimiter, 1, this.deleteTempFiles, "", "", true,
+						true);
 				executorService.execute(splitterTask);
 
 				try {
@@ -198,7 +199,8 @@ public class KneserNeyResultAggregator {
 				splitterTask = new SplitterTask(pipedInputStream,
 						this.tempResultDirectory, this.wordIndex,
 						currentPattern, currentTempResultDirectory.getName(),
-						this.delimiter, 0, this.deleteTempFiles, "", "", true);
+						this.delimiter, 0, this.deleteTempFiles, "", "", true,
+						true);
 				executorService.execute(splitterTask);
 
 				try {
