@@ -28,7 +28,8 @@ public class SplitterTask implements Runnable {
 
 	private String addBeforeSentence;
 	private String addAfterSentence;
-	private boolean completeLine;
+	private boolean sequenceModifyCounts;
+	private boolean aggregateCompleteLine;
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
@@ -36,7 +37,7 @@ public class SplitterTask implements Runnable {
 			WordIndex wordIndex, boolean[] pattern, String patternLabel,
 			String delimiter, int startSortAtColumn, boolean deleteTempFiles,
 			String addBeforeSentence, String addAfterSentence,
-			boolean completeLine) {
+			boolean sequenceModifyCounts, boolean aggregateCompleteLine) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.wordIndex = wordIndex;
@@ -47,7 +48,8 @@ public class SplitterTask implements Runnable {
 		this.deleteTempFiles = deleteTempFiles;
 		this.addBeforeSentence = addBeforeSentence;
 		this.addAfterSentence = addAfterSentence;
-		this.completeLine = completeLine;
+		this.sequenceModifyCounts = sequenceModifyCounts;
+		this.aggregateCompleteLine = aggregateCompleteLine;
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public class SplitterTask implements Runnable {
 		Sequencer sequencer = new Sequencer(this.inputStream,
 				sequencerOutputDirectory, this.wordIndex, this.pattern,
 				this.addBeforeSentence, this.addAfterSentence, this.delimiter,
-				this.completeLine, this.startSortAtColumn);
+				this.sequenceModifyCounts, this.startSortAtColumn);
 		sequencer.splitIntoFiles();
 
 		File aggregatedOutputDirectory = new File(
@@ -93,10 +95,10 @@ public class SplitterTask implements Runnable {
 					aggregatedOutputDirectory.getAbsolutePath() + "/"
 							+ splitFile.getName()), this.delimiter,
 					this.startSortAtColumn);
-			if (this.completeLine) {
-				aggregator.aggregateCounts();
-			} else {
+			if (this.aggregateCompleteLine) {
 				aggregator.aggregateWithoutCounts();
+			} else {
+				aggregator.aggregateCounts();
 			}
 		}
 

@@ -267,7 +267,8 @@ public class SmoothingSplitter {
 			// don't add tags here
 			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
 					outputDirectory, wordIndex, newPattern, newPatternLabel,
-					this.delimiter, 0, this.deleteTempFiles, "", "", true);
+					this.delimiter, 0, this.deleteTempFiles, "", "", true,
+					false);
 			this.executorService.execute(splitterTask);
 		}
 
