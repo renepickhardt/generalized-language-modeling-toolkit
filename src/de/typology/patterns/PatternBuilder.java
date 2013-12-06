@@ -30,6 +30,13 @@ public class PatternBuilder {
 		return patterns;
 	}
 
+	/**
+	 * Also returns sequences that are greater than maxModelLength but are
+	 * needed to calculate kneser ney smoothed values
+	 * 
+	 * @param maxModelLength
+	 * @return
+	 */
 	public static ArrayList<boolean[]> getGLMForSmoothingPatterns(
 			int maxModelLength) {
 		ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();

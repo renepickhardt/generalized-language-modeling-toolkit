@@ -13,6 +13,7 @@ import de.typology.smoother.KneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
+import de.typology.tester.TestSequenceExtractor;
 import de.typology.utils.Config;
 
 public class KneserNeyBuilder {
@@ -61,7 +62,7 @@ public class KneserNeyBuilder {
 			absolteSplitter.split(glmForSmoothingPatterns,
 					Config.get().numberOfCores);
 		}
-		if (Config.get().build_absoluteGLM) {
+		if (Config.get().buildContinuationGLM) {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
 					.getReverseGLMForSmoothingPatterns(Config.get().modelLength);
 			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
@@ -74,6 +75,8 @@ public class KneserNeyBuilder {
 			smoothingSplitter.split(glmForSmoothingPatterns,
 					Config.get().numberOfCores);
 		}
+		File absoluteDirecory = new File(inputDirectory.getAbsolutePath()
+				+ "/absolute");
 		File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
 				+ "/_absolute");
 		File _absolute_Direcory = new File(inputDirectory.getAbsolutePath()
@@ -93,6 +96,20 @@ public class KneserNeyBuilder {
 				// call KneserNeySmoother
 				kns.smoothComplex(i, Config.get().numberOfCores);
 			}
+		}
+		if (Config.get().extractContinuationGLM) {
+			File testSequences = new File(inputDirectory.getAbsolutePath()
+					+ "/testing-samples.txt");
+			File testExtractOutputDirectory = new File(
+					inputDirectory.getAbsolutePath() + "/testing-extract");
+			testExtractOutputDirectory.mkdir();
+
+			TestSequenceExtractor tse = new TestSequenceExtractor(
+					testSequences, absoluteDirecory, _absoluteDirecory,
+					_absolute_Direcory, absolute_Direcory,
+					testExtractOutputDirectory, "\t");
+			tse.extractSequences(Config.get().modelLength,
+					Config.get().numberOfCores);
 		}
 		logger.info("done");
 	}

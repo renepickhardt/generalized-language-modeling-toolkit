@@ -25,19 +25,10 @@ public class Config extends Properties {
 	// CONTROLL PARAMETERS
 	public int numberOfCores;
 
-	public String dbUser;
-
-	public String rawLogDir;
-
 	public String trainedOnDataSet;
 	public String trainedOnLang;
 	public String testedOnDataSet;
 	public String testedOnLang;
-	public String dataBaseType;
-	public String resultLogDirName;
-
-	public String weight;
-	public boolean useWeights;
 
 	public boolean splitData;
 	public boolean buildStats;
@@ -45,10 +36,9 @@ public class Config extends Properties {
 	public boolean buildNGrams;
 	public boolean buildTypoEdges;
 	public boolean buildGLM;
-	public boolean build_absoluteGLM;
+	public boolean buildContinuationGLM;
+	public boolean extractContinuationGLM;
 	public boolean buildKneserNey;
-	public boolean revertSort;
-	public boolean aggregateAbsolute_;
 
 	public boolean deleteTempFiles;
 
