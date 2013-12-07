@@ -4,9 +4,12 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
+import org.apache.commons.io.FileUtils;
 
 import de.typology.indexes.WordIndex;
 import de.typology.patterns.PatternTransformer;
@@ -92,9 +95,51 @@ public class ContinuationExtractorTask implements Runnable {
 		if (Integer.bitCount(PatternTransformer
 				.getIntPattern(this.originalPattern)) == 1) {
 			// count number of different sequences
+			long lineCount = 0L;
+			for (File inputFile : currentInputDirectory.listFiles()) {
+				try {
+					BufferedReader inputFileReader = new BufferedReader(
+							new FileReader(inputFile));
+					while (inputFileReader.readLine() != null) {
+						lineCount++;
+					}
+					inputFileReader.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 
 			// write result
+			for (Entry<Integer, HashMap<String, Long>> continuationMapEntry : continuationMap
+					.entrySet()) {
+				File currentOutputDirectory = new File(
+						this.outputDirectory.getAbsolutePath()
+								+ "/"
+								+ continuationLabelMap.get(continuationMapEntry
+										.getKey()));
+				if (currentOutputDirectory.exists()) {
+					try {
+						FileUtils.deleteDirectory(currentOutputDirectory);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				currentOutputDirectory.mkdir();
+				File currentOutputFile = new File(
+						currentOutputDirectory.getAbsolutePath() + "/all");
+				try {
+					BufferedWriter currentOutputWriter = new BufferedWriter(
+							new FileWriter(currentOutputFile));
+					currentOutputWriter.write(String.valueOf(lineCount));
+					currentOutputWriter.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 
+			}
 		} else {
 			// else scan files in inputDirectory for matching sequences
 			for (File inputFile : currentInputDirectory.listFiles()) {
