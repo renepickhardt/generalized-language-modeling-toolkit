@@ -3,12 +3,10 @@ package de.typology.splitter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +50,8 @@ public class Sequencer {
 	}
 
 	public void splitIntoFiles() {
-		HashMap<Integer, BufferedWriter> writers = this.openWriters();
+		HashMap<Integer, BufferedWriter> writers = this.wordIndex
+				.openWriters(this.outputDirectory);
 		// TODO: bufferSize calculation
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(this.inputStream), 100 * 8 * 1024);
@@ -97,68 +96,7 @@ public class Sequencer {
 			e.printStackTrace();
 		}
 
-		this.closeWriters(writers);
-	}
-
-	private HashMap<Integer, BufferedWriter> openWriters() {
-		HashMap<Integer, BufferedWriter> writers = new HashMap<Integer, BufferedWriter>();
-
-		// Runtime runtime = Runtime.getRuntime();
-		// int mb = 1024 * 1024;
-		// logger.debug("totalMemory: " + runtime.totalMemory() / mb);
-		// logger.debug("buffersize: " + bufferSize / mb);
-
-		// System.out.println("");
-		//
-		// int mb = 1024 * 1024;
-		//
-		// // Getting the runtime reference from system
-		// Runtime runtime = Runtime.getRuntime();
-		//
-		// System.out.println("##### Heap utilization statistics [MB] #####");
-		//
-		// // Print used memory
-		// System.out.println("Used Memory:\t"
-		// + (runtime.totalMemory() - runtime.freeMemory()) / mb);
-		//
-		// // Print free memory
-		// System.out.println("Free Memory:\t" + runtime.freeMemory() / mb);
-		//
-		// // Print total available memory
-		// System.out.println("Total Memory:\t" + runtime.totalMemory() / mb);
-		//
-		// // Print Maximum available memory
-		// System.out.println("Max Memory:\t" + runtime.maxMemory() / mb);
-
-		File currentOutputDirectory = new File(
-				this.outputDirectory.getAbsolutePath());
-
-		currentOutputDirectory.mkdir();
-
-		// calculate buffer size for writers
-		// TODO: bufferSize calculation
-		for (int fileCount = 0; fileCount < this.wordIndex.getLength(); fileCount++) {
-			try {
-				writers.put(fileCount, new BufferedWriter(new FileWriter(
-						currentOutputDirectory.getAbsolutePath() + "/"
-								+ fileCount), 10 * 8 * 1024));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return writers;
-	}
-
-	private void closeWriters(HashMap<Integer, BufferedWriter> writers) {
-		for (Entry<Integer, BufferedWriter> entry : writers.entrySet()) {
-			try {
-				entry.getValue().close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		this.wordIndex.closeWriters(writers);
 	}
 
 	public boolean[] getPattern() {

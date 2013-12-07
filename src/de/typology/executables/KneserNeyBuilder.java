@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
-import de.typology.smoother.KneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
@@ -77,26 +76,6 @@ public class KneserNeyBuilder {
 		}
 		File absoluteDirecory = new File(inputDirectory.getAbsolutePath()
 				+ "/absolute");
-		File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
-				+ "/_absolute");
-		File _absolute_Direcory = new File(inputDirectory.getAbsolutePath()
-				+ "/_absolute_");
-		File absolute_Direcory = new File(inputDirectory.getAbsolutePath()
-				+ "/absolute_");
-		if (Config.get().buildKneserNey) {
-			File kneserNeyOutputDirectory = new File(
-					inputDirectory.getAbsolutePath() + "/kneser-ney");
-			KneserNeySmoother kns = new KneserNeySmoother(
-					absoluteOutputDirectory, _absoluteDirecory,
-					_absolute_Direcory, absolute_Direcory,
-					kneserNeyOutputDirectory, new WordIndex(indexFile), "\t",
-					Config.get().decimalPlaces, Config.get().deleteTempFiles);
-			kns.deleteResults();
-			for (int i = 1; i <= Config.get().modelLength; i++) {
-				// call KneserNeySmoother
-				kns.smoothComplex(i, Config.get().numberOfCores);
-			}
-		}
 		if (Config.get().extractContinuationGLM) {
 			File testSequences = new File(inputDirectory.getAbsolutePath()
 					+ "/testing-samples.txt");
@@ -105,12 +84,33 @@ public class KneserNeyBuilder {
 			testExtractOutputDirectory.mkdir();
 
 			TestSequenceExtractor tse = new TestSequenceExtractor(
-					testSequences, absoluteDirecory, _absoluteDirecory,
-					_absolute_Direcory, absolute_Direcory,
-					testExtractOutputDirectory, "\t");
+					testSequences, absoluteDirecory,
+					testExtractOutputDirectory, "\t", new WordIndex(indexFile));
 			tse.extractSequences(Config.get().modelLength,
 					Config.get().numberOfCores);
+			tse.extractContinuationSequences(Config.get().modelLength,
+					Config.get().numberOfCores);
 		}
+		// File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
+		// + "/_absolute");
+		// File _absolute_Direcory = new File(inputDirectory.getAbsolutePath()
+		// + "/_absolute_");
+		// File absolute_Direcory = new File(inputDirectory.getAbsolutePath()
+		// + "/absolute_");
+		// if (Config.get().buildKneserNey) {
+		// File kneserNeyOutputDirectory = new File(
+		// inputDirectory.getAbsolutePath() + "/kneser-ney");
+		// KneserNeySmoother kns = new KneserNeySmoother(
+		// absoluteOutputDirectory, _absoluteDirecory,
+		// _absolute_Direcory, absolute_Direcory,
+		// kneserNeyOutputDirectory, new WordIndex(indexFile), "\t",
+		// Config.get().decimalPlaces, Config.get().deleteTempFiles);
+		// kns.deleteResults();
+		// for (int i = 1; i <= Config.get().modelLength; i++) {
+		// // call KneserNeySmoother
+		// kns.smoothComplex(i, Config.get().numberOfCores);
+		// }
+		// }
 		logger.info("done");
 	}
 }

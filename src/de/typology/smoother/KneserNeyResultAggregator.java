@@ -25,6 +25,7 @@ import de.typology.patterns.PatternTransformer;
 import de.typology.splitter.SequenceModifier;
 import de.typology.splitter.SplitterTask;
 import de.typology.utils.DecimalFormatter;
+import de.typology.utils.SequenceFormatter;
 import de.typology.utils.SlidingWindowReader;
 
 public class KneserNeyResultAggregator {
@@ -160,7 +161,7 @@ public class KneserNeyResultAggregator {
 						String line;
 						while ((line = currentTempResult2ndReader.readLine()) != null) {
 							String[] lineSplit = line.split(this.delimiter);
-							String wordsWithoutFirst = LineFormatter
+							String wordsWithoutFirst = SequenceFormatter
 									.removeWord(lineSplit[0], 0);
 							double lowOrderResult = Double
 									.parseDouble(currentLowOrderResultReader
@@ -279,7 +280,7 @@ public class KneserNeyResultAggregator {
 						while ((previousLine = previousTempResultReader
 								.readLine()) != null) {
 							double lowerOrderResult = lowerOrderResultMap
-									.get(LineFormatter.removeWord(
+									.get(SequenceFormatter.removeWord(
 											previousLine.split(this.delimiter)[0],
 											removeBitPosition));
 							aggregatedResultWriter.write(previousLine

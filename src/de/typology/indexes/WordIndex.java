@@ -1,11 +1,17 @@
 package de.typology.indexes;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * A class that is based on the text file produced by WordIndexer.
@@ -81,4 +87,71 @@ public class WordIndex implements Iterable<String> {
 		return Arrays.asList(this.index).iterator();
 	}
 
+	public HashMap<Integer, BufferedWriter> openWriters(File outputDirectory) {
+		HashMap<Integer, BufferedWriter> writers = new HashMap<Integer, BufferedWriter>();
+
+		// Runtime runtime = Runtime.getRuntime();
+		// int mb = 1024 * 1024;
+		// logger.debug("totalMemory: " + runtime.totalMemory() / mb);
+		// logger.debug("buffersize: " + bufferSize / mb);
+
+		// System.out.println("");
+		//
+		// int mb = 1024 * 1024;
+		//
+		// // Getting the runtime reference from system
+		// Runtime runtime = Runtime.getRuntime();
+		//
+		// System.out.println("##### Heap utilization statistics [MB] #####");
+		//
+		// // Print used memory
+		// System.out.println("Used Memory:\t"
+		// + (runtime.totalMemory() - runtime.freeMemory()) / mb);
+		//
+		// // Print free memory
+		// System.out.println("Free Memory:\t" + runtime.freeMemory() / mb);
+		//
+		// // Print total available memory
+		// System.out.println("Total Memory:\t" + runtime.totalMemory() / mb);
+		//
+		// // Print Maximum available memory
+		// System.out.println("Max Memory:\t" + runtime.maxMemory() / mb);
+
+		File currentOutputDirectory = new File(
+				outputDirectory.getAbsolutePath());
+		if (currentOutputDirectory.exists()) {
+			try {
+				FileUtils.deleteDirectory(currentOutputDirectory);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		currentOutputDirectory.mkdir();
+
+		// calculate buffer size for writers
+		// TODO: bufferSize calculation
+		for (int fileCount = 0; fileCount < this.index.length; fileCount++) {
+			try {
+				writers.put(fileCount, new BufferedWriter(new FileWriter(
+						currentOutputDirectory.getAbsolutePath() + "/"
+								+ fileCount), 10 * 8 * 1024));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return writers;
+	}
+
+	public void closeWriters(HashMap<Integer, BufferedWriter> writers) {
+		for (Entry<Integer, BufferedWriter> entry : writers.entrySet()) {
+			try {
+				entry.getValue().close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 }

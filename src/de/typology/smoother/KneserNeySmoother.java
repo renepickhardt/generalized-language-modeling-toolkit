@@ -17,6 +17,7 @@ import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 import de.typology.utils.Counter;
 import de.typology.utils.DecimalFormatter;
+import de.typology.utils.SequenceFormatter;
 import de.typology.utils.SlidingWindowReader;
 
 public class KneserNeySmoother {
@@ -270,7 +271,7 @@ public class KneserNeySmoother {
 
 					// calculate higher order result
 					String _absolute_Line = current_absolute_FileReader
-							.getLine(LineFormatter.removeWord(
+							.getLine(SequenceFormatter.removeWord(
 									_absoluteLineSplit[0],
 									_absoluteWords.length - 2));
 					String[] _absolute_LineSplit = _absolute_Line
@@ -290,7 +291,7 @@ public class KneserNeySmoother {
 
 					// calculate backoff weight
 					String absolute_Line = currentAbsolute_FileReader
-							.getLine(LineFormatter.removeWord(
+							.getLine(SequenceFormatter.removeWord(
 									_absoluteLineSplit[0],
 									_absoluteWords.length - 2));
 					String[] absolute_LineSplit = absolute_Line

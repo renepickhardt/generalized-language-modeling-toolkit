@@ -1,10 +1,14 @@
-package de.typology.smoother;
+package de.typology.utils;
 
-public class LineFormatter {
+public class SequenceFormatter {
 
-	/*
+	/**
 	 * Removes word at position removeWordAtPosition. Words are separated with
 	 * whitespaces. Returns the resulting string.
+	 * 
+	 * @param inputString
+	 * @param removeWordAtPosition
+	 * @return
 	 */
 	public static String removeWord(String inputString, int removeWordAtPosition) {
 		String[] words = inputString.split("\\s");

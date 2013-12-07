@@ -11,8 +11,6 @@ import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
 
-import de.typology.patterns.PatternTransformer;
-
 /**
  * This class takes an ArrayList of sequences and a directory of Files as an
  * input and writes all occurrences of the sequences into new files in the
@@ -29,34 +27,30 @@ public class SequenceExtractorTask implements Runnable {
 	private File outputDirectory;
 	private String delimiter;
 
-	private HashSet<String> newSequences;
-
 	public SequenceExtractorTask(ArrayList<String> originalSequences,
-			boolean[] originalPattern, boolean[] pattern, File inputDirectory,
-			File outputDirectory, String delimiter) {
+			boolean[] pattern, File inputDirectory, File outputDirectory,
+			String delimiter) {
 		this.originalSequences = originalSequences;
 		this.pattern = pattern;
 
 		this.inputDirectory = inputDirectory;
 		this.outputDirectory = outputDirectory;
-		if (outputDirectory.exists()) {
+		if (this.outputDirectory.exists()) {
 			try {
-				FileUtils.deleteDirectory(outputDirectory);
+				FileUtils.deleteDirectory(this.outputDirectory);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		outputDirectory.mkdirs();
+		this.outputDirectory.mkdirs();
 		this.delimiter = delimiter;
 
 	}
 
 	@Override
 	public void run() {
-		System.out.println(this.inputDirectory + "; "
-				+ PatternTransformer.getStringPattern(this.pattern));
-		this.buildNewSequences();
+		HashSet<String> newSequences = this.getNewSequences();
 
 		for (File inputFile : this.inputDirectory.listFiles()) {
 			File outputFile = new File(this.outputDirectory.getAbsolutePath()
@@ -76,8 +70,7 @@ public class SequenceExtractorTask implements Runnable {
 						new FileWriter(outputFile));
 				String line;
 				while ((line = inputFileReader.readLine()) != null) {
-					if (this.newSequences
-							.contains(line.split(this.delimiter)[0])) {
+					if (newSequences.contains(line.split(this.delimiter)[0])) {
 						outputFileWriter.write(line);
 					}
 				}
@@ -92,8 +85,8 @@ public class SequenceExtractorTask implements Runnable {
 
 	}
 
-	private void buildNewSequences() {
-		this.newSequences = new HashSet<String>();
+	private HashSet<String> getNewSequences() {
+		HashSet<String> newSequences = new HashSet<String>();
 
 		for (String originalLine : this.originalSequences) {
 			String[] originalLineSplit = originalLine.split("\\s");
@@ -117,14 +110,12 @@ public class SequenceExtractorTask implements Runnable {
 				}
 				newSequence = newSequence.replaceFirst(" $", "");
 				if (newSequence.length() > 0) {
-					this.newSequences.add(newSequence);
+					newSequences.add(newSequence);
 				}
 
 				linePointer++;
 			}
 		}
-		for (String s : this.newSequences) {
-			System.out.println(s);
-		}
+		return newSequences;
 	}
 }
