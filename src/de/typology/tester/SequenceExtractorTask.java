@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This class takes an ArrayList of sequences and a directory of Files as an
@@ -20,6 +22,8 @@ import org.apache.commons.io.FileUtils;
  * 
  */
 public class SequenceExtractorTask implements Runnable {
+
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	private ArrayList<String> originalSequences;
 	private boolean[] pattern;
@@ -71,7 +75,7 @@ public class SequenceExtractorTask implements Runnable {
 				String line;
 				while ((line = inputFileReader.readLine()) != null) {
 					if (newSequences.contains(line.split(this.delimiter)[0])) {
-						outputFileWriter.write(line);
+						outputFileWriter.write(line + "\n");
 					}
 				}
 				inputFileReader.close();

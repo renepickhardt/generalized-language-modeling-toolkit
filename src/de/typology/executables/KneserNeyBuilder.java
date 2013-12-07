@@ -34,8 +34,11 @@ public class KneserNeyBuilder {
 		if (Config.get().splitData) {
 			DataSetSplitter dss = new DataSetSplitter(inputDirectory,
 					"normalized.txt");
-			dss.split("training.txt", "learning.txt", "testing.txt",
-					Config.get().modelLength);
+			// dss.split("training.txt", "learning.txt", "testing.txt",
+			// Config.get().modelLength);
+			dss.splitIntoSequences(new File(inputDirectory.getAbsolutePath()
+					+ "/testing.txt"), Config.get().modelLength,
+					Config.get().numberOfQueries);
 			// dss.splitIntoSequences(new
 			// File(inputDirectory.getAbsolutePath()+"/learning.txt"),
 			// Config.get().modelLength,Config.get().numberOfQueries);
@@ -78,9 +81,9 @@ public class KneserNeyBuilder {
 				+ "/absolute");
 		if (Config.get().extractContinuationGLM) {
 			File testSequences = new File(inputDirectory.getAbsolutePath()
-					+ "/testing-samples.txt");
+					+ "/testing-samples-" + Config.get().modelLength + ".txt");
 			File testExtractOutputDirectory = new File(
-					inputDirectory.getAbsolutePath() + "/testing-extract");
+					inputDirectory.getAbsolutePath() + "/testing-samples");
 			testExtractOutputDirectory.mkdir();
 
 			TestSequenceExtractor tse = new TestSequenceExtractor(
@@ -90,6 +93,7 @@ public class KneserNeyBuilder {
 					Config.get().numberOfCores);
 			tse.extractContinuationSequences(Config.get().modelLength,
 					Config.get().numberOfCores);
+
 		}
 		// File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
 		// + "/_absolute");

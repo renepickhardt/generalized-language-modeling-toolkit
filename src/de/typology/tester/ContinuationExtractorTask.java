@@ -6,12 +6,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
+import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 import de.typology.utils.SequenceFormatter;
 
@@ -23,6 +27,8 @@ import de.typology.utils.SequenceFormatter;
  * 
  */
 public class ContinuationExtractorTask implements Runnable {
+
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	private File originalSequencesDirectory;
 	private boolean[] originalPattern;
@@ -38,6 +44,7 @@ public class ContinuationExtractorTask implements Runnable {
 		this.originalPattern = originalPattern;
 		this.inputDirectory = inputDirectory;
 		this.outputDirectory = outputDirectory;
+		outputDirectory.mkdir();
 		this.wordIndex = wordIndex;
 		this.delimiter = delimiter;
 	}
@@ -49,27 +56,67 @@ public class ContinuationExtractorTask implements Runnable {
 						+ "/"
 						+ PatternTransformer
 								.getStringPattern(this.originalPattern));
-		HashMap<Integer, HashMap<String, Long>> continuationMap = new HashMap<Integer, HashMap<String, Long>>();
-		HashMap<Integer, String> continuationLabelMap = new HashMap<Integer, String>();
-		String originalStringPattern = PatternTransformer
-				.getStringPattern(this.originalPattern);
+
+		this.logger.info("build continuation for: "
+				+ currentInputDirectory.getAbsolutePath());
 
 		// initialize continuationMap and build continuation labels
-		for (int i = 0; i < this.originalPattern.length; i++) {
-			if (this.originalPattern[i]) {
+		HashMap<boolean[], HashMap<String, Long>> continuationMap = new HashMap<boolean[], HashMap<String, Long>>();
+		ArrayList<boolean[]> allPatterns = PatternBuilder
+				.getGLMPatterns(this.originalPattern.length);
+		for (boolean[] pattern : allPatterns) {
+			if (pattern.length == this.originalPattern.length
+					&& PatternTransformer.getStringPattern(pattern).contains(
+							"0")) {
 				// set a new HashMap
-				continuationMap.put(i, new HashMap<String, Long>());
-
-				// build continuation label
-				StringBuilder continuationStringBuilder = new StringBuilder(
-						originalStringPattern);
-				continuationStringBuilder.setCharAt(i, '_');
-				continuationLabelMap.put(i,
-						continuationStringBuilder.toString());
+				continuationMap.put(pattern, new HashMap<String, Long>());
 			}
+		}
+		// replace the first word with _
+		boolean[] replaceFirstWordPattern = this.originalPattern.clone();
+		replaceFirstWordPattern[0] = false;
+
+		// set a new HashMap
+
+		if (replaceFirstWordPattern.length > 1) {
+			continuationMap.put(replaceFirstWordPattern,
+					new HashMap<String, Long>());
+		}
+
+		if (this.originalPattern.length > 1) {
+
+			// add continuationPatterns with replaced last word
+			ArrayList<boolean[]> continuationWithoutLastPatterns = new ArrayList<boolean[]>();
+			for (Entry<boolean[], HashMap<String, Long>> continuationMapEntry : continuationMap
+					.entrySet()) {
+				boolean[] continuationPatternWithoutLast = continuationMapEntry
+						.getKey().clone();
+				continuationPatternWithoutLast[continuationPatternWithoutLast.length - 1] = false;
+				continuationWithoutLastPatterns
+						.add(continuationPatternWithoutLast);
+			}
+			for (boolean[] continuationPatternWithoutLast : continuationWithoutLastPatterns) {
+				if (PatternTransformer.getStringPattern(
+						continuationPatternWithoutLast).contains("1")) {
+					continuationMap.put(continuationPatternWithoutLast,
+							new HashMap<String, Long>());
+				}
+
+			}
+
+			// replace the last word with _
+			boolean[] replaceLastWordPattern = this.originalPattern.clone();
+			replaceLastWordPattern[replaceLastWordPattern.length - 1] = false;
+
+			// set a new HashMap
+			continuationMap.put(replaceLastWordPattern,
+					new HashMap<String, Long>());
+
 		}
 
 		// add sequences to continuationMap
+		this.logger.info("add testing sequences to continuationMap for "
+				+ PatternTransformer.getStringPattern(this.originalPattern));
 		try {
 			for (File originalSequencesFile : this.originalSequencesDirectory
 					.listFiles()) {
@@ -77,10 +124,10 @@ public class ContinuationExtractorTask implements Runnable {
 						new FileReader(originalSequencesFile));
 				String line;
 				while ((line = originalSequencesReader.readLine()) != null) {
-					for (Entry<Integer, HashMap<String, Long>> continuationMapEntry : continuationMap
+					for (Entry<boolean[], HashMap<String, Long>> continuationMapEntry : continuationMap
 							.entrySet()) {
 						continuationMapEntry.getValue().put(
-								SequenceFormatter.removeWord(
+								SequenceFormatter.removeWords(
 										line.split(this.delimiter)[0],
 										continuationMapEntry.getKey()), 0L);
 					}
@@ -92,69 +139,102 @@ public class ContinuationExtractorTask implements Runnable {
 			e.printStackTrace();
 		}
 
-		if (Integer.bitCount(PatternTransformer
-				.getIntPattern(this.originalPattern)) == 1) {
-			// count number of different sequences
-			long lineCount = 0L;
-			for (File inputFile : currentInputDirectory.listFiles()) {
-				try {
-					BufferedReader inputFileReader = new BufferedReader(
-							new FileReader(inputFile));
-					while (inputFileReader.readLine() != null) {
+		// count number of different sequences
+		long lineCount = 0L;
+		for (File inputFile : currentInputDirectory.listFiles()) {
+			try {
+				BufferedReader inputFileReader = new BufferedReader(
+						new FileReader(inputFile));
+				String line;
+				while ((line = inputFileReader.readLine()) != null) {
+					if (!line.startsWith("<fs>")) {
 						lineCount++;
 					}
-					inputFileReader.close();
+				}
+				inputFileReader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		// write result to continuation files without ones
+
+		if (this.originalPattern.length < 3) {
+			File currentOutputDirectory;
+			if (this.originalPattern.length == 1) {
+				currentOutputDirectory = new File(
+						this.outputDirectory.getAbsolutePath() + "/_");
+			} else {
+				currentOutputDirectory = new File(
+						this.outputDirectory.getAbsolutePath() + "/__");
+			}
+			if (currentOutputDirectory.exists()) {
+				try {
+					FileUtils.deleteDirectory(currentOutputDirectory);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-
-			// write result
-			for (Entry<Integer, HashMap<String, Long>> continuationMapEntry : continuationMap
-					.entrySet()) {
-				File currentOutputDirectory = new File(
-						this.outputDirectory.getAbsolutePath()
-								+ "/"
-								+ continuationLabelMap.get(continuationMapEntry
-										.getKey()));
-				if (currentOutputDirectory.exists()) {
-					try {
-						FileUtils.deleteDirectory(currentOutputDirectory);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				currentOutputDirectory.mkdir();
-				File currentOutputFile = new File(
-						currentOutputDirectory.getAbsolutePath() + "/all");
-				try {
-					BufferedWriter currentOutputWriter = new BufferedWriter(
-							new FileWriter(currentOutputFile));
-					currentOutputWriter.write(String.valueOf(lineCount));
-					currentOutputWriter.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
+			currentOutputDirectory.mkdir();
+			File currentOutputFile = new File(
+					currentOutputDirectory.getAbsolutePath() + "/all");
+			try {
+				BufferedWriter currentOutputWriter = new BufferedWriter(
+						new FileWriter(currentOutputFile));
+				currentOutputWriter.write(String.valueOf(lineCount) + "\n");
+				currentOutputWriter.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} else {
-			// else scan files in inputDirectory for matching sequences
-			for (File inputFile : currentInputDirectory.listFiles()) {
-				try {
-					BufferedReader inputFileReader = new BufferedReader(
-							new FileReader(inputFile));
-					String line;
-					while ((line = inputFileReader.readLine()) != null) {
-						String[] lineSplit = line.split(this.delimiter);
 
-						// go over different continuation patterns
-						for (Entry<Integer, HashMap<String, Long>> continuationMapEntry : continuationMap
-								.entrySet()) {
+		}
+		// else scan files in inputDirectory for matching sequences
+		this.logger.info("scan files for "
+				+ PatternTransformer.getStringPattern(this.originalPattern));
+		for (File inputFile : currentInputDirectory.listFiles()) {
+			try {
+				BufferedReader inputFileReader = new BufferedReader(
+						new FileReader(inputFile));
+				String line;
+				while ((line = inputFileReader.readLine()) != null) {
+					String[] lineSplit = line.split(this.delimiter);
+
+					// go over different continuation patterns
+					for (Entry<boolean[], HashMap<String, Long>> continuationMapEntry : continuationMap
+							.entrySet()) {
+
+						// some logic for <fs>
+						if (lineSplit[0].startsWith("<fs>")) {
+							if (continuationMapEntry.getKey()[0]) {
+								continue;
+							} else {
+								if (continuationMapEntry.getKey().length == 2
+										&& lineSplit[0].contains("<s>")) {
+									// TODO write "<s> 0" ?
+								} else {
+									String continuationSequence = SequenceFormatter
+											.removeWords(lineSplit[0],
+													continuationMapEntry
+															.getKey());
+
+									if (continuationMapEntry.getValue()
+											.containsKey(continuationSequence)) {
+										continuationMapEntry
+												.getValue()
+												.put(continuationSequence,
+														continuationMapEntry
+																.getValue()
+																.get(continuationSequence)
+																+ Long.parseLong(lineSplit[1]));
+									}
+								}
+							}
+						} else {
 							String continuationSequence = SequenceFormatter
-									.removeWord(lineSplit[0],
+									.removeWords(lineSplit[0],
 											continuationMapEntry.getKey());
 							if (continuationMapEntry.getValue().containsKey(
 									continuationSequence)) {
@@ -165,45 +245,47 @@ public class ContinuationExtractorTask implements Runnable {
 							}
 						}
 					}
-					inputFileReader.close();
+				}
+				inputFileReader.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		// write result
+		this.logger.info("write results for "
+				+ PatternTransformer.getStringPattern(this.originalPattern));
+		for (Entry<boolean[], HashMap<String, Long>> continuationMapEntry : continuationMap
+				.entrySet()) {
+			File currentOutputDirectory = new File(
+					this.outputDirectory.getAbsolutePath()
+							+ "/"
+							+ PatternTransformer.getStringPattern(
+									continuationMapEntry.getKey()).replaceAll(
+									"0", "_"));
+			HashMap<Integer, BufferedWriter> continuationWriters = this.wordIndex
+					.openWriters(currentOutputDirectory);
+			for (Entry<String, Long> continuationMapEntryMapEntry : continuationMapEntry
+					.getValue().entrySet()) {
+				try {
+					if (continuationMapEntryMapEntry.getValue() > 0) {
+						continuationWriters.get(
+								this.wordIndex
+										.rank(continuationMapEntryMapEntry
+												.getKey().split("\\s")[0]))
+								.write(continuationMapEntryMapEntry.getKey()
+										+ this.delimiter
+										+ continuationMapEntryMapEntry
+												.getValue() + "\n");
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
-				// write result
-				for (Entry<Integer, HashMap<String, Long>> continuationMapEntry : continuationMap
-						.entrySet()) {
-					File currentOutputDirectory = new File(
-							this.outputDirectory.getAbsolutePath()
-									+ "/"
-									+ continuationLabelMap
-											.get(continuationMapEntry.getKey()));
-					HashMap<Integer, BufferedWriter> continuationWriters = this.wordIndex
-							.openWriters(currentOutputDirectory);
-					for (Entry<String, Long> continuationMapEntryMapEntry : continuationMapEntry
-							.getValue().entrySet()) {
-						try {
-							continuationWriters.get(
-									this.wordIndex
-											.rank(continuationMapEntryMapEntry
-													.getKey().split("\\s")[0]))
-									.write(continuationMapEntryMapEntry
-											.getKey()
-											+ this.delimiter
-											+ continuationMapEntryMapEntry
-													.getValue());
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-					}
-					this.wordIndex.closeWriters(continuationWriters);
-				}
-
 			}
-
+			this.wordIndex.closeWriters(continuationWriters);
 		}
+
 	}
 }

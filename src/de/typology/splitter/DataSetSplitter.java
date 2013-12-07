@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,8 +47,7 @@ public class DataSetSplitter {
 	private File directory;
 	private String inputName;
 
-	static Logger logger = LogManager
-			.getLogger(DataSetSplitter.class.getName());
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public DataSetSplitter(File directory, String inputName) {
 
@@ -77,7 +78,7 @@ public class DataSetSplitter {
 	 */
 	public void split(String trainingFileName, String learningFileName,
 			String testingFileName, int sequenceLength) {
-		logger.info("splitting into training, testing and learning file: "
+		this.logger.info("splitting into training, testing and learning file: "
 				+ this.directory + "/" + this.inputName);
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(
@@ -124,20 +125,33 @@ public class DataSetSplitter {
 			trainingDataWriter.close();
 			learningDataWriter.close();
 			testingDataWriter.close();
-			logger.info("splitting done");
+			this.logger.info("splitting done");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public void splitIntoSequences(File inputFile, int sequenceLength,
+	public void splitIntoSequences(File inputFile, int maxSequenceLength,
 			int numberOfSequences) {
-
+		System.out.println(maxSequenceLength);
 		String[] fileNameSplit = inputFile.getName().split("\\.");
-		String newFileName = fileNameSplit[0] + "-splitted." + fileNameSplit[1];
-		// get total count from stats file
 
+		HashMap<Integer, BufferedWriter> testSequenceFileWriters = new HashMap<Integer, BufferedWriter>();
+		for (int i = 1; i <= maxSequenceLength; i++) {
+			try {
+				testSequenceFileWriters.put(i,
+						new BufferedWriter(new FileWriter(new File(
+								this.directory.getAbsolutePath() + "/"
+										+ fileNameSplit[0] + "-samples-" + i
+										+ "." + fileNameSplit[1]))));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		// get total count from stats file
 		long sequenceCount = 0L;
 		try {
 			BufferedReader reader = new BufferedReader(
@@ -146,11 +160,11 @@ public class DataSetSplitter {
 			// count sequences
 			while ((line = reader.readLine()) != null) {
 				String[] lineSplit = line.split("\\s");
-				if (lineSplit.length < sequenceLength) {
+				if (lineSplit.length < maxSequenceLength) {
 					continue;
 				} else {
 					int sequenceStart = 0;
-					while (lineSplit.length - sequenceStart >= sequenceLength) {
+					while (lineSplit.length - sequenceStart >= maxSequenceLength) {
 						sequenceCount++;
 						sequenceStart++;
 					}
@@ -161,37 +175,55 @@ public class DataSetSplitter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		logger.debug("sequenceCount: " + sequenceCount);
+		this.logger.debug("sequenceCount: " + sequenceCount);
+		double sequenceProbability = (double) numberOfSequences / sequenceCount;
 		long skipDistance = sequenceCount / numberOfSequences;
-		logger.debug("skipDistance: " + skipDistance);
+		this.logger.debug("skipDistance: " + skipDistance);
 
-		// BufferedWriter writer = new BufferedWriter(new FileWriter(
-		// this.directory.getAbsolutePath() + "/" + newFileName));
-		// logger.info("splitting " + inputFile.getName() + " into sequences");
-		// int sequence = 0;
-		// int query = 0;
-		// while (splitter.getNextSequence(sequenceLength)) {
-		// if (sequence % skipDistance == 0) {
-		// query++;
-		// try {
-		// for (String word : splitter.sequence) {
-		// writer.write(word + " ");
-		// }
-		// writer.write("\n");
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// sequence++;
-		// if (query >= Config.get().numberOfQueries) {
-		// break;
-		// }
-		// }
-		// try {
-		// writer.close();
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
+		try {
+			BufferedReader reader = new BufferedReader(
+					new FileReader(inputFile));
+			this.logger.info("splitting " + inputFile.getName()
+					+ " into sequences");
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String[] originalLineSplit = line.split("\\s");
+				int linePointer = 0;
+				while (originalLineSplit.length - linePointer >= maxSequenceLength) {
+					// build current Sequence
+					String currentSequence = "";
+					for (int i = 0; i < maxSequenceLength; i++) {
+						currentSequence += originalLineSplit[linePointer + i]
+								+ " ";
+					}
+					currentSequence = currentSequence.replaceFirst(" $", "");
+					if (Math.random() <= sequenceProbability) {
+						String[] currentSequenceSplit = currentSequence
+								.split("\\s");
+						for (int i = 1; i <= maxSequenceLength; i++) {
+							// build result sequence
+							String resultSequence = "";
+							for (int j = 0; j < i; j++) {
+								resultSequence += currentSequenceSplit[j] + " ";
+							}
+							resultSequence = resultSequence.replaceFirst(" $",
+									"");
+							testSequenceFileWriters.get(i).write(
+									resultSequence + "\n");
+						}
+					}
+					linePointer++;
+				}
+			}
 
+			reader.close();
+			for (Entry<Integer, BufferedWriter> testSequenceWritersEntry : testSequenceFileWriters
+					.entrySet()) {
+				testSequenceWritersEntry.getValue().close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

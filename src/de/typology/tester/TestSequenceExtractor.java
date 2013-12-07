@@ -92,7 +92,7 @@ public class TestSequenceExtractor {
 
 	public void extractContinuationSequences(int maxModelLength, int cores) {
 		ArrayList<boolean[]> absolutePatterns = PatternBuilder
-				.getGLMPatterns(maxModelLength);
+				.getLMPatterns(maxModelLength);
 
 		// initialize executerService
 		// int cores = Runtime.getRuntime().availableProcessors();
