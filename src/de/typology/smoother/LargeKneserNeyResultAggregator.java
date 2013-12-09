@@ -28,7 +28,7 @@ import de.typology.utils.DecimalFormatter;
 import de.typology.utils.SequenceFormatter;
 import de.typology.utils.SlidingWindowReader;
 
-public class KneserNeyResultAggregator {
+public class LargeKneserNeyResultAggregator {
 	private File lowOrderResultDirectory;
 	private File tempResultDirectory;
 
@@ -39,7 +39,7 @@ public class KneserNeyResultAggregator {
 
 	private Logger logger = LogManager.getLogger(this.getClass().getName());
 
-	public KneserNeyResultAggregator(File lowOrderResultDirectory,
+	public LargeKneserNeyResultAggregator(File lowOrderResultDirectory,
 			File tempResultDirectory, WordIndex wordIndex, String delimiter,
 			int decimalPlaces, boolean deleteTempFiles) {
 		this.lowOrderResultDirectory = lowOrderResultDirectory;

@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.utils.Counter;
 
-public class ModifiedKneserNeySmoother {
+public class LargeModifiedKneserNeySmoother {
 
 	private double d1;
 	private double d2;

@@ -92,7 +92,11 @@ public class SequenceExtractorTask implements Runnable {
 	private HashSet<String> getNewSequences() {
 		HashSet<String> newSequences = new HashSet<String>();
 
-		int originalSequenceLength = this.originalSequences.get(0).length();
+		if (this.originalSequences.size() == 0) {
+			return newSequences;
+		}
+		int originalSequenceLength = this.originalSequences.get(0).split("\\s").length;
+
 		boolean[] extractPattern = new boolean[originalSequenceLength];
 		int extractPatternPointer = extractPattern.length - 1;
 		for (int i = this.pattern.length - 1; i >= 0; i--) {
