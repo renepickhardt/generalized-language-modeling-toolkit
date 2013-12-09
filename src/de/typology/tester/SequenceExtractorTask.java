@@ -92,33 +92,25 @@ public class SequenceExtractorTask implements Runnable {
 	private HashSet<String> getNewSequences() {
 		HashSet<String> newSequences = new HashSet<String>();
 
+		int originalSequenceLength = this.originalSequences.get(0).length();
+		boolean[] extractPattern = new boolean[originalSequenceLength];
+		int extractPatternPointer = extractPattern.length - 1;
+		for (int i = this.pattern.length - 1; i >= 0; i--) {
+			extractPattern[extractPatternPointer] = this.pattern[i];
+			extractPatternPointer--;
+		}
+
 		for (String originalLine : this.originalSequences) {
 			String[] originalLineSplit = originalLine.split("\\s");
-			int linePointer = 0;
-			while (originalLineSplit.length - linePointer >= this.pattern.length) {
-				// build current Sequence
-				String currentSequence = "";
-				for (int i = 0; i < this.pattern.length; i++) {
-					currentSequence += originalLineSplit[linePointer + i] + " ";
+			String newSequence = "";
+			for (int i = 0; i < extractPattern.length; i++) {
+				if (extractPattern[i]) {
+					newSequence += originalLineSplit[i] + " ";
 				}
-				currentSequence = currentSequence.replaceFirst(" $", "");
-
-				String[] currentSequenceSplit = currentSequence.split("\\s");
-				String newSequence = "";
-				for (int i = 0; i < this.pattern.length; i++) {
-					if (this.pattern[i]) {
-						if (this.pattern[i]) {
-							newSequence += currentSequenceSplit[i] + " ";
-						}
-					}
-				}
-				newSequence = newSequence.replaceFirst(" $", "");
-				if (newSequence.length() > 0) {
-					newSequences.add(newSequence);
-				}
-
-				linePointer++;
 			}
+			newSequence = newSequence.replaceFirst(" $", "");
+			newSequences.add(newSequence);
+
 		}
 		return newSequences;
 	}
