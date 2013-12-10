@@ -107,6 +107,50 @@ public class Counter {
 	}
 
 	/**
+	 * used for aggregating the counts in a directory
+	 * 
+	 * @param count
+	 * @param directory
+	 * @return
+	 */
+	public static long aggregateCountsInDirectory(File directory) {
+		long totalCount = 0;
+		for (File file : directory.listFiles()) {
+			totalCount += aggregateCounts(file);
+		}
+		return totalCount;
+	}
+
+	/**
+	 * used for calculating the count of counts in smoothing methods
+	 * 
+	 * @param count
+	 * @param directoryName
+	 * @return
+	 */
+	public static long aggregateCounts(File file) {
+		long totalCount = 0;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			try {
+				String line;
+				String[] lineSplit;
+				while ((line = br.readLine()) != null) {
+					lineSplit = line.split("\t");
+					totalCount += Long
+							.parseLong(lineSplit[lineSplit.length - 1]);
+				}
+			} finally {
+				br.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return totalCount;
+	}
+
+	/**
 	 * used for calculating the count of counts in smoothing methods
 	 * 
 	 * @param count

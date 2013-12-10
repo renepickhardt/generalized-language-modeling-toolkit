@@ -43,7 +43,6 @@ public class TestSequenceExtractor {
 		// read test sequences into HashSet
 		ArrayList<String> sequences = new ArrayList<String>();
 		try {
-			System.out.println(this.testSequenceFile.getAbsolutePath());
 			BufferedReader testSequenceReader = new BufferedReader(
 					new FileReader(this.testSequenceFile));
 			String line;

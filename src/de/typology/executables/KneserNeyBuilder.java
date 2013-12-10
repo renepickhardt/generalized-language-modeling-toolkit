@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
+import de.typology.smoother.KneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
@@ -77,23 +78,46 @@ public class KneserNeyBuilder {
 			smoothingSplitter.split(glmForSmoothingPatterns,
 					Config.get().numberOfCores);
 		}
-		File absoluteDirecory = new File(inputDirectory.getAbsolutePath()
+		File absoluteDirectory = new File(inputDirectory.getAbsolutePath()
 				+ "/absolute");
+
+		File testExtractOutputDirectory = new File(
+				inputDirectory.getAbsolutePath() + "/testing-samples");
 		if (Config.get().extractContinuationGLM) {
 			File testSequences = new File(inputDirectory.getAbsolutePath()
 					+ "/testing-samples-" + Config.get().modelLength + ".txt");
-			File testExtractOutputDirectory = new File(
-					inputDirectory.getAbsolutePath() + "/testing-samples");
 			testExtractOutputDirectory.mkdir();
 
 			TestSequenceExtractor tse = new TestSequenceExtractor(
-					testSequences, absoluteDirecory,
+					testSequences, absoluteDirectory,
 					testExtractOutputDirectory, "\t", new WordIndex(indexFile));
 			tse.extractSequences(Config.get().modelLength,
 					Config.get().numberOfCores);
 			tse.extractContinuationSequences(Config.get().modelLength,
 					Config.get().numberOfCores);
 
+		}
+
+		if (Config.get().buildKneserNey) {
+			File continuationDirectory = new File(
+					inputDirectory.getAbsolutePath() + "/continuation");
+			KneserNeySmoother kns = new KneserNeySmoother(
+					testExtractOutputDirectory, absoluteDirectory,
+					continuationDirectory, "\t", Config.get().decimalPlaces);
+			for (int i = 1; i <= Config.get().modelLength; i++) {
+				File inputSequenceFile = new File(
+						inputDirectory.getAbsolutePath() + "/testing-samples-"
+								+ i + ".txt");
+				// smooth simple
+				File resultFile = new File(inputDirectory.getAbsolutePath()
+						+ "/kneser-ney-simple-" + i + ".txt");
+				kns.smooth(inputSequenceFile, resultFile, i, false);
+
+				// smooth complex
+				resultFile = new File(inputDirectory.getAbsolutePath()
+						+ "/kneser-ney-complex-" + i + ".txt");
+				kns.smooth(inputSequenceFile, resultFile, i, true);
+			}
 		}
 		// File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
 		// + "/_absolute");
