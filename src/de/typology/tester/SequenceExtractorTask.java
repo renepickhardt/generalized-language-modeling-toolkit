@@ -13,6 +13,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.typology.patterns.PatternTransformer;
+
 /**
  * This class takes an ArrayList of sequences and a directory of Files as an
  * input and writes all occurrences of the sequences into new files in the
@@ -56,6 +58,12 @@ public class SequenceExtractorTask implements Runnable {
 	public void run() {
 		HashSet<String> newSequences = this.getNewSequences();
 
+		System.out.println(PatternTransformer.getStringPattern(this.pattern)
+				+ ":");
+		for (String s : newSequences) {
+			System.out.println(s);
+		}
+
 		for (File inputFile : this.inputDirectory.listFiles()) {
 			File outputFile = new File(this.outputDirectory.getAbsolutePath()
 					+ "/" + inputFile.getName());
@@ -73,9 +81,16 @@ public class SequenceExtractorTask implements Runnable {
 				BufferedWriter outputFileWriter = new BufferedWriter(
 						new FileWriter(outputFile));
 				String line;
+
 				while ((line = inputFileReader.readLine()) != null) {
 					if (newSequences.contains(line.split(this.delimiter)[0])) {
+
+						System.out
+								.println(line.split(this.delimiter)[0] + " y");
 						outputFileWriter.write(line + "\n");
+					} else {
+						System.out
+								.println(line.split(this.delimiter)[0] + " n");
 					}
 				}
 				inputFileReader.close();
@@ -92,29 +107,31 @@ public class SequenceExtractorTask implements Runnable {
 	private HashSet<String> getNewSequences() {
 		HashSet<String> newSequences = new HashSet<String>();
 
-		if (this.originalSequences.size() == 0) {
-			return newSequences;
-		}
-		int originalSequenceLength = this.originalSequences.get(0).split("\\s").length;
-
-		boolean[] extractPattern = new boolean[originalSequenceLength];
-		int extractPatternPointer = extractPattern.length - 1;
-		for (int i = this.pattern.length - 1; i >= 0; i--) {
-			extractPattern[extractPatternPointer] = this.pattern[i];
-			extractPatternPointer--;
-		}
-
 		for (String originalLine : this.originalSequences) {
 			String[] originalLineSplit = originalLine.split("\\s");
-			String newSequence = "";
-			for (int i = 0; i < extractPattern.length; i++) {
-				if (extractPattern[i]) {
-					newSequence += originalLineSplit[i] + " ";
+			int linePointer = 0;
+			while (originalLineSplit.length - linePointer >= this.pattern.length) {
+				// build current Sequence
+				String currentSequence = "";
+				for (int i = 0; i < this.pattern.length; i++) {
+					currentSequence += originalLineSplit[linePointer + i] + " ";
 				}
-			}
-			newSequence = newSequence.replaceFirst(" $", "");
-			newSequences.add(newSequence);
+				currentSequence = currentSequence.replaceFirst(" $", "");
 
+				String[] currentSequenceSplit = currentSequence.split("\\s");
+				String newSequence = "";
+				for (int i = 0; i < this.pattern.length; i++) {
+					if (this.pattern[i]) {
+						newSequence += currentSequenceSplit[i] + " ";
+					}
+				}
+				newSequence = newSequence.replaceFirst(" $", "");
+				if (newSequence.length() > 0) {
+					newSequences.add(newSequence);
+				}
+
+				linePointer++;
+			}
 		}
 		return newSequences;
 	}

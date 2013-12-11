@@ -113,10 +113,10 @@ public class KneserNeyBuilder {
 						+ "/kneser-ney-simple-" + i + ".txt");
 				kns.smooth(inputSequenceFile, resultFile, i, false);
 
-				// smooth complex
-				resultFile = new File(inputDirectory.getAbsolutePath()
-						+ "/kneser-ney-complex-" + i + ".txt");
-				kns.smooth(inputSequenceFile, resultFile, i, true);
+				// // smooth complex
+				// resultFile = new File(inputDirectory.getAbsolutePath()
+				// + "/kneser-ney-complex-" + i + ".txt");
+				// kns.smooth(inputSequenceFile, resultFile, i, true);
 			}
 		}
 		// File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
