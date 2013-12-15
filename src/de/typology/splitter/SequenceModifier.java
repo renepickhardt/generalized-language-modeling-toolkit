@@ -36,10 +36,8 @@ public class SequenceModifier implements Runnable {
 
 	@Override
 	public void run() {
-
 		BufferedWriter outputStreamWriter = new BufferedWriter(
 				new OutputStreamWriter(this.outputStream));
-		System.out.println(this.inputDirectory.getAbsolutePath());
 		try {
 			for (File inputFile : this.inputDirectory.listFiles()) {
 				BufferedReader inputFileReader = new BufferedReader(

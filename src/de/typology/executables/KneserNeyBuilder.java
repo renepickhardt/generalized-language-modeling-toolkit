@@ -57,8 +57,7 @@ public class KneserNeyBuilder {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
 					.getReverseGLMForSmoothingPatterns(Config.get().modelLength);
 			AbsoluteSplitter absolteSplitter = new AbsoluteSplitter(inputFile,
-					indexFile, absoluteOutputDirectory,
-					Config.get().maxCountDivider, "\t",
+					indexFile, absoluteOutputDirectory, "\t",
 					Config.get().deleteTempFiles, "<fs> <s> ", " </s>");
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());

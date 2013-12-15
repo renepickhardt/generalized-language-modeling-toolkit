@@ -13,8 +13,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.patterns.PatternTransformer;
-
 /**
  * This class takes an ArrayList of sequences and a directory of Files as an
  * input and writes all occurrences of the sequences into new files in the
@@ -58,12 +56,6 @@ public class SequenceExtractorTask implements Runnable {
 	public void run() {
 		HashSet<String> newSequences = this.getNewSequences();
 
-		System.out.println(PatternTransformer.getStringPattern(this.pattern)
-				+ ":");
-		for (String s : newSequences) {
-			System.out.println(s);
-		}
-
 		for (File inputFile : this.inputDirectory.listFiles()) {
 			File outputFile = new File(this.outputDirectory.getAbsolutePath()
 					+ "/" + inputFile.getName());
@@ -85,12 +77,7 @@ public class SequenceExtractorTask implements Runnable {
 				while ((line = inputFileReader.readLine()) != null) {
 					if (newSequences.contains(line.split(this.delimiter)[0])) {
 
-						System.out
-								.println(line.split(this.delimiter)[0] + " y");
 						outputFileWriter.write(line + "\n");
-					} else {
-						System.out
-								.println(line.split(this.delimiter)[0] + " n");
 					}
 				}
 				inputFileReader.close();

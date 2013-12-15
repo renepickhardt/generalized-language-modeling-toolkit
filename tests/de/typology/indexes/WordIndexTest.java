@@ -42,10 +42,10 @@ public class WordIndexTest {
 	@Test
 	public void rankTest() {
 		WordIndex wi = new WordIndex(this.indexFile);
-		assertEquals(7, wi.rank("et"));
-		assertEquals(2, wi.rank("A"));
-		assertEquals(3, wi.rank("Z"));
-		assertEquals(10, wi.rank("tempora"));
+		assertEquals(8, wi.rank("et"));
+		assertEquals(3, wi.rank("A"));
+		assertEquals(4, wi.rank("Z"));
+		assertEquals(11, wi.rank("tempora"));
 		assertEquals(11, wi.rank("z"));
 
 		for (String word : wi) {

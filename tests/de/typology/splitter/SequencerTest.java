@@ -70,15 +70,15 @@ public class SequencerTest {
 			// test file contents
 			BufferedReader br8 = new BufferedReader(new FileReader(
 					this.sequencerOutputDirectory.getAbsolutePath() + "/8"));
-			for (int i = 0; i < 7; i++) {
-				assertEquals("ipsum\t1", br8.readLine());
+			for (int i = 0; i < 10; i++) {
+				assertEquals("et\t1", br8.readLine());
 			}
 			assertNull(br8.readLine());
 			br8.close();
 
 			BufferedReader br2 = new BufferedReader(new FileReader(
-					this.sequencerOutputDirectory.getAbsolutePath() + "/2"));
-			for (int i = 0; i < 8; i++) {
+					this.sequencerOutputDirectory.getAbsolutePath() + "/3"));
+			for (int i = 0; i < 20; i++) {
 				assertEquals("<s>\t1", br2.readLine());
 			}
 			assertNull(br2.readLine());

@@ -28,8 +28,8 @@ public class KneserNeySmoother {
 
 	private String delimiter;
 	private DecimalFormatter decimalFormatter;
-	private HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
-	private HashMap<String, HashMap<String, Long>> continuationTypeSequenceValueMap;
+	protected HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
+	protected HashMap<String, HashMap<String, Long>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValueMap;
 
 	private boolean smoothComplex;
@@ -116,17 +116,21 @@ public class KneserNeySmoother {
 			HashMap<String, Long> sequenceValuesMap = new HashMap<String, Long>();
 			for (File sequenceValueFile : typeDirectory.listFiles()) {
 				try {
-					if (!sequenceValueFile.getName().equals("all")) {
-						BufferedReader sequenceValueReader = new BufferedReader(
-								new FileReader(sequenceValueFile));
-						String line;
+					BufferedReader sequenceValueReader = new BufferedReader(
+							new FileReader(sequenceValueFile));
+					String line;
+					if (sequenceValueFile.getName().equals("all")) {
+						while ((line = sequenceValueReader.readLine()) != null) {
+							sequenceValuesMap.put("", Long.parseLong(line));
+						}
+					} else {
 						while ((line = sequenceValueReader.readLine()) != null) {
 							String[] lineSplit = line.split(this.delimiter);
 							sequenceValuesMap.put(lineSplit[0],
 									Long.parseLong(lineSplit[1]));
 						}
-						sequenceValueReader.close();
 					}
+					sequenceValueReader.close();
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -193,6 +197,8 @@ public class KneserNeySmoother {
 		if (this.smoothComplex) {
 			char[] higherOrderCharPattern = higherOrderStringPattern
 					.toCharArray();
+			this.logger.debug("for lower order (" + higherOrderStringPattern
+					+ ") for \"" + higherOrderSequence + "\" aggregate:");
 			for (int i = 0; i < higherOrderSequenceLength - 1; i++) {
 				if (higherOrderCharPattern[i] == '1') {
 					char[] lowerOrderCharPattern = higherOrderCharPattern
@@ -213,31 +219,42 @@ public class KneserNeySmoother {
 
 					String lowerOrderStringPattern = String
 							.copyValueOf(lowerOrderCharPattern);
-					aggregatedLowerOrderValue += this
+					double currentLowerOrderValue = this
 							.calculateLowerOrderResult(lowerOrderSequence,
 									higherOrderSequenceLength,
 									lowerOrderStringPattern);
+					this.logger.debug("    (" + lowerOrderStringPattern
+							+ "): \"" + lowerOrderSequence + "\"");
+					aggregatedLowerOrderValue += currentLowerOrderValue;
 				}
 
 			}
-			this.logger.debug("lower order value with length "
-					+ higherOrderSequenceLength + " for \""
-					+ higherOrderSequence + "\":" + aggregatedLowerOrderValue
-					+ "/" + (higherOrderSequenceLength - 1));
-			return aggregatedLowerOrderValue / (higherOrderSequenceLength - 1);
+
+			double result = aggregatedLowerOrderValue
+					/ (higherOrderSequenceLength - 1);
+			this.logger.debug("lower order result (" + higherOrderStringPattern
+					+ ") for \"" + higherOrderSequence + "\":"
+					+ aggregatedLowerOrderValue + "/"
+					+ (higherOrderSequenceLength - 1) + "=" + result);
+			return result;
 		} else {
 			String lowerOrderSequence = SequenceFormatter.removeWord(
 					higherOrderSequence, 0);
 			String lowerOrderStringPattern = higherOrderStringPattern
 					.substring(1);
 
-			return this.calculateLowerOrderResult(lowerOrderSequence,
+			double result = this.calculateLowerOrderResult(lowerOrderSequence,
 					higherOrderSequenceLength - 1, lowerOrderStringPattern);
+			this.logger.debug("lower order result ("
+					+ +higherOrderSequenceLength + ") for \""
+					+ higherOrderSequence + "\"=" + result);
+
+			return result;
 		}
 
 	}
 
-	private double calculateLowerOrderResult(String sequence,
+	protected double calculateLowerOrderResult(String sequence,
 			int sequenceLength, String sequenceStringPattern) {
 		String continuationPattern;
 		if (sequenceStringPattern.contains("0")) {
@@ -264,24 +281,26 @@ public class KneserNeySmoother {
 				continuationReplacedLastStringPattern, sequenceWithoutLast);
 
 		// TODO: change this
-		if (higherOrderDenominator == 0) {
-			System.out.println("(" + continuationReplacedLastStringPattern
-					+ ")" + sequenceWithoutLast + " not found");
-			return 0;
-		}
+		// if (higherOrderDenominator == 0) {
+		// System.out.println("(" + continuationReplacedLastStringPattern
+		// + ")" + sequenceWithoutLast + " not found");
+		// return 0;
+		// }
 
 		// call methods for lower order results
-		this.logger.debug("KNlow(" + sequenceStringPattern + "): "
-				+ higherOrderValue + "/" + higherOrderDenominator + "+gamma("
-				+ sequenceStringPattern + ")*KNlow(" + sequenceStringPattern
-				+ ")");
-		return higherOrderValue
+		double result = (higherOrderValue - discountValue)
 				/ higherOrderDenominator
 				+ this.calculateWeightNumerator(sequence, sequenceLength,
 						sequenceStringPattern)
 				/ higherOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
 						sequenceStringPattern, sequenceLength);
+
+		this.logger.debug("KNlow(" + sequenceStringPattern + "): "
+				+ higherOrderValue + "-" + discountValue + "/"
+				+ higherOrderDenominator + "+gamma(" + sequenceStringPattern
+				+ ")*KNlow(" + sequenceStringPattern + ")=" + result);
+		return result;
 	}
 
 	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
@@ -295,14 +314,14 @@ public class KneserNeySmoother {
 			HashMap<String, Double> discountValuesMap = new HashMap<String, Double>();
 			long n1 = Counter.countCountsInDirectory(1, absoluteTypeDirectory);
 			long n2 = Counter.countCountsInDirectory(2, absoluteTypeDirectory);
-			this.logger.debug("n1 for " + absoluteTypeDirectory.getName() + ":"
+			this.logger.info("n1 for " + absoluteTypeDirectory.getName() + ":"
 					+ n1);
-			this.logger.debug("n2 for " + absoluteTypeDirectory.getName() + ":"
+			this.logger.info("n2 for " + absoluteTypeDirectory.getName() + ":"
 					+ n2);
 			// this.d1plus = 0.5;
 			double d1plus = n1 / ((double) n1 + 2 * n2);
-			this.logger.debug("D1+ for " + absoluteTypeDirectory.getName()
-					+ ":" + d1plus);
+			this.logger.info("D1+ for " + absoluteTypeDirectory.getName() + ":"
+					+ d1plus);
 			discountValuesMap.put("D1+", d1plus);
 
 			discountTypeValuesMap.put(absoluteTypeDirectory.getName(),

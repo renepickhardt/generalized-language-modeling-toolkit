@@ -11,17 +11,6 @@ import java.io.InputStream;
 
 public class Counter {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		System.out.println(Counter.countLinesInDirectory(new File(
-				"/home/martin/glm/out/wiki/bar/absolute/1/")));
-		System.out.println(Counter.countLines(new File(
-				"/home/martin/typoeval/out/wiki/bar/absolute/1/13")));
-
-	}
-
 	public static long countLinesInDirectory(File directory) {
 		long totalCount = 0;
 		for (File file : directory.listFiles()) {
@@ -160,7 +149,9 @@ public class Counter {
 	public static long countCountsInDirectory(int count, File directory) {
 		long totalCount = 0;
 		for (File file : directory.listFiles()) {
-			totalCount += countCounts(count, file);
+			if (!file.getName().contains("-split")) {
+				totalCount += countCounts(count, file);
+			}
 		}
 		return totalCount;
 	}

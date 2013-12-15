@@ -35,9 +35,8 @@ public class AbsoluteSplitter {
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public AbsoluteSplitter(File inputFile, File indexFile,
-			File outputDirectory, int maxCountDivider, String delimiter,
-			boolean deleteTempFiles, String addBeforeSentence,
-			String addAfterSentence) {
+			File outputDirectory, String delimiter, boolean deleteTempFiles,
+			String addBeforeSentence, String addAfterSentence) {
 		this.inputFile = inputFile;
 		this.indexFile = indexFile;
 		this.outputDirectory = outputDirectory;
