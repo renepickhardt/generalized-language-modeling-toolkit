@@ -17,15 +17,17 @@ public class LineCounterTask implements Runnable {
 	protected File outputDirectory;
 	protected String patternLabel;
 	protected String delimiter;
+	protected boolean setCountToOne;
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public LineCounterTask(InputStream inputStream, File outputDirectory,
-			String patternLabel, String delimiter) {
+			String patternLabel, String delimiter, boolean setCountToOne) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.patternLabel = patternLabel;
 		this.delimiter = delimiter;
+		this.setCountToOne = setCountToOne;
 	}
 
 	@Override
@@ -47,9 +49,16 @@ public class LineCounterTask implements Runnable {
 		BufferedReader inputStreamReader = new BufferedReader(
 				new InputStreamReader(this.inputStream));
 		long lineCount = 0L;
+		String line;
 		try {
-			while (inputStreamReader.readLine() != null) {
-				lineCount++;
+			if (this.setCountToOne) {
+				while ((line = inputStreamReader.readLine()) != null) {
+					lineCount++;
+				}
+			} else {
+				while ((line = inputStreamReader.readLine()) != null) {
+					lineCount += Long.parseLong(line.split(this.delimiter)[1]);
+				}
 			}
 			inputStreamReader.close();
 

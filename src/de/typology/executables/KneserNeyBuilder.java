@@ -30,8 +30,10 @@ public class KneserNeyBuilder {
 				+ "/training.txt");
 		File indexFile = new File(inputDirectory.getAbsolutePath()
 				+ "/index.txt");
-		File absoluteOutputDirectory = new File(
-				inputDirectory.getAbsolutePath() + "/absolute");
+		File absoluteDirectory = new File(inputDirectory.getAbsolutePath()
+				+ "/absolute");
+		File continuationDirectory = new File(inputDirectory.getAbsolutePath()
+				+ "/continuation");
 		if (Config.get().splitData) {
 			DataSetSplitter dss = new DataSetSplitter(inputDirectory,
 					"normalized.txt");
@@ -57,7 +59,7 @@ public class KneserNeyBuilder {
 			ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
 					.getReverseGLMForSmoothingPatterns(Config.get().modelLength);
 			AbsoluteSplitter absolteSplitter = new AbsoluteSplitter(inputFile,
-					indexFile, absoluteOutputDirectory, "\t",
+					indexFile, absoluteDirectory, "\t",
 					Config.get().deleteTempFiles, "<fs> <s> ", " </s>");
 			logger.info("split into GLM sequences: "
 					+ inputFile.getAbsolutePath());
@@ -67,28 +69,25 @@ public class KneserNeyBuilder {
 		if (Config.get().buildContinuationGLM) {
 			// ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
 			// .getReverseGLMForSmoothingPatterns(Config.get().modelLength);
-			// OldSmoothingSplitter smoothingSplitter = new
+			// OldSmoothingSplitter oldSmoothingSplitter = new
 			// OldSmoothingSplitter(
-			// absoluteOutputDirectory, indexFile,
-			// Config.get().maxCountDivider, "\t",
-			// Config.get().deleteTempFiles);
+			// absoluteDirectory, indexFile, Config.get().maxCountDivider,
+			// "\t", Config.get().deleteTempFiles);
 			//
 			// logger.info("split into old continuation sequences: "
 			// + inputFile.getAbsolutePath());
-			// smoothingSplitter.split(glmForSmoothingPatterns,
+			// oldSmoothingSplitter.split(glmForSmoothingPatterns,
 			// Config.get().numberOfCores);
 			ArrayList<boolean[]> lmPatterns = PatternBuilder
 					.getReverseLMPatterns(Config.get().modelLength);
 			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
-					absoluteOutputDirectory, indexFile,
+					absoluteDirectory, continuationDirectory, indexFile,
 					Config.get().maxCountDivider, "\t",
 					Config.get().deleteTempFiles);
 			logger.info("split into continuation sequences: "
 					+ inputFile.getAbsolutePath());
 			smoothingSplitter.split(lmPatterns, Config.get().numberOfCores);
 		}
-		File absoluteDirectory = new File(inputDirectory.getAbsolutePath()
-				+ "/absolute");
 
 		File testExtractOutputDirectory = new File(
 				inputDirectory.getAbsolutePath() + "/testing-samples");
@@ -108,8 +107,6 @@ public class KneserNeyBuilder {
 		}
 
 		if (Config.get().buildKneserNey) {
-			File continuationDirectory = new File(
-					inputDirectory.getAbsolutePath() + "/continuation");
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t", Config.get().decimalPlaces);

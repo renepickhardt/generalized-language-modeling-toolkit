@@ -58,11 +58,14 @@ public class SequenceModifier implements Runnable {
 							e.printStackTrace();
 						}
 						modifiedWords = modifiedWords.replaceFirst(" $", "");
-						// TODO: better solution?md
+						// TODO: better solution?
 						if (words[0].equals("<fs>")) {
 							// for kneser-ney smoothing: every sequence that
 							// starts
 							// with <fs> counts as a new sequence
+							if (this.inputDirectory.getName().equals("1")) {
+								continue;
+							}
 							if (!this.pattern[0]) {
 								// set <s> in _1 to zero
 								if (this.inputDirectory.getName().equals("11")

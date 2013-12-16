@@ -7,6 +7,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -21,7 +22,8 @@ import de.typology.indexes.WordIndex;
 import de.typology.patterns.PatternTransformer;
 
 public class SmoothingSplitter {
-	private File inputDirectory;
+	private File absoluteDirectory;
+	private File continuationDirectory;
 	private File indexFile;
 	private String delimiter;
 	protected boolean deleteTempFiles;
@@ -37,9 +39,12 @@ public class SmoothingSplitter {
 		}
 	};
 
-	public SmoothingSplitter(File inputDirectory, File indexFile,
-			int maxCountDivider, String delimiter, boolean deleteTempFiles) {
-		this.inputDirectory = inputDirectory;
+	public SmoothingSplitter(File absoluteDirectory,
+			File continuationDirectory, File indexFile, int maxCountDivider,
+			String delimiter, boolean deleteTempFiles) {
+		this.absoluteDirectory = absoluteDirectory;
+		this.continuationDirectory = continuationDirectory;
+		continuationDirectory.mkdir();
 		this.indexFile = indexFile;
 		this.delimiter = delimiter;
 		this.deleteTempFiles = deleteTempFiles;
@@ -52,25 +57,183 @@ public class SmoothingSplitter {
 		WordIndex wordIndex = new WordIndex(this.indexFile);
 		// initialize executerService
 		// int cores = Runtime.getRuntime().availableProcessors();
-		this.executorService = Executors.newFixedThreadPool(cores);
 
 		SortedMap<boolean[], boolean[]> continuationMap = this
 				.filterContinuationMap(this.getContinuationMap(patterns));
 
-		for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
-			System.out.println(PatternTransformer.getStringPattern(entry
-					.getKey())
-					+ " <-- "
-					+ PatternTransformer.getStringPattern(entry.getValue()));
-		}
-		System.out.println(continuationMap.size());
+		HashSet<boolean[]> finishedPatterns = new HashSet<boolean[]>();
 
-		// TODO build continuation sequences
-		this.executorService.shutdown();
+		while (finishedPatterns.size() < continuationMap.size()) {
+			ArrayList<boolean[]> currentPatterns = new ArrayList<boolean[]>();
+			this.executorService = Executors.newFixedThreadPool(cores);
+
+			for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
+				// list for storing patterns that are currently computed
+
+				if (!finishedPatterns.contains(entry.getKey())) {
+					if (!PatternTransformer.getStringPattern(entry.getValue())
+							.contains("0")) {
+						// read absolute files
+						currentPatterns.add(entry.getKey());
+						this.logger.info("build continuation for "
+								+ PatternTransformer.getStringPattern(entry
+										.getKey())
+								+ " from absolute "
+								+ PatternTransformer.getStringPattern(entry
+										.getValue()));
+
+						String inputPatternLabel = PatternTransformer
+								.getStringPattern(entry.getValue());
+						boolean[] outputPattern = PatternTransformer
+								.getBooleanPattern(PatternTransformer
+										.getStringPattern(entry.getKey())
+										.replaceAll("0", ""));
+						String outputPatternLabel = PatternTransformer
+								.getStringPattern(entry.getKey()).replaceAll(
+										"0", "_");
+
+						File currentAbsoluteInputDirectory = new File(
+								this.absoluteDirectory.getAbsolutePath() + "/"
+										+ inputPatternLabel);
+
+						this.logger.debug("inputPattern: "
+								+ PatternTransformer.getStringPattern(entry
+										.getValue()));
+						this.logger.debug("inputPatternLabel: "
+								+ inputPatternLabel);
+						this.logger.debug("outputPattern: "
+								+ PatternTransformer
+										.getStringPattern(outputPattern));
+						this.logger.debug("newPatternLabel: "
+								+ outputPatternLabel);
+						this.logger.debug("patternForModifier: "
+								+ PatternTransformer.getStringPattern(entry
+										.getKey()));
+
+						this.splitType(currentAbsoluteInputDirectory,
+								this.continuationDirectory, outputPattern,
+								outputPatternLabel, entry.getKey(), wordIndex,
+								true);
+					} else {
+						if (finishedPatterns.contains(entry.getValue())) {
+							// read continuation files
+							currentPatterns.add(entry.getKey());
+							this.logger.info("build continuation for "
+									+ PatternTransformer.getStringPattern(entry
+											.getKey())
+									+ " from continuation "
+									+ PatternTransformer.getStringPattern(entry
+											.getValue()));
+
+							String inputPatternLabel = PatternTransformer
+									.getStringPattern(entry.getValue())
+									.replaceAll("0", "_");
+							boolean[] outputPattern = PatternTransformer
+									.getBooleanPattern(PatternTransformer
+											.getStringPattern(entry.getKey())
+											.replaceAll("0", ""));
+							String outputPatternLabel = PatternTransformer
+									.getStringPattern(entry.getKey())
+									.replaceAll("0", "_");
+
+							File currentContinuationInputDirectory = new File(
+									this.continuationDirectory
+											.getAbsolutePath()
+											+ "/"
+											+ inputPatternLabel);
+
+							// build patternForModifier
+							boolean[] patternForModifier = new boolean[Integer
+									.bitCount(PatternTransformer
+											.getIntPattern(entry.getValue()))];
+							System.out.println(outputPatternLabel + "<--"
+									+ inputPatternLabel + " "
+									+ patternForModifier.length);
+							int patternPointer = 0;
+							for (int i = 0; i < entry.getValue().length; i++) {
+								if (entry.getKey()[i] && entry.getValue()[i]) {
+									patternForModifier[patternPointer] = true;
+									patternPointer++;
+								} else {
+									if (!entry.getKey()[i]
+											&& entry.getValue()[i]) {
+										patternForModifier[patternPointer] = false;
+										patternPointer++;
+									}
+								}
+							}
+
+							this.logger.debug("inputPattern: "
+									+ PatternTransformer.getStringPattern(entry
+											.getValue()));
+							this.logger.debug("inputPatternLabel: "
+									+ inputPatternLabel);
+							this.logger.debug("outputPattern: "
+									+ PatternTransformer
+											.getStringPattern(outputPattern));
+							this.logger.debug("newPatternLabel: "
+									+ outputPatternLabel);
+							this.logger
+									.debug("patternForModifier: "
+											+ PatternTransformer
+													.getStringPattern(patternForModifier));
+
+							this.splitType(currentContinuationInputDirectory,
+									this.continuationDirectory, outputPattern,
+									outputPatternLabel, patternForModifier,
+									wordIndex, false);
+
+						}
+					}
+				}
+			}
+			this.executorService.shutdown();
+			this.logger.info("end of this round of calculation");
+			try {
+				this.executorService.awaitTermination(Long.MAX_VALUE,
+						TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			// add currently computed patterns to finishedPatterns
+			for (boolean[] currentPattern : currentPatterns) {
+				finishedPatterns.add(currentPattern);
+			}
+		}
+
+	}
+
+	private void splitType(File currentInputDirectory, File outputDirectory,
+			boolean[] newPattern, String newPatternLabel,
+			boolean[] patternForModifier, WordIndex wordIndex,
+			boolean setCountToOne) {
+		PipedInputStream pipedInputStream = new PipedInputStream(100 * 8 * 1024);
+
+		if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
+			LineCounterTask lineCountTask = new LineCounterTask(
+					pipedInputStream, outputDirectory, newPatternLabel,
+					this.delimiter, setCountToOne);
+			this.executorService.execute(lineCountTask);
+		} else {
+			// don't add tags here
+			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
+					outputDirectory, wordIndex, newPattern, newPatternLabel,
+					this.delimiter, 0, this.deleteTempFiles, "", "", true,
+					false);
+			this.executorService.execute(splitterTask);
+		}
+
 		try {
-			this.executorService.awaitTermination(Long.MAX_VALUE,
-					TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
+			OutputStream pipedOutputStream = new PipedOutputStream(
+					pipedInputStream);
+			System.out.println(currentInputDirectory.getAbsolutePath());
+			SequenceModifier sequenceModifier = new SequenceModifier(
+					currentInputDirectory, pipedOutputStream, this.delimiter,
+					patternForModifier, true, setCountToOne);
+			this.executorService.execute(sequenceModifier);
+
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -130,40 +293,4 @@ public class SmoothingSplitter {
 		}
 	}
 
-	private void splitType(File currentInputDirectory, File outputDirectory,
-			boolean[] newPattern, String newPatternLabel,
-			boolean[] patternForModifier, WordIndex wordIndex,
-			boolean setCountToOne) {
-
-		PipedInputStream pipedInputStream = new PipedInputStream(100 * 8 * 1024);
-
-		if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
-			LineCounterTask lineCountTask = new LineCounterTask(
-					pipedInputStream, outputDirectory, newPatternLabel,
-					this.delimiter);
-			this.executorService.execute(lineCountTask);
-		} else {
-			// don't add tags here
-			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
-					outputDirectory, wordIndex, newPattern, newPatternLabel,
-					this.delimiter, 0, this.deleteTempFiles, "", "", true,
-					false);
-			this.executorService.execute(splitterTask);
-		}
-
-		try {
-			OutputStream pipedOutputStream = new PipedOutputStream(
-					pipedInputStream);
-			System.out.println(currentInputDirectory.getAbsolutePath());
-			SequenceModifier sequenceModifier = new SequenceModifier(
-					currentInputDirectory, pipedOutputStream, this.delimiter,
-					patternForModifier, true, setCountToOne);
-			this.executorService.execute(sequenceModifier);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
 }

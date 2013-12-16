@@ -261,7 +261,7 @@ public class OldSmoothingSplitter {
 		if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
 			LineCounterTask lineCountTask = new LineCounterTask(
 					pipedInputStream, outputDirectory, newPatternLabel,
-					this.delimiter);
+					this.delimiter, setCountToOne);
 			this.executorService.execute(lineCountTask);
 		} else {
 			// don't add tags here
