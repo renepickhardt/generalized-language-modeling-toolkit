@@ -146,11 +146,12 @@ public class Counter {
 	 * @param directory
 	 * @return
 	 */
-	public static long countCountsInDirectory(int count, File directory) {
+	public static long countCountsInDirectory(int count, File directory,
+			String skipSequence) {
 		long totalCount = 0;
 		for (File file : directory.listFiles()) {
 			if (!file.getName().contains("-split")) {
-				totalCount += countCounts(count, file);
+				totalCount += countCounts(count, file, skipSequence);
 			}
 		}
 		return totalCount;
@@ -163,7 +164,7 @@ public class Counter {
 	 * @param directoryName
 	 * @return
 	 */
-	public static long countCounts(int count, File file) {
+	public static long countCounts(int count, File file, String skipSequence) {
 		long totalCount = 0;
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -171,6 +172,9 @@ public class Counter {
 				String line;
 				String[] lineSplit;
 				while ((line = br.readLine()) != null) {
+					if (line.startsWith("<fs>")) {
+						continue;
+					}
 					lineSplit = line.split("\t");
 					long currentCount = Long
 							.parseLong(lineSplit[lineSplit.length - 1]);

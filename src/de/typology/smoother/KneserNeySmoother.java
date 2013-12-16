@@ -30,7 +30,7 @@ public class KneserNeySmoother {
 	private DecimalFormatter decimalFormatter;
 	protected HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Long>> continuationTypeSequenceValueMap;
-	protected HashMap<String, HashMap<String, Double>> discountTypeValueMap;
+	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
 	private boolean smoothComplex;
 
@@ -46,8 +46,8 @@ public class KneserNeySmoother {
 						+ continuationDirectory.getName());
 
 		// calculate discount Values
-		this.discountTypeValueMap = this
-				.calculateDiscountValues(this.absoluteDirectory);
+		this.discountTypeValuesMap = this.calculateDiscountValues(
+				this.absoluteDirectory, continuationDirectory);
 
 		this.delimiter = delimiter;
 		this.decimalFormatter = new DecimalFormatter(decimalPlaces);
@@ -145,7 +145,7 @@ public class KneserNeySmoother {
 
 	}
 
-	private double calculateResult(String sequence, int sequenceLength,
+	protected double calculateResult(String sequence, int sequenceLength,
 			String sequenceStringPattern) {
 		this.logger.debug("calculate(" + sequenceStringPattern + "):"
 				+ sequence);
@@ -172,17 +172,29 @@ public class KneserNeySmoother {
 			return 0;
 		}
 
-		this.logger.debug("highestOrder: (" + highestOrderValue + "-"
-				+ discountValue + ")/" + highestOrderDenominator + "*gamma("
-				+ sequenceStringPattern + ")*KNlow(" + sequenceStringPattern
-				+ ")");
-		return highestOrderNumerator
+		double result = highestOrderNumerator
 				/ highestOrderDenominator
-				+ this.calculateWeightNumerator(sequence, sequenceLength,
+				+ discountValue
+				* this.calculateContinuationLast(sequence, sequenceLength,
 						sequenceStringPattern)
 				/ highestOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
 						sequenceStringPattern, sequenceLength);
+		this.logger.debug("KNhigh("
+				+ sequenceStringPattern
+				+ "): "
+				+ highestOrderValue
+				+ "-"
+				+ discountValue
+				+ "/"
+				+ highestOrderDenominator
+				+ "+"
+				+ discountValue
+				+ "*"
+				+ this.calculateContinuationLast(sequence, sequenceLength,
+						sequenceStringPattern) + "/" + highestOrderDenominator
+				+ "*KNlow(" + sequenceStringPattern + ")=" + result);
+		return result;
 	}
 
 	private double calculateAggregatedLowerOrderResult(
@@ -265,7 +277,7 @@ public class KneserNeySmoother {
 		long higherOrderValue = this.getContinuationValue(continuationPattern,
 				sequence);
 
-		double discountValue = this.getDiscountValue(sequenceStringPattern,
+		double discountValue = this.getDiscountValue(continuationPattern,
 				higherOrderValue);
 
 		double highestOrderNumerator = higherOrderValue - discountValue;
@@ -288,32 +300,55 @@ public class KneserNeySmoother {
 		// }
 
 		// call methods for lower order results
-		double result = (higherOrderValue - discountValue)
+		double result = highestOrderNumerator
 				/ higherOrderDenominator
-				+ this.calculateWeightNumerator(sequence, sequenceLength,
+				+ discountValue
+				* this.calculateContinuationLast(sequence, sequenceLength,
 						sequenceStringPattern)
 				/ higherOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
 						sequenceStringPattern, sequenceLength);
 
-		this.logger.debug("KNlow(" + sequenceStringPattern + "): "
-				+ higherOrderValue + "-" + discountValue + "/"
-				+ higherOrderDenominator + "+gamma(" + sequenceStringPattern
-				+ ")*KNlow(" + sequenceStringPattern + ")=" + result);
+		this.logger.debug("KNlow("
+				+ sequenceStringPattern
+				+ "): "
+				+ higherOrderValue
+				+ "-"
+				+ discountValue
+				+ "/"
+				+ higherOrderDenominator
+				+ "+"
+				+ discountValue
+				+ "*"
+				+ this.calculateContinuationLast(sequence, sequenceLength,
+						sequenceStringPattern) + "/" + higherOrderDenominator
+				+ "*KNlow(" + sequenceStringPattern + ")=" + result);
 		return result;
 	}
 
 	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
-			File absoluteDirectory) {
+			File absoluteDirectory, File continuationDirectory) {
 		HashMap<String, HashMap<String, Double>> discountTypeValuesMap = new HashMap<String, HashMap<String, Double>>();
+		this.calculateDiscountValues(discountTypeValuesMap, absoluteDirectory);
+		this.calculateDiscountValues(discountTypeValuesMap,
+				continuationDirectory);
 
-		for (File absoluteTypeDirectory : absoluteDirectory.listFiles()) {
+		return discountTypeValuesMap;
+
+	}
+
+	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
+			HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
+			File inputDirectory) {
+		for (File absoluteTypeDirectory : inputDirectory.listFiles()) {
 			if (absoluteTypeDirectory.getName().contains("split")) {
 				continue;
 			}
 			HashMap<String, Double> discountValuesMap = new HashMap<String, Double>();
-			long n1 = Counter.countCountsInDirectory(1, absoluteTypeDirectory);
-			long n2 = Counter.countCountsInDirectory(2, absoluteTypeDirectory);
+			long n1 = Counter.countCountsInDirectory(1, absoluteTypeDirectory,
+					"<fs>");
+			long n2 = Counter.countCountsInDirectory(2, absoluteTypeDirectory,
+					"<fs>");
 			this.logger.info("n1 for " + absoluteTypeDirectory.getName() + ":"
 					+ n1);
 			this.logger.info("n2 for " + absoluteTypeDirectory.getName() + ":"
@@ -384,17 +419,20 @@ public class KneserNeySmoother {
 	 */
 	protected double getDiscountValue(String sequenceStringPattern,
 			long sequenceCount) {
-		if (sequenceStringPattern.length() > 1) {
-			return this.discountTypeValueMap.get(sequenceStringPattern).get(
+		String stringPatternForBitcount = sequenceStringPattern.replaceAll("_",
+				"0");
+		if (Integer.bitCount(PatternTransformer
+				.getIntPattern(PatternTransformer
+						.getBooleanPattern(stringPatternForBitcount))) > 1) {
+			return this.discountTypeValuesMap.get(sequenceStringPattern).get(
 					"D1+");
 		} else {
 			return 0;
 		}
 	}
 
-	protected double calculateWeightNumerator(String sequence,
+	protected double calculateContinuationLast(String sequence,
 			int sequenceLength, String sequenceStringPattern) {
-		double discountValue = this.getDiscountValue(sequenceStringPattern, 0);
 
 		String sequenceWithoutLast = SequenceFormatter.removeWord(sequence,
 				sequenceLength - 1);
@@ -402,10 +440,9 @@ public class KneserNeySmoother {
 				sequenceStringPattern.length() - 1) + "_";
 		long continuationLastValue = this.getContinuationValue(
 				continuationLastPattern, sequenceWithoutLast);
-
-		this.logger.debug("gamma(" + sequenceStringPattern + "):"
-				+ discountValue + "*" + continuationLastValue);
-		return discountValue * continuationLastValue;
+		this.logger.debug("continuationLast(" + sequenceStringPattern
+				+ ") for " + sequence + ":" + continuationLastValue);
+		return continuationLastValue;
 	}
 
 }

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,10 +54,6 @@ public class KneserNeySmootherTest {
 		this.kneserNeyFile = new File(inputDirectoryPath + "kn-sequences-5.txt");
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	// @Test
 	// public void calculateDiscoutValuesTest() {
 	//
@@ -79,6 +74,8 @@ public class KneserNeySmootherTest {
 		kns.smooth(this.testSequenceFile, this.kneserNeyFile, 5, false);
 		System.out.println(kns.continuationTypeSequenceValueMap.get("__").get(
 				""));
+		assertEquals(0.625, kns.discountTypeValuesMap.get("_11").get("D1+"),
+				0.00001);
 		assertEquals(0.0357, kns.calculateLowerOrderResult("dolor", 1, "1"),
 				0.0001);
 		assertEquals(0.07143, kns.calculateLowerOrderResult("et", 1, "1"),
@@ -86,9 +83,16 @@ public class KneserNeySmootherTest {
 		assertEquals(0.39282, kns.calculateLowerOrderResult("</s>", 1, "1"),
 				0.0001);
 		assertEquals(0.0, kns.calculateLowerOrderResult("<s>", 1, "1"), 0.0001);
-
-		// assertEquals(0.2098,
-		// kns.calculateLowerOrderResult("ipsum dolor", 2, "11"), 0.0001);
+		assertEquals(0.2098,
+				kns.calculateLowerOrderResult("sit amet", 2, "11"), 0.0001);
+		assertEquals(0.309885,
+				kns.calculateLowerOrderResult("dolor sit amet", 3, "111"),
+				0.0001);
+		assertEquals(0.3595, kns.calculateLowerOrderResult(
+				"ipsum dolor sit amet", 4, "1111"), 0.0001);
+		assertEquals(0.77929,
+				kns.calculateResult("Lorem ipsum dolor sit amet", 5, "11111"),
+				0.0001);
 
 	}
 

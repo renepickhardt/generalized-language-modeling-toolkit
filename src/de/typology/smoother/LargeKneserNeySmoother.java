@@ -40,10 +40,11 @@ public class LargeKneserNeySmoother {
 	private DecimalFormatter decimalFormatter;
 	private boolean deleteTempFiles;
 
-	public LargeKneserNeySmoother(File absoluteDirectory, File _absoluteDirectory,
-			File _absolute_Directory, File absolute_Directory,
-			File kneserNeyOutputDirectory, WordIndex wordIndex,
-			String delimiter, int decimalPlaces, boolean deleteTempFiles) {
+	public LargeKneserNeySmoother(File absoluteDirectory,
+			File _absoluteDirectory, File _absolute_Directory,
+			File absolute_Directory, File kneserNeyOutputDirectory,
+			WordIndex wordIndex, String delimiter, int decimalPlaces,
+			boolean deleteTempFiles) {
 		this.absoluteDirectory = absoluteDirectory;
 		this._absoluteDirectory = _absoluteDirectory;
 		this._absolute_Directory = _absolute_Directory;
@@ -329,8 +330,8 @@ public class LargeKneserNeySmoother {
 	}
 
 	protected void calculateDs(File directory) {
-		long n1 = Counter.countCountsInDirectory(1, directory);
-		long n2 = Counter.countCountsInDirectory(2, directory);
+		long n1 = Counter.countCountsInDirectory(1, directory, "<fs>");
+		long n2 = Counter.countCountsInDirectory(2, directory, "<fs>");
 		this.logger.info("n1: " + n1);
 		this.logger.info("n2: " + n2);
 		// this.d1plus = 0.5;

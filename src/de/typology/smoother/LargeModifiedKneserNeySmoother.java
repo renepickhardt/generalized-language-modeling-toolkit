@@ -21,10 +21,10 @@ public class LargeModifiedKneserNeySmoother {
 
 	// @Override
 	protected void calculateDs(File directory) {
-		long n1 = Counter.countCountsInDirectory(1, directory);
-		long n2 = Counter.countCountsInDirectory(2, directory);
-		long n3 = Counter.countCountsInDirectory(3, directory);
-		long n4 = Counter.countCountsInDirectory(4, directory);
+		long n1 = Counter.countCountsInDirectory(1, directory, "<fs>");
+		long n2 = Counter.countCountsInDirectory(2, directory, "<fs>");
+		long n3 = Counter.countCountsInDirectory(3, directory, "<fs>");
+		long n4 = Counter.countCountsInDirectory(4, directory, "<fs>");
 		this.logger.info("n1: " + n1);
 		this.logger.info("n2: " + n2);
 		this.logger.info("n3: " + n3);
