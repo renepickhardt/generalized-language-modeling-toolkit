@@ -84,4 +84,26 @@ public class AggregatorTest {
 		}
 		this.outputFile.delete();
 	}
+
+	@Test
+	public void aggregatorCol2Test() {
+		Aggregator aggregator = new Aggregator(this.inputFile, this.outputFile,
+				"\t", 2);
+		aggregator.aggregateCounts();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(
+					this.outputFile));
+			assertEquals("a z a\t1", br.readLine());
+			assertEquals("b y a\t1", br.readLine());
+			assertEquals("c x a\t2", br.readLine());
+			assertEquals("b y b\t1", br.readLine());
+			assertEquals("c y b\t1", br.readLine());
+			assertNull(br.readLine());
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		this.outputFile.delete();
+	}
 }

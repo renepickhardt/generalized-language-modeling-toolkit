@@ -89,38 +89,37 @@ public class SequencerTest {
 		}
 	}
 
-	// @Test
-	// public void squencing1101Test() {
-	// WordIndex wordIndex = new WordIndex(this.indexFile);
-	// boolean[] pattern = { true, true, false, true };
-	//
-	// try {
-	// InputStream inputStream = new FileInputStream(this.inputFile);
-	// Sequencer sequencer = new Sequencer(inputStream,
-	// this.sequencerOutputDirectory, wordIndex, pattern, "<fs> <s> ",
-	// " </s>");
-	// sequencer.run();
-	//
-	// // test file contents
-	// BufferedReader br0 = new BufferedReader(new FileReader(
-	// this.sequencerOutputDirectory.getAbsolutePath() + "/8"));
-	// for (int i = 0; i < 4; i++) {
-	// assertEquals("ipsum dolor amet,", br0.readLine());
-	// }
-	// assertNull(br0.readLine());
-	// br0.close();
-	//
-	// BufferedReader br10 = new BufferedReader(new FileReader(
-	// this.sequencerOutputDirectory.getAbsolutePath() + "/3"));
-	// for (int i = 0; i < 5; i++) {
-	// assertEquals("Lorem ipsum sit", br10.readLine());
-	// }
-	// assertNull(br10.readLine());
-	// br10.close();
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
+	@Test
+	public void squencing1101Test() {
+		WordIndex wordIndex = new WordIndex(this.indexFile);
+		boolean[] pattern = { true, true, false, true };
 
+		try {
+			InputStream inputStream = new FileInputStream(this.inputFile);
+			Sequencer sequencer = new Sequencer(inputStream,
+					this.sequencerOutputDirectory, wordIndex, pattern,
+					"<fs> <s> ", " </s>", "\t", false, 0);
+			sequencer.splitIntoFiles();
+
+			// test file contents
+			BufferedReader br0 = new BufferedReader(new FileReader(
+					this.sequencerOutputDirectory.getAbsolutePath() + "/8"));
+			for (int i = 0; i < 6; i++) {
+				assertEquals("et justo dolores\t1", br0.readLine());
+			}
+			assertNull(br0.readLine());
+			br0.close();
+
+			BufferedReader br10 = new BufferedReader(new FileReader(
+					this.sequencerOutputDirectory.getAbsolutePath() + "/3"));
+			for (int i = 0; i < 6; i++) {
+				assertEquals("<s> Lorem dolor\t1", br10.readLine());
+			}
+			assertEquals("<s> Lorem </s>\t1", br10.readLine());
+			br10.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

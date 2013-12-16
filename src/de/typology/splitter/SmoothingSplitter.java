@@ -6,12 +6,14 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,9 +22,6 @@ import de.typology.patterns.PatternTransformer;
 
 public class SmoothingSplitter {
 	private File inputDirectory;
-	private File _outputDirectory;
-	private File _output_Directory;
-	private File output_Directory;
 	private File indexFile;
 	private String delimiter;
 	protected boolean deleteTempFiles;
@@ -30,47 +29,20 @@ public class SmoothingSplitter {
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 	private ExecutorService executorService;
 
+	private Comparator<boolean[]> patternComparator = new Comparator<boolean[]>() {
+		@Override
+		public int compare(boolean[] pattern1, boolean[] pattern2) {
+			return PatternTransformer.getStringPattern(pattern2).compareTo(
+					PatternTransformer.getStringPattern(pattern1));
+		}
+	};
+
 	public SmoothingSplitter(File inputDirectory, File indexFile,
 			int maxCountDivider, String delimiter, boolean deleteTempFiles) {
 		this.inputDirectory = inputDirectory;
 		this.indexFile = indexFile;
 		this.delimiter = delimiter;
 		this.deleteTempFiles = deleteTempFiles;
-		// delete old directory
-		this._outputDirectory = new File(this.inputDirectory.getParent() + "/_"
-				+ this.inputDirectory.getName());
-		this._output_Directory = new File(this.inputDirectory.getParent()
-				+ "/_" + this.inputDirectory.getName() + "_");
-		this.output_Directory = new File(this.inputDirectory.getParent() + "/"
-				+ this.inputDirectory.getName() + "_");
-
-		if (this._outputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this._outputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		this._outputDirectory.mkdir();
-		if (this.output_Directory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.output_Directory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		this.output_Directory.mkdir();
-		if (this._output_Directory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this._output_Directory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		this._output_Directory.mkdir();
 	}
 
 	public void split(ArrayList<boolean[]> patterns, int cores) {
@@ -82,50 +54,18 @@ public class SmoothingSplitter {
 		// int cores = Runtime.getRuntime().availableProcessors();
 		this.executorService = Executors.newFixedThreadPool(cores);
 
-		// _absolute
-		for (boolean[] inputPattern : patterns) {
-			// boolean[] pattern = patterns.get(14);
+		SortedMap<boolean[], boolean[]> continuationMap = this
+				.filterContinuationMap(this.getContinuationMap(patterns));
 
-			String inputPatternLabel = PatternTransformer
-					.getStringPattern(inputPattern);
-			File currentInputDirectory = new File(this.inputDirectory + "/"
-					+ inputPatternLabel);
-
-			int inputPatternNumberOfColumns = Integer
-					.bitCount(PatternTransformer.getIntPattern(inputPattern));
-
-			boolean[] inputPatternWithoutFirst = Arrays.copyOfRange(
-					inputPattern, 1, inputPattern.length);
-
-			boolean[] newPattern = PatternTransformer
-					.getBooleanPatternWithOnes(Integer
-							.bitCount(PatternTransformer
-									.getIntPattern(inputPatternWithoutFirst)));
-			String newPatternLabel = "_"
-					+ PatternTransformer
-							.getStringPattern(inputPatternWithoutFirst);
-
-			boolean[] patternForModifier = PatternTransformer
-					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
-			patternForModifier[0] = false;
-
-			this.logger.debug("inputPattern: "
-					+ PatternTransformer.getStringPattern(inputPattern));
-			this.logger.debug("inputPatternLabel: " + inputPatternLabel);
-			this.logger.debug("newPattern: "
-					+ PatternTransformer.getStringPattern(newPattern));
-			this.logger.debug("newPatternLabel: " + newPatternLabel);
-			this.logger.debug("patternForModifier: "
-					+ PatternTransformer.getStringPattern(patternForModifier));
-
-			this.splitType(currentInputDirectory, this._outputDirectory,
-					newPattern, newPatternLabel, patternForModifier, wordIndex,
-					true);
-
+		for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
+			System.out.println(PatternTransformer.getStringPattern(entry
+					.getKey())
+					+ " <-- "
+					+ PatternTransformer.getStringPattern(entry.getValue()));
 		}
+		System.out.println(continuationMap.size());
 
-		// restart executerService to make sure that all threads are done for
-		// building _absolute_
+		// TODO build continuation sequences
 		this.executorService.shutdown();
 		try {
 			this.executorService.awaitTermination(Long.MAX_VALUE,
@@ -135,120 +75,59 @@ public class SmoothingSplitter {
 			e.printStackTrace();
 		}
 
-		this.executorService = Executors.newFixedThreadPool(cores);
+	}
 
-		// _absolute_
-		for (boolean[] pattern : patterns) {
-			// boolean[] pattern = patterns.get(14);
-
-			// skip patterns that end with a zero
-			if (pattern[pattern.length - 1] == false) {
+	private SortedMap<boolean[], boolean[]> filterContinuationMap(
+			SortedMap<boolean[], boolean[]> continuationMap) {
+		SortedMap<boolean[], boolean[]> newContinuationMap = new TreeMap<boolean[], boolean[]>(
+				this.patternComparator);
+		for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
+			if (PatternTransformer.getStringPattern(entry.getKey()).equals(
+					PatternTransformer.getStringPattern(entry.getValue()))) {
 				continue;
 			}
-
-			boolean[] inputPattern = Arrays.copyOfRange(pattern, 1,
-					pattern.length);
-			String inputPatternLabel = "_"
-					+ PatternTransformer.getStringPattern(inputPattern);
-			File currentInputDirectory = new File(this._outputDirectory + "/"
-					+ inputPatternLabel);
-
-			// skip "_"
-			if (inputPatternLabel.length() < 2) {
-				continue;
+			boolean[] currentPattern = entry.getKey();
+			if (currentPattern.length > 2) {
+				if (!currentPattern[0]
+						&& currentPattern[1]
+						&& Integer.bitCount(PatternTransformer
+								.getIntPattern(currentPattern)) < currentPattern.length - 1) {
+					continue;
+				}
+				if (!currentPattern[0]
+						&& !currentPattern[1]
+						&& Integer.bitCount(PatternTransformer
+								.getIntPattern(currentPattern)) < currentPattern.length - 2) {
+					continue;
+				}
 			}
-
-			int inputPatternNumberOfColumns = Integer
-					.bitCount(PatternTransformer.getIntPattern(inputPattern));
-
-			boolean[] inputPatternWithoutLast = Arrays.copyOfRange(
-					inputPattern, 0, inputPattern.length - 1);
-
-			boolean[] newPattern = PatternTransformer
-					.getBooleanPatternWithOnes(Integer
-							.bitCount(PatternTransformer
-									.getIntPattern(inputPatternWithoutLast)));
-			String newPatternLabel = "_"
-					+ PatternTransformer
-							.getStringPattern(inputPatternWithoutLast) + "_";
-
-			boolean[] patternForModifier = PatternTransformer
-					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
-			patternForModifier[patternForModifier.length - 1] = false;
-
-			this.logger.debug("inputPattern: "
-					+ PatternTransformer.getStringPattern(inputPattern));
-			this.logger.debug("inputPatternLabel: " + inputPatternLabel);
-			this.logger.debug("newPattern: "
-					+ PatternTransformer.getStringPattern(newPattern));
-			this.logger.debug("newPatternLabel: " + newPatternLabel);
-			this.logger.debug("patternForModifier: "
-					+ PatternTransformer.getStringPattern(patternForModifier));
-
-			this.splitType(currentInputDirectory, this._output_Directory,
-					newPattern, newPatternLabel, patternForModifier, wordIndex,
-					false);
+			newContinuationMap.put(entry.getKey(), entry.getValue());
 
 		}
+		return newContinuationMap;
+	}
 
-		// no need to restart executerService since _absolute_ and absolute_ are
-		// independent
+	private SortedMap<boolean[], boolean[]> getContinuationMap(
+			ArrayList<boolean[]> patterns) {
+		SortedMap<boolean[], boolean[]> continuationMap = new TreeMap<boolean[], boolean[]>(
+				this.patternComparator);
 
-		// absolute_
 		for (boolean[] inputPattern : patterns) {
-			// boolean[] pattern = patterns.get(14);
-
-			// skip patterns that end with a zero
-			if (inputPattern[inputPattern.length - 1] == false) {
-				continue;
-			}
-
-			String inputPatternLabel = PatternTransformer
-					.getStringPattern(inputPattern);
-			File currentInputDirectory = new File(this.inputDirectory + "/"
-					+ inputPatternLabel);
-
-			int inputPatternNumberOfColumns = Integer
-					.bitCount(PatternTransformer.getIntPattern(inputPattern));
-
-			boolean[] inputPatternWithoutLast = Arrays.copyOfRange(
-					inputPattern, 0, inputPattern.length - 1);
-
-			boolean[] newPattern = PatternTransformer
-					.getBooleanPatternWithOnes(Integer
-							.bitCount(PatternTransformer
-									.getIntPattern(inputPatternWithoutLast)));
-			String newPatternLabel = PatternTransformer
-					.getStringPattern(inputPatternWithoutLast) + "_";
-
-			boolean[] patternForModifier = PatternTransformer
-					.getBooleanPatternWithOnes(inputPatternNumberOfColumns);
-			patternForModifier[patternForModifier.length - 1] = false;
-
-			this.logger.debug("inputPattern: "
-					+ PatternTransformer.getStringPattern(inputPattern));
-			this.logger.debug("inputPatternLabel: " + inputPatternLabel);
-			this.logger.debug("newPattern: "
-					+ PatternTransformer.getStringPattern(newPattern));
-			this.logger.debug("newPatternLabel: " + newPatternLabel);
-			this.logger.debug("patternForModifier: "
-					+ PatternTransformer.getStringPattern(patternForModifier));
-
-			this.splitType(currentInputDirectory, this.output_Directory,
-					newPattern, newPatternLabel, patternForModifier, wordIndex,
-					true);
-
+			this.addPatterns(continuationMap, inputPattern, inputPattern, 0);
 		}
+		return continuationMap;
+	}
 
-		this.executorService.shutdown();
-		try {
-			this.executorService.awaitTermination(Long.MAX_VALUE,
-					TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private void addPatterns(SortedMap<boolean[], boolean[]> continuationMap,
+			boolean[] pattern, boolean[] oldPattern, int position) {
+		if (position < pattern.length) {
+			boolean[] newPattern = pattern.clone();
+			newPattern[position] = false;
+			continuationMap.put(newPattern, pattern);
+			continuationMap.put(pattern, oldPattern);
+			this.addPatterns(continuationMap, newPattern, pattern, position + 1);
+			this.addPatterns(continuationMap, pattern, oldPattern, position + 1);
 		}
-
 	}
 
 	private void splitType(File currentInputDirectory, File outputDirectory,

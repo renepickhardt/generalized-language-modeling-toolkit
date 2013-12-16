@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -37,19 +36,48 @@ public class Aggregator {
 			if (Aggregator.this.startSortAtColumn == 0) {
 				return string1.compareTo(string2);
 			} else {
-				if (Aggregator.this.startSortAtColumn == 1) {
-					int result = string1
-							.substring(string1.indexOf(' ') + 1)
-							.compareTo(
-									string2.substring(string2.indexOf(' ') + 1));
-					if (result != 0) {
-						return result;
-					} else {
-						return string1.compareTo(string2);
-					}
+				// System.out.println(string1);
+				// System.out.println(string2);
+				String[] string1Split = string1.split("\\s");
+				String[] string2Split = string2.split("\\s");
+				String newString1 = "";
+				String newString2 = "";
+				for (int i = Aggregator.this.startSortAtColumn; i < string1Split.length; i++) {
+					newString1 += string1Split[i] + " ";
+					newString2 += string2Split[i] + " ";
+				}
+				newString1 = newString1.replaceFirst(" $", "");
+				newString2 = newString2.replaceFirst(" $", "");
+				// System.out.println(newString1);
+				// System.out.println(newString2);
+				int result = newString1.compareTo(newString2);
+				if (result != 0) {
+					// System.out.println("not equal");
+					return result;
 				} else {
-					throw new InvalidParameterException(
-							"startSortAtColumn greater than 1 is not implemented");
+					// System.out.println("equal");
+					int i = 0;
+					while (i < Aggregator.this.startSortAtColumn) {
+						String newNewString1 = newString1;
+						String newNewString2 = newString2;
+						for (int j = i; j >= 0; j--) {
+							newNewString1 = string1Split[j] + " "
+									+ newNewString1;
+							newNewString2 = string2Split[j] + " "
+									+ newNewString2;
+						}
+						// System.out.println(newNewString1);
+						// System.out.println(newNewString2);
+						result = newNewString1.compareTo(newNewString2);
+						if (result != 0) {
+							// System.out.println("not equal");
+							return result;
+						}
+						// System.out.println("equal");
+						i++;
+					}
+					// System.out.println("final result: equal");
+					return 0;
 				}
 			}
 		}
