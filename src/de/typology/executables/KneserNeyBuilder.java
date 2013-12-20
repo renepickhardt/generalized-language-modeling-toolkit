@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.typology.evaluators.EntropyEvaluator;
 import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
@@ -37,8 +38,8 @@ public class KneserNeyBuilder {
 		if (Config.get().splitData) {
 			DataSetSplitter dss = new DataSetSplitter(inputDirectory,
 					"normalized.txt");
-			// dss.split("training.txt", "learning.txt", "testing.txt",
-			// Config.get().modelLength);
+			dss.split("training.txt", "learning.txt", "testing.txt",
+					Config.get().modelLength);
 			dss.splitIntoSequences(new File(inputDirectory.getAbsolutePath()
 					+ "/testing.txt"), Config.get().modelLength,
 					Config.get().numberOfQueries);
@@ -110,21 +111,62 @@ public class KneserNeyBuilder {
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t", Config.get().decimalPlaces);
-			for (int i = 1; i <= Config.get().modelLength; i++) {
+			// TODO remove comments
+			// for (int i = 1; i <= Config.get().modelLength; i++) {
+			for (int i = 5; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
 								+ i + ".txt");
+				File resultFile;
 				// smooth simple
-				File resultFile = new File(inputDirectory.getAbsolutePath()
-						+ "/kneser-ney-simple-" + i + ".txt");
-				kns.smooth(inputSequenceFile, resultFile, i, false);
+				if (Config.get().kneserNeySimple) {
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/kneser-ney-simple-" + i + ".txt");
+					kns.smooth(inputSequenceFile, resultFile, i, false);
 
+				}
 				// // smooth complex
-				// resultFile = new File(inputDirectory.getAbsolutePath()
-				// + "/kneser-ney-complex-" + i + ".txt");
-				// kns.smooth(inputSequenceFile, resultFile, i, true);
+				if (Config.get().kneserNeyComplex) {
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/kneser-ney-complex-" + i + ".txt");
+					kns.smooth(inputSequenceFile, resultFile, i, true);
+				}
 			}
 		}
+		if (Config.get().calculateEntropy) {
+			EntropyEvaluator ee = new EntropyEvaluator();
+			// TODO remove comments
+			// for (int i = 1; i <= Config.get().modelLength; i++) {
+			for (int i = 5; i <= Config.get().modelLength; i++) {
+				File inputSequenceFile = new File(
+						inputDirectory.getAbsolutePath() + "/testing-samples-"
+								+ i + ".txt");
+				File resultFile;
+				// smooth simple
+				if (Config.get().kneserNeySimple) {
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/kneser-ney-simple-" + i + ".txt");
+
+					File entropyResultFile = new File(
+							inputDirectory.getAbsolutePath() + "/entropy-"
+									+ resultFile.getName());
+					ee.caculateEntropy(inputSequenceFile, resultFile,
+							entropyResultFile, "\t");
+
+				}
+				// // smooth complex
+				if (Config.get().kneserNeyComplex) {
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/kneser-ney-complex-" + i + ".txt");
+					File entropyResultFile = new File(
+							inputDirectory.getAbsolutePath() + "/entropy-"
+									+ resultFile.getName());
+					ee.caculateEntropy(inputSequenceFile, resultFile,
+							entropyResultFile, "\t");
+				}
+			}
+		}
+
 		// File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
 		// + "/_absolute");
 		// File _absolute_Direcory = new File(inputDirectory.getAbsolutePath()
