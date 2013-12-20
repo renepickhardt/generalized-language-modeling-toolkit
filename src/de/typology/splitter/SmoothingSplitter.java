@@ -227,7 +227,6 @@ public class SmoothingSplitter {
 		try {
 			OutputStream pipedOutputStream = new PipedOutputStream(
 					pipedInputStream);
-			System.out.println(currentInputDirectory.getAbsolutePath());
 			SequenceModifier sequenceModifier = new SequenceModifier(
 					currentInputDirectory, pipedOutputStream, this.delimiter,
 					patternForModifier, true, setCountToOne);
@@ -251,16 +250,7 @@ public class SmoothingSplitter {
 			}
 			boolean[] currentPattern = entry.getKey();
 			if (currentPattern.length > 2) {
-				if (!currentPattern[0]
-						&& currentPattern[1]
-						&& Integer.bitCount(PatternTransformer
-								.getIntPattern(currentPattern)) < currentPattern.length - 1) {
-					continue;
-				}
-				if (!currentPattern[0]
-						&& !currentPattern[1]
-						&& Integer.bitCount(PatternTransformer
-								.getIntPattern(currentPattern)) < currentPattern.length - 2) {
+				if (!currentPattern[0] && !currentPattern[1]) {
 					continue;
 				}
 			}

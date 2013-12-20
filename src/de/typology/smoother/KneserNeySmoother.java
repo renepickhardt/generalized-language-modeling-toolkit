@@ -219,7 +219,8 @@ public class KneserNeySmoother {
 					String lowerOrderSequence = null;
 					if (i == 0) {
 						while (lowerOrderCharPattern[0] == '0') {
-							Arrays.copyOfRange(lowerOrderCharPattern, 1,
+							lowerOrderCharPattern = Arrays.copyOfRange(
+									lowerOrderCharPattern, 1,
 									lowerOrderCharPattern.length);
 							lowerOrderSequence = SequenceFormatter.removeWord(
 									higherOrderSequence, 0);
