@@ -35,7 +35,7 @@ public class SequenceFormatter {
 			resultString = resultString.replaceFirst(" $", "");
 			return resultString;
 		} else {
-			return null;
+			return "";
 		}
 	}
 
