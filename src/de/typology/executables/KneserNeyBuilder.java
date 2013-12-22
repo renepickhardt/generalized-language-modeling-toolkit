@@ -82,8 +82,7 @@ public class KneserNeyBuilder {
 			ArrayList<boolean[]> lmPatterns = PatternBuilder
 					.getReverseLMPatterns(Config.get().modelLength);
 			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
-					absoluteDirectory, continuationDirectory, indexFile,
-					Config.get().maxCountDivider, "\t",
+					absoluteDirectory, continuationDirectory, indexFile, "\t",
 					Config.get().deleteTempFiles);
 			logger.info("split into continuation sequences: "
 					+ inputFile.getAbsolutePath());
@@ -98,7 +97,7 @@ public class KneserNeyBuilder {
 			testExtractOutputDirectory.mkdir();
 
 			TestSequenceExtractor tse = new TestSequenceExtractor(
-					testSequences, absoluteDirectory,
+					testSequences, absoluteDirectory, continuationDirectory,
 					testExtractOutputDirectory, "\t", new WordIndex(indexFile));
 			tse.extractSequences(Config.get().modelLength,
 					Config.get().numberOfCores);

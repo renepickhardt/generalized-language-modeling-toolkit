@@ -147,8 +147,6 @@ public class KneserNeySmoother {
 
 	protected double calculateResult(String sequence, int sequenceLength,
 			String sequenceStringPattern) {
-		this.logger.debug("calculate(" + sequenceStringPattern + "):"
-				+ sequence);
 		// calculate highest order result
 		long highestOrderValue = this.getAbsoluteValue(sequenceStringPattern,
 				sequence);
@@ -171,15 +169,17 @@ public class KneserNeySmoother {
 		if (highestOrderDenominator == 0) {
 			// calculate result of sequence without first word
 
-			String sequenceWithoutFirst = SequenceFormatter.removeWord(
-					sequence, 0);
-			String sequenceStringPatternWithoutFirst = sequenceStringPattern
-					.substring(1);
+			// String sequenceWithoutFirst = SequenceFormatter.removeWord(
+			// sequence, 0);
+			// String sequenceStringPatternWithoutFirst = sequenceStringPattern
+			// .substring(1);
+			// this.logger.debug("zero denominator for: " + sequence
+			// + " --> backoff to " + sequenceWithoutFirst);
 			// return this.calculateResult(sequenceWithoutFirst,
 			// sequenceLength - 1, sequenceStringPatternWithoutFirst);
-			return this.calculateAggregatedLowerOrderResult(
-					sequenceWithoutFirst, sequenceLength - 1,
-					sequenceStringPatternWithoutFirst);
+			this.logger.debug("zero denominator for: " + sequence);
+			return this.calculateAggregatedLowerOrderResult(sequence,
+					sequenceLength, sequenceStringPattern);
 
 		}
 
@@ -204,7 +204,7 @@ public class KneserNeySmoother {
 				+ "*"
 				+ this.calculateContinuationLast(sequence, sequenceLength,
 						sequenceStringPattern) + "/" + highestOrderDenominator
-				+ "*KNlow(" + sequenceStringPattern + ")=" + result);
+				+ "*KNlowAggr(" + sequenceStringPattern + ")=" + result);
 		return result;
 	}
 
@@ -230,7 +230,7 @@ public class KneserNeySmoother {
 					char[] lowerOrderCharPattern = higherOrderCharPattern
 							.clone();
 					lowerOrderCharPattern[i] = '0';
-					String lowerOrderSequence = "";
+					String lowerOrderSequence = null;
 					if (i == 0) {
 						while (lowerOrderCharPattern[0] == '0'
 								&& lowerOrderCharPattern.length > 1) {
@@ -238,7 +238,7 @@ public class KneserNeySmoother {
 									lowerOrderCharPattern, 1,
 									lowerOrderCharPattern.length);
 							lowerOrderSequence = SequenceFormatter.removeWord(
-									lowerOrderSequence, 0);
+									higherOrderSequence, 0);
 						}
 					} else {
 						lowerOrderSequence = SequenceFormatter.removeWord(
@@ -252,8 +252,6 @@ public class KneserNeySmoother {
 								.calculateLowerOrderResult(lowerOrderSequence,
 										higherOrderSequenceLength - 1,
 										lowerOrderStringPattern);
-						this.logger.debug("    (" + lowerOrderStringPattern
-								+ "): \"" + lowerOrderSequence + "\"");
 						aggregatedLowerOrderValue += currentLowerOrderValue;
 					}
 				} else {
@@ -315,35 +313,42 @@ public class KneserNeySmoother {
 		long higherOrderDenominator = this.getContinuationValue(
 				continuationReplacedLastStringPattern, sequenceWithoutLast);
 
-		// call methods for lower order results
-		// TODO what if highestOrderDenominator==0?
-		if (higherOrderDenominator == 0) {
-			// calculate result of sequence without first word
-
-			while (PatternTransformer.getBooleanPattern(sequenceStringPattern)[1] == false) {
-				sequenceStringPattern = 1 + sequenceStringPattern.substring(2);
-			}
-			String sequenceWithoutFirst = SequenceFormatter.removeWord(
-					sequence, 0);
-			String sequenceStringPatternWithoutFirst = sequenceStringPattern
-					.substring(1);
-			if (sequenceWithoutFirst.length() == 0) {
-				return 0;
-			}
-			// return this.calculateResult(sequenceWithoutFirst,
-			// sequenceLength - 1, sequenceStringPatternWithoutFirst);
-			return this.calculateAggregatedLowerOrderResult(
-					sequenceWithoutFirst, sequenceLength - 1,
-					sequenceStringPatternWithoutFirst);
-
-		}
-
-		// TODO: change this
+		// // the higher
 		// if (higherOrderDenominator == 0) {
 		// System.out.println("(" + continuationReplacedLastStringPattern
 		// + ")" + sequenceWithoutLast + " not found");
-		// return 0;
+		// this.logger.error("lower order denominator is zero!");
+		// System.exit(1);
 		// }
+
+		// call methods for lower order results
+		// TODO what if highestOrderDenominator==0?
+
+		if (higherOrderDenominator == 0) {
+			// calculate result of sequence without first word
+
+			// String sequenceWithoutFirst = SequenceFormatter.removeWord(
+			// sequence, 0);
+			// if (sequenceWithoutFirst.length() == 0) {
+			// return 0;
+			// }
+			//
+			// while
+			// (PatternTransformer.getBooleanPattern(sequenceStringPattern)[1]
+			// == false) {
+			// sequenceStringPattern = 1 + sequenceStringPattern.substring(2);
+			// }
+			// String sequenceStringPatternWithoutFirst = sequenceStringPattern
+			// .substring(1);
+			// this.logger.debug("zero denominator for: " + sequence
+			// + " --> backoff to " + sequenceWithoutFirst);
+			// return this.calculateResult(sequenceWithoutFirst,
+			// sequenceLength - 1, sequenceStringPatternWithoutFirst);
+			this.logger.debug("zero denominator for: " + sequence);
+			return this.calculateAggregatedLowerOrderResult(sequence,
+					sequenceLength, sequenceStringPattern);
+
+		}
 
 		// call methods for lower order results
 		double result = highestOrderNumerator
@@ -355,7 +360,7 @@ public class KneserNeySmoother {
 				* this.calculateAggregatedLowerOrderResult(sequence,
 						sequenceLength, sequenceStringPattern);
 
-		this.logger.debug("KNlow("
+		this.logger.debug("\tKNlow("
 				+ sequenceStringPattern
 				+ "): "
 				+ higherOrderValue
@@ -368,7 +373,7 @@ public class KneserNeySmoother {
 				+ "*"
 				+ this.calculateContinuationLast(sequence, sequenceLength,
 						sequenceStringPattern) + "/" + higherOrderDenominator
-				+ "*KNlow(" + sequenceStringPattern + ")=" + result);
+				+ "*KNlowAggr(" + sequenceStringPattern + ")=" + result);
 		return result;
 	}
 
@@ -486,7 +491,7 @@ public class KneserNeySmoother {
 				sequenceStringPattern.length() - 1) + "_";
 		long continuationLastValue = this.getContinuationValue(
 				continuationLastPattern, sequenceWithoutLast);
-		this.logger.debug("continuationLast(" + sequenceStringPattern + "("
+		this.logger.debug("\t\tcontinuationLast(" + sequenceStringPattern + "("
 				+ sequenceLength + ")-->" + continuationLastPattern + ") for "
 				+ sequence + "-->" + sequenceWithoutLast + ":"
 				+ continuationLastValue);

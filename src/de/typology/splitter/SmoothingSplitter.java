@@ -40,8 +40,8 @@ public class SmoothingSplitter {
 	};
 
 	public SmoothingSplitter(File absoluteDirectory,
-			File continuationDirectory, File indexFile, int maxCountDivider,
-			String delimiter, boolean deleteTempFiles) {
+			File continuationDirectory, File indexFile, String delimiter,
+			boolean deleteTempFiles) {
 		this.absoluteDirectory = absoluteDirectory;
 		this.continuationDirectory = continuationDirectory;
 		continuationDirectory.mkdir();

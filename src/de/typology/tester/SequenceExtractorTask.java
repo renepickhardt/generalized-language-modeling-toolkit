@@ -66,25 +66,27 @@ public class SequenceExtractorTask implements Runnable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
-			try {
-				BufferedReader inputFileReader = new BufferedReader(
-						new FileReader(inputFile));
-				BufferedWriter outputFileWriter = new BufferedWriter(
-						new FileWriter(outputFile));
-				String line;
+			} else {
+				try {
+					BufferedReader inputFileReader = new BufferedReader(
+							new FileReader(inputFile));
+					BufferedWriter outputFileWriter = new BufferedWriter(
+							new FileWriter(outputFile));
+					String line;
 
-				while ((line = inputFileReader.readLine()) != null) {
-					if (newSequences.contains(line.split(this.delimiter)[0])) {
+					while ((line = inputFileReader.readLine()) != null) {
+						if (newSequences
+								.contains(line.split(this.delimiter)[0])) {
 
-						outputFileWriter.write(line + "\n");
+							outputFileWriter.write(line + "\n");
+						}
 					}
+					inputFileReader.close();
+					outputFileWriter.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				inputFileReader.close();
-				outputFileWriter.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 
 		}
@@ -95,9 +97,27 @@ public class SequenceExtractorTask implements Runnable {
 		HashSet<String> newSequences = new HashSet<String>();
 
 		for (String originalLine : this.originalSequences) {
+			// modify sequences for continuation
+			if (!this.pattern[0] || !this.pattern[this.pattern.length - 1]) {
+				for (int i = 0; i < this.pattern.length; i++) {
+					if (this.pattern[i]) {
+						break;
+					} else {
+						originalLine = "<dummy> " + originalLine;
+					}
+				}
+				for (int i = this.pattern.length - 1; i >= 0; i--) {
+					if (this.pattern[i]) {
+						break;
+					} else {
+						originalLine = originalLine + " <dummy>";
+					}
+				}
+			}
 			String[] originalLineSplit = originalLine.split("\\s");
 			int linePointer = 0;
 			while (originalLineSplit.length - linePointer >= this.pattern.length) {
+
 				// build current Sequence
 				String currentSequence = "";
 				for (int i = 0; i < this.pattern.length; i++) {

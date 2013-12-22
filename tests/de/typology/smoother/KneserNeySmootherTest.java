@@ -3,6 +3,7 @@ package de.typology.smoother;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,7 +13,7 @@ import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.splitter.AbsoluteSplitter;
-import de.typology.tester.TestSequenceExtractor;
+import de.typology.splitter.SmoothingSplitter;
 
 public class KneserNeySmootherTest {
 
@@ -36,21 +37,29 @@ public class KneserNeySmootherTest {
 		wier.buildIndex(inputFile, indexFile, 10, "<fs> <s> ", " </s>");
 		WordIndex wi = new WordIndex(indexFile);
 		this.absoluteDirectory = new File(inputDirectoryPath + "absolute");
+		this.continuationDirectory = new File(inputDirectoryPath
+				+ "continuation");
 
 		AbsoluteSplitter as = new AbsoluteSplitter(inputFile, indexFile,
 				this.absoluteDirectory, "\t", true, "<fs> <s> ", " </s>");
 		as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
 
+		ArrayList<boolean[]> lmPatterns = PatternBuilder
+				.getReverseLMPatterns(5);
+		SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
+				this.absoluteDirectory, this.continuationDirectory, indexFile,
+				"\t", true);
+		smoothingSplitter.split(lmPatterns, 2);
+
 		this.testSequenceFile = new File(inputDirectoryPath
 				+ "test-sequences-5.txt");
 		this.extractedSequenceDirectory = new File(inputDirectoryPath);
 		this.absoluteDirectory = new File(inputDirectoryPath + "absolute");
-		this.continuationDirectory = new File(inputDirectoryPath
-				+ "continuation");
-		TestSequenceExtractor tse = new TestSequenceExtractor(
-				this.testSequenceFile, this.absoluteDirectory,
-				this.extractedSequenceDirectory, "\t", wi);
-		tse.extractContinuationSequences(5, 2);
+		// TestSequenceExtractor tse = new TestSequenceExtractor(
+		// this.testSequenceFile, this.absoluteDirectory,
+		// this.continuationDirectory, this.extractedSequenceDirectory,
+		// "\t", wi);
+		// tse.extractContinuationSequences(5, 2);
 		this.kneserNeyFile = new File(inputDirectoryPath + "kn-sequences-5.txt");
 	}
 
@@ -66,7 +75,7 @@ public class KneserNeySmootherTest {
 	// }
 
 	@Test
-	public void calculateLowerOrderResultTest() {
+	public void calculateLowerOrderResultSimpleTest() {
 
 		KneserNeySmoother kns = new KneserNeySmoother(
 				this.extractedSequenceDirectory, this.absoluteDirectory,
@@ -96,4 +105,41 @@ public class KneserNeySmootherTest {
 
 	}
 
+	@Test
+	public void calculateLowerOrderResultComplexTest() {
+
+		KneserNeySmoother kns = new KneserNeySmoother(
+				this.extractedSequenceDirectory, this.absoluteDirectory,
+				this.continuationDirectory, "\t", 5);
+		kns.smooth(this.testSequenceFile, this.kneserNeyFile, 5, true);
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+		}
+		// assertEquals(0.625, kns.discountTypeValuesMap.get("_11").get("D1+"),
+		// 0.00001);
+		// assertEquals(0.0357, kns.calculateLowerOrderResult("dolor", 1, "1"),
+		// 0.0001);
+		// assertEquals(0.07143, kns.calculateLowerOrderResult("et", 1, "1"),
+		// 0.0001);
+		// assertEquals(0.07246, kns.calculateResult("et", 1, "1"), 0.0001);
+		// assertEquals(0.39282, kns.calculateLowerOrderResult("</s>", 1, "1"),
+		// 0.0001);
+		// assertEquals(0.0, kns.calculateLowerOrderResult("<s>", 1, "1"),
+		// 0.0001);
+		// assertEquals(0.20982,
+		// kns.calculateLowerOrderResult("sit amet", 2, "11"), 0.0001);
+		// assertEquals(0.309885,
+		// kns.calculateLowerOrderResult("dolor sit amet", 3, "111"),
+		// 0.0001);
+		// assertEquals(0.3595, kns.calculateLowerOrderResult(
+		// "ipsum dolor sit amet", 4, "1111"), 0.0001);
+		assertEquals(0.06944,
+				kns.calculateResult("<s> At vero eos et", 5, "11111"), 0.0001);
+		// assertEquals(0.77929,
+		// kns.calculateResult("Lorem ipsum dolor sit amet", 5, "11111"),
+		// 0.0001);
+
+	}
 }
