@@ -41,6 +41,9 @@ public class Config extends Properties {
 	public boolean buildKneserNey;
 	public boolean calculateEntropy;
 
+	public boolean conditionalProbabilityOnly;
+	public boolean backoffAbsolute;
+
 	public boolean kneserNeySimple;
 	public boolean kneserNeyComplex;
 

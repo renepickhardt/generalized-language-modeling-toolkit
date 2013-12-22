@@ -121,14 +121,18 @@ public class KneserNeyBuilder {
 				if (Config.get().kneserNeySimple) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-simple-" + i + ".txt");
-					kns.smooth(inputSequenceFile, resultFile, i, false);
+					kns.smooth(inputSequenceFile, resultFile, i, false,
+							Config.get().conditionalProbabilityOnly,
+							Config.get().backoffAbsolute);
 
 				}
 				// // smooth complex
 				if (Config.get().kneserNeyComplex) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-complex-" + i + ".txt");
-					kns.smooth(inputSequenceFile, resultFile, i, true);
+					kns.smooth(inputSequenceFile, resultFile, i, true,
+							Config.get().conditionalProbabilityOnly,
+							Config.get().backoffAbsolute);
 				}
 			}
 		}
