@@ -15,11 +15,6 @@ import org.apache.logging.log4j.Logger;
 import de.typology.utils.Counter;
 
 public class EntropyEvaluator {
-	File testingSampleFile;
-	File resultSampleFile;
-	File entropyResultFile;
-	String delimiter;
-
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public EntropyEvaluator() {
@@ -30,10 +25,6 @@ public class EntropyEvaluator {
 		this.logger.info("calculate entropy for "
 				+ resultSampleFile.getAbsolutePath() + " based on "
 				+ testingSampleFile.getAbsolutePath());
-		this.testingSampleFile = testingSampleFile;
-		this.resultSampleFile = resultSampleFile;
-		this.entropyResultFile = entropyResultFile;
-		this.delimiter = delimiter;
 
 		// count number of sequences in testingSampleFile
 		long totalTestSequenceCount = Counter.countLines(testingSampleFile);
