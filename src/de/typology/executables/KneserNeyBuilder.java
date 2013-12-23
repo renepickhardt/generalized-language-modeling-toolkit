@@ -112,7 +112,7 @@ public class KneserNeyBuilder {
 					continuationDirectory, "\t", Config.get().decimalPlaces);
 			// TODO remove comments
 			// for (int i = 1; i <= Config.get().modelLength; i++) {
-			for (int i = 5; i <= Config.get().modelLength; i++) {
+			for (int i = 1; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
 								+ i + ".txt");

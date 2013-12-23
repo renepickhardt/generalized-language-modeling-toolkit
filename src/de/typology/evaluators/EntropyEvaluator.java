@@ -36,12 +36,11 @@ public class EntropyEvaluator {
 		this.delimiter = delimiter;
 
 		// count number of sequences in testingSampleFile
-		long totalTestSequenceCount = Counter
-				.aggregateCounts(testingSampleFile);
+		long totalTestSequenceCount = Counter.countLines(testingSampleFile);
 		this.logger.info("total count of test sequences: "
 				+ totalTestSequenceCount);
 		try {
-			// count occurences of testing sequences
+			// count occurrences of testing sequences with format: sequence\n
 			HashMap<String, Long> testSequenceMap = new HashMap<String, Long>();
 			BufferedReader testSampleReader = new BufferedReader(
 					new FileReader(testingSampleFile));
@@ -61,7 +60,7 @@ public class EntropyEvaluator {
 			String resultSampleLine;
 
 			double entropyResult = 0.0;
-			// iterate over result file
+			// iterate over result file with format: sequence\tprobability\n
 			while ((resultSampleLine = resultSampleReader.readLine()) != null) {
 				String[] resultSampleLineSplit = resultSampleLine
 						.split(delimiter);
@@ -74,17 +73,25 @@ public class EntropyEvaluator {
 					entropyResult += testSequenceMap
 							.get(resultSampleLineSplit[0])
 							/ totalTestSequenceCount
-							* Double.parseDouble(resultSampleLineSplit[1]);
+							* Math.log(Double
+									.parseDouble(resultSampleLineSplit[1])
+									/ Math.log(2));
 				}
 			}
 			resultSampleReader.close();
+
+			// negative result
+			entropyResult = -entropyResult;
+
 			BufferedWriter entropyResultWriter = new BufferedWriter(
 					new FileWriter(entropyResultFile, true));
 			Date date = new Date();
-			entropyResultWriter.write("(" + date.toString() + ") entropy of "
+			String resultString = "(" + date.toString() + ") entropy of "
 					+ resultSampleFile.getAbsolutePath() + " based on "
-					+ testingSampleFile.getAbsolutePath() + " : ");
-			entropyResultWriter.write(String.valueOf(entropyResult));
+					+ testingSampleFile.getAbsolutePath() + " : "
+					+ String.valueOf(entropyResult);
+			this.logger.info(resultString);
+			entropyResultWriter.write(resultString + "\n");
 			entropyResultWriter.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
