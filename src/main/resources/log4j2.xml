@@ -11,7 +11,7 @@
   </appenders>
 
   <loggers>     
-    <root level="trace">
+    <root level="info">
       <appender-ref ref="Console" level="trace"/>
        <appender-ref ref="MyFile" level="trace"/>
     </root>    
