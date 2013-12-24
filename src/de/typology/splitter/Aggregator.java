@@ -109,7 +109,9 @@ public class Aggregator {
 			BufferedReader inputFileReader = new BufferedReader(new FileReader(
 					this.inputFile));
 
-			SortedMap<String, HashMap<String, Long>> wordMap = new TreeMap<String, HashMap<String, Long>>(
+			SortedMap<String, HashMap<String, Long>> wordMapAdditionalCounts = new TreeMap<String, HashMap<String, Long>>(
+					this.stringComparator);
+			SortedMap<String, Long> wordMapNoAdditionalCounts = new TreeMap<String, Long>(
 					this.stringComparator);
 			String inputLine;
 			// TODO remove
@@ -129,7 +131,14 @@ public class Aggregator {
 					// System.exit(1);
 					continue;
 				}
-				this.addCount(wordMap, words, count, this.additionalCounts);
+
+				if (this.additionalCounts) {
+					this.addCountWithAdditional(wordMapAdditionalCounts, words,
+							count);
+				} else {
+					this.addCountWithNoAdditional(wordMapNoAdditionalCounts,
+							words, count);
+				}
 			}
 			// TODO remove
 			// System.out.println("after reading " + this.inputFile.getName()
@@ -140,18 +149,22 @@ public class Aggregator {
 			inputFileReader.close();
 			BufferedWriter outputFileWriter = new BufferedWriter(
 					new FileWriter(this.outputFile));
-			for (Entry<String, HashMap<String, Long>> entry : wordMap
-					.entrySet()) {
-				String words = entry.getKey();
-				if (this.additionalCounts) {
+			if (this.additionalCounts) {
+				for (Entry<String, HashMap<String, Long>> entry : wordMapAdditionalCounts
+						.entrySet()) {
+					String words = entry.getKey();
 					outputFileWriter.write(words + this.delimiter
 							+ entry.getValue().get("1+") + this.delimiter
 							+ entry.getValue().get("1") + this.delimiter
 							+ entry.getValue().get("2") + this.delimiter
 							+ entry.getValue().get("3+") + "\n");
-				} else {
+				}
+			} else {
+				for (Entry<String, Long> entry : wordMapNoAdditionalCounts
+						.entrySet()) {
+					String words = entry.getKey();
 					outputFileWriter.write(words + this.delimiter
-							+ entry.getValue().get("1+") + "\n");
+							+ entry.getValue() + "\n");
 				}
 			}
 			outputFileWriter.close();
@@ -161,41 +174,49 @@ public class Aggregator {
 		}
 	}
 
-	private void addCount(SortedMap<String, HashMap<String, Long>> wordMap,
-			String words, long count, boolean additionalCounts) {
+	private void addCountWithNoAdditional(
+			SortedMap<String, Long> wordMapNoAdditionalCounts, String words,
+			long count) {
+		if (wordMapNoAdditionalCounts.containsKey(words)) {
+			wordMapNoAdditionalCounts.put(words,
+					wordMapNoAdditionalCounts.get(words) + count);
+		} else {
+			wordMapNoAdditionalCounts.put(words, count);
+		}
+	}
+
+	private void addCountWithAdditional(
+			SortedMap<String, HashMap<String, Long>> wordMap, String words,
+			long count) {
 		if (wordMap.containsKey(words)) {
 			HashMap<String, Long> countTypeMap = wordMap.get(words);
 			countTypeMap.put("1+", countTypeMap.get("1+") + count);
-			if (additionalCounts) {
-				if (count == 1) {
-					countTypeMap.put("1", countTypeMap.get("1") + count);
-				}
-				if (count == 2) {
-					countTypeMap.put("2", countTypeMap.get("2") + count);
-				}
-				if (count >= 3) {
-					countTypeMap.put("3+", countTypeMap.get("3+") + count);
-				}
+			if (count == 1) {
+				countTypeMap.put("1", countTypeMap.get("1") + count);
+			}
+			if (count == 2) {
+				countTypeMap.put("2", countTypeMap.get("2") + count);
+			}
+			if (count >= 3) {
+				countTypeMap.put("3+", countTypeMap.get("3+") + count);
 			}
 		} else {
 			HashMap<String, Long> countTypeMap = new HashMap<String, Long>();
 			countTypeMap.put("1+", count);
-			if (additionalCounts) {
-				if (count == 1) {
-					countTypeMap.put("1", count);
-				} else {
-					countTypeMap.put("1", 0L);
-				}
-				if (count == 2) {
-					countTypeMap.put("2", count);
-				} else {
-					countTypeMap.put("2", 0L);
-				}
-				if (count >= 3) {
-					countTypeMap.put("3+", count);
-				} else {
-					countTypeMap.put("3+", 0L);
-				}
+			if (count == 1) {
+				countTypeMap.put("1", count);
+			} else {
+				countTypeMap.put("1", 0L);
+			}
+			if (count == 2) {
+				countTypeMap.put("2", count);
+			} else {
+				countTypeMap.put("2", 0L);
+			}
+			if (count >= 3) {
+				countTypeMap.put("3+", count);
+			} else {
+				countTypeMap.put("3+", 0L);
 			}
 			wordMap.put(words, countTypeMap);
 		}
