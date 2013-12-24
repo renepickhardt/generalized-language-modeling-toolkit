@@ -29,7 +29,7 @@ public class KneserNeySmoother {
 	private String delimiter;
 	private DecimalFormatter decimalFormatter;
 	protected HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
-	protected HashMap<String, HashMap<String, Long>> continuationTypeSequenceValueMap;
+	protected HashMap<String, HashMap<String, HashMap<String, Long>>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
 	private boolean smoothComplex;
@@ -73,7 +73,7 @@ public class KneserNeySmoother {
 
 		// read absolute and continuation values into HashMaps
 		this.absoluteTypeSequenceValueMap = this
-				.readValuesIntoHashMap(this.extractedAbsoluteDirectory);
+				.readAbsoluteValuesIntoHashMap(this.extractedAbsoluteDirectory);
 
 		// also add total count of 1grams
 		HashMap<String, Long> aggregated1GramsMap = new HashMap<String, Long>();
@@ -83,7 +83,7 @@ public class KneserNeySmoother {
 		this.absoluteTypeSequenceValueMap.put("", aggregated1GramsMap);
 
 		this.continuationTypeSequenceValueMap = this
-				.readValuesIntoHashMap(this.extractedContinuationDirectory);
+				.readContinuationValuesIntoHashMap(this.extractedContinuationDirectory);
 
 		// go through sequence file
 		try {
@@ -118,7 +118,7 @@ public class KneserNeySmoother {
 
 	}
 
-	private HashMap<String, HashMap<String, Long>> readValuesIntoHashMap(
+	private HashMap<String, HashMap<String, Long>> readAbsoluteValuesIntoHashMap(
 			File inputDirectory) {
 		HashMap<String, HashMap<String, Long>> typeSequenceValueMap = new HashMap<String, HashMap<String, Long>>();
 		for (File typeDirectory : inputDirectory.listFiles()) {
@@ -137,6 +137,62 @@ public class KneserNeySmoother {
 							String[] lineSplit = line.split(this.delimiter);
 							sequenceValuesMap.put(lineSplit[0],
 									Long.parseLong(lineSplit[1]));
+						}
+					}
+					sequenceValueReader.close();
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			typeSequenceValueMap
+					.put(typeDirectory.getName(), sequenceValuesMap);
+
+		}
+		return typeSequenceValueMap;
+
+	}
+
+	private HashMap<String, HashMap<String, HashMap<String, Long>>> readContinuationValuesIntoHashMap(
+			File inputDirectory) {
+		HashMap<String, HashMap<String, HashMap<String, Long>>> typeSequenceValueMap = new HashMap<String, HashMap<String, HashMap<String, Long>>>();
+
+		for (File typeDirectory : inputDirectory.listFiles()) {
+			HashMap<String, HashMap<String, Long>> sequenceValuesMap = new HashMap<String, HashMap<String, Long>>();
+			for (File sequenceValueFile : typeDirectory.listFiles()) {
+				try {
+					BufferedReader sequenceValueReader = new BufferedReader(
+							new FileReader(sequenceValueFile));
+					String line;
+					if (sequenceValueFile.getName().equals("all")) {
+						while ((line = sequenceValueReader.readLine()) != null) {
+							String[] lineSplit = line.split(this.delimiter);
+							HashMap<String, Long> currentResultTypeMap = new HashMap<String, Long>();
+							currentResultTypeMap.put("1+",
+									Long.parseLong(lineSplit[0]));
+							currentResultTypeMap.put("1",
+									Long.parseLong(lineSplit[1]));
+							currentResultTypeMap.put("2",
+									Long.parseLong(lineSplit[2]));
+							currentResultTypeMap.put("3+",
+									Long.parseLong(lineSplit[3]));
+							sequenceValuesMap.put("", currentResultTypeMap);
+						}
+					} else {
+						while ((line = sequenceValueReader.readLine()) != null) {
+							String[] lineSplit = line.split(this.delimiter);
+							HashMap<String, Long> currentResultTypeMap = new HashMap<String, Long>();
+							currentResultTypeMap.put("1+",
+									Long.parseLong(lineSplit[1]));
+							currentResultTypeMap.put("1",
+									Long.parseLong(lineSplit[2]));
+							currentResultTypeMap.put("2",
+									Long.parseLong(lineSplit[3]));
+							currentResultTypeMap.put("3+",
+									Long.parseLong(lineSplit[4]));
+							sequenceValuesMap.put(lineSplit[0],
+									currentResultTypeMap);
 						}
 					}
 					sequenceValueReader.close();
@@ -221,9 +277,8 @@ public class KneserNeySmoother {
 
 		double result = highestOrderNumerator
 				/ highestOrderDenominator
-				+ discountValue
-				* this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern)
+				+ this.calculateWeightNumerator(sequenceStringPattern,
+						sequence, sequenceLength, sequenceStringPattern)
 				/ highestOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
 						sequenceLength, sequenceStringPattern, backoffAbsolute);
@@ -238,9 +293,10 @@ public class KneserNeySmoother {
 				+ "+"
 				+ discountValue
 				+ "*"
-				+ this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern) + "/" + highestOrderDenominator
-				+ "*KNlowAggr(" + sequenceStringPattern + ")=" + result);
+				+ this.calculateWeightNumerator(sequenceStringPattern,
+						sequence, sequenceLength, sequenceStringPattern) + "/"
+				+ highestOrderDenominator + "*KNlowAggr("
+				+ sequenceStringPattern + ")=" + result);
 		return result;
 	}
 
@@ -332,7 +388,7 @@ public class KneserNeySmoother {
 			continuationPattern = "_" + sequenceStringPattern;
 		}
 		long higherOrderValue = this.getContinuationValue(continuationPattern,
-				sequence);
+				sequence, "1+");
 
 		double discountValue = this.getDiscountValue(continuationPattern,
 				higherOrderValue);
@@ -350,7 +406,8 @@ public class KneserNeySmoother {
 				+ sequenceStringPattern + ")" + "-->" + sequenceWithoutLast
 				+ "(" + continuationReplacedLastStringPattern + "):");
 		long higherOrderDenominator = this.getContinuationValue(
-				continuationReplacedLastStringPattern, sequenceWithoutLast);
+				continuationReplacedLastStringPattern, sequenceWithoutLast,
+				"1+");
 
 		// // the higher
 		// if (higherOrderDenominator == 0) {
@@ -396,9 +453,11 @@ public class KneserNeySmoother {
 		// call methods for lower order results
 		double result = highestOrderNumerator
 				/ higherOrderDenominator
-				+ discountValue
-				* this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern)
+				+ this.calculateWeightNumerator(continuationPattern, sequence,
+						sequenceLength, sequenceStringPattern)
+				// + discountValue
+				// * this.calculateContinuationLast(sequence, sequenceLength,
+				// sequenceStringPattern)
 				/ higherOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
 						sequenceLength, sequenceStringPattern, backoffAbsolute);
@@ -412,12 +471,18 @@ public class KneserNeySmoother {
 				+ "/"
 				+ higherOrderDenominator
 				+ "+"
-				+ discountValue
-				+ "*"
-				+ this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern) + "/" + higherOrderDenominator
-				+ "*KNlowAggr(" + sequenceStringPattern + ")=" + result);
+				+ this.calculateWeightNumerator(continuationPattern, sequence,
+						sequenceLength, sequenceStringPattern) + "/"
+				+ higherOrderDenominator + "*KNlowAggr("
+				+ sequenceStringPattern + ")=" + result);
 		return result;
+	}
+
+	protected double calculateWeightNumerator(String continuationPattern,
+			String sequence, int sequenceLength, String sequenceStringPattern) {
+		return this.getDiscountValue(continuationPattern, 1)
+				* this.calculateContinuationLast(sequence, sequenceLength,
+						sequenceStringPattern, "1+");
 	}
 
 	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
@@ -481,7 +546,8 @@ public class KneserNeySmoother {
 		}
 	}
 
-	protected long getContinuationValue(String pattern, String sequence) {
+	protected long getContinuationValue(String pattern, String sequence,
+			String countType) {
 		if (!this.continuationTypeSequenceValueMap.containsKey(pattern)) {
 			this.logger.error("Continuation pattern not found:" + pattern);
 			try {
@@ -494,8 +560,8 @@ public class KneserNeySmoother {
 		}
 		if (this.continuationTypeSequenceValueMap.get(pattern).containsKey(
 				sequence)) {
-			return this.continuationTypeSequenceValueMap.get(pattern).get(
-					sequence);
+			return this.continuationTypeSequenceValueMap.get(pattern)
+					.get(sequence).get(countType);
 		} else {
 			return 0;
 		}
@@ -526,14 +592,14 @@ public class KneserNeySmoother {
 	}
 
 	protected double calculateContinuationLast(String sequence,
-			int sequenceLength, String sequenceStringPattern) {
+			int sequenceLength, String sequenceStringPattern, String countType) {
 		String sequenceWithoutLast = SequenceFormatter.removeWord(sequence,
 				sequenceLength - 1);
 		sequenceStringPattern = sequenceStringPattern.replaceAll("0", "_");
 		String continuationLastPattern = sequenceStringPattern.substring(0,
 				sequenceStringPattern.length() - 1) + "_";
 		long continuationLastValue = this.getContinuationValue(
-				continuationLastPattern, sequenceWithoutLast);
+				continuationLastPattern, sequenceWithoutLast, countType);
 		this.logger.debug("\t\tcontinuationLast(" + sequenceStringPattern + "("
 				+ sequenceLength + ")-->" + continuationLastPattern + ") for "
 				+ sequence + "-->" + sequenceWithoutLast + ":"

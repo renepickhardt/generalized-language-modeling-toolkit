@@ -39,6 +39,7 @@ public class Config extends Properties {
 	public boolean buildContinuationGLM;
 	public boolean extractContinuationGLM;
 	public boolean buildKneserNey;
+	public boolean buildModKneserNey;
 	public boolean calculateEntropy;
 
 	public boolean conditionalProbabilityOnly;

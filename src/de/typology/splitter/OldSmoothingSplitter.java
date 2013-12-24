@@ -261,14 +261,14 @@ public class OldSmoothingSplitter {
 		if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
 			LineCounterTask lineCountTask = new LineCounterTask(
 					pipedInputStream, outputDirectory, newPatternLabel,
-					this.delimiter, setCountToOne);
+					this.delimiter, setCountToOne, true);
 			this.executorService.execute(lineCountTask);
 		} else {
 			// don't add tags here
 			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
 					outputDirectory, wordIndex, newPattern, newPatternLabel,
 					this.delimiter, 0, this.deleteTempFiles, "", "", true,
-					false);
+					false, true);
 			this.executorService.execute(splitterTask);
 		}
 

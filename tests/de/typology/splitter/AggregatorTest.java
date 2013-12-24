@@ -43,7 +43,7 @@ public class AggregatorTest {
 	@Test
 	public void aggregatorCol0Test() {
 		Aggregator aggregator = new Aggregator(this.inputFile, this.outputFile,
-				"\t", 0);
+				"\t", 0, false);
 		aggregator.aggregateCounts();
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(
@@ -66,7 +66,7 @@ public class AggregatorTest {
 	@Test
 	public void aggregatorCol1Test() {
 		Aggregator aggregator = new Aggregator(this.inputFile, this.outputFile,
-				"\t", 1);
+				"\t", 1, false);
 		aggregator.aggregateCounts();
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(
@@ -88,7 +88,7 @@ public class AggregatorTest {
 	@Test
 	public void aggregatorCol2Test() {
 		Aggregator aggregator = new Aggregator(this.inputFile, this.outputFile,
-				"\t", 2);
+				"\t", 2, false);
 		aggregator.aggregateCounts();
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(

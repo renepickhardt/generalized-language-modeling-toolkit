@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -28,6 +29,9 @@ public class Aggregator {
 	File outputFile;
 	String delimiter;
 	int startSortAtColumn;
+	boolean additionalCounts;
+
+	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	// this comparator is based on the value of startSortAtColumn
 	private Comparator<String> stringComparator = new Comparator<String>() {
@@ -83,8 +87,6 @@ public class Aggregator {
 		}
 	};
 
-	Logger logger = LogManager.getLogger(this.getClass().getName());
-
 	/**
 	 * @param inputStream
 	 * @param outputStream
@@ -93,11 +95,12 @@ public class Aggregator {
 	 *            : First column is zero
 	 */
 	public Aggregator(File inputFile, File outputFile, String delimiter,
-			int startSortAtColumn) {
+			int startSortAtColumn, boolean additionalCounts) {
 		this.inputFile = inputFile;
 		this.outputFile = outputFile;
 		this.delimiter = delimiter;
 		this.startSortAtColumn = startSortAtColumn;
+		this.additionalCounts = additionalCounts;
 
 	}
 
@@ -106,7 +109,7 @@ public class Aggregator {
 			BufferedReader inputFileReader = new BufferedReader(new FileReader(
 					this.inputFile));
 
-			SortedMap<String, Long> wordMap = new TreeMap<String, Long>(
+			SortedMap<String, HashMap<String, Long>> wordMap = new TreeMap<String, HashMap<String, Long>>(
 					this.stringComparator);
 			String inputLine;
 			// TODO remove
@@ -126,11 +129,7 @@ public class Aggregator {
 					// System.exit(1);
 					continue;
 				}
-				if (wordMap.containsKey(words)) {
-					wordMap.put(words, wordMap.get(words) + count);
-				} else {
-					wordMap.put(words, count);
-				}
+				this.addCount(wordMap, words, count, this.additionalCounts);
 			}
 			// TODO remove
 			// System.out.println("after reading " + this.inputFile.getName()
@@ -141,15 +140,64 @@ public class Aggregator {
 			inputFileReader.close();
 			BufferedWriter outputFileWriter = new BufferedWriter(
 					new FileWriter(this.outputFile));
-			for (Entry<String, Long> entry : wordMap.entrySet()) {
+			for (Entry<String, HashMap<String, Long>> entry : wordMap
+					.entrySet()) {
 				String words = entry.getKey();
-				outputFileWriter.write(words + this.delimiter
-						+ entry.getValue() + "\n");
+				if (this.additionalCounts) {
+					outputFileWriter.write(words + this.delimiter
+							+ entry.getValue().get("1+") + this.delimiter
+							+ entry.getValue().get("1") + this.delimiter
+							+ entry.getValue().get("2") + this.delimiter
+							+ entry.getValue().get("3+") + "\n");
+				} else {
+					outputFileWriter.write(words + this.delimiter
+							+ entry.getValue().get("1+") + "\n");
+				}
 			}
 			outputFileWriter.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	private void addCount(SortedMap<String, HashMap<String, Long>> wordMap,
+			String words, long count, boolean additionalCounts) {
+		if (wordMap.containsKey(words)) {
+			HashMap<String, Long> countTypeMap = wordMap.get(words);
+			countTypeMap.put("1+", countTypeMap.get("1+") + count);
+			if (additionalCounts) {
+				if (count == 1) {
+					countTypeMap.put("1", countTypeMap.get("1") + count);
+				}
+				if (count == 2) {
+					countTypeMap.put("2", countTypeMap.get("2") + count);
+				}
+				if (count >= 3) {
+					countTypeMap.put("3+", countTypeMap.get("3+") + count);
+				}
+			}
+		} else {
+			HashMap<String, Long> countTypeMap = new HashMap<String, Long>();
+			countTypeMap.put("1+", count);
+			if (additionalCounts) {
+				if (count == 1) {
+					countTypeMap.put("1", count);
+				} else {
+					countTypeMap.put("1", 0L);
+				}
+				if (count == 2) {
+					countTypeMap.put("2", count);
+				} else {
+					countTypeMap.put("2", 0L);
+				}
+				if (count >= 3) {
+					countTypeMap.put("3+", count);
+				} else {
+					countTypeMap.put("3+", 0L);
+				}
+			}
+			wordMap.put(words, countTypeMap);
 		}
 	}
 

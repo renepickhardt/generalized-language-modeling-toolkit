@@ -176,8 +176,12 @@ public class Counter {
 						continue;
 					}
 					lineSplit = line.split("\t");
-					long currentCount = Long
-							.parseLong(lineSplit[lineSplit.length - 1]);
+					long currentCount;
+					if (lineSplit.length == 1) {
+						currentCount = Long.parseLong(lineSplit[0]);
+					} else {
+						currentCount = Long.parseLong(lineSplit[1]);
+					}
 					if (count == currentCount && !lineSplit[0].equals("<fs>")) {
 						totalCount += 1;
 					}

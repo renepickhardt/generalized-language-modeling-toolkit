@@ -108,7 +108,7 @@ public class LargeKneserNeyResultAggregator {
 						currentPattern,
 						currentTempResult2ndDirectory.getName(),
 						this.delimiter, 1, this.deleteTempFiles, "", "", true,
-						true);
+						true, false);
 				executorService.execute(splitterTask);
 
 				try {
@@ -201,7 +201,7 @@ public class LargeKneserNeyResultAggregator {
 						this.tempResultDirectory, this.wordIndex,
 						currentPattern, currentTempResultDirectory.getName(),
 						this.delimiter, 0, this.deleteTempFiles, "", "", true,
-						true);
+						true, false);
 				executorService.execute(splitterTask);
 
 				try {

@@ -113,7 +113,7 @@ public class SmoothingSplitter {
 						this.splitType(currentAbsoluteInputDirectory,
 								this.continuationDirectory, outputPattern,
 								outputPatternLabel, entry.getKey(), wordIndex,
-								true);
+								true, true);
 					} else {
 						if (finishedPatterns.contains(entry.getValue())) {
 							// read continuation files
@@ -181,7 +181,7 @@ public class SmoothingSplitter {
 							this.splitType(currentContinuationInputDirectory,
 									this.continuationDirectory, outputPattern,
 									outputPatternLabel, patternForModifier,
-									wordIndex, false);
+									wordIndex, false, true);
 
 						}
 					}
@@ -207,20 +207,20 @@ public class SmoothingSplitter {
 	private void splitType(File currentInputDirectory, File outputDirectory,
 			boolean[] newPattern, String newPatternLabel,
 			boolean[] patternForModifier, WordIndex wordIndex,
-			boolean setCountToOne) {
+			boolean setCountToOne, boolean additionalCounts) {
 		PipedInputStream pipedInputStream = new PipedInputStream(100 * 8 * 1024);
 
 		if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
 			LineCounterTask lineCountTask = new LineCounterTask(
 					pipedInputStream, outputDirectory, newPatternLabel,
-					this.delimiter, setCountToOne);
+					this.delimiter, setCountToOne, additionalCounts);
 			this.executorService.execute(lineCountTask);
 		} else {
 			// don't add tags here
 			SplitterTask splitterTask = new SplitterTask(pipedInputStream,
 					outputDirectory, wordIndex, newPattern, newPatternLabel,
 					this.delimiter, 0, this.deleteTempFiles, "", "", true,
-					false);
+					false, additionalCounts);
 			this.executorService.execute(splitterTask);
 		}
 

@@ -11,6 +11,7 @@ import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.smoother.KneserNeySmoother;
+import de.typology.smoother.ModifiedKneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.SmoothingSplitter;
@@ -110,8 +111,6 @@ public class KneserNeyBuilder {
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t", Config.get().decimalPlaces);
-			// TODO remove comments
-			// for (int i = 1; i <= Config.get().modelLength; i++) {
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
@@ -126,11 +125,38 @@ public class KneserNeyBuilder {
 							Config.get().backoffAbsolute);
 
 				}
-				// // smooth complex
+				// smooth complex
 				if (Config.get().kneserNeyComplex) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-complex-" + i + ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, true,
+							Config.get().conditionalProbabilityOnly,
+							Config.get().backoffAbsolute);
+				}
+			}
+		}
+		if (Config.get().buildModKneserNey) {
+			ModifiedKneserNeySmoother mkns = new ModifiedKneserNeySmoother(
+					testExtractOutputDirectory, absoluteDirectory,
+					continuationDirectory, "\t", Config.get().decimalPlaces);
+			for (int i = 1; i <= Config.get().modelLength; i++) {
+				File inputSequenceFile = new File(
+						inputDirectory.getAbsolutePath() + "/testing-samples-"
+								+ i + ".txt");
+				File resultFile;
+				// smooth simple
+				if (Config.get().kneserNeySimple) {
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/mod-kneser-ney-simple-" + i + ".txt");
+					mkns.smooth(inputSequenceFile, resultFile, i, false,
+							Config.get().conditionalProbabilityOnly,
+							Config.get().backoffAbsolute);
+				}
+				// smooth complex
+				if (Config.get().kneserNeyComplex) {
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/mod-kneser-ney-complex-" + i + ".txt");
+					mkns.smooth(inputSequenceFile, resultFile, i, true,
 							Config.get().conditionalProbabilityOnly,
 							Config.get().backoffAbsolute);
 				}

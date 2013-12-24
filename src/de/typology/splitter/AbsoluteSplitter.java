@@ -78,7 +78,7 @@ public class AbsoluteSplitter {
 						pattern, PatternTransformer.getStringPattern(pattern),
 						this.delimiter, 0, this.deleteTempFiles,
 						this.addBeforeSentence, this.addAfterSentence, false,
-						false);
+						false, false);
 				executorService.execute(splitterTask);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block

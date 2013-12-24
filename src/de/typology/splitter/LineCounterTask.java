@@ -18,16 +18,19 @@ public class LineCounterTask implements Runnable {
 	protected String patternLabel;
 	protected String delimiter;
 	protected boolean setCountToOne;
+	protected boolean additionalCounts;
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	public LineCounterTask(InputStream inputStream, File outputDirectory,
-			String patternLabel, String delimiter, boolean setCountToOne) {
+			String patternLabel, String delimiter, boolean setCountToOne,
+			boolean additionalCounts) {
 		this.inputStream = inputStream;
 		this.outputDirectory = outputDirectory;
 		this.patternLabel = patternLabel;
 		this.delimiter = delimiter;
 		this.setCountToOne = setCountToOne;
+		this.additionalCounts = additionalCounts;
 	}
 
 	@Override
@@ -48,23 +51,43 @@ public class LineCounterTask implements Runnable {
 
 		BufferedReader inputStreamReader = new BufferedReader(
 				new InputStreamReader(this.inputStream));
-		long lineCount = 0L;
+		long onePlusLineCount = 0L;
+		long oneLineCount = 0L;
+		long twoLineCount = 0L;
+		long threePlusLineCount = 0L;
 		String line;
 		try {
 			if (this.setCountToOne) {
 				while ((line = inputStreamReader.readLine()) != null) {
-					lineCount++;
+					onePlusLineCount++;
 				}
 			} else {
 				while ((line = inputStreamReader.readLine()) != null) {
-					lineCount += Long.parseLong(line.split(this.delimiter)[1]);
+					long currentCount = Long.parseLong(line
+							.split(this.delimiter)[1]);
+					onePlusLineCount += currentCount;
+					if (currentCount == 1L) {
+						oneLineCount += currentCount;
+					}
+					if (currentCount == 2L) {
+						twoLineCount += currentCount;
+					}
+					if (currentCount >= 3L) {
+						threePlusLineCount += currentCount;
+					}
 				}
 			}
 			inputStreamReader.close();
 
 			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(
 					outputDirectory.getAbsolutePath() + "/" + "all"));
-			bufferedWriter.write(lineCount + "\n");
+			if (this.additionalCounts) {
+				bufferedWriter.write(onePlusLineCount + this.delimiter
+						+ oneLineCount + this.delimiter + twoLineCount
+						+ this.delimiter + threePlusLineCount + "\n");
+			} else {
+				bufferedWriter.write(onePlusLineCount + "\n");
+			}
 			bufferedWriter.close();
 
 		} catch (IOException e) {
