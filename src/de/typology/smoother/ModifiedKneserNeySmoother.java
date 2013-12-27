@@ -108,14 +108,18 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 	@Override
 	protected double calculateWeightNumerator(String continuationPattern,
 			String sequence, int sequenceLength, String sequenceStringPattern) {
+		// [0]=1+
+		// [1]=1
+		// [2]=2
+		// [3]=3+
 		return this.getDiscountValue(continuationPattern, 1)
 				* this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern, "1")
+						sequenceStringPattern, 1)
 				+ this.getDiscountValue(continuationPattern, 2)
 				* this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern, "2")
+						sequenceStringPattern, 2)
 				+ this.getDiscountValue(continuationPattern, 3)
 				* this.calculateContinuationLast(sequence, sequenceLength,
-						sequenceStringPattern, "3+");
+						sequenceStringPattern, 3);
 	}
 }
