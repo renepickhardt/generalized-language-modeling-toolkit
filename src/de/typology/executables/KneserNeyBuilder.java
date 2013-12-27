@@ -2,6 +2,7 @@ package de.typology.executables;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -107,10 +108,23 @@ public class KneserNeyBuilder {
 
 		}
 
+		HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap = null;
+		HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap = null;
 		if (Config.get().buildKneserNey) {
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t", Config.get().decimalPlaces);
+
+			// read absolute and continuation values into HashMaps
+			absoluteTypeSequenceValueMap = kns
+					.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
+
+			continuationTypeSequenceValueMap = kns
+					.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
+
+			kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
+			kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
+
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
@@ -119,19 +133,26 @@ public class KneserNeyBuilder {
 				// smooth simple
 				if (Config.get().kneserNeySimple) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/kneser-ney-simple-" + i + ".txt");
+							+ "/kneser-ney-simple-backoffToAbsolute-" + i
+							+ ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, false,
-							Config.get().conditionalProbabilityOnly,
-							Config.get().backoffAbsolute);
-
+							Config.get().conditionalProbabilityOnly, true);
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/kneser-ney-simple-backoffToCont-" + i + ".txt");
+					kns.smooth(inputSequenceFile, resultFile, i, false,
+							Config.get().conditionalProbabilityOnly, false);
 				}
 				// smooth complex
 				if (Config.get().kneserNeyComplex) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/kneser-ney-complex-" + i + ".txt");
+							+ "/kneser-ney-complex-backoffToAbsolute-" + i
+							+ ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, true,
-							Config.get().conditionalProbabilityOnly,
-							Config.get().backoffAbsolute);
+							Config.get().conditionalProbabilityOnly, true);
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/kneser-ney-complex-backoffToCont-" + i + ".txt");
+					kns.smooth(inputSequenceFile, resultFile, i, true,
+							Config.get().conditionalProbabilityOnly, false);
 				}
 			}
 		}
@@ -139,6 +160,19 @@ public class KneserNeyBuilder {
 			ModifiedKneserNeySmoother mkns = new ModifiedKneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t", Config.get().decimalPlaces);
+
+			if (absoluteTypeSequenceValueMap == null) {
+				// read absolute and continuation values into HashMaps
+				absoluteTypeSequenceValueMap = mkns
+						.readAbsoluteValuesIntoHashMap(mkns.extractedAbsoluteDirectory);
+
+				continuationTypeSequenceValueMap = mkns
+						.readContinuationValuesIntoHashMap(mkns.extractedContinuationDirectory);
+			}
+
+			mkns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
+			mkns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
+
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
@@ -147,18 +181,28 @@ public class KneserNeyBuilder {
 				// smooth simple
 				if (Config.get().kneserNeySimple) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/mod-kneser-ney-simple-" + i + ".txt");
+							+ "/mod-kneser-ney-simple-backoffToAbsolute-" + i
+							+ ".txt");
 					mkns.smooth(inputSequenceFile, resultFile, i, false,
-							Config.get().conditionalProbabilityOnly,
-							Config.get().backoffAbsolute);
+							Config.get().conditionalProbabilityOnly, true);
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/mod-kneser-ney-simple-backoffToCont-" + i
+							+ ".txt");
+					mkns.smooth(inputSequenceFile, resultFile, i, false,
+							Config.get().conditionalProbabilityOnly, false);
 				}
 				// smooth complex
 				if (Config.get().kneserNeyComplex) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/mod-kneser-ney-complex-" + i + ".txt");
+							+ "/mod-kneser-ney-complex-backoffToAbsolute-" + i
+							+ ".txt");
 					mkns.smooth(inputSequenceFile, resultFile, i, true,
-							Config.get().conditionalProbabilityOnly,
-							Config.get().backoffAbsolute);
+							Config.get().conditionalProbabilityOnly, true);
+					resultFile = new File(inputDirectory.getAbsolutePath()
+							+ "/mod-kneser-ney-complex-backoffToCont-" + i
+							+ ".txt");
+					mkns.smooth(inputSequenceFile, resultFile, i, true,
+							Config.get().conditionalProbabilityOnly, false);
 				}
 			}
 		}

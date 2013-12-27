@@ -23,13 +23,13 @@ public class KneserNeySmoother {
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
 	private File absoluteDirectory;
-	private File extractedAbsoluteDirectory;
-	private File extractedContinuationDirectory;
+	public File extractedAbsoluteDirectory;
+	public File extractedContinuationDirectory;
 
 	private String delimiter;
 	private DecimalFormatter decimalFormatter;
-	protected HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
-	protected HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
+	public HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
+	public HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
 	private boolean smoothComplex;
@@ -71,20 +71,6 @@ public class KneserNeySmoother {
 			resultFile.delete();
 		}
 
-		// read absolute and continuation values into HashMaps
-		this.absoluteTypeSequenceValueMap = this
-				.readAbsoluteValuesIntoHashMap(this.extractedAbsoluteDirectory);
-
-		// also add total count of 1grams
-		HashMap<String, Long> aggregated1GramsMap = new HashMap<String, Long>();
-		aggregated1GramsMap.put("", Counter
-				.aggregateCountsInDirectory(new File(this.absoluteDirectory
-						.getAbsolutePath() + "/1")));
-		this.absoluteTypeSequenceValueMap.put("", aggregated1GramsMap);
-
-		this.continuationTypeSequenceValueMap = this
-				.readContinuationValuesIntoHashMap(this.extractedContinuationDirectory);
-
 		// go through sequence file
 		try {
 			BufferedReader inputSequenceReader = new BufferedReader(
@@ -118,7 +104,7 @@ public class KneserNeySmoother {
 
 	}
 
-	private HashMap<String, HashMap<String, Long>> readAbsoluteValuesIntoHashMap(
+	public HashMap<String, HashMap<String, Long>> readAbsoluteValuesIntoHashMap(
 			File inputDirectory) {
 		HashMap<String, HashMap<String, Long>> typeSequenceValueMap = new HashMap<String, HashMap<String, Long>>();
 		for (File typeDirectory : inputDirectory.listFiles()) {
@@ -150,11 +136,17 @@ public class KneserNeySmoother {
 					.put(typeDirectory.getName(), sequenceValuesMap);
 
 		}
+		// also add total count of 1grams
+		HashMap<String, Long> aggregated1GramsMap = new HashMap<String, Long>();
+		aggregated1GramsMap.put("", Counter
+				.aggregateCountsInDirectory(new File(this.absoluteDirectory
+						.getAbsolutePath() + "/1")));
+		typeSequenceValueMap.put("", aggregated1GramsMap);
 		return typeSequenceValueMap;
 
 	}
 
-	private HashMap<String, HashMap<String, Long[]>> readContinuationValuesIntoHashMap(
+	public HashMap<String, HashMap<String, Long[]>> readContinuationValuesIntoHashMap(
 			File inputDirectory) {
 		HashMap<String, HashMap<String, Long[]>> typeSequenceValueMap = new HashMap<String, HashMap<String, Long[]>>();
 
