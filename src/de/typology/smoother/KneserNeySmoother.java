@@ -256,6 +256,8 @@ public class KneserNeySmoother {
 
 		// call methods for lower order results
 		// TODO what if highestOrderDenominator==0?
+		// FIXME: this could only happen if the numerator was also 0 and this
+		// won't happen. otherwise we backoff
 		if (highestOrderDenominator == 0) {
 			// calculate result of sequence without first word
 
@@ -526,6 +528,9 @@ public class KneserNeySmoother {
 
 	}
 
+	// FIXME: might it be better to return -1 if errors occure. er even let the
+	// function through an exception and catch it from outside? as far as I
+	// understand this exception should hardly be thrown.
 	protected long getAbsoluteValue(String pattern, String sequence) {
 		if (!this.absoluteTypeSequenceValueMap.containsKey(pattern)) {
 			this.logger.error("Absolute pattern not found:" + pattern);
