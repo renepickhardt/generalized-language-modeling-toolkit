@@ -268,9 +268,9 @@ public class KneserNeySmoother {
 						.substring(1);
 				this.logger.debug("zero denominator for: " + sequence
 						+ " --> backoff to " + sequenceWithoutFirst);
-				return this.calculateProbability(sequenceWithoutFirst,
-						sequenceLength - 1, sequenceStringPatternWithoutFirst,
-						backoffAbsolute);
+				return this.calculateConditionalProbability(
+						sequenceWithoutFirst, sequenceLength - 1,
+						sequenceStringPatternWithoutFirst, backoffAbsolute);
 			} else {
 				this.logger.debug("zero denominator for: " + sequence);
 				return this.calculateAggregatedLowerOrderResult(sequence,
@@ -442,9 +442,9 @@ public class KneserNeySmoother {
 						.substring(1);
 				this.logger.debug("zero denominator for: " + sequence
 						+ " --> backoff to " + sequenceWithoutFirst);
-				return this.calculateProbability(sequenceWithoutFirst,
-						sequenceLength - 1, sequenceStringPatternWithoutFirst,
-						backoffAbsolute);
+				return this.calculateConditionalProbability(
+						sequenceWithoutFirst, sequenceLength - 1,
+						sequenceStringPatternWithoutFirst, backoffAbsolute);
 			} else {
 				this.logger.debug("zero denominator for: " + sequence);
 				return this.calculateAggregatedLowerOrderResult(sequence,
