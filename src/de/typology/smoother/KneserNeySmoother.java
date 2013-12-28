@@ -3,10 +3,14 @@ package de.typology.smoother;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -22,7 +26,8 @@ public class KneserNeySmoother {
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
-	private File absoluteDirectory;
+	protected File absoluteDirectory;
+	protected File continuationDirectory;
 	public File extractedAbsoluteDirectory;
 	public File extractedContinuationDirectory;
 
@@ -32,12 +37,15 @@ public class KneserNeySmoother {
 	public HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
+	protected File discountTypesValuesMapFile;
+
 	private boolean smoothComplex;
 
 	public KneserNeySmoother(File extractedSequenceDirectory,
 			File absoluteDirectory, File continuationDirectory,
 			String delimiter, int decimalPlaces) {
 		this.absoluteDirectory = absoluteDirectory;
+		this.continuationDirectory = continuationDirectory;
 		this.extractedAbsoluteDirectory = new File(
 				extractedSequenceDirectory.getAbsolutePath() + "/"
 						+ absoluteDirectory.getName());
@@ -45,12 +53,12 @@ public class KneserNeySmoother {
 				extractedSequenceDirectory.getAbsolutePath() + "/"
 						+ continuationDirectory.getName());
 
-		// calculate discount Values
-		this.discountTypeValuesMap = this.calculateDiscountValues(
-				this.absoluteDirectory, continuationDirectory);
-
 		this.delimiter = delimiter;
 		this.decimalFormatter = new DecimalFormatter(decimalPlaces);
+
+		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
+				.getParentFile().getAbsolutePath()
+				+ "/kneserNeyDiscountValues.ser");
 	};
 
 	/**
@@ -66,6 +74,12 @@ public class KneserNeySmoother {
 	public void smooth(File inputSequenceFile, File resultFile,
 			int sequenceLength, boolean smoothComplex,
 			boolean conditionalProbabilityOnly, boolean backOffAbsolute) {
+
+		// calculate discount Values
+
+		this.discountTypeValuesMap = this.calculateDiscountValues(
+				this.absoluteDirectory, this.continuationDirectory);
+
 		this.smoothComplex = smoothComplex;
 		if (resultFile.exists()) {
 			resultFile.delete();
@@ -488,13 +502,39 @@ public class KneserNeySmoother {
 						sequenceStringPattern, 0);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
 			File absoluteDirectory, File continuationDirectory) {
-		HashMap<String, HashMap<String, Double>> discountTypeValuesMap = new HashMap<String, HashMap<String, Double>>();
-		this.calculateDiscountValues(discountTypeValuesMap, absoluteDirectory);
-		this.calculateDiscountValues(discountTypeValuesMap,
-				continuationDirectory);
 
+		// calculate discount Values
+		HashMap<String, HashMap<String, Double>> discountTypeValuesMap = new HashMap<String, HashMap<String, Double>>();
+		try {
+			if (this.discountTypesValuesMapFile.exists()) {
+				FileInputStream fis = new FileInputStream(
+						this.discountTypesValuesMapFile);
+				ObjectInputStream ois = new ObjectInputStream(fis);
+				discountTypeValuesMap = (HashMap<String, HashMap<String, Double>>) ois
+						.readObject();
+				ois.close();
+			} else {
+				this.calculateDiscountValues(discountTypeValuesMap,
+						absoluteDirectory);
+				this.calculateDiscountValues(discountTypeValuesMap,
+						continuationDirectory);
+
+				FileOutputStream fos = new FileOutputStream(
+						this.discountTypesValuesMapFile);
+				ObjectOutputStream oos = new ObjectOutputStream(fos);
+				oos.writeObject(discountTypeValuesMap);
+				oos.close();
+			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return discountTypeValuesMap;
 
 	}

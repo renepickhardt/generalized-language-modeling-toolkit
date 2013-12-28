@@ -13,6 +13,10 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 			String delimiter, int decimalPlaces) {
 		super(extractedSequenceDirectory, absoluteDirectory,
 				continuationDirectory, delimiter, decimalPlaces);
+
+		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
+				.getParentFile().getAbsolutePath()
+				+ "/modKneserNeyDiscountValues.ser");
 	}
 
 	private double d1;
