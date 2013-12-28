@@ -16,7 +16,8 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 
 		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
 				.getParentFile().getAbsolutePath()
-				+ "/modKneserNeyDiscountValues.ser");
+				+ "/discount-values-mod-kneser-ney.ser");
+
 	}
 
 	private double d1;

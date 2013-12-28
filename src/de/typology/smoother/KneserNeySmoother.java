@@ -58,7 +58,7 @@ public class KneserNeySmoother {
 
 		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
 				.getParentFile().getAbsolutePath()
-				+ "/kneserNeyDiscountValues.ser");
+				+ "/discount-values-kneser-ney.ser");
 	};
 
 	/**
