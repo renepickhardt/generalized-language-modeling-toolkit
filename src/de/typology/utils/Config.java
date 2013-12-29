@@ -30,6 +30,8 @@ public class Config extends Properties {
 	public String testedOnDataSet;
 	public String testedOnLang;
 
+	public String languages;
+
 	public boolean splitData;
 	public boolean buildStats;
 	public boolean buildIndex;
