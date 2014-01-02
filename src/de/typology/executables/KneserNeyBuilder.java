@@ -137,6 +137,7 @@ public class KneserNeyBuilder {
 							+ ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, false,
 							Config.get().conditionalProbabilityOnly, true);
+
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-simple-backoffToCont-" + i + ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, false,

@@ -581,14 +581,17 @@ public class KneserNeySmoother {
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
-
-			return 0;
+			// laplacian smoothing
+			// return 0;
+			return 1;
 		}
 		if (this.absoluteTypeSequenceValueMap.get(pattern)
 				.containsKey(sequence)) {
 			return this.absoluteTypeSequenceValueMap.get(pattern).get(sequence);
 		} else {
-			return 0;
+			// laplacian smoothing
+			// return 0;
+			return 1;
 		}
 	}
 
@@ -602,14 +605,19 @@ public class KneserNeySmoother {
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
-			return 0;
+			// replace with laplace smoothing
+			// return 0;
+			return 1;
+
 		}
 		if (this.continuationTypeSequenceValueMap.get(pattern).containsKey(
 				sequence)) {
 			return this.continuationTypeSequenceValueMap.get(pattern).get(
 					sequence)[countIndex];
 		} else {
-			return 0;
+			// replace with laplace smoothing
+			// return 0;
+			return 1;
 		}
 	}
 
