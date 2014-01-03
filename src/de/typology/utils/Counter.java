@@ -175,6 +175,8 @@ public class Counter {
 					if (line.startsWith("<fs>")) {
 						continue;
 					}
+					// FIXME: put the delimiter to a global config file or at
+					// least as a constant
 					lineSplit = line.split("\t");
 					long currentCount;
 					if (lineSplit.length == 1) {

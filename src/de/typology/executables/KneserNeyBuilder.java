@@ -113,7 +113,7 @@ public class KneserNeyBuilder {
 		if (Config.get().buildKneserNey) {
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
-					continuationDirectory, "\t", Config.get().decimalPlaces);
+					continuationDirectory, "\t");
 
 			// read absolute and continuation values into HashMaps
 			absoluteTypeSequenceValueMap = kns
@@ -137,6 +137,7 @@ public class KneserNeyBuilder {
 							+ ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, false,
 							Config.get().conditionalProbabilityOnly, true);
+
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-simple-backoffToCont-" + i + ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, false,

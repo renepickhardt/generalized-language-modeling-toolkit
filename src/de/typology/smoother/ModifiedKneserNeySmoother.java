@@ -12,7 +12,7 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 			File absoluteDirectory, File continuationDirectory,
 			String delimiter, int decimalPlaces) {
 		super(extractedSequenceDirectory, absoluteDirectory,
-				continuationDirectory, delimiter, decimalPlaces);
+				continuationDirectory, delimiter);
 
 		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
 				.getParentFile().getAbsolutePath()
