@@ -47,7 +47,7 @@ public class KneserNeySmoother {
 
 	// global fiel needed to store discount values in different files for
 	// modified and standard kneser ney
-	File discountTypesValuesMapFile;
+	protected File discountTypesValuesMapFile;
 
 	// true if we smooth generalized language models
 	private boolean smoothComplex;
