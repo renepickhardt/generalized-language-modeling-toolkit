@@ -274,10 +274,11 @@ public class KneserNeySmoother {
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
 			// FIXME: change to sum and take logs before
-			logProbability += Math.log(this.calculateConditionalProbability(
-					newSequence, newSequenceLength, newSequenceStringPattern,
-					backoffAbsolute))
-					/ Math.log(2.0);
+			logProbability += Math.max(
+					Math.log(this.calculateConditionalProbability(newSequence,
+							newSequenceLength, newSequenceStringPattern,
+							backoffAbsolute))
+							/ Math.log(2.0), -100);
 
 		}
 		return logProbability;
