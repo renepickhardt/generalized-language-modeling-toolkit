@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.patterns.PatternTransformer;
+import de.typology.utils.Config;
 import de.typology.utils.Counter;
 import de.typology.utils.DecimalFormatter;
 import de.typology.utils.SequenceFormatter;
@@ -26,24 +27,35 @@ public class KneserNeySmoother {
 
 	Logger logger = LogManager.getLogger(this.getClass().getName());
 
+	// location of trained language models
 	protected File absoluteDirectory;
 	protected File continuationDirectory;
+
+	// location of extracted language models which are needed for smoothing lm
+	// for test data
 	public File extractedAbsoluteDirectory;
 	public File extractedContinuationDirectory;
 
 	private String delimiter;
 	private DecimalFormatter decimalFormatter;
+
+	// in memory index of extracted counts for training data
+	// TODO: why public?
 	public HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
 	public HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
-	protected File discountTypesValuesMapFile;
+	// global fiel needed to store discount values in different files for
+	// modified and standard kneser ney
+	File discountTypesValuesMapFile;
 
+	// true if we smooth generalized language models
 	private boolean smoothComplex;
 
+	// removed global config variable decimal places from Constructor. does that
+	// make sense?
 	public KneserNeySmoother(File extractedSequenceDirectory,
-			File absoluteDirectory, File continuationDirectory,
-			String delimiter, int decimalPlaces) {
+			File absoluteDirectory, File continuationDirectory, String delimiter) {
 		this.absoluteDirectory = absoluteDirectory;
 		this.continuationDirectory = continuationDirectory;
 		this.extractedAbsoluteDirectory = new File(
@@ -54,11 +66,12 @@ public class KneserNeySmoother {
 						+ continuationDirectory.getName());
 
 		this.delimiter = delimiter;
-		this.decimalFormatter = new DecimalFormatter(decimalPlaces);
+		this.decimalFormatter = new DecimalFormatter(Config.get().decimalPlaces);
 
 		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
 				.getParentFile().getAbsolutePath()
 				+ "/discount-values-kneser-ney.ser");
+
 	};
 
 	/**
@@ -75,8 +88,7 @@ public class KneserNeySmoother {
 			int sequenceLength, boolean smoothComplex,
 			boolean conditionalProbabilityOnly, boolean backOffAbsolute) {
 
-		// calculate discount Values
-
+		// calculate discount Values or read them from local file
 		this.discountTypeValuesMap = this.calculateDiscountValues(
 				this.absoluteDirectory, this.continuationDirectory);
 
@@ -226,6 +238,22 @@ public class KneserNeySmoother {
 
 	}
 
+	/**
+	 * calculates a probability of a given sequence to be seen in a trained
+	 * language model
+	 * 
+	 * The probability will be calculated as:
+	 * 
+	 * P(w1...w5) = P(w5|w1...w4) * P(w4|w1...w3) *...* P(w1)
+	 * 
+	 * later it could be possible to calculate the log of the sequence
+	 * 
+	 * @param sequence
+	 * @param sequenceLength
+	 * @param sequenceStringPattern
+	 * @param backoffAbsolute
+	 * @return
+	 */
 	protected double calculateProbability(String sequence, int sequenceLength,
 			String sequenceStringPattern, boolean backoffAbsolute) {
 		double probability = 1;
@@ -234,9 +262,13 @@ public class KneserNeySmoother {
 			String newSequence = "";
 			int newSequenceLength = 0;
 			String newSequenceStringPattern = "";
+			// FIXME: shouldn't this loop go from 0 to i instead of i to
+			// sequenceLength
 			for (int j = i; j < sequenceLength; j++) {
 				newSequence += sequenceSplit[j] + " ";
 				newSequenceLength++;
+				// FIXME: is it true to always put 1 to the string pattern
+				// without looking at the old one?
 				newSequenceStringPattern += "1";
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
@@ -248,6 +280,19 @@ public class KneserNeySmoother {
 		return probability;
 	}
 
+	/**
+	 * conditional probability of a given sequence w_{1}...w_{n} this will be
+	 * evaluated as P(w_{n}|w_{1}...w_{n-1}). Is this true?
+	 * 
+	 * it will use smoothing with interpolation and backof in order to calculate
+	 * the probabilities from the training data
+	 * 
+	 * @param sequence
+	 * @param sequenceLength
+	 * @param sequenceStringPattern
+	 * @param backoffAbsolute
+	 * @return
+	 */
 	protected double calculateConditionalProbability(String sequence,
 			int sequenceLength, String sequenceStringPattern,
 			boolean backoffAbsolute) {
@@ -502,6 +547,15 @@ public class KneserNeySmoother {
 						sequenceStringPattern, 0);
 	}
 
+	/**
+	 * Controller method to either calculate the discount values for a given
+	 * language model and store the results in a serialized file or if that file
+	 * exists retrieve those values from that file
+	 * 
+	 * @param absoluteDirectory
+	 * @param continuationDirectory
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
 			File absoluteDirectory, File continuationDirectory) {
@@ -539,9 +593,19 @@ public class KneserNeySmoother {
 
 	}
 
+	/**
+	 * calculates the discount values for kneser ney smoothing of a language
+	 * model with
+	 * 
+	 * @param discountTypeValuesMap
+	 * @param inputDirectory
+	 * @return
+	 */
 	protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
 			HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
 			File inputDirectory) {
+		// an absoluteTypeDirectory could be a file handle e.g. to
+		// /inputpath/dataset/lang/absolut/11001
 		for (File absoluteTypeDirectory : inputDirectory.listFiles()) {
 			if (absoluteTypeDirectory.getName().contains("split")) {
 				continue;
@@ -582,16 +646,21 @@ public class KneserNeySmoother {
 				e.printStackTrace();
 			}
 			// laplacian smoothing
-			// return 0;
-			return 1;
+			if (sequence.length() == 1) {
+				return 1;
+			}
+			return 0;
+
 		}
 		if (this.absoluteTypeSequenceValueMap.get(pattern)
 				.containsKey(sequence)) {
 			return this.absoluteTypeSequenceValueMap.get(pattern).get(sequence);
 		} else {
 			// laplacian smoothing
-			// return 0;
-			return 1;
+			if (sequence.length() == 1) {
+				return 1;
+			}
+			return 0;
 		}
 	}
 
@@ -606,9 +675,10 @@ public class KneserNeySmoother {
 				e.printStackTrace();
 			}
 			// replace with laplace smoothing
-			// return 0;
-			return 1;
-
+			if (sequence.length() == 1) {
+				return 1;
+			}
+			return 0;
 		}
 		if (this.continuationTypeSequenceValueMap.get(pattern).containsKey(
 				sequence)) {
@@ -616,8 +686,10 @@ public class KneserNeySmoother {
 					sequence)[countIndex];
 		} else {
 			// replace with laplace smoothing
-			// return 0;
-			return 1;
+			if (sequence.length() == 1) {
+				return 1;
+			}
+			return 0;
 		}
 	}
 

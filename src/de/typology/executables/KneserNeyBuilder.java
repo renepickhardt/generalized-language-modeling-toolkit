@@ -113,7 +113,7 @@ public class KneserNeyBuilder {
 		if (Config.get().buildKneserNey) {
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
-					continuationDirectory, "\t", Config.get().decimalPlaces);
+					continuationDirectory, "\t");
 
 			// read absolute and continuation values into HashMaps
 			absoluteTypeSequenceValueMap = kns
