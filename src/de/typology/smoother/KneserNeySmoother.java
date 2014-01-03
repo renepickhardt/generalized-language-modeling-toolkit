@@ -256,7 +256,8 @@ public class KneserNeySmoother {
 	 */
 	protected double calculateProbability(String sequence, int sequenceLength,
 			String sequenceStringPattern, boolean backoffAbsolute) {
-		double probability = 1;
+		// double probability = 1;
+		double logProbability = 0;
 		String[] sequenceSplit = sequence.split("\\s");
 		for (int i = 0; i < sequenceLength; i++) {
 			String newSequence = "";
@@ -272,12 +273,14 @@ public class KneserNeySmoother {
 				newSequenceStringPattern += "1";
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
-			probability *= this.calculateConditionalProbability(newSequence,
-					newSequenceLength, newSequenceStringPattern,
-					backoffAbsolute);
+			// FIXME: change to sum and take logs before
+			logProbability += Math.log(this.calculateConditionalProbability(
+					newSequence, newSequenceLength, newSequenceStringPattern,
+					backoffAbsolute))
+					/ Math.log(2.0);
 
 		}
-		return probability;
+		return logProbability;
 	}
 
 	/**
@@ -647,7 +650,7 @@ public class KneserNeySmoother {
 				e.printStackTrace();
 			}
 			// laplacian smoothing
-			if (sequence.length() == 1) {
+			if (sequence.length() <= 1) {
 				return 1;
 			}
 			return 0;
@@ -658,7 +661,7 @@ public class KneserNeySmoother {
 			return this.absoluteTypeSequenceValueMap.get(pattern).get(sequence);
 		} else {
 			// laplacian smoothing
-			if (sequence.length() == 1) {
+			if (sequence.length() <= 1) {
 				return 1;
 			}
 			return 0;
@@ -676,7 +679,7 @@ public class KneserNeySmoother {
 				e.printStackTrace();
 			}
 			// replace with laplace smoothing
-			if (sequence.length() == 1) {
+			if (sequence.length() <= 1) {
 				return 1;
 			}
 			return 0;
@@ -687,7 +690,7 @@ public class KneserNeySmoother {
 					sequence)[countIndex];
 		} else {
 			// replace with laplace smoothing
-			if (sequence.length() == 1) {
+			if (sequence.length() <= 1) {
 				return 1;
 			}
 			return 0;
