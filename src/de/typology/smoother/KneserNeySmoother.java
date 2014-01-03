@@ -489,7 +489,8 @@ public class KneserNeySmoother {
 				String sequenceWithoutFirst = SequenceFormatter.removeWord(
 						sequence, 0);
 				if (sequenceWithoutFirst.length() == 0) {
-					return 0;
+					// FIXME: laplacian smoothing?
+					return 1e-6;
 				}
 
 				while (PatternTransformer
