@@ -2,7 +2,6 @@ package de.typology.executables;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -108,22 +107,10 @@ public class KneserNeyBuilder {
 
 		}
 
-		HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap = null;
-		HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap = null;
 		if (Config.get().buildKneserNey) {
 			KneserNeySmoother kns = new KneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t");
-
-			// read absolute and continuation values into HashMaps
-			absoluteTypeSequenceValueMap = kns
-					.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
-
-			continuationTypeSequenceValueMap = kns
-					.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
-
-			kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
-			kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
 
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(
@@ -161,18 +148,6 @@ public class KneserNeyBuilder {
 			ModifiedKneserNeySmoother mkns = new ModifiedKneserNeySmoother(
 					testExtractOutputDirectory, absoluteDirectory,
 					continuationDirectory, "\t", Config.get().decimalPlaces);
-
-			if (absoluteTypeSequenceValueMap == null) {
-				// read absolute and continuation values into HashMaps
-				absoluteTypeSequenceValueMap = mkns
-						.readAbsoluteValuesIntoHashMap(mkns.extractedAbsoluteDirectory);
-
-				continuationTypeSequenceValueMap = mkns
-						.readContinuationValuesIntoHashMap(mkns.extractedContinuationDirectory);
-			}
-
-			mkns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
-			mkns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
 
 			for (int i = 1; i <= Config.get().modelLength; i++) {
 				File inputSequenceFile = new File(

@@ -78,7 +78,7 @@ public class KneserNeySmootherTest {
 
 		KneserNeySmoother kns = new KneserNeySmoother(
 				this.extractedSequenceDirectory, this.absoluteDirectory,
-				this.continuationDirectory, "\t", 5);
+				this.continuationDirectory, "\t");
 
 		HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap = null;
 		HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap = null;
@@ -122,7 +122,7 @@ public class KneserNeySmootherTest {
 
 		KneserNeySmoother kns = new KneserNeySmoother(
 				this.extractedSequenceDirectory, this.absoluteDirectory,
-				this.continuationDirectory, "\t", 5);
+				this.continuationDirectory, "\t");
 
 		HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap = null;
 		HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap = null;
