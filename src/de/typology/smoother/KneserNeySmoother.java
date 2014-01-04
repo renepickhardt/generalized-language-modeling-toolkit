@@ -40,8 +40,8 @@ public class KneserNeySmoother {
 	private DecimalFormatter decimalFormatter;
 
 	// in memory index of extracted counts for training data
-	protected HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
-	protected HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
+	public HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
+	public HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
 	// global fiel needed to store discount values in different files for
@@ -52,8 +52,7 @@ public class KneserNeySmoother {
 	private boolean smoothComplex;
 
 	// removed global config variable decimal places from Constructor. does that
-	// make sense? yeah well, doesn't matter. my aim was to keep Config out of
-	// this class
+	// make sense?
 	public KneserNeySmoother(File extractedSequenceDirectory,
 			File absoluteDirectory, File continuationDirectory, String delimiter) {
 		this.absoluteDirectory = absoluteDirectory;
@@ -71,12 +70,6 @@ public class KneserNeySmoother {
 		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
 				.getParentFile().getAbsolutePath()
 				+ "/discount-values-kneser-ney.ser");
-
-		this.absoluteTypeSequenceValueMap = this
-				.readAbsoluteValuesIntoHashMap(this.extractedAbsoluteDirectory);
-
-		this.continuationTypeSequenceValueMap = this
-				.readContinuationValuesIntoHashMap(this.extractedContinuationDirectory);
 
 	};
 
