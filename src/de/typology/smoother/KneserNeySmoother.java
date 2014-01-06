@@ -70,6 +70,7 @@ public class KneserNeySmoother {
 		this.discountTypesValuesMapFile = new File(this.absoluteDirectory
 				.getParentFile().getAbsolutePath()
 				+ "/discount-values-kneser-ney.ser");
+		this.discountTypeValuesMap = null;
 
 	};
 
@@ -86,12 +87,17 @@ public class KneserNeySmoother {
 	public void smooth(File inputSequenceFile, File resultFile,
 			int sequenceLength, boolean smoothComplex,
 			boolean conditionalProbabilityOnly, boolean backOffAbsolute) {
+		this.smoothComplex = smoothComplex;
+		this.logger
+				.info("start calculating kneser-ney (or mod kneser ney) of length "
+						+ sequenceLength);
 
 		// calculate discount Values or read them from local file
+		this.logger.info("calculate or read discount values");
+
 		this.discountTypeValuesMap = this.calculateDiscountValues(
 				this.absoluteDirectory, this.continuationDirectory);
 
-		this.smoothComplex = smoothComplex;
 		if (resultFile.exists()) {
 			resultFile.delete();
 		}
@@ -262,13 +268,9 @@ public class KneserNeySmoother {
 			String newSequence = "";
 			int newSequenceLength = 0;
 			String newSequenceStringPattern = "";
-			// FIXME: shouldn't this loop go from 0 to i instead of i to
-			// sequenceLength
-			for (int j = i; j < sequenceLength; j++) {
+			for (int j = 0; j <= i; j++) {
 				newSequence += sequenceSplit[j] + " ";
 				newSequenceLength++;
-				// FIXME: is it true to always put 1 to the string pattern
-				// without looking at the old one?
 				newSequenceStringPattern += "1";
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
@@ -302,6 +304,12 @@ public class KneserNeySmoother {
 		// calculate highest order result
 		long highestOrderValue = this.getAbsoluteValue(sequenceStringPattern,
 				sequence);
+
+		if (sequenceLength == 1 && highestOrderValue == 0) {
+			// FIXME add laplace here
+			return 1000;
+		}
+
 		double discountValue = this.getDiscountValue(sequenceStringPattern,
 				highestOrderValue);
 
@@ -366,7 +374,7 @@ public class KneserNeySmoother {
 		return result;
 	}
 
-	private double calculateAggregatedLowerOrderResult(
+	protected double calculateAggregatedLowerOrderResult(
 			String higherOrderSequence, int higherOrderSequenceLength,
 			String higherOrderStringPattern, boolean backoffAbsolute) {
 		if (higherOrderSequenceLength < 2) {
@@ -383,7 +391,7 @@ public class KneserNeySmoother {
 			// count skipped zeros to remove the correct word for the lower
 			// order sequence
 			int skippedZeros = 0;
-			for (int i = 0; i < higherOrderCharPattern.length - 1; i++) {
+			for (int i = 0; i < higherOrderCharPattern.length; i++) {
 				if (higherOrderCharPattern[i] == '1') {
 					char[] lowerOrderCharPattern = higherOrderCharPattern
 							.clone();
@@ -455,6 +463,10 @@ public class KneserNeySmoother {
 		}
 		long higherOrderValue = this.getContinuationValue(continuationPattern,
 				sequence, 0);
+		if (sequenceLength == 1 && higherOrderValue == 0) {
+			// FIXME add laplace here
+			return 1000;
+		}
 
 		double discountValue = this.getDiscountValue(continuationPattern,
 				higherOrderValue);
@@ -491,11 +503,6 @@ public class KneserNeySmoother {
 			if (backoffAbsolute) {
 				String sequenceWithoutFirst = SequenceFormatter.removeWord(
 						sequence, 0);
-				if (sequenceWithoutFirst.length() == 0) {
-					// FIXME: laplacian smoothing?
-					return 1e-6;
-				}
-
 				while (PatternTransformer
 						.getBooleanPattern(sequenceStringPattern)[1] == false) {
 					sequenceStringPattern = 1 + sequenceStringPattern

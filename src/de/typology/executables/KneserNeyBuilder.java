@@ -116,12 +116,12 @@ public class KneserNeyBuilder {
 					continuationDirectory, "\t");
 
 			// read absolute and continuation values into HashMaps
+			logger.info("read absolute and continuation values into HashMaps for kneser ney");
 			absoluteTypeSequenceValueMap = kns
 					.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
 
 			continuationTypeSequenceValueMap = kns
 					.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
-
 			kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
 			kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
 
@@ -164,6 +164,8 @@ public class KneserNeyBuilder {
 
 			if (absoluteTypeSequenceValueMap == null) {
 				// read absolute and continuation values into HashMaps
+
+				logger.info("read absolute and continuation values into HashMaps for mod kneser ney");
 				absoluteTypeSequenceValueMap = mkns
 						.readAbsoluteValuesIntoHashMap(mkns.extractedAbsoluteDirectory);
 
