@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -44,12 +43,14 @@ public class KneserNeySmoother {
 	public HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
 	protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;
 
-	// global fiel needed to store discount values in different files for
+	// global field needed to store discount values in different files for
 	// modified and standard kneser ney
 	protected File discountTypesValuesMapFile;
 
 	// true if we smooth generalized language models
 	private boolean smoothComplex;
+
+	private long totalUnigramCount;
 
 	// removed global config variable decimal places from Constructor. does that
 	// make sense?
@@ -72,6 +73,9 @@ public class KneserNeySmoother {
 				+ "/discount-values-kneser-ney.ser");
 		this.discountTypeValuesMap = null;
 
+		this.totalUnigramCount = Counter.aggregateCountsInDirectory(new File(
+				absoluteDirectory.getAbsolutePath() + "/1"));
+		this.logger.info("total unigram count: " + this.totalUnigramCount);
 	};
 
 	/**
@@ -274,12 +278,10 @@ public class KneserNeySmoother {
 				newSequenceStringPattern += "1";
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
-			// FIXME: change to sum and take logs before
-			logProbability += Math.max(
-					Math.log(this.calculateConditionalProbability(newSequence,
-							newSequenceLength, newSequenceStringPattern,
-							backoffAbsolute))
-							/ Math.log(2.0), -100);
+			logProbability += Math.log(this.calculateConditionalProbability(
+					newSequence, newSequenceLength, newSequenceStringPattern,
+					backoffAbsolute))
+					/ Math.log(2.0);
 
 		}
 		return logProbability;
@@ -304,10 +306,8 @@ public class KneserNeySmoother {
 		// calculate highest order result
 		long highestOrderValue = this.getAbsoluteValue(sequenceStringPattern,
 				sequence);
-
 		if (sequenceLength == 1 && highestOrderValue == 0) {
-			// FIXME add laplace here
-			return 1000;
+			return (double) 1 / (this.totalUnigramCount + 1);
 		}
 
 		double discountValue = this.getDiscountValue(sequenceStringPattern,
@@ -325,9 +325,6 @@ public class KneserNeySmoother {
 				sequencePatternWithoutLast, sequenceWithoutLast);
 
 		// call methods for lower order results
-		// TODO what if highestOrderDenominator==0?
-		// FIXME: this could only happen if the numerator was also 0 and this
-		// won't happen. otherwise we backoff
 		if (highestOrderDenominator == 0) {
 			// calculate result of sequence without first word
 
@@ -398,18 +395,26 @@ public class KneserNeySmoother {
 					lowerOrderCharPattern[i] = '0';
 					String lowerOrderSequence = null;
 					if (i == 0) {
+						// remove all leading zeros
 						while (lowerOrderCharPattern[0] == '0'
 								&& lowerOrderCharPattern.length > 1) {
 							lowerOrderCharPattern = Arrays.copyOfRange(
 									lowerOrderCharPattern, 1,
 									lowerOrderCharPattern.length);
-							lowerOrderSequence = SequenceFormatter.removeWord(
-									higherOrderSequence, 0);
 						}
 					} else {
-						lowerOrderSequence = SequenceFormatter.removeWord(
-								higherOrderSequence, i - skippedZeros);
+						if (i == higherOrderCharPattern.length - 1) {
+							// remove all zeros at the end of the pattern
+							while (lowerOrderCharPattern[lowerOrderCharPattern.length - 1] == '0'
+									&& lowerOrderCharPattern.length > 1) {
+								lowerOrderCharPattern = Arrays.copyOfRange(
+										lowerOrderCharPattern, 0,
+										lowerOrderCharPattern.length - 1);
+							}
+						}
 					}
+					lowerOrderSequence = SequenceFormatter.removeWord(
+							higherOrderSequence, i - skippedZeros);
 
 					if (lowerOrderSequence.length() > 0) {
 						String lowerOrderStringPattern = String
@@ -464,8 +469,7 @@ public class KneserNeySmoother {
 		long higherOrderValue = this.getContinuationValue(continuationPattern,
 				sequence, 0);
 		if (sequenceLength == 1 && higherOrderValue == 0) {
-			// FIXME add laplace here
-			return 1000;
+			return (double) 1 / (this.totalUnigramCount + 1);
 		}
 
 		double discountValue = this.getDiscountValue(continuationPattern,
@@ -495,9 +499,12 @@ public class KneserNeySmoother {
 		// }
 
 		// call methods for lower order results
-		// TODO what if highestOrderDenominator==0?
-
 		if (higherOrderDenominator == 0) {
+			if (sequenceLength == 1) {
+				this.logger
+						.error("denominator is zero at sequence length 1 which is not possible");
+				System.exit(1);
+			}
 			// calculate result of sequence without first word
 
 			if (backoffAbsolute) {
@@ -594,10 +601,8 @@ public class KneserNeySmoother {
 				oos.close();
 			}
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return discountTypeValuesMap;
@@ -643,34 +648,16 @@ public class KneserNeySmoother {
 
 	}
 
-	// FIXME: might it be better to return -1 if errors occure. er even let the
-	// function through an exception and catch it from outside? as far as I
-	// understand this exception should hardly be thrown.
 	protected long getAbsoluteValue(String pattern, String sequence) {
 		if (!this.absoluteTypeSequenceValueMap.containsKey(pattern)) {
 			this.logger.error("Absolute pattern not found:" + pattern);
-
-			try {
-				throw new FileNotFoundException(
-						"could not find absolute pattern: " + pattern);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			// laplacian smoothing
-			if (sequence.length() <= 1) {
-				return 1;
-			}
-			return 0;
+			System.exit(1);
 
 		}
 		if (this.absoluteTypeSequenceValueMap.get(pattern)
 				.containsKey(sequence)) {
 			return this.absoluteTypeSequenceValueMap.get(pattern).get(sequence);
 		} else {
-			// laplacian smoothing
-			if (sequence.length() <= 1) {
-				return 1;
-			}
 			return 0;
 		}
 	}
@@ -679,27 +666,13 @@ public class KneserNeySmoother {
 			int countIndex) {
 		if (!this.continuationTypeSequenceValueMap.containsKey(pattern)) {
 			this.logger.error("Continuation pattern not found:" + pattern);
-			try {
-				throw new FileNotFoundException(
-						"could not find continuation pattern: " + pattern);
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-			// replace with laplace smoothing
-			if (sequence.length() <= 1) {
-				return 1;
-			}
-			return 0;
+			System.exit(1);
 		}
 		if (this.continuationTypeSequenceValueMap.get(pattern).containsKey(
 				sequence)) {
 			return this.continuationTypeSequenceValueMap.get(pattern).get(
 					sequence)[countIndex];
 		} else {
-			// replace with laplace smoothing
-			if (sequence.length() <= 1) {
-				return 1;
-			}
 			return 0;
 		}
 	}

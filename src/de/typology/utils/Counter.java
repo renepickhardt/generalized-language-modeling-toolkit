@@ -125,6 +125,10 @@ public class Counter {
 				String line;
 				String[] lineSplit;
 				while ((line = br.readLine()) != null) {
+					// TODO remove this or make it pretty
+					if (line.startsWith("<fs>")) {
+						continue;
+					}
 					lineSplit = line.split("\t");
 					totalCount += Long
 							.parseLong(lineSplit[lineSplit.length - 1]);
