@@ -278,10 +278,15 @@ public class KneserNeySmoother {
 				newSequenceStringPattern += "1";
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
-			logProbability += Math.log(this.calculateConditionalProbability(
+			double currentResult = this.calculateConditionalProbability(
 					newSequence, newSequenceLength, newSequenceStringPattern,
-					backoffAbsolute))
-					/ Math.log(2.0);
+					backoffAbsolute);
+			if (currentResult <= 0) {
+				this.logger.error("zero probability at: " + newSequence + " , "
+						+ newSequenceLength + " , " + newSequenceStringPattern);
+				currentResult = 0.000000000001;
+			}
+			logProbability += Math.log(currentResult) / Math.log(2.0);
 
 		}
 		return logProbability;
