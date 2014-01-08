@@ -532,7 +532,7 @@ public class KneserNeySmoother {
 				this.logger
 						.error("denominator is zero at sequence length 1 which is not possible");
 
-				// return (double) 1 / (this.totalUnigramCount + 1);
+				return (double) 1 / (this.totalUnigramCount + 1);
 				// System.exit(1);
 			}
 			// calculate result of sequence without first word
