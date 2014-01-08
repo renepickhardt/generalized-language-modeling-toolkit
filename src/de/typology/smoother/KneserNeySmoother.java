@@ -399,27 +399,46 @@ public class KneserNeySmoother {
 							.clone();
 					lowerOrderCharPattern[i] = '0';
 					String lowerOrderSequence = null;
+					// FIXME: conjecture: this leads to a huge perplexity gain
+					// because also the last word in a sequence is being removed
+					// see results of commit
+					// faed2240527d573b16d2ae5e27e3dc5d1620a82e
+					// if (i == 0) {
+					// // remove all leading zeros
+					// while (lowerOrderCharPattern[0] == '0'
+					// && lowerOrderCharPattern.length > 1) {
+					// lowerOrderCharPattern = Arrays.copyOfRange(
+					// lowerOrderCharPattern, 1,
+					// lowerOrderCharPattern.length);
+					// }
+					// } else {
+					// if (i == higherOrderCharPattern.length - 1) {
+					// // remove all zeros at the end of the pattern
+					// while (lowerOrderCharPattern[lowerOrderCharPattern.length
+					// - 1] == '0'
+					// && lowerOrderCharPattern.length > 1) {
+					// lowerOrderCharPattern = Arrays.copyOfRange(
+					// lowerOrderCharPattern, 0,
+					// lowerOrderCharPattern.length - 1);
+					// }
+					// }
+					// }
+					// lowerOrderSequence = SequenceFormatter.removeWord(
+					// higherOrderSequence, i - skippedZeros);
+
 					if (i == 0) {
-						// remove all leading zeros
 						while (lowerOrderCharPattern[0] == '0'
 								&& lowerOrderCharPattern.length > 1) {
 							lowerOrderCharPattern = Arrays.copyOfRange(
 									lowerOrderCharPattern, 1,
 									lowerOrderCharPattern.length);
+							lowerOrderSequence = SequenceFormatter.removeWord(
+									higherOrderSequence, 0);
 						}
 					} else {
-						if (i == higherOrderCharPattern.length - 1) {
-							// remove all zeros at the end of the pattern
-							while (lowerOrderCharPattern[lowerOrderCharPattern.length - 1] == '0'
-									&& lowerOrderCharPattern.length > 1) {
-								lowerOrderCharPattern = Arrays.copyOfRange(
-										lowerOrderCharPattern, 0,
-										lowerOrderCharPattern.length - 1);
-							}
-						}
+						lowerOrderSequence = SequenceFormatter.removeWord(
+								higherOrderSequence, i - skippedZeros);
 					}
-					lowerOrderSequence = SequenceFormatter.removeWord(
-							higherOrderSequence, i - skippedZeros);
 
 					if (lowerOrderSequence.length() > 0) {
 						String lowerOrderStringPattern = String
@@ -437,6 +456,10 @@ public class KneserNeySmoother {
 
 			}
 
+			// FIXME: here in the last commit
+			// (faed2240527d573b16d2ae5e27e3dc5d1620a82e) should have been
+			// written double result = aggregatedLowerOrderValue /
+			// higherOrderSequenceLength; instead but never mind
 			double result = aggregatedLowerOrderValue
 					/ (higherOrderSequenceLength - 1);
 			this.logger.debug("lower order result (" + higherOrderStringPattern
