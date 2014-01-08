@@ -529,8 +529,8 @@ public class KneserNeySmoother {
 		// call methods for lower order results
 		if (higherOrderDenominator == 0) {
 			if (sequenceLength == 1) {
-				this.logger
-						.error("denominator is zero at sequence length 1 which is not possible");
+				// this.logger
+				// .error("denominator is zero at sequence length 1 which is not possible");
 
 				return (double) 1 / (this.totalUnigramCount + 1);
 				// System.exit(1);
