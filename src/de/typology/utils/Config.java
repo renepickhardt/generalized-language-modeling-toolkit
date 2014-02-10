@@ -23,30 +23,32 @@ import java.util.Properties;
 public class Config extends Properties {
 
 	// CONTROLL PARAMETERS
-	public String dbUser;
-
-	public String rawLogDir;
+	public int numberOfCores;
 
 	public String trainedOnDataSet;
 	public String trainedOnLang;
 	public String testedOnDataSet;
 	public String testedOnLang;
-	public String dataBaseType;
-	public String resultLogDirName;
 
-	public String weight;
-	public boolean useWeights;
+	public String languages;
 
-	public boolean parseData;
 	public boolean splitData;
 	public boolean buildStats;
 	public boolean buildIndex;
 	public boolean buildNGrams;
-	public boolean buildGLM;
-	public boolean build_absoluteGLM;
 	public boolean buildTypoEdges;
-	public boolean revertSort;
-	public boolean aggregateAbsolute_;
+	public boolean buildGLM;
+	public boolean buildContinuationGLM;
+	public boolean extractContinuationGLM;
+	public boolean buildKneserNey;
+	public boolean buildModKneserNey;
+	public boolean calculateEntropy;
+
+	public boolean conditionalProbabilityOnly;
+	public boolean backoffAbsolute;
+
+	public boolean kneserNeySimple;
+	public boolean kneserNeyComplex;
 
 	public boolean deleteTempFiles;
 
@@ -54,6 +56,7 @@ public class Config extends Properties {
 	public boolean addFakeStartTag;
 
 	public boolean resultLog10;
+	public int decimalPlaces;
 	// DEBUGGING
 	public String inputDataSet;
 

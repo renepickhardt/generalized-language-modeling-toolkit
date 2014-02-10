@@ -1,4 +1,0 @@
-This is a test with	4
-4 very very fancy NGrams.	3
-This is a another test	2
-with still the same NGrams.	1
