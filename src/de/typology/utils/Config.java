@@ -21,22 +21,13 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
-
 	// CONTROLL PARAMETERS
 	public int numberOfCores;
-
-	public String trainedOnDataSet;
-	public String trainedOnLang;
-	public String testedOnDataSet;
-	public String testedOnLang;
 
 	public String languages;
 
 	public boolean splitData;
-	public boolean buildStats;
 	public boolean buildIndex;
-	public boolean buildNGrams;
-	public boolean buildTypoEdges;
 	public boolean buildGLM;
 	public boolean buildContinuationGLM;
 	public boolean extractContinuationGLM;
@@ -55,37 +46,17 @@ public class Config extends Properties {
 	public boolean addSentenceTags;
 	public boolean addFakeStartTag;
 
-	public boolean resultLog10;
 	public int decimalPlaces;
 	// DEBUGGING
 	public String inputDataSet;
 
-	public String trainingPath;
-	public String testingPath;
-	public String learningPath;
-
 	// STEP 0 GLOBAL CONFIGS
-	public boolean weightedPredictions;
 
-	public String acquisInputDirectory;
-	public String enronInputDirectory;
-	public String googleInputDirectory;
-	public String reutersInputDirectory;
-	public String wikiInputDirectory;
-	public String acquisLanguages;
-
-	public boolean splitPunctuation;
-
-	public int fileSizeThreashhold;
 	public String outputDirectory;
-	public int memoryLimitForWritingFiles;
-	public int memoryLimitForReadingFiles;
 	public int maxCountDivider;
-	public int minCountPerFile;
 	public int modelLength;
 
 	public int numberOfQueries;
-	public int subResultSize;
 
 	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
 	public int sampleRate; // \in [0, 100] 0 means no data from input will be
@@ -95,30 +66,9 @@ public class Config extends Properties {
 	public int splitTestRatio; // \in [0, 100] 0 means all data is stored in
 	// test file. 100 means all data is stored in (smaller) learning file
 
-	// OTHER VARIABLES...
-	public String wikiLinksOutputPath;
-	public String wikiLinksHead;
-
-	// used in de.typology.utils/WordCounter
-	public String wordCountInput;
-	public String wordCountStats;
-	// used in de.typology.utils/LineCounter
-	public String lineCountInput;
-	public String lineCountStats;
-	public String dataSet;
-
 	private static final long serialVersionUID = -4439565094382127683L;
 
 	static Config instance = null;
-
-	public static String ngramDownloadPath;
-	public static String ngramDownloadOutputPath;
-	
-	
-	public String indexName;
-	public String statsName;
-	public String trainingName;
-	
 
 	public Config() {
 		String file = "config.txt";
