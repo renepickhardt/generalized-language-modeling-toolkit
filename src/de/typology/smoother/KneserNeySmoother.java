@@ -489,7 +489,7 @@ public class KneserNeySmoother {
 			int sequenceLength, String sequenceStringPattern,
 			boolean backoffAbsolute) {
 		String continuationPattern;
-		if (sequenceStringPattern.contains("0")) {
+		if (sequenceStringPattern.contains("0")) {// in glm case replacing
 			continuationPattern = sequenceStringPattern.replaceAll("0", "_");
 		} else {
 			continuationPattern = "_" + sequenceStringPattern;

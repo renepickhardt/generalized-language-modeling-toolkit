@@ -1,0 +1,115 @@
+##################################################################################################
+#
+#		Wellcome to the Generalized Language Model toolkit config file.
+#
+# !!!!!!!!!! copy config.sample.txt to config.txt !!!!!!!!
+#
+# this is the configuration file for the generalized language modelleing toolkit 
+# you can configure everything such as model length and the place of your training data.
+#
+# also this software can be used to run in several stages if your data set is large and your machine
+# got killed for some reason you don't have to redo the calculation. 
+#
+# if you have questions please send a mail to rene@rene-pickhardt.de
+##################################################################################################
+
+##################################################################################################
+### basic settings which will be most certainly be needed to change
+##################################################################################################
+
+#directory from which we will start to work
+outputDirectory = /media/mssd/datasets/glm/out/
+
+#length of the model to be trained
+modelLength = 5
+
+#amount of threads that should be concurrently assigned to the program
+numberOfCores = 4
+
+#name of the input data set (this is supposed to be a subfolder of outputDirectory) in this folder the trainingfile should be named normalized.txt and should contain one sentence per line.
+inputDataSet = wiki
+
+#can be used for multiple languages
+languages = en
+
+##################################################################################################
+### stages of the entire calculaten in the order they are being processed
+### usefull for big data sets. here if something goes wrong you don't have to start over again
+### set the following values to false for the stages of processing you wish to skip
+##################################################################################################
+
+### first the data sets are split to training and test data
+splitData = true
+
+### state if the index of words should be build. The index is used to create subfiles for counting and aggregating sequences
+buildIndex = true
+
+### if the absolute values for skipped sequences should be build
+buildGLM = true
+
+### states if also all the continuation values should be build.
+buildContinuationGLM = true
+
+### the absolute counts and continuation counts from the entire LM which are needed for the testing-samples
+### will be extracted and stored in testing-samples/ pay attantion. If your testing-samples are too large
+### you might run out of memory when running the experiment since all the data needed will be stored into main
+### memory
+extractContinuationGLM = true
+
+### set this to true if you want to build a standard kneser ney (generalized) language model
+buildKneserNey = true
+
+### set this to true if you want to build a modified kneser ney (generalized) language model
+buildModKneserNey = true
+
+# was not used for paper since there is currently an acompaning python script for the task
+calculateEntropy = false
+
+### calculate a standard language model
+kneserNeySimple = true
+
+### calculate a generalized language model
+kneserNeyComplex = true
+
+### use absolute discounting for interpolated probabilities (this should be set to false for the standard (modified) kneser ney implementation)
+backoffAbsolute = false
+
+### don't use any smoothing but just calculate conditional probabilities.
+conditionalProbabilityOnly = false
+
+##################################################################################################
+### misc
+##################################################################################################
+
+### should be used to save space
+deleteTempFiles = true
+
+### is useful for modified kneser ney smoothing
+addSentenceTags = true
+addFakeStartTag = true
+
+### number of decimal places that will be used for calculation of smoothing algorithms
+decimalPlaces = 30
+
+##################################################################################################
+### configuration of training data 
+##################################################################################################
+
+### number of test queries which will be sampled from the test query set
+numberOfQueries = 100000
+
+### used for splitting files in which the skipped ngrams are stored and for index building
+maxCountDivider = 1000
+
+##################################################################################################
+### the following numbers are for creation of training, learning and testing data splits.
+##################################################################################################
+
+# 20 means that only 20% of the input data will be thrown away
+sampleRate = 0
+
+# 90 means that 90% of data will be training data
+splitDataRatio = 2
+
+splitTestRatio = 100
+
