@@ -99,8 +99,8 @@ public class SequenceExtractorTask implements Runnable {
 		for (String originalLine : this.originalSequences) {
 			// modify sequences for continuation
 			if (!this.pattern[0] || !this.pattern[this.pattern.length - 1]) {
-				for (int i = 0; i < this.pattern.length; i++) {
-					if (this.pattern[i]) {
+				for (boolean element : this.pattern) {
+					if (element) {
 						break;
 					} else {
 						originalLine = "<dummy> " + originalLine;
