@@ -45,12 +45,6 @@ public class KneserNeyBuilder {
 			dss.splitIntoSequences(new File(inputDirectory.getAbsolutePath()
 					+ "/testing.txt"), Config.get().modelLength,
 					Config.get().numberOfQueries);
-			// dss.splitIntoSequences(new
-			// File(inputDirectory.getAbsolutePath()+"/learning.txt"),
-			// Config.get().modelLength,Config.get().numberOfQueries);
-			// dss.splitIntoSequences(new
-			// File(inputDirectory.getAbsolutePath()+"/testing.txt"),
-			// Config.get().modelLength,Config.get().numberOfQueries);
 		}
 		if (Config.get().buildIndex) {
 			logger.info("build word index: " + indexFile.getAbsolutePath());
@@ -70,17 +64,6 @@ public class KneserNeyBuilder {
 					Config.get().numberOfCores);
 		}
 		if (Config.get().buildContinuationGLM) {
-			// ArrayList<boolean[]> glmForSmoothingPatterns = PatternBuilder
-			// .getReverseGLMForSmoothingPatterns(Config.get().modelLength);
-			// OldSmoothingSplitter oldSmoothingSplitter = new
-			// OldSmoothingSplitter(
-			// absoluteDirectory, indexFile, Config.get().maxCountDivider,
-			// "\t", Config.get().deleteTempFiles);
-			//
-			// logger.info("split into old continuation sequences: "
-			// + inputFile.getAbsolutePath());
-			// oldSmoothingSplitter.split(glmForSmoothingPatterns,
-			// Config.get().numberOfCores);
 			ArrayList<boolean[]> lmPatterns = PatternBuilder
 					.getReverseLMPatterns(Config.get().modelLength);
 			SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
@@ -237,27 +220,6 @@ public class KneserNeyBuilder {
 				}
 			}
 		}
-
-		// File _absoluteDirecory = new File(inputDirectory.getAbsolutePath()
-		// + "/_absolute");
-		// File _absolute_Direcory = new File(inputDirectory.getAbsolutePath()
-		// + "/_absolute_");
-		// File absolute_Direcory = new File(inputDirectory.getAbsolutePath()
-		// + "/absolute_");
-		// if (Config.get().buildKneserNey) {
-		// File kneserNeyOutputDirectory = new File(
-		// inputDirectory.getAbsolutePath() + "/kneser-ney");
-		// KneserNeySmoother kns = new KneserNeySmoother(
-		// absoluteOutputDirectory, _absoluteDirecory,
-		// _absolute_Direcory, absolute_Direcory,
-		// kneserNeyOutputDirectory, new WordIndex(indexFile), "\t",
-		// Config.get().decimalPlaces, Config.get().deleteTempFiles);
-		// kns.deleteResults();
-		// for (int i = 1; i <= Config.get().modelLength; i++) {
-		// // call KneserNeySmoother
-		// kns.smoothComplex(i, Config.get().numberOfCores);
-		// }
-		// }
 		logger.info("done");
 	}
 }
