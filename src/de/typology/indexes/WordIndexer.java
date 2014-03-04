@@ -48,30 +48,6 @@ public class WordIndexer {
 		try {
 			while ((line = reader.readLine()) != null) {
 				line = addBeforeSentence + line + addAfterSentence;
-				// lineCount++;
-				// IOHelper.log("");
-				// IOHelper.log("lines: " + lineCount);
-				//
-				// int mb = 1024 * 1024;
-				//
-				// // Getting the runtime reference from system
-				// Runtime runtime = Runtime.getRuntime();
-				//
-				// IOHelper.log("##### Heap utilization statistics [MB] #####");
-				//
-				// // Print used memory
-				// IOHelper.log("Used Memory:\t"
-				// + (runtime.totalMemory() - runtime.freeMemory())
-				// / mb);
-				//
-				// // Print free memory
-				// IOHelper.log("Free Memory:\t" + runtime.freeMemory() / mb);
-				//
-				// // Print total available memory
-				// IOHelper.log("Total Memory:\t" + runtime.totalMemory() / mb);
-				//
-				// // Print Maximum available memory
-				// IOHelper.log("Max Memory:\t" + runtime.maxMemory() / mb);
 				String[] words = line.split("\\s+");
 				for (String word : words) {
 					if (wordMap.containsKey(word)) {
@@ -86,9 +62,6 @@ public class WordIndexer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// for (Entry<String, Long> word : this.wordMap.entrySet()) {
-		// System.out.println(word.getKey() + " : " + word.getValue());
-		// }
 		return wordMap;
 	}
 

@@ -125,7 +125,7 @@ public class KneserNeyBuilder {
 			kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
 			kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
 
-			for (int i = 1; i <= Config.get().modelLength; i++) {
+			for (int i = Config.get().modelLength; i >= 1; i--) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
 								+ i + ".txt");
@@ -176,18 +176,18 @@ public class KneserNeyBuilder {
 			mkns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
 			mkns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
 
-			for (int i = 1; i <= Config.get().modelLength; i++) {
+			for (int i = Config.get().modelLength; i >= 1; i--) {
 				File inputSequenceFile = new File(
 						inputDirectory.getAbsolutePath() + "/testing-samples-"
 								+ i + ".txt");
 				File resultFile;
 				// smooth simple
 				if (Config.get().kneserNeySimple) {
-					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/mod-kneser-ney-simple-backoffToAbsolute-" + i
-							+ ".txt");
-					mkns.smooth(inputSequenceFile, resultFile, i, false,
-							Config.get().conditionalProbabilityOnly, true);
+					// resultFile = new File(inputDirectory.getAbsolutePath()
+					// + "/mod-kneser-ney-simple-backoffToAbsolute-" + i
+					// + ".txt");
+					// mkns.smooth(inputSequenceFile, resultFile, i, false,
+					// Config.get().conditionalProbabilityOnly, true);
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/mod-kneser-ney-simple-backoffToCont-" + i
 							+ ".txt");
@@ -196,11 +196,6 @@ public class KneserNeyBuilder {
 				}
 				// smooth complex
 				if (Config.get().kneserNeyComplex) {
-					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/mod-kneser-ney-complex-backoffToAbsolute-" + i
-							+ ".txt");
-					mkns.smooth(inputSequenceFile, resultFile, i, true,
-							Config.get().conditionalProbabilityOnly, true);
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/mod-kneser-ney-complex-backoffToCont-" + i
 							+ ".txt");

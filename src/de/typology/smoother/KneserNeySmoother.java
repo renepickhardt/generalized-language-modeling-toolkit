@@ -681,7 +681,8 @@ public class KneserNeySmoother {
 	protected long getAbsoluteValue(String pattern, String sequence) {
 		if (!this.absoluteTypeSequenceValueMap.containsKey(pattern)) {
 			this.logger.error("Absolute pattern not found:" + pattern);
-			System.exit(1);
+			// System.exit(1);
+			return 0;
 
 		}
 		if (this.absoluteTypeSequenceValueMap.get(pattern)
