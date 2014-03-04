@@ -90,7 +90,7 @@ public class KneserNeySmoother {
 	 */
 	public void smooth(File inputSequenceFile, File resultFile,
 			int sequenceLength, boolean smoothComplex,
-			boolean conditionalProbabilityOnly, boolean backOffAbsolute) {
+			boolean conditionalProbabilityOnly) {
 		this.smoothComplex = smoothComplex;
 		this.logger
 				.info("start calculating kneser-ney (or mod kneser ney) of length "
@@ -120,12 +120,10 @@ public class KneserNeySmoother {
 				double currentResult;
 				if (conditionalProbabilityOnly) {
 					currentResult = this.calculateConditionalProbability(
-							sequence, sequenceLength, sequenceStringPattern,
-							backOffAbsolute);
+							sequence, sequenceLength, sequenceStringPattern);
 				} else {
 					currentResult = this.calculateProbability(sequence,
-							sequenceLength, sequenceStringPattern,
-							backOffAbsolute);
+							sequenceLength, sequenceStringPattern);
 				}
 				resultWriter.write(sequence + this.delimiter
 						+ this.decimalFormatter.getRoundedResult(currentResult)
@@ -260,11 +258,10 @@ public class KneserNeySmoother {
 	 * @param sequence
 	 * @param sequenceLength
 	 * @param sequenceStringPattern
-	 * @param backoffAbsolute
 	 * @return
 	 */
 	protected double calculateProbability(String sequence, int sequenceLength,
-			String sequenceStringPattern, boolean backoffAbsolute) {
+			String sequenceStringPattern) {
 		// double probability = 1;
 		double logProbability = 0;
 		String[] sequenceSplit = sequence.split("\\s");
@@ -279,8 +276,7 @@ public class KneserNeySmoother {
 			}
 			newSequence = newSequence.replaceFirst(" $", "");
 			double currentResult = this.calculateConditionalProbability(
-					newSequence, newSequenceLength, newSequenceStringPattern,
-					backoffAbsolute);
+					newSequence, newSequenceLength, newSequenceStringPattern);
 			if (currentResult <= 0) {
 				this.logger.error("zero probability at: " + newSequence + " , "
 						+ newSequenceLength + " , " + newSequenceStringPattern);
@@ -302,12 +298,10 @@ public class KneserNeySmoother {
 	 * @param sequence
 	 * @param sequenceLength
 	 * @param sequenceStringPattern
-	 * @param backoffAbsolute
 	 * @return
 	 */
 	protected double calculateConditionalProbability(String sequence,
-			int sequenceLength, String sequenceStringPattern,
-			boolean backoffAbsolute) {
+			int sequenceLength, String sequenceStringPattern) {
 		// calculate highest order result
 		long highestOrderValue = this.getAbsoluteValue(sequenceStringPattern,
 				sequence);
@@ -332,22 +326,9 @@ public class KneserNeySmoother {
 		// call methods for lower order results
 		if (highestOrderDenominator == 0) {
 			// calculate result of sequence without first word
-
-			if (backoffAbsolute) {
-				String sequenceWithoutFirst = SequenceFormatter.removeWord(
-						sequence, 0);
-				String sequenceStringPatternWithoutFirst = sequenceStringPattern
-						.substring(1);
-				this.logger.debug("zero denominator for: " + sequence
-						+ " --> backoff to " + sequenceWithoutFirst);
-				return this.calculateConditionalProbability(
-						sequenceWithoutFirst, sequenceLength - 1,
-						sequenceStringPatternWithoutFirst, backoffAbsolute);
-			} else {
-				this.logger.debug("zero denominator for: " + sequence);
-				return this.calculateAggregatedLowerOrderResult(sequence,
-						sequenceLength, sequenceStringPattern, backoffAbsolute);
-			}
+			this.logger.debug("zero denominator for: " + sequence);
+			return this.calculateAggregatedLowerOrderResult(sequence,
+					sequenceLength, sequenceStringPattern);
 
 		}
 
@@ -357,7 +338,7 @@ public class KneserNeySmoother {
 						sequence, sequenceLength, sequenceStringPattern)
 				/ highestOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
-						sequenceLength, sequenceStringPattern, backoffAbsolute);
+						sequenceLength, sequenceStringPattern);
 		this.logger.debug("KNhigh("
 				+ sequenceStringPattern
 				+ "): "
@@ -378,7 +359,7 @@ public class KneserNeySmoother {
 
 	protected double calculateAggregatedLowerOrderResult(
 			String higherOrderSequence, int higherOrderSequenceLength,
-			String higherOrderStringPattern, boolean backoffAbsolute) {
+			String higherOrderStringPattern) {
 		if (higherOrderSequenceLength < 2) {
 			return 0;
 		}
@@ -403,28 +384,6 @@ public class KneserNeySmoother {
 					// because also the last word in a sequence is being removed
 					// see results of commit
 					// faed2240527d573b16d2ae5e27e3dc5d1620a82e
-					// if (i == 0) {
-					// // remove all leading zeros
-					// while (lowerOrderCharPattern[0] == '0'
-					// && lowerOrderCharPattern.length > 1) {
-					// lowerOrderCharPattern = Arrays.copyOfRange(
-					// lowerOrderCharPattern, 1,
-					// lowerOrderCharPattern.length);
-					// }
-					// } else {
-					// if (i == higherOrderCharPattern.length - 1) {
-					// // remove all zeros at the end of the pattern
-					// while (lowerOrderCharPattern[lowerOrderCharPattern.length
-					// - 1] == '0'
-					// && lowerOrderCharPattern.length > 1) {
-					// lowerOrderCharPattern = Arrays.copyOfRange(
-					// lowerOrderCharPattern, 0,
-					// lowerOrderCharPattern.length - 1);
-					// }
-					// }
-					// }
-					// lowerOrderSequence = SequenceFormatter.removeWord(
-					// higherOrderSequence, i - skippedZeros);
 
 					if (i == 0) {
 						while (lowerOrderCharPattern[0] == '0'
@@ -446,8 +405,7 @@ public class KneserNeySmoother {
 						double currentLowerOrderValue = this
 								.calculateLowerOrderResult(lowerOrderSequence,
 										higherOrderSequenceLength - 1,
-										lowerOrderStringPattern,
-										backoffAbsolute);
+										lowerOrderStringPattern);
 						aggregatedLowerOrderValue += currentLowerOrderValue;
 					}
 				} else {
@@ -474,8 +432,7 @@ public class KneserNeySmoother {
 					.substring(1);
 
 			double result = this.calculateLowerOrderResult(lowerOrderSequence,
-					higherOrderSequenceLength - 1, lowerOrderStringPattern,
-					backoffAbsolute);
+					higherOrderSequenceLength - 1, lowerOrderStringPattern);
 			this.logger.debug("lower order result ("
 					+ +higherOrderSequenceLength + ") for \""
 					+ higherOrderSequence + "\"=" + result);
@@ -486,8 +443,7 @@ public class KneserNeySmoother {
 	}
 
 	protected double calculateLowerOrderResult(String sequence,
-			int sequenceLength, String sequenceStringPattern,
-			boolean backoffAbsolute) {
+			int sequenceLength, String sequenceStringPattern) {
 		String continuationPattern;
 		if (sequenceStringPattern.contains("0")) {// in glm case replacing
 			continuationPattern = sequenceStringPattern.replaceAll("0", "_");
@@ -536,27 +492,9 @@ public class KneserNeySmoother {
 				// System.exit(1);
 			}
 			// calculate result of sequence without first word
-
-			if (backoffAbsolute) {
-				String sequenceWithoutFirst = SequenceFormatter.removeWord(
-						sequence, 0);
-				while (PatternTransformer
-						.getBooleanPattern(sequenceStringPattern)[1] == false) {
-					sequenceStringPattern = 1 + sequenceStringPattern
-							.substring(2);
-				}
-				String sequenceStringPatternWithoutFirst = sequenceStringPattern
-						.substring(1);
-				this.logger.debug("zero denominator for: " + sequence
-						+ " --> backoff to " + sequenceWithoutFirst);
-				return this.calculateConditionalProbability(
-						sequenceWithoutFirst, sequenceLength - 1,
-						sequenceStringPatternWithoutFirst, backoffAbsolute);
-			} else {
-				this.logger.debug("zero denominator for: " + sequence);
-				return this.calculateAggregatedLowerOrderResult(sequence,
-						sequenceLength, sequenceStringPattern, backoffAbsolute);
-			}
+			this.logger.debug("zero denominator for: " + sequence);
+			return this.calculateAggregatedLowerOrderResult(sequence,
+					sequenceLength, sequenceStringPattern);
 
 		}
 
@@ -570,7 +508,7 @@ public class KneserNeySmoother {
 				// sequenceStringPattern)
 				/ higherOrderDenominator
 				* this.calculateAggregatedLowerOrderResult(sequence,
-						sequenceLength, sequenceStringPattern, backoffAbsolute);
+						sequenceLength, sequenceStringPattern);
 
 		this.logger.debug("\tKNlow("
 				+ sequenceStringPattern

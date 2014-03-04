@@ -7,7 +7,6 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.evaluators.EntropyEvaluator;
 import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
@@ -116,27 +115,16 @@ public class KneserNeyBuilder {
 				// smooth simple
 				if (Config.get().kneserNeySimple) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/kneser-ney-simple-backoffToAbsolute-" + i
-							+ ".txt");
-					kns.smooth(inputSequenceFile, resultFile, i, false,
-							Config.get().conditionalProbabilityOnly, true);
-
-					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-simple-backoffToCont-" + i + ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, false,
-							Config.get().conditionalProbabilityOnly, false);
+							Config.get().conditionalProbabilityOnly);
 				}
 				// smooth complex
 				if (Config.get().kneserNeyComplex) {
 					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/kneser-ney-complex-backoffToAbsolute-" + i
-							+ ".txt");
-					kns.smooth(inputSequenceFile, resultFile, i, true,
-							Config.get().conditionalProbabilityOnly, true);
-					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/kneser-ney-complex-backoffToCont-" + i + ".txt");
 					kns.smooth(inputSequenceFile, resultFile, i, true,
-							Config.get().conditionalProbabilityOnly, false);
+							Config.get().conditionalProbabilityOnly);
 				}
 			}
 		}
@@ -166,16 +154,11 @@ public class KneserNeyBuilder {
 				File resultFile;
 				// smooth simple
 				if (Config.get().kneserNeySimple) {
-					// resultFile = new File(inputDirectory.getAbsolutePath()
-					// + "/mod-kneser-ney-simple-backoffToAbsolute-" + i
-					// + ".txt");
-					// mkns.smooth(inputSequenceFile, resultFile, i, false,
-					// Config.get().conditionalProbabilityOnly, true);
 					resultFile = new File(inputDirectory.getAbsolutePath()
 							+ "/mod-kneser-ney-simple-backoffToCont-" + i
 							+ ".txt");
 					mkns.smooth(inputSequenceFile, resultFile, i, false,
-							Config.get().conditionalProbabilityOnly, false);
+							Config.get().conditionalProbabilityOnly);
 				}
 				// smooth complex
 				if (Config.get().kneserNeyComplex) {
@@ -183,40 +166,7 @@ public class KneserNeyBuilder {
 							+ "/mod-kneser-ney-complex-backoffToCont-" + i
 							+ ".txt");
 					mkns.smooth(inputSequenceFile, resultFile, i, true,
-							Config.get().conditionalProbabilityOnly, false);
-				}
-			}
-		}
-		if (Config.get().calculateEntropy) {
-			EntropyEvaluator ee = new EntropyEvaluator();
-			// TODO remove comments
-			// for (int i = 1; i <= Config.get().modelLength; i++) {
-			for (int i = 5; i <= Config.get().modelLength; i++) {
-				File inputSequenceFile = new File(
-						inputDirectory.getAbsolutePath() + "/testing-samples-"
-								+ i + ".txt");
-				File resultFile;
-				// smooth simple
-				if (Config.get().kneserNeySimple) {
-					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/kneser-ney-simple-" + i + ".txt");
-
-					File entropyResultFile = new File(
-							inputDirectory.getAbsolutePath() + "/entropy-"
-									+ resultFile.getName());
-					ee.caculateEntropy(inputSequenceFile, resultFile,
-							entropyResultFile, "\t");
-
-				}
-				// // smooth complex
-				if (Config.get().kneserNeyComplex) {
-					resultFile = new File(inputDirectory.getAbsolutePath()
-							+ "/kneser-ney-complex-" + i + ".txt");
-					File entropyResultFile = new File(
-							inputDirectory.getAbsolutePath() + "/entropy-"
-									+ resultFile.getName());
-					ee.caculateEntropy(inputSequenceFile, resultFile,
-							entropyResultFile, "\t");
+							Config.get().conditionalProbabilityOnly);
 				}
 			}
 		}
