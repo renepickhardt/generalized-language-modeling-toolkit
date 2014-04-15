@@ -1,6 +1,6 @@
 #Generalized Language Model Toolkit
 
-The software can be used to compute a Generalized Language Model which is yet another mean to compute a [Language Model](http://en.wikipedia.org/wiki/Language_model) 
+The software can be used to compute a Generalized Language Model which is yet another mean to compute a [Language Model](http://en.wikipedia.org/wiki/Language_model). As shown [in this publication](http://arxiv.org/pdf/1404.3377v1.pdf) Generalized Language models can outperform Modified Kneser Ney Smoothing by 10 to 25 % in Terms of perplexity. 
 
 ## Getting started
 ```
@@ -29,11 +29,16 @@ Since Generalized language models can become very large the software is written 
 We tried to avoid frequent disc hits. Still the programm will execute much faster if you store your data on a Solid State disk. 
 
 ## Download the test data sets
+you need to have a file called `normalized.txt` which serves as your input. This file should contain one sentence per line. You will learn language models based on this file. 
+
 Please refere to http://glm.rene-pickhardt.de/data in order to download preprocessed and formatted data sets. 
 
 If you whish to parse the data yourself (e.g. because you want to use a newer wikipedia dump) refer to https://github.com/mkrnr/lexer-parser
 
 ## Processing pipeline of the GLM toolkit: 
+
+you have to start with a file called `normalized.txt` which has to be stored in your data directory (according to `config.txt`). `mvn.sh` will compile the program and start the flow of the following steps (which can be configured by switching the fields ind `config.txt` from `true` to `false`)
+
 * splitting `normalized.txt` to `training.txt` and `testing.txt` according to the datasplit parameters in `config.txt`
 * building a wordindex `index.txt` this index is used to split the language models into files of equal size
 * creating absolute counts and continuation counts in the directories `absolute` and `continuation`
