@@ -12,7 +12,7 @@ You will need to install maven in order to build the project.
 sudo apt-get install maven2
 ```
 
-You need to copy config.sample.txt to config.txt and reed the instructions in config.sample.txt.
+You need to copy config.sample.txt to config.txt and read the instructions in config.sample.txt.
 ```
 cp config.sample.txt config.txt
 emacs config.txt
