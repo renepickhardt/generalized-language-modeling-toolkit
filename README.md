@@ -33,9 +33,19 @@ Please refere to http://glm.rene-pickhardt.de/data in order to download preproce
 
 If you whish to parse the data yourself (e.g. because you want to use a newer wikipedia dump) refer to https://github.com/mkrnr/lexer-parser
 
+## Processing pipeline of the GLM toolkit: 
+* splitting `normalized.txt` to `training.txt` and `testing.txt` according to the datasplit parameters in `config.txt`
+* building a wordindex `index.txt` this index is used to split the language models into files of equal size
+* creating absolute counts and continuation counts in the directories `absolute` and `continuation`
+** the various models are stored in folders like `11111` meaning a regular 5 gram or `11011` meaning a skipped 5 gram at the third position
+* creation of testing samples from `testing.txt`: `testing-samples-4.txt` for example contains about 100k sequences of 4 words to be tested
+* calculating the D and N values for Modified Kneser Ney Smoothing and making them persistent in the two *.ser files (for speeding up various tests)
+* running the experiments by creating files like `mod-kneser-ney-complex-backoffToCont-3.txt`: depending on your configuration the files could be named with a `simple` instead of `complex` (complex meaning GLM, simple meaning LM). Exchanging the `3` you can have different model lenghts. These files contain the testing samples with the log of their probabilities.
+* you have to manually calculate the entropy by running the python script as an argument you might want to pass `mod*.txt`: in this way you can calculate the entropy for all files and experiments.
+
 ## Citing the paper
-If this software or data is of any help to your research please be so fair and cite the [original publication](http://glm.rene-pickhardt/paper). 
-You might want to use the following bibtex entry
+If this software or data is of any help to your research please be so fair and cite the [original publication](http://arxiv.org/pdf/1404.3377v1.pdf) which is also in the home directory of [this git repository](https://github.com/renepickhardt/generalized-language-modeling-toolkit/raw/master/A-Generalized-Language-Model-as-the-Combination-of-Skipped-n-grams-and-Modified-Kneser-Ney-Smoothing.pdf).
+You might want to use the following bibtex entry:
 ```
 @inproceedings{Pickhardt:2014:GLM, 
    author = {Pickhardt, Rene and Gottron, Thomas and Körner, Martin and  Wagner, Paul Georg and  Speicher, Till and  Staab, Steffen}, 
@@ -47,6 +57,9 @@ You might want to use the following bibtex entry
 
 ## History
 The Generalized Language models envolved from Paul Georg Wagner's and Till Speicher's Young Scientists project called [Typology](http://www.typology.de) which I advised in 2012.
-The Typology project played around and evaluated an idea I had (inspired by Adam Schenker) of presenting text as a graph in which the edges would encode relationships (nowerdays known as skipped bi-grams). The Graph was used to produce an answer to the next word prediction problem applied to word suggestions in keyboards of modern smartphones.
+The Typology project played around and evaluated an idea I had (inspired by [the PhD thesis of Adam Schenker](http://scholarcommons.usf.edu/cgi/viewcontent.cgi?article=2466&context=etd)) of presenting text as a graph in which the edges would encode relationships (nowerdays known as skipped bi-grams). The Graph was used to produce an answer to the next word prediction problem applied to word suggestions in keyboards of modern smartphones.
 From the convincing results I developed the theory of Generalized Language models. 
-Most of the Code was written by my student assistent [Martin Körner](http://mkoerner.de/) who also created his [bachlor thesis](bachlor-thesis-martin-koerner.pdf) about the implementation of a preliminary vesion of the Generalized Language Models. This thesis is a nice reference if you want to get an understanding of modified kneser ney smoothing for standard language models. In terms of notation and building of generalized language models it is outdated.
+Most of the Code was written by my student assistent [Martin Körner](http://mkoerner.de/) who also created his [bachlor thesis](https://github.com/renepickhardt/generalized-language-modeling-toolkit/raw/master/bachelor-thesis-martin-koerner.pdf) about the implementation of a preliminary vesion of the Generalized Language Models. This thesis is a nice reference if you want to get an understanding of modified kneser ney smoothing for standard language models. In terms of notation and building of generalized language models it is outdated.
+
+## Questions, Feedback, Bugs
+If you have questions feel free to contact me via the issue tracker. on [my blog](http://www.rene-pickhardt.de) or in the paper you could find my mail address.

@@ -6,3 +6,14 @@
 /testDataset
 /logs
 /target
+
+.ser
+mod*
+kneser*
+normalized*
+training.txt
+learning.txt
+test*
+absolute
+continuation
+parsed.txt
