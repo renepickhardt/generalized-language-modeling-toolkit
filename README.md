@@ -44,7 +44,7 @@ If you whish to parse the data yourself (e.g. because you want to use a newer wi
 * you have to manually calculate the entropy by running the python script as an argument you might want to pass `mod*.txt`: in this way you can calculate the entropy for all files and experiments.
 
 ## Citing the paper
-If this software or data is of any help to your research please be so fair and cite the [original publication](http://arxiv.org/pdf/1404.3377v1.pdf) which is also in the home directory of [this git repository](https://github.com/renepickhardt/generalized-language-modeling-toolkit/raw/master/A-Generalized-Language-Model-as-the-Combination-of-Skipped-n-grams-and-Modified-Kneser-Ney-Smoothing.pdf).
+If this software or data is of any help to your research please be so fair and cite the [original publication](http://arxiv.org/pdf/1404.3377v1.pdf) which is also in the home directory of [this git repository](https://github.com/renepickhardt/generalized-language-modeling-toolkit/raw/master/A Generalized Language Model as the Combination of Skipped n-grams and Modified Kneser-Ney Smoothing.pdf).
 You might want to use the following bibtex entry:
 ```
 @inproceedings{Pickhardt:2014:GLM, 
