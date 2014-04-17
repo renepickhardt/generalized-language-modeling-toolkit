@@ -31,6 +31,19 @@
           <argLine>-Xmx6024m</argLine>
         </configuration>
       </plugin>
+      <plugin>
+	<artifactId>maven-assembly-plugin</artifactId>
+	<configuration>
+	  <archive>
+	    <manifest>
+	      <mainClass>de.typology.executables.KneserNeyBuilder</mainClass>
+	    </manifest>
+	  </archive>
+	  <descriptorRefs>
+	    <descriptorRef>jar-with-dependencies</descriptorRef>
+	  </descriptorRefs>
+	</configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
