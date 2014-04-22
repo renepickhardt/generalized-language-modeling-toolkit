@@ -17,176 +17,175 @@ import de.typology.splitter.SmoothingSplitter;
 
 public class KneserNeySmootherTest {
 
-	File extractedSequenceDirectory;
+    File extractedSequenceDirectory;
 
-	File absoluteDirectory;
-	File continuationDirectory;
-	File testSequenceFile;
-	File kneserNeyFile;
+    File absoluteDirectory;
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    File continuationDirectory;
 
-	@Before
-	public void setUp() throws Exception {
-		String inputDirectoryPath = "testDataset/";
-		File inputFile = new File(inputDirectoryPath + "training.txt");
-		File indexFile = new File(inputDirectoryPath + "index.txt");
-		WordIndexer wier = new WordIndexer();
-		wier.buildIndex(inputFile, indexFile, 10, "<fs> <s> ", " </s>");
-		this.absoluteDirectory = new File(inputDirectoryPath + "absolute");
-		this.continuationDirectory = new File(inputDirectoryPath
-				+ "continuation");
+    File testSequenceFile;
 
-		AbsoluteSplitter as = new AbsoluteSplitter(inputFile, indexFile,
-				this.absoluteDirectory, "\t", true, "<fs> <s> ", " </s>");
-		as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
+    File kneserNeyFile;
 
-		ArrayList<boolean[]> lmPatterns = PatternBuilder
-				.getReverseLMPatterns(5);
-		SmoothingSplitter smoothingSplitter = new SmoothingSplitter(
-				this.absoluteDirectory, this.continuationDirectory, indexFile,
-				"\t", true);
-		smoothingSplitter.split(lmPatterns, 2);
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-		this.testSequenceFile = new File(inputDirectoryPath
-				+ "test-sequences-5.txt");
-		this.extractedSequenceDirectory = new File(inputDirectoryPath);
-		this.absoluteDirectory = new File(inputDirectoryPath + "absolute");
-		// TestSequenceExtractor tse = new TestSequenceExtractor(
-		// this.testSequenceFile, this.absoluteDirectory,
-		// this.continuationDirectory, this.extractedSequenceDirectory,
-		// "\t", wi);
-		// tse.extractContinuationSequences(5, 2);
-		this.kneserNeyFile = new File(inputDirectoryPath + "kn-sequences-5.txt");
-	}
+    @Before
+    public void setUp() throws Exception {
+        String inputDirectoryPath = "testDataset/";
+        File inputFile = new File(inputDirectoryPath + "training.txt");
+        File indexFile = new File(inputDirectoryPath + "index.txt");
+        WordIndexer wier = new WordIndexer();
+        wier.buildIndex(inputFile, indexFile, 10, "<fs> <s> ", " </s>");
+        absoluteDirectory = new File(inputDirectoryPath + "absolute");
+        continuationDirectory = new File(inputDirectoryPath + "continuation");
 
-	// @Test
-	// public void calculateDiscoutValuesTest() {
-	//
-	// KneserNeySmoother kns = new KneserNeySmoother(
-	// this.extractedSequenceDirectory, this.absoluteDirectory,
-	// this.continuationDirectory, "\t", 5);
-	// kns.smooth(this.testSequenceFile, this.kneserNeyFile, 5, false);
-	// double d = kns.discountTypeValueMap.get("1").get("D1+");
-	// assertEquals(0.529412, d, 0.00001);
-	// }
+        AbsoluteSplitter as =
+                new AbsoluteSplitter(inputFile, indexFile, absoluteDirectory,
+                        "\t", true, "<fs> <s> ", " </s>");
+        as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
 
-	@Test
-	public void calculateLowerOrderResultSimpleTest() {
+        ArrayList<boolean[]> lmPatterns =
+                PatternBuilder.getReverseLMPatterns(5);
+        SmoothingSplitter smoothingSplitter =
+                new SmoothingSplitter(absoluteDirectory, continuationDirectory,
+                        indexFile, "\t", true);
+        smoothingSplitter.split(lmPatterns, 2);
 
-		KneserNeySmoother kns = new KneserNeySmoother(
-				this.extractedSequenceDirectory, this.absoluteDirectory,
-				this.continuationDirectory, "\t");
+        testSequenceFile =
+                new File(inputDirectoryPath + "test-sequences-5.txt");
+        extractedSequenceDirectory = new File(inputDirectoryPath);
+        absoluteDirectory = new File(inputDirectoryPath + "absolute");
+        // TestSequenceExtractor tse = new TestSequenceExtractor(
+        // this.testSequenceFile, this.absoluteDirectory,
+        // this.continuationDirectory, this.extractedSequenceDirectory,
+        // "\t", wi);
+        // tse.extractContinuationSequences(5, 2);
+        kneserNeyFile = new File(inputDirectoryPath + "kn-sequences-5.txt");
+    }
 
-		HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap = null;
-		HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap = null;
-		absoluteTypeSequenceValueMap = kns
-				.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
+    // @Test
+    // public void calculateDiscoutValuesTest() {
+    //
+    // KneserNeySmoother kns = new KneserNeySmoother(
+    // this.extractedSequenceDirectory, this.absoluteDirectory,
+    // this.continuationDirectory, "\t", 5);
+    // kns.smooth(this.testSequenceFile, this.kneserNeyFile, 5, false);
+    // double d = kns.discountTypeValueMap.get("1").get("D1+");
+    // assertEquals(0.529412, d, 0.00001);
+    // }
 
-		continuationTypeSequenceValueMap = kns
-				.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
+    @Test
+    public void calculateLowerOrderResultSimpleTest() {
 
-		kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
-		kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
+        KneserNeySmoother kns =
+                new KneserNeySmoother(extractedSequenceDirectory,
+                        absoluteDirectory, continuationDirectory, "\t");
 
-		kns.smooth(this.testSequenceFile, this.kneserNeyFile, 5, false, true,
-				false);
-		System.out.println(kns.continuationTypeSequenceValueMap.get("__").get(
-				""));
-		assertEquals(0.625, kns.discountTypeValuesMap.get("_11").get("D1+"),
-				0.00001);
-		assertEquals(0.0357,
-				kns.calculateLowerOrderResult("dolor", 1, "1", false), 0.0001);
-		assertEquals(0.07143,
-				kns.calculateLowerOrderResult("et", 1, "1", false), 0.0001);
-		assertEquals(0.39282,
-				kns.calculateLowerOrderResult("</s>", 1, "1", false), 0.0001);
-		assertEquals(0.00840,
-				kns.calculateLowerOrderResult("<s>", 1, "1", false), 0.0001);
-		assertEquals(0.2098,
-				kns.calculateLowerOrderResult("sit amet", 2, "11", false),
-				0.0001);
-		assertEquals(0.00525,
-				kns.calculateLowerOrderResult("sit unknown", 2, "11", false),
-				0.0001);
-		assertEquals(0.309885, kns.calculateLowerOrderResult("dolor sit amet",
-				3, "111", false), 0.0001);
-		assertEquals(0.3595, kns.calculateLowerOrderResult(
-				"ipsum dolor sit amet", 4, "1111", false), 0.0001);
-		assertEquals(0.77929, kns.calculateConditionalProbability(
-				"Lorem ipsum dolor sit amet", 5, "11111", false), 0.0001);
+        HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap =
+                null;
+        HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap =
+                null;
+        absoluteTypeSequenceValueMap =
+                kns.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
 
-	}
+        continuationTypeSequenceValueMap =
+                kns.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
 
-	@Test
-	public void calculateLowerOrderResultComplexTest() {
+        kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
+        kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
 
-		KneserNeySmoother kns = new KneserNeySmoother(
-				this.extractedSequenceDirectory, this.absoluteDirectory,
-				this.continuationDirectory, "\t");
+        kns.smooth(testSequenceFile, kneserNeyFile, 5, false, true);
+        System.out.println(kns.continuationTypeSequenceValueMap.get("__").get(
+                ""));
+        assertEquals(0.625, kns.discountTypeValuesMap.get("_11").get("D1+"),
+                0.00001);
+        assertEquals(0.0357, kns.calculateLowerOrderResult("dolor", 1, "1"),
+                0.0001);
+        assertEquals(0.07143, kns.calculateLowerOrderResult("et", 1, "1"),
+                0.0001);
+        assertEquals(0.39282, kns.calculateLowerOrderResult("</s>", 1, "1"),
+                0.0001);
+        assertEquals(0.00840, kns.calculateLowerOrderResult("<s>", 1, "1"),
+                0.0001);
+        assertEquals(0.2098,
+                kns.calculateLowerOrderResult("sit amet", 2, "11"), 0.0001);
+        assertEquals(0.00525,
+                kns.calculateLowerOrderResult("sit unknown", 2, "11"), 0.0001);
+        assertEquals(0.309885,
+                kns.calculateLowerOrderResult("dolor sit amet", 3, "111"),
+                0.0001);
+        assertEquals(0.3595, kns.calculateLowerOrderResult(
+                "ipsum dolor sit amet", 4, "1111"), 0.0001);
+        assertEquals(0.77929, kns.calculateConditionalProbability(
+                "Lorem ipsum dolor sit amet", 5, "11111"), 0.0001);
 
-		HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap = null;
-		HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap = null;
+    }
 
-		absoluteTypeSequenceValueMap = kns
-				.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
+    @Test
+    public void calculateLowerOrderResultComplexTest() {
 
-		continuationTypeSequenceValueMap = kns
-				.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
+        KneserNeySmoother kns =
+                new KneserNeySmoother(extractedSequenceDirectory,
+                        absoluteDirectory, continuationDirectory, "\t");
 
-		kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
-		kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
+        HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap =
+                null;
+        HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap =
+                null;
 
-		kns.smooth(this.testSequenceFile, this.kneserNeyFile, 5, true, true,
-				false);
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-		}
-		System.out.println("----");
-		assertEquals(0.0084,
-				kns.calculateConditionalProbability("notFound", 1, "1", false),
-				0.0001);
-		assertEquals(0.0084,
-				kns.calculateLowerOrderResult("notFound", 1, "1", false),
-				0.0001);
-		kns.calculateProbability("Lorem ipsum dolor sit amet", 5, "11111",
-				false);
-		assertEquals(0.625, kns.discountTypeValuesMap.get("_11").get("D1+"),
-				0.00001);
-		assertEquals(0.0357,
-				kns.calculateLowerOrderResult("dolor", 1, "1", false), 0.0001);
-		assertEquals(0.07143,
-				kns.calculateLowerOrderResult("et", 1, "1", false), 0.0001);
-		assertEquals(0.08474,
-				kns.calculateConditionalProbability("et", 1, "1", false),
-				0.0001);
-		assertEquals(0.39282,
-				kns.calculateLowerOrderResult("</s>", 1, "1", false), 0.0001);
-		assertEquals(0.0084,
-				kns.calculateLowerOrderResult("<s>", 1, "1", false), 0.0001);
-		assertEquals(0.2321,
-				kns.calculateLowerOrderResult("sit amet", 2, "11", false),
-				0.0001);
+        absoluteTypeSequenceValueMap =
+                kns.readAbsoluteValuesIntoHashMap(kns.extractedAbsoluteDirectory);
 
-		assertEquals(0.0275,
-				kns.calculateLowerOrderResult("sit unknown", 2, "11", false),
-				0.0001);
-		assertEquals(0.3587, kns.calculateLowerOrderResult("dolor sit amet", 3,
-				"111", false), 0.0001);
-		assertEquals(0.4173, kns.calculateLowerOrderResult(
-				"ipsum dolor sit amet", 4, "1111", false), 0.0001);
-		assertEquals(0.09857, kns.calculateConditionalProbability(
-				"<s> At vero eos et", 5, "11111", false), 0.0001);
-		assertEquals(0.79221, kns.calculateConditionalProbability(
-				"Lorem ipsum dolor sit amet", 5, "11111", false), 0.0001);
+        continuationTypeSequenceValueMap =
+                kns.readContinuationValuesIntoHashMap(kns.extractedContinuationDirectory);
 
-		System.out.println(kns.calculateProbability(
-				"Lorem ipsum dolor sit amet", 5, "11111", false));
-		// assertEquals(0.00875, kns.calculateProbability(
-		// "Lorem ipsum dolor sit amet", 5, "11111", false), 0.0001);
-	}
+        kns.absoluteTypeSequenceValueMap = absoluteTypeSequenceValueMap;
+        kns.continuationTypeSequenceValueMap = continuationTypeSequenceValueMap;
+
+        kns.smooth(testSequenceFile, kneserNeyFile, 5, true, true);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("----");
+        assertEquals(0.0084,
+                kns.calculateConditionalProbability("notFound", 1, "1"), 0.0001);
+        assertEquals(0.0084, kns.calculateLowerOrderResult("notFound", 1, "1"),
+                0.0001);
+        kns.calculateProbability("Lorem ipsum dolor sit amet", 5, "11111");
+        assertEquals(0.625, kns.discountTypeValuesMap.get("_11").get("D1+"),
+                0.00001);
+        assertEquals(0.0357, kns.calculateLowerOrderResult("dolor", 1, "1"),
+                0.0001);
+        assertEquals(0.07143, kns.calculateLowerOrderResult("et", 1, "1"),
+                0.0001);
+        assertEquals(0.08474,
+                kns.calculateConditionalProbability("et", 1, "1"), 0.0001);
+        assertEquals(0.39282, kns.calculateLowerOrderResult("</s>", 1, "1"),
+                0.0001);
+        assertEquals(0.0084, kns.calculateLowerOrderResult("<s>", 1, "1"),
+                0.0001);
+        assertEquals(0.2321,
+                kns.calculateLowerOrderResult("sit amet", 2, "11"), 0.0001);
+
+        assertEquals(0.0275,
+                kns.calculateLowerOrderResult("sit unknown", 2, "11"), 0.0001);
+        assertEquals(0.3587,
+                kns.calculateLowerOrderResult("dolor sit amet", 3, "111"),
+                0.0001);
+        assertEquals(0.4173, kns.calculateLowerOrderResult(
+                "ipsum dolor sit amet", 4, "1111"), 0.0001);
+        assertEquals(0.09857, kns.calculateConditionalProbability(
+                "<s> At vero eos et", 5, "11111"), 0.0001);
+        assertEquals(0.79221, kns.calculateConditionalProbability(
+                "Lorem ipsum dolor sit amet", 5, "11111"), 0.0001);
+
+        System.out.println(kns.calculateProbability(
+                "Lorem ipsum dolor sit amet", 5, "11111"));
+        // assertEquals(0.00875, kns.calculateProbability(
+        // "Lorem ipsum dolor sit amet", 5, "11111"), 0.0001);
+    }
 }
