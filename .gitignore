@@ -17,3 +17,5 @@ test*
 absolute
 continuation
 parsed.txt
+brownPlain.txt
+brownTagged.txt
