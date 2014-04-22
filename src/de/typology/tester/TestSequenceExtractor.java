@@ -27,6 +27,7 @@ public class TestSequenceExtractor {
 	private File outputDirectory;
 
 	private String delimiter;
+	@SuppressWarnings("unused")
 	private WordIndex wordIndex;
 
 	public TestSequenceExtractor(File testSequenceFile, File absoluteDirectory,
