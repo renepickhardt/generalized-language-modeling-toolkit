@@ -21,120 +21,232 @@ import java.util.Properties;
  * 
  */
 public class Config extends Properties {
-	// CONTROLL PARAMETERS
-	public int numberOfCores;
 
-	public String languages;
+    // CONTROLL PARAMETERS /////////////////////////////////////////////////////
 
-	public boolean splitData;
-	public boolean buildIndex;
-	public boolean buildGLM;
-	public boolean buildContinuationGLM;
-	public boolean extractContinuationGLM;
-	public boolean buildKneserNey;
-	public boolean buildModKneserNey;
+    /**
+     * amount of threads that should be concurrently assigned to the program
+     */
+    public int numberOfCores;
 
-	public boolean conditionalProbabilityOnly;
-	public boolean backoffAbsolute;
+    /**
+     * can be used for multiple languages
+     */
+    public String languages;
 
-	public boolean kneserNeySimple;
-	public boolean kneserNeyComplex;
+    /**
+     * first the data sets are split to training and test data
+     */
+    public boolean splitData;
 
-	public boolean deleteTempFiles;
+    /**
+     * state if the index of words should be build. The index is used to create
+     * subfiles for counting and aggregating sequences
+     */
+    public boolean buildIndex;
 
-	public boolean addSentenceTags;
-	public boolean addFakeStartTag;
+    /**
+     * if the absolute values for skipped sequences should be build
+     */
+    public boolean buildGLM;
 
-	public int decimalPlaces;
-	// DEBUGGING
-	public String inputDataSet;
+    /**
+     * states if also all the continuation values should be build.
+     */
+    public boolean buildContinuationGLM;
 
-	// STEP 0 GLOBAL CONFIGS
+    /**
+     * the absolute counts and continuation counts from the entire LM which are
+     * needed for the testing-samples will be extracted and stored in
+     * testing-samples/ pay attention. If your testing-samples are too large you
+     * might run out of memory when running the experiment since all the data
+     * needed will be stored into main memory
+     */
+    public boolean extractContinuationGLM;
 
-	public String outputDirectory;
-	public int maxCountDivider;
-	public int modelLength;
+    /**
+     * set this to true if you want to build a standard kneser ney (generalized)
+     * language model
+     */
+    public boolean buildKneserNey;
 
-	public int numberOfQueries;
+    /**
+     * set this to true if you want to build a modified kneser ney (generalized)
+     * language model
+     */
+    public boolean buildModKneserNey;
 
-	// STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT
-	public int sampleRate; // \in [0, 100] 0 means no data from input will be
-	// used. 100 means all input data will be used
-	public int splitDataRatio; // \in [0, 100] 0 means no training data. 100
-	// means only training data
-	public int splitTestRatio; // \in [0, 100] 0 means all data is stored in
-	// test file. 100 means all data is stored in (smaller) learning file
+    /**
+     * was not used for paper since there is currently an acompaning python
+     * script for the task
+     * 
+     * Currently unused.
+     */
+    public boolean calculateEntropy;
 
-	private static final long serialVersionUID = -4439565094382127683L;
+    /**
+     * don't use any smoothing but just calculate conditional probabilities.
+     */
+    public boolean conditionalProbabilityOnly;
 
-	static Config instance = null;
+    /**
+     * use absolute discounting for interpolated probabilities (this should be
+     * set to false for the standard (modified) kneser ney implementation)
+     */
+    public boolean backoffAbsolute;
 
-	public Config() {
-		String file = "config.txt";
-		try {
-			BufferedInputStream stream = new BufferedInputStream(
-					new FileInputStream(file));
-			this.load(stream);
-			stream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		try {
-			this.initialize();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-	}
+    /**
+     * calculate a standard language model
+     */
+    public boolean kneserNeySimple;
 
-	/**
-	 * Fills all fields with the data defined in the config file.
-	 * 
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	private void initialize() throws IllegalArgumentException,
-			IllegalAccessException {
-		Field[] fields = this.getClass().getFields();
-		for (Field f : fields) {
-			if (this.getProperty(f.getName()) == null) {
-				System.err.print("Property '" + f.getName()
-						+ "' not defined in config file");
-			}
-			if (f.getType().equals(String.class)) {
-				f.set(this, this.getProperty(f.getName()));
-			} else if (f.getType().equals(long.class)) {
-				f.setLong(this, Long.valueOf(this.getProperty(f.getName())));
-			} else if (f.getType().equals(int.class)) {
-				f.setInt(this, Integer.valueOf(this.getProperty(f.getName())));
-			} else if (f.getType().equals(boolean.class)) {
-				f.setBoolean(this,
-						Boolean.valueOf(this.getProperty(f.getName())));
-			} else if (f.getType().equals(String[].class)) {
-				f.set(this, this.getProperty(f.getName()).split(";"));
-			} else if (f.getType().equals(int[].class)) {
-				String[] tmp = this.getProperty(f.getName()).split(";");
-				int[] ints = new int[tmp.length];
-				for (int i = 0; i < tmp.length; i++) {
-					ints[i] = Integer.parseInt(tmp[i]);
-				}
-				f.set(this, ints);
-			} else if (f.getType().equals(long[].class)) {
-				String[] tmp = this.getProperty(f.getName()).split(";");
-				long[] longs = new long[tmp.length];
-				for (int i = 0; i < tmp.length; i++) {
-					longs[i] = Long.parseLong(tmp[i]);
-				}
-				f.set(this, longs);
-			}
-		}
-	}
+    /**
+     * calculate a generalized language model
+     */
+    public boolean kneserNeyComplex;
 
-	public static Config get() {
-		if (instance == null) {
-			instance = new Config();
-		}
-		return instance;
-	}
+    /**
+     * should be used to save space
+     */
+    public boolean deleteTempFiles;
+
+    /**
+     * is useful for modified kneser ney smoothing
+     */
+    public boolean addSentenceTags;
+
+    /**
+     * is useful for modified kneser ney smoothing
+     */
+    public boolean addFakeStartTag;
+
+    /**
+     * number of decimal places that will be used for calculation of smoothing
+     * algorithms
+     */
+    public int decimalPlaces;
+
+    // DEBUGGING ///////////////////////////////////////////////////////////////
+
+    /**
+     * name of the input data set (this is supposed to be a subfolder of
+     * outputDirectory) in this folder the trainingfile should be named
+     * normalized.txt and should contain one sentence per line.
+     */
+    public String inputDataSet;
+
+    // STEP 0 GLOBAL CONFIGS ///////////////////////////////////////////////////
+
+    /**
+     * directory from which we will start to work
+     */
+    public String outputDirectory;
+
+    /**
+     * used for splitting files in which the skipped ngrams are stored and for
+     * index building
+     */
+    public int maxCountDivider;
+
+    /**
+     * length of the model to be trained
+     */
+    public int modelLength;
+
+    /**
+     * number of test queries which will be sampled from the test query set
+     */
+    public int numberOfQueries;
+
+    // STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT ///////////////////////////
+    /**
+     * 20 means that only 20% of the input data will be thrown away
+     * 
+     * in [0, 100] 0 means no data from input will be used. 100 means all input
+     * data will be used
+     */
+    public int sampleRate;
+
+    /**
+     * 90 means that 90% of data will be training data
+     * 
+     * in [0, 100] 0 means no training data. 100 means only training data
+     */
+    public int splitDataRatio;
+
+    /**
+     * in [0, 100] 0 means all data is stored in test file. 100 means all data
+     * is stored in (smaller) learning file
+     */
+    public int splitTestRatio;
+
+    private static final long serialVersionUID = -4439565094382127683L;
+
+    private static Config instance = null;
+
+    public Config() {
+        String file = "config.txt";
+        try {
+            BufferedInputStream stream =
+                    new BufferedInputStream(new FileInputStream(file));
+            this.load(stream);
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            initialize();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Fills all fields with the data defined in the config file.
+     */
+    private void initialize() throws IllegalArgumentException,
+            IllegalAccessException {
+        Field[] fields = this.getClass().getFields();
+        for (Field f : fields) {
+            if (this.getProperty(f.getName()) == null) {
+                System.err.print("Property '" + f.getName()
+                        + "' not defined in config file");
+            }
+            if (f.getType().equals(String.class)) {
+                f.set(this, this.getProperty(f.getName()));
+            } else if (f.getType().equals(long.class)) {
+                f.setLong(this, Long.valueOf(this.getProperty(f.getName())));
+            } else if (f.getType().equals(int.class)) {
+                f.setInt(this, Integer.valueOf(this.getProperty(f.getName())));
+            } else if (f.getType().equals(boolean.class)) {
+                f.setBoolean(this,
+                        Boolean.valueOf(this.getProperty(f.getName())));
+            } else if (f.getType().equals(String[].class)) {
+                f.set(this, this.getProperty(f.getName()).split(";"));
+            } else if (f.getType().equals(int[].class)) {
+                String[] tmp = this.getProperty(f.getName()).split(";");
+                int[] ints = new int[tmp.length];
+                for (int i = 0; i < tmp.length; i++) {
+                    ints[i] = Integer.parseInt(tmp[i]);
+                }
+                f.set(this, ints);
+            } else if (f.getType().equals(long[].class)) {
+                String[] tmp = this.getProperty(f.getName()).split(";");
+                long[] longs = new long[tmp.length];
+                for (int i = 0; i < tmp.length; i++) {
+                    longs[i] = Long.parseLong(tmp[i]);
+                }
+                f.set(this, longs);
+            }
+        }
+    }
+
+    public static Config get() {
+        if (instance == null) {
+            instance = new Config();
+        }
+        return instance;
+    }
 }

@@ -37,7 +37,7 @@ inputDataSet = wiki
 languages = en
 
 ################################################################################
-# stages of the entire calculaten in the order they are being processed usefull
+# stages of the entire calculation in the order they are being processed useful
 # for big data sets. here if something goes wrong you don't have to start over
 # again set the following values to false for the stages of processing you wish
 # to skip
@@ -58,7 +58,7 @@ buildContinuationGLM = true
 
 # the absolute counts and continuation counts from the entire LM which are
 # needed for the testing-samples will be extracted and stored in
-# testing-samples/ pay attantion. If your testing-samples are too large you
+# testing-samples/ pay attention. If your testing-samples are too large you
 # might run out of memory when running the experiment since all the data needed
 # will be stored into main memory
 extractContinuationGLM = true
@@ -71,7 +71,7 @@ buildKneserNey = true
 # language model
 buildModKneserNey = true
 
-# was not used for paper since there is currently an acompaning python script
+# was not used for paper since there is currently an accompanying python script
 # for the task
 calculateEntropy = false
 
@@ -120,9 +120,14 @@ maxCountDivider = 1000
 ################################################################################
 
 # 20 means that only 20% of the input data will be thrown away
+# in [0, 100] 0 means no data from input will be used. 100 means all input data
+# will be used
 sampleRate = 0
 
 # 90 means that 90% of data will be training data
+# in [0, 100] 0 means no training data. 100 means only training data
 splitDataRatio = 2
 
+# in [0, 100] 0 means all data is stored in test file. 100 means all data is
+# stored in (smaller) learning file
 splitTestRatio = 100
