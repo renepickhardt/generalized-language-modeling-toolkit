@@ -71,8 +71,8 @@ buildKneserNey = true
 # language model
 buildModKneserNey = true
 
-# was not used for paper since there is currently an accompanying python script
-# for the task
+# currently unused since there is currently an acompaning python script for the
+# task
 calculateEntropy = false
 
 # calculate a standard language model

@@ -22,7 +22,19 @@ import java.util.Properties;
  */
 public class Config extends Properties {
 
-    // CONTROLL PARAMETERS /////////////////////////////////////////////////////
+    // START CONFIG VALUES
+
+    // BASIC SETTINGS //////////////////////////////////////////////////////////
+
+    /**
+     * directory from which we will start to work
+     */
+    public String outputDirectory;
+
+    /**
+     * length of the model to be trained
+     */
+    public int modelLength;
 
     /**
      * amount of threads that should be concurrently assigned to the program
@@ -30,9 +42,18 @@ public class Config extends Properties {
     public int numberOfCores;
 
     /**
+     * name of the input data set (this is supposed to be a subfolder of
+     * outputDirectory) in this folder the trainingfile should be named
+     * normalized.txt and should contain one sentence per line.
+     */
+    public String inputDataSet;
+
+    /**
      * can be used for multiple languages
      */
     public String languages;
+
+    // STAGES //////////////////////////////////////////////////////////////////
 
     /**
      * first the data sets are split to training and test data
@@ -77,23 +98,10 @@ public class Config extends Properties {
     public boolean buildModKneserNey;
 
     /**
-     * was not used for paper since there is currently an acompaning python
+     * currently unused since there is currently an acompaning python
      * script for the task
-     * 
-     * Currently unused.
      */
     public boolean calculateEntropy;
-
-    /**
-     * don't use any smoothing but just calculate conditional probabilities.
-     */
-    public boolean conditionalProbabilityOnly;
-
-    /**
-     * use absolute discounting for interpolated probabilities (this should be
-     * set to false for the standard (modified) kneser ney implementation)
-     */
-    public boolean backoffAbsolute;
 
     /**
      * calculate a standard language model
@@ -104,6 +112,19 @@ public class Config extends Properties {
      * calculate a generalized language model
      */
     public boolean kneserNeyComplex;
+
+    /**
+     * use absolute discounting for interpolated probabilities (this should be
+     * set to false for the standard (modified) kneser ney implementation)
+     */
+    public boolean backoffAbsolute;
+
+    /**
+     * don't use any smoothing but just calculate conditional probabilities.
+     */
+    public boolean conditionalProbabilityOnly;
+
+    // MISC ////////////////////////////////////////////////////////////////////
 
     /**
      * should be used to save space
@@ -126,21 +147,12 @@ public class Config extends Properties {
      */
     public int decimalPlaces;
 
-    // DEBUGGING ///////////////////////////////////////////////////////////////
+    // TRAINING DATA ///////////////////////////////////////////////////////////
 
     /**
-     * name of the input data set (this is supposed to be a subfolder of
-     * outputDirectory) in this folder the trainingfile should be named
-     * normalized.txt and should contain one sentence per line.
+     * number of test queries which will be sampled from the test query set
      */
-    public String inputDataSet;
-
-    // STEP 0 GLOBAL CONFIGS ///////////////////////////////////////////////////
-
-    /**
-     * directory from which we will start to work
-     */
-    public String outputDirectory;
+    public int numberOfQueries;
 
     /**
      * used for splitting files in which the skipped ngrams are stored and for
@@ -148,17 +160,8 @@ public class Config extends Properties {
      */
     public int maxCountDivider;
 
-    /**
-     * length of the model to be trained
-     */
-    public int modelLength;
+    // SPLITS //////////////////////////////////////////////////////////////////
 
-    /**
-     * number of test queries which will be sampled from the test query set
-     */
-    public int numberOfQueries;
-
-    // STEP 2 SAMPLING AND MAKE TRAININGS DATA SPLIT ///////////////////////////
     /**
      * 20 means that only 20% of the input data will be thrown away
      * 
@@ -179,6 +182,8 @@ public class Config extends Properties {
      * is stored in (smaller) learning file
      */
     public int splitTestRatio;
+
+    // END CONFIG VALUES
 
     private static final long serialVersionUID = -4439565094382127683L;
 
