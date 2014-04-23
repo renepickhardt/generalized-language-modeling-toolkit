@@ -1,9 +1,11 @@
 package de.typology.utils;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -100,7 +102,7 @@ public class Config extends Properties {
     public boolean buildModKneserNey;
 
     /**
-     * currently unused since there is currently an acompaning python
+     * currently unused since there is currently an accompanying python
      * script for the task
      */
     public boolean calculateEntropy;
@@ -191,23 +193,16 @@ public class Config extends Properties {
 
     private static Config instance = null;
 
-    public Config() {
+    public Config() throws IOException, IllegalArgumentException,
+            IllegalAccessException {
         String file = "config.txt";
-        try {
-            BufferedInputStream stream =
-                    new BufferedInputStream(new FileInputStream(file));
-            this.load(stream);
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        try (BufferedReader r =
+                Files.newBufferedReader(Paths.get(file),
+                        Charset.defaultCharset())) {
+            load(Files.newBufferedReader(Paths.get(file),
+                    Charset.defaultCharset()));
         }
-        try {
-            initialize();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        initialize();
     }
 
     /**
@@ -252,7 +247,12 @@ public class Config extends Properties {
 
     public static Config get() {
         if (instance == null) {
-            instance = new Config();
+            try {
+                instance = new Config();
+            } catch (IllegalArgumentException | IllegalAccessException
+                    | IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         return instance;
     }
