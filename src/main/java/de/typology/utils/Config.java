@@ -94,6 +94,8 @@ public class Config extends Properties {
     /**
      * set this to true if you want to build a modified kneser ney (generalized)
      * language model
+     * 
+     * will only be build if buildKneserNey is also true
      */
     public boolean buildModKneserNey;
 

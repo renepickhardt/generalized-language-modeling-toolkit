@@ -69,6 +69,7 @@ buildKneserNey = true
 
 # set this to true if you want to build a modified kneser ney (generalized)
 # language model
+# will only be build if buildKneserNey is also true
 buildModKneserNey = true
 
 # currently unused since there is currently an acompaning python script for the
