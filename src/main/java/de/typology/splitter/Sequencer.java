@@ -21,85 +21,99 @@ import de.typology.indexes.WordIndex;
  * 
  */
 public class Sequencer {
-	protected InputStream inputStream;
-	protected File outputDirectory;
-	protected WordIndex wordIndex;
-	protected boolean[] pattern;
-	protected String addBeforeSentence;
-	protected String addAfterSentence;
-	protected String delimiter;
-	protected boolean completeLine;
-	private int startSortAtColumn;
 
-	Logger logger = LogManager.getLogger(this.getClass().getName());
+    protected InputStream inputStream;
 
-	public Sequencer(InputStream inputStream, File outputDirectory,
-			WordIndex wordIndex, boolean[] pattern, String addBeforeSentence,
-			String addAfterSentence, String delimiter, boolean completeLine,
-			int startSortAtColumn) {
-		this.inputStream = inputStream;
-		this.outputDirectory = outputDirectory;
-		this.wordIndex = wordIndex;
-		this.pattern = pattern;
-		this.addBeforeSentence = addBeforeSentence;
-		this.addAfterSentence = addAfterSentence;
-		this.delimiter = delimiter;
-		this.completeLine = completeLine;
-		this.startSortAtColumn = startSortAtColumn;
+    protected File outputDirectory;
 
-	}
+    protected WordIndex wordIndex;
 
-	public void splitIntoFiles() {
-		HashMap<Integer, BufferedWriter> writers = this.wordIndex
-				.openWriters(this.outputDirectory);
-		// TODO: bufferSize calculation
-		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(this.inputStream), 100 * 8 * 1024);
-		// BufferedReader bufferedReader = new BufferedReader(
-		// new InputStreamReader(this.inputStream), 10 * 8 * 1024);
-		String line;
-		try {
-			while ((line = bufferedReader.readLine()) != null) {
-				line = this.addBeforeSentence + line + this.addAfterSentence;
-				if (this.completeLine) {
-					String[] lineSplit = line.split("\\s");
-					writers.get(
-							this.wordIndex
-									.rank(lineSplit[this.startSortAtColumn]))
-							.write(line + "\n");
-				} else {
-					String[] lineSplit = line.split("\\s");
-					int linePointer = 0;
-					while (lineSplit.length - linePointer >= this.pattern.length) {
-						String sequence = "";
-						for (int i = 0; i < this.pattern.length; i++) {
-							if (this.pattern[i]) {
-								sequence += lineSplit[linePointer + i] + " ";
-							}
-						}
-						sequence = sequence.replaceFirst(" $", "");
-						sequence += this.delimiter + "1\n";
+    protected boolean[] pattern;
 
-						// write sequence
+    protected String addBeforeSentence;
 
-						writers.get(
-								this.wordIndex.rank(sequence.split(" ")[this.startSortAtColumn]))
-								.write(sequence);
+    protected String addAfterSentence;
 
-						linePointer++;
-					}
-				}
-			}
-			bufferedReader.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    protected String delimiter;
 
-		this.wordIndex.closeWriters(writers);
-	}
+    protected boolean completeLine;
 
-	public boolean[] getPattern() {
-		return this.pattern;
-	}
+    private int startSortAtColumn;
+
+    Logger logger = LogManager.getLogger(this.getClass().getName());
+
+    public Sequencer(
+            InputStream inputStream,
+            File outputDirectory,
+            WordIndex wordIndex,
+            boolean[] pattern,
+            String addBeforeSentence,
+            String addAfterSentence,
+            String delimiter,
+            boolean completeLine,
+            int startSortAtColumn) {
+        this.inputStream = inputStream;
+        this.outputDirectory = outputDirectory;
+        this.wordIndex = wordIndex;
+        this.pattern = pattern;
+        this.addBeforeSentence = addBeforeSentence;
+        this.addAfterSentence = addAfterSentence;
+        this.delimiter = delimiter;
+        this.completeLine = completeLine;
+        this.startSortAtColumn = startSortAtColumn;
+
+    }
+
+    public void splitIntoFiles() {
+        HashMap<Integer, BufferedWriter> writers =
+                wordIndex.openWriters(outputDirectory);
+        // TODO: bufferSize calculation
+        BufferedReader bufferedReader =
+                new BufferedReader(new InputStreamReader(inputStream),
+                        100 * 8 * 1024);
+        // BufferedReader bufferedReader = new BufferedReader(
+        // new InputStreamReader(this.inputStream), 10 * 8 * 1024);
+        String line;
+        try {
+            while ((line = bufferedReader.readLine()) != null) {
+                line = addBeforeSentence + line + addAfterSentence;
+                if (completeLine) {
+                    String[] lineSplit = line.split("\\s");
+                    writers.get(wordIndex.rank(lineSplit[startSortAtColumn]))
+                            .write(line + "\n");
+                } else {
+                    String[] lineSplit = line.split("\\s");
+                    int linePointer = 0;
+                    while (lineSplit.length - linePointer >= pattern.length) {
+                        String sequence = "";
+                        for (int i = 0; i < pattern.length; i++) {
+                            if (pattern[i]) {
+                                sequence += lineSplit[linePointer + i] + " ";
+                            }
+                        }
+                        sequence = sequence.replaceFirst(" $", "");
+                        sequence += delimiter + "1\n";
+
+                        // write sequence
+
+                        writers.get(
+                                wordIndex.rank(sequence.split(" ")[startSortAtColumn]))
+                                .write(sequence);
+
+                        linePointer++;
+                    }
+                }
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        wordIndex.closeWriters(writers);
+    }
+
+    public boolean[] getPattern() {
+        return pattern;
+    }
 }

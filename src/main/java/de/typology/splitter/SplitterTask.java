@@ -17,102 +17,122 @@ import de.typology.indexes.WordIndex;
  * 
  */
 public class SplitterTask implements Runnable {
-	private InputStream inputStream;
-	private File outputDirectory;
-	private WordIndex wordIndex;
-	private boolean[] pattern;
-	private String patternLabel;
-	private String delimiter;
-	private int startSortAtColumn;
-	private boolean deleteTempFiles;
 
-	private String addBeforeSentence;
-	private String addAfterSentence;
-	private boolean sequenceModifyCounts;
-	private boolean aggregateCompleteLine;
-	private boolean additionalCounts;
+    private InputStream inputStream;
 
-	Logger logger = LogManager.getLogger(this.getClass().getName());
+    private File outputDirectory;
 
-	public SplitterTask(InputStream inputStream, File outputDirectory,
-			WordIndex wordIndex, boolean[] pattern, String patternLabel,
-			String delimiter, int startSortAtColumn, boolean deleteTempFiles,
-			String addBeforeSentence, String addAfterSentence,
-			boolean sequenceModifyCounts, boolean aggregateCompleteLine,
-			boolean additionalCounts) {
-		this.inputStream = inputStream;
-		this.outputDirectory = outputDirectory;
-		this.wordIndex = wordIndex;
-		this.pattern = pattern;
-		this.patternLabel = patternLabel;
-		this.delimiter = delimiter;
-		this.startSortAtColumn = startSortAtColumn;
-		this.deleteTempFiles = deleteTempFiles;
-		this.addBeforeSentence = addBeforeSentence;
-		this.addAfterSentence = addAfterSentence;
-		this.sequenceModifyCounts = sequenceModifyCounts;
-		this.aggregateCompleteLine = aggregateCompleteLine;
-		this.additionalCounts = additionalCounts;
-	}
+    private WordIndex wordIndex;
 
-	@Override
-	public void run() {
-		File sequencerOutputDirectory = new File(
-				this.outputDirectory.getAbsolutePath() + "/"
-						+ this.patternLabel + "-split");
-		if (sequencerOutputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(sequencerOutputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		sequencerOutputDirectory.mkdir();
-		this.logger.info("start building: "
-				+ sequencerOutputDirectory.getAbsolutePath());
+    private boolean[] pattern;
 
-		// initialize sequencer
-		Sequencer sequencer = new Sequencer(this.inputStream,
-				sequencerOutputDirectory, this.wordIndex, this.pattern,
-				this.addBeforeSentence, this.addAfterSentence, this.delimiter,
-				this.sequenceModifyCounts, this.startSortAtColumn);
-		sequencer.splitIntoFiles();
+    private String patternLabel;
 
-		File aggregatedOutputDirectory = new File(
-				this.outputDirectory.getAbsolutePath() + "/"
-						+ this.patternLabel);
-		if (aggregatedOutputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(aggregatedOutputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		aggregatedOutputDirectory.mkdir();
-		this.logger.info("aggregate into: " + aggregatedOutputDirectory);
+    private String delimiter;
 
-		for (File splitFile : sequencerOutputDirectory.listFiles()) {
-			Aggregator aggregator = new Aggregator(splitFile, new File(
-					aggregatedOutputDirectory.getAbsolutePath() + "/"
-							+ splitFile.getName()), this.delimiter,
-					this.startSortAtColumn, this.additionalCounts);
-			if (this.aggregateCompleteLine) {
-				aggregator.aggregateWithoutCounts();
-			} else {
-				aggregator.aggregateCounts();
-			}
-		}
+    private int startSortAtColumn;
 
-		// delete sequencerOutputDirectory
-		if (this.deleteTempFiles) {
-			try {
-				FileUtils.deleteDirectory(sequencerOutputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+    private boolean deleteTempFiles;
+
+    private String addBeforeSentence;
+
+    private String addAfterSentence;
+
+    private boolean sequenceModifyCounts;
+
+    private boolean aggregateCompleteLine;
+
+    private boolean additionalCounts;
+
+    Logger logger = LogManager.getLogger(this.getClass().getName());
+
+    public SplitterTask(
+            InputStream inputStream,
+            File outputDirectory,
+            WordIndex wordIndex,
+            boolean[] pattern,
+            String patternLabel,
+            String delimiter,
+            int startSortAtColumn,
+            boolean deleteTempFiles,
+            String addBeforeSentence,
+            String addAfterSentence,
+            boolean sequenceModifyCounts,
+            boolean aggregateCompleteLine,
+            boolean additionalCounts) {
+        this.inputStream = inputStream;
+        this.outputDirectory = outputDirectory;
+        this.wordIndex = wordIndex;
+        this.pattern = pattern;
+        this.patternLabel = patternLabel;
+        this.delimiter = delimiter;
+        this.startSortAtColumn = startSortAtColumn;
+        this.deleteTempFiles = deleteTempFiles;
+        this.addBeforeSentence = addBeforeSentence;
+        this.addAfterSentence = addAfterSentence;
+        this.sequenceModifyCounts = sequenceModifyCounts;
+        this.aggregateCompleteLine = aggregateCompleteLine;
+        this.additionalCounts = additionalCounts;
+    }
+
+    @Override
+    public void run() {
+        File sequencerOutputDirectory =
+                new File(outputDirectory.getAbsolutePath() + "/" + patternLabel
+                        + "-split");
+        if (sequencerOutputDirectory.exists()) {
+            try {
+                FileUtils.deleteDirectory(sequencerOutputDirectory);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        sequencerOutputDirectory.mkdir();
+        logger.info("start building: "
+                + sequencerOutputDirectory.getAbsolutePath());
+
+        // initialize sequencer
+        Sequencer sequencer =
+                new Sequencer(inputStream, sequencerOutputDirectory, wordIndex,
+                        pattern, addBeforeSentence, addAfterSentence,
+                        delimiter, sequenceModifyCounts, startSortAtColumn);
+        sequencer.splitIntoFiles();
+
+        File aggregatedOutputDirectory =
+                new File(outputDirectory.getAbsolutePath() + "/" + patternLabel);
+        if (aggregatedOutputDirectory.exists()) {
+            try {
+                FileUtils.deleteDirectory(aggregatedOutputDirectory);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        aggregatedOutputDirectory.mkdir();
+        logger.info("aggregate into: " + aggregatedOutputDirectory);
+
+        for (File splitFile : sequencerOutputDirectory.listFiles()) {
+            Aggregator aggregator =
+                    new Aggregator(splitFile, new File(
+                            aggregatedOutputDirectory.getAbsolutePath() + "/"
+                                    + splitFile.getName()), delimiter,
+                            startSortAtColumn, additionalCounts);
+            if (aggregateCompleteLine) {
+                aggregator.aggregateWithoutCounts();
+            } else {
+                aggregator.aggregateCounts();
+            }
+        }
+
+        // delete sequencerOutputDirectory
+        if (deleteTempFiles) {
+            try {
+                FileUtils.deleteDirectory(sequencerOutputDirectory);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
 }

@@ -23,123 +23,130 @@ import org.apache.logging.log4j.Logger;
  */
 public class SequenceExtractorTask implements Runnable {
 
-	Logger logger = LogManager.getLogger(this.getClass().getName());
+    Logger logger = LogManager.getLogger(this.getClass().getName());
 
-	private ArrayList<String> originalSequences;
-	private boolean[] pattern;
-	private File inputDirectory;
-	private File outputDirectory;
-	private String delimiter;
+    private ArrayList<String> originalSequences;
 
-	public SequenceExtractorTask(ArrayList<String> originalSequences,
-			boolean[] pattern, File inputDirectory, File outputDirectory,
-			String delimiter) {
-		this.originalSequences = originalSequences;
-		this.pattern = pattern;
+    private boolean[] pattern;
 
-		this.inputDirectory = inputDirectory;
-		this.outputDirectory = outputDirectory;
-		if (this.outputDirectory.exists()) {
-			try {
-				FileUtils.deleteDirectory(this.outputDirectory);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		this.outputDirectory.mkdirs();
-		this.delimiter = delimiter;
+    private File inputDirectory;
 
-	}
+    private File outputDirectory;
 
-	@Override
-	public void run() {
-		HashSet<String> newSequences = this.getNewSequences();
+    private String delimiter;
 
-		for (File inputFile : this.inputDirectory.listFiles()) {
-			File outputFile = new File(this.outputDirectory.getAbsolutePath()
-					+ "/" + inputFile.getName());
-			if (inputFile.getName().equals("all")) {
-				try {
-					FileUtils.copyFile(inputFile, outputFile);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				try {
-					BufferedReader inputFileReader = new BufferedReader(
-							new FileReader(inputFile));
-					BufferedWriter outputFileWriter = new BufferedWriter(
-							new FileWriter(outputFile));
-					String line;
+    public SequenceExtractorTask(
+            ArrayList<String> originalSequences,
+            boolean[] pattern,
+            File inputDirectory,
+            File outputDirectory,
+            String delimiter) {
+        this.originalSequences = originalSequences;
+        this.pattern = pattern;
 
-					while ((line = inputFileReader.readLine()) != null) {
-						if (newSequences
-								.contains(line.split(this.delimiter)[0])) {
+        this.inputDirectory = inputDirectory;
+        this.outputDirectory = outputDirectory;
+        if (this.outputDirectory.exists()) {
+            try {
+                FileUtils.deleteDirectory(this.outputDirectory);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        this.outputDirectory.mkdirs();
+        this.delimiter = delimiter;
 
-							outputFileWriter.write(line + "\n");
-						}
-					}
-					inputFileReader.close();
-					outputFileWriter.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+    }
 
-		}
+    @Override
+    public void run() {
+        HashSet<String> newSequences = getNewSequences();
 
-	}
+        for (File inputFile : inputDirectory.listFiles()) {
+            File outputFile =
+                    new File(outputDirectory.getAbsolutePath() + "/"
+                            + inputFile.getName());
+            if (inputFile.getName().equals("all")) {
+                try {
+                    FileUtils.copyFile(inputFile, outputFile);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                try {
+                    BufferedReader inputFileReader =
+                            new BufferedReader(new FileReader(inputFile));
+                    BufferedWriter outputFileWriter =
+                            new BufferedWriter(new FileWriter(outputFile));
+                    String line;
 
-	private HashSet<String> getNewSequences() {
-		HashSet<String> newSequences = new HashSet<String>();
+                    while ((line = inputFileReader.readLine()) != null) {
+                        if (newSequences.contains(line.split(delimiter)[0])) {
 
-		for (String originalLine : this.originalSequences) {
-			// modify sequences for continuation
-			if (!this.pattern[0] || !this.pattern[this.pattern.length - 1]) {
-				for (boolean element : this.pattern) {
-					if (element) {
-						break;
-					} else {
-						originalLine = "<dummy> " + originalLine;
-					}
-				}
-				for (int i = this.pattern.length - 1; i >= 0; i--) {
-					if (this.pattern[i]) {
-						break;
-					} else {
-						originalLine = originalLine + " <dummy>";
-					}
-				}
-			}
-			String[] originalLineSplit = originalLine.split("\\s");
-			int linePointer = 0;
-			while (originalLineSplit.length - linePointer >= this.pattern.length) {
+                            outputFileWriter.write(line + "\n");
+                        }
+                    }
+                    inputFileReader.close();
+                    outputFileWriter.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
 
-				// build current Sequence
-				String currentSequence = "";
-				for (int i = 0; i < this.pattern.length; i++) {
-					currentSequence += originalLineSplit[linePointer + i] + " ";
-				}
-				currentSequence = currentSequence.replaceFirst(" $", "");
+        }
 
-				String[] currentSequenceSplit = currentSequence.split("\\s");
-				String newSequence = "";
-				for (int i = 0; i < this.pattern.length; i++) {
-					if (this.pattern[i]) {
-						newSequence += currentSequenceSplit[i] + " ";
-					}
-				}
-				newSequence = newSequence.replaceFirst(" $", "");
-				if (newSequence.length() > 0) {
-					newSequences.add(newSequence);
-				}
+    }
 
-				linePointer++;
-			}
-		}
-		return newSequences;
-	}
+    private HashSet<String> getNewSequences() {
+        HashSet<String> newSequences = new HashSet<String>();
+
+        for (String originalLine : originalSequences) {
+            // modify sequences for continuation
+            if (!pattern[0] || !pattern[pattern.length - 1]) {
+                for (boolean element : pattern) {
+                    if (element) {
+                        break;
+                    } else {
+                        originalLine = "<dummy> " + originalLine;
+                    }
+                }
+                for (int i = pattern.length - 1; i >= 0; i--) {
+                    if (pattern[i]) {
+                        break;
+                    } else {
+                        originalLine = originalLine + " <dummy>";
+                    }
+                }
+            }
+            String[] originalLineSplit = originalLine.split("\\s");
+            int linePointer = 0;
+            while (originalLineSplit.length - linePointer >= pattern.length) {
+
+                // build current Sequence
+                String currentSequence = "";
+                for (int i = 0; i < pattern.length; i++) {
+                    currentSequence += originalLineSplit[linePointer + i] + " ";
+                }
+                currentSequence = currentSequence.replaceFirst(" $", "");
+
+                String[] currentSequenceSplit = currentSequence.split("\\s");
+                String newSequence = "";
+                for (int i = 0; i < pattern.length; i++) {
+                    if (pattern[i]) {
+                        newSequence += currentSequenceSplit[i] + " ";
+                    }
+                }
+                newSequence = newSequence.replaceFirst(" $", "");
+                if (newSequence.length() > 0) {
+                    newSequences.add(newSequence);
+                }
+
+                linePointer++;
+            }
+        }
+        return newSequences;
+    }
 }

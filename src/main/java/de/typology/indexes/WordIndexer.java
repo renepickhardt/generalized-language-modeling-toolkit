@@ -22,109 +22,115 @@ import java.util.TreeMap;
  */
 public class WordIndexer {
 
-	private TreeMap<String, Long> buildMap(File InputFile,
-			String addBeforeSentence, String addAfterSentence) {
-		BufferedReader reader;
-		try {
-			reader = new BufferedReader(new FileReader(InputFile));
-		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			return null;
-		}
+    private TreeMap<String, Long> buildMap(
+            File InputFile,
+            String addBeforeSentence,
+            String addAfterSentence) {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(InputFile));
+        } catch (FileNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return null;
+        }
 
-		// a comparator for wordMap
-		Comparator<String> StringComparator = new Comparator<String>() {
-			@Override
-			public int compare(String s1, String s2) {
-				return s1.compareTo(s2);
-			}
-		};
+        // a comparator for wordMap
+        Comparator<String> StringComparator = new Comparator<String>() {
 
-		TreeMap<String, Long> wordMap = new TreeMap<String, Long>(
-				StringComparator);
-		String line;
-		// long lineCount=0L;
-		try {
-			while ((line = reader.readLine()) != null) {
-				line = addBeforeSentence + line + addAfterSentence;
-				String[] words = line.split("\\s+");
-				for (String word : words) {
-					if (wordMap.containsKey(word)) {
-						wordMap.put(word, wordMap.get(word) + 1);
-					} else {
-						wordMap.put(word, 1L);
-					}
-				}
-			}
-			reader.close();
+            @Override
+            public int compare(String s1, String s2) {
+                return s1.compareTo(s2);
+            }
+        };
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return wordMap;
-	}
+        TreeMap<String, Long> wordMap =
+                new TreeMap<String, Long>(StringComparator);
+        String line;
+        // long lineCount=0L;
+        try {
+            while ((line = reader.readLine()) != null) {
+                line = addBeforeSentence + line + addAfterSentence;
+                String[] words = line.split("\\s+");
+                for (String word : words) {
+                    if (wordMap.containsKey(word)) {
+                        wordMap.put(word, wordMap.get(word) + 1);
+                    } else {
+                        wordMap.put(word, 1L);
+                    }
+                }
+            }
+            reader.close();
 
-	/**
-	 * 
-	 * @param inputFile
-	 * @param maxCountDivider
-	 * @return Long: maxCountPerFile
-	 */
-	public long buildIndex(File inputFile, File indexOutputFile,
-			int maxCountDivider, String addBeforeSentence,
-			String addAfterSentence) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return wordMap;
+    }
 
-		// build WordMap
-		TreeMap<String, Long> wordMap = this.buildMap(inputFile,
-				addBeforeSentence, addAfterSentence);
+    /**
+     * 
+     * @param inputFile
+     * @param maxCountDivider
+     * @return Long: maxCountPerFile
+     */
+    public long buildIndex(
+            File inputFile,
+            File indexOutputFile,
+            int maxCountDivider,
+            String addBeforeSentence,
+            String addAfterSentence) {
 
-		// summarize all word counts
-		Long totalCount = 0L;
-		for (Entry<String, Long> word : wordMap.entrySet()) {
-			totalCount += word.getValue();
-		}
+        // build WordMap
+        TreeMap<String, Long> wordMap =
+                buildMap(inputFile, addBeforeSentence, addAfterSentence);
 
-		// calculate max count per file
-		Long maxCountPerFile = totalCount / maxCountDivider;
-		// System.out.println("maxCountPerFile: " + maxCountPerFile);
-		if (maxCountPerFile < 1L) {
-			maxCountPerFile = 1L;
-		}
+        // summarize all word counts
+        Long totalCount = 0L;
+        for (Entry<String, Long> word : wordMap.entrySet()) {
+            totalCount += word.getValue();
+        }
 
-		// build index
-		BufferedWriter indexWriter;
-		try {
-			indexWriter = new BufferedWriter(new FileWriter(indexOutputFile));
-			Long currentFileCount = 0L;
-			int fileCount = 0;
-			Iterator<Map.Entry<String, Long>> wordMapIterator = wordMap
-					.entrySet().iterator();
-			Entry<String, Long> word;
+        // calculate max count per file
+        Long maxCountPerFile = totalCount / maxCountDivider;
+        // System.out.println("maxCountPerFile: " + maxCountPerFile);
+        if (maxCountPerFile < 1L) {
+            maxCountPerFile = 1L;
+        }
 
-			while (wordMapIterator.hasNext()) {
-				// get next word
-				word = wordMapIterator.next();
-				if (fileCount == 0
-						|| currentFileCount + word.getValue() > maxCountPerFile) {
-					indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
-					currentFileCount = word.getValue();
-					fileCount++;
-				} else {
-					currentFileCount += word.getValue();
-				}
-			}
-			indexWriter.close();
-		} catch (IOException e) {
-			// make sure that no corrupted index file is stored
-			if (indexOutputFile.exists()) {
-				indexOutputFile.delete();
-			}
-			e.printStackTrace();
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return maxCountPerFile;
-	}
+        // build index
+        BufferedWriter indexWriter;
+        try {
+            indexWriter = new BufferedWriter(new FileWriter(indexOutputFile));
+            Long currentFileCount = 0L;
+            int fileCount = 0;
+            Iterator<Map.Entry<String, Long>> wordMapIterator =
+                    wordMap.entrySet().iterator();
+            Entry<String, Long> word;
+
+            while (wordMapIterator.hasNext()) {
+                // get next word
+                word = wordMapIterator.next();
+                if (fileCount == 0
+                        || currentFileCount + word.getValue() > maxCountPerFile) {
+                    indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
+                    currentFileCount = word.getValue();
+                    fileCount++;
+                } else {
+                    currentFileCount += word.getValue();
+                }
+            }
+            indexWriter.close();
+        } catch (IOException e) {
+            // make sure that no corrupted index file is stored
+            if (indexOutputFile.exists()) {
+                indexOutputFile.delete();
+            }
+            e.printStackTrace();
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return maxCountPerFile;
+    }
 
 }
