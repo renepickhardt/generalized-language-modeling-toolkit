@@ -160,7 +160,7 @@ public class KneserNeyBuilder {
                 + "/testing.txt"), config.modelLength, config.numberOfQueries);
     }
 
-    private void buildIndex(File inputFile, File indexFile) {
+    private void buildIndex(File inputFile, File indexFile) throws IOException {
         WordIndexer wordIndexer = new WordIndexer();
         wordIndexer.buildIndex(inputFile, indexFile, config.maxCountDivider,
                 "<fs> <s> ", " </s>");
