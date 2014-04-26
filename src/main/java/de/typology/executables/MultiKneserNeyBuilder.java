@@ -6,7 +6,8 @@ import de.typology.utils.Config;
 
 public class MultiKneserNeyBuilder {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException,
+            InterruptedException {
         String[] languages = Config.get().languages.split(",");
         String inputDataSet = Config.get().inputDataSet;
         for (String language : languages) {

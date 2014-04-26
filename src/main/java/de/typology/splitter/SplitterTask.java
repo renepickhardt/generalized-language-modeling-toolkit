@@ -97,7 +97,11 @@ public class SplitterTask implements Runnable {
                 new Sequencer(inputStream, sequencerOutputDirectory, wordIndex,
                         pattern, addBeforeSentence, addAfterSentence,
                         delimiter, sequenceModifyCounts, startSortAtColumn);
-        sequencer.splitIntoFiles();
+        try {
+            sequencer.splitIntoFiles();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         File aggregatedOutputDirectory =
                 new File(outputDirectory.getAbsolutePath() + "/" + patternLabel);

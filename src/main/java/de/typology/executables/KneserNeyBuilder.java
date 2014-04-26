@@ -27,7 +27,7 @@ public class KneserNeyBuilder {
     private Config config;
 
     private KneserNeyBuilder(
-            String[] args) throws IOException {
+            String[] args) throws IOException, InterruptedException {
         config = Config.get();
         loadStages(args);
 
@@ -167,7 +167,8 @@ public class KneserNeyBuilder {
     }
 
     private void
-        buildGLM(File inputFile, File indexFile, File absoluteDirectory) {
+        buildGLM(File inputFile, File indexFile, File absoluteDirectory)
+                throws IOException, InterruptedException {
         ArrayList<boolean[]> glmForSmoothingPatterns =
                 PatternBuilder
                         .getReverseGLMForSmoothingPatterns(config.modelLength);
@@ -181,7 +182,7 @@ public class KneserNeyBuilder {
             File inputFile,
             File indexFile,
             File absoluteDirectory,
-            File continuationDirectory) {
+            File continuationDirectory) throws IOException {
         ArrayList<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
         SmoothingSplitter smoothingSplitter =
@@ -195,7 +196,7 @@ public class KneserNeyBuilder {
             File indexFile,
             File absoluteDirectory,
             File continuationDirectory,
-            File testExtractOutputDirectory) {
+            File testExtractOutputDirectory) throws IOException {
         File testSequences =
                 new File(inputDirectory.getAbsolutePath() + "/testing-samples-"
                         + config.modelLength + ".txt");
@@ -309,7 +310,8 @@ public class KneserNeyBuilder {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException,
+            InterruptedException {
         new KneserNeyBuilder(args);
     }
 

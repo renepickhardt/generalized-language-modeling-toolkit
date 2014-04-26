@@ -63,7 +63,8 @@ public class SmoothingSplitter {
         this.deleteTempFiles = deleteTempFiles;
     }
 
-    public void split(ArrayList<boolean[]> patterns, int cores) {
+    public void split(ArrayList<boolean[]> patterns, int cores)
+            throws IOException {
         // read Index
         logger.info("read word index: " + indexFile.getAbsolutePath());
         WordIndex wordIndex = new WordIndex(indexFile);

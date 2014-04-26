@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,7 +43,7 @@ public class WordIndexTest {
     }
 
     @Test
-    public void rankTest() {
+    public void rankTest() throws IOException {
         WordIndex wi = new WordIndex(indexFile);
         assertEquals(8, wi.rank("et"));
         assertEquals(3, wi.rank("A"));
@@ -56,7 +57,7 @@ public class WordIndexTest {
     }
 
     @Test
-    public void iteratorTest() {
+    public void iteratorTest() throws IOException {
         WordIndex wi = new WordIndex(indexFile);
 
         for (String word : wi) {

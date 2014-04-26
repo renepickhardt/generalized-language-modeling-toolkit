@@ -21,28 +21,23 @@ import org.apache.commons.io.FileUtils;
  */
 public class WordIndex implements Iterable<String> {
 
-    protected String[] index;
+    private String[] index;
 
     public WordIndex(
-            File indexFile) {
+            File indexFile) throws IOException {
         // count total number of lines in the index file
         int lineCount = 0;
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(indexFile));
+        try (BufferedReader br = new BufferedReader(new FileReader(indexFile))) {
             while (br.readLine() != null) {
                 lineCount++;
             }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         index = new String[lineCount];
         int currentLineCount = 0;
 
         // read the index file
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(indexFile));
+        try (BufferedReader br = new BufferedReader(new FileReader(indexFile))) {
             String line;
             String[] lineSplit;
             while ((line = br.readLine()) != null) {
@@ -50,9 +45,6 @@ public class WordIndex implements Iterable<String> {
                 index[currentLineCount] = lineSplit[0];
                 currentLineCount++;
             }
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -89,45 +81,32 @@ public class WordIndex implements Iterable<String> {
         return Arrays.asList(index).iterator();
     }
 
-    public HashMap<Integer, BufferedWriter> openWriters(File outputDirectory) {
+    public HashMap<Integer, BufferedWriter> openWriters(File outputDirectory)
+            throws IOException {
         HashMap<Integer, BufferedWriter> writers =
                 new HashMap<Integer, BufferedWriter>();
 
         File currentOutputDirectory =
                 new File(outputDirectory.getAbsolutePath());
         if (currentOutputDirectory.exists()) {
-            try {
-                FileUtils.deleteDirectory(currentOutputDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            FileUtils.deleteDirectory(currentOutputDirectory);
         }
         currentOutputDirectory.mkdir();
 
         // calculate buffer size for writers
         // TODO: bufferSize calculation
         for (int fileCount = 0; fileCount < index.length; fileCount++) {
-            try {
-                writers.put(fileCount, new BufferedWriter(new FileWriter(
-                        currentOutputDirectory.getAbsolutePath() + "/"
-                                + fileCount), 10 * 8 * 1024));
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            writers.put(fileCount, new BufferedWriter(
+                    new FileWriter(currentOutputDirectory.getAbsolutePath()
+                            + "/" + fileCount), 10 * 8 * 1024));
         }
         return writers;
     }
 
-    public void closeWriters(HashMap<Integer, BufferedWriter> writers) {
+    public void closeWriters(HashMap<Integer, BufferedWriter> writers)
+            throws IOException {
         for (Entry<Integer, BufferedWriter> entry : writers.entrySet()) {
-            try {
-                entry.getValue().close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            entry.getValue().close();
         }
     }
 }

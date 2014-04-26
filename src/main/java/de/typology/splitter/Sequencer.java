@@ -64,7 +64,7 @@ public class Sequencer {
 
     }
 
-    public void splitIntoFiles() {
+    public void splitIntoFiles() throws IOException {
         HashMap<Integer, BufferedWriter> writers =
                 wordIndex.openWriters(outputDirectory);
         // TODO: bufferSize calculation

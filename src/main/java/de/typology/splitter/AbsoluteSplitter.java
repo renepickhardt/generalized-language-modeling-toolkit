@@ -33,13 +33,13 @@ public class AbsoluteSplitter {
 
     private String delimiter;
 
-    protected boolean deleteTempFiles;
+    private boolean deleteTempFiles;
 
-    protected String addBeforeSentence;
+    private String addBeforeSentence;
 
-    protected String addAfterSentence;
+    private String addAfterSentence;
 
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public AbsoluteSplitter(
             File inputFile,
@@ -68,14 +68,14 @@ public class AbsoluteSplitter {
         outputDirectory.mkdir();
     }
 
-    public void split(ArrayList<boolean[]> patterns, int cores) {
-
+    public void split(ArrayList<boolean[]> patterns, int cores)
+            throws IOException, InterruptedException {
         logger.info("read word index: " + indexFile.getAbsolutePath());
         WordIndex wordIndex = new WordIndex(indexFile);
 
         // initialize executerService
-        // int cores = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = Executors.newFixedThreadPool(cores);
+
         for (boolean[] pattern : patterns) {
             logger.debug("execute SplitterTask for: "
                     + PatternTransformer.getStringPattern(pattern)
@@ -93,19 +93,18 @@ public class AbsoluteSplitter {
                                 false, false);
                 executorService.execute(splitterTask);
             } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
                 logger.error("inputFile not found: "
                         + inputFile.getAbsolutePath());
-                return;
+                throw e;
             }
         }
+
         executorService.shutdown();
         try {
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // Interrupted
+            throw e;
         }
     }
 }
