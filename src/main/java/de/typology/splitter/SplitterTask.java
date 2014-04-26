@@ -77,66 +77,53 @@ public class SplitterTask implements Runnable {
 
     @Override
     public void run() {
-        File sequencerOutputDirectory =
-                new File(outputDirectory.getAbsolutePath() + "/" + patternLabel
-                        + "-split");
-        if (sequencerOutputDirectory.exists()) {
-            try {
-                FileUtils.deleteDirectory(sequencerOutputDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        sequencerOutputDirectory.mkdir();
-        logger.info("start building: "
-                + sequencerOutputDirectory.getAbsolutePath());
-
-        // initialize sequencer
-        Sequencer sequencer =
-                new Sequencer(inputStream, sequencerOutputDirectory, wordIndex,
-                        pattern, addBeforeSentence, addAfterSentence,
-                        delimiter, sequenceModifyCounts, startSortAtColumn);
         try {
+            File sequencerOutputDirectory =
+                    new File(outputDirectory.getAbsolutePath() + "/"
+                            + patternLabel + "-split");
+            if (sequencerOutputDirectory.exists()) {
+                FileUtils.deleteDirectory(sequencerOutputDirectory);
+            }
+            sequencerOutputDirectory.mkdir();
+            logger.info("start building: "
+                    + sequencerOutputDirectory.getAbsolutePath());
+
+            // initialize sequencer
+            Sequencer sequencer =
+                    new Sequencer(inputStream, sequencerOutputDirectory,
+                            wordIndex, pattern, addBeforeSentence,
+                            addAfterSentence, delimiter, sequenceModifyCounts,
+                            startSortAtColumn);
             sequencer.splitIntoFiles();
+
+            File aggregatedOutputDirectory =
+                    new File(outputDirectory.getAbsolutePath() + "/"
+                            + patternLabel);
+            if (aggregatedOutputDirectory.exists()) {
+                FileUtils.deleteDirectory(aggregatedOutputDirectory);
+            }
+            aggregatedOutputDirectory.mkdir();
+            logger.info("aggregate into: " + aggregatedOutputDirectory);
+
+            for (File splitFile : sequencerOutputDirectory.listFiles()) {
+                Aggregator aggregator =
+                        new Aggregator(splitFile, new File(
+                                aggregatedOutputDirectory.getAbsolutePath()
+                                        + "/" + splitFile.getName()),
+                                delimiter, startSortAtColumn, additionalCounts);
+                if (aggregateCompleteLine) {
+                    aggregator.aggregateWithoutCounts();
+                } else {
+                    aggregator.aggregateCounts();
+                }
+            }
+
+            // delete sequencerOutputDirectory
+            if (deleteTempFiles) {
+                FileUtils.deleteDirectory(sequencerOutputDirectory);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-
-        File aggregatedOutputDirectory =
-                new File(outputDirectory.getAbsolutePath() + "/" + patternLabel);
-        if (aggregatedOutputDirectory.exists()) {
-            try {
-                FileUtils.deleteDirectory(aggregatedOutputDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        aggregatedOutputDirectory.mkdir();
-        logger.info("aggregate into: " + aggregatedOutputDirectory);
-
-        for (File splitFile : sequencerOutputDirectory.listFiles()) {
-            Aggregator aggregator =
-                    new Aggregator(splitFile, new File(
-                            aggregatedOutputDirectory.getAbsolutePath() + "/"
-                                    + splitFile.getName()), delimiter,
-                            startSortAtColumn, additionalCounts);
-            if (aggregateCompleteLine) {
-                aggregator.aggregateWithoutCounts();
-            } else {
-                aggregator.aggregateCounts();
-            }
-        }
-
-        // delete sequencerOutputDirectory
-        if (deleteTempFiles) {
-            try {
-                FileUtils.deleteDirectory(sequencerOutputDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
     }
 }

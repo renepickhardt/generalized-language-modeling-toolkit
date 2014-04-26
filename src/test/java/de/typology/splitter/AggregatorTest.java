@@ -43,7 +43,7 @@ public class AggregatorTest {
     }
 
     @Test
-    public void aggregatorCol0Test() {
+    public void aggregatorCol0Test() throws IOException {
         Aggregator aggregator =
                 new Aggregator(inputFile, outputFile, "\t", 0, false);
         aggregator.aggregateCounts();
@@ -65,7 +65,7 @@ public class AggregatorTest {
     }
 
     @Test
-    public void aggregatorCol1Test() {
+    public void aggregatorCol1Test() throws IOException {
         Aggregator aggregator =
                 new Aggregator(inputFile, outputFile, "\t", 1, false);
         aggregator.aggregateCounts();
@@ -86,7 +86,7 @@ public class AggregatorTest {
     }
 
     @Test
-    public void aggregatorCol2Test() {
+    public void aggregatorCol2Test() throws IOException {
         Aggregator aggregator =
                 new Aggregator(inputFile, outputFile, "\t", 2, false);
         aggregator.aggregateCounts();

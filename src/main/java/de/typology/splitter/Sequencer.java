@@ -60,30 +60,27 @@ public class Sequencer {
     }
 
     public void splitIntoFiles() throws IOException {
-        HashMap<Integer, BufferedWriter> writers =
-                wordIndex.openWriters(outputDirectory);
         // TODO: bufferSize calculation
-        BufferedReader bufferedReader =
+        try (BufferedReader bufferedReader =
                 new BufferedReader(new InputStreamReader(inputStream),
-                        100 * 8 * 1024);
-        // BufferedReader bufferedReader = new BufferedReader(
-        // new InputStreamReader(this.inputStream), 10 * 8 * 1024);
-        String line;
-        try {
+                        100 * 8 * 1024)) {
+            HashMap<Integer, BufferedWriter> writers =
+                    wordIndex.openWriters(outputDirectory);
+
+            String line;
             while ((line = bufferedReader.readLine()) != null) {
                 line = addBeforeSentence + line + addAfterSentence;
+                String[] words = line.split("\\s");
                 if (completeLine) {
-                    String[] lineSplit = line.split("\\s");
-                    writers.get(wordIndex.rank(lineSplit[startSortAtColumn]))
+                    writers.get(wordIndex.rank(words[startSortAtColumn]))
                             .write(line + "\n");
                 } else {
-                    String[] lineSplit = line.split("\\s");
                     int linePointer = 0;
-                    while (lineSplit.length - linePointer >= pattern.length) {
+                    while (words.length - linePointer >= pattern.length) {
                         String sequence = "";
                         for (int i = 0; i < pattern.length; i++) {
                             if (pattern[i]) {
-                                sequence += lineSplit[linePointer + i] + " ";
+                                sequence += words[linePointer + i] + " ";
                             }
                         }
                         sequence = sequence.replaceFirst(" $", "");
@@ -99,13 +96,9 @@ public class Sequencer {
                     }
                 }
             }
-            bufferedReader.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
-        wordIndex.closeWriters(writers);
+            wordIndex.closeWriters(writers);
+        }
     }
 
     public boolean[] getPattern() {

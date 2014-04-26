@@ -78,15 +78,9 @@ public class Aggregator {
                 }
             }
         }
+
     };
 
-    /**
-     * @param inputStream
-     * @param outputStream
-     * @param delimiter
-     * @param startSortAtColumn
-     *            : First column is zero
-     */
     public Aggregator(
             File inputFile,
             File outputFile,
@@ -98,30 +92,22 @@ public class Aggregator {
         this.delimiter = delimiter;
         this.startSortAtColumn = startSortAtColumn;
         this.additionalCounts = additionalCounts;
-
     }
 
-    public void aggregateCounts() {
-        try {
-            BufferedReader inputFileReader =
-                    new BufferedReader(new FileReader(inputFile));
+    public void aggregateCounts() throws IOException {
+        SortedMap<String, Long[]> wordMapAdditionalCounts =
+                new TreeMap<String, Long[]>(stringComparator);
+        SortedMap<String, Long> wordMapNoAdditionalCounts =
+                new TreeMap<String, Long>(stringComparator);
 
-            SortedMap<String, Long[]> wordMapAdditionalCounts =
-                    new TreeMap<String, Long[]>(stringComparator);
-            SortedMap<String, Long> wordMapNoAdditionalCounts =
-                    new TreeMap<String, Long>(stringComparator);
+        try (BufferedReader inputFileReader =
+                new BufferedReader(new FileReader(inputFile))) {
             String inputLine;
-
             while ((inputLine = inputFileReader.readLine()) != null) {
                 String[] inputLineSplit = inputLine.split(delimiter);
                 String words = inputLineSplit[0];
                 long count = Long.parseLong(inputLineSplit[1]);
                 if (words.length() == 0) {
-                    // TODO: understand the following comment
-                    // logger.error("empty row in " + this.inputFile + ": \""
-                    // + inputLine + "\"");
-                    // logger.error("exiting JVM");
-                    // System.exit(1);
                     continue;
                 }
 
@@ -133,10 +119,10 @@ public class Aggregator {
                             count);
                 }
             }
+        }
 
-            inputFileReader.close();
-            BufferedWriter outputFileWriter =
-                    new BufferedWriter(new FileWriter(outputFile));
+        try (BufferedWriter outputFileWriter =
+                new BufferedWriter(new FileWriter(outputFile))) {
             if (additionalCounts) {
                 for (Entry<String, Long[]> entry : wordMapAdditionalCounts
                         .entrySet()) {
@@ -159,10 +145,6 @@ public class Aggregator {
                             + "\n");
                 }
             }
-            outputFileWriter.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
@@ -170,9 +152,9 @@ public class Aggregator {
             SortedMap<String, Long> wordMapNoAdditionalCounts,
             String words,
             long count) {
-        if (wordMapNoAdditionalCounts.containsKey(words)) {
-            wordMapNoAdditionalCounts.put(words,
-                    wordMapNoAdditionalCounts.get(words) + count);
+        Long curCount = wordMapNoAdditionalCounts.get(words);
+        if (curCount != null) {
+            wordMapNoAdditionalCounts.put(words, curCount + count);
         } else {
             wordMapNoAdditionalCounts.put(words, count);
         }
@@ -182,8 +164,8 @@ public class Aggregator {
             SortedMap<String, Long[]> wordMap,
             String words,
             long count) {
-        if (wordMap.containsKey(words)) {
-            Long[] countTypeArray = wordMap.get(words);
+        Long[] countTypeArray = wordMap.get(words);
+        if (countTypeArray != null) {
             countTypeArray[0] = countTypeArray[0] + count;
             if (count == 1) {
                 countTypeArray[1] = countTypeArray[1] + count;
@@ -195,7 +177,7 @@ public class Aggregator {
                 countTypeArray[3] = countTypeArray[3] + count;
             }
         } else {
-            Long[] countTypeArray = new Long[4];
+            countTypeArray = new Long[4];
             countTypeArray[0] = count;
             if (count == 1) {
                 countTypeArray[1] = count;
@@ -216,27 +198,22 @@ public class Aggregator {
         }
     }
 
-    public void aggregateWithoutCounts() {
-        try {
-            BufferedReader inputFileReader =
-                    new BufferedReader(new FileReader(inputFile));
+    public void aggregateWithoutCounts() throws IOException {
+        SortedSet<String> wordSet = new TreeSet<String>(stringComparator);
 
-            SortedSet<String> wordSet = new TreeSet<String>(stringComparator);
+        try (BufferedReader inputFileReader =
+                new BufferedReader(new FileReader(inputFile))) {
             String inputLine;
-
             while ((inputLine = inputFileReader.readLine()) != null) {
                 wordSet.add(inputLine);
             }
-            inputFileReader.close();
-            BufferedWriter outputFileWriter =
-                    new BufferedWriter(new FileWriter(outputFile));
+        }
+
+        try (BufferedWriter outputFileWriter =
+                new BufferedWriter(new FileWriter(outputFile))) {
             for (String line : wordSet) {
                 outputFileWriter.write(line + "\n");
             }
-            outputFileWriter.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 }
