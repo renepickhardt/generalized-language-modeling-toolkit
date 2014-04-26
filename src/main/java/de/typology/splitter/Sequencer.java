@@ -8,9 +8,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.typology.indexes.WordIndex;
 
 /**
@@ -22,25 +19,23 @@ import de.typology.indexes.WordIndex;
  */
 public class Sequencer {
 
-    protected InputStream inputStream;
+    private InputStream inputStream;
 
-    protected File outputDirectory;
+    private File outputDirectory;
 
-    protected WordIndex wordIndex;
+    private WordIndex wordIndex;
 
-    protected boolean[] pattern;
+    private boolean[] pattern;
 
-    protected String addBeforeSentence;
+    private String addBeforeSentence;
 
-    protected String addAfterSentence;
+    private String addAfterSentence;
 
-    protected String delimiter;
+    private String delimiter;
 
-    protected boolean completeLine;
+    private boolean completeLine;
 
     private int startSortAtColumn;
-
-    Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public Sequencer(
             InputStream inputStream,

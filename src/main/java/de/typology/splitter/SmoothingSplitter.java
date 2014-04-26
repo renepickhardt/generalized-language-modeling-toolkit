@@ -31,9 +31,9 @@ public class SmoothingSplitter {
 
     private String delimiter;
 
-    protected boolean deleteTempFiles;
+    private boolean deleteTempFiles;
 
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     private ExecutorService executorService;
 

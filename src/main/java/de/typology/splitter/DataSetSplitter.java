@@ -28,10 +28,6 @@ import de.typology.utils.Config;
  */
 public class DataSetSplitter {
 
-    /**
-     * @param args
-     * @throws IOException
-     */
     public static void main(String[] args) throws IOException {
         String outputDirectory =
                 Config.get().outputDirectory + Config.get().inputDataSet;
@@ -48,7 +44,7 @@ public class DataSetSplitter {
 
     private String inputName;
 
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public DataSetSplitter(
             File directory,

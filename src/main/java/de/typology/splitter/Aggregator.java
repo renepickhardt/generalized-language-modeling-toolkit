@@ -13,9 +13,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * A class for aggregating sequences by counting their occurrences. Expects an
  * inputStream with a size that is 30% of the allocated main memory.
@@ -25,17 +22,15 @@ import org.apache.logging.log4j.Logger;
  */
 public class Aggregator {
 
-    File inputFile;
+    private File inputFile;
 
-    File outputFile;
+    private File outputFile;
 
-    String delimiter;
+    private String delimiter;
 
-    int startSortAtColumn;
+    private int startSortAtColumn;
 
-    boolean additionalCounts;
-
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    private boolean additionalCounts;
 
     // this comparator is based on the value of startSortAtColumn
     private Comparator<String> stringComparator = new Comparator<String>() {

@@ -44,7 +44,7 @@ public class SplitterTask implements Runnable {
 
     private boolean additionalCounts;
 
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public SplitterTask(
             InputStream inputStream,

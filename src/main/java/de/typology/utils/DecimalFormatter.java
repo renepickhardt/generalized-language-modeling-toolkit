@@ -5,7 +5,7 @@ import java.text.DecimalFormatSymbols;
 
 public class DecimalFormatter {
 
-    DecimalFormat decimalFormat;
+    private DecimalFormat decimalFormat;
 
     public DecimalFormatter(
             int decimalPlaces) {

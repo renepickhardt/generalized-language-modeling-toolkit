@@ -24,17 +24,19 @@ import de.typology.utils.SequenceFormatter;
 
 public class KneserNeySmoother {
 
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    protected Logger logger = LogManager.getLogger(this.getClass().getName());
 
     // location of trained language models
     protected File absoluteDirectory;
 
-    protected File continuationDirectory;
+    private File continuationDirectory;
 
     // location of extracted language models which are needed for smoothing lm
     // for test data
+    // TODO: make non-public
     public File extractedAbsoluteDirectory;
 
+    // TODO: make non-public
     public File extractedContinuationDirectory;
 
     private String delimiter;
@@ -42,8 +44,10 @@ public class KneserNeySmoother {
     private DecimalFormatter decimalFormatter;
 
     // in memory index of extracted counts for training data
+    // TODO: make non-public
     public HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap;
 
+    // TODO: make non-public
     public HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap;
 
     protected HashMap<String, HashMap<String, Double>> discountTypeValuesMap;

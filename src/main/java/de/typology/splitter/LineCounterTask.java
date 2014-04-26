@@ -26,7 +26,7 @@ public class LineCounterTask implements Runnable {
 
     protected boolean additionalCounts;
 
-    Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public LineCounterTask(
             InputStream inputStream,
