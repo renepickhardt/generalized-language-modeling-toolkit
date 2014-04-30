@@ -91,44 +91,4 @@ public class PatternBuilder {
         return patterns;
     }
 
-    /**
-     * Create pattern like these (n = maxModelLength):
-     * 
-     * <pre>
-     * {
-     *   { true }                           // length: 1
-     *   { true, true }                     // length: 2
-     *   { true, false, true }              // length: 3
-     *   { true, false, false, true }       // length: 4
-     *   ...
-     *   { true, false, ... , false, true } // length: n
-     * }
-     * </pre>
-     */
-    public static List<boolean[]> getTypologyPatterns(int maxModelLength) {
-        List<boolean[]> patterns = new ArrayList<boolean[]>(maxModelLength);
-        for (int i = 0; i != maxModelLength; ++i) {
-            boolean[] pattern = new boolean[i + 1];
-            pattern[0] = true;
-            if (i != 0) {
-                for (int j = 1; j != i; ++j) {
-                    pattern[j] = false;
-                }
-            }
-            pattern[i] = true;
-            patterns.add(pattern);
-        }
-        return patterns;
-    }
-
-    /**
-     * As {@link #getTypologyPatterns(int)} but reversed.
-     */
-    public static List<boolean[]>
-        getReverseTypologyPatterns(int maxModelLength) {
-        List<boolean[]> patterns = getTypologyPatterns(maxModelLength);
-        Collections.reverse(patterns);
-        return patterns;
-    }
-
 }
