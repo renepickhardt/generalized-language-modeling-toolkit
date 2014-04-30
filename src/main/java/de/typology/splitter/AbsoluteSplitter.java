@@ -44,28 +44,28 @@ public class AbsoluteSplitter {
     public AbsoluteSplitter(
             File trainingFile,
             File indexFile,
-            File outputDirectory,
+            File absoluteDirectory,
             String delimiter,
             boolean deleteTempFiles,
             String addBeforeSentence,
             String addAfterSentence) {
         this.trainingFile = trainingFile;
         this.indexFile = indexFile;
-        this.outputDirectory = outputDirectory;
+        this.outputDirectory = absoluteDirectory;
         this.delimiter = delimiter;
         this.deleteTempFiles = deleteTempFiles;
         this.addBeforeSentence = addBeforeSentence;
         this.addAfterSentence = addAfterSentence;
         // delete old directory
-        if (outputDirectory.exists()) {
+        if (absoluteDirectory.exists()) {
             try {
-                FileUtils.deleteDirectory(outputDirectory);
+                FileUtils.deleteDirectory(absoluteDirectory);
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
-        outputDirectory.mkdir();
+        absoluteDirectory.mkdir();
     }
 
     public void split(ArrayList<boolean[]> patterns, int cores)
