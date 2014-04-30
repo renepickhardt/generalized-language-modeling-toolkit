@@ -35,9 +35,9 @@ public class AbsoluteSplitter {
 
     private boolean deleteTempFiles;
 
-    private String addBeforeSentence;
+    private String beforeLine;
 
-    private String addAfterSentence;
+    private String afterLine;
 
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
@@ -47,15 +47,15 @@ public class AbsoluteSplitter {
             File absoluteDirectory,
             String delimiter,
             boolean deleteTempFiles,
-            String addBeforeSentence,
-            String addAfterSentence) {
+            String beforeLine,
+            String afterLine) {
         this.trainingFile = trainingFile;
         this.indexFile = indexFile;
         outputDirectory = absoluteDirectory;
         this.delimiter = delimiter;
         this.deleteTempFiles = deleteTempFiles;
-        this.addBeforeSentence = addBeforeSentence;
-        this.addAfterSentence = addAfterSentence;
+        this.beforeLine = beforeLine;
+        this.afterLine = afterLine;
         // delete old directory
         if (absoluteDirectory.exists()) {
             try {
@@ -88,8 +88,8 @@ public class AbsoluteSplitter {
                         new SplitterTask(trainingFileInputStream,
                                 outputDirectory, wordIndex, pattern,
                                 PatternTransformer.getStringPattern(pattern),
-                                delimiter, deleteTempFiles, addBeforeSentence,
-                                addAfterSentence, false);
+                                delimiter, deleteTempFiles, beforeLine,
+                                afterLine, false);
                 executorService.execute(splitterTask);
             } catch (FileNotFoundException e) {
                 logger.error("trainingFile not found: "

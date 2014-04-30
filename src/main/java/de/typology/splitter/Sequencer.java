@@ -27,9 +27,9 @@ public class Sequencer {
 
     private boolean[] pattern;
 
-    private String addBeforeSentence;
+    private String beforeLine;
 
-    private String addAfterSentence;
+    private String afterLine;
 
     private String delimiter;
 
@@ -40,16 +40,16 @@ public class Sequencer {
             File outputDirectory,
             WordIndex wordIndex,
             boolean[] pattern,
-            String addBeforeSentence,
-            String addAfterSentence,
+            String beforeLine,
+            String afterLine,
             String delimiter,
             boolean completeLine) {
         this.inputStream = inputStream;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
-        this.addBeforeSentence = addBeforeSentence;
-        this.addAfterSentence = addAfterSentence;
+        this.beforeLine = beforeLine;
+        this.afterLine = afterLine;
         this.delimiter = delimiter;
         this.completeLine = completeLine;
     }
@@ -64,7 +64,7 @@ public class Sequencer {
 
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-                line = addBeforeSentence + line + addAfterSentence;
+                line = beforeLine + line + afterLine;
                 String[] words = line.split("\\s");
                 if (completeLine) {
                     writers.get(wordIndex.rank(words[0])).write(line + "\n");

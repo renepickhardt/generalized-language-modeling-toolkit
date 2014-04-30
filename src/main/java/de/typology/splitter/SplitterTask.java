@@ -32,9 +32,9 @@ public class SplitterTask implements Runnable {
 
     private boolean deleteTempFiles;
 
-    private String addBeforeSentence;
+    private String beforeLine;
 
-    private String addAfterSentence;
+    private String afterLine;
 
     private boolean isSmoothing;
 
@@ -48,8 +48,8 @@ public class SplitterTask implements Runnable {
             String patternLabel,
             String delimiter,
             boolean deleteTempFiles,
-            String addBeforeSentence,
-            String addAfterSentence,
+            String beforeLine,
+            String afterLine,
             boolean isSmoothing) {
         this.inputStream = inputStream;
         this.outputDirectory = outputDirectory;
@@ -58,8 +58,8 @@ public class SplitterTask implements Runnable {
         this.patternLabel = patternLabel;
         this.delimiter = delimiter;
         this.deleteTempFiles = deleteTempFiles;
-        this.addBeforeSentence = addBeforeSentence;
-        this.addAfterSentence = addAfterSentence;
+        this.beforeLine = beforeLine;
+        this.afterLine = afterLine;
         this.isSmoothing = isSmoothing;
     }
 
@@ -82,8 +82,8 @@ public class SplitterTask implements Runnable {
             // initialize sequencer
             Sequencer sequencer =
                     new Sequencer(inputStream, sequencerOutputDirectory,
-                            wordIndex, pattern, addBeforeSentence,
-                            addAfterSentence, delimiter, sequenceModifyCounts);
+                            wordIndex, pattern, beforeLine,
+                            afterLine, delimiter, sequenceModifyCounts);
             sequencer.splitIntoFiles();
 
             File aggregatedOutputDirectory =

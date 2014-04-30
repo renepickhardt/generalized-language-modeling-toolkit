@@ -23,8 +23,8 @@ public class WordIndexer {
 
     private TreeMap<String, Long> buildMap(
             File trainingFile,
-            String addBeforeSentence,
-            String addAfterSentence) throws IOException {
+            String beforeLine,
+            String afterLine) throws IOException {
         try (BufferedReader reader =
                 new BufferedReader(new FileReader(trainingFile))) {
             // a comparator for wordMap
@@ -42,7 +42,7 @@ public class WordIndexer {
             String line;
             // long lineCount=0L;
             while ((line = reader.readLine()) != null) {
-                line = addBeforeSentence + line + addAfterSentence;
+                line = beforeLine + line + afterLine;
                 String[] words = line.split("\\s+");
                 for (String word : words) {
                     Long curCount = wordMap.get(word);
@@ -65,12 +65,12 @@ public class WordIndexer {
             File trainingFile,
             File indexOutputFile,
             int maxCountDivider,
-            String addBeforeSentence,
-            String addAfterSentence) throws IOException {
+            String beforeLine,
+            String afterLine) throws IOException {
 
         // build WordMap
         TreeMap<String, Long> wordMap =
-                buildMap(trainingFile, addBeforeSentence, addAfterSentence);
+                buildMap(trainingFile, beforeLine, afterLine);
 
         // summarize all word counts
         Long totalCount = 0L;
