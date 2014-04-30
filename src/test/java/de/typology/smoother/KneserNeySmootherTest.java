@@ -33,16 +33,16 @@ public class KneserNeySmootherTest {
 
     @Before
     public void setUp() throws Exception {
-        String inputDirectoryPath = "testDataset/";
-        File inputFile = new File(inputDirectoryPath + "training.txt");
-        File indexFile = new File(inputDirectoryPath + "index.txt");
+        String workingDirectoryPath = "testDataset/";
+        File trainingFile = new File(workingDirectoryPath + "training.txt");
+        File indexFile = new File(workingDirectoryPath + "index.txt");
         WordIndexer wier = new WordIndexer();
-        wier.buildIndex(inputFile, indexFile, 10, "<fs> <s> ", " </s>");
-        absoluteDirectory = new File(inputDirectoryPath + "absolute");
-        continuationDirectory = new File(inputDirectoryPath + "continuation");
+        wier.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
+        absoluteDirectory = new File(workingDirectoryPath + "absolute");
+        continuationDirectory = new File(workingDirectoryPath + "continuation");
 
         AbsoluteSplitter as =
-                new AbsoluteSplitter(inputFile, indexFile, absoluteDirectory,
+                new AbsoluteSplitter(trainingFile, indexFile, absoluteDirectory,
                         "\t", true, "<fs> <s> ", " </s>");
         as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
 
@@ -54,15 +54,15 @@ public class KneserNeySmootherTest {
         smoothingSplitter.split(lmPatterns, 2);
 
         testSequenceFile =
-                new File(inputDirectoryPath + "test-sequences-5.txt");
-        extractedSequenceDirectory = new File(inputDirectoryPath);
-        absoluteDirectory = new File(inputDirectoryPath + "absolute");
+                new File(workingDirectoryPath + "test-sequences-5.txt");
+        extractedSequenceDirectory = new File(workingDirectoryPath);
+        absoluteDirectory = new File(workingDirectoryPath + "absolute");
         // TestSequenceExtractor tse = new TestSequenceExtractor(
         // this.testSequenceFile, this.absoluteDirectory,
         // this.continuationDirectory, this.extractedSequenceDirectory,
         // "\t", wi);
         // tse.extractContinuationSequences(5, 2);
-        kneserNeyFile = new File(inputDirectoryPath + "kn-sequences-5.txt");
+        kneserNeyFile = new File(workingDirectoryPath + "kn-sequences-5.txt");
     }
 
     // @Test

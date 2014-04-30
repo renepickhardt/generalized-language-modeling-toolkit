@@ -81,7 +81,7 @@ public class TestSequenceExtractor {
             // extract absolute sequences
             String absoluteStringPattern =
                     PatternTransformer.getStringPattern(absolutePattern);
-            File absoluteInputDirectory =
+            File absoluteworkingDirectory =
                     new File(absoluteDirectory.getAbsolutePath() + "/"
                             + absoluteStringPattern);
             File absoluteOutputDirectory =
@@ -90,7 +90,7 @@ public class TestSequenceExtractor {
                             + absoluteStringPattern);
             SequenceExtractorTask absoluteSET =
                     new SequenceExtractorTask(sequences, absolutePattern,
-                            absoluteInputDirectory, absoluteOutputDirectory,
+                            absoluteworkingDirectory, absoluteOutputDirectory,
                             delimiter);
             executorService.execute(absoluteSET);
 

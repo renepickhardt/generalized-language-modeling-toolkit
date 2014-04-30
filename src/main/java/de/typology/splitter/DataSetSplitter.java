@@ -66,7 +66,7 @@ public class DataSetSplitter {
      * test data is also devided again into learning and testing data
      * 
      * 
-     * @param inputFile
+     * @param trainingFile
      *            potentially large text file that needs to be split
      * @param trainingFileName
      *            filename where training data are to be stored
@@ -132,10 +132,10 @@ public class DataSetSplitter {
      * splits testing.txt into testing-samples-1.txt - test-samples-n.txt.
      */
     public void splitIntoSequences(
-            File inputFile,
+            File trainingFile,
             int maxSequenceLength,
             int numberOfSequences) throws IOException {
-        String[] fileNameSplit = inputFile.getName().split("\\.");
+        String[] fileNameSplit = trainingFile.getName().split("\\.");
 
         HashMap<Integer, BufferedWriter> testSequenceFileWriters =
                 new HashMap<Integer, BufferedWriter>();
@@ -149,7 +149,7 @@ public class DataSetSplitter {
         // get total count from stats file
         long sequenceCount = 0;
         try (BufferedReader reader =
-                new BufferedReader(new FileReader(inputFile))) {
+                new BufferedReader(new FileReader(trainingFile))) {
             String line;
             // count sequences
             while ((line = reader.readLine()) != null) {
@@ -171,9 +171,9 @@ public class DataSetSplitter {
         long skipDistance = sequenceCount / numberOfSequences;
         logger.info("skipDistance: " + skipDistance);
 
-        logger.info("splitting " + inputFile.getName() + " into sequences");
+        logger.info("splitting " + trainingFile.getName() + " into sequences");
         try (BufferedReader reader =
-                new BufferedReader(new FileReader(inputFile))) {
+                new BufferedReader(new FileReader(trainingFile))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] words = line.split("\\s");

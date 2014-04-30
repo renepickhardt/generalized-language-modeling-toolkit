@@ -22,7 +22,7 @@ import java.util.TreeSet;
  */
 public class Aggregator {
 
-    private File inputFile;
+    private File trainingFile;
 
     private File outputFile;
 
@@ -82,12 +82,12 @@ public class Aggregator {
     };
 
     public Aggregator(
-            File inputFile,
+            File trainingFile,
             File outputFile,
             String delimiter,
             int startSortAtColumn,
             boolean additionalCounts) {
-        this.inputFile = inputFile;
+        this.trainingFile = trainingFile;
         this.outputFile = outputFile;
         this.delimiter = delimiter;
         this.startSortAtColumn = startSortAtColumn;
@@ -100,10 +100,10 @@ public class Aggregator {
         SortedMap<String, Long> wordMapNoAdditionalCounts =
                 new TreeMap<String, Long>(stringComparator);
 
-        try (BufferedReader inputFileReader =
-                new BufferedReader(new FileReader(inputFile))) {
+        try (BufferedReader trainingFileReader =
+                new BufferedReader(new FileReader(trainingFile))) {
             String inputLine;
-            while ((inputLine = inputFileReader.readLine()) != null) {
+            while ((inputLine = trainingFileReader.readLine()) != null) {
                 String[] inputLineSplit = inputLine.split(delimiter);
                 String words = inputLineSplit[0];
                 long count = Long.parseLong(inputLineSplit[1]);
@@ -201,10 +201,10 @@ public class Aggregator {
     public void aggregateWithoutCounts() throws IOException {
         SortedSet<String> wordSet = new TreeSet<String>(stringComparator);
 
-        try (BufferedReader inputFileReader =
-                new BufferedReader(new FileReader(inputFile))) {
+        try (BufferedReader trainingFileReader =
+                new BufferedReader(new FileReader(trainingFile))) {
             String inputLine;
-            while ((inputLine = inputFileReader.readLine()) != null) {
+            while ((inputLine = trainingFileReader.readLine()) != null) {
                 wordSet.add(inputLine);
             }
         }

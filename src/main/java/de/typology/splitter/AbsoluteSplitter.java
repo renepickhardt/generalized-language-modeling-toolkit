@@ -25,7 +25,7 @@ import de.typology.patterns.PatternTransformer;
  */
 public class AbsoluteSplitter {
 
-    private File inputFile;
+    private File trainingFile;
 
     private File indexFile;
 
@@ -42,14 +42,14 @@ public class AbsoluteSplitter {
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public AbsoluteSplitter(
-            File inputFile,
+            File trainingFile,
             File indexFile,
             File outputDirectory,
             String delimiter,
             boolean deleteTempFiles,
             String addBeforeSentence,
             String addAfterSentence) {
-        this.inputFile = inputFile;
+        this.trainingFile = trainingFile;
         this.indexFile = indexFile;
         this.outputDirectory = outputDirectory;
         this.delimiter = delimiter;
@@ -82,10 +82,10 @@ public class AbsoluteSplitter {
                     + " sequences");
 
             try {
-                InputStream inputFileInputStream =
-                        new FileInputStream(inputFile);
+                InputStream trainingFileInputStream =
+                        new FileInputStream(trainingFile);
                 SplitterTask splitterTask =
-                        new SplitterTask(inputFileInputStream, outputDirectory,
+                        new SplitterTask(trainingFileInputStream, outputDirectory,
                                 wordIndex, pattern,
                                 PatternTransformer.getStringPattern(pattern),
                                 delimiter, 0, deleteTempFiles,
@@ -93,8 +93,8 @@ public class AbsoluteSplitter {
                                 false, false);
                 executorService.execute(splitterTask);
             } catch (FileNotFoundException e) {
-                logger.error("inputFile not found: "
-                        + inputFile.getAbsolutePath());
+                logger.error("trainingFile not found: "
+                        + trainingFile.getAbsolutePath());
                 throw e;
             }
         }

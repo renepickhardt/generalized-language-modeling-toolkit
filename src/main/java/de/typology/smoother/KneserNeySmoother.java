@@ -156,10 +156,10 @@ public class KneserNeySmoother {
     }
 
     public HashMap<String, HashMap<String, Long>>
-        readAbsoluteValuesIntoHashMap(File inputDirectory) {
+        readAbsoluteValuesIntoHashMap(File workingDirectory) {
         HashMap<String, HashMap<String, Long>> typeSequenceValueMap =
                 new HashMap<String, HashMap<String, Long>>();
-        for (File typeDirectory : inputDirectory.listFiles()) {
+        for (File typeDirectory : workingDirectory.listFiles()) {
             HashMap<String, Long> sequenceValuesMap =
                     new HashMap<String, Long>();
             for (File sequenceValueFile : typeDirectory.listFiles()) {
@@ -202,11 +202,11 @@ public class KneserNeySmoother {
     }
 
     public HashMap<String, HashMap<String, Long[]>>
-        readContinuationValuesIntoHashMap(File inputDirectory) {
+        readContinuationValuesIntoHashMap(File workingDirectory) {
         HashMap<String, HashMap<String, Long[]>> typeSequenceValueMap =
                 new HashMap<String, HashMap<String, Long[]>>();
 
-        for (File typeDirectory : inputDirectory.listFiles()) {
+        for (File typeDirectory : workingDirectory.listFiles()) {
             HashMap<String, Long[]> sequenceValuesMap =
                     new HashMap<String, Long[]>();
             for (File sequenceValueFile : typeDirectory.listFiles()) {
@@ -629,15 +629,15 @@ public class KneserNeySmoother {
      * model with
      * 
      * @param discountTypeValuesMap
-     * @param inputDirectory
+     * @param workingDirectory
      * @return
      */
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
             HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
-            File inputDirectory) {
+            File workingDirectory) {
         // an absoluteTypeDirectory could be a file handle e.g. to
         // /inputpath/dataset/lang/absolut/11001
-        for (File absoluteTypeDirectory : inputDirectory.listFiles()) {
+        for (File absoluteTypeDirectory : workingDirectory.listFiles()) {
             if (absoluteTypeDirectory.getName().contains("split")) {
                 continue;
             }

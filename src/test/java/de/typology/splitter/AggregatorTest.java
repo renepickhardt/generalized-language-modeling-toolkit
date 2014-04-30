@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class AggregatorTest {
 
-    File inputFile = new File("testDataset/aggregator-in.txt");
+    File trainingFile = new File("testDataset/aggregator-in.txt");
 
     File outputFile = new File("testDataset/aggregator-out.txt");
 
@@ -27,7 +27,7 @@ public class AggregatorTest {
 
     @Before
     public void setUp() throws Exception {
-        BufferedWriter br = new BufferedWriter(new FileWriter(inputFile));
+        BufferedWriter br = new BufferedWriter(new FileWriter(trainingFile));
         br.write("b y b\t1\n");
         br.write("c x a\t1\n");
         br.write("b y a\t1\n");
@@ -39,13 +39,13 @@ public class AggregatorTest {
 
     @After
     public void tearDown() throws Exception {
-        inputFile.delete();
+        trainingFile.delete();
     }
 
     @Test
     public void aggregatorCol0Test() throws IOException {
         Aggregator aggregator =
-                new Aggregator(inputFile, outputFile, "\t", 0, false);
+                new Aggregator(trainingFile, outputFile, "\t", 0, false);
         aggregator.aggregateCounts();
         try {
             BufferedReader br = new BufferedReader(new FileReader(outputFile));
@@ -67,7 +67,7 @@ public class AggregatorTest {
     @Test
     public void aggregatorCol1Test() throws IOException {
         Aggregator aggregator =
-                new Aggregator(inputFile, outputFile, "\t", 1, false);
+                new Aggregator(trainingFile, outputFile, "\t", 1, false);
         aggregator.aggregateCounts();
         try {
             BufferedReader br = new BufferedReader(new FileReader(outputFile));
@@ -88,7 +88,7 @@ public class AggregatorTest {
     @Test
     public void aggregatorCol2Test() throws IOException {
         Aggregator aggregator =
-                new Aggregator(inputFile, outputFile, "\t", 2, false);
+                new Aggregator(trainingFile, outputFile, "\t", 2, false);
         aggregator.aggregateCounts();
         try {
             BufferedReader br = new BufferedReader(new FileReader(outputFile));

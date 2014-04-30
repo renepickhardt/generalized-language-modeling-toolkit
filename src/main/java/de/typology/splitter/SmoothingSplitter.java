@@ -108,7 +108,7 @@ public class SmoothingSplitter {
                                 PatternTransformer.getStringPattern(
                                         entry.getKey()).replaceAll("0", "_");
 
-                        File currentAbsoluteInputDirectory =
+                        File currentAbsoluteworkingDirectory =
                                 new File(absoluteDirectory.getAbsolutePath()
                                         + "/" + inputPatternLabel);
 
@@ -124,7 +124,7 @@ public class SmoothingSplitter {
                                 + PatternTransformer.getStringPattern(entry
                                         .getKey()));
 
-                        splitType(currentAbsoluteInputDirectory,
+                        splitType(currentAbsoluteworkingDirectory,
                                 continuationDirectory, outputPattern,
                                 outputPatternLabel, entry.getKey(), wordIndex,
                                 true, true);
@@ -154,7 +154,7 @@ public class SmoothingSplitter {
                                             entry.getKey())
                                             .replaceAll("0", "_");
 
-                            File currentContinuationInputDirectory =
+                            File currentContinuationworkingDirectory =
                                     new File(
                                             continuationDirectory
                                                     .getAbsolutePath()
@@ -199,7 +199,7 @@ public class SmoothingSplitter {
                                     + PatternTransformer
                                             .getStringPattern(patternForModifier));
 
-                            splitType(currentContinuationInputDirectory,
+                            splitType(currentContinuationworkingDirectory,
                                     continuationDirectory, outputPattern,
                                     outputPatternLabel, patternForModifier,
                                     wordIndex, false, true);
@@ -226,7 +226,7 @@ public class SmoothingSplitter {
     }
 
     private void splitType(
-            File currentInputDirectory,
+            File currentworkingDirectory,
             File outputDirectory,
             boolean[] newPattern,
             String newPatternLabel,
@@ -257,7 +257,7 @@ public class SmoothingSplitter {
             OutputStream pipedOutputStream =
                     new PipedOutputStream(pipedInputStream);
             SequenceModifier sequenceModifier =
-                    new SequenceModifier(currentInputDirectory,
+                    new SequenceModifier(currentworkingDirectory,
                             pipedOutputStream, delimiter, patternForModifier,
                             true, setCountToOne);
             executorService.execute(sequenceModifier);

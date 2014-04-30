@@ -22,11 +22,11 @@ import java.util.TreeMap;
 public class WordIndexer {
 
     private TreeMap<String, Long> buildMap(
-            File InputFile,
+            File trainingFile,
             String addBeforeSentence,
             String addAfterSentence) throws IOException {
         try (BufferedReader reader =
-                new BufferedReader(new FileReader(InputFile))) {
+                new BufferedReader(new FileReader(trainingFile))) {
             // a comparator for wordMap
             Comparator<String> StringComparator = new Comparator<String>() {
 
@@ -62,7 +62,7 @@ public class WordIndexer {
      * @return maxCountPerFile
      */
     public long buildIndex(
-            File inputFile,
+            File trainingFile,
             File indexOutputFile,
             int maxCountDivider,
             String addBeforeSentence,
@@ -70,7 +70,7 @@ public class WordIndexer {
 
         // build WordMap
         TreeMap<String, Long> wordMap =
-                buildMap(inputFile, addBeforeSentence, addAfterSentence);
+                buildMap(trainingFile, addBeforeSentence, addAfterSentence);
 
         // summarize all word counts
         Long totalCount = 0L;

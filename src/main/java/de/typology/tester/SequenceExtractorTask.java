@@ -25,7 +25,7 @@ public class SequenceExtractorTask implements Runnable {
 
     private boolean[] pattern;
 
-    private File inputDirectory;
+    private File workingDirectory;
 
     private File outputDirectory;
 
@@ -34,13 +34,13 @@ public class SequenceExtractorTask implements Runnable {
     public SequenceExtractorTask(
             ArrayList<String> originalSequences,
             boolean[] pattern,
-            File inputDirectory,
+            File workingDirectory,
             File outputDirectory,
             String delimiter) {
         this.originalSequences = originalSequences;
         this.pattern = pattern;
 
-        this.inputDirectory = inputDirectory;
+        this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
         if (this.outputDirectory.exists()) {
             try {
@@ -59,32 +59,32 @@ public class SequenceExtractorTask implements Runnable {
     public void run() {
         HashSet<String> newSequences = getNewSequences();
 
-        for (File inputFile : inputDirectory.listFiles()) {
+        for (File trainingFile : workingDirectory.listFiles()) {
             File outputFile =
                     new File(outputDirectory.getAbsolutePath() + "/"
-                            + inputFile.getName());
-            if (inputFile.getName().equals("all")) {
+                            + trainingFile.getName());
+            if (trainingFile.getName().equals("all")) {
                 try {
-                    FileUtils.copyFile(inputFile, outputFile);
+                    FileUtils.copyFile(trainingFile, outputFile);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             } else {
                 try {
-                    BufferedReader inputFileReader =
-                            new BufferedReader(new FileReader(inputFile));
+                    BufferedReader trainingFileReader =
+                            new BufferedReader(new FileReader(trainingFile));
                     BufferedWriter outputFileWriter =
                             new BufferedWriter(new FileWriter(outputFile));
                     String line;
 
-                    while ((line = inputFileReader.readLine()) != null) {
+                    while ((line = trainingFileReader.readLine()) != null) {
                         if (newSequences.contains(line.split(delimiter)[0])) {
 
                             outputFileWriter.write(line + "\n");
                         }
                     }
-                    inputFileReader.close();
+                    trainingFileReader.close();
                     outputFileWriter.close();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block

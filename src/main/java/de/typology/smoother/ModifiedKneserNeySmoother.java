@@ -37,8 +37,8 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
     @Override
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
             HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
-            File inputDirectory) {
-        for (File absoluteTypeDirectory : inputDirectory.listFiles()) {
+            File workingDirectory) {
+        for (File absoluteTypeDirectory : workingDirectory.listFiles()) {
             if (absoluteTypeDirectory.getName().contains("split")) {
                 continue;
             }

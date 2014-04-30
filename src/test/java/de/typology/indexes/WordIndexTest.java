@@ -14,7 +14,7 @@ import org.junit.Test;
 
 public class WordIndexTest {
 
-    File inputFile = new File("testDataset/training.txt");
+    File trainingFile = new File("testDataset/training.txt");
 
     File indexFile = new File("testDataset/index.txt");
 
@@ -32,7 +32,7 @@ public class WordIndexTest {
             indexFile.delete();
         }
         WordIndexer wi = new WordIndexer();
-        wi.buildIndex(inputFile, indexFile, 10, "<fs> <s> ", " </s>");
+        wi.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
     }
 
     @After

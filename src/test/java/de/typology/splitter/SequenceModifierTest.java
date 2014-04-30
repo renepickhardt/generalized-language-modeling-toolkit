@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class SequenceModifierTest {
 
-    File inputDirectory = new File("testDataset/sequenceModifier");
+    File workingDirectory = new File("testDataset/sequenceModifier");
 
     OutputStream outputStream;
 
@@ -30,20 +30,20 @@ public class SequenceModifierTest {
 
     @Before
     public void setUp() throws Exception {
-        if (inputDirectory.exists()) {
-            FileUtils.deleteDirectory(inputDirectory);
+        if (workingDirectory.exists()) {
+            FileUtils.deleteDirectory(workingDirectory);
         }
-        inputDirectory.mkdir();
+        workingDirectory.mkdir();
         BufferedWriter br1 =
                 new BufferedWriter(new FileWriter(
-                        inputDirectory.getAbsolutePath() + "/1"));
+                        workingDirectory.getAbsolutePath() + "/1"));
         br1.write("a b c\t13\n");
         br1.write("d e f\t14\n");
         br1.write("g h i\t15\n");
         br1.close();
         BufferedWriter br2 =
                 new BufferedWriter(new FileWriter(
-                        inputDirectory.getAbsolutePath() + "/2"));
+                        workingDirectory.getAbsolutePath() + "/2"));
         br2.write("j k l\t16\n");
         br2.write("m n o\t17\n");
         br2.write("ä ö ü\t18\n");
@@ -55,8 +55,8 @@ public class SequenceModifierTest {
 
     @After
     public void tearDown() throws Exception {
-        if (inputDirectory.exists()) {
-            FileUtils.deleteDirectory(inputDirectory);
+        if (workingDirectory.exists()) {
+            FileUtils.deleteDirectory(workingDirectory);
         }
     }
 
@@ -67,7 +67,7 @@ public class SequenceModifierTest {
         };
 
         SequenceModifier sequenceModifier =
-                new SequenceModifier(inputDirectory, pipedOutputStream, "\t",
+                new SequenceModifier(workingDirectory, pipedOutputStream, "\t",
                         pattern, true, true);
         sequenceModifier.run();
         BufferedReader bufferedReader =

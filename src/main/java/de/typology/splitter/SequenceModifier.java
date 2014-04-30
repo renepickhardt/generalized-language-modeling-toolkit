@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 /**
- * A class for modifying the sequences in InputDirectory based on the given
+ * A class for modifying the sequences in workingDirectory based on the given
  * Pattern. The modified sequences are returned as outputStream
  * 
  * @author Martin Koerner
@@ -17,7 +17,7 @@ import java.io.OutputStreamWriter;
  */
 public class SequenceModifier implements Runnable {
 
-    private File inputDirectory;
+    private File workingDirectory;
 
     private OutputStream outputStream;
 
@@ -30,13 +30,13 @@ public class SequenceModifier implements Runnable {
     private boolean setCountToOne;
 
     public SequenceModifier(
-            File inputDirectory,
+            File workingDirectory,
             OutputStream outputStream,
             String delimiter,
             boolean[] pattern,
             boolean modifyCount,
             boolean setCountToOne) {
-        this.inputDirectory = inputDirectory;
+        this.workingDirectory = workingDirectory;
         this.outputStream = outputStream;
         this.delimiter = delimiter;
         this.pattern = pattern;
@@ -49,11 +49,11 @@ public class SequenceModifier implements Runnable {
         BufferedWriter outputStreamWriter =
                 new BufferedWriter(new OutputStreamWriter(outputStream));
         try {
-            for (File inputFile : inputDirectory.listFiles()) {
-                BufferedReader inputFileReader =
-                        new BufferedReader(new FileReader(inputFile));
+            for (File trainingFile : workingDirectory.listFiles()) {
+                BufferedReader trainingFileReader =
+                        new BufferedReader(new FileReader(trainingFile));
                 String line;
-                while ((line = inputFileReader.readLine()) != null) {
+                while ((line = trainingFileReader.readLine()) != null) {
                     String[] lineSplit = line.split(delimiter);
                     if (modifyCount) {
                         String[] words = lineSplit[0].split("\\s");
@@ -73,12 +73,12 @@ public class SequenceModifier implements Runnable {
                             // for kneser-ney smoothing: every sequence that
                             // starts
                             // with <fs> counts as a new sequence
-                            if (inputDirectory.getName().equals("1")) {
+                            if (workingDirectory.getName().equals("1")) {
                                 continue;
                             }
                             if (!pattern[0]) {
                                 // set <s> in _1 to zero
-                                if (inputDirectory.getName().equals("11")
+                                if (workingDirectory.getName().equals("11")
                                         && words[1].equals("<s>")) {
                                     outputStreamWriter.write("<s>" + delimiter
                                             + "0\n");
@@ -103,7 +103,7 @@ public class SequenceModifier implements Runnable {
                     }
 
                 }
-                inputFileReader.close();
+                trainingFileReader.close();
             }
             outputStreamWriter.close();
         } catch (IOException e) {

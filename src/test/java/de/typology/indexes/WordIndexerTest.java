@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class WordIndexerTest {
 
-    File inputFile = new File("testDataset/training.txt");
+    File trainingFile = new File("testDataset/training.txt");
 
     File indexFile = new File("testDataset/index.txt");
 
@@ -43,7 +43,7 @@ public class WordIndexerTest {
     public void buildIndexTest() throws IOException {
         WordIndexer wi = new WordIndexer();
         long maxCountPerFile =
-                wi.buildIndex(inputFile, indexFile, 10, "<fs> <s> ", " </s>");
+                wi.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
         assertEquals(13, maxCountPerFile);
     }
 
