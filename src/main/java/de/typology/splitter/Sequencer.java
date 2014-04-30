@@ -94,7 +94,4 @@ public class Sequencer {
         }
     }
 
-    public boolean[] getPattern() {
-        return pattern;
-    }
 }
