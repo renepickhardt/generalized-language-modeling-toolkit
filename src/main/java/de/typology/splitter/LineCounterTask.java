@@ -10,13 +10,13 @@ import java.io.OutputStreamWriter;
 
 public class LineCounterTask implements Runnable {
 
-    protected InputStream inputStream;
+    private InputStream inputStream;
 
-    protected OutputStream outputStream;
+    private OutputStream outputStream;
 
-    protected String delimiter;
+    private String delimiter;
 
-    protected boolean setCountToOne;
+    private boolean setCountToOne;
 
     /**
      * Expects an {@code inputStream} where each line is formatted as
