@@ -6,6 +6,11 @@ import java.util.List;
 
 public class PatternBuilder {
 
+    /**
+     * Creates all permutations of { true, false } from length 1 to
+     * maxModeLength. Permutations with leading or trailing ranges of falses
+     * are ignored.
+     */
     public static List<boolean[]> getGLMPatterns(int maxModelLength) {
         int pow = (int) Math.pow(2, maxModelLength);
         List<boolean[]> patterns = new ArrayList<boolean[]>(pow);
@@ -20,6 +25,9 @@ public class PatternBuilder {
         return patterns;
     }
 
+    /**
+     * As {@link #getGLMPatterns(int)} but reversed.
+     */
     public static List<boolean[]> getReverseGLMPatterns(int maxModelLength) {
         List<boolean[]> patterns = getGLMPatterns(maxModelLength);
         Collections.reverse(patterns);
@@ -40,6 +48,9 @@ public class PatternBuilder {
         return patterns;
     }
 
+    /**
+     * As {@link #getGLMForSmoothingPatterns(int)} but reversed.
+     */
     public static List<boolean[]> getReverseGLMForSmoothingPatterns(
             int maxModelLength) {
         List<boolean[]> patterns = getGLMForSmoothingPatterns(maxModelLength);
@@ -72,16 +83,7 @@ public class PatternBuilder {
     }
 
     /**
-     * Creates pattern like these (n = maxModelLength):
-     * 
-     * <pre>
-     * {
-     *   { true, true, ... } // n     - times
-     *   { true, ... }       // (n-1) - times
-     *   ...
-     *   { true }            // 1     - time
-     * }
-     * </pre>
+     * As {@link #getLMPatterns(int)} but reversed.
      */
     public static List<boolean[]> getReverseLMPatterns(int maxModelLength) {
         List<boolean[]> patterns = getLMPatterns(maxModelLength);
@@ -89,6 +91,20 @@ public class PatternBuilder {
         return patterns;
     }
 
+    /**
+     * Create pattern like these (n = maxModelLength):
+     * 
+     * <pre>
+     * {
+     *   { true }                           // length: 1
+     *   { true, true }                     // length: 2
+     *   { true, false, true }              // length: 3
+     *   { true, false, false, true }       // length: 4
+     *   ...
+     *   { true, false, ... , false, true } // length: n
+     * }
+     * </pre>
+     */
     public static List<boolean[]> getTypologyPatterns(int maxModelLength) {
         List<boolean[]> patterns = new ArrayList<boolean[]>(maxModelLength);
         for (int i = 0; i != maxModelLength; ++i) {
@@ -105,6 +121,9 @@ public class PatternBuilder {
         return patterns;
     }
 
+    /**
+     * As {@link #getTypologyPatterns(int)} but reversed.
+     */
     public static List<boolean[]>
         getReverseTypologyPatterns(int maxModelLength) {
         List<boolean[]> patterns = getTypologyPatterns(maxModelLength);
