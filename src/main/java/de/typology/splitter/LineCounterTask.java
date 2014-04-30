@@ -51,31 +51,29 @@ public class LineCounterTask implements Runnable {
             outputDirectory.mkdir();
             logger.info("count lines for: " + outputDirectory.getAbsolutePath());
 
-            long onePlusLineCount = 0L;
-            long oneLineCount = 0L;
-            long twoLineCount = 0L;
-            long threePlusLineCount = 0L;
+            long onePlusCount = 0L;
+            long oneCount = 0L;
+            long twoCount = 0L;
+            long threePlusCount = 0L;
 
             try (BufferedReader inputStreamReader =
                     new BufferedReader(new InputStreamReader(inputStream))) {
                 String line;
-                if (setCountToOne) {
-                    while ((line = inputStreamReader.readLine()) != null) {
-                        onePlusLineCount++;
-                    }
-                } else {
-                    while ((line = inputStreamReader.readLine()) != null) {
-                        long currentCount =
-                                Long.parseLong(line.split(delimiter)[1]);
-                        onePlusLineCount += currentCount;
-                        if (currentCount == 1L) {
-                            oneLineCount += currentCount;
+                while ((line = inputStreamReader.readLine()) != null) {
+                    if (setCountToOne) {
+                        onePlusCount++;
+                    } else {
+                        long count = Long.parseLong(line.split(delimiter)[1]);
+
+                        onePlusCount += count;
+                        if (count == 1L) {
+                            oneCount += count;
                         }
-                        if (currentCount == 2L) {
-                            twoLineCount += currentCount;
+                        if (count == 2L) {
+                            twoCount += count;
                         }
-                        if (currentCount >= 3L) {
-                            threePlusLineCount += currentCount;
+                        if (count >= 3L) {
+                            threePlusCount += count;
                         }
                     }
                 }
@@ -84,9 +82,9 @@ public class LineCounterTask implements Runnable {
             try (BufferedWriter bufferedWriter =
                     new BufferedWriter(new FileWriter(
                             outputDirectory.getAbsolutePath() + "/" + "all"))) {
-                bufferedWriter.write(onePlusLineCount + delimiter
-                        + oneLineCount + delimiter + twoLineCount + delimiter
-                        + threePlusLineCount + "\n");
+                bufferedWriter.write(onePlusCount + delimiter + oneCount
+                        + delimiter + twoCount + delimiter + threePlusCount
+                        + "\n");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
