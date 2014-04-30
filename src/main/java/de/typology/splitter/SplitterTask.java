@@ -36,11 +36,7 @@ public class SplitterTask implements Runnable {
 
     private String addAfterSentence;
 
-    private boolean sequenceModifyCounts;
-
-    private boolean aggregateCompleteLine;
-
-    private boolean additionalCounts;
+    private boolean isSmoothing;
 
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
@@ -54,9 +50,7 @@ public class SplitterTask implements Runnable {
             boolean deleteTempFiles,
             String addBeforeSentence,
             String addAfterSentence,
-            boolean sequenceModifyCounts,
-            boolean aggregateCompleteLine,
-            boolean additionalCounts) {
+            boolean isSmoothing) {
         this.inputStream = inputStream;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
@@ -66,14 +60,15 @@ public class SplitterTask implements Runnable {
         this.deleteTempFiles = deleteTempFiles;
         this.addBeforeSentence = addBeforeSentence;
         this.addAfterSentence = addAfterSentence;
-        this.sequenceModifyCounts = sequenceModifyCounts;
-        this.aggregateCompleteLine = aggregateCompleteLine;
-        this.additionalCounts = additionalCounts;
+        this.isSmoothing = isSmoothing;
     }
 
     @Override
     public void run() {
         try {
+            boolean sequenceModifyCounts = isSmoothing;
+            boolean additionalCounts = isSmoothing;
+
             File sequencerOutputDirectory =
                     new File(outputDirectory.getAbsolutePath() + "/"
                             + patternLabel + "-split");
@@ -106,11 +101,7 @@ public class SplitterTask implements Runnable {
                                 aggregatedOutputDirectory.getAbsolutePath()
                                         + "/" + splitFile.getName()),
                                 delimiter, additionalCounts);
-                if (aggregateCompleteLine) {
-                    aggregator.aggregateWithoutCounts();
-                } else {
-                    aggregator.aggregateCounts();
-                }
+                aggregator.aggregateCounts();
             }
 
             // delete sequencerOutputDirectory
