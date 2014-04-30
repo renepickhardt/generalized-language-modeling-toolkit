@@ -130,7 +130,7 @@ public class SmoothingSplitter {
                         splitType(currentAbsoluteworkingDirectory,
                                 continuationDirectory, outputPattern,
                                 outputPatternLabel, entry.getKey(), wordIndex,
-                                true, true);
+                                true);
                     } else {
                         if (finishedPatterns.contains(entry.getValue())) {
                             // read continuation files
@@ -205,7 +205,7 @@ public class SmoothingSplitter {
                             splitType(currentContinuationworkingDirectory,
                                     continuationDirectory, outputPattern,
                                     outputPatternLabel, patternForModifier,
-                                    wordIndex, false, true);
+                                    wordIndex, false);
 
                         }
                     }
@@ -237,24 +237,21 @@ public class SmoothingSplitter {
             String newPatternLabel,
             boolean[] patternForModifier,
             WordIndex wordIndex,
-            boolean setCountToOne,
-            boolean additionalCounts) {
+            boolean setCountToOne) {
         PipedInputStream pipedInputStream =
                 new PipedInputStream(100 * 8 * 1024);
 
         if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
             LineCounterTask lineCountTask =
                     new LineCounterTask(pipedInputStream, outputDirectory,
-                            newPatternLabel, delimiter, setCountToOne,
-                            additionalCounts);
+                            newPatternLabel, delimiter, setCountToOne, true);
             executorService.execute(lineCountTask);
         } else {
             // don't add tags here
             SplitterTask splitterTask =
                     new SplitterTask(pipedInputStream, outputDirectory,
                             wordIndex, newPattern, newPatternLabel, delimiter,
-                            0, deleteTempFiles, "", "", true, false,
-                            additionalCounts);
+                            0, deleteTempFiles, "", "", true, false, true);
             executorService.execute(splitterTask);
         }
 
