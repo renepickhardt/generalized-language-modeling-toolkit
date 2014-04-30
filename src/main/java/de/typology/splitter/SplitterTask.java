@@ -30,8 +30,6 @@ public class SplitterTask implements Runnable {
 
     private String delimiter;
 
-    private int startSortAtColumn;
-
     private boolean deleteTempFiles;
 
     private String addBeforeSentence;
@@ -53,7 +51,6 @@ public class SplitterTask implements Runnable {
             boolean[] pattern,
             String patternLabel,
             String delimiter,
-            int startSortAtColumn,
             boolean deleteTempFiles,
             String addBeforeSentence,
             String addAfterSentence,
@@ -66,7 +63,6 @@ public class SplitterTask implements Runnable {
         this.pattern = pattern;
         this.patternLabel = patternLabel;
         this.delimiter = delimiter;
-        this.startSortAtColumn = startSortAtColumn;
         this.deleteTempFiles = deleteTempFiles;
         this.addBeforeSentence = addBeforeSentence;
         this.addAfterSentence = addAfterSentence;
@@ -92,8 +88,7 @@ public class SplitterTask implements Runnable {
             Sequencer sequencer =
                     new Sequencer(inputStream, sequencerOutputDirectory,
                             wordIndex, pattern, addBeforeSentence,
-                            addAfterSentence, delimiter, sequenceModifyCounts,
-                            startSortAtColumn);
+                            addAfterSentence, delimiter, sequenceModifyCounts);
             sequencer.splitIntoFiles();
 
             File aggregatedOutputDirectory =
@@ -110,7 +105,7 @@ public class SplitterTask implements Runnable {
                         new Aggregator(splitFile, new File(
                                 aggregatedOutputDirectory.getAbsolutePath()
                                         + "/" + splitFile.getName()),
-                                delimiter, startSortAtColumn, additionalCounts);
+                                delimiter, additionalCounts);
                 if (aggregateCompleteLine) {
                     aggregator.aggregateWithoutCounts();
                 } else {

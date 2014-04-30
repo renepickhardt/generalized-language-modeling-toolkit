@@ -39,7 +39,8 @@ public class SequencerTest {
     @Before
     public void setUp() throws Exception {
         WordIndexer wordIndexer = new WordIndexer();
-        wordIndexer.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
+        wordIndexer.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ",
+                " </s>");
         if (sequencerOutputDirectory.exists()) {
             FileUtils.deleteDirectory(sequencerOutputDirectory);
         }
@@ -68,7 +69,7 @@ public class SequencerTest {
             Sequencer sequencer =
                     new Sequencer(inputStream, sequencerOutputDirectory,
                             wordIndex, pattern, "<fs> <s> ", " </s>", "\t",
-                            false, 0);
+                            false);
 
             sequencer.splitIntoFiles();
 
@@ -108,7 +109,7 @@ public class SequencerTest {
             Sequencer sequencer =
                     new Sequencer(inputStream, sequencerOutputDirectory,
                             wordIndex, pattern, "<fs> <s> ", " </s>", "\t",
-                            false, 0);
+                            false);
             sequencer.splitIntoFiles();
 
             // test file contents

@@ -265,8 +265,8 @@ public class SmoothingSplitter {
             // don't add tags here
             SplitterTask splitterTask =
                     new SplitterTask(inputStream, outputDirectory, wordIndex,
-                            pattern, patternLabel, delimiter, 0,
-                            deleteTempFiles, "", "", true, false, true);
+                            pattern, patternLabel, delimiter, deleteTempFiles,
+                            "", "", true, false, true);
             executorService.execute(splitterTask);
         }
 

@@ -45,7 +45,7 @@ public class AggregatorTest {
     @Test
     public void aggregatorCol0Test() throws IOException {
         Aggregator aggregator =
-                new Aggregator(trainingFile, outputFile, "\t", 0, false);
+                new Aggregator(trainingFile, outputFile, "\t", false);
         aggregator.aggregateCounts();
         try {
             BufferedReader br = new BufferedReader(new FileReader(outputFile));
@@ -64,45 +64,45 @@ public class AggregatorTest {
 
     }
 
-    @Test
-    public void aggregatorCol1Test() throws IOException {
-        Aggregator aggregator =
-                new Aggregator(trainingFile, outputFile, "\t", 1, false);
-        aggregator.aggregateCounts();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(outputFile));
-            assertEquals("c x a\t2", br.readLine());
-            assertEquals("b y a\t1", br.readLine());
-            assertEquals("b y b\t1", br.readLine());
-            assertEquals("c y b\t1", br.readLine());
-            assertEquals("a z a\t1", br.readLine());
-            assertNull(br.readLine());
-            br.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        outputFile.delete();
-    }
-
-    @Test
-    public void aggregatorCol2Test() throws IOException {
-        Aggregator aggregator =
-                new Aggregator(trainingFile, outputFile, "\t", 2, false);
-        aggregator.aggregateCounts();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(outputFile));
-            assertEquals("a z a\t1", br.readLine());
-            assertEquals("b y a\t1", br.readLine());
-            assertEquals("c x a\t2", br.readLine());
-            assertEquals("b y b\t1", br.readLine());
-            assertEquals("c y b\t1", br.readLine());
-            assertNull(br.readLine());
-            br.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        outputFile.delete();
-    }
+    //    @Test
+    //    public void aggregatorCol1Test() throws IOException {
+    //        Aggregator aggregator =
+    //                new Aggregator(trainingFile, outputFile, "\t", 1, false);
+    //        aggregator.aggregateCounts();
+    //        try {
+    //            BufferedReader br = new BufferedReader(new FileReader(outputFile));
+    //            assertEquals("c x a\t2", br.readLine());
+    //            assertEquals("b y a\t1", br.readLine());
+    //            assertEquals("b y b\t1", br.readLine());
+    //            assertEquals("c y b\t1", br.readLine());
+    //            assertEquals("a z a\t1", br.readLine());
+    //            assertNull(br.readLine());
+    //            br.close();
+    //        } catch (IOException e) {
+    //            // TODO Auto-generated catch block
+    //            e.printStackTrace();
+    //        }
+    //        outputFile.delete();
+    //    }
+    //
+    //    @Test
+    //    public void aggregatorCol2Test() throws IOException {
+    //        Aggregator aggregator =
+    //                new Aggregator(trainingFile, outputFile, "\t", 2, false);
+    //        aggregator.aggregateCounts();
+    //        try {
+    //            BufferedReader br = new BufferedReader(new FileReader(outputFile));
+    //            assertEquals("a z a\t1", br.readLine());
+    //            assertEquals("b y a\t1", br.readLine());
+    //            assertEquals("c x a\t2", br.readLine());
+    //            assertEquals("b y b\t1", br.readLine());
+    //            assertEquals("c y b\t1", br.readLine());
+    //            assertNull(br.readLine());
+    //            br.close();
+    //        } catch (IOException e) {
+    //            // TODO Auto-generated catch block
+    //            e.printStackTrace();
+    //        }
+    //        outputFile.delete();
+    //    }
 }

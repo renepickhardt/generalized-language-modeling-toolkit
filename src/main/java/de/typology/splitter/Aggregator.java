@@ -28,8 +28,6 @@ public class Aggregator {
 
     private String delimiter;
 
-    private int startSortAtColumn;
-
     private boolean additionalCounts;
 
     // this comparator is based on the value of startSortAtColumn
@@ -37,46 +35,7 @@ public class Aggregator {
 
         @Override
         public int compare(String string1, String string2) {
-            if (startSortAtColumn == 0) {
-                return string1.compareTo(string2);
-            } else {
-                String[] string1Split = string1.split("\\s");
-                String[] string2Split = string2.split("\\s");
-                String newString1 = "";
-                String newString2 = "";
-                for (int i = startSortAtColumn; i < string1Split.length; i++) {
-                    newString1 += string1Split[i] + " ";
-                    newString2 += string2Split[i] + " ";
-                }
-                newString1 = newString1.replaceFirst(" $", "");
-                newString2 = newString2.replaceFirst(" $", "");
-                int result = newString1.compareTo(newString2);
-                if (result != 0) {
-                    // not equal
-                    return result;
-                } else {
-                    int i = 0;
-                    while (i < startSortAtColumn) {
-                        String newNewString1 = newString1;
-                        String newNewString2 = newString2;
-                        for (int j = i; j >= 0; j--) {
-                            newNewString1 =
-                                    string1Split[j] + " " + newNewString1;
-                            newNewString2 =
-                                    string2Split[j] + " " + newNewString2;
-                        }
-                        result = newNewString1.compareTo(newNewString2);
-                        if (result != 0) {
-                            // not equal
-                            return result;
-                        }
-                        // equal
-                        i++;
-                    }
-                    // final result: equal
-                    return 0;
-                }
-            }
+            return string1.compareTo(string2);
         }
 
     };
@@ -85,12 +44,10 @@ public class Aggregator {
             File trainingFile,
             File outputFile,
             String delimiter,
-            int startSortAtColumn,
             boolean additionalCounts) {
         this.trainingFile = trainingFile;
         this.outputFile = outputFile;
         this.delimiter = delimiter;
-        this.startSortAtColumn = startSortAtColumn;
         this.additionalCounts = additionalCounts;
     }
 

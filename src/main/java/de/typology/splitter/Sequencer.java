@@ -35,8 +35,6 @@ public class Sequencer {
 
     private boolean completeLine;
 
-    private int startSortAtColumn;
-
     public Sequencer(
             InputStream inputStream,
             File outputDirectory,
@@ -45,8 +43,7 @@ public class Sequencer {
             String addBeforeSentence,
             String addAfterSentence,
             String delimiter,
-            boolean completeLine,
-            int startSortAtColumn) {
+            boolean completeLine) {
         this.inputStream = inputStream;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
@@ -55,8 +52,6 @@ public class Sequencer {
         this.addAfterSentence = addAfterSentence;
         this.delimiter = delimiter;
         this.completeLine = completeLine;
-        this.startSortAtColumn = startSortAtColumn;
-
     }
 
     public void splitIntoFiles() throws IOException {
@@ -72,8 +67,7 @@ public class Sequencer {
                 line = addBeforeSentence + line + addAfterSentence;
                 String[] words = line.split("\\s");
                 if (completeLine) {
-                    writers.get(wordIndex.rank(words[startSortAtColumn]))
-                            .write(line + "\n");
+                    writers.get(wordIndex.rank(words[0])).write(line + "\n");
                 } else {
                     int linePointer = 0;
                     while (words.length - linePointer >= pattern.length) {
@@ -88,8 +82,7 @@ public class Sequencer {
 
                         // write sequence
 
-                        writers.get(
-                                wordIndex.rank(sequence.split(" ")[startSortAtColumn]))
+                        writers.get(wordIndex.rank(sequence.split(" ")[0]))
                                 .write(sequence);
 
                         linePointer++;
