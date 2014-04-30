@@ -1,10 +1,12 @@
 package de.typology.splitter;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -233,11 +235,13 @@ public class SmoothingSplitter {
     private void splitType(
             File currentworkingDirectory,
             File outputDirectory,
-            boolean[] newPattern,
-            String newPatternLabel,
+            boolean[] pattern,
+            String patternLabel,
             boolean[] patternForModifier,
             WordIndex wordIndex,
             boolean setCountToOne) throws IOException {
+        Path outputPath = outputDirectory.toPath();
+
         PipedInputStream inputStream = new PipedInputStream(100 * 8 * 1024);
         OutputStream outputStream = new PipedOutputStream(inputStream);
 
@@ -246,16 +250,22 @@ public class SmoothingSplitter {
                         delimiter, patternForModifier, true, setCountToOne);
         executorService.execute(sequenceModifier);
 
-        if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
+        if (Integer.bitCount(PatternTransformer.getIntPattern(pattern)) == 0) {
+            Path lineCountOutputDirPath = outputPath.resolve(patternLabel);
+            lineCountOutputDirPath.toFile().mkdir();
+            Path lineCountOutputPath = lineCountOutputDirPath.resolve("all");
+
+            OutputStream output =
+                    new FileOutputStream(lineCountOutputPath.toFile());
             LineCounterTask lineCountTask =
-                    new LineCounterTask(inputStream, outputDirectory,
-                            newPatternLabel, delimiter, setCountToOne);
+                    new LineCounterTask(inputStream, output, delimiter,
+                            setCountToOne);
             executorService.execute(lineCountTask);
         } else {
             // don't add tags here
             SplitterTask splitterTask =
                     new SplitterTask(inputStream, outputDirectory, wordIndex,
-                            newPattern, newPatternLabel, delimiter, 0,
+                            pattern, patternLabel, delimiter, 0,
                             deleteTempFiles, "", "", true, false, true);
             executorService.execute(splitterTask);
         }
