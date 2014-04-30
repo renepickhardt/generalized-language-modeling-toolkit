@@ -41,28 +41,23 @@ public class LineCounterTask implements Runnable {
 
     @Override
     public void run() {
-        File outputDirectory =
-                new File(this.outputDirectory.getAbsolutePath() + "/"
-                        + patternLabel);
-        if (outputDirectory.exists()) {
-            try {
-                FileUtils.deleteDirectory(outputDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        outputDirectory.mkdir();
-        logger.info("count lines for: " + outputDirectory.getAbsolutePath());
-
-        BufferedReader inputStreamReader =
-                new BufferedReader(new InputStreamReader(inputStream));
-        long onePlusLineCount = 0L;
-        long oneLineCount = 0L;
-        long twoLineCount = 0L;
-        long threePlusLineCount = 0L;
-        String line;
         try {
+            File outputDirectory =
+                    new File(this.outputDirectory.getAbsolutePath() + "/"
+                            + patternLabel);
+            if (outputDirectory.exists()) {
+                FileUtils.deleteDirectory(outputDirectory);
+            }
+            outputDirectory.mkdir();
+            logger.info("count lines for: " + outputDirectory.getAbsolutePath());
+
+            BufferedReader inputStreamReader =
+                    new BufferedReader(new InputStreamReader(inputStream));
+            long onePlusLineCount = 0L;
+            long oneLineCount = 0L;
+            long twoLineCount = 0L;
+            long threePlusLineCount = 0L;
+            String line;
             if (setCountToOne) {
                 while ((line = inputStreamReader.readLine()) != null) {
                     onePlusLineCount++;
@@ -92,10 +87,8 @@ public class LineCounterTask implements Runnable {
                     + delimiter + twoLineCount + delimiter + threePlusLineCount
                     + "\n");
             bufferedWriter.close();
-
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }
