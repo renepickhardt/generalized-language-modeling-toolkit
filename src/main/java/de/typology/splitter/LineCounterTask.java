@@ -24,8 +24,6 @@ public class LineCounterTask implements Runnable {
 
     protected boolean setCountToOne;
 
-    protected boolean additionalCounts;
-
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public LineCounterTask(
@@ -33,14 +31,12 @@ public class LineCounterTask implements Runnable {
             File outputDirectory,
             String patternLabel,
             String delimiter,
-            boolean setCountToOne,
-            boolean additionalCounts) {
+            boolean setCountToOne) {
         this.inputStream = inputStream;
         this.outputDirectory = outputDirectory;
         this.patternLabel = patternLabel;
         this.delimiter = delimiter;
         this.setCountToOne = setCountToOne;
-        this.additionalCounts = additionalCounts;
     }
 
     @Override
@@ -92,13 +88,9 @@ public class LineCounterTask implements Runnable {
             BufferedWriter bufferedWriter =
                     new BufferedWriter(new FileWriter(
                             outputDirectory.getAbsolutePath() + "/" + "all"));
-            if (additionalCounts) {
-                bufferedWriter.write(onePlusLineCount + delimiter
-                        + oneLineCount + delimiter + twoLineCount + delimiter
-                        + threePlusLineCount + "\n");
-            } else {
-                bufferedWriter.write(onePlusLineCount + "\n");
-            }
+            bufferedWriter.write(onePlusLineCount + delimiter + oneLineCount
+                    + delimiter + twoLineCount + delimiter + threePlusLineCount
+                    + "\n");
             bufferedWriter.close();
 
         } catch (IOException e) {

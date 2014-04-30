@@ -244,7 +244,7 @@ public class SmoothingSplitter {
         if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
             LineCounterTask lineCountTask =
                     new LineCounterTask(pipedInputStream, outputDirectory,
-                            newPatternLabel, delimiter, setCountToOne, true);
+                            newPatternLabel, delimiter, setCountToOne);
             executorService.execute(lineCountTask);
         } else {
             // don't add tags here
