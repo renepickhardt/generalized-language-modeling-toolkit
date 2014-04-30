@@ -2,8 +2,8 @@ package de.typology.executables;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +61,8 @@ public class KneserNeyBuilder {
         }
 
         File testExtractOutputDirectory =
-                new File(workingDirectory.getAbsolutePath() + "/testing-samples");
+                new File(workingDirectory.getAbsolutePath()
+                        + "/testing-samples");
         if (config.extractContinuationGLM) {
             logger.info("extract continuation sequences");
             extractContinuationGLM(workingDirectory, indexFile,
@@ -160,21 +161,24 @@ public class KneserNeyBuilder {
                 + "/testing.txt"), config.modelLength, config.numberOfQueries);
     }
 
-    private void buildIndex(File trainingFile, File indexFile) throws IOException {
+    private void buildIndex(File trainingFile, File indexFile)
+            throws IOException {
         WordIndexer wordIndexer = new WordIndexer();
         wordIndexer.buildIndex(trainingFile, indexFile, config.maxCountDivider,
                 "<fs> <s> ", " </s>");
     }
 
-    private void
-        buildGLM(File trainingFile, File indexFile, File absoluteDirectory)
-                throws IOException, InterruptedException {
-        ArrayList<boolean[]> glmForSmoothingPatterns =
+    private void buildGLM(
+            File trainingFile,
+            File indexFile,
+            File absoluteDirectory) throws IOException, InterruptedException {
+        List<boolean[]> glmForSmoothingPatterns =
                 PatternBuilder
                         .getReverseGLMForSmoothingPatterns(config.modelLength);
         AbsoluteSplitter absolteSplitter =
-                new AbsoluteSplitter(trainingFile, indexFile, absoluteDirectory,
-                        "\t", config.deleteTempFiles, "<fs> <s> ", " </s>");
+                new AbsoluteSplitter(trainingFile, indexFile,
+                        absoluteDirectory, "\t", config.deleteTempFiles,
+                        "<fs> <s> ", " </s>");
         absolteSplitter.split(glmForSmoothingPatterns, config.numberOfCores);
     }
 
@@ -182,8 +186,9 @@ public class KneserNeyBuilder {
             File trainingFile,
             File indexFile,
             File absoluteDirectory,
-            File continuationDirectory) throws IOException {
-        ArrayList<boolean[]> lmPatterns =
+            File continuationDirectory) throws IOException,
+            InterruptedException {
+        List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
         SmoothingSplitter smoothingSplitter =
                 new SmoothingSplitter(absoluteDirectory, continuationDirectory,
@@ -198,8 +203,8 @@ public class KneserNeyBuilder {
             File continuationDirectory,
             File testExtractOutputDirectory) throws IOException {
         File testSequences =
-                new File(workingDirectory.getAbsolutePath() + "/testing-samples-"
-                        + config.modelLength + ".txt");
+                new File(workingDirectory.getAbsolutePath()
+                        + "/testing-samples-" + config.modelLength + ".txt");
         testExtractOutputDirectory.mkdir();
 
         TestSequenceExtractor tse =

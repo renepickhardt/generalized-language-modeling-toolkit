@@ -8,6 +8,8 @@ import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -19,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
+import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 
 public class SmoothingSplitter {
@@ -37,17 +40,18 @@ public class SmoothingSplitter {
 
     private ExecutorService executorService;
 
-    private Comparator<boolean[]> patternComparator =
-            new Comparator<boolean[]>() {
+    private static Comparator<boolean[]> patternComparator;
+    static {
+        patternComparator = new Comparator<boolean[]>() {
 
-                @Override
-                public int compare(boolean[] pattern1, boolean[] pattern2) {
-                    return PatternTransformer.getStringPattern(pattern2)
-                            .compareTo(
-                                    PatternTransformer
-                                            .getStringPattern(pattern1));
-                }
-            };
+            @Override
+            public int compare(boolean[] pattern1, boolean[] pattern2) {
+                return PatternTransformer.getStringPattern(pattern2).compareTo(
+                        PatternTransformer.getStringPattern(pattern1));
+            }
+
+        };
+    }
 
     public SmoothingSplitter(
             File absoluteDirectory,
@@ -63,13 +67,11 @@ public class SmoothingSplitter {
         this.deleteTempFiles = deleteTempFiles;
     }
 
-    public void split(ArrayList<boolean[]> patterns, int cores)
-            throws IOException {
+    public void split(List<boolean[]> patterns, int cores) throws IOException,
+            InterruptedException {
         // read Index
         logger.info("read word index: " + indexFile.getAbsolutePath());
         WordIndex wordIndex = new WordIndex(indexFile);
-        // initialize executerService
-        // int cores = Runtime.getRuntime().availableProcessors();
 
         SortedMap<boolean[], boolean[]> continuationMap =
                 filterContinuationMap(getContinuationMap(patterns));
@@ -78,6 +80,7 @@ public class SmoothingSplitter {
 
         while (finishedPatterns.size() < continuationMap.size()) {
             ArrayList<boolean[]> currentPatterns = new ArrayList<boolean[]>();
+            // initialize executerService
             executorService = Executors.newFixedThreadPool(cores);
 
             for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
@@ -208,15 +211,17 @@ public class SmoothingSplitter {
                     }
                 }
             }
+
             executorService.shutdown();
             logger.info("end of this round of calculation");
             try {
                 executorService.awaitTermination(Long.MAX_VALUE,
                         TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // Interrupted
+                throw e;
             }
+
             // add currently computed patterns to finishedPatterns
             for (boolean[] currentPattern : currentPatterns) {
                 finishedPatterns.add(currentPattern);
@@ -269,7 +274,15 @@ public class SmoothingSplitter {
 
     }
 
-    private SortedMap<boolean[], boolean[]> filterContinuationMap(
+    /**
+     * Removes some entries from continuationMap:
+     * 
+     * <ul>
+     * <li>remove if key == value</li>
+     * <li>remove if first two are false</li>
+     * </ul>
+     */
+    private static SortedMap<boolean[], boolean[]> filterContinuationMap(
             SortedMap<boolean[], boolean[]> continuationMap) {
         SortedMap<boolean[], boolean[]> newContinuationMap =
                 new TreeMap<boolean[], boolean[]>(patternComparator);
@@ -279,10 +292,9 @@ public class SmoothingSplitter {
                 continue;
             }
             boolean[] currentPattern = entry.getKey();
-            if (currentPattern.length > 2) {
-                if (!currentPattern[0] && !currentPattern[1]) {
-                    continue;
-                }
+            if (currentPattern.length > 2 && !currentPattern[0]
+                    && !currentPattern[1]) {
+                continue;
             }
             newContinuationMap.put(entry.getKey(), entry.getValue());
 
@@ -290,18 +302,18 @@ public class SmoothingSplitter {
         return newContinuationMap;
     }
 
-    private SortedMap<boolean[], boolean[]> getContinuationMap(
-            ArrayList<boolean[]> patterns) {
+    private static SortedMap<boolean[], boolean[]> getContinuationMap(
+            List<boolean[]> patterns) {
         SortedMap<boolean[], boolean[]> continuationMap =
                 new TreeMap<boolean[], boolean[]>(patternComparator);
 
-        for (boolean[] inputPattern : patterns) {
-            addPatterns(continuationMap, inputPattern, inputPattern, 0);
+        for (boolean[] pattern : patterns) {
+            addPatterns(continuationMap, pattern, pattern, 0);
         }
         return continuationMap;
     }
 
-    private void addPatterns(
+    private static void addPatterns(
             SortedMap<boolean[], boolean[]> continuationMap,
             boolean[] pattern,
             boolean[] oldPattern,
@@ -314,6 +326,40 @@ public class SmoothingSplitter {
             addPatterns(continuationMap, newPattern, pattern, position + 1);
             addPatterns(continuationMap, pattern, oldPattern, position + 1);
         }
+    }
+
+    // DEBUG FUNCTIONS /////////////////////////////////////////////////////////
+
+    private static void printSortedMap(SortedMap<boolean[], boolean[]> map) {
+        System.out.println("SortedMap: {");
+        for (Map.Entry<boolean[], boolean[]> entry : map.entrySet()) {
+            System.out.println("    "
+                    + PatternTransformer.getStringPattern(entry.getKey())
+                    + " -> "
+                    + PatternTransformer.getStringPattern(entry.getValue()));
+        }
+        System.out.println("}");
+    }
+
+    private static void printList(List<boolean[]> list) {
+        System.out.println("List: {");
+        for (boolean[] pattern : list) {
+            System.out.println("    "
+                    + PatternTransformer.getStringPattern(pattern) + ",");
+        }
+        System.out.println("}");
+    }
+
+    public static void main(String[] args) {
+        List<boolean[]> patterns = PatternBuilder.getReverseLMPatterns(5);
+        printList(patterns);
+
+        SortedMap<boolean[], boolean[]> continuationMap =
+                getContinuationMap(patterns);
+        printSortedMap(continuationMap);
+
+        continuationMap = filterContinuationMap(continuationMap);
+        printSortedMap(continuationMap);
     }
 
 }

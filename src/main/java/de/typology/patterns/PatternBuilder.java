@@ -1,11 +1,12 @@
 package de.typology.patterns;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PatternBuilder {
 
-    public static ArrayList<boolean[]> getGLMPatterns(int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    public static List<boolean[]> getGLMPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
             // leave out even sequences since they don't contain a
             // target
@@ -17,9 +18,8 @@ public class PatternBuilder {
         return patterns;
     }
 
-    public static ArrayList<boolean[]>
-        getReverseGLMPatterns(int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    public static List<boolean[]> getReverseGLMPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = (int) (Math.pow(2, maxModelLength) - 1); intPattern > 0; intPattern--) {
             // leave out even sequences since they don't contain a
             // target
@@ -38,9 +38,9 @@ public class PatternBuilder {
      * @param maxModelLength
      * @return
      */
-    public static ArrayList<boolean[]> getGLMForSmoothingPatterns(
-            int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    public static List<boolean[]>
+        getGLMForSmoothingPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
             // // leave out even sequences since they don't contain a
             // // target
@@ -52,9 +52,9 @@ public class PatternBuilder {
         return patterns;
     }
 
-    public static ArrayList<boolean[]> getReverseGLMForSmoothingPatterns(
+    public static List<boolean[]> getReverseGLMForSmoothingPatterns(
             int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = (int) Math.pow(2, maxModelLength) - 1; intPattern > 0; intPattern--) {
             // // leave out even sequences since they don't contain a
             // // target
@@ -66,8 +66,8 @@ public class PatternBuilder {
         return patterns;
     }
 
-    public static ArrayList<boolean[]> getLMPatterns(int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    public static List<boolean[]> getLMPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
             String stringPattern = Integer.toBinaryString(intPattern);
             if (Integer.bitCount(intPattern) == stringPattern.length()) {
@@ -77,8 +77,20 @@ public class PatternBuilder {
         return patterns;
     }
 
-    public static ArrayList<boolean[]> getReverseLMPatterns(int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    /**
+     * Creates pattern like these(n = maxModelLength):
+     * 
+     * <pre>
+     * {
+     *   { true, true, ... } // n     - times
+     *   { true, ... }       // (n-1) - times
+     *   ...
+     *   { true }            // 1     - time
+     * }
+     * </pre>
+     */
+    public static List<boolean[]> getReverseLMPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = (int) (Math.pow(2, maxModelLength) - 1); intPattern > 0; intPattern--) {
             String stringPattern = Integer.toBinaryString(intPattern);
             if (Integer.bitCount(intPattern) == stringPattern.length()) {
@@ -88,8 +100,8 @@ public class PatternBuilder {
         return patterns;
     }
 
-    public static ArrayList<boolean[]> getTypologyPatterns(int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    public static List<boolean[]> getTypologyPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = 1; intPattern < Math.pow(2, maxModelLength); intPattern++) {
             String stringPattern = Integer.toBinaryString(intPattern);
             if (Integer.bitCount(intPattern) <= 2
@@ -101,9 +113,9 @@ public class PatternBuilder {
         return patterns;
     }
 
-    public static ArrayList<boolean[]> getReverseTypologyPatterns(
-            int maxModelLength) {
-        ArrayList<boolean[]> patterns = new ArrayList<boolean[]>();
+    public static List<boolean[]>
+        getReverseTypologyPatterns(int maxModelLength) {
+        List<boolean[]> patterns = new ArrayList<boolean[]>();
         for (int intPattern = (int) (Math.pow(2, maxModelLength) - 1); intPattern > 0; intPattern--) {
             String stringPattern = Integer.toBinaryString(intPattern);
             if (Integer.bitCount(intPattern) <= 2

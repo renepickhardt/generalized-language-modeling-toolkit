@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +51,7 @@ public class AbsoluteSplitter {
             String addAfterSentence) {
         this.trainingFile = trainingFile;
         this.indexFile = indexFile;
-        this.outputDirectory = absoluteDirectory;
+        outputDirectory = absoluteDirectory;
         this.delimiter = delimiter;
         this.deleteTempFiles = deleteTempFiles;
         this.addBeforeSentence = addBeforeSentence;
@@ -68,8 +68,8 @@ public class AbsoluteSplitter {
         absoluteDirectory.mkdir();
     }
 
-    public void split(ArrayList<boolean[]> patterns, int cores)
-            throws IOException, InterruptedException {
+    public void split(List<boolean[]> patterns, int cores) throws IOException,
+            InterruptedException {
         logger.info("read word index: " + indexFile.getAbsolutePath());
         WordIndex wordIndex = new WordIndex(indexFile);
 
@@ -85,8 +85,8 @@ public class AbsoluteSplitter {
                 InputStream trainingFileInputStream =
                         new FileInputStream(trainingFile);
                 SplitterTask splitterTask =
-                        new SplitterTask(trainingFileInputStream, outputDirectory,
-                                wordIndex, pattern,
+                        new SplitterTask(trainingFileInputStream,
+                                outputDirectory, wordIndex, pattern,
                                 PatternTransformer.getStringPattern(pattern),
                                 delimiter, 0, deleteTempFiles,
                                 addBeforeSentence, addAfterSentence, false,

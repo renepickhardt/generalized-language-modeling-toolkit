@@ -3,8 +3,8 @@ package de.typology.smoother;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -42,12 +42,11 @@ public class KneserNeySmootherTest {
         continuationDirectory = new File(workingDirectoryPath + "continuation");
 
         AbsoluteSplitter as =
-                new AbsoluteSplitter(trainingFile, indexFile, absoluteDirectory,
-                        "\t", true, "<fs> <s> ", " </s>");
+                new AbsoluteSplitter(trainingFile, indexFile,
+                        absoluteDirectory, "\t", true, "<fs> <s> ", " </s>");
         as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
 
-        ArrayList<boolean[]> lmPatterns =
-                PatternBuilder.getReverseLMPatterns(5);
+        List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
         SmoothingSplitter smoothingSplitter =
                 new SmoothingSplitter(absoluteDirectory, continuationDirectory,
                         indexFile, "\t", true);
