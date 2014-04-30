@@ -237,36 +237,27 @@ public class SmoothingSplitter {
             String newPatternLabel,
             boolean[] patternForModifier,
             WordIndex wordIndex,
-            boolean setCountToOne) {
-        PipedInputStream pipedInputStream =
-                new PipedInputStream(100 * 8 * 1024);
+            boolean setCountToOne) throws IOException {
+        PipedInputStream inputStream = new PipedInputStream(100 * 8 * 1024);
+        OutputStream outputStream = new PipedOutputStream(inputStream);
+
+        SequenceModifier sequenceModifier =
+                new SequenceModifier(currentworkingDirectory, outputStream,
+                        delimiter, patternForModifier, true, setCountToOne);
+        executorService.execute(sequenceModifier);
 
         if (Integer.bitCount(PatternTransformer.getIntPattern(newPattern)) == 0) {
             LineCounterTask lineCountTask =
-                    new LineCounterTask(pipedInputStream, outputDirectory,
+                    new LineCounterTask(inputStream, outputDirectory,
                             newPatternLabel, delimiter, setCountToOne);
             executorService.execute(lineCountTask);
         } else {
             // don't add tags here
             SplitterTask splitterTask =
-                    new SplitterTask(pipedInputStream, outputDirectory,
-                            wordIndex, newPattern, newPatternLabel, delimiter,
-                            0, deleteTempFiles, "", "", true, false, true);
+                    new SplitterTask(inputStream, outputDirectory, wordIndex,
+                            newPattern, newPatternLabel, delimiter, 0,
+                            deleteTempFiles, "", "", true, false, true);
             executorService.execute(splitterTask);
-        }
-
-        try {
-            OutputStream pipedOutputStream =
-                    new PipedOutputStream(pipedInputStream);
-            SequenceModifier sequenceModifier =
-                    new SequenceModifier(currentworkingDirectory,
-                            pipedOutputStream, delimiter, patternForModifier,
-                            true, setCountToOne);
-            executorService.execute(sequenceModifier);
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
     }
