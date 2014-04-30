@@ -8,6 +8,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+/**
+ * Calculates counts of lines in a InputStream.
+ */
 public class LineCounterTask implements Runnable {
 
     private InputStream inputStream;

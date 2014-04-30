@@ -11,11 +11,7 @@ import java.util.HashMap;
 import de.typology.indexes.WordIndex;
 
 /**
- * A class for splitting a text file (via inputStream) into sequences that are
- * stored in different files based on the indexFile in outputDirectory.
- * 
- * @author Martin Koerner
- * 
+ * Splits an InputStream into a sequences of a pattern.
  */
 public class Sequencer {
 
@@ -35,6 +31,35 @@ public class Sequencer {
 
     private boolean completeLine;
 
+    /**
+     * Expects an {@code inputStream} where each line contains a number of words
+     * separated by whitespace. Extracts all sequence specified by
+     * {@code pattern} and writes them to <em>indexed files</em> in
+     * {@code outputDirectory}. Each output line has this format:
+     * {@code <Sequence><Delimiter>1}.
+     * 
+     * @param inputStream
+     *            InputStream to be read.
+     * @param outputDirectory
+     *            Directory where <em>indexed files</em> should be
+     *            written to.
+     * @param wordIndex
+     *            WordIndex of the corpus.
+     * @param pattern
+     *            Pattern about which Sequence should be extracted.
+     * @param beforeLine
+     *            Prepended before each line before sequencing.
+     * @param afterLine
+     *            Appended after each line before sequencing.
+     * @param delimiter
+     *            Delimiter between {@code Sequence} and {@code Count} in the
+     *            output.
+     * @param completeLine
+     *            If {@code true} will not extract Sequences or append Count
+     *            but instead just write each line into the correct
+     *            <em>indexed file</em>.
+     *            If {@code false} will act as described above.
+     */
     public Sequencer(
             InputStream inputStream,
             File outputDirectory,
@@ -69,23 +94,19 @@ public class Sequencer {
                 if (completeLine) {
                     writers.get(wordIndex.rank(words[0])).write(line + "\n");
                 } else {
-                    int linePointer = 0;
-                    while (words.length - linePointer >= pattern.length) {
+                    for (int pointer = 0; pointer <= words.length
+                            - pattern.length; ++pointer) {
                         String sequence = "";
-                        for (int i = 0; i < pattern.length; i++) {
+                        for (int i = 0; i != pattern.length; ++i) {
                             if (pattern[i]) {
-                                sequence += words[linePointer + i] + " ";
+                                sequence += words[pointer + i] + " ";
                             }
                         }
-                        sequence = sequence.replaceFirst(" $", "");
+                        sequence.replaceFirst(" $", "");
                         sequence += delimiter + "1\n";
-
-                        // write sequence
 
                         writers.get(wordIndex.rank(sequence.split(" ")[0]))
                                 .write(sequence);
-
-                        linePointer++;
                     }
                 }
             }
