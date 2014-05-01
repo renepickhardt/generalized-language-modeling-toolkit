@@ -19,7 +19,7 @@ public class LineCounterTask implements Runnable {
 
     private String delimiter;
 
-    private boolean setCountToOne;
+    private boolean countLines;
 
     /**
      * Expects an {@code inputStream} where each line is formatted as
@@ -39,7 +39,7 @@ public class LineCounterTask implements Runnable {
      *            OutputStream to be written to.
      * @param delimiter
      *            Delimiter that separates Sequence and Count.
-     * @param setCountToOne
+     * @param countLines
      *            If {@code true} {@code 1+Count} will count the number of lines
      *            and all other counts will be zero. If {@code false} will act
      *            as described above.
@@ -48,48 +48,41 @@ public class LineCounterTask implements Runnable {
             InputStream input,
             OutputStream output,
             String delimiter,
-            boolean setCountToOne) {
+            boolean countLines) {
         this.input = input;
         this.output = output;
         this.delimiter = delimiter;
-        this.setCountToOne = setCountToOne;
+        this.countLines = countLines;
     }
 
     @Override
     public void run() {
         try {
-            long onePlusCount = 0L;
-            long oneCount = 0L;
-            long twoCount = 0L;
-            long threePlusCount = 0L;
+            String result;
 
             try (BufferedReader reader =
                     new BufferedReader(new InputStreamReader(input))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    if (setCountToOne) {
-                        ++onePlusCount;
-                    } else {
-                        long count = Long.parseLong(line.split(delimiter)[1]);
-
-                        onePlusCount += count;
-                        if (count == 1L) {
-                            oneCount += count;
-                        }
-                        if (count == 2L) {
-                            twoCount += count;
-                        }
-                        if (count >= 3L) {
-                            threePlusCount += count;
-                        }
+                if (countLines) {
+                    Long count = 0L;
+                    while (reader.readLine() != null) {
+                        ++count;
                     }
+                    result =
+                            count + delimiter + "0" + delimiter + "0"
+                                    + delimiter + "0";
+                } else {
+                    Counter counter = new Counter();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        counter.add(Long.parseLong(line.split(delimiter)[1]));
+                    }
+                    result = counter.toString(delimiter);
                 }
             }
 
             try (BufferedWriter writer =
                     new BufferedWriter(new OutputStreamWriter(output))) {
-                writer.write(onePlusCount + delimiter + oneCount + delimiter
-                        + twoCount + delimiter + threePlusCount + "\n");
+                writer.write(result + "\n");
             }
             output.close();
         } catch (IOException e) {
