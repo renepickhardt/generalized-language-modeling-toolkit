@@ -15,7 +15,8 @@ import java.util.TreeMap;
  * Groups multiple sequences with counts into distinct sequences with aggregated
  * counts.
  * 
- * Expects an InputStream with a size that is 30% of the allocated main memory.
+ * Expects an {@link InputStream} with a size that is 30% of the allocated main
+ * memory.
  */
 public class Aggregator {
 
@@ -45,9 +46,9 @@ public class Aggregator {
      * </ul>
      * 
      * @param input
-     *            InputStream to be read.
+     *            {@link InputStream} to be read.
      * @param output
-     *            OutputStream to be written to.
+     *            {@link OutputStream} to be written to.
      * @param delimiter
      *            Delimiter that separates Sequences and Counts.
      * @param additionalCounts

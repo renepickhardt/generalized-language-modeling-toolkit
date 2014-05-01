@@ -14,14 +14,15 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexes.WordIndex;
 
 /**
- * A class for running Sequencer and Aggregator for a given pattern.
+ * A class for running {@link Sequencer} and {@link Aggregator} for a given
+ * pattern.
  * 
  * @author Martin Koerner
  * 
  */
 public class SplitterTask implements Runnable {
 
-    private InputStream inputStream;
+    private InputStream input;
 
     private File outputDirectory;
 
@@ -44,7 +45,7 @@ public class SplitterTask implements Runnable {
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public SplitterTask(
-            InputStream inputStream,
+            InputStream input,
             File outputDirectory,
             WordIndex wordIndex,
             boolean[] pattern,
@@ -54,7 +55,7 @@ public class SplitterTask implements Runnable {
             String beforeLine,
             String afterLine,
             boolean isSmoothing) {
-        this.inputStream = inputStream;
+        this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
@@ -81,9 +82,9 @@ public class SplitterTask implements Runnable {
 
             // initialize sequencer
             Sequencer sequencer =
-                    new Sequencer(inputStream, sequencerOutputDirectory,
-                            wordIndex, pattern, beforeLine, afterLine,
-                            delimiter, isSmoothing);
+                    new Sequencer(input, sequencerOutputDirectory, wordIndex,
+                            pattern, beforeLine, afterLine, delimiter,
+                            isSmoothing);
             sequencer.splitIntoFiles();
 
             File aggregatedOutputDirectory =
@@ -102,8 +103,7 @@ public class SplitterTask implements Runnable {
                                 aggregatedOutputDirectory.getAbsolutePath()
                                         + "/" + splitFile.getName()));
                 Aggregator aggregator =
-                        new Aggregator(input, output, delimiter,
-                                isSmoothing);
+                        new Aggregator(input, output, delimiter, isSmoothing);
                 aggregator.aggregate();
             }
 

@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 /**
- * Calculates counts of lines in a InputStream.
+ * Calculates counts of lines in a {@link InputStream}.
  */
 public class LineCounterTask implements Runnable {
 
@@ -34,9 +34,9 @@ public class LineCounterTask implements Runnable {
      * </ul>
      * 
      * @param input
-     *            InputStream to be read.
+     *            {@link InputStream} to be read.
      * @param output
-     *            OutputStream to be written to.
+     *            {@link OutputStream} to be written to.
      * @param delimiter
      *            Delimiter that separates Sequences and Counts.
      * @param countLines

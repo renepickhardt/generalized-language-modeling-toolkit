@@ -11,7 +11,7 @@ import java.util.HashMap;
 import de.typology.indexes.WordIndex;
 
 /**
- * Splits an InputStream into a sequences of a pattern.
+ * Splits an {@link InputStream} into a sequences of a pattern.
  */
 public class Sequencer {
 
@@ -39,12 +39,12 @@ public class Sequencer {
      * {@code <Sequence><Delimiter>1}.
      * 
      * @param inputStream
-     *            InputStream to be read.
+     *            {@link InputStream} to be read.
      * @param outputDirectory
      *            Directory where <em>indexed files</em> should be
      *            written to.
      * @param wordIndex
-     *            WordIndex of the corpus.
+     *            {@link WordIndex} of the corpus.
      * @param pattern
      *            Pattern about which Sequence should be extracted.
      * @param beforeLine
