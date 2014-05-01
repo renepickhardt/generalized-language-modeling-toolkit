@@ -3,9 +3,20 @@ package de.typology.smoothing;
 import java.io.File;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import de.typology.patterns.PatternTransformer;
 
 public class ModifiedKneserNeySmoother extends KneserNeySmoother {
+
+    private static Logger logger = LogManager.getLogger();
+
+    private double d1;
+
+    private double d2;
+
+    private double d3plus;
 
     public ModifiedKneserNeySmoother(
             File extractedSequenceDirectory,
@@ -22,16 +33,6 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
                         + "/discount-values-mod-kneser-ney.ser");
 
     }
-
-    private double d1;
-
-    private double d2;
-
-    private double d3plus;
-
-    /**
-     * @param args
-     */
 
     @Override
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
@@ -79,12 +80,6 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 
     }
 
-    /**
-     * 
-     * @param sequenceStringPattern
-     * @param sequenceCount
-     * @return
-     */
     @Override
     protected double getDiscountValue(
             String sequenceStringPattern,

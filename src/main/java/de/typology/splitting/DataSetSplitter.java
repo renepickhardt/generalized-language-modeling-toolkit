@@ -28,16 +28,15 @@ import de.typology.utils.Config;
  */
 public class DataSetSplitter {
 
+    private Logger logger = LogManager.getLogger();
+
     private File directory;
 
     private String inputName;
 
-    private Logger logger = LogManager.getLogger(getClass().getName());
-
     public DataSetSplitter(
             File directory,
             String inputName) {
-
         this.directory = directory;
         this.inputName = inputName;
     }

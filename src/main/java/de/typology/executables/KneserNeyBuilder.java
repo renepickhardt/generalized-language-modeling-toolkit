@@ -25,8 +25,7 @@ import de.typology.utils.Config;
 
 public class KneserNeyBuilder {
 
-    private static Logger logger = LogManager.getLogger(KneserNeyBuilder.class
-            .getName());
+    private static Logger logger = LogManager.getLogger();
 
     private Config config;
 

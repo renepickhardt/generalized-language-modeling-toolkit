@@ -30,6 +30,8 @@ import de.typology.patterns.PatternTransformer;
  */
 public class ContinuationCounter {
 
+    private static Logger logger = LogManager.getLogger();
+
     private Path inputDirectory;
 
     private Path outputDirectory;
@@ -41,8 +43,6 @@ public class ContinuationCounter {
     private int numberOfCores;
 
     private boolean deleteTempFiles;
-
-    private Logger logger = LogManager.getLogger(getClass().getName());
 
     public ContinuationCounter(
             Path inputDirectory,

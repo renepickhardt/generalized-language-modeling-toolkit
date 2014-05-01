@@ -21,7 +21,7 @@ import de.typology.utils.Config;
 
 public class KneserNeySmoother {
 
-    protected Logger logger = LogManager.getLogger(getClass().getName());
+    private static Logger logger = LogManager.getLogger();
 
     // location of trained language models
     protected File absoluteDirectory;
@@ -91,12 +91,6 @@ public class KneserNeySmoother {
     /**
      * if smoothComplex==false: calculate traditional Kneser-Ney smoothing based
      * on Chen and Goodman
-     * 
-     * @param inputSequenceFile
-     * @param resultFile
-     * @param smoothComplex
-     * @param maxModelLength
-     * @param cores
      */
     public void smooth(
             File inputSequenceFile,
@@ -276,11 +270,6 @@ public class KneserNeySmoother {
      * P(w1...w5) = P(w5|w1...w4) * P(w4|w1...w3) *...* P(w1)
      * 
      * later it could be possible to calculate the log of the sequence
-     * 
-     * @param sequence
-     * @param sequenceLength
-     * @param sequenceStringPattern
-     * @return
      */
     protected double calculateProbability(
             String sequence,
@@ -319,11 +308,6 @@ public class KneserNeySmoother {
      * 
      * it will use smoothing with interpolation and backof in order to calculate
      * the probabilities from the training data
-     * 
-     * @param sequence
-     * @param sequenceLength
-     * @param sequenceStringPattern
-     * @return
      */
     protected double calculateConditionalProbability(
             String sequence,
@@ -578,10 +562,6 @@ public class KneserNeySmoother {
      * Controller method to either calculate the discount values for a given
      * language model and store the results in a serialized file or if that file
      * exists retrieve those values from that file
-     * 
-     * @param absoluteDirectory
-     * @param continuationDirectory
-     * @return
      */
     @SuppressWarnings("unchecked")
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
@@ -624,10 +604,6 @@ public class KneserNeySmoother {
     /**
      * calculates the discount values for kneser ney smoothing of a language
      * model with
-     * 
-     * @param discountTypeValuesMap
-     * @param workingDirectory
-     * @return
      */
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
             HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
@@ -695,10 +671,6 @@ public class KneserNeySmoother {
     /**
      * sequenceCount is not not needed here. Yet, it is needed for modified
      * Kneser-Ney
-     * 
-     * @param sequenceStringPattern
-     * @param sequenceCount
-     * @return
      */
     protected double getDiscountValue(
             String sequenceStringPattern,

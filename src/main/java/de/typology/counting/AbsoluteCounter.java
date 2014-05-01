@@ -20,6 +20,8 @@ import de.typology.patterns.PatternTransformer;
  */
 public class AbsoluteCounter {
 
+    private static Logger logger = LogManager.getLogger();
+
     private Path input;
 
     private Path outputDirectory;
@@ -35,8 +37,6 @@ public class AbsoluteCounter {
     private int numberOfCores;
 
     private boolean deleteTempFiles;
-
-    private Logger logger = LogManager.getLogger(getClass().getName());
 
     public AbsoluteCounter(
             Path input,

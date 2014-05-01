@@ -19,6 +19,8 @@ import de.typology.indexing.WordIndex;
  */
 public class PatternCounterTask implements Runnable {
 
+    private static Logger logger = LogManager.getLogger();
+
     private InputStream input;
 
     private Path outputDirectory;
@@ -36,8 +38,6 @@ public class PatternCounterTask implements Runnable {
     private boolean isContinuation;
 
     private boolean deleteTempFiles;
-
-    private Logger logger = LogManager.getLogger(getClass().getName());
 
     /**
      * Expects an {@code input} where each line contains a number of words

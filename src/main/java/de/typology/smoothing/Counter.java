@@ -11,6 +11,12 @@ import java.io.InputStream;
 
 public class Counter {
 
+    private static int columnNumberStartZero;
+
+    private static File directory;
+
+    private static long currentCountForDirectory;
+
     public static long countLinesInDirectory(File directory) {
         long totalCount = 0;
         for (File file : directory.listFiles()) {
@@ -51,12 +57,6 @@ public class Counter {
         }
         return 0;
     }
-
-    private static int columnNumberStartZero;
-
-    private static File directory;
-
-    private static long currentCountForDirectory;
 
     public static long countColumnCountsInDirectory(
             int columnNumberStartZero,
@@ -100,10 +100,6 @@ public class Counter {
 
     /**
      * used for aggregating the counts in a directory
-     * 
-     * @param count
-     * @param directory
-     * @return
      */
     public static long aggregateCountsInDirectory(File directory) {
         long totalCount = 0;
@@ -115,10 +111,6 @@ public class Counter {
 
     /**
      * used for calculating the count of counts in smoothing methods
-     * 
-     * @param count
-     * @param directoryName
-     * @return
      */
     public static long aggregateCounts(File file) {
         long totalCount = 0;
@@ -148,10 +140,6 @@ public class Counter {
 
     /**
      * used for calculating the count of counts in smoothing methods
-     * 
-     * @param count
-     * @param directory
-     * @return
      */
     public static long countCountsInDirectory(
             int count,
@@ -168,10 +156,6 @@ public class Counter {
 
     /**
      * used for calculating the count of counts in smoothing methods
-     * 
-     * @param count
-     * @param directoryName
-     * @return
      */
     public static long countCounts(int count, File file, String skipSequence) {
         long totalCount = 0;
@@ -206,4 +190,5 @@ public class Counter {
         }
         return totalCount;
     }
+
 }

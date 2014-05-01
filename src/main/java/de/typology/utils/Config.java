@@ -24,6 +24,10 @@ import java.util.Properties;
  */
 public class Config extends Properties {
 
+    private static final long serialVersionUID = -4439565094382127683L;
+
+    private static Config instance = null;
+
     // START CONFIG VALUES
 
     // BASIC SETTINGS //////////////////////////////////////////////////////////
@@ -190,11 +194,7 @@ public class Config extends Properties {
 
     // END CONFIG VALUES
 
-    private static final long serialVersionUID = -4439565094382127683L;
-
-    private static Config instance = null;
-
-    public Config() throws IOException, IllegalArgumentException,
+    private Config() throws IOException, IllegalArgumentException,
             IllegalAccessException {
         String file = "config.txt";
         try (BufferedReader r =
