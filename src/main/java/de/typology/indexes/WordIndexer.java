@@ -7,9 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
@@ -18,65 +16,63 @@ import java.util.TreeMap;
  */
 public class WordIndexer {
 
-    public long buildIndex(
+    public void buildIndex(
             InputStream input,
             OutputStream output,
             int maxCountDivider,
             String beforeLine,
             String afterLine) throws IOException {
-        TreeMap<String, Long> wordMap = new TreeMap<String, Long>();
+        // calculate counts of words
+        TreeMap<String, Long> wordCounts = new TreeMap<String, Long>();
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(input))) {
             String line;
-            // long lineCount=0L;
             while ((line = reader.readLine()) != null) {
                 line = beforeLine + line + afterLine;
                 String[] words = line.split("\\s+");
+
                 for (String word : words) {
-                    Long curCount = wordMap.get(word);
-                    if (curCount != null) {
-                        wordMap.put(word, curCount + 1L);
+                    Long count = wordCounts.get(word);
+                    if (count != null) {
+                        wordCounts.put(word, count + 1L);
                     } else {
-                        wordMap.put(word, 1L);
+                        wordCounts.put(word, 1L);
                     }
                 }
             }
         }
 
         // summarize all word counts
-        Long totalCount = 0L;
-        for (Entry<String, Long> word : wordMap.entrySet()) {
-            totalCount += word.getValue();
+        long sumCount = 0L;
+        for (long count : wordCounts.values()) {
+            sumCount += count;
         }
 
         // calculate max count per file
-        Long maxCountPerFile = totalCount / maxCountDivider;
+        Long maxCountPerFile = sumCount / maxCountDivider;
         if (maxCountPerFile < 1L) {
             maxCountPerFile = 1L;
         }
 
         // build index
-        try (BufferedWriter indexWriter =
+        try (BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(output))) {
-            Long currentFileCount = 0L;
+            long currentFileCount = 0L;
             int fileCount = 0;
-            Iterator<Map.Entry<String, Long>> wordMapIterator =
-                    wordMap.entrySet().iterator();
-            Entry<String, Long> word;
 
-            while (wordMapIterator.hasNext()) {
-                // get next word
-                word = wordMapIterator.next();
+            for (Map.Entry<String, Long> wordCount : wordCounts.entrySet()) {
+                String word = wordCount.getKey();
+                long count = wordCount.getValue();
+
                 if (fileCount == 0
-                        || currentFileCount + word.getValue() > maxCountPerFile) {
-                    indexWriter.write(word.getKey() + "\t" + fileCount + "\n");
-                    currentFileCount = word.getValue();
-                    fileCount++;
+                        || currentFileCount + count > maxCountPerFile) {
+                    writer.write(word + "\t" + fileCount + "\n");
+                    currentFileCount = count;
+                    ++fileCount;
                 } else {
-                    currentFileCount += word.getValue();
+                    currentFileCount += count;
                 }
             }
         }
-        return maxCountPerFile;
     }
 }

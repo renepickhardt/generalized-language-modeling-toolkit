@@ -1,7 +1,5 @@
 package de.typology.indexes;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,10 +41,8 @@ public class WordIndexerTest {
     @Test
     public void buildIndexTest() throws IOException {
         WordIndexer wi = new WordIndexer();
-        long maxCountPerFile =
-                wi.buildIndex(Files.newInputStream(trainingFile.toPath()),
-                        Files.newOutputStream(indexFile.toPath()), 10,
-                        "<fs> <s> ", " </s>");
-        assertEquals(13, maxCountPerFile);
+        wi.buildIndex(Files.newInputStream(trainingFile.toPath()),
+                Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
+                " </s>");
     }
 }
