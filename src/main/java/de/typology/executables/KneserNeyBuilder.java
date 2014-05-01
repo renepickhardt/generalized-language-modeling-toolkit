@@ -216,11 +216,9 @@ public class KneserNeyBuilder {
                         + config.modelLength + ".txt");
 
         TestSequenceExtractor testSequenceExtractor =
-                new TestSequenceExtractor(testSequences.toFile(),
-                        absoluteDirectory.toFile(),
-                        continuationDirectory.toFile(),
-                        testExtractOutputDirectory.toFile(), "\t",
-                        config.modelLength, config.numberOfCores);
+                new TestSequenceExtractor(testSequences, absoluteDirectory,
+                        continuationDirectory, testExtractOutputDirectory,
+                        "\t", config.modelLength, config.numberOfCores);
         testSequenceExtractor.extractSequences();
         testSequenceExtractor.extractContinuationSequences();
     }

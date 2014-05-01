@@ -1,10 +1,11 @@
 package de.typology.extracting;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,13 +21,13 @@ import de.typology.patterns.PatternTransformer;
  */
 public class TestSequenceExtractor {
 
-    private File testSequenceFile;
+    private Path testSequenceFile;
 
-    private File absoluteDirectory;
+    private Path absoluteDirectory;
 
-    private File continuationDirectory;
+    private Path continuationDirectory;
 
-    private File outputDirectory;
+    private Path outputDirectory;
 
     private String delimiter;
 
@@ -35,10 +36,10 @@ public class TestSequenceExtractor {
     private int numberOfCores;
 
     public TestSequenceExtractor(
-            File testSequenceFile,
-            File absoluteDirectory,
-            File continuationDirectory,
-            File outputDirectory,
+            Path testSequenceFile,
+            Path absoluteDirectory,
+            Path continuationDirectory,
+            Path outputDirectory,
             String delimiter,
             int modelLength,
             int numberOfCores) throws IOException {
@@ -50,7 +51,7 @@ public class TestSequenceExtractor {
         this.modelLength = modelLength;
         this.numberOfCores = numberOfCores;
 
-        Files.createDirectory(outputDirectory.toPath());
+        Files.createDirectory(outputDirectory);
     }
 
     public void extractSequences() {
@@ -58,7 +59,8 @@ public class TestSequenceExtractor {
         ArrayList<String> sequences = new ArrayList<String>();
         try {
             BufferedReader testSequenceReader =
-                    new BufferedReader(new FileReader(testSequenceFile));
+                    Files.newBufferedReader(testSequenceFile,
+                            Charset.defaultCharset());
             String line;
             while ((line = testSequenceReader.readLine()) != null) {
                 sequences.add(line);
@@ -83,17 +85,15 @@ public class TestSequenceExtractor {
             // extract absolute sequences
             String absoluteStringPattern =
                     PatternTransformer.getStringPattern(absolutePattern);
-            File absoluteworkingDirectory =
-                    new File(absoluteDirectory.getAbsolutePath() + "/"
-                            + absoluteStringPattern);
-            File absoluteOutputDirectory =
-                    new File(outputDirectory + "/"
-                            + absoluteDirectory.getName() + "/"
-                            + absoluteStringPattern);
+            Path absoluteworkingDirectory =
+                    absoluteDirectory.resolve(absoluteStringPattern);
+            Path absoluteOutputDirectory =
+                    outputDirectory.resolve(absoluteDirectory.getFileName())
+                            .resolve(absoluteStringPattern);
             SequenceExtractorTask absoluteSET =
                     new SequenceExtractorTask(sequences, absolutePattern,
-                            absoluteworkingDirectory, absoluteOutputDirectory,
-                            delimiter);
+                            absoluteworkingDirectory.toFile(),
+                            absoluteOutputDirectory.toFile(), delimiter);
             executorService.execute(absoluteSET);
 
         }
@@ -107,12 +107,13 @@ public class TestSequenceExtractor {
 
     }
 
-    public void extractContinuationSequences() {
+    public void extractContinuationSequences() throws IOException {
         // read test sequences into HashSet
         ArrayList<String> sequences = new ArrayList<String>();
         try {
             BufferedReader testSequenceReader =
-                    new BufferedReader(new FileReader(testSequenceFile));
+                    Files.newBufferedReader(testSequenceFile,
+                            Charset.defaultCharset());
             String line;
             while ((line = testSequenceReader.readLine()) != null) {
                 sequences.add(line);
@@ -129,24 +130,28 @@ public class TestSequenceExtractor {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        for (File continuationTypeDirectory : continuationDirectory.listFiles()) {
-            // extract absolute sequences
-            String continuationStringPattern =
-                    continuationTypeDirectory.getName();
-            boolean[] continuationPattern =
-                    PatternTransformer
-                            .getBooleanPattern(continuationStringPattern
-                                    .replaceAll("_", "0"));
-            File continuationOutputDirectory =
-                    new File(outputDirectory + "/"
-                            + continuationDirectory.getName() + "/"
-                            + continuationStringPattern);
-            SequenceExtractorTask continuationSET =
-                    new SequenceExtractorTask(sequences, continuationPattern,
-                            continuationTypeDirectory,
-                            continuationOutputDirectory, delimiter);
-            executorService.execute(continuationSET);
+        try (DirectoryStream<Path> continuationFiles =
+                Files.newDirectoryStream(continuationDirectory)) {
+            for (Path continuationTypeDirectory : continuationFiles) {
+                // extract absolute sequences
+                String continuationStringPattern =
+                        continuationTypeDirectory.getFileName().toString();
+                boolean[] continuationPattern =
+                        PatternTransformer
+                                .getBooleanPattern(continuationStringPattern
+                                        .replaceAll("_", "0"));
+                Path continuationOutputDirectory =
+                        outputDirectory.resolve(
+                                continuationDirectory.getFileName()).resolve(
+                                continuationStringPattern);
+                SequenceExtractorTask continuationSET =
+                        new SequenceExtractorTask(sequences,
+                                continuationPattern,
+                                continuationTypeDirectory.toFile(),
+                                continuationOutputDirectory.toFile(), delimiter);
+                executorService.execute(continuationSET);
 
+            }
         }
         executorService.shutdown();
         try {
@@ -166,16 +171,16 @@ public class TestSequenceExtractor {
     //        // int cores = Runtime.getRuntime().availableProcessors();
     //        ExecutorService executorService = Executors.newFixedThreadPool(cores);
     //        for (boolean[] absolutePattern : absolutePatterns) {
-    //            File originalSequencesDirectory =
-    //                    new File(
+    //            Path originalSequencesDirectory =
+    //                    new Path(
     //                            outputDirectory.getAbsolutePath()
     //                                    + "/"
     //                                    + absoluteDirectory.getName()
     //                                    + "/"
     //                                    + PatternTransformer
     //                                            .getStringPattern(absolutePattern));
-    //            File outputDirectory =
-    //                    new File(this.outputDirectory.getAbsolutePath()
+    //            Path outputDirectory =
+    //                    new Path(this.outputDirectory.getAbsolutePath()
     //                            + "/continuation");
     //            ContinuationExtractorTask cet =
     //                    new ContinuationExtractorTask(originalSequencesDirectory,
