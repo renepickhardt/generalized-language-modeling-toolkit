@@ -71,21 +71,22 @@ public class TestSequenceExtractor {
         List<boolean[]> absolutePatterns =
                 PatternBuilder.getGLMForSmoothingPatterns(modelLength);
 
+        Path absoluteOutputDirectory =
+                outputDirectory.resolve(absoluteDirectory.getFileName());
+        Files.createDirectory(absoluteOutputDirectory);
+
         for (boolean[] absolutePattern : absolutePatterns) {
             String absoluteStringPattern =
                     PatternTransformer.getStringPattern(absolutePattern);
-            Path absoluteworkingDirectory =
+            Path absoluteWorkingDirectory =
                     absoluteDirectory.resolve(absoluteStringPattern);
-            Path absoluteOutputDirectory =
-                    outputDirectory.resolve(absoluteDirectory.getFileName())
-                            .resolve(absoluteStringPattern);
+            Path absoluteOutput =
+                    absoluteOutputDirectory.resolve(absoluteStringPattern);
 
             SequenceExtractorTask sequenceExtractorTask =
                     new SequenceExtractorTask(sequences, absolutePattern,
-                            absoluteworkingDirectory.toFile(),
-                            absoluteOutputDirectory.toFile(), delimiter);
+                            absoluteWorkingDirectory, absoluteOutput, delimiter);
             executorService.execute(sequenceExtractorTask);
-
         }
 
         executorService.shutdown();
@@ -97,6 +98,10 @@ public class TestSequenceExtractor {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
+        Path continuationOutputDirectory =
+                outputDirectory.resolve(continuationDirectory.getFileName());
+        Files.createDirectory(continuationOutputDirectory);
+
         try (DirectoryStream<Path> continuationFiles =
                 Files.newDirectoryStream(continuationDirectory)) {
             for (Path continuationTypeDirectory : continuationFiles) {
@@ -106,18 +111,15 @@ public class TestSequenceExtractor {
                         PatternTransformer
                                 .getBooleanPattern(continuationStringPattern
                                         .replaceAll("_", "0"));
-                Path continuationOutputDirectory =
-                        outputDirectory.resolve(
-                                continuationDirectory.getFileName()).resolve(
-                                continuationStringPattern);
+                Path continuationOutput =
+                        continuationOutputDirectory
+                                .resolve(continuationStringPattern);
 
                 SequenceExtractorTask sequenceExtractorTask =
                         new SequenceExtractorTask(sequences,
-                                continuationPattern,
-                                continuationTypeDirectory.toFile(),
-                                continuationOutputDirectory.toFile(), delimiter);
+                                continuationPattern, continuationTypeDirectory,
+                                continuationOutput, delimiter);
                 executorService.execute(sequenceExtractorTask);
-
             }
         }
 

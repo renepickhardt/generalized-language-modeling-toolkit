@@ -2,22 +2,19 @@ package de.typology.extracting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
+import java.util.Set;
 
 /**
  * This class takes an List of sequences and a directory of Files as an
  * input and writes all occurrences of the sequences into new files in the
  * outputDirectory
- * 
- * @author Martin Koerner
- * 
  */
 public class SequenceExtractorTask implements Runnable {
 
@@ -25,79 +22,64 @@ public class SequenceExtractorTask implements Runnable {
 
     private boolean[] pattern;
 
-    private File workingDirectory;
+    private Path workingDirectory;
 
-    private File outputDirectory;
+    private Path outputDirectory;
 
     private String delimiter;
 
     public SequenceExtractorTask(
             List<String> originalSequences,
             boolean[] pattern,
-            File workingDirectory,
-            File outputDirectory,
-            String delimiter) {
+            Path workingDirectory,
+            Path outputDirectory,
+            String delimiter) throws IOException {
         this.originalSequences = originalSequences;
         this.pattern = pattern;
-
         this.workingDirectory = workingDirectory;
         this.outputDirectory = outputDirectory;
-        if (this.outputDirectory.exists()) {
-            try {
-                FileUtils.deleteDirectory(this.outputDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        this.outputDirectory.mkdirs();
         this.delimiter = delimiter;
 
+        Files.createDirectory(outputDirectory);
     }
 
     @Override
     public void run() {
-        HashSet<String> newSequences = getNewSequences();
+        try {
+            Set<String> newSequences = getNewSequences();
 
-        for (File trainingFile : workingDirectory.listFiles()) {
-            File outputFile =
-                    new File(outputDirectory.getAbsolutePath() + "/"
-                            + trainingFile.getName());
-            if (trainingFile.getName().equals("all")) {
-                try {
-                    FileUtils.copyFile(trainingFile, outputFile);
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            } else {
-                try {
-                    BufferedReader trainingFileReader =
-                            new BufferedReader(new FileReader(trainingFile));
-                    BufferedWriter outputFileWriter =
-                            new BufferedWriter(new FileWriter(outputFile));
-                    String line;
-
-                    while ((line = trainingFileReader.readLine()) != null) {
-                        if (newSequences.contains(line.split(delimiter)[0])) {
-
-                            outputFileWriter.write(line + "\n");
+            try (DirectoryStream<Path> trainingFiles =
+                    Files.newDirectoryStream(workingDirectory)) {
+                for (Path trainingFile : trainingFiles) {
+                    Path outputFile =
+                            outputDirectory.resolve(trainingFile.getFileName());
+                    if (trainingFile.getFileName().toString().equals("all")) {
+                        Files.copy(trainingFile, outputFile);
+                    } else {
+                        try (BufferedReader reader =
+                                Files.newBufferedReader(trainingFile,
+                                        Charset.defaultCharset());
+                                BufferedWriter writer =
+                                        Files.newBufferedWriter(outputFile,
+                                                Charset.defaultCharset())) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                if (newSequences
+                                        .contains(line.split(delimiter)[0])) {
+                                    writer.write(line + "\n");
+                                }
+                            }
                         }
                     }
-                    trainingFileReader.close();
-                    outputFileWriter.close();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 }
             }
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
     }
 
-    private HashSet<String> getNewSequences() {
-        HashSet<String> newSequences = new HashSet<String>();
+    private Set<String> getNewSequences() {
+        Set<String> newSequences = new HashSet<String>();
 
         for (String originalLine : originalSequences) {
             // modify sequences for continuation
@@ -143,6 +125,7 @@ public class SequenceExtractorTask implements Runnable {
                 linePointer++;
             }
         }
+
         return newSequences;
     }
 }
