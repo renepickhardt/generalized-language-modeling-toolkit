@@ -102,7 +102,7 @@ public class Sequencer {
                                 sequence += words[pointer + i] + " ";
                             }
                         }
-                        sequence.replaceFirst(" $", "");
+                        sequence = sequence.replaceFirst(" $", "");
                         sequence += delimiter + "1\n";
 
                         writers.get(wordIndex.rank(sequence.split(" ")[0]))
