@@ -1,6 +1,5 @@
 package de.typology.patterns;
 
-import java.util.Arrays;
 
 /**
  * A class for transforming the used boolean pattern into different formats like
@@ -10,17 +9,6 @@ import java.util.Arrays;
  * 
  */
 public class PatternTransformer {
-
-    public static void main(String[] args) {
-        boolean[] bool1 = {
-            true, false, true, true
-        };
-        System.out.println(getStringPattern(bool1));
-        int i = 8;
-        boolean[] bool2 =
-                PatternTransformer.getBooleanPattern(Integer.toBinaryString(i));
-        System.out.println(Arrays.toString(bool2));
-    }
 
     public static String getStringPattern(boolean[] booleanPattern) {
         String stringPattern = new String();

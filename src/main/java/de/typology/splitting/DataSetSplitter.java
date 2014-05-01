@@ -28,18 +28,6 @@ import de.typology.utils.Config;
  */
 public class DataSetSplitter {
 
-    public static void main(String[] args) throws IOException {
-        String outputDirectory =
-                Config.get().outputDirectory + Config.get().inputDataSet;
-
-        DataSetSplitter dss =
-                new DataSetSplitter(new File(outputDirectory), "normalized.txt");
-        dss.split("training.txt", "learning.txt", "testing.txt");
-        dss.splitIntoSequences(new File(outputDirectory + "/training.txt"),
-                Config.get().modelLength, Config.get().numberOfQueries);
-
-    }
-
     private File directory;
 
     private String inputName;
