@@ -6,13 +6,13 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -80,156 +80,123 @@ public class ContinuationCounter {
         Map<boolean[], boolean[]> continuationMap =
                 generateContinuationMap(patterns);
 
-        HashSet<boolean[]> finishedPatterns = new HashSet<boolean[]>();
+        Set<boolean[]> finishedPatterns = new HashSet<boolean[]>();
 
-        while (finishedPatterns.size() < continuationMap.size()) {
-            ArrayList<boolean[]> currentPatterns = new ArrayList<boolean[]>();
-            // initialize executerService
+        while (finishedPatterns.size() != continuationMap.size()) {
             ExecutorService executorService =
                     Executors.newFixedThreadPool(numberOfCores);
 
+            Set<boolean[]> currentPatterns = new HashSet<boolean[]>();
+
             for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
-                // list for storing patterns that are currently computed
+                boolean[] key = entry.getKey();
+                boolean[] value = entry.getValue();
 
-                if (!finishedPatterns.contains(entry.getKey())) {
-                    if (!PatternTransformer.getStringPattern(entry.getValue())
-                            .contains("0")) {
-                        // read absolute files
-                        currentPatterns.add(entry.getKey());
-                        logger.info("build continuation for "
-                                + PatternTransformer.getStringPattern(entry
-                                        .getKey())
-                                + " from absolute "
-                                + PatternTransformer.getStringPattern(entry
-                                        .getValue()));
+                if (finishedPatterns.contains(key)) {
+                    continue;
+                }
 
-                        String inputPatternLabel =
-                                PatternTransformer.getStringPattern(entry
-                                        .getValue());
-                        boolean[] outputPattern =
-                                PatternTransformer
-                                        .getBooleanPattern(PatternTransformer
-                                                .getStringPattern(
-                                                        entry.getKey())
-                                                .replaceAll("0", ""));
-                        String outputPatternLabel =
-                                PatternTransformer.getStringPattern(
-                                        entry.getKey()).replaceAll("0", "_");
-
-                        Path currentAbsoluteworkingDirectory =
-                                inputDirectory.resolve(inputPatternLabel);
-
-                        logger.debug("inputPattern: "
-                                + PatternTransformer.getStringPattern(entry
-                                        .getValue()));
-                        logger.debug("inputPatternLabel: " + inputPatternLabel);
-                        logger.debug("outputPattern: "
-                                + PatternTransformer
-                                        .getStringPattern(outputPattern));
-                        logger.debug("newPatternLabel: " + outputPatternLabel);
-                        logger.debug("patternForModifier: "
-                                + PatternTransformer.getStringPattern(entry
-                                        .getKey()));
-
-                        splitType(executorService,
-                                currentAbsoluteworkingDirectory,
-                                outputDirectory, outputPattern,
-                                outputPatternLabel, entry.getKey(), wordIndex,
-                                true);
-                    } else {
-                        if (finishedPatterns.contains(entry.getValue())) {
-                            // read continuation files
-                            currentPatterns.add(entry.getKey());
-                            logger.info("build continuation for "
-                                    + PatternTransformer.getStringPattern(entry
-                                            .getKey())
-                                    + " from continuation "
-                                    + PatternTransformer.getStringPattern(entry
-                                            .getValue()));
-
-                            String inputPatternLabel =
-                                    PatternTransformer.getStringPattern(
-                                            entry.getValue()).replaceAll("0",
-                                            "_");
-                            boolean[] outputPattern =
-                                    PatternTransformer
-                                            .getBooleanPattern(PatternTransformer
-                                                    .getStringPattern(
-                                                            entry.getKey())
-                                                    .replaceAll("0", ""));
-                            String outputPatternLabel =
-                                    PatternTransformer.getStringPattern(
-                                            entry.getKey())
-                                            .replaceAll("0", "_");
-
-                            Path currentContinuationworkingDirectory =
-                                    outputDirectory.resolve(inputPatternLabel);
-
-                            // build patternForModifier
-                            boolean[] patternForModifier =
-                                    new boolean[Integer
-                                            .bitCount(PatternTransformer
-                                                    .getIntPattern(entry
-                                                            .getValue()))];
-                            System.out.println(outputPatternLabel + "<--"
-                                    + inputPatternLabel + " "
-                                    + patternForModifier.length);
-                            int patternPointer = 0;
-                            for (int i = 0; i < entry.getValue().length; i++) {
-                                if (entry.getKey()[i] && entry.getValue()[i]) {
-                                    patternForModifier[patternPointer] = true;
-                                    patternPointer++;
-                                } else {
-                                    if (!entry.getKey()[i]
-                                            && entry.getValue()[i]) {
-                                        patternForModifier[patternPointer] =
-                                                false;
-                                        patternPointer++;
-                                    }
-                                }
-                            }
-
-                            logger.debug("inputPattern: "
-                                    + PatternTransformer.getStringPattern(entry
-                                            .getValue()));
-                            logger.debug("inputPatternLabel: "
-                                    + inputPatternLabel);
-                            logger.debug("outputPattern: "
-                                    + PatternTransformer
-                                            .getStringPattern(outputPattern));
-                            logger.debug("newPatternLabel: "
-                                    + outputPatternLabel);
-                            logger.debug("patternForModifier: "
-                                    + PatternTransformer
-                                            .getStringPattern(patternForModifier));
-
-                            splitType(executorService,
-                                    currentContinuationworkingDirectory,
-                                    outputDirectory, outputPattern,
-                                    outputPatternLabel, patternForModifier,
-                                    wordIndex, false);
-
-                        }
-                    }
+                if (!PatternTransformer.getStringPattern(value).contains("0")) {
+                    currentPatterns.add(key);
+                    calcFromAbsolute(executorService, key, value);
+                } else if (finishedPatterns.contains(value)) {
+                    currentPatterns.add(key);
+                    calcFromContinuation(executorService, key, value);
                 }
             }
 
-            executorService.shutdown();
-            logger.info("end of this round of calculation");
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE,
-                        TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // Interrupted
-                throw e;
-            }
+            finishedPatterns.addAll(currentPatterns);
 
-            // add currently computed patterns to finishedPatterns
-            for (boolean[] currentPattern : currentPatterns) {
-                finishedPatterns.add(currentPattern);
+            executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+            logger.info("end of this round of calculation");
+        }
+
+    }
+
+    private void calcFromAbsolute(
+            ExecutorService executorService,
+            boolean[] key,
+            boolean[] value) throws IOException {
+        logger.info("build continuation for "
+                + PatternTransformer.getStringPattern(key) + " from absolute "
+                + PatternTransformer.getStringPattern(value));
+
+        String inputPatternLabel = PatternTransformer.getStringPattern(value);
+        boolean[] outputPattern =
+                PatternTransformer.getBooleanPattern(PatternTransformer
+                        .getStringPattern(key).replaceAll("0", ""));
+        String outputPatternLabel =
+                PatternTransformer.getStringPattern(key).replaceAll("0", "_");
+
+        Path currentAbsoluteworkingDirectory =
+                inputDirectory.resolve(inputPatternLabel);
+
+        logger.debug("inputPattern: "
+                + PatternTransformer.getStringPattern(value));
+        logger.debug("inputPatternLabel: " + inputPatternLabel);
+        logger.debug("outputPattern: "
+                + PatternTransformer.getStringPattern(outputPattern));
+        logger.debug("newPatternLabel: " + outputPatternLabel);
+        logger.debug("patternForModifier: "
+                + PatternTransformer.getStringPattern(key));
+
+        splitType(executorService, currentAbsoluteworkingDirectory,
+                outputDirectory, outputPattern, outputPatternLabel, key,
+                wordIndex, true);
+    }
+
+    private void calcFromContinuation(
+            ExecutorService executorService,
+            boolean[] key,
+            boolean[] value) throws IOException {
+        logger.info("build continuation for "
+                + PatternTransformer.getStringPattern(key)
+                + " from continuation "
+                + PatternTransformer.getStringPattern(value));
+
+        String inputPatternLabel =
+                PatternTransformer.getStringPattern(value).replaceAll("0", "_");
+        boolean[] outputPattern =
+                PatternTransformer.getBooleanPattern(PatternTransformer
+                        .getStringPattern(key).replaceAll("0", ""));
+        String outputPatternLabel =
+                PatternTransformer.getStringPattern(key).replaceAll("0", "_");
+
+        Path currentContinuationworkingDirectory =
+                outputDirectory.resolve(inputPatternLabel);
+
+        // build patternForModifier
+        boolean[] patternForModifier =
+                new boolean[Integer.bitCount(PatternTransformer
+                        .getIntPattern(value))];
+        System.out.println(outputPatternLabel + "<--" + inputPatternLabel + " "
+                + patternForModifier.length);
+        int patternPointer = 0;
+        for (int i = 0; i < value.length; i++) {
+            if (key[i] && value[i]) {
+                patternForModifier[patternPointer] = true;
+                patternPointer++;
+            } else {
+                if (!key[i] && value[i]) {
+                    patternForModifier[patternPointer] = false;
+                    patternPointer++;
+                }
             }
         }
 
+        logger.debug("inputPattern: "
+                + PatternTransformer.getStringPattern(value));
+        logger.debug("inputPatternLabel: " + inputPatternLabel);
+        logger.debug("outputPattern: "
+                + PatternTransformer.getStringPattern(outputPattern));
+        logger.debug("newPatternLabel: " + outputPatternLabel);
+        logger.debug("patternForModifier: "
+                + PatternTransformer.getStringPattern(patternForModifier));
+
+        splitType(executorService, currentContinuationworkingDirectory,
+                outputDirectory, outputPattern, outputPatternLabel,
+                patternForModifier, wordIndex, false);
     }
 
     private void splitType(
@@ -278,14 +245,6 @@ public class ContinuationCounter {
 
     }
 
-    /**
-     * Removes some entries from continuationMap:
-     * 
-     * <ul>
-     * <li>remove if key == value</li>
-     * <li>remove if first two are false</li>
-     * </ul>
-     */
     private static Map<boolean[], boolean[]> generateContinuationMap(
             List<boolean[]> patterns) {
         Map<boolean[], boolean[]> map =
