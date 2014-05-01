@@ -79,6 +79,9 @@ public class Sequencer {
         this.completeLine = completeLine;
     }
 
+    /**
+     * Perform the actual splitting and writing output.
+     */
     public void splitIntoFiles() throws IOException {
         // TODO: bufferSize calculation
         try (BufferedReader bufferedReader =

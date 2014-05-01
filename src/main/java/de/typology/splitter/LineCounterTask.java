@@ -22,15 +22,15 @@ public class LineCounterTask implements Runnable {
     private boolean countLines;
 
     /**
-     * Expects an {@code inputStream} where each line is formatted as
-     * {@code <Sequence><Delimiter><Count>}. Writes to {@code outputStream}:
-     * {@code <1+Count><1Count><2Count><3Count>} where:
+     * Expects an {@code input} where each line is formatted as
+     * {@code <Sequence><Delimiter><Count>}. Writes to {@code output}:
+     * {@code <1+Count><1Count><2Count><3+Count>} where:
      * 
      * <ul>
      * <li>{@code 1+Count} is the sum of the counts of all lines.</li>
-     * <li>{@code 1Count} is the number of lines where count is {@code 1}.</li>
-     * <li>{@code 2Count} is the number of lines where count is {@code 2}.</li>
-     * <li>{@code 3+Count} is the number of line where count is {@code 3+}.</li>
+     * <li>{@code 1Count} is the number of lines where count was {@code 1}.</li>
+     * <li>{@code 2Count} is the number of lines where count was {@code 2}.</li>
+     * <li>{@code 3+Count} is the number of line where count was {@code 3+}.</li>
      * </ul>
      * 
      * @param input
@@ -38,7 +38,7 @@ public class LineCounterTask implements Runnable {
      * @param output
      *            OutputStream to be written to.
      * @param delimiter
-     *            Delimiter that separates Sequence and Count.
+     *            Delimiter that separates Sequences and Counts.
      * @param countLines
      *            If {@code true} {@code 1+Count} will count the number of lines
      *            and all other counts will be zero. If {@code false} will act

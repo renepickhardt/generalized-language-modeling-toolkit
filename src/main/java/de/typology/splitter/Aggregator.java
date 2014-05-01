@@ -12,11 +12,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * A class for aggregating sequences by counting their occurrences. Expects an
- * inputStream with a size that is 30% of the allocated main memory.
+ * Groups multiple sequences with counts into distinct sequences with aggregated
+ * counts.
  * 
- * @author Martin Koerner
- * 
+ * Expects an InputStream with a size that is 30% of the allocated main memory.
  */
 public class Aggregator {
 
@@ -28,6 +27,33 @@ public class Aggregator {
 
     private boolean additionalCounts;
 
+    /**
+     * Expects an {@code input} where each line is formatted as
+     * {@code <Sequence><Delimiter><Count>}. For each distinct sequence it
+     * writes to {@code output}:
+     * {@code <Sequence><Delimiter><1+Count><Delimiter><1Count><Delimiter><2Count><Delimiter><3+Count>}
+     * where:
+     * 
+     * <ul>
+     * <li>{@code 1+Count} is the aggregated count of this sequence.</li>
+     * <li>{@code 1Count} is the number of lines where count was {@code 1} for
+     * this sequence.</li>
+     * <li>{@code 2Count} is the number of lines where count was {@code 2} for
+     * this sequence.</li>
+     * <li>{@code 3+Count} is the number of lines where count was {@code 3+} for
+     * this sequence.</li>
+     * </ul>
+     * 
+     * @param input
+     *            InputStream to be read.
+     * @param output
+     *            OutputStream to be written to.
+     * @param delimiter
+     *            Delimiter that separates Sequences and Counts.
+     * @param additionalCounts
+     *            If {@code true} will act as described above. If {@code false}
+     *            will only output {@code <Sequence><Delimiter><1+Count>}.
+     */
     public Aggregator(
             InputStream input,
             OutputStream output,
@@ -39,6 +65,9 @@ public class Aggregator {
         this.additionalCounts = additionalCounts;
     }
 
+    /**
+     * Perform the actual aggregating and writing output.
+     */
     public void aggregate() throws IOException {
         SortedMap<String, Counter> sequenceCounts =
                 new TreeMap<String, Counter>();
