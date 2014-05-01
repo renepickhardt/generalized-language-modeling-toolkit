@@ -14,13 +14,13 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
+import de.typology.extracting.TestSequenceExtractor;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.smoothing.KneserNeySmoother;
 import de.typology.smoothing.ModifiedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
-import de.typology.testing.TestSequenceExtractor;
 import de.typology.utils.Config;
 
 public class KneserNeyBuilder {

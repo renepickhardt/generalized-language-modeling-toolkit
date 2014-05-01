@@ -1,4 +1,4 @@
-package de.typology.testing;
+package de.typology.extracting;
 
 import java.io.BufferedReader;
 import java.io.File;
