@@ -58,31 +58,23 @@ public class LineCounterTask implements Runnable {
     @Override
     public void run() {
         try {
-            String result;
+            Counter counter = new Counter();
 
             try (BufferedReader reader =
                     new BufferedReader(new InputStreamReader(input))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    counter.add(countLines ? 1 : Long.parseLong(line
+                            .split(delimiter)[1]));
+                }
                 if (countLines) {
-                    Long count = 0L;
-                    while (reader.readLine() != null) {
-                        ++count;
-                    }
-                    result =
-                            count + delimiter + "0" + delimiter + "0"
-                                    + delimiter + "0";
-                } else {
-                    Counter counter = new Counter();
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        counter.add(Long.parseLong(line.split(delimiter)[1]));
-                    }
-                    result = counter.toString(delimiter);
+                    counter.setOneCount(0);
                 }
             }
 
             try (BufferedWriter writer =
                     new BufferedWriter(new OutputStreamWriter(output))) {
-                writer.write(result + "\n");
+                writer.write(counter.toString(delimiter) + "\n");
             }
             output.close();
         } catch (IOException e) {

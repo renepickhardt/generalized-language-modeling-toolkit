@@ -32,16 +32,32 @@ public class Counter {
         return onePlusCount;
     }
 
+    public void setOnePlusCount(long onePlusCount) {
+        this.onePlusCount = onePlusCount;
+    }
+
     public long getOneCount() {
         return oneCount;
+    }
+
+    public void setOneCount(long oneCount) {
+        this.oneCount = oneCount;
     }
 
     public long getTwoCount() {
         return twoCount;
     }
 
+    public void setTwoCount(long twoCount) {
+        this.twoCount = twoCount;
+    }
+
     public long getThreePlusCount() {
         return threePlusCount;
+    }
+
+    public void setThreePlusCount(long threePlusCount) {
+        this.threePlusCount = threePlusCount;
     }
 
 }
