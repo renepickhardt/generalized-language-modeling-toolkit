@@ -6,10 +6,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 
@@ -81,32 +82,31 @@ public class WordIndex implements Iterable<String> {
         return Arrays.asList(index).iterator();
     }
 
-    public HashMap<Integer, BufferedWriter> openWriters(File outputDirectory)
+    public HashMap<Integer, BufferedWriter> openWriters(Path outputDirectory)
             throws IOException {
         HashMap<Integer, BufferedWriter> writers =
                 new HashMap<Integer, BufferedWriter>();
 
-        File currentOutputDirectory =
-                new File(outputDirectory.getAbsolutePath());
-        if (currentOutputDirectory.exists()) {
-            FileUtils.deleteDirectory(currentOutputDirectory);
+        // TODO: research why we directories are written multiple times to.
+        if (Files.exists(outputDirectory)) {
+            // TODO: replace with non legacy api.
+            FileUtils.deleteDirectory(outputDirectory.toFile());
         }
-        currentOutputDirectory.mkdir();
+        Files.createDirectory(outputDirectory);
 
         // calculate buffer size for writers
         // TODO: bufferSize calculation
         for (int fileCount = 0; fileCount < index.length; fileCount++) {
-            writers.put(fileCount, new BufferedWriter(
-                    new FileWriter(currentOutputDirectory.getAbsolutePath()
-                            + "/" + fileCount), 10 * 8 * 1024));
+            writers.put(fileCount, new BufferedWriter(new FileWriter(
+                    outputDirectory + "/" + fileCount), 10 * 8 * 1024));
         }
         return writers;
     }
 
     public void closeWriters(HashMap<Integer, BufferedWriter> writers)
             throws IOException {
-        for (Entry<Integer, BufferedWriter> entry : writers.entrySet()) {
-            entry.getValue().close();
+        for (BufferedWriter writer : writers.values()) {
+            writer.close();
         }
     }
 }

@@ -86,7 +86,7 @@ public class AbsoluteSplitter {
                         new FileInputStream(trainingFile);
                 SplitterTask splitterTask =
                         new SplitterTask(trainingFileInputStream,
-                                outputDirectory, wordIndex, pattern,
+                                outputDirectory.toPath(), wordIndex, pattern,
                                 PatternTransformer.getStringPattern(pattern),
                                 delimiter, deleteTempFiles, beforeLine,
                                 afterLine, false);

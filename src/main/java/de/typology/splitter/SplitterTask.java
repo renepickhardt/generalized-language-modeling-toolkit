@@ -1,11 +1,13 @@
 package de.typology.splitter;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +26,7 @@ public class SplitterTask implements Runnable {
 
     private InputStream input;
 
-    private File outputDirectory;
+    private Path outputDirectory;
 
     private WordIndex wordIndex;
 
@@ -46,7 +48,7 @@ public class SplitterTask implements Runnable {
 
     public SplitterTask(
             InputStream input,
-            File outputDirectory,
+            Path outputDirectory,
             WordIndex wordIndex,
             boolean[] pattern,
             String patternLabel,
@@ -70,46 +72,44 @@ public class SplitterTask implements Runnable {
     @Override
     public void run() {
         try {
-            File sequencerOutputDirectory =
-                    new File(outputDirectory.getAbsolutePath() + "/"
-                            + patternLabel + "-split");
-            if (sequencerOutputDirectory.exists()) {
-                FileUtils.deleteDirectory(sequencerOutputDirectory);
-            }
-            sequencerOutputDirectory.mkdir();
-            logger.info("start building: "
-                    + sequencerOutputDirectory.getAbsolutePath());
+            // SEQUENCING //////////////////////////////////////////////////////
+            Path sequencerOutputDirectory =
+                    outputDirectory.resolve(patternLabel + "-split");
+            Files.createDirectory(sequencerOutputDirectory);
+            logger.info("start building: " + sequencerOutputDirectory);
 
-            // initialize sequencer
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
                             pattern, beforeLine, afterLine, delimiter,
                             isSmoothing);
             sequencer.splitIntoFiles();
 
-            File aggregatedOutputDirectory =
-                    new File(outputDirectory.getAbsolutePath() + "/"
-                            + patternLabel);
-            if (aggregatedOutputDirectory.exists()) {
-                FileUtils.deleteDirectory(aggregatedOutputDirectory);
-            }
-            aggregatedOutputDirectory.mkdir();
+            // AGGREGATING /////////////////////////////////////////////////////
+
+            Path aggregatedOutputDirectory =
+                    outputDirectory.resolve(patternLabel);
+            Files.createDirectory(aggregatedOutputDirectory);
             logger.info("aggregate into: " + aggregatedOutputDirectory);
 
-            for (File splitFile : sequencerOutputDirectory.listFiles()) {
-                InputStream input = new FileInputStream(splitFile);
-                OutputStream output =
-                        new FileOutputStream(new File(
-                                aggregatedOutputDirectory.getAbsolutePath()
-                                        + "/" + splitFile.getName()));
-                Aggregator aggregator =
-                        new Aggregator(input, output, delimiter, isSmoothing);
-                aggregator.aggregate();
+            try (DirectoryStream<Path> sequencerOutputContents =
+                    Files.newDirectoryStream(sequencerOutputDirectory)) {
+                for (Path file : sequencerOutputContents) {
+                    InputStream input = new FileInputStream(file.toString());
+                    OutputStream output =
+                            new FileOutputStream(aggregatedOutputDirectory
+                                    .resolve(file.getFileName()).toString());
+
+                    Aggregator aggregator =
+                            new Aggregator(input, output, delimiter,
+                                    isSmoothing);
+                    aggregator.aggregate();
+                }
             }
 
             // delete sequencerOutputDirectory
             if (deleteTempFiles) {
-                FileUtils.deleteDirectory(sequencerOutputDirectory);
+                // TODO: replace by non legacy file api
+                FileUtils.deleteDirectory(sequencerOutputDirectory.toFile());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

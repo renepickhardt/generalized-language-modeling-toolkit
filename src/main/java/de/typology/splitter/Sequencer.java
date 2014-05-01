@@ -2,10 +2,10 @@ package de.typology.splitter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 import de.typology.indexes.WordIndex;
@@ -17,7 +17,7 @@ public class Sequencer {
 
     private InputStream inputStream;
 
-    private File outputDirectory;
+    private Path outputDirectory;
 
     private WordIndex wordIndex;
 
@@ -62,7 +62,7 @@ public class Sequencer {
      */
     public Sequencer(
             InputStream inputStream,
-            File outputDirectory,
+            Path outputDirectory,
             WordIndex wordIndex,
             boolean[] pattern,
             String beforeLine,
