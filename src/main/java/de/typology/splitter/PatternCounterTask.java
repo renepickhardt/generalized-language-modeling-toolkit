@@ -17,7 +17,7 @@ import de.typology.indexes.WordIndex;
  * A class for running {@link Sequencer} and {@link Aggregator} for a given
  * pattern.
  */
-public class SplitterTask implements Runnable {
+public class PatternCounterTask implements Runnable {
 
     private InputStream input;
 
@@ -68,7 +68,7 @@ public class SplitterTask implements Runnable {
      *            Whether temporary created files should be deleted (
      *            {@link Sequencer} output).
      */
-    public SplitterTask(
+    public PatternCounterTask(
             InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,

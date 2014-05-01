@@ -70,8 +70,8 @@ public class AbsoluteSplitter {
             // SplitterTask will read complete stream on each pass.
             InputStream inputStream = Files.newInputStream(input);
 
-            SplitterTask splitterTask =
-                    new SplitterTask(inputStream,
+            PatternCounterTask splitterTask =
+                    new PatternCounterTask(inputStream,
                             outputDirectory.resolve(PatternTransformer
                                     .getStringPattern(pattern)), wordIndex,
                             pattern, delimiter, beforeLine, afterLine, false,
