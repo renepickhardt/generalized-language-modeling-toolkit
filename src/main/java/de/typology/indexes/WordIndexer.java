@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,18 +26,7 @@ public class WordIndexer {
             String afterLine) throws IOException {
         try (BufferedReader reader =
                 new BufferedReader(new FileReader(trainingFile))) {
-            // a comparator for wordMap
-            Comparator<String> StringComparator = new Comparator<String>() {
-
-                @Override
-                public int compare(String s1, String s2) {
-                    return s1.compareTo(s2);
-                }
-
-            };
-
-            TreeMap<String, Long> wordMap =
-                    new TreeMap<String, Long>(StringComparator);
+            TreeMap<String, Long> wordMap = new TreeMap<String, Long>();
             String line;
             // long lineCount=0L;
             while ((line = reader.readLine()) != null) {
