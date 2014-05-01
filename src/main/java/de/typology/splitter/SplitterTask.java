@@ -86,17 +86,17 @@ public class SplitterTask implements Runnable {
 
             // AGGREGATING /////////////////////////////////////////////////////
 
-            Path aggregatedOutputDirectory =
+            Path aggregatorOutputDirectory =
                     outputDirectory.resolve(patternLabel);
-            Files.createDirectory(aggregatedOutputDirectory);
-            logger.info("aggregate into: " + aggregatedOutputDirectory);
+            Files.createDirectory(aggregatorOutputDirectory);
+            logger.info("aggregate into: " + aggregatorOutputDirectory);
 
             try (DirectoryStream<Path> sequencerOutputContents =
                     Files.newDirectoryStream(sequencerOutputDirectory)) {
                 for (Path file : sequencerOutputContents) {
                     InputStream input = new FileInputStream(file.toString());
                     OutputStream output =
-                            new FileOutputStream(aggregatedOutputDirectory
+                            new FileOutputStream(aggregatorOutputDirectory
                                     .resolve(file.getFileName()).toString());
 
                     Aggregator aggregator =
