@@ -15,7 +15,7 @@ import de.typology.indexes.WordIndex;
  */
 public class Sequencer {
 
-    private InputStream inputStream;
+    private InputStream input;
 
     private Path outputDirectory;
 
@@ -32,13 +32,13 @@ public class Sequencer {
     private boolean completeLine;
 
     /**
-     * Expects an {@code inputStream} where each line contains a number of words
+     * Expects an {@code input} where each line contains a number of words
      * separated by whitespace. Extracts all sequence specified by
      * {@code pattern} and writes them to <em>indexed files</em> in
      * {@code outputDirectory}. Each output line has this format:
      * {@code <Sequence><Delimiter>1}.
      * 
-     * @param inputStream
+     * @param input
      *            {@link InputStream} to be read.
      * @param outputDirectory
      *            Directory where <em>indexed files</em> should be
@@ -46,7 +46,7 @@ public class Sequencer {
      * @param wordIndex
      *            {@link WordIndex} of the corpus.
      * @param pattern
-     *            Pattern about which Sequence should be extracted.
+     *            Pattern specifying sequences.
      * @param beforeLine
      *            Prepended before each line before sequencing.
      * @param afterLine
@@ -61,7 +61,7 @@ public class Sequencer {
      *            If {@code false} will act as described above.
      */
     public Sequencer(
-            InputStream inputStream,
+            InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,
             boolean[] pattern,
@@ -69,7 +69,7 @@ public class Sequencer {
             String afterLine,
             String delimiter,
             boolean completeLine) {
-        this.inputStream = inputStream;
+        this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
@@ -85,8 +85,7 @@ public class Sequencer {
     public void splitIntoFiles() throws IOException {
         // TODO: bufferSize calculation
         try (BufferedReader bufferedReader =
-                new BufferedReader(new InputStreamReader(inputStream),
-                        100 * 8 * 1024)) {
+                new BufferedReader(new InputStreamReader(input), 100 * 8 * 1024)) {
             HashMap<Integer, BufferedWriter> writers =
                     wordIndex.openWriters(outputDirectory);
 

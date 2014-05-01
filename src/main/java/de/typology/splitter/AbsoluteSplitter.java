@@ -86,10 +86,11 @@ public class AbsoluteSplitter {
                         new FileInputStream(trainingFile);
                 SplitterTask splitterTask =
                         new SplitterTask(trainingFileInputStream,
-                                outputDirectory.toPath(), wordIndex, pattern,
-                                PatternTransformer.getStringPattern(pattern),
-                                delimiter, deleteTempFiles, beforeLine,
-                                afterLine, false);
+                                outputDirectory.toPath().resolve(
+                                        PatternTransformer
+                                                .getStringPattern(pattern)),
+                                wordIndex, pattern, delimiter, beforeLine,
+                                afterLine, false, deleteTempFiles);
                 executorService.execute(splitterTask);
             } catch (FileNotFoundException e) {
                 logger.error("trainingFile not found: "

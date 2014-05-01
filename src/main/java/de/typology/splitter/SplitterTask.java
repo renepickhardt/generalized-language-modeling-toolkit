@@ -16,9 +16,6 @@ import de.typology.indexes.WordIndex;
 /**
  * A class for running {@link Sequencer} and {@link Aggregator} for a given
  * pattern.
- * 
- * @author Martin Koerner
- * 
  */
 public class SplitterTask implements Runnable {
 
@@ -30,8 +27,6 @@ public class SplitterTask implements Runnable {
 
     private boolean[] pattern;
 
-    private String patternLabel;
-
     private String delimiter;
 
     private boolean deleteTempFiles;
@@ -40,55 +35,83 @@ public class SplitterTask implements Runnable {
 
     private String afterLine;
 
-    private boolean isSmoothing;
+    private boolean isContinuation;
 
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
+    /**
+     * Expects an {@code input} where each line contains a number of words
+     * separated by white space. Extract the counts of all distinct sequences
+     * described by {@code pattern} and writes them to <em>indexed files</em> in
+     * {@code outputDirectory}.
+     * 
+     * @param input
+     *            {@link InputStream} to be read.
+     * @param outputDirectory
+     *            Directory where <em>indexed files</em> should be written to.
+     * @param wordIndex
+     *            {@link WordIndex} of the corpus.
+     * @param pattern
+     *            Pattern specifying sequences.
+     * @param delimiter
+     *            Delimiter that separates Sequences and Counts in output.
+     * @param beforeLine
+     *            Prepended before each line before sequencing.
+     * @param afterLine
+     *            Appended after each line before sequencing.
+     * @param isContinuation
+     *            Whether we are calculating this for continuation or absolute
+     *            counts. Absolute only has 1+ Counts (Continuation has 1+, 1,
+     *            2, 3+), Absolute counts completely, Continuation uses absolute
+     *            counts as input.
+     * @param deleteTempFiles
+     *            Whether temporary created files should be deleted (
+     *            {@link Sequencer} output).
+     */
     public SplitterTask(
             InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,
             boolean[] pattern,
-            String patternLabel,
             String delimiter,
-            boolean deleteTempFiles,
             String beforeLine,
             String afterLine,
-            boolean isSmoothing) {
+            boolean isContinuation,
+            boolean deleteTempFiles) {
         this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
-        this.patternLabel = patternLabel;
         this.delimiter = delimiter;
         this.deleteTempFiles = deleteTempFiles;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
-        this.isSmoothing = isSmoothing;
+        this.isContinuation = isContinuation;
     }
 
     @Override
     public void run() {
         try {
+            Files.createDirectory(outputDirectory);
+
             // SEQUENCING //////////////////////////////////////////////////////
 
             Path sequencerOutputDirectory =
-                    outputDirectory.resolve(patternLabel + "-split");
+                    outputDirectory.getParent().resolve(
+                            outputDirectory.getFileName() + "-split");
             Files.createDirectory(sequencerOutputDirectory);
+
             logger.info("sequencing:  " + sequencerOutputDirectory);
 
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
                             pattern, beforeLine, afterLine, delimiter,
-                            isSmoothing);
+                            isContinuation);
             sequencer.splitIntoFiles();
 
             // AGGREGATING /////////////////////////////////////////////////////
 
-            Path aggregatorOutputDirectory =
-                    outputDirectory.resolve(patternLabel);
-            Files.createDirectory(aggregatorOutputDirectory);
-            logger.info("aggregating: " + aggregatorOutputDirectory);
+            logger.info("aggregating: " + outputDirectory);
 
             try (DirectoryStream<Path> sequencerOutputFiles =
                     Files.newDirectoryStream(sequencerOutputDirectory)) {
@@ -96,12 +119,12 @@ public class SplitterTask implements Runnable {
                     InputStream input =
                             Files.newInputStream(sequencerOutputFile);
                     OutputStream output =
-                            Files.newOutputStream(aggregatorOutputDirectory
+                            Files.newOutputStream(outputDirectory
                                     .resolve(sequencerOutputFile.getFileName()));
 
                     Aggregator aggregator =
                             new Aggregator(input, output, delimiter,
-                                    isSmoothing);
+                                    isContinuation);
                     aggregator.aggregate();
                 }
             }
