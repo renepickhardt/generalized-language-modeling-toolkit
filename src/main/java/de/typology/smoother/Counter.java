@@ -1,4 +1,4 @@
-package de.typology.utils;
+package de.typology.smoother;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

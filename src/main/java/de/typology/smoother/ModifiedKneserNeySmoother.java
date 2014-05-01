@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 
 import de.typology.patterns.PatternTransformer;
-import de.typology.utils.Counter;
 
 public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 

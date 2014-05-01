@@ -1,4 +1,4 @@
-package de.typology.utils;
+package de.typology.smoother;
 
 public class SequenceFormatter {
 

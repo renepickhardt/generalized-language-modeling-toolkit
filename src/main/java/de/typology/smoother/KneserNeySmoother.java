@@ -18,9 +18,6 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.patterns.PatternTransformer;
 import de.typology.utils.Config;
-import de.typology.utils.Counter;
-import de.typology.utils.DecimalFormatter;
-import de.typology.utils.SequenceFormatter;
 
 public class KneserNeySmoother {
 
