@@ -8,19 +8,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 
 /**
- * A class that is based on the text file produced by {@link WordIndexer}.
- * 
- * @author Martin Koerner
- * 
+ * Class used to interface with the output of {@link WordIndexer}.
  */
-public class WordIndex implements Iterable<String> {
+public class WordIndex {
 
     private String[] index;
 
@@ -49,10 +44,6 @@ public class WordIndex implements Iterable<String> {
         }
     }
 
-    public int getLength() {
-        return index.length;
-    }
-
     /**
      * returns the file in which word should be stored based on this.index
      * 
@@ -75,11 +66,6 @@ public class WordIndex implements Iterable<String> {
         // the following return statement is not the standard return result for
         // binary search
         return (lo + hi) / 2;
-    }
-
-    @Override
-    public Iterator<String> iterator() {
-        return Arrays.asList(index).iterator();
     }
 
     public HashMap<Integer, BufferedWriter> openWriters(Path outputDirectory)

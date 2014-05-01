@@ -1,7 +1,6 @@
 package de.typology.indexes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,19 +52,6 @@ public class WordIndexTest {
         assertEquals(4, wi.rank("Z"));
         assertEquals(11, wi.rank("tempora"));
         assertEquals(11, wi.rank("z"));
-
-        for (String word : wi) {
-            assertTrue(word.length() > 0);
-        }
-    }
-
-    @Test
-    public void iteratorTest() throws IOException {
-        WordIndex wi = new WordIndex(indexFile);
-
-        for (String word : wi) {
-            assertTrue(word.length() > 0);
-        }
     }
 
 }
