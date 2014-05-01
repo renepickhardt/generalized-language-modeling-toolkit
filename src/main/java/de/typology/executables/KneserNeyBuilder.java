@@ -220,7 +220,7 @@ public class KneserNeyBuilder {
                 new TestSequenceExtractor(testSequences, absoluteDirectory,
                         continuationDirectory, testExtractOutputDirectory,
                         "\t", config.modelLength, config.numberOfCores);
-        testSequenceExtractor.extractSequences();
+        testSequenceExtractor.extractAbsoluteSequences();
         testSequenceExtractor.extractContinuationSequences();
     }
 

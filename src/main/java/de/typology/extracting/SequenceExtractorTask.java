@@ -6,13 +6,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
 /**
- * This class takes an ArrayList of sequences and a directory of Files as an
+ * This class takes an List of sequences and a directory of Files as an
  * input and writes all occurrences of the sequences into new files in the
  * outputDirectory
  * 
@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
  */
 public class SequenceExtractorTask implements Runnable {
 
-    private ArrayList<String> originalSequences;
+    private List<String> originalSequences;
 
     private boolean[] pattern;
 
@@ -32,7 +32,7 @@ public class SequenceExtractorTask implements Runnable {
     private String delimiter;
 
     public SequenceExtractorTask(
-            ArrayList<String> originalSequences,
+            List<String> originalSequences,
             boolean[] pattern,
             File workingDirectory,
             File outputDirectory,

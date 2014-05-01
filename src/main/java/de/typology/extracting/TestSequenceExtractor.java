@@ -21,8 +21,6 @@ import de.typology.patterns.PatternTransformer;
  */
 public class TestSequenceExtractor {
 
-    private Path testSequenceFile;
-
     private Path absoluteDirectory;
 
     private Path continuationDirectory;
@@ -35,6 +33,8 @@ public class TestSequenceExtractor {
 
     private int numberOfCores;
 
+    private List<String> sequences;
+
     public TestSequenceExtractor(
             Path testSequenceFile,
             Path absoluteDirectory,
@@ -43,7 +43,6 @@ public class TestSequenceExtractor {
             String delimiter,
             int modelLength,
             int numberOfCores) throws IOException {
-        this.testSequenceFile = testSequenceFile;
         this.absoluteDirectory = absoluteDirectory;
         this.continuationDirectory = continuationDirectory;
         this.outputDirectory = outputDirectory;
@@ -52,11 +51,8 @@ public class TestSequenceExtractor {
         this.numberOfCores = numberOfCores;
 
         Files.createDirectory(outputDirectory);
-    }
 
-    public void extractSequences() throws IOException, InterruptedException {
-        // read test sequences into HashSet
-        ArrayList<String> sequences = new ArrayList<String>();
+        sequences = new ArrayList<String>();
         try (BufferedReader testSequenceReader =
                 Files.newBufferedReader(testSequenceFile,
                         Charset.defaultCharset())) {
@@ -65,19 +61,17 @@ public class TestSequenceExtractor {
                 sequences.add(line);
             }
         }
+    }
+
+    public void extractAbsoluteSequences() throws IOException,
+            InterruptedException {
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(numberOfCores);
 
         List<boolean[]> absolutePatterns =
                 PatternBuilder.getGLMForSmoothingPatterns(modelLength);
 
-        // call SequenceExtractorTasks
-
-        // initialize executerService
-        // int cores = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService =
-                Executors.newFixedThreadPool(numberOfCores);
-
         for (boolean[] absolutePattern : absolutePatterns) {
-            // extract absolute sequences
             String absoluteStringPattern =
                     PatternTransformer.getStringPattern(absolutePattern);
             Path absoluteworkingDirectory =
@@ -85,11 +79,12 @@ public class TestSequenceExtractor {
             Path absoluteOutputDirectory =
                     outputDirectory.resolve(absoluteDirectory.getFileName())
                             .resolve(absoluteStringPattern);
-            SequenceExtractorTask absoluteSET =
+
+            SequenceExtractorTask sequenceExtractorTask =
                     new SequenceExtractorTask(sequences, absolutePattern,
                             absoluteworkingDirectory.toFile(),
                             absoluteOutputDirectory.toFile(), delimiter);
-            executorService.execute(absoluteSET);
+            executorService.execute(sequenceExtractorTask);
 
         }
 
@@ -99,28 +94,12 @@ public class TestSequenceExtractor {
 
     public void extractContinuationSequences() throws IOException,
             InterruptedException {
-        // read test sequences into HashSet
-        ArrayList<String> sequences = new ArrayList<String>();
-        try (BufferedReader testSequenceReader =
-                Files.newBufferedReader(testSequenceFile,
-                        Charset.defaultCharset())) {
-            String line;
-            while ((line = testSequenceReader.readLine()) != null) {
-                sequences.add(line);
-            }
-        }
-
-        // call SequenceExtractorTasks
-
-        // initialize executerService
-        // int cores = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
         try (DirectoryStream<Path> continuationFiles =
                 Files.newDirectoryStream(continuationDirectory)) {
             for (Path continuationTypeDirectory : continuationFiles) {
-                // extract absolute sequences
                 String continuationStringPattern =
                         continuationTypeDirectory.getFileName().toString();
                 boolean[] continuationPattern =
@@ -131,12 +110,13 @@ public class TestSequenceExtractor {
                         outputDirectory.resolve(
                                 continuationDirectory.getFileName()).resolve(
                                 continuationStringPattern);
-                SequenceExtractorTask continuationSET =
+
+                SequenceExtractorTask sequenceExtractorTask =
                         new SequenceExtractorTask(sequences,
                                 continuationPattern,
                                 continuationTypeDirectory.toFile(),
                                 continuationOutputDirectory.toFile(), delimiter);
-                executorService.execute(continuationSET);
+                executorService.execute(sequenceExtractorTask);
 
             }
         }
@@ -145,38 +125,4 @@ public class TestSequenceExtractor {
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
     }
 
-    //    public void extractContinuationSequences2(int maxModelLength, int cores) {
-    //        ArrayList<boolean[]> absolutePatterns =
-    //                PatternBuilder.getLMPatterns(maxModelLength);
-    //
-    //        // initialize executerService
-    //        // int cores = Runtime.getRuntime().availableProcessors();
-    //        ExecutorService executorService = Executors.newFixedThreadPool(cores);
-    //        for (boolean[] absolutePattern : absolutePatterns) {
-    //            Path originalSequencesDirectory =
-    //                    new Path(
-    //                            outputDirectory.getAbsolutePath()
-    //                                    + "/"
-    //                                    + absoluteDirectory.getName()
-    //                                    + "/"
-    //                                    + PatternTransformer
-    //                                            .getStringPattern(absolutePattern));
-    //            Path outputDirectory =
-    //                    new Path(this.outputDirectory.getAbsolutePath()
-    //                            + "/continuation");
-    //            ContinuationExtractorTask cet =
-    //                    new ContinuationExtractorTask(originalSequencesDirectory,
-    //                            absolutePattern, absoluteDirectory,
-    //                            outputDirectory, wordIndex, delimiter);
-    //            executorService.execute(cet);
-    //        }
-    //
-    //        executorService.shutdown();
-    //        try {
-    //            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-    //        } catch (InterruptedException e) {
-    //            // TODO Auto-generated catch block
-    //            e.printStackTrace();
-    //        }
-    //    }
 }
