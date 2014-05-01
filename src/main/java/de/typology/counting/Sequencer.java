@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.counting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.HashMap;
 
-import de.typology.indexes.WordIndex;
+import de.typology.indexing.WordIndex;
 
 /**
  * Splits an {@link InputStream} into a sequences of a pattern.

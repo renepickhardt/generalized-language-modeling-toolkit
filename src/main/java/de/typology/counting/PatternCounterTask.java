@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.counting;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.indexes.WordIndex;
+import de.typology.indexing.WordIndex;
 
 /**
  * A class for running {@link Sequencer} and {@link Aggregator} for a given

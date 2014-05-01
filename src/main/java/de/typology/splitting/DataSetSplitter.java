@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.splitting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

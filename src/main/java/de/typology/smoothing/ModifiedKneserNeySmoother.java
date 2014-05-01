@@ -1,4 +1,4 @@
-package de.typology.smoother;
+package de.typology.smoothing;
 
 import java.io.File;
 import java.util.HashMap;

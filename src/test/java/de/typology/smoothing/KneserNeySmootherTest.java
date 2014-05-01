@@ -1,4 +1,4 @@
-package de.typology.smoother;
+package de.typology.smoothing;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,11 +12,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.typology.indexes.WordIndex;
-import de.typology.indexes.WordIndexer;
+import de.typology.counting.AbsoluteCounter;
+import de.typology.counting.ContinuationCounter;
+import de.typology.indexing.WordIndex;
+import de.typology.indexing.WordIndexer;
 import de.typology.patterns.PatternBuilder;
-import de.typology.splitter.AbsoluteCounter;
-import de.typology.splitter.ContinuationCounter;
+import de.typology.smoothing.KneserNeySmoother;
 
 public class KneserNeySmootherTest {
 

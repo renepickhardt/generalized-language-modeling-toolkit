@@ -1,4 +1,4 @@
-package de.typology.indexes;
+package de.typology.indexing;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import de.typology.indexing.WordIndexer;
 
 public class WordIndexerTest {
 

@@ -1,4 +1,4 @@
-package de.typology.smoother;
+package de.typology.smoothing;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.counting;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.indexes.WordIndex;
+import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternTransformer;
 
 public class AbsoluteCounter {

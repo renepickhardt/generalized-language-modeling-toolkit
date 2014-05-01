@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.splitting;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -17,6 +17,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.typology.counting.SequenceModifier;
 
 public class SequenceModifierTest {
 

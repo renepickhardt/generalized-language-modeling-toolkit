@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.splitting;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -18,8 +18,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.typology.indexes.WordIndex;
-import de.typology.indexes.WordIndexer;
+import de.typology.counting.Sequencer;
+import de.typology.indexing.WordIndex;
+import de.typology.indexing.WordIndexer;
 
 public class SequencerTest {
 

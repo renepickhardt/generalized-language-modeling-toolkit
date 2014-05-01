@@ -1,4 +1,4 @@
-package de.typology.indexes;
+package de.typology.indexing;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,6 +12,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import de.typology.indexing.WordIndex;
+import de.typology.indexing.WordIndexer;
 
 public class WordIndexTest {
 

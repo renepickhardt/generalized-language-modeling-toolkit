@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.counting;
 
 public class Counter {
 

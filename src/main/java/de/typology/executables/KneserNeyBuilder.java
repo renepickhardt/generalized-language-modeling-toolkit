@@ -12,15 +12,15 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.indexes.WordIndex;
-import de.typology.indexes.WordIndexer;
+import de.typology.counting.AbsoluteCounter;
+import de.typology.counting.ContinuationCounter;
+import de.typology.indexing.WordIndex;
+import de.typology.indexing.WordIndexer;
 import de.typology.patterns.PatternBuilder;
-import de.typology.smoother.KneserNeySmoother;
-import de.typology.smoother.ModifiedKneserNeySmoother;
-import de.typology.splitter.AbsoluteCounter;
-import de.typology.splitter.ContinuationCounter;
-import de.typology.splitter.DataSetSplitter;
-import de.typology.tester.TestSequenceExtractor;
+import de.typology.smoothing.KneserNeySmoother;
+import de.typology.smoothing.ModifiedKneserNeySmoother;
+import de.typology.splitting.DataSetSplitter;
+import de.typology.testing.TestSequenceExtractor;
 import de.typology.utils.Config;
 
 public class KneserNeyBuilder {

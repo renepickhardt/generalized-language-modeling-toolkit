@@ -1,4 +1,4 @@
-package de.typology.indexes;
+package de.typology.indexing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

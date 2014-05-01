@@ -1,4 +1,4 @@
-package de.typology.tester;
+package de.typology.testing;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import de.typology.indexes.WordIndex;
+import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 

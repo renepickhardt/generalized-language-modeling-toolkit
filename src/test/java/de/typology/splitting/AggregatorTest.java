@@ -1,4 +1,4 @@
-package de.typology.splitter;
+package de.typology.splitting;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -18,6 +18,8 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.typology.counting.Aggregator;
 
 public class AggregatorTest {
 
