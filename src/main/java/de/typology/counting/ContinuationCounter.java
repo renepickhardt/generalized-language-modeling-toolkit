@@ -7,12 +7,12 @@ import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -77,8 +77,8 @@ public class ContinuationCounter {
 
     public void split(List<boolean[]> patterns) throws IOException,
             InterruptedException {
-        SortedMap<boolean[], boolean[]> continuationMap =
-                filterContinuationMap(getContinuationMap(patterns));
+        Map<boolean[], boolean[]> continuationMap =
+                generateContinuationMap(patterns);
 
         HashSet<boolean[]> finishedPatterns = new HashSet<boolean[]>();
 
@@ -253,14 +253,16 @@ public class ContinuationCounter {
 
         // CONSUMER ////////////////////////////////////////////////////////////
 
+        Path consumerOutputDirectory = outputDirectory.resolve(patternLabel);
+
         // if pattern has only falses
         if (PatternTransformer.getIntPattern(pattern) == 0) {
-            Path lineCountOutputDirPath = outputDirectory.resolve(patternLabel);
-            Files.createDirectory(lineCountOutputDirPath);
-            Path lineCountOutputPath = lineCountOutputDirPath.resolve("all");
+            Files.createDirectory(consumerOutputDirectory);
+            Path lineCountOutputPath = consumerOutputDirectory.resolve("all");
 
             OutputStream lineCounterOutput =
                     Files.newOutputStream(lineCountOutputPath);
+
             LineCounterTask lineCountTask =
                     new LineCounterTask(input, lineCounterOutput, delimiter,
                             setCountToOne);
@@ -268,9 +270,9 @@ public class ContinuationCounter {
         } else {
             // don't add tags here
             PatternCounterTask splitterTask =
-                    new PatternCounterTask(input,
-                            outputDirectory.resolve(patternLabel), wordIndex,
-                            pattern, delimiter, "", "", true, deleteTempFiles);
+                    new PatternCounterTask(input, consumerOutputDirectory,
+                            wordIndex, pattern, delimiter, "", "", true,
+                            deleteTempFiles);
             executorService.execute(splitterTask);
         }
 
@@ -284,56 +286,59 @@ public class ContinuationCounter {
      * <li>remove if first two are false</li>
      * </ul>
      */
-    private static SortedMap<boolean[], boolean[]> filterContinuationMap(
-            SortedMap<boolean[], boolean[]> continuationMap) {
-        SortedMap<boolean[], boolean[]> newContinuationMap =
-                new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
-        for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
-            if (PatternTransformer.getStringPattern(entry.getKey()).equals(
-                    PatternTransformer.getStringPattern(entry.getValue()))) {
-                continue;
-            }
-            boolean[] currentPattern = entry.getKey();
-            if (currentPattern.length > 2 && !currentPattern[0]
-                    && !currentPattern[1]) {
-                continue;
-            }
-            newContinuationMap.put(entry.getKey(), entry.getValue());
-
-        }
-        return newContinuationMap;
-    }
-
-    private static SortedMap<boolean[], boolean[]> getContinuationMap(
+    private static Map<boolean[], boolean[]> generateContinuationMap(
             List<boolean[]> patterns) {
-        SortedMap<boolean[], boolean[]> continuationMap =
+        Map<boolean[], boolean[]> map =
                 new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
 
         for (boolean[] pattern : patterns) {
-            addPatterns(continuationMap, pattern, pattern, 0);
+            addPatterns(map, pattern, pattern, 0);
         }
-        return continuationMap;
+
+        // Filter entries if:
+        // - key == value
+        // - !key[0] && !key[1]
+
+        Map<boolean[], boolean[]> filteredMap =
+                new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
+
+        for (Entry<boolean[], boolean[]> entry : map.entrySet()) {
+            boolean[] key = entry.getKey();
+            boolean[] value = entry.getValue();
+
+            if (Arrays.equals(key, value)) {
+                continue;
+            }
+
+            if (key.length > 2 && !key[0] && !key[1]) {
+                continue;
+            }
+
+            filteredMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return filteredMap;
     }
 
     private static void addPatterns(
-            SortedMap<boolean[], boolean[]> continuationMap,
+            Map<boolean[], boolean[]> map,
             boolean[] pattern,
             boolean[] oldPattern,
             int position) {
         if (position < pattern.length) {
             boolean[] newPattern = pattern.clone();
             newPattern[position] = false;
-            continuationMap.put(newPattern, pattern);
-            continuationMap.put(pattern, oldPattern);
-            addPatterns(continuationMap, newPattern, pattern, position + 1);
-            addPatterns(continuationMap, pattern, oldPattern, position + 1);
+            map.put(newPattern, pattern);
+            map.put(pattern, oldPattern);
+            addPatterns(map, newPattern, pattern, position + 1);
+            addPatterns(map, pattern, oldPattern, position + 1);
         }
     }
 
     // DEBUG FUNCTIONS /////////////////////////////////////////////////////////
 
-    private static void printSortedMap(SortedMap<boolean[], boolean[]> map) {
-        System.out.println("SortedMap: {");
+    private static void printMap(Map<boolean[], boolean[]> map) {
+        System.out.println("Map: {");
         for (Map.Entry<boolean[], boolean[]> entry : map.entrySet()) {
             System.out.println("    "
                     + PatternTransformer.getStringPattern(entry.getKey())
@@ -356,12 +361,9 @@ public class ContinuationCounter {
         List<boolean[]> patterns = PatternBuilder.getReverseLMPatterns(5);
         printList(patterns);
 
-        SortedMap<boolean[], boolean[]> continuationMap =
-                getContinuationMap(patterns);
-        printSortedMap(continuationMap);
-
-        continuationMap = filterContinuationMap(continuationMap);
-        printSortedMap(continuationMap);
+        Map<boolean[], boolean[]> continuationMap =
+                generateContinuationMap(patterns);
+        printMap(continuationMap);
     }
 
 }
