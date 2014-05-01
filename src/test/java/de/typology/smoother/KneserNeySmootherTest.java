@@ -15,8 +15,8 @@ import org.junit.Test;
 import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
-import de.typology.splitter.AbsoluteSplitter;
-import de.typology.splitter.ContinuationSplitter;
+import de.typology.splitter.AbsoluteCounter;
+import de.typology.splitter.ContinuationCounter;
 
 public class KneserNeySmootherTest {
 
@@ -47,15 +47,15 @@ public class KneserNeySmootherTest {
         continuationDirectory = new File(workingDirectoryPath + "continuation");
 
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        AbsoluteSplitter as =
-                new AbsoluteSplitter(trainingFile.toPath(),
+        AbsoluteCounter as =
+                new AbsoluteCounter(trainingFile.toPath(),
                         absoluteDirectory.toPath(), wordIndex, "\t",
                         "<fs> <s> ", " </s>", 2, true);
         as.split(PatternBuilder.getGLMForSmoothingPatterns(5));
 
         List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
-        ContinuationSplitter smoothingSplitter =
-                new ContinuationSplitter(absoluteDirectory,
+        ContinuationCounter smoothingSplitter =
+                new ContinuationCounter(absoluteDirectory,
                         continuationDirectory, indexFile, "\t", true);
         smoothingSplitter.split(lmPatterns, 2);
 

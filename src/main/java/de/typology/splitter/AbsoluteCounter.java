@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexes.WordIndex;
 import de.typology.patterns.PatternTransformer;
 
-public class AbsoluteSplitter {
+public class AbsoluteCounter {
 
     private Path input;
 
@@ -35,7 +35,7 @@ public class AbsoluteSplitter {
 
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
-    public AbsoluteSplitter(
+    public AbsoluteCounter(
             Path input,
             Path outputDirectory,
             WordIndex wordIndex,

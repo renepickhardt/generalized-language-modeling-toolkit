@@ -17,8 +17,8 @@ import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.smoother.KneserNeySmoother;
 import de.typology.smoother.ModifiedKneserNeySmoother;
-import de.typology.splitter.AbsoluteSplitter;
-import de.typology.splitter.ContinuationSplitter;
+import de.typology.splitter.AbsoluteCounter;
+import de.typology.splitter.ContinuationCounter;
 import de.typology.splitter.DataSetSplitter;
 import de.typology.tester.TestSequenceExtractor;
 import de.typology.utils.Config;
@@ -182,8 +182,8 @@ public class KneserNeyBuilder {
                 PatternBuilder
                         .getReverseGLMForSmoothingPatterns(config.modelLength);
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        AbsoluteSplitter absolteSplitter =
-                new AbsoluteSplitter(trainingFile.toPath(),
+        AbsoluteCounter absolteSplitter =
+                new AbsoluteCounter(trainingFile.toPath(),
                         absoluteDirectory.toPath(), wordIndex, "\t",
                         "<fs> <s> ", " </s>", config.numberOfCores,
                         config.deleteTempFiles);
@@ -198,8 +198,8 @@ public class KneserNeyBuilder {
             InterruptedException {
         List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
-        ContinuationSplitter smoothingSplitter =
-                new ContinuationSplitter(absoluteDirectory,
+        ContinuationCounter smoothingSplitter =
+                new ContinuationCounter(absoluteDirectory,
                         continuationDirectory, indexFile, "\t",
                         config.deleteTempFiles);
         smoothingSplitter.split(lmPatterns, config.numberOfCores);

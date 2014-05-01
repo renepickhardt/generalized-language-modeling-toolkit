@@ -27,7 +27,7 @@ import de.typology.indexes.WordIndex;
 import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 
-public class ContinuationSplitter {
+public class ContinuationCounter {
 
     private File absoluteDirectory;
 
@@ -56,7 +56,7 @@ public class ContinuationSplitter {
         };
     }
 
-    public ContinuationSplitter(
+    public ContinuationCounter(
             File absoluteDirectory,
             File continuationDirectory,
             File indexFile,
