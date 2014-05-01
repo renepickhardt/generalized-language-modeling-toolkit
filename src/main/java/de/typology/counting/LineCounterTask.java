@@ -71,6 +71,7 @@ public class LineCounterTask implements Runnable {
                     counter.setOneCount(0);
                 }
             }
+            input.close();
 
             try (BufferedWriter writer =
                     new BufferedWriter(new OutputStreamWriter(output))) {

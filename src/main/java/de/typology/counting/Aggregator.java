@@ -7,8 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
@@ -70,8 +70,7 @@ public class Aggregator {
      * Perform the actual aggregating and writing output.
      */
     public void aggregate() throws IOException {
-        SortedMap<String, Counter> sequenceCounts =
-                new TreeMap<String, Counter>();
+        Map<String, Counter> sequenceCounts = new TreeMap<String, Counter>();
 
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(input))) {

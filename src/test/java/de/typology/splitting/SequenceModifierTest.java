@@ -18,7 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.typology.counting.SequenceModifier;
+import de.typology.counting.SequenceModifierTask;
 
 public class SequenceModifierTest {
 
@@ -68,8 +68,8 @@ public class SequenceModifierTest {
             true, false, true
         };
 
-        SequenceModifier sequenceModifier =
-                new SequenceModifier(workingDirectory.toPath(),
+        SequenceModifierTask sequenceModifier =
+                new SequenceModifierTask(workingDirectory.toPath(),
                         pipedOutputStream, "\t", pattern, true);
         sequenceModifier.run();
         BufferedReader bufferedReader =

@@ -197,11 +197,10 @@ public class Config extends Properties {
     private Config() throws IOException, IllegalArgumentException,
             IllegalAccessException {
         String file = "config.txt";
-        try (BufferedReader r =
+        try (BufferedReader reader =
                 Files.newBufferedReader(Paths.get(file),
                         Charset.defaultCharset())) {
-            load(Files.newBufferedReader(Paths.get(file),
-                    Charset.defaultCharset()));
+            load(reader);
         }
         initialize();
     }

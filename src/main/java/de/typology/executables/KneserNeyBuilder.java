@@ -165,18 +165,22 @@ public class KneserNeyBuilder {
 
     private void buildIndex(Path trainingFile, Path indexFile)
             throws IOException {
-        InputStream input = Files.newInputStream(trainingFile);
-        OutputStream output = Files.newOutputStream(indexFile);
-        WordIndexer wordIndexer = new WordIndexer();
-        wordIndexer.buildIndex(input, output, config.maxCountDivider,
-                "<fs> <s> ", " </s>");
+        try (InputStream input = Files.newInputStream(trainingFile);
+                OutputStream output = Files.newOutputStream(indexFile)) {
+            WordIndexer wordIndexer = new WordIndexer();
+            wordIndexer.buildIndex(input, output, config.maxCountDivider,
+                    "<fs> <s> ", " </s>");
+        }
     }
 
     private void buildGLM(
             Path trainingFile,
             Path indexFile,
             Path absoluteDirectory) throws IOException, InterruptedException {
-        WordIndex wordIndex = new WordIndex(Files.newInputStream(indexFile));
+        WordIndex wordIndex;
+        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
+            wordIndex = new WordIndex(wordIndexInput);
+        }
 
         List<boolean[]> glmForSmoothingPatterns =
                 PatternBuilder
@@ -194,7 +198,10 @@ public class KneserNeyBuilder {
             Path absoluteDirectory,
             Path continuationDirectory) throws IOException,
             InterruptedException {
-        WordIndex wordIndex = new WordIndex(Files.newInputStream(indexFile));
+        WordIndex wordIndex;
+        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
+            wordIndex = new WordIndex(wordIndexInput);
+        }
 
         List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
@@ -212,16 +219,17 @@ public class KneserNeyBuilder {
             Path continuationDirectory,
             Path testExtractOutputDirectory) throws IOException,
             InterruptedException {
-        Path testSequences =
-                workingDirectory.resolve("testing-samples-"
-                        + config.modelLength + ".txt");
-
-        TestSequenceExtractor testSequenceExtractor =
-                new TestSequenceExtractor(testSequences, absoluteDirectory,
-                        continuationDirectory, testExtractOutputDirectory,
-                        "\t", config.modelLength, config.numberOfCores);
-        testSequenceExtractor.extractAbsoluteSequences();
-        testSequenceExtractor.extractContinuationSequences();
+        try (InputStream input =
+                Files.newInputStream(workingDirectory
+                        .resolve("testing-samples-" + config.modelLength
+                                + ".txt"))) {
+            TestSequenceExtractor testSequenceExtractor =
+                    new TestSequenceExtractor(input, absoluteDirectory,
+                            continuationDirectory, testExtractOutputDirectory,
+                            "\t", config.modelLength, config.numberOfCores);
+            testSequenceExtractor.extractAbsoluteSequences();
+            testSequenceExtractor.extractContinuationSequences();
+        }
     }
 
     private KneserNeySmoother buildKneserNey(

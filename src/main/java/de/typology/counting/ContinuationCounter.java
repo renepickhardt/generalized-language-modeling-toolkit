@@ -177,10 +177,10 @@ public class ContinuationCounter {
 
         // PRODUCER ////////////////////////////////////////////////////////////
 
-        SequenceModifier sequenceModifier =
-                new SequenceModifier(inputDir, output, delimiter,
+        SequenceModifierTask sequenceModifierTask =
+                new SequenceModifierTask(inputDir, output, delimiter,
                         patternForModifier, setCountToOne);
-        executorService.execute(sequenceModifier);
+        executorService.execute(sequenceModifierTask);
 
         // CONSUMER ////////////////////////////////////////////////////////////
 

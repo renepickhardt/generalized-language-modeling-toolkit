@@ -14,7 +14,7 @@ import java.nio.file.Path;
  * A class for modifying the sequences in workingDirectory based on the given
  * Pattern. The modified sequences are returned as an {@link OutputStream}.
  */
-public class SequenceModifier implements Runnable {
+public class SequenceModifierTask implements Runnable {
 
     private Path inputDirectory;
 
@@ -26,7 +26,7 @@ public class SequenceModifier implements Runnable {
 
     private boolean setCountToOne;
 
-    public SequenceModifier(
+    public SequenceModifierTask(
             Path inputDirectory,
             OutputStream output,
             String delimiter,
@@ -56,6 +56,7 @@ public class SequenceModifier implements Runnable {
                             String origSequence = split[0];
                             long count = Long.parseLong(split[1]);
 
+                            // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
                             String sequence = "";
                             int i = 0;
                             for (String word : origSequence.split("\\s")) {
@@ -76,6 +77,8 @@ public class SequenceModifier implements Runnable {
                     }
                 }
             }
+
+            output.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

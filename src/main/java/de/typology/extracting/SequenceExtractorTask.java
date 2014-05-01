@@ -18,25 +18,25 @@ import java.util.Set;
  */
 public class SequenceExtractorTask implements Runnable {
 
-    private List<String> originalSequences;
+    private List<String> testingSequences;
 
     private boolean[] pattern;
 
-    private Path workingDirectory;
+    private Path inputDirectory;
 
     private Path outputDirectory;
 
     private String delimiter;
 
     public SequenceExtractorTask(
-            List<String> originalSequences,
+            List<String> testingSequences,
             boolean[] pattern,
-            Path workingDirectory,
+            Path inputDirectory,
             Path outputDirectory,
             String delimiter) throws IOException {
-        this.originalSequences = originalSequences;
+        this.testingSequences = testingSequences;
         this.pattern = pattern;
-        this.workingDirectory = workingDirectory;
+        this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
         this.delimiter = delimiter;
 
@@ -46,26 +46,28 @@ public class SequenceExtractorTask implements Runnable {
     @Override
     public void run() {
         try {
-            Set<String> newSequences = getNewSequences();
+            Set<String> sequences =
+                    generateSequences(testingSequences, pattern);
 
-            try (DirectoryStream<Path> trainingFiles =
-                    Files.newDirectoryStream(workingDirectory)) {
-                for (Path trainingFile : trainingFiles) {
+            try (DirectoryStream<Path> inputFiles =
+                    Files.newDirectoryStream(inputDirectory)) {
+                for (Path inputFile : inputFiles) {
                     Path outputFile =
-                            outputDirectory.resolve(trainingFile.getFileName());
-                    if (trainingFile.getFileName().toString().equals("all")) {
-                        Files.copy(trainingFile, outputFile);
+                            outputDirectory.resolve(inputFile.getFileName());
+
+                    if (inputFile.getFileName().toString().equals("all")) {
+                        Files.copy(inputFile, outputFile);
                     } else {
                         try (BufferedReader reader =
-                                Files.newBufferedReader(trainingFile,
+                                Files.newBufferedReader(inputFile,
                                         Charset.defaultCharset());
                                 BufferedWriter writer =
                                         Files.newBufferedWriter(outputFile,
                                                 Charset.defaultCharset())) {
                             String line;
                             while ((line = reader.readLine()) != null) {
-                                if (newSequences
-                                        .contains(line.split(delimiter)[0])) {
+                                String inputSequence = line.split(delimiter)[0];
+                                if (sequences.contains(inputSequence)) {
                                     writer.write(line + "\n");
                                 }
                             }
@@ -78,54 +80,47 @@ public class SequenceExtractorTask implements Runnable {
         }
     }
 
-    private Set<String> getNewSequences() {
-        Set<String> newSequences = new HashSet<String>();
+    private static Set<String> generateSequences(
+            List<String> origSequences,
+            boolean[] pattern) {
+        Set<String> sequences = new HashSet<String>();
 
-        for (String originalLine : originalSequences) {
+        for (String origSequence : origSequences) {
             // modify sequences for continuation
-            if (!pattern[0] || !pattern[pattern.length - 1]) {
-                for (boolean element : pattern) {
-                    if (element) {
-                        break;
-                    } else {
-                        originalLine = "<dummy> " + originalLine;
-                    }
-                }
-                for (int i = pattern.length - 1; i >= 0; i--) {
-                    if (pattern[i]) {
-                        break;
-                    } else {
-                        originalLine = originalLine + " <dummy>";
-                    }
+            // for each false at the start of pattern prepend "<dummy> "
+            for (int i = 0; i != pattern.length; ++i) {
+                if (pattern[i]) {
+                    break;
+                } else {
+                    origSequence = "<dummy> " + origSequence;
                 }
             }
-            String[] originalLineSplit = originalLine.split("\\s");
-            int linePointer = 0;
-            while (originalLineSplit.length - linePointer >= pattern.length) {
-
-                // build current Sequence
-                String currentSequence = "";
-                for (int i = 0; i < pattern.length; i++) {
-                    currentSequence += originalLineSplit[linePointer + i] + " ";
+            // for each false at the end of pattern append " <dummy>"
+            for (int i = pattern.length - 1; i != -1; --i) {
+                if (pattern[i]) {
+                    break;
+                } else {
+                    origSequence += " <dummy>";
                 }
-                currentSequence = currentSequence.replaceFirst(" $", "");
+            }
 
-                String[] currentSequenceSplit = currentSequence.split("\\s");
-                String newSequence = "";
-                for (int i = 0; i < pattern.length; i++) {
+            String[] words = origSequence.split("\\s");
+            for (int pointer = 0; pointer <= words.length - pattern.length; ++pointer) {
+                // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
+                String sequence = "";
+                for (int i = 0; i != pattern.length; ++i) {
                     if (pattern[i]) {
-                        newSequence += currentSequenceSplit[i] + " ";
+                        sequence += words[pointer + i] + " ";
                     }
                 }
-                newSequence = newSequence.replaceFirst(" $", "");
-                if (newSequence.length() > 0) {
-                    newSequences.add(newSequence);
-                }
+                sequence = sequence.replaceFirst(" $", "");
 
-                linePointer++;
+                if (sequence.length() > 0) {
+                    sequences.add(sequence);
+                }
             }
         }
 
-        return newSequences;
+        return sequences;
     }
 }

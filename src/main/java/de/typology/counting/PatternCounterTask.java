@@ -108,6 +108,7 @@ public class PatternCounterTask implements Runnable {
                             pattern, beforeLine, afterLine, delimiter,
                             isContinuation);
             sequencer.splitIntoFiles();
+            input.close();
 
             // AGGREGATING /////////////////////////////////////////////////////
 
@@ -116,16 +117,17 @@ public class PatternCounterTask implements Runnable {
             try (DirectoryStream<Path> sequencerOutputFiles =
                     Files.newDirectoryStream(sequencerOutputDirectory)) {
                 for (Path sequencerOutputFile : sequencerOutputFiles) {
-                    InputStream input =
+                    try (InputStream input =
                             Files.newInputStream(sequencerOutputFile);
-                    OutputStream output =
-                            Files.newOutputStream(outputDirectory
-                                    .resolve(sequencerOutputFile.getFileName()));
-
-                    Aggregator aggregator =
-                            new Aggregator(input, output, delimiter,
-                                    isContinuation);
-                    aggregator.aggregate();
+                            OutputStream output =
+                                    Files.newOutputStream(outputDirectory
+                                            .resolve(sequencerOutputFile
+                                                    .getFileName()))) {
+                        Aggregator aggregator =
+                                new Aggregator(input, output, delimiter,
+                                        isContinuation);
+                        aggregator.aggregate();
+                    }
                 }
             }
 

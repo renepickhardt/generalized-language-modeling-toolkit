@@ -2,11 +2,12 @@ package de.typology.extracting;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,7 +37,7 @@ public class TestSequenceExtractor {
     private List<String> sequences;
 
     public TestSequenceExtractor(
-            Path testSequenceFile,
+            InputStream input,
             Path absoluteDirectory,
             Path continuationDirectory,
             Path outputDirectory,
@@ -52,10 +53,9 @@ public class TestSequenceExtractor {
 
         Files.createDirectory(outputDirectory);
 
-        sequences = new ArrayList<String>();
+        sequences = new LinkedList<String>();
         try (BufferedReader testSequenceReader =
-                Files.newBufferedReader(testSequenceFile,
-                        Charset.defaultCharset())) {
+                new BufferedReader(new InputStreamReader(input))) {
             String line;
             while ((line = testSequenceReader.readLine()) != null) {
                 sequences.add(line);

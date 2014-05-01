@@ -101,6 +101,7 @@ public class Sequencer {
                 } else {
                     for (int pointer = 0; pointer <= words.length
                             - pattern.length; ++pointer) {
+                        // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
                         String sequence = "";
                         for (int i = 0; i != pattern.length; ++i) {
                             if (pattern[i]) {
@@ -119,6 +120,8 @@ public class Sequencer {
 
             wordIndex.closeWriters(writers);
         }
+
+        input.close();
     }
 
 }
