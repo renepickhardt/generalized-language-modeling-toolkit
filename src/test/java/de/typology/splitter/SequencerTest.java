@@ -61,7 +61,7 @@ public class SequencerTest {
 
     @Test
     public void squencing1Test() throws IOException {
-        WordIndex wordIndex = new WordIndex(indexFile);
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         boolean[] pattern = {
             true
         };
@@ -101,7 +101,7 @@ public class SequencerTest {
 
     @Test
     public void squencing1101Test() throws IOException {
-        WordIndex wordIndex = new WordIndex(indexFile);
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         boolean[] pattern = {
             true, true, false, true
         };

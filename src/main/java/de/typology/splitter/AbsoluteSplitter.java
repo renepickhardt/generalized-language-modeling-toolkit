@@ -71,7 +71,7 @@ public class AbsoluteSplitter {
     public void split(List<boolean[]> patterns, int cores) throws IOException,
             InterruptedException {
         logger.info("read word index: " + indexFile.getAbsolutePath());
-        WordIndex wordIndex = new WordIndex(indexFile);
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
 
         // initialize executerService
         ExecutorService executorService = Executors.newFixedThreadPool(cores);

@@ -1,6 +1,7 @@
 package de.typology.executables;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -216,7 +217,7 @@ public class KneserNeyBuilder {
         TestSequenceExtractor tse =
                 new TestSequenceExtractor(testSequences, absoluteDirectory,
                         continuationDirectory, testExtractOutputDirectory,
-                        "\t", new WordIndex(indexFile));
+                        "\t", new WordIndex(new FileInputStream(indexFile)));
         tse.extractSequences(config.modelLength, config.numberOfCores);
         tse.extractContinuationSequences(config.modelLength,
                 config.numberOfCores);

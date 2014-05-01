@@ -3,6 +3,7 @@ package de.typology.indexes;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 
@@ -40,13 +41,13 @@ public class WordIndexTest {
     @After
     public void tearDown() throws Exception {
         if (indexFile.exists()) {
-            indexFile.delete();
-        }
+            indexFile.delete(); 
+        } 
     }
 
     @Test
     public void rankTest() throws IOException {
-        WordIndex wi = new WordIndex(indexFile);
+        WordIndex wi = new WordIndex(new FileInputStream(indexFile));
         assertEquals(8, wi.rank("et"));
         assertEquals(3, wi.rank("A"));
         assertEquals(4, wi.rank("Z"));

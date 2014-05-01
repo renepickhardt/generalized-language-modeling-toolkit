@@ -2,13 +2,15 @@ package de.typology.indexes;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -17,47 +19,46 @@ import org.apache.commons.io.FileUtils;
  */
 public class WordIndex {
 
-    private String[] index;
+    private List<String> index = new ArrayList<String>();
 
+    /**
+     * Initialized new {@link WordIndex}.
+     * 
+     * @param input
+     *            {@link InputStream} to be read as the output of
+     *            {@link WordIndexer}.
+     */
     public WordIndex(
-            File indexFile) throws IOException {
-        // count total number of lines in the index file
-        int lineCount = 0;
-        try (BufferedReader br = new BufferedReader(new FileReader(indexFile))) {
-            while (br.readLine() != null) {
-                lineCount++;
-            }
-        }
-
-        index = new String[lineCount];
-        int currentLineCount = 0;
-
+            InputStream input) throws IOException {
         // read the index file
-        try (BufferedReader br = new BufferedReader(new FileReader(indexFile))) {
+        try (BufferedReader br =
+                new BufferedReader(new InputStreamReader(input))) {
             String line;
-            String[] lineSplit;
             while ((line = br.readLine()) != null) {
-                lineSplit = line.split("\t");
-                index[currentLineCount] = lineSplit[0];
-                currentLineCount++;
+                index.add(line.split("\t")[0]);
             }
         }
     }
 
     /**
-     * returns the file in which word should be stored based on this.index
+     * Returns the file in which {@code word} should be stored based on the
+     * index.
+     * 
+     * Performs binary search on the index.
      * 
      * @param word
-     * @return
+     *            The word to be stored.
+     * @return An integer representing the <em>indexed file</em> the word should
+     *         be stored in.
      */
     public int rank(String word) {
         int lo = 0;
-        int hi = index.length - 1;
+        int hi = index.size() - 1;
         while (lo <= hi) {
             int mid = lo + (hi - lo) / 2;
-            if (word.compareTo(index[mid]) < 0) {
+            if (word.compareTo(index.get(mid)) < 0) {
                 hi = mid - 1;
-            } else if (word.compareTo(index[mid]) > 0) {
+            } else if (word.compareTo(index.get(mid)) > 0) {
                 lo = mid + 1;
             } else {
                 return mid;
@@ -80,11 +81,13 @@ public class WordIndex {
         }
         Files.createDirectory(outputDirectory);
 
-        // calculate buffer size for writers
-        // TODO: bufferSize calculation
-        for (int fileCount = 0; fileCount < index.length; fileCount++) {
-            writers.put(fileCount, new BufferedWriter(new FileWriter(
-                    outputDirectory + "/" + fileCount), 10 * 8 * 1024));
+        for (Integer i = 0; i != index.size(); ++i) {
+            // TODO: bufferSize calculation
+            writers.put(
+                    i,
+                    new BufferedWriter(new OutputStreamWriter(Files
+                            .newOutputStream(outputDirectory.resolve(i
+                                    .toString()))), 10 * 8 * 1024));
         }
         return writers;
     }

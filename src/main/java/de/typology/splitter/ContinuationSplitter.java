@@ -1,6 +1,7 @@
 package de.typology.splitter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -73,7 +74,7 @@ public class ContinuationSplitter {
             InterruptedException {
         // read Index
         logger.info("read word index: " + indexFile.getAbsolutePath());
-        WordIndex wordIndex = new WordIndex(indexFile);
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
 
         SortedMap<boolean[], boolean[]> continuationMap =
                 filterContinuationMap(getContinuationMap(patterns));
@@ -265,8 +266,8 @@ public class ContinuationSplitter {
             // don't add tags here
             SplitterTask splitterTask =
                     new SplitterTask(input, outputDirectory.toPath().resolve(
-                            patternLabel), wordIndex, pattern, delimiter,
-                            "", "", true, deleteTempFiles);
+                            patternLabel), wordIndex, pattern, delimiter, "",
+                            "", true, deleteTempFiles);
             executorService.execute(splitterTask);
         }
 
