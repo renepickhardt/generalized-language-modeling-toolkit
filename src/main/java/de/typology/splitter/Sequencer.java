@@ -94,8 +94,11 @@ public class Sequencer {
             while ((line = bufferedReader.readLine()) != null) {
                 line = beforeLine + line + afterLine;
                 String[] words = line.split("\\s");
+
                 if (completeLine) {
-                    writers.get(wordIndex.rank(words[0])).write(line + "\n");
+                    BufferedWriter writer =
+                            writers.get(wordIndex.rank(words[0]));
+                    writer.write(line + "\n");
                 } else {
                     for (int pointer = 0; pointer <= words.length
                             - pattern.length; ++pointer) {
@@ -108,8 +111,9 @@ public class Sequencer {
                         sequence = sequence.replaceFirst(" $", "");
                         sequence += delimiter + "1\n";
 
-                        writers.get(wordIndex.rank(sequence.split(" ")[0]))
-                                .write(sequence);
+                        BufferedWriter writer =
+                                writers.get(wordIndex.rank(sequence.split(" ")[0]));
+                        writer.write(sequence);
                     }
                 }
             }
