@@ -48,7 +48,7 @@ public class KneserNeySmootherTest {
 
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         AbsoluteSplitter as =
-                new AbsoluteSplitter(new FileInputStream(trainingFile),
+                new AbsoluteSplitter(trainingFile.toPath(),
                         absoluteDirectory.toPath(), wordIndex, "\t",
                         "<fs> <s> ", " </s>", 2, true);
         as.split(PatternBuilder.getGLMForSmoothingPatterns(5));

@@ -17,7 +17,7 @@ import de.typology.patterns.PatternTransformer;
 
 public class AbsoluteSplitter {
 
-    private InputStream input;
+    private Path input;
 
     private Path outputDirectory;
 
@@ -36,7 +36,7 @@ public class AbsoluteSplitter {
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public AbsoluteSplitter(
-            InputStream input,
+            Path input,
             Path outputDirectory,
             WordIndex wordIndex,
             String delimiter,
@@ -66,8 +66,12 @@ public class AbsoluteSplitter {
                     + PatternTransformer.getStringPattern(pattern)
                     + " sequences");
 
+            // Need to create a new InputStream for each iteration, as
+            // SplitterTask will read complete stream on each pass.
+            InputStream inputStream = Files.newInputStream(input);
+
             SplitterTask splitterTask =
-                    new SplitterTask(input,
+                    new SplitterTask(inputStream,
                             outputDirectory.resolve(PatternTransformer
                                     .getStringPattern(pattern)), wordIndex,
                             pattern, delimiter, beforeLine, afterLine, false,
