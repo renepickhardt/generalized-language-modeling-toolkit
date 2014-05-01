@@ -2,11 +2,13 @@ package de.typology.counting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * A class for modifying the sequences in workingDirectory based on the given
@@ -17,9 +19,9 @@ import java.io.OutputStreamWriter;
  */
 public class SequenceModifier implements Runnable {
 
-    private File workingDirectory;
+    private Path inputDirectory;
 
-    private OutputStream outputStream;
+    private OutputStream output;
 
     private String delimiter;
 
@@ -30,14 +32,14 @@ public class SequenceModifier implements Runnable {
     private boolean setCountToOne;
 
     public SequenceModifier(
-            File workingDirectory,
-            OutputStream outputStream,
+            Path inputDirectory,
+            OutputStream output,
             String delimiter,
             boolean[] pattern,
             boolean modifyCount,
             boolean setCountToOne) {
-        this.workingDirectory = workingDirectory;
-        this.outputStream = outputStream;
+        this.inputDirectory = inputDirectory;
+        this.output = output;
         this.delimiter = delimiter;
         this.pattern = pattern;
         this.modifyCount = modifyCount;
@@ -46,70 +48,75 @@ public class SequenceModifier implements Runnable {
 
     @Override
     public void run() {
-        BufferedWriter outputStreamWriter =
-                new BufferedWriter(new OutputStreamWriter(outputStream));
         try {
-            for (File trainingFile : workingDirectory.listFiles()) {
-                BufferedReader trainingFileReader =
-                        new BufferedReader(new FileReader(trainingFile));
-                String line;
-                while ((line = trainingFileReader.readLine()) != null) {
-                    String[] lineSplit = line.split(delimiter);
-                    if (modifyCount) {
-                        String[] words = lineSplit[0].split("\\s");
-                        String modifiedWords = "";
-                        try {
-                            for (int i = 0; i < pattern.length; i++) {
-                                if (pattern[i]) {
-                                    modifiedWords += words[i] + " ";
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        modifiedWords = modifiedWords.replaceFirst(" $", "");
-                        // TODO: better solution?
-                        if (words[0].equals("<fs>")) {
-                            // for kneser-ney smoothing: every sequence that
-                            // starts
-                            // with <fs> counts as a new sequence
-                            if (workingDirectory.getName().equals("1")) {
-                                continue;
-                            }
-                            if (!pattern[0]) {
-                                // set <s> in _1 to zero
-                                if (workingDirectory.getName().equals("11")
-                                        && words[1].equals("<s>")) {
-                                    outputStreamWriter.write("<s>" + delimiter
-                                            + "0\n");
-                                } else {
-                                    outputStreamWriter.write(modifiedWords
-                                            + delimiter
-                                            + line.split(delimiter)[1] + "\n");
-                                }
-                            }
-                            // if pattern[0]==true: leave out sequence
+            try (BufferedWriter writer =
+                    new BufferedWriter(new OutputStreamWriter(output));
+                    DirectoryStream<Path> inputFiles =
+                            Files.newDirectoryStream(inputDirectory)) {
+                for (Path inputFile : inputFiles) {
+                    try (BufferedReader reader =
+                            Files.newBufferedReader(inputFile,
+                                    Charset.defaultCharset())) {
+                        if (modifyCount) {
+                            modifyCount(reader, writer);
                         } else {
-                            if (setCountToOne) {
-                                outputStreamWriter.write(modifiedWords
-                                        + delimiter + "1\n");
-                            } else {
-                                outputStreamWriter.write(modifiedWords
-                                        + delimiter + lineSplit[1] + "\n");
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                writer.write(line + "\n");
                             }
                         }
-                    } else {
-                        outputStreamWriter.write(line + "\n");
                     }
-
                 }
-                trainingFileReader.close();
             }
-            outputStreamWriter.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
+    }
 
+    private void modifyCount(BufferedReader reader, BufferedWriter writer)
+            throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] split = line.split(delimiter);
+            String sequence = split[0];
+            String count = split[1];
+
+            String[] words = sequence.split("\\s");
+
+            String patternedSequence = "";
+            for (int i = 0; i < pattern.length; i++) {
+                if (pattern[i]) {
+                    patternedSequence += words[i] + " ";
+                }
+            }
+            patternedSequence = patternedSequence.replaceFirst(" $", "");
+
+            if (words[0].equals("<fs>")) {
+                // for kneser-ney smoothing: every sequence that
+                // starts
+                // with <fs> counts as a new sequence
+                if (inputDirectory.getFileName().toString().equals("1")) {
+                    continue;
+                }
+
+                if (!pattern[0]) {
+                    // set <s> in _1 to zero
+                    if (inputDirectory.getFileName().toString().equals("11")
+                            && words[1].equals("<s>")) {
+                        writer.write("<s>" + delimiter + "0\n");
+                    } else {
+                        writer.write(patternedSequence + delimiter
+                                + line.split(delimiter)[1] + "\n");
+                    }
+                }
+                // else if (pattern[0]) { leave out sequence }
+            } else {
+                if (setCountToOne) {
+                    writer.write(patternedSequence + delimiter + "1\n");
+                } else {
+                    writer.write(patternedSequence + delimiter + count + "\n");
+                }
+            }
+        }
     }
 }
