@@ -70,7 +70,7 @@ public class SequenceModifierTest {
 
         SequenceModifier sequenceModifier =
                 new SequenceModifier(workingDirectory.toPath(),
-                        pipedOutputStream, "\t", pattern, true, true);
+                        pipedOutputStream, "\t", pattern, true);
         sequenceModifier.run();
         BufferedReader bufferedReader =
                 new BufferedReader(new InputStreamReader(pipedInputStream));

@@ -248,7 +248,7 @@ public class ContinuationCounter {
 
         SequenceModifier sequenceModifier =
                 new SequenceModifier(currentWorkingDirectory, output,
-                        delimiter, patternForModifier, true, setCountToOne);
+                        delimiter, patternForModifier, setCountToOne);
         executorService.execute(sequenceModifier);
 
         // CONSUMER ////////////////////////////////////////////////////////////
