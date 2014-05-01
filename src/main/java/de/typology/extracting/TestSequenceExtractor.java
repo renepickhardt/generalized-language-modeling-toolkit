@@ -4,22 +4,19 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 
 /**
  * This class extracts all sequences that are needed for computing the
  * Kneser-Ney smoothed values for a set of given test sequences.
- * 
- * @author Martin Koerner
- * 
  */
 public class TestSequenceExtractor {
 
@@ -33,8 +30,9 @@ public class TestSequenceExtractor {
 
     private String delimiter;
 
-    @SuppressWarnings("unused")
-    private WordIndex wordIndex;
+    private int modelLength;
+
+    private int numberOfCores;
 
     public TestSequenceExtractor(
             File testSequenceFile,
@@ -42,18 +40,20 @@ public class TestSequenceExtractor {
             File continuationDirectory,
             File outputDirectory,
             String delimiter,
-            WordIndex wordIndex) {
+            int modelLength,
+            int numberOfCores) throws IOException {
         this.testSequenceFile = testSequenceFile;
         this.absoluteDirectory = absoluteDirectory;
         this.continuationDirectory = continuationDirectory;
         this.outputDirectory = outputDirectory;
         this.delimiter = delimiter;
-        this.wordIndex = wordIndex;
+        this.modelLength = modelLength;
+        this.numberOfCores = numberOfCores;
 
+        Files.createDirectory(outputDirectory.toPath());
     }
 
-    public void extractSequences(int maxModelLength, int cores) {
-
+    public void extractSequences() {
         // read test sequences into HashSet
         ArrayList<String> sequences = new ArrayList<String>();
         try {
@@ -70,13 +70,14 @@ public class TestSequenceExtractor {
         }
 
         List<boolean[]> absolutePatterns =
-                PatternBuilder.getGLMForSmoothingPatterns(maxModelLength);
+                PatternBuilder.getGLMForSmoothingPatterns(modelLength);
 
         // call SequenceExtractorTasks
 
         // initialize executerService
         // int cores = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newFixedThreadPool(cores);
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(numberOfCores);
 
         for (boolean[] absolutePattern : absolutePatterns) {
             // extract absolute sequences
@@ -106,8 +107,7 @@ public class TestSequenceExtractor {
 
     }
 
-    public void extractContinuationSequences(int maxModelLength, int cores) {
-
+    public void extractContinuationSequences() {
         // read test sequences into HashSet
         ArrayList<String> sequences = new ArrayList<String>();
         try {
@@ -126,7 +126,8 @@ public class TestSequenceExtractor {
 
         // initialize executerService
         // int cores = Runtime.getRuntime().availableProcessors();
-        ExecutorService executorService = Executors.newFixedThreadPool(cores);
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(numberOfCores);
 
         for (File continuationTypeDirectory : continuationDirectory.listFiles()) {
             // extract absolute sequences
@@ -156,37 +157,39 @@ public class TestSequenceExtractor {
         }
 
     }
-    // public void extractContinuationSequences(int maxModelLength, int cores) {
-    // ArrayList<boolean[]> absolutePatterns = PatternBuilder
-    // .getLMPatterns(maxModelLength);
+
+    //    public void extractContinuationSequences2(int maxModelLength, int cores) {
+    //        ArrayList<boolean[]> absolutePatterns =
+    //                PatternBuilder.getLMPatterns(maxModelLength);
     //
-    // // initialize executerService
-    // // int cores = Runtime.getRuntime().availableProcessors();
-    // ExecutorService executorService = Executors.newFixedThreadPool(cores);
-    // for (boolean[] absolutePattern : absolutePatterns) {
-    // File originalSequencesDirectory = new File(
-    // this.outputDirectory.getAbsolutePath()
-    // + "/"
-    // + this.absoluteDirectory.getName()
-    // + "/"
-    // + PatternTransformer
-    // .getStringPattern(absolutePattern));
-    // File outputDirectory = new File(
-    // this.outputDirectory.getAbsolutePath() + "/continuation");
-    // ContinuationExtractorTask cet = new ContinuationExtractorTask(
-    // originalSequencesDirectory, absolutePattern,
-    // this.absoluteDirectory, outputDirectory, this.wordIndex,
-    // this.delimiter);
-    // executorService.execute(cet);
-    // }
+    //        // initialize executerService
+    //        // int cores = Runtime.getRuntime().availableProcessors();
+    //        ExecutorService executorService = Executors.newFixedThreadPool(cores);
+    //        for (boolean[] absolutePattern : absolutePatterns) {
+    //            File originalSequencesDirectory =
+    //                    new File(
+    //                            outputDirectory.getAbsolutePath()
+    //                                    + "/"
+    //                                    + absoluteDirectory.getName()
+    //                                    + "/"
+    //                                    + PatternTransformer
+    //                                            .getStringPattern(absolutePattern));
+    //            File outputDirectory =
+    //                    new File(this.outputDirectory.getAbsolutePath()
+    //                            + "/continuation");
+    //            ContinuationExtractorTask cet =
+    //                    new ContinuationExtractorTask(originalSequencesDirectory,
+    //                            absolutePattern, absoluteDirectory,
+    //                            outputDirectory, wordIndex, delimiter);
+    //            executorService.execute(cet);
+    //        }
     //
-    // executorService.shutdown();
-    // try {
-    // executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-    // } catch (InterruptedException e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-    //
-    // }
+    //        executorService.shutdown();
+    //        try {
+    //            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+    //        } catch (InterruptedException e) {
+    //            // TODO Auto-generated catch block
+    //            e.printStackTrace();
+    //        }
+    //    }
 }
