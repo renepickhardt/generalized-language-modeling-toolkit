@@ -26,6 +26,7 @@ outputDirectory = /media/mssd/datasets/glm/out/
 modelLength = 5
 
 # amount of threads that should be concurrently assigned to the program
+# needs to be >= 2
 numberOfCores = 4
 
 # name of the input data set (this is supposed to be a subfolder of

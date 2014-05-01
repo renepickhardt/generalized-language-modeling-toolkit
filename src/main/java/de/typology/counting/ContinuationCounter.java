@@ -206,7 +206,6 @@ public class ContinuationCounter {
                             deleteTempFiles);
             executorService.execute(splitterTask);
         }
-
     }
 
     private static Map<boolean[], boolean[]> generateContinuationMap(

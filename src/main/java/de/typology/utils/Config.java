@@ -40,6 +40,7 @@ public class Config extends Properties {
 
     /**
      * amount of threads that should be concurrently assigned to the program
+     * needs to be >= 2
      */
     public int numberOfCores;
 
