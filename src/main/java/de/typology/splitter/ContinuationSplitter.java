@@ -26,7 +26,7 @@ import de.typology.indexes.WordIndex;
 import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 
-public class SmoothingSplitter {
+public class ContinuationSplitter {
 
     private File absoluteDirectory;
 
@@ -55,7 +55,7 @@ public class SmoothingSplitter {
         };
     }
 
-    public SmoothingSplitter(
+    public ContinuationSplitter(
             File absoluteDirectory,
             File continuationDirectory,
             File indexFile,

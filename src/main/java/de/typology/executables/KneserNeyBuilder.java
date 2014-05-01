@@ -15,7 +15,7 @@ import de.typology.smoother.KneserNeySmoother;
 import de.typology.smoother.ModifiedKneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
 import de.typology.splitter.DataSetSplitter;
-import de.typology.splitter.SmoothingSplitter;
+import de.typology.splitter.ContinuationSplitter;
 import de.typology.tester.TestSequenceExtractor;
 import de.typology.utils.Config;
 
@@ -190,8 +190,8 @@ public class KneserNeyBuilder {
             InterruptedException {
         List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
-        SmoothingSplitter smoothingSplitter =
-                new SmoothingSplitter(absoluteDirectory, continuationDirectory,
+        ContinuationSplitter smoothingSplitter =
+                new ContinuationSplitter(absoluteDirectory, continuationDirectory,
                         indexFile, "\t", config.deleteTempFiles);
         smoothingSplitter.split(lmPatterns, config.numberOfCores);
     }

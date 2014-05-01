@@ -13,7 +13,7 @@ import org.junit.Test;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.splitter.AbsoluteSplitter;
-import de.typology.splitter.SmoothingSplitter;
+import de.typology.splitter.ContinuationSplitter;
 
 public class KneserNeySmootherTest {
 
@@ -47,8 +47,8 @@ public class KneserNeySmootherTest {
         as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
 
         List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
-        SmoothingSplitter smoothingSplitter =
-                new SmoothingSplitter(absoluteDirectory, continuationDirectory,
+        ContinuationSplitter smoothingSplitter =
+                new ContinuationSplitter(absoluteDirectory, continuationDirectory,
                         indexFile, "\t", true);
         smoothingSplitter.split(lmPatterns, 2);
 
