@@ -37,7 +37,7 @@ public class PatternCounterTask implements Runnable {
 
     private boolean deleteTempFiles;
 
-    private Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(getClass().getName());
 
     /**
      * Expects an {@code input} where each line contains a number of words

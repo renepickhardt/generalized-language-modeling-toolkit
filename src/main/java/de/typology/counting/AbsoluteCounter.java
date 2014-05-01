@@ -36,7 +36,7 @@ public class AbsoluteCounter {
 
     private boolean deleteTempFiles;
 
-    private Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(getClass().getName());
 
     public AbsoluteCounter(
             Path input,

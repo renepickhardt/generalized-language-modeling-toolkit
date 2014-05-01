@@ -210,7 +210,7 @@ public class Config extends Properties {
      */
     private void initialize() throws IllegalArgumentException,
             IllegalAccessException {
-        Field[] fields = this.getClass().getFields();
+        Field[] fields = getClass().getFields();
         for (Field f : fields) {
             if (this.getProperty(f.getName()) == null) {
                 System.err.print("Property '" + f.getName()

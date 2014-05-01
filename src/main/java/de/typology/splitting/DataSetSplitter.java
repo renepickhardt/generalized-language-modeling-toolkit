@@ -32,7 +32,7 @@ public class DataSetSplitter {
 
     private String inputName;
 
-    private Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(getClass().getName());
 
     public DataSetSplitter(
             File directory,

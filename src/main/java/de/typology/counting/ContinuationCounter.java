@@ -43,7 +43,7 @@ public class ContinuationCounter {
 
     private boolean deleteTempFiles;
 
-    private Logger logger = LogManager.getLogger(this.getClass().getName());
+    private Logger logger = LogManager.getLogger(getClass().getName());
 
     private static final Comparator<boolean[]> PATTERN_COMPARATOR =
             new Comparator<boolean[]>() {

@@ -21,7 +21,7 @@ import de.typology.utils.Config;
 
 public class KneserNeySmoother {
 
-    protected Logger logger = LogManager.getLogger(this.getClass().getName());
+    protected Logger logger = LogManager.getLogger(getClass().getName());
 
     // location of trained language models
     protected File absoluteDirectory;
