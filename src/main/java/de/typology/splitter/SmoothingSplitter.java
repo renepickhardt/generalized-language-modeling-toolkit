@@ -243,11 +243,11 @@ public class SmoothingSplitter {
             boolean setCountToOne) throws IOException {
         Path outputPath = outputDirectory.toPath();
 
-        PipedInputStream inputStream = new PipedInputStream(100 * 8 * 1024);
-        OutputStream outputStream = new PipedOutputStream(inputStream);
+        PipedInputStream input = new PipedInputStream(100 * 8 * 1024);
+        OutputStream output = new PipedOutputStream(input);
 
         SequenceModifier sequenceModifier =
-                new SequenceModifier(currentworkingDirectory, outputStream,
+                new SequenceModifier(currentworkingDirectory, output,
                         delimiter, patternForModifier, true, setCountToOne);
         executorService.execute(sequenceModifier);
 
@@ -256,16 +256,16 @@ public class SmoothingSplitter {
             Files.createDirectory(lineCountOutputDirPath);
             Path lineCountOutputPath = lineCountOutputDirPath.resolve("all");
 
-            OutputStream output =
-                    new FileOutputStream(lineCountOutputPath.toFile());
+            OutputStream lineCounterOutput =
+                    new FileOutputStream(lineCountOutputPath.toString());
             LineCounterTask lineCountTask =
-                    new LineCounterTask(inputStream, output, delimiter,
+                    new LineCounterTask(input, lineCounterOutput, delimiter,
                             setCountToOne);
             executorService.execute(lineCountTask);
         } else {
             // don't add tags here
             SplitterTask splitterTask =
-                    new SplitterTask(inputStream, outputDirectory, wordIndex,
+                    new SplitterTask(input, outputDirectory, wordIndex,
                             pattern, patternLabel, delimiter, deleteTempFiles,
                             "", "", true);
             executorService.execute(splitterTask);

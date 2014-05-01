@@ -6,9 +6,13 @@ import static org.junit.Assert.assertNull;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -44,8 +48,9 @@ public class AggregatorTest {
 
     @Test
     public void aggregatorCol0Test() throws IOException {
-        Aggregator aggregator =
-                new Aggregator(trainingFile, outputFile, "\t", false);
+        InputStream input = new FileInputStream(trainingFile);
+        OutputStream output = new FileOutputStream(outputFile);
+        Aggregator aggregator = new Aggregator(input, output, "\t", false);
         aggregator.aggregateCounts();
         try {
             BufferedReader br = new BufferedReader(new FileReader(outputFile));

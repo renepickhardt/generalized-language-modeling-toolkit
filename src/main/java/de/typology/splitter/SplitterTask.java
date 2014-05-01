@@ -1,8 +1,11 @@
 package de.typology.splitter;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -82,8 +85,8 @@ public class SplitterTask implements Runnable {
             // initialize sequencer
             Sequencer sequencer =
                     new Sequencer(inputStream, sequencerOutputDirectory,
-                            wordIndex, pattern, beforeLine,
-                            afterLine, delimiter, sequenceModifyCounts);
+                            wordIndex, pattern, beforeLine, afterLine,
+                            delimiter, sequenceModifyCounts);
             sequencer.splitIntoFiles();
 
             File aggregatedOutputDirectory =
@@ -96,11 +99,14 @@ public class SplitterTask implements Runnable {
             logger.info("aggregate into: " + aggregatedOutputDirectory);
 
             for (File splitFile : sequencerOutputDirectory.listFiles()) {
-                Aggregator aggregator =
-                        new Aggregator(splitFile, new File(
+                InputStream input = new FileInputStream(splitFile);
+                OutputStream output =
+                        new FileOutputStream(new File(
                                 aggregatedOutputDirectory.getAbsolutePath()
-                                        + "/" + splitFile.getName()),
-                                delimiter, additionalCounts);
+                                        + "/" + splitFile.getName()));
+                Aggregator aggregator =
+                        new Aggregator(input, output, delimiter,
+                                additionalCounts);
                 aggregator.aggregateCounts();
             }
 

@@ -13,9 +13,9 @@ import java.io.OutputStreamWriter;
  */
 public class LineCounterTask implements Runnable {
 
-    private InputStream inputStream;
+    private InputStream input;
 
-    private OutputStream outputStream;
+    private OutputStream output;
 
     private String delimiter;
 
@@ -33,9 +33,9 @@ public class LineCounterTask implements Runnable {
      * <li>{@code 3+Count} is the number of line where count is {@code 3+}.</li>
      * </ul>
      * 
-     * @param inputStream
+     * @param input
      *            InputStream to be read.
-     * @param outputStream
+     * @param output
      *            OutputStream to be written to.
      * @param delimiter
      *            Delimiter that separates Sequence and Count.
@@ -45,12 +45,12 @@ public class LineCounterTask implements Runnable {
      *            as described above.
      */
     public LineCounterTask(
-            InputStream inputStream,
-            OutputStream outputStream,
+            InputStream input,
+            OutputStream output,
             String delimiter,
             boolean setCountToOne) {
-        this.inputStream = inputStream;
-        this.outputStream = outputStream;
+        this.input = input;
+        this.output = output;
         this.delimiter = delimiter;
         this.setCountToOne = setCountToOne;
     }
@@ -63,10 +63,10 @@ public class LineCounterTask implements Runnable {
             long twoCount = 0L;
             long threePlusCount = 0L;
 
-            try (BufferedReader inputStreamReader =
-                    new BufferedReader(new InputStreamReader(inputStream))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(input))) {
                 String line;
-                while ((line = inputStreamReader.readLine()) != null) {
+                while ((line = reader.readLine()) != null) {
                     if (setCountToOne) {
                         ++onePlusCount;
                     } else {
@@ -86,13 +86,12 @@ public class LineCounterTask implements Runnable {
                 }
             }
 
-            try (BufferedWriter bufferedWriter =
-                    new BufferedWriter(new OutputStreamWriter(outputStream))) {
-                bufferedWriter.write(onePlusCount + delimiter + oneCount
-                        + delimiter + twoCount + delimiter + threePlusCount
-                        + "\n");
+            try (BufferedWriter writer =
+                    new BufferedWriter(new OutputStreamWriter(output))) {
+                writer.write(onePlusCount + delimiter + oneCount + delimiter
+                        + twoCount + delimiter + threePlusCount + "\n");
             }
-            outputStream.close();
+            output.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

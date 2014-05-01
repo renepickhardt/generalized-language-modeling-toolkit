@@ -2,10 +2,11 @@ package de.typology.splitter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -22,9 +23,9 @@ import java.util.TreeSet;
  */
 public class Aggregator {
 
-    private File trainingFile;
+    private InputStream input;
 
-    private File outputFile;
+    private OutputStream output;
 
     private String delimiter;
 
@@ -41,12 +42,12 @@ public class Aggregator {
     };
 
     public Aggregator(
-            File trainingFile,
-            File outputFile,
+            InputStream input,
+            OutputStream output,
             String delimiter,
             boolean additionalCounts) {
-        this.trainingFile = trainingFile;
-        this.outputFile = outputFile;
+        this.input = input;
+        this.output = output;
         this.delimiter = delimiter;
         this.additionalCounts = additionalCounts;
     }
@@ -57,29 +58,29 @@ public class Aggregator {
         SortedMap<String, Long> wordMapNoAdditionalCounts =
                 new TreeMap<String, Long>(stringComparator);
 
-        try (BufferedReader trainingFileReader =
-                new BufferedReader(new FileReader(trainingFile))) {
-            String inputLine;
-            while ((inputLine = trainingFileReader.readLine()) != null) {
-                String[] inputLineSplit = inputLine.split(delimiter);
-                String words = inputLineSplit[0];
-                long count = Long.parseLong(inputLineSplit[1]);
-                if (words.length() == 0) {
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(input))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] split = line.split(delimiter);
+                String sequence = split[0];
+                long count = Long.parseLong(split[1]);
+                if (sequence.length() == 0) {
                     continue;
                 }
 
                 if (additionalCounts) {
-                    addCountWithAdditional(wordMapAdditionalCounts, words,
+                    addCountWithAdditional(wordMapAdditionalCounts, sequence,
                             count);
                 } else {
-                    addCountWithNoAdditional(wordMapNoAdditionalCounts, words,
-                            count);
+                    addCountWithNoAdditional(wordMapNoAdditionalCounts,
+                            sequence, count);
                 }
             }
         }
 
-        try (BufferedWriter outputFileWriter =
-                new BufferedWriter(new FileWriter(outputFile))) {
+        try (BufferedWriter writer =
+                new BufferedWriter(new OutputStreamWriter(output))) {
             if (additionalCounts) {
                 for (Entry<String, Long[]> entry : wordMapAdditionalCounts
                         .entrySet()) {
@@ -88,9 +89,8 @@ public class Aggregator {
                     // [1]=1
                     // [2]=2
                     // [3]=3+
-                    outputFileWriter.write(words + delimiter
-                            + entry.getValue()[0] + delimiter
-                            + entry.getValue()[1] + delimiter
+                    writer.write(words + delimiter + entry.getValue()[0]
+                            + delimiter + entry.getValue()[1] + delimiter
                             + entry.getValue()[2] + delimiter
                             + entry.getValue()[3] + "\n");
                 }
@@ -98,8 +98,7 @@ public class Aggregator {
                 for (Entry<String, Long> entry : wordMapNoAdditionalCounts
                         .entrySet()) {
                     String words = entry.getKey();
-                    outputFileWriter.write(words + delimiter + entry.getValue()
-                            + "\n");
+                    writer.write(words + delimiter + entry.getValue() + "\n");
                 }
             }
         }
@@ -156,20 +155,20 @@ public class Aggregator {
     }
 
     public void aggregateWithoutCounts() throws IOException {
-        SortedSet<String> wordSet = new TreeSet<String>(stringComparator);
+        SortedSet<String> words = new TreeSet<String>(stringComparator);
 
-        try (BufferedReader trainingFileReader =
-                new BufferedReader(new FileReader(trainingFile))) {
-            String inputLine;
-            while ((inputLine = trainingFileReader.readLine()) != null) {
-                wordSet.add(inputLine);
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(input))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                words.add(line);
             }
         }
 
-        try (BufferedWriter outputFileWriter =
-                new BufferedWriter(new FileWriter(outputFile))) {
-            for (String line : wordSet) {
-                outputFileWriter.write(line + "\n");
+        try (BufferedWriter writer =
+                new BufferedWriter(new OutputStreamWriter(output))) {
+            for (String line : words) {
+                writer.write(line + "\n");
             }
         }
     }
