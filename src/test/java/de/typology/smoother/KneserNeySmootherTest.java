@@ -3,6 +3,7 @@ package de.typology.smoother;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.typology.indexes.WordIndex;
 import de.typology.indexes.WordIndexer;
 import de.typology.patterns.PatternBuilder;
 import de.typology.splitter.AbsoluteSplitter;
@@ -44,10 +46,12 @@ public class KneserNeySmootherTest {
         absoluteDirectory = new File(workingDirectoryPath + "absolute");
         continuationDirectory = new File(workingDirectoryPath + "continuation");
 
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         AbsoluteSplitter as =
-                new AbsoluteSplitter(trainingFile, indexFile,
-                        absoluteDirectory, "\t", true, "<fs> <s> ", " </s>");
-        as.split(PatternBuilder.getGLMForSmoothingPatterns(5), 2);
+                new AbsoluteSplitter(new FileInputStream(trainingFile),
+                        absoluteDirectory.toPath(), wordIndex, "\t",
+                        "<fs> <s> ", " </s>", 2, true);
+        as.split(PatternBuilder.getGLMForSmoothingPatterns(5));
 
         List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
         ContinuationSplitter smoothingSplitter =

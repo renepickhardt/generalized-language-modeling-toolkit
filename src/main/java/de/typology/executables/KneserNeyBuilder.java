@@ -181,11 +181,13 @@ public class KneserNeyBuilder {
         List<boolean[]> glmForSmoothingPatterns =
                 PatternBuilder
                         .getReverseGLMForSmoothingPatterns(config.modelLength);
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         AbsoluteSplitter absolteSplitter =
-                new AbsoluteSplitter(trainingFile, indexFile,
-                        absoluteDirectory, "\t", config.deleteTempFiles,
-                        "<fs> <s> ", " </s>");
-        absolteSplitter.split(glmForSmoothingPatterns, config.numberOfCores);
+                new AbsoluteSplitter(new FileInputStream(trainingFile),
+                        absoluteDirectory.toPath(), wordIndex, "\t",
+                        "<fs> <s> ", " </s>", config.numberOfCores,
+                        config.deleteTempFiles);
+        absolteSplitter.split(glmForSmoothingPatterns);
     }
 
     private void buildContinuationGLM(

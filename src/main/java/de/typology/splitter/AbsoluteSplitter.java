@@ -1,110 +1,81 @@
 package de.typology.splitter;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexes.WordIndex;
 import de.typology.patterns.PatternTransformer;
 
-/**
- * Split
- * 
- * @author Martin Koerner
- * 
- */
 public class AbsoluteSplitter {
 
-    private File trainingFile;
+    private InputStream input;
 
-    private File indexFile;
+    private Path outputDirectory;
 
-    private File outputDirectory;
+    private WordIndex wordIndex;
 
     private String delimiter;
-
-    private boolean deleteTempFiles;
 
     private String beforeLine;
 
     private String afterLine;
 
+    private int numberOfCores;
+
+    private boolean deleteTempFiles;
+
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
     public AbsoluteSplitter(
-            File trainingFile,
-            File indexFile,
-            File absoluteDirectory,
+            InputStream input,
+            Path outputDirectory,
+            WordIndex wordIndex,
             String delimiter,
-            boolean deleteTempFiles,
             String beforeLine,
-            String afterLine) {
-        this.trainingFile = trainingFile;
-        this.indexFile = indexFile;
-        outputDirectory = absoluteDirectory;
+            String afterLine,
+            int numberOfCores,
+            boolean deleteTempFiles) throws IOException {
+        this.input = input;
+        this.outputDirectory = outputDirectory;
+        this.wordIndex = wordIndex;
         this.delimiter = delimiter;
-        this.deleteTempFiles = deleteTempFiles;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
-        // delete old directory
-        if (absoluteDirectory.exists()) {
-            try {
-                FileUtils.deleteDirectory(absoluteDirectory);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        absoluteDirectory.mkdir();
+        this.numberOfCores = numberOfCores;
+        this.deleteTempFiles = deleteTempFiles;
+
+        Files.createDirectory(outputDirectory);
     }
 
-    public void split(List<boolean[]> patterns, int cores) throws IOException,
+    public void split(List<boolean[]> patterns) throws IOException,
             InterruptedException {
-        logger.info("read word index: " + indexFile.getAbsolutePath());
-        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-
-        // initialize executerService
-        ExecutorService executorService = Executors.newFixedThreadPool(cores);
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(numberOfCores);
 
         for (boolean[] pattern : patterns) {
             logger.debug("execute SplitterTask for: "
                     + PatternTransformer.getStringPattern(pattern)
                     + " sequences");
 
-            try {
-                InputStream trainingFileInputStream =
-                        new FileInputStream(trainingFile);
-                SplitterTask splitterTask =
-                        new SplitterTask(trainingFileInputStream,
-                                outputDirectory.toPath().resolve(
-                                        PatternTransformer
-                                                .getStringPattern(pattern)),
-                                wordIndex, pattern, delimiter, beforeLine,
-                                afterLine, false, deleteTempFiles);
-                executorService.execute(splitterTask);
-            } catch (FileNotFoundException e) {
-                logger.error("trainingFile not found: "
-                        + trainingFile.getAbsolutePath());
-                throw e;
-            }
+            SplitterTask splitterTask =
+                    new SplitterTask(input,
+                            outputDirectory.resolve(PatternTransformer
+                                    .getStringPattern(pattern)), wordIndex,
+                            pattern, delimiter, beforeLine, afterLine, false,
+                            deleteTempFiles);
+            executorService.execute(splitterTask);
         }
 
         executorService.shutdown();
-        try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            // Interrupted
-            throw e;
-        }
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
     }
 }

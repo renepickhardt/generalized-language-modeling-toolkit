@@ -29,13 +29,13 @@ public class SplitterTask implements Runnable {
 
     private String delimiter;
 
-    private boolean deleteTempFiles;
-
     private String beforeLine;
 
     private String afterLine;
 
     private boolean isContinuation;
+
+    private boolean deleteTempFiles;
 
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
@@ -83,10 +83,10 @@ public class SplitterTask implements Runnable {
         this.wordIndex = wordIndex;
         this.pattern = pattern;
         this.delimiter = delimiter;
-        this.deleteTempFiles = deleteTempFiles;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
         this.isContinuation = isContinuation;
+        this.deleteTempFiles = deleteTempFiles;
     }
 
     @Override
