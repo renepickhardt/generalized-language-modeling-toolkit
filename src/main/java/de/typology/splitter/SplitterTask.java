@@ -69,9 +69,6 @@ public class SplitterTask implements Runnable {
     @Override
     public void run() {
         try {
-            boolean sequenceModifyCounts = isSmoothing;
-            boolean additionalCounts = isSmoothing;
-
             File sequencerOutputDirectory =
                     new File(outputDirectory.getAbsolutePath() + "/"
                             + patternLabel + "-split");
@@ -86,7 +83,7 @@ public class SplitterTask implements Runnable {
             Sequencer sequencer =
                     new Sequencer(inputStream, sequencerOutputDirectory,
                             wordIndex, pattern, beforeLine, afterLine,
-                            delimiter, sequenceModifyCounts);
+                            delimiter, isSmoothing);
             sequencer.splitIntoFiles();
 
             File aggregatedOutputDirectory =
@@ -106,7 +103,7 @@ public class SplitterTask implements Runnable {
                                         + "/" + splitFile.getName()));
                 Aggregator aggregator =
                         new Aggregator(input, output, delimiter,
-                                additionalCounts);
+                                isSmoothing);
                 aggregator.aggregate();
             }
 

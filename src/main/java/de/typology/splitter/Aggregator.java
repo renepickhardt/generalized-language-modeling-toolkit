@@ -63,6 +63,7 @@ public class Aggregator {
                 String[] split = line.split(delimiter);
                 String sequence = split[0];
                 long count = Long.parseLong(split[1]);
+
                 if (sequence.length() == 0) {
                     continue;
                 }
