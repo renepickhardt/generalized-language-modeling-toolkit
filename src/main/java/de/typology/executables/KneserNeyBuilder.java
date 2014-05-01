@@ -198,11 +198,12 @@ public class KneserNeyBuilder {
             InterruptedException {
         List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
+        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         ContinuationCounter smoothingSplitter =
-                new ContinuationCounter(absoluteDirectory,
-                        continuationDirectory, indexFile, "\t",
-                        config.deleteTempFiles);
-        smoothingSplitter.split(lmPatterns, config.numberOfCores);
+                new ContinuationCounter(absoluteDirectory.toPath(),
+                        continuationDirectory.toPath(), wordIndex, "\t",
+                        config.numberOfCores, config.deleteTempFiles);
+        smoothingSplitter.split(lmPatterns);
     }
 
     private void extractContinuationGLM(

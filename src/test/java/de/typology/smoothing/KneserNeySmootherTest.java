@@ -17,7 +17,6 @@ import de.typology.counting.ContinuationCounter;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexer;
 import de.typology.patterns.PatternBuilder;
-import de.typology.smoothing.KneserNeySmoother;
 
 public class KneserNeySmootherTest {
 
@@ -56,9 +55,10 @@ public class KneserNeySmootherTest {
 
         List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
         ContinuationCounter smoothingSplitter =
-                new ContinuationCounter(absoluteDirectory,
-                        continuationDirectory, indexFile, "\t", true);
-        smoothingSplitter.split(lmPatterns, 2);
+                new ContinuationCounter(absoluteDirectory.toPath(),
+                        continuationDirectory.toPath(), wordIndex, "\t", 2,
+                        true);
+        smoothingSplitter.split(lmPatterns);
 
         testSequenceFile =
                 new File(workingDirectoryPath + "test-sequences-5.txt");

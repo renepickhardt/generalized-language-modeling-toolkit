@@ -1,7 +1,5 @@
 package de.typology.counting;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -27,55 +25,58 @@ import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 
+/**
+ * Counts continuation counts of sequences for a number of patterns using
+ * absolute counts.
+ */
 public class ContinuationCounter {
 
-    private File absoluteDirectory;
+    private Path inputDirectory;
 
-    private File continuationDirectory;
+    private Path outputDirectory;
 
-    private File indexFile;
+    private WordIndex wordIndex;
 
     private String delimiter;
+
+    private int numberOfCores;
 
     private boolean deleteTempFiles;
 
     private Logger logger = LogManager.getLogger(this.getClass().getName());
 
-    private ExecutorService executorService;
+    private static final Comparator<boolean[]> PATTERN_COMPARATOR =
+            new Comparator<boolean[]>() {
 
-    private static Comparator<boolean[]> patternComparator;
-    static {
-        patternComparator = new Comparator<boolean[]>() {
+                @Override
+                public int compare(boolean[] pattern1, boolean[] pattern2) {
+                    return PatternTransformer.getStringPattern(pattern2)
+                            .compareTo(
+                                    PatternTransformer
+                                            .getStringPattern(pattern1));
+                }
 
-            @Override
-            public int compare(boolean[] pattern1, boolean[] pattern2) {
-                return PatternTransformer.getStringPattern(pattern2).compareTo(
-                        PatternTransformer.getStringPattern(pattern1));
-            }
-
-        };
-    }
+            };
 
     public ContinuationCounter(
-            File absoluteDirectory,
-            File continuationDirectory,
-            File indexFile,
+            Path inputDirectory,
+            Path outputDirectory,
+            WordIndex wordIndex,
             String delimiter,
-            boolean deleteTempFiles) {
-        this.absoluteDirectory = absoluteDirectory;
-        this.continuationDirectory = continuationDirectory;
-        continuationDirectory.mkdir();
-        this.indexFile = indexFile;
+            int numberOfCores,
+            boolean deleteTempFiles) throws IOException {
+        this.inputDirectory = inputDirectory;
+        this.outputDirectory = outputDirectory;
+        this.wordIndex = wordIndex;
         this.delimiter = delimiter;
+        this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
+
+        Files.createDirectory(outputDirectory);
     }
 
-    public void split(List<boolean[]> patterns, int cores) throws IOException,
+    public void split(List<boolean[]> patterns) throws IOException,
             InterruptedException {
-        // read Index
-        logger.info("read word index: " + indexFile.getAbsolutePath());
-        WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-
         SortedMap<boolean[], boolean[]> continuationMap =
                 filterContinuationMap(getContinuationMap(patterns));
 
@@ -84,7 +85,8 @@ public class ContinuationCounter {
         while (finishedPatterns.size() < continuationMap.size()) {
             ArrayList<boolean[]> currentPatterns = new ArrayList<boolean[]>();
             // initialize executerService
-            executorService = Executors.newFixedThreadPool(cores);
+            ExecutorService executorService =
+                    Executors.newFixedThreadPool(numberOfCores);
 
             for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
                 // list for storing patterns that are currently computed
@@ -114,9 +116,8 @@ public class ContinuationCounter {
                                 PatternTransformer.getStringPattern(
                                         entry.getKey()).replaceAll("0", "_");
 
-                        File currentAbsoluteworkingDirectory =
-                                new File(absoluteDirectory.getAbsolutePath()
-                                        + "/" + inputPatternLabel);
+                        Path currentAbsoluteworkingDirectory =
+                                inputDirectory.resolve(inputPatternLabel);
 
                         logger.debug("inputPattern: "
                                 + PatternTransformer.getStringPattern(entry
@@ -130,8 +131,9 @@ public class ContinuationCounter {
                                 + PatternTransformer.getStringPattern(entry
                                         .getKey()));
 
-                        splitType(currentAbsoluteworkingDirectory,
-                                continuationDirectory, outputPattern,
+                        splitType(executorService,
+                                currentAbsoluteworkingDirectory,
+                                outputDirectory, outputPattern,
                                 outputPatternLabel, entry.getKey(), wordIndex,
                                 true);
                     } else {
@@ -160,12 +162,8 @@ public class ContinuationCounter {
                                             entry.getKey())
                                             .replaceAll("0", "_");
 
-                            File currentContinuationworkingDirectory =
-                                    new File(
-                                            continuationDirectory
-                                                    .getAbsolutePath()
-                                                    + "/"
-                                                    + inputPatternLabel);
+                            Path currentContinuationworkingDirectory =
+                                    outputDirectory.resolve(inputPatternLabel);
 
                             // build patternForModifier
                             boolean[] patternForModifier =
@@ -205,8 +203,9 @@ public class ContinuationCounter {
                                     + PatternTransformer
                                             .getStringPattern(patternForModifier));
 
-                            splitType(currentContinuationworkingDirectory,
-                                    continuationDirectory, outputPattern,
+                            splitType(executorService,
+                                    currentContinuationworkingDirectory,
+                                    outputDirectory, outputPattern,
                                     outputPatternLabel, patternForModifier,
                                     wordIndex, false);
 
@@ -234,25 +233,28 @@ public class ContinuationCounter {
     }
 
     private void splitType(
-            File currentWorkingDirectory,
-            File outputDirectory,
+            ExecutorService executorService,
+            Path currentWorkingDirectory,
+            Path outputDirectory,
             boolean[] pattern,
             String patternLabel,
             boolean[] patternForModifier,
             WordIndex wordIndex,
             boolean setCountToOne) throws IOException {
-        Path outputPath = outputDirectory.toPath();
-
         PipedInputStream input = new PipedInputStream(100 * 8 * 1024);
         OutputStream output = new PipedOutputStream(input);
 
+        // PRODUCER ////////////////////////////////////////////////////////////
+
         SequenceModifier sequenceModifier =
-                new SequenceModifier(currentWorkingDirectory, output,
+                new SequenceModifier(currentWorkingDirectory.toFile(), output,
                         delimiter, patternForModifier, true, setCountToOne);
         executorService.execute(sequenceModifier);
 
+        // CONSUMER ////////////////////////////////////////////////////////////
+
         if (Integer.bitCount(PatternTransformer.getIntPattern(pattern)) == 0) {
-            Path lineCountOutputDirPath = outputPath.resolve(patternLabel);
+            Path lineCountOutputDirPath = outputDirectory.resolve(patternLabel);
             Files.createDirectory(lineCountOutputDirPath);
             Path lineCountOutputPath = lineCountOutputDirPath.resolve("all");
 
@@ -265,9 +267,9 @@ public class ContinuationCounter {
         } else {
             // don't add tags here
             PatternCounterTask splitterTask =
-                    new PatternCounterTask(input, outputDirectory.toPath().resolve(
-                            patternLabel), wordIndex, pattern, delimiter, "",
-                            "", true, deleteTempFiles);
+                    new PatternCounterTask(input,
+                            outputDirectory.resolve(patternLabel), wordIndex,
+                            pattern, delimiter, "", "", true, deleteTempFiles);
             executorService.execute(splitterTask);
         }
 
@@ -284,7 +286,7 @@ public class ContinuationCounter {
     private static SortedMap<boolean[], boolean[]> filterContinuationMap(
             SortedMap<boolean[], boolean[]> continuationMap) {
         SortedMap<boolean[], boolean[]> newContinuationMap =
-                new TreeMap<boolean[], boolean[]>(patternComparator);
+                new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
         for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
             if (PatternTransformer.getStringPattern(entry.getKey()).equals(
                     PatternTransformer.getStringPattern(entry.getValue()))) {
@@ -304,7 +306,7 @@ public class ContinuationCounter {
     private static SortedMap<boolean[], boolean[]> getContinuationMap(
             List<boolean[]> patterns) {
         SortedMap<boolean[], boolean[]> continuationMap =
-                new TreeMap<boolean[], boolean[]>(patternComparator);
+                new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
 
         for (boolean[] pattern : patterns) {
             addPatterns(continuationMap, pattern, pattern, 0);

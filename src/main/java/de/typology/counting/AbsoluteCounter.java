@@ -15,6 +15,9 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternTransformer;
 
+/**
+ * Counts absolute counts of sequences for a number of patterns.
+ */
 public class AbsoluteCounter {
 
     private Path input;
