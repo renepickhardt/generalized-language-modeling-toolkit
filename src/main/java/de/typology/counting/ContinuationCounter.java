@@ -253,7 +253,8 @@ public class ContinuationCounter {
 
         // CONSUMER ////////////////////////////////////////////////////////////
 
-        if (Integer.bitCount(PatternTransformer.getIntPattern(pattern)) == 0) {
+        // if pattern has only falses
+        if (PatternTransformer.getIntPattern(pattern) == 0) {
             Path lineCountOutputDirPath = outputDirectory.resolve(patternLabel);
             Files.createDirectory(lineCountOutputDirPath);
             Path lineCountOutputPath = lineCountOutputDirPath.resolve("all");
