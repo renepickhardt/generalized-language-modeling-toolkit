@@ -7,13 +7,12 @@ import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -44,19 +43,6 @@ public class ContinuationCounter {
     private boolean deleteTempFiles;
 
     private Logger logger = LogManager.getLogger(getClass().getName());
-
-    private static final Comparator<boolean[]> PATTERN_COMPARATOR =
-            new Comparator<boolean[]>() {
-
-                @Override
-                public int compare(boolean[] pattern1, boolean[] pattern2) {
-                    return PatternTransformer.getStringPattern(pattern2)
-                            .compareTo(
-                                    PatternTransformer
-                                            .getStringPattern(pattern1));
-                }
-
-            };
 
     public ContinuationCounter(
             Path inputDirectory,
@@ -225,8 +211,7 @@ public class ContinuationCounter {
 
     private static Map<boolean[], boolean[]> generateContinuationMap(
             List<boolean[]> patterns) {
-        Map<boolean[], boolean[]> map =
-                new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
+        Map<boolean[], boolean[]> map = new HashMap<boolean[], boolean[]>();
 
         for (boolean[] pattern : patterns) {
             addPatterns(map, pattern, pattern, 0);
@@ -237,7 +222,7 @@ public class ContinuationCounter {
         // - !key[0] && !key[1]
 
         Map<boolean[], boolean[]> filteredMap =
-                new TreeMap<boolean[], boolean[]>(PATTERN_COMPARATOR);
+                new HashMap<boolean[], boolean[]>();
 
         for (Entry<boolean[], boolean[]> entry : map.entrySet()) {
             boolean[] key = entry.getKey();
@@ -251,7 +236,7 @@ public class ContinuationCounter {
                 continue;
             }
 
-            filteredMap.put(entry.getKey(), entry.getValue());
+            filteredMap.put(key, value);
         }
 
         return filteredMap;
