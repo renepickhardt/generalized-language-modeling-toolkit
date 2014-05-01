@@ -107,7 +107,7 @@ public class SplitterTask implements Runnable {
                 Aggregator aggregator =
                         new Aggregator(input, output, delimiter,
                                 additionalCounts);
-                aggregator.aggregateCounts();
+                aggregator.aggregate();
             }
 
             // delete sequencerOutputDirectory

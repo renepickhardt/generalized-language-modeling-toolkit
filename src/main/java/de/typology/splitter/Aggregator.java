@@ -10,9 +10,7 @@ import java.io.OutputStreamWriter;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * A class for aggregating sequences by counting their occurrences. Expects an
@@ -52,7 +50,7 @@ public class Aggregator {
         this.additionalCounts = additionalCounts;
     }
 
-    public void aggregateCounts() throws IOException {
+    public void aggregate() throws IOException {
         SortedMap<String, Long[]> wordMapAdditionalCounts =
                 new TreeMap<String, Long[]>(stringComparator);
         SortedMap<String, Long> wordMapNoAdditionalCounts =
@@ -154,22 +152,4 @@ public class Aggregator {
         }
     }
 
-    public void aggregateWithoutCounts() throws IOException {
-        SortedSet<String> words = new TreeSet<String>(stringComparator);
-
-        try (BufferedReader reader =
-                new BufferedReader(new InputStreamReader(input))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                words.add(line);
-            }
-        }
-
-        try (BufferedWriter writer =
-                new BufferedWriter(new OutputStreamWriter(output))) {
-            for (String line : words) {
-                writer.write(line + "\n");
-            }
-        }
-    }
 }

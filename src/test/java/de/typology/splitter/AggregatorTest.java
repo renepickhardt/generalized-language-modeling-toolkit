@@ -51,7 +51,7 @@ public class AggregatorTest {
         InputStream input = new FileInputStream(trainingFile);
         OutputStream output = new FileOutputStream(outputFile);
         Aggregator aggregator = new Aggregator(input, output, "\t", false);
-        aggregator.aggregateCounts();
+        aggregator.aggregate();
         try {
             BufferedReader br = new BufferedReader(new FileReader(outputFile));
             assertEquals("a z a\t1", br.readLine());
