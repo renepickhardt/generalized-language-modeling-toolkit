@@ -54,21 +54,16 @@ public class TestSequenceExtractor {
         Files.createDirectory(outputDirectory);
     }
 
-    public void extractSequences() {
+    public void extractSequences() throws IOException, InterruptedException {
         // read test sequences into HashSet
         ArrayList<String> sequences = new ArrayList<String>();
-        try {
-            BufferedReader testSequenceReader =
-                    Files.newBufferedReader(testSequenceFile,
-                            Charset.defaultCharset());
+        try (BufferedReader testSequenceReader =
+                Files.newBufferedReader(testSequenceFile,
+                        Charset.defaultCharset())) {
             String line;
             while ((line = testSequenceReader.readLine()) != null) {
                 sequences.add(line);
             }
-            testSequenceReader.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
         List<boolean[]> absolutePatterns =
@@ -97,32 +92,24 @@ public class TestSequenceExtractor {
             executorService.execute(absoluteSET);
 
         }
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
     }
 
-    public void extractContinuationSequences() throws IOException {
+    public void extractContinuationSequences() throws IOException,
+            InterruptedException {
         // read test sequences into HashSet
         ArrayList<String> sequences = new ArrayList<String>();
-        try {
-            BufferedReader testSequenceReader =
-                    Files.newBufferedReader(testSequenceFile,
-                            Charset.defaultCharset());
+        try (BufferedReader testSequenceReader =
+                Files.newBufferedReader(testSequenceFile,
+                        Charset.defaultCharset())) {
             String line;
             while ((line = testSequenceReader.readLine()) != null) {
                 sequences.add(line);
             }
-            testSequenceReader.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
+
         // call SequenceExtractorTasks
 
         // initialize executerService
@@ -153,14 +140,9 @@ public class TestSequenceExtractor {
 
             }
         }
-        executorService.shutdown();
-        try {
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
     }
 
     //    public void extractContinuationSequences2(int maxModelLength, int cores) {

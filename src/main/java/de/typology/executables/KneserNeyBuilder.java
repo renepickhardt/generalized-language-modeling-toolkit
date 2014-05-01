@@ -210,7 +210,8 @@ public class KneserNeyBuilder {
             Path indexFile,
             Path absoluteDirectory,
             Path continuationDirectory,
-            Path testExtractOutputDirectory) throws IOException {
+            Path testExtractOutputDirectory) throws IOException,
+            InterruptedException {
         Path testSequences =
                 workingDirectory.resolve("testing-samples-"
                         + config.modelLength + ".txt");
