@@ -2,6 +2,9 @@ package de.typology.executables;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,8 +17,8 @@ import de.typology.patterns.PatternBuilder;
 import de.typology.smoother.KneserNeySmoother;
 import de.typology.smoother.ModifiedKneserNeySmoother;
 import de.typology.splitter.AbsoluteSplitter;
-import de.typology.splitter.DataSetSplitter;
 import de.typology.splitter.ContinuationSplitter;
+import de.typology.splitter.DataSetSplitter;
 import de.typology.tester.TestSequenceExtractor;
 import de.typology.utils.Config;
 
@@ -163,8 +166,10 @@ public class KneserNeyBuilder {
 
     private void buildIndex(File trainingFile, File indexFile)
             throws IOException {
+        InputStream input = Files.newInputStream(trainingFile.toPath());
+        OutputStream output = Files.newOutputStream(indexFile.toPath());
         WordIndexer wordIndexer = new WordIndexer();
-        wordIndexer.buildIndex(trainingFile, indexFile, config.maxCountDivider,
+        wordIndexer.buildIndex(input, output, config.maxCountDivider,
                 "<fs> <s> ", " </s>");
     }
 
@@ -191,8 +196,9 @@ public class KneserNeyBuilder {
         List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
         ContinuationSplitter smoothingSplitter =
-                new ContinuationSplitter(absoluteDirectory, continuationDirectory,
-                        indexFile, "\t", config.deleteTempFiles);
+                new ContinuationSplitter(absoluteDirectory,
+                        continuationDirectory, indexFile, "\t",
+                        config.deleteTempFiles);
         smoothingSplitter.split(lmPatterns, config.numberOfCores);
     }
 

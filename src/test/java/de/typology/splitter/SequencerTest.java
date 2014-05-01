@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -39,7 +40,8 @@ public class SequencerTest {
     @Before
     public void setUp() throws Exception {
         WordIndexer wordIndexer = new WordIndexer();
-        wordIndexer.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ",
+        wordIndexer.buildIndex(Files.newInputStream(trainingFile.toPath()),
+                Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
                 " </s>");
         if (sequencerOutputDirectory.exists()) {
             FileUtils.deleteDirectory(sequencerOutputDirectory);

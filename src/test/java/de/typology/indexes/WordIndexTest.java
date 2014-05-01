@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,7 +33,9 @@ public class WordIndexTest {
             indexFile.delete();
         }
         WordIndexer wi = new WordIndexer();
-        wi.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
+        wi.buildIndex(Files.newInputStream(trainingFile.toPath()),
+                Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
+                " </s>");
     }
 
     @After

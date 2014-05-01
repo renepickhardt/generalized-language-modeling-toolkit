@@ -3,6 +3,7 @@ package de.typology.smoother;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 
@@ -37,7 +38,9 @@ public class KneserNeySmootherTest {
         File trainingFile = new File(workingDirectoryPath + "training.txt");
         File indexFile = new File(workingDirectoryPath + "index.txt");
         WordIndexer wier = new WordIndexer();
-        wier.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
+        wier.buildIndex(Files.newInputStream(trainingFile.toPath()),
+                Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
+                " </s>");
         absoluteDirectory = new File(workingDirectoryPath + "absolute");
         continuationDirectory = new File(workingDirectoryPath + "continuation");
 
@@ -48,8 +51,8 @@ public class KneserNeySmootherTest {
 
         List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
         ContinuationSplitter smoothingSplitter =
-                new ContinuationSplitter(absoluteDirectory, continuationDirectory,
-                        indexFile, "\t", true);
+                new ContinuationSplitter(absoluteDirectory,
+                        continuationDirectory, indexFile, "\t", true);
         smoothingSplitter.split(lmPatterns, 2);
 
         testSequenceFile =

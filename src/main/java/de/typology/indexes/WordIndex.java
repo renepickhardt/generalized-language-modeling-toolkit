@@ -15,7 +15,7 @@ import java.util.Iterator;
 import org.apache.commons.io.FileUtils;
 
 /**
- * A class that is based on the text file produced by WordIndexer.
+ * A class that is based on the text file produced by {@link WordIndexer}.
  * 
  * @author Martin Koerner
  * 

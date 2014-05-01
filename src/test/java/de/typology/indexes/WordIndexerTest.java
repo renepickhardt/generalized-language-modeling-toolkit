@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,8 +44,9 @@ public class WordIndexerTest {
     public void buildIndexTest() throws IOException {
         WordIndexer wi = new WordIndexer();
         long maxCountPerFile =
-                wi.buildIndex(trainingFile, indexFile, 10, "<fs> <s> ", " </s>");
+                wi.buildIndex(Files.newInputStream(trainingFile.toPath()),
+                        Files.newOutputStream(indexFile.toPath()), 10,
+                        "<fs> <s> ", " </s>");
         assertEquals(13, maxCountPerFile);
     }
-
 }
