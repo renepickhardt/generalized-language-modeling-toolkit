@@ -16,6 +16,28 @@ import java.util.TreeMap;
  */
 public class WordIndexer {
 
+    /**
+     * Expects an {@code input} where line contains a number of words separated
+     * by white space. Generates an output containing an index where each line
+     * is formatted as: {@code <Word>\t<File>}. Where word is a {@code <Word>}
+     * is a String and {@code <File>} is an Integer specifying to which
+     * <em>indexed file</em> all words lying between this line's {@code <Word>}
+     * and next line's belong.
+     * 
+     * @param input
+     *            {@link InputStream} to be read.
+     * @param output
+     *            {@link OutputStream} to be written to.
+     * @param maxCountDivider
+     *            The number of <em>indexed files</em> the index should be split
+     *            across.
+     * @param beforeLine
+     *            Prepended before each line before splitting into words. Need
+     *            here because it might skew the index.
+     * @param afterLine
+     *            Appended after each line before splitting into words. Need
+     *            here because it might skew the index.
+     */
     public void buildIndex(
             InputStream input,
             OutputStream output,
