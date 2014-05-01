@@ -44,7 +44,7 @@ public class PatternBuilder {
      */
     public static List<boolean[]> getReverseLMPatterns(int maxModelLength) {
         List<boolean[]> patterns = new ArrayList<boolean[]>(maxModelLength);
-        for (int i = maxModelLength; i != 0; --i) {
+        for (int i = maxModelLength - 1; i != -1; --i) {
             boolean[] pattern = new boolean[i + 1];
             for (int j = 0; j != i + 1; ++j) {
                 pattern[j] = true;
