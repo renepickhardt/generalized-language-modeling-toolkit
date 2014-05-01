@@ -1,7 +1,6 @@
 package de.typology.splitter;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -234,7 +233,7 @@ public class SmoothingSplitter {
     }
 
     private void splitType(
-            File currentworkingDirectory,
+            File currentWorkingDirectory,
             File outputDirectory,
             boolean[] pattern,
             String patternLabel,
@@ -247,7 +246,7 @@ public class SmoothingSplitter {
         OutputStream output = new PipedOutputStream(input);
 
         SequenceModifier sequenceModifier =
-                new SequenceModifier(currentworkingDirectory, output,
+                new SequenceModifier(currentWorkingDirectory, output,
                         delimiter, patternForModifier, true, setCountToOne);
         executorService.execute(sequenceModifier);
 
@@ -257,7 +256,7 @@ public class SmoothingSplitter {
             Path lineCountOutputPath = lineCountOutputDirPath.resolve("all");
 
             OutputStream lineCounterOutput =
-                    new FileOutputStream(lineCountOutputPath.toString());
+                    Files.newOutputStream(lineCountOutputPath);
             LineCounterTask lineCountTask =
                     new LineCounterTask(input, lineCounterOutput, delimiter,
                             setCountToOne);

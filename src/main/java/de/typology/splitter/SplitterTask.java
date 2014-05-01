@@ -1,7 +1,5 @@
 package de.typology.splitter;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -73,10 +71,11 @@ public class SplitterTask implements Runnable {
     public void run() {
         try {
             // SEQUENCING //////////////////////////////////////////////////////
+
             Path sequencerOutputDirectory =
                     outputDirectory.resolve(patternLabel + "-split");
             Files.createDirectory(sequencerOutputDirectory);
-            logger.info("start building: " + sequencerOutputDirectory);
+            logger.info("sequencing:  " + sequencerOutputDirectory);
 
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
@@ -89,15 +88,16 @@ public class SplitterTask implements Runnable {
             Path aggregatorOutputDirectory =
                     outputDirectory.resolve(patternLabel);
             Files.createDirectory(aggregatorOutputDirectory);
-            logger.info("aggregate into: " + aggregatorOutputDirectory);
+            logger.info("aggregating: " + aggregatorOutputDirectory);
 
-            try (DirectoryStream<Path> sequencerOutputContents =
+            try (DirectoryStream<Path> sequencerOutputFiles =
                     Files.newDirectoryStream(sequencerOutputDirectory)) {
-                for (Path file : sequencerOutputContents) {
-                    InputStream input = new FileInputStream(file.toString());
+                for (Path sequencerOutputFile : sequencerOutputFiles) {
+                    InputStream input =
+                            Files.newInputStream(sequencerOutputFile);
                     OutputStream output =
-                            new FileOutputStream(aggregatorOutputDirectory
-                                    .resolve(file.getFileName()).toString());
+                            Files.newOutputStream(aggregatorOutputDirectory
+                                    .resolve(sequencerOutputFile.getFileName()));
 
                     Aggregator aggregator =
                             new Aggregator(input, output, delimiter,
