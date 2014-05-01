@@ -65,9 +65,8 @@ public class AbsoluteCounter {
                 Executors.newFixedThreadPool(numberOfCores);
 
         for (boolean[] pattern : patterns) {
-            logger.debug("execute SplitterTask for: "
-                    + PatternTransformer.getStringPattern(pattern)
-                    + " sequences");
+            logger.info("calculate absolute counts for "
+                    + PatternTransformer.getStringPattern(pattern));
 
             // Need to create a new InputStream for each iteration, as
             // SplitterTask will read complete stream on each pass.
