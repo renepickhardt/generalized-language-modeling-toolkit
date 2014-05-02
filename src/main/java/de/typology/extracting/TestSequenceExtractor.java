@@ -85,8 +85,8 @@ public class TestSequenceExtractor {
                     absoluteOutputDirectory.resolve(absoluteStringPattern);
 
             SequenceExtractorTask sequenceExtractorTask =
-                    new SequenceExtractorTask(sequences, absolutePattern,
-                            absoluteWorkingDirectory, absoluteOutput, delimiter);
+                    new SequenceExtractorTask(absoluteWorkingDirectory, absoluteOutput,
+                            sequences, absolutePattern, delimiter);
             executorService.execute(sequenceExtractorTask);
         }
 
@@ -117,9 +117,9 @@ public class TestSequenceExtractor {
                                 .resolve(continuationStringPattern);
 
                 SequenceExtractorTask sequenceExtractorTask =
-                        new SequenceExtractorTask(sequences,
-                                continuationPattern, continuationTypeDirectory,
-                                continuationOutput, delimiter);
+                        new SequenceExtractorTask(continuationTypeDirectory,
+                                continuationOutput, sequences,
+                                continuationPattern, delimiter);
                 executorService.execute(sequenceExtractorTask);
             }
         }

@@ -11,29 +11,46 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class takes an List of sequences and a directory of Files as an
- * input and writes all occurrences of the sequences into new files in the
- * outputDirectory
+ * Filters all files in an {@code inputDirectory} to only the lines that contain
+ * a {@code sequence} from a set of {@code sequences}.
  */
 public class SequenceExtractorTask implements Runnable {
-
-    private Set<String> sequences;
 
     private Path inputDirectory;
 
     private Path outputDirectory;
 
+    private Set<String> sequences;
+
     private String delimiter;
 
+    /**
+     * Expects an {@code inputDirectory} with files containing lines in
+     * the format of {@code <Sequence>(<Delimiter><Count>)*}. For each file in
+     * {@code inputDirectory} a file in {@code outputDirectory} will be created,
+     * containing all lines whose {@code <Sequence>} was an element in
+     * {@code sequences} modified by {@code pattern}.
+     * 
+     * @param inputDirectory
+     *            Directory to read files from.
+     * @param outputDirectory
+     *            Directory to write files to.
+     * @param sequences
+     *            Set of Sequences to be checked against.
+     * @param pattern
+     *            Pattern {@code sequences} will be modified with.
+     * @param delimiter
+     *            Delimiter separating {@code <Sequence>} and {@code <Count>}s.
+     */
     public SequenceExtractorTask(
-            Set<String> sequences,
-            boolean[] pattern,
             Path inputDirectory,
             Path outputDirectory,
+            Set<String> sequences,
+            boolean[] pattern,
             String delimiter) throws IOException {
-        this.sequences = extractSequencesWithPattern(sequences, pattern);
         this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
+        this.sequences = extractSequencesWithPattern(sequences, pattern);
         this.delimiter = delimiter;
 
         Files.createDirectory(outputDirectory);
