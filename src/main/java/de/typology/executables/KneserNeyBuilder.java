@@ -53,6 +53,10 @@ public class KneserNeyBuilder {
             buildIndex(trainingFile, indexFile);
         }
 
+        if (config.extractTestingSequences) {
+            logger.info("extracting testing sequences");
+        }
+
         if (config.buildGLM) {
             logger.info("split into GLM sequences");
             buildGLM(trainingFile, indexFile, absoluteDirectory);
@@ -62,14 +66,6 @@ public class KneserNeyBuilder {
             logger.info("split into continuation sequences");
             buildContinuationGLM(trainingFile, indexFile, absoluteDirectory,
                     continuationDirectory);
-        }
-
-        if (config.extractContinuationGLM) {
-            logger.info("extract continuation sequences");
-            extractContinuationGLM(workingDirectory, indexFile,
-                    absoluteDirectory, continuationDirectory,
-                    testExtractOutputDirectory);
-
         }
 
         if (config.buildKneserNey) {
@@ -97,9 +93,9 @@ public class KneserNeyBuilder {
 
         config.splitData = false;
         config.buildIndex = false;
+        config.extractTestingSequences = false;
         config.buildGLM = false;
         config.buildContinuationGLM = false;
-        config.extractContinuationGLM = false;
         config.buildKneserNey = false;
         config.buildModKneserNey = false;
 
@@ -109,9 +105,9 @@ public class KneserNeyBuilder {
             } else if (stages[0].equals("all")) {
                 config.splitData = true;
                 config.buildIndex = true;
+                config.extractTestingSequences = false;
                 config.buildGLM = true;
                 config.buildContinuationGLM = true;
-                config.extractContinuationGLM = true;
                 config.buildKneserNey = true;
                 config.buildModKneserNey = true;
                 return;
@@ -128,16 +124,16 @@ public class KneserNeyBuilder {
                     config.buildIndex = true;
                     break;
 
+                case "extract":
+                    config.extractTestingSequences = true;
+                    break;
+
                 case "glm":
                     config.buildGLM = true;
                     break;
 
                 case "contglm":
                     config.buildContinuationGLM = true;
-                    break;
-
-                case "extract":
-                    config.extractContinuationGLM = true;
                     break;
 
                 case "kneserney":

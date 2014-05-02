@@ -74,6 +74,12 @@ public class Config extends Properties {
     public boolean buildIndex;
 
     /**
+     * whether testing-samples should be parsed and all sequences that should be
+     * counted should be extracted
+     */
+    public boolean extractTestingSequences;
+
+    /**
      * if the absolute values for skipped sequences should be build
      */
     public boolean buildGLM;
@@ -82,15 +88,6 @@ public class Config extends Properties {
      * states if also all the continuation values should be build.
      */
     public boolean buildContinuationGLM;
-
-    /**
-     * the absolute counts and continuation counts from the entire LM which are
-     * needed for the testing-samples will be extracted and stored in
-     * testing-samples/ pay attention. If your testing-samples are too large you
-     * might run out of memory when running the experiment since all the data
-     * needed will be stored into main memory
-     */
-    public boolean extractContinuationGLM;
 
     /**
      * set this to true if you want to build a standard kneser ney (generalized)
