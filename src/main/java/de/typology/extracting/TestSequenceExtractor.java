@@ -7,8 +7,9 @@ import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +35,7 @@ public class TestSequenceExtractor {
 
     private int numberOfCores;
 
-    private List<String> sequences;
+    private Set<String> sequences;
 
     public TestSequenceExtractor(
             InputStream input,
@@ -53,7 +54,7 @@ public class TestSequenceExtractor {
 
         Files.createDirectory(outputDirectory);
 
-        sequences = new LinkedList<String>();
+        sequences = new HashSet<String>();
         try (BufferedReader testSequenceReader =
                 new BufferedReader(new InputStreamReader(input))) {
             String line;

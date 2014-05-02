@@ -8,7 +8,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,7 +17,7 @@ import java.util.Set;
  */
 public class SequenceExtractorTask implements Runnable {
 
-    private List<String> testingSequences;
+    private Set<String> testingSequences;
 
     private boolean[] pattern;
 
@@ -29,7 +28,7 @@ public class SequenceExtractorTask implements Runnable {
     private String delimiter;
 
     public SequenceExtractorTask(
-            List<String> testingSequences,
+            Set<String> testingSequences,
             boolean[] pattern,
             Path inputDirectory,
             Path outputDirectory,
@@ -81,7 +80,7 @@ public class SequenceExtractorTask implements Runnable {
     }
 
     private static Set<String> generateSequences(
-            List<String> origSequences,
+            Set<String> origSequences,
             boolean[] pattern) {
         Set<String> sequences = new HashSet<String>();
 
