@@ -17,9 +17,7 @@ import java.util.Set;
  */
 public class SequenceExtractorTask implements Runnable {
 
-    private Set<String> testingSequences;
-
-    private boolean[] pattern;
+    private Set<String> sequences;
 
     private Path inputDirectory;
 
@@ -28,13 +26,12 @@ public class SequenceExtractorTask implements Runnable {
     private String delimiter;
 
     public SequenceExtractorTask(
-            Set<String> testingSequences,
+            Set<String> sequences,
             boolean[] pattern,
             Path inputDirectory,
             Path outputDirectory,
             String delimiter) throws IOException {
-        this.testingSequences = testingSequences;
-        this.pattern = pattern;
+        this.sequences = extractSequencesWithPattern(sequences, pattern);
         this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
         this.delimiter = delimiter;
@@ -45,9 +42,6 @@ public class SequenceExtractorTask implements Runnable {
     @Override
     public void run() {
         try {
-            Set<String> sequences =
-                    generateSequences(testingSequences, pattern);
-
             try (DirectoryStream<Path> inputFiles =
                     Files.newDirectoryStream(inputDirectory)) {
                 for (Path inputFile : inputFiles) {
@@ -79,7 +73,7 @@ public class SequenceExtractorTask implements Runnable {
         }
     }
 
-    private static Set<String> generateSequences(
+    private static Set<String> extractSequencesWithPattern(
             Set<String> origSequences,
             boolean[] pattern) {
         Set<String> sequences = new HashSet<String>();
@@ -113,10 +107,7 @@ public class SequenceExtractorTask implements Runnable {
                     }
                 }
                 sequence = sequence.replaceFirst(" $", "");
-
-                if (sequence.length() > 0) {
-                    sequences.add(sequence);
-                }
+                sequences.add(sequence);
             }
         }
 
