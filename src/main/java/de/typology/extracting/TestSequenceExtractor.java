@@ -69,24 +69,21 @@ public class TestSequenceExtractor {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        List<boolean[]> absolutePatterns =
+        List<boolean[]> patterns =
                 PatternBuilder.getGLMForSmoothingPatterns(modelLength);
 
-        Path absoluteOutputDirectory =
+        Path outputBaseDirectory =
                 outputDirectory.resolve(absoluteDirectory.getFileName());
-        Files.createDirectory(absoluteOutputDirectory);
+        Files.createDirectory(outputBaseDirectory);
 
-        for (boolean[] absolutePattern : absolutePatterns) {
-            String absoluteStringPattern =
-                    PatternTransformer.getStringPattern(absolutePattern);
-            Path absoluteWorkingDirectory =
-                    absoluteDirectory.resolve(absoluteStringPattern);
-            Path absoluteOutput =
-                    absoluteOutputDirectory.resolve(absoluteStringPattern);
+        for (boolean[] pattern : patterns) {
+            String patternLabel = PatternTransformer.getStringPattern(pattern);
+            Path inputDirectory = absoluteDirectory.resolve(patternLabel);
+            Path outputDirectory = outputBaseDirectory.resolve(patternLabel);
 
             SequenceExtractorTask sequenceExtractorTask =
-                    new SequenceExtractorTask(absoluteWorkingDirectory, absoluteOutput,
-                            sequences, absolutePattern, delimiter);
+                    new SequenceExtractorTask(inputDirectory, outputDirectory,
+                            sequences, pattern, delimiter);
             executorService.execute(sequenceExtractorTask);
         }
 
@@ -99,27 +96,23 @@ public class TestSequenceExtractor {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        Path continuationOutputDirectory =
+        Path outputBaseDirectory =
                 outputDirectory.resolve(continuationDirectory.getFileName());
-        Files.createDirectory(continuationOutputDirectory);
+        Files.createDirectory(outputBaseDirectory);
 
         try (DirectoryStream<Path> continuationFiles =
                 Files.newDirectoryStream(continuationDirectory)) {
-            for (Path continuationTypeDirectory : continuationFiles) {
-                String continuationStringPattern =
-                        continuationTypeDirectory.getFileName().toString();
-                boolean[] continuationPattern =
-                        PatternTransformer
-                                .getBooleanPattern(continuationStringPattern
-                                        .replaceAll("_", "0"));
-                Path continuationOutput =
-                        continuationOutputDirectory
-                                .resolve(continuationStringPattern);
+            for (Path inputDirectory : continuationFiles) {
+                String patternLabel = inputDirectory.getFileName().toString();
+                boolean[] pattern =
+                        PatternTransformer.getBooleanPattern(patternLabel
+                                .replaceAll("_", "0"));
+                Path outputDirectory =
+                        outputBaseDirectory.resolve(patternLabel);
 
                 SequenceExtractorTask sequenceExtractorTask =
-                        new SequenceExtractorTask(continuationTypeDirectory,
-                                continuationOutput, sequences,
-                                continuationPattern, delimiter);
+                        new SequenceExtractorTask(inputDirectory,
+                                outputDirectory, sequences, pattern, delimiter);
                 executorService.execute(sequenceExtractorTask);
             }
         }
