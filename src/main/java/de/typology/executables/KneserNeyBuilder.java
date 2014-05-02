@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
-import de.typology.extracting.TestSequenceExtractor;
+import de.typology.filtering.Filterer;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexer;
 import de.typology.patterns.PatternBuilder;
@@ -38,10 +38,12 @@ public class KneserNeyBuilder {
                 Paths.get(config.outputDirectory + config.inputDataSet);
         Path trainingFile = workingDirectory.resolve("training.txt");
         Path indexFile = workingDirectory.resolve("index.txt");
-        Path absoluteDirectory = workingDirectory.resolve("absolute");
-        Path continuationDirectory = workingDirectory.resolve("continuation");
-        Path testExtractOutputDirectory =
+        Path filterDirectory = workingDirectory.resolve("filter");
+        Path testingSamplesDirectory =
                 workingDirectory.resolve("testing-samples");
+        Path absoluteDirectory = testingSamplesDirectory.resolve("absolute");
+        Path continuationDirectory =
+                testingSamplesDirectory.resolve("continuation");
 
         if (config.splitData) {
             logger.info("split data");
@@ -53,31 +55,35 @@ public class KneserNeyBuilder {
             buildIndex(trainingFile, indexFile);
         }
 
-        if (config.extractTestingSequences) {
+        if (config.buildFilter) {
             logger.info("extracting testing sequences");
+            buildFilter(
+                    workingDirectory.resolve("testing-samples-"
+                            + config.modelLength + ".txt"), filterDirectory);
         }
 
         if (config.buildGLM) {
             logger.info("split into GLM sequences");
-            buildGLM(trainingFile, indexFile, absoluteDirectory);
+            buildGLM(trainingFile, indexFile, filterDirectory,
+                    absoluteDirectory);
         }
 
         if (config.buildContinuationGLM) {
             logger.info("split into continuation sequences");
-            buildContinuationGLM(trainingFile, indexFile, absoluteDirectory,
-                    continuationDirectory);
+            buildContinuationGLM(trainingFile, indexFile, filterDirectory,
+                    absoluteDirectory, continuationDirectory);
         }
 
         if (config.buildKneserNey) {
             logger.info("build kneser ney");
             KneserNeySmoother kns =
                     buildKneserNey(workingDirectory, absoluteDirectory,
-                            continuationDirectory, testExtractOutputDirectory);
+                            continuationDirectory, testingSamplesDirectory);
 
             if (config.buildModKneserNey) {
                 logger.info("build modified kneser ney");
                 buildModKneserNey(workingDirectory, absoluteDirectory,
-                        continuationDirectory, testExtractOutputDirectory,
+                        continuationDirectory, testingSamplesDirectory,
                         kns.absoluteTypeSequenceValueMap,
                         kns.continuationTypeSequenceValueMap);
             }
@@ -93,7 +99,7 @@ public class KneserNeyBuilder {
 
         config.splitData = false;
         config.buildIndex = false;
-        config.extractTestingSequences = false;
+        config.buildFilter = false;
         config.buildGLM = false;
         config.buildContinuationGLM = false;
         config.buildKneserNey = false;
@@ -105,7 +111,7 @@ public class KneserNeyBuilder {
             } else if (stages[0].equals("all")) {
                 config.splitData = true;
                 config.buildIndex = true;
-                config.extractTestingSequences = false;
+                config.buildFilter = false;
                 config.buildGLM = true;
                 config.buildContinuationGLM = true;
                 config.buildKneserNey = true;
@@ -124,8 +130,8 @@ public class KneserNeyBuilder {
                     config.buildIndex = true;
                     break;
 
-                case "extract":
-                    config.extractTestingSequences = true;
+                case "filter":
+                    config.buildFilter = true;
                     break;
 
                 case "glm":
@@ -169,9 +175,14 @@ public class KneserNeyBuilder {
         }
     }
 
+    private void buildFilter(Path input, Path filterDirectory) {
+        Filterer filterer = new Filterer(input, filterDirectory);
+    }
+
     private void buildGLM(
             Path trainingFile,
             Path indexFile,
+            Path filterDirectory,
             Path absoluteDirectory) throws IOException, InterruptedException {
         WordIndex wordIndex;
         try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
@@ -192,6 +203,7 @@ public class KneserNeyBuilder {
             Path trainingFile,
             Path indexFile,
             Path absoluteDirectory,
+            Path filterDirectory,
             Path continuationDirectory) throws IOException,
             InterruptedException {
         WordIndex wordIndex;
@@ -206,26 +218,6 @@ public class KneserNeyBuilder {
                         continuationDirectory, wordIndex, "\t",
                         config.numberOfCores, config.deleteTempFiles);
         continuationCounter.split(lmPatterns);
-    }
-
-    private void extractContinuationGLM(
-            Path workingDirectory,
-            Path indexFile,
-            Path absoluteDirectory,
-            Path continuationDirectory,
-            Path testExtractOutputDirectory) throws IOException,
-            InterruptedException {
-        try (InputStream input =
-                Files.newInputStream(workingDirectory
-                        .resolve("testing-samples-" + config.modelLength
-                                + ".txt"))) {
-            TestSequenceExtractor testSequenceExtractor =
-                    new TestSequenceExtractor(input, absoluteDirectory,
-                            continuationDirectory, testExtractOutputDirectory,
-                            "\t", config.modelLength, config.numberOfCores);
-            testSequenceExtractor.extractAbsoluteSequences();
-            testSequenceExtractor.extractContinuationSequences();
-        }
     }
 
     private KneserNeySmoother buildKneserNey(

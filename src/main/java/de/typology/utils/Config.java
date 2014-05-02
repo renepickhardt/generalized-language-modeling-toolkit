@@ -77,7 +77,7 @@ public class Config extends Properties {
      * whether testing-samples should be parsed and all sequences that should be
      * counted should be extracted
      */
-    public boolean extractTestingSequences;
+    public boolean buildFilter;
 
     /**
      * if the absolute values for skipped sequences should be build
