@@ -1,4 +1,4 @@
-package de.typology.counting;
+package de.typology;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.Map;
 
 import de.typology.indexing.WordIndex;
 
@@ -27,16 +27,18 @@ public class Sequencer {
 
     private String afterLine;
 
-    private String delimiter;
+    private boolean onlyLine;
 
-    private boolean completeLine;
+    private boolean setCountToOne;
+
+    private String delimiter;
 
     /**
      * Expects an {@code input} where each line contains a number of words
      * separated by whitespace. Extracts all sequence specified by
      * {@code pattern} and writes them to <em>indexed files</em> in
      * {@code outputDirectory}. Each output line has this format:
-     * {@code <Sequence><Delimiter>1}.
+     * {@code <Sequence>}.
      * 
      * @param input
      *            {@link InputStream} to be read.
@@ -51,14 +53,19 @@ public class Sequencer {
      *            Prepended before each line before sequencing.
      * @param afterLine
      *            Appended after each line before sequencing.
-     * @param delimiter
-     *            Delimiter between {@code Sequence} and {@code Count} in the
-     *            output.
-     * @param completeLine
+     * @param onlyLine
      *            If {@code true} will not extract Sequences or append Count
      *            but instead just write each line into the correct
      *            <em>indexed file</em>.
      *            If {@code false} will act as described above.
+     * @param setCountToOne
+     *            If {@code false} will act as described above.
+     *            If {@code true} will also append {@code <Delimiter>1} after
+     *            each {@code <Sequence>}.
+     * @param delimiter
+     *            Delimiter between {@code Sequence} and {@code Count} in the
+     *            output. Can be {@code null} if {@code setCountToOne} is
+     *            {@code false}.
      */
     public Sequencer(
             InputStream input,
@@ -67,16 +74,18 @@ public class Sequencer {
             boolean[] pattern,
             String beforeLine,
             String afterLine,
-            String delimiter,
-            boolean completeLine) {
+            boolean onlyLine,
+            boolean setCountToOne,
+            String delimiter) {
         this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
+        this.onlyLine = onlyLine;
+        this.setCountToOne = setCountToOne;
         this.delimiter = delimiter;
-        this.completeLine = completeLine;
     }
 
     /**
@@ -86,7 +95,7 @@ public class Sequencer {
         // TODO: bufferSize calculation
         try (BufferedReader bufferedReader =
                 new BufferedReader(new InputStreamReader(input), 100 * 8 * 1024)) {
-            HashMap<Integer, BufferedWriter> writers =
+            Map<Integer, BufferedWriter> writers =
                     wordIndex.openWriters(outputDirectory);
 
             String line;
@@ -94,7 +103,7 @@ public class Sequencer {
                 line = beforeLine + line + afterLine;
                 String[] words = line.split("\\s");
 
-                if (completeLine) {
+                if (onlyLine) {
                     BufferedWriter writer =
                             writers.get(wordIndex.rank(words[0]));
                     writer.write(line + "\n");
@@ -109,7 +118,10 @@ public class Sequencer {
                             }
                         }
                         sequence = sequence.replaceFirst(" $", "");
-                        sequence += delimiter + "1\n";
+                        if (setCountToOne) {
+                            sequence += delimiter + "1";
+                        }
+                        sequence += "\n";
 
                         BufferedWriter writer =
                                 writers.get(wordIndex.rank(sequence.split(" ")[0]));

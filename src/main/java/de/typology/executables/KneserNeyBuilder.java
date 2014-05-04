@@ -25,6 +25,8 @@ import de.typology.utils.Config;
 
 public class KneserNeyBuilder {
 
+    // TODO: share one ExecutorService across all stages
+
     private static Logger logger = LogManager.getLogger();
 
     private Config config;
@@ -59,7 +61,8 @@ public class KneserNeyBuilder {
             logger.info("extracting testing sequences");
             buildFilter(
                     workingDirectory.resolve("testing-samples-"
-                            + config.modelLength + ".txt"), filterDirectory);
+                            + config.modelLength + ".txt"), filterDirectory,
+                    indexFile);
         }
 
         if (config.buildGLM) {
@@ -175,8 +178,18 @@ public class KneserNeyBuilder {
         }
     }
 
-    private void buildFilter(Path input, Path filterDirectory) {
-        Filterer filterer = new Filterer(input, filterDirectory);
+    private void buildFilter(Path input, Path filterDirectory, Path indexFile)
+            throws IOException, InterruptedException {
+        WordIndex wordIndex;
+        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
+            wordIndex = new WordIndex(wordIndexInput);
+        }
+
+        Filterer filterer =
+                new Filterer(input, filterDirectory, wordIndex, "<fs> <s> ",
+                        " </s>", config.modelLength, config.numberOfCores,
+                        config.deleteTempFiles);
+        filterer.filter();
     }
 
     private void buildGLM(

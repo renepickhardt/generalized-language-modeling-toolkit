@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.typology.counting.Sequencer;
+import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexer;
 
@@ -72,7 +72,7 @@ public class SequencerTest {
             Sequencer sequencer =
                     new Sequencer(inputStream,
                             sequencerOutputDirectory.toPath(), wordIndex,
-                            pattern, "<fs> <s> ", " </s>", "\t", false);
+                            pattern, "<fs> <s> ", " </s>", false, true, "\t");
 
             sequencer.splitIntoFiles();
 
@@ -112,7 +112,7 @@ public class SequencerTest {
             Sequencer sequencer =
                     new Sequencer(inputStream,
                             sequencerOutputDirectory.toPath(), wordIndex,
-                            pattern, "<fs> <s> ", " </s>", "\t", false);
+                            pattern, "<fs> <s> ", " </s>", false, true, "\t");
             sequencer.splitIntoFiles();
 
             // test file contents

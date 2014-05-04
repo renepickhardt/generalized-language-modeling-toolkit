@@ -55,10 +55,10 @@ public class TestSequenceExtractor {
         Files.createDirectory(outputDirectory);
 
         sequences = new HashSet<String>();
-        try (BufferedReader testSequenceReader =
+        try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(input))) {
             String line;
-            while ((line = testSequenceReader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 sequences.add(line);
             }
         }

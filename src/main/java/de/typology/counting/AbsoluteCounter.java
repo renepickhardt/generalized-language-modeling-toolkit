@@ -72,13 +72,13 @@ public class AbsoluteCounter {
             // SplitterTask will read complete stream on each pass.
             InputStream inputStream = Files.newInputStream(input);
 
-            PatternCounterTask splitterTask =
+            PatternCounterTask patternCounterTask =
                     new PatternCounterTask(inputStream,
                             outputDirectory.resolve(PatternTransformer
                                     .getStringPattern(pattern)), wordIndex,
                             pattern, delimiter, beforeLine, afterLine, false,
                             deleteTempFiles);
-            executorService.execute(splitterTask);
+            executorService.execute(patternCounterTask);
         }
 
         executorService.shutdown();
