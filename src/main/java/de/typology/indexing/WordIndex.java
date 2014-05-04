@@ -16,7 +16,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 
 /**
- * Class used to interface with the output of {@link WordIndexer}.
+ * Class used to interface with the output of {@link WordIndexBuilder}.
  */
 public class WordIndex {
 
@@ -27,7 +27,7 @@ public class WordIndex {
      * 
      * @param input
      *            {@link InputStream} to be read as the output of
-     *            {@link WordIndexer}.
+     *            {@link WordIndexBuilder}.
      */
     public WordIndex(
             InputStream input) throws IOException {

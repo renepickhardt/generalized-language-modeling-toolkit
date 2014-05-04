@@ -14,7 +14,7 @@ import java.util.TreeMap;
  * A class for building a text file containing a index representation for a
  * given text file based on the alphabetical distribution of its words.
  */
-public class WordIndexer {
+public class WordIndexBuilder {
 
     /**
      * Expects an {@code input} where line contains a number of words separated

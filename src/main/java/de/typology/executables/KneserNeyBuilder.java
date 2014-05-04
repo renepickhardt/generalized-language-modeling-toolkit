@@ -14,9 +14,10 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
-import de.typology.filtering.Filterer;
+import de.typology.filtering.Filter;
+import de.typology.filtering.FilterBuilder;
 import de.typology.indexing.WordIndex;
-import de.typology.indexing.WordIndexer;
+import de.typology.indexing.WordIndexBuilder;
 import de.typology.patterns.PatternBuilder;
 import de.typology.smoothing.KneserNeySmoother;
 import de.typology.smoothing.ModifiedKneserNeySmoother;
@@ -43,6 +44,7 @@ public class KneserNeyBuilder {
         Path filterDirectory = workingDirectory.resolve("filter");
         Path testingSamplesDirectory =
                 workingDirectory.resolve("testing-samples");
+        Files.createDirectory(testingSamplesDirectory);
         Path absoluteDirectory = testingSamplesDirectory.resolve("absolute");
         Path continuationDirectory =
                 testingSamplesDirectory.resolve("continuation");
@@ -172,7 +174,7 @@ public class KneserNeyBuilder {
             throws IOException {
         try (InputStream input = Files.newInputStream(trainingFile);
                 OutputStream output = Files.newOutputStream(indexFile)) {
-            WordIndexer wordIndexer = new WordIndexer();
+            WordIndexBuilder wordIndexer = new WordIndexBuilder();
             wordIndexer.buildIndex(input, output, config.maxCountDivider,
                     "<fs> <s> ", " </s>");
         }
@@ -185,8 +187,8 @@ public class KneserNeyBuilder {
             wordIndex = new WordIndex(wordIndexInput);
         }
 
-        Filterer filterer =
-                new Filterer(input, filterDirectory, wordIndex, "<fs> <s> ",
+        FilterBuilder filterer =
+                new FilterBuilder(input, filterDirectory, wordIndex, "<fs> <s> ",
                         " </s>", config.modelLength, config.numberOfCores,
                         config.deleteTempFiles);
         filterer.filter();
@@ -202,13 +204,15 @@ public class KneserNeyBuilder {
             wordIndex = new WordIndex(wordIndexInput);
         }
 
+        Filter filter = new Filter(filterDirectory);
+
         List<boolean[]> glmForSmoothingPatterns =
                 PatternBuilder
                         .getReverseGLMForSmoothingPatterns(config.modelLength);
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(trainingFile, absoluteDirectory, wordIndex,
-                        "\t", "<fs> <s> ", " </s>", config.numberOfCores,
-                        config.deleteTempFiles);
+                        filter, "\t", "<fs> <s> ", " </s>",
+                        config.numberOfCores, config.deleteTempFiles);
         absoluteCounter.split(glmForSmoothingPatterns);
     }
 
@@ -224,11 +228,13 @@ public class KneserNeyBuilder {
             wordIndex = new WordIndex(wordIndexInput);
         }
 
+        Filter filter = new Filter(filterDirectory);
+
         List<boolean[]> lmPatterns =
                 PatternBuilder.getReverseLMPatterns(config.modelLength);
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDirectory,
-                        continuationDirectory, wordIndex, "\t",
+                        continuationDirectory, wordIndex, filter, "\t",
                         config.numberOfCores, config.deleteTempFiles);
         continuationCounter.split(lmPatterns);
     }

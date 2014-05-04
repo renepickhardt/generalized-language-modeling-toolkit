@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.typology.indexing.WordIndexer;
+import de.typology.indexing.WordIndexBuilder;
 
 public class WordIndexerTest {
 
@@ -42,7 +42,7 @@ public class WordIndexerTest {
 
     @Test
     public void buildIndexTest() throws IOException {
-        WordIndexer wi = new WordIndexer();
+        WordIndexBuilder wi = new WordIndexBuilder();
         wi.buildIndex(Files.newInputStream(trainingFile.toPath()),
                 Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
                 " </s>");

@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
-import de.typology.indexing.WordIndexer;
+import de.typology.indexing.WordIndexBuilder;
 
 public class SequencerTest {
 
@@ -40,7 +40,7 @@ public class SequencerTest {
 
     @Before
     public void setUp() throws Exception {
-        WordIndexer wordIndexer = new WordIndexer();
+        WordIndexBuilder wordIndexer = new WordIndexBuilder();
         wordIndexer.buildIndex(Files.newInputStream(trainingFile.toPath()),
                 Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
                 " </s>");
@@ -71,7 +71,7 @@ public class SequencerTest {
             InputStream inputStream = new FileInputStream(trainingFile);
             Sequencer sequencer =
                     new Sequencer(inputStream,
-                            sequencerOutputDirectory.toPath(), wordIndex,
+                            sequencerOutputDirectory.toPath(), wordIndex, null,
                             pattern, "<fs> <s> ", " </s>", false, true, "\t");
 
             sequencer.splitIntoFiles();
@@ -111,7 +111,7 @@ public class SequencerTest {
             InputStream inputStream = new FileInputStream(trainingFile);
             Sequencer sequencer =
                     new Sequencer(inputStream,
-                            sequencerOutputDirectory.toPath(), wordIndex,
+                            sequencerOutputDirectory.toPath(), wordIndex, null,
                             pattern, "<fs> <s> ", " </s>", false, true, "\t");
             sequencer.splitIntoFiles();
 

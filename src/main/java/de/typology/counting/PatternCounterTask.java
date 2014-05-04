@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.Sequencer;
+import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
 
 /**
@@ -27,6 +28,8 @@ public class PatternCounterTask implements Runnable {
     private Path outputDirectory;
 
     private WordIndex wordIndex;
+
+    private Filter filter;
 
     private boolean[] pattern;
 
@@ -52,6 +55,8 @@ public class PatternCounterTask implements Runnable {
      *            Directory where <em>indexed files</em> should be written to.
      * @param wordIndex
      *            {@link WordIndex} of the corpus.
+     * @param filter
+     *            Filter of the testing samples.
      * @param pattern
      *            Pattern specifying sequences.
      * @param delimiter
@@ -73,6 +78,7 @@ public class PatternCounterTask implements Runnable {
             InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,
+            Filter filter,
             boolean[] pattern,
             String delimiter,
             String beforeLine,
@@ -82,6 +88,7 @@ public class PatternCounterTask implements Runnable {
         this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
+        this.filter = filter;
         this.pattern = pattern;
         this.delimiter = delimiter;
         this.beforeLine = beforeLine;
@@ -106,8 +113,8 @@ public class PatternCounterTask implements Runnable {
 
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
-                            pattern, beforeLine, afterLine, isContinuation,
-                            true, delimiter);
+                            filter, pattern, beforeLine, afterLine,
+                            isContinuation, true, delimiter);
             sequencer.splitIntoFiles();
             input.close();
 

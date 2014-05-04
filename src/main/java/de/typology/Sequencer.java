@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Map;
 
+import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
 
 /**
@@ -20,6 +21,8 @@ public class Sequencer {
     private Path outputDirectory;
 
     private WordIndex wordIndex;
+
+    private Filter filter;
 
     private boolean[] pattern;
 
@@ -47,6 +50,10 @@ public class Sequencer {
      *            written to.
      * @param wordIndex
      *            {@link WordIndex} of the corpus.
+     * @param filter
+     *            Can be {@code null}. If a {@link Filter} is given will
+     *            test for all Sequences whether it's present in the filter. If
+     *            {@code null} all Sequences will pass.
      * @param pattern
      *            Pattern specifying sequences.
      * @param beforeLine
@@ -71,6 +78,7 @@ public class Sequencer {
             InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,
+            Filter filter,
             boolean[] pattern,
             String beforeLine,
             String afterLine,
@@ -80,6 +88,7 @@ public class Sequencer {
         this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
+        this.filter = filter;
         this.pattern = pattern;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
@@ -118,14 +127,15 @@ public class Sequencer {
                             }
                         }
                         sequence = sequence.replaceFirst(" $", "");
-                        if (setCountToOne) {
-                            sequence += delimiter + "1";
-                        }
-                        sequence += "\n";
 
                         BufferedWriter writer =
                                 writers.get(wordIndex.rank(sequence.split(" ")[0]));
-                        writer.write(sequence);
+                        if (filter == null
+                                || filter.contains(sequence, pattern)) {
+                            writer.write(sequence
+                                    + (setCountToOne ? delimiter + "1" : "")
+                                    + "\n");
+                        }
                     }
                 }
             }

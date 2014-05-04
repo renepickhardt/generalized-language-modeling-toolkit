@@ -13,7 +13,7 @@ import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternBuilder;
 import de.typology.patterns.PatternTransformer;
 
-public class Filterer {
+public class FilterBuilder {
 
     private Path inputFile;
 
@@ -31,7 +31,7 @@ public class Filterer {
 
     private boolean deleteTempFiles;
 
-    public Filterer(
+    public FilterBuilder(
             Path inputFile,
             Path outputDirectory,
             WordIndex wordIndex,

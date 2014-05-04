@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.PatternTransformer;
 
@@ -28,6 +29,8 @@ public class AbsoluteCounter {
 
     private WordIndex wordIndex;
 
+    private Filter filter;
+
     private String delimiter;
 
     private String beforeLine;
@@ -42,6 +45,7 @@ public class AbsoluteCounter {
             Path input,
             Path outputDirectory,
             WordIndex wordIndex,
+            Filter filter,
             String delimiter,
             String beforeLine,
             String afterLine,
@@ -50,6 +54,7 @@ public class AbsoluteCounter {
         this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
+        this.filter = filter;
         this.delimiter = delimiter;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
@@ -76,8 +81,8 @@ public class AbsoluteCounter {
                     new PatternCounterTask(inputStream,
                             outputDirectory.resolve(PatternTransformer
                                     .getStringPattern(pattern)), wordIndex,
-                            pattern, delimiter, beforeLine, afterLine, false,
-                            deleteTempFiles);
+                            filter, pattern, delimiter, beforeLine, afterLine,
+                            false, deleteTempFiles);
             executorService.execute(patternCounterTask);
         }
 

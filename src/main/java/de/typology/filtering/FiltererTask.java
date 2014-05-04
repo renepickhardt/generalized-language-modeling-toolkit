@@ -65,7 +65,8 @@ public class FiltererTask implements Runnable {
 
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
-                            pattern, beforeLine, afterLine, false, false, null);
+                            null, pattern, beforeLine, afterLine, false, false,
+                            null);
             sequencer.splitIntoFiles();
             input.close();
 
