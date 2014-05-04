@@ -10,6 +10,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternType;
+
 /**
  * A class for modifying the sequences in workingDirectory based on the given
  * Pattern. The modified sequences are returned as an {@link OutputStream}.
@@ -22,7 +25,7 @@ public class SequenceModifierTask implements Runnable {
 
     private String delimiter;
 
-    private boolean[] pattern;
+    private Pattern pattern;
 
     private boolean setCountToOne;
 
@@ -30,7 +33,7 @@ public class SequenceModifierTask implements Runnable {
             Path inputDirectory,
             OutputStream output,
             String delimiter,
-            boolean[] pattern,
+            Pattern pattern,
             boolean setCountToOne) {
         this.inputDirectory = inputDirectory;
         this.output = output;
@@ -60,7 +63,7 @@ public class SequenceModifierTask implements Runnable {
                             String sequence = "";
                             int i = 0;
                             for (String word : origSequence.split("\\s")) {
-                                if (pattern[i]) {
+                                if (pattern.get(i) == PatternType.CNT) {
                                     sequence += word + " ";
                                 }
                                 ++i;
@@ -89,14 +92,15 @@ public class SequenceModifierTask implements Runnable {
         // for kneser-ney smoothing: every sequence that starts with <fs>
         // counts as a new sequence
         if (origSequence.matches("^(<fs>|<fs>\\s.*)$")) {
-            if ((pattern.length == 1 && !pattern[0]) || pattern[0]) {
+            if ((pattern.length() == 1 && pattern.get(0) == PatternType.SKP)
+                    || pattern.get(0) != PatternType.SKP) {
                 return null;
             }
 
             // set <s> in _1 to zero
             // if (pattern == { false, true} && words[1].equals("<s>"))
-            if ((pattern.length == 2 && !pattern[0] && pattern[1])
-                    && sequence.equals("<s>")) {
+            if ((pattern.length() == 2 && pattern.get(0) == PatternType.SKP && pattern
+                    .get(1) != PatternType.SKP) && sequence.equals("<s>")) {
                 return 0L;
             }
         } else if (setCountToOne) {

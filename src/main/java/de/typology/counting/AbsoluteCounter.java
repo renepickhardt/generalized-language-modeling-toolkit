@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
 
 /**
  * Counts absolute counts of sequences for a number of patterns.
@@ -64,14 +64,13 @@ public class AbsoluteCounter {
         Files.createDirectory(outputDirectory);
     }
 
-    public void split(List<boolean[]> patterns) throws IOException,
+    public void split(List<Pattern> patterns) throws IOException,
             InterruptedException {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        for (boolean[] pattern : patterns) {
-            logger.info("calculate absolute counts for "
-                    + PatternTransformer.getStringPattern(pattern));
+        for (Pattern pattern : patterns) {
+            logger.info("calculate absolute counts for " + pattern);
 
             // Need to create a new InputStream for each iteration, as
             // SplitterTask will read complete stream on each pass.
@@ -79,10 +78,9 @@ public class AbsoluteCounter {
 
             PatternCounterTask patternCounterTask =
                     new PatternCounterTask(inputStream,
-                            outputDirectory.resolve(PatternTransformer
-                                    .getStringPattern(pattern)), wordIndex,
-                            filter, pattern, delimiter, beforeLine, afterLine,
-                            false, deleteTempFiles);
+                            outputDirectory.resolve(pattern.toString()),
+                            wordIndex, filter, pattern, delimiter, beforeLine,
+                            afterLine, false, deleteTempFiles);
             executorService.execute(patternCounterTask);
         }
 

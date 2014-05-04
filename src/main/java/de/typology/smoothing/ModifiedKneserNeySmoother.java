@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
 
 public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 
@@ -86,9 +86,7 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
             long sequenceCount) {
         String stringPatternForBitcount =
                 sequenceStringPattern.replaceAll("_", "0");
-        if (Integer.bitCount(PatternTransformer
-                .getIntPattern(PatternTransformer
-                        .getBooleanPattern(stringPatternForBitcount))) > 1) {
+        if (new Pattern(stringPatternForBitcount).numCnt() > 1) {
             // not lowest order
             if (sequenceCount == 1) {
                 return discountTypeValuesMap.get(sequenceStringPattern).get(

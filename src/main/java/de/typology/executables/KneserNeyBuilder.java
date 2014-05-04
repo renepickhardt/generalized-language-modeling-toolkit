@@ -18,7 +18,7 @@ import de.typology.filtering.Filter;
 import de.typology.filtering.FilterBuilder;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
-import de.typology.patterns.PatternBuilder;
+import de.typology.patterns.Pattern;
 import de.typology.smoothing.KneserNeySmoother;
 import de.typology.smoothing.ModifiedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
@@ -188,9 +188,9 @@ public class KneserNeyBuilder {
         }
 
         FilterBuilder filterer =
-                new FilterBuilder(input, filterDirectory, wordIndex, "<fs> <s> ",
-                        " </s>", config.modelLength, config.numberOfCores,
-                        config.deleteTempFiles);
+                new FilterBuilder(input, filterDirectory, wordIndex,
+                        "<fs> <s> ", " </s>", config.modelLength,
+                        config.numberOfCores, config.deleteTempFiles);
         filterer.filter();
     }
 
@@ -206,9 +206,8 @@ public class KneserNeyBuilder {
 
         Filter filter = new Filter(filterDirectory);
 
-        List<boolean[]> glmForSmoothingPatterns =
-                PatternBuilder
-                        .getReverseGLMForSmoothingPatterns(config.modelLength);
+        List<Pattern> glmForSmoothingPatterns =
+                Pattern.getGlmForSmoothingPatterns(config.modelLength);
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(trainingFile, absoluteDirectory, wordIndex,
                         filter, "\t", "<fs> <s> ", " </s>",
@@ -219,8 +218,8 @@ public class KneserNeyBuilder {
     private void buildContinuationGLM(
             Path trainingFile,
             Path indexFile,
-            Path absoluteDirectory,
             Path filterDirectory,
+            Path absoluteDirectory,
             Path continuationDirectory) throws IOException,
             InterruptedException {
         WordIndex wordIndex;
@@ -230,8 +229,8 @@ public class KneserNeyBuilder {
 
         Filter filter = new Filter(filterDirectory);
 
-        List<boolean[]> lmPatterns =
-                PatternBuilder.getReverseLMPatterns(config.modelLength);
+        List<Pattern> lmPatterns =
+                Pattern.getReverseLmPatterns(config.modelLength);
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDirectory,
                         continuationDirectory, wordIndex, filter, "\t",

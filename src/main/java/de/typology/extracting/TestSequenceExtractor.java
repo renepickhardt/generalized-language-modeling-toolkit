@@ -14,8 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import de.typology.patterns.PatternBuilder;
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
 
 /**
  * This class extracts all sequences that are needed for computing the
@@ -69,17 +68,17 @@ public class TestSequenceExtractor {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        List<boolean[]> patterns =
-                PatternBuilder.getGLMForSmoothingPatterns(modelLength);
+        List<Pattern> patterns =
+                Pattern.getGlmForSmoothingPatterns(modelLength);
 
         Path outputBaseDirectory =
                 outputDirectory.resolve(absoluteDirectory.getFileName());
         Files.createDirectory(outputBaseDirectory);
 
-        for (boolean[] pattern : patterns) {
-            String patternLabel = PatternTransformer.getStringPattern(pattern);
-            Path inputDirectory = absoluteDirectory.resolve(patternLabel);
-            Path outputDirectory = outputBaseDirectory.resolve(patternLabel);
+        for (Pattern pattern : patterns) {
+            Path inputDirectory = absoluteDirectory.resolve(pattern.toString());
+            Path outputDirectory =
+                    outputBaseDirectory.resolve(pattern.toString());
 
             SequenceExtractorTask sequenceExtractorTask =
                     new SequenceExtractorTask(inputDirectory, outputDirectory,
@@ -104,9 +103,7 @@ public class TestSequenceExtractor {
                 Files.newDirectoryStream(continuationDirectory)) {
             for (Path inputDirectory : continuationFiles) {
                 String patternLabel = inputDirectory.getFileName().toString();
-                boolean[] pattern =
-                        PatternTransformer.getBooleanPattern(patternLabel
-                                .replaceAll("_", "0"));
+                Pattern pattern = new Pattern(patternLabel);
                 Path outputDirectory =
                         outputBaseDirectory.resolve(patternLabel);
 

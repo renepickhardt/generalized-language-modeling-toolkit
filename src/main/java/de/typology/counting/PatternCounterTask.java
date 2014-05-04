@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import de.typology.Sequencer;
 import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
+import de.typology.patterns.Pattern;
 
 /**
  * A class for running {@link Sequencer} and {@link Aggregator} for a given
@@ -31,7 +32,7 @@ public class PatternCounterTask implements Runnable {
 
     private Filter filter;
 
-    private boolean[] pattern;
+    private Pattern pattern;
 
     private String delimiter;
 
@@ -79,7 +80,7 @@ public class PatternCounterTask implements Runnable {
             Path outputDirectory,
             WordIndex wordIndex,
             Filter filter,
-            boolean[] pattern,
+            Pattern pattern,
             String delimiter,
             String beforeLine,
             String afterLine,

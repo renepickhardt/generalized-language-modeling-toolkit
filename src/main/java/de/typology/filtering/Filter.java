@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
 
 /**
  * Class used to interface with the output of {@link FilterBuilder}.
@@ -20,25 +20,24 @@ public class Filter {
 
     private Path inputDirectory;
 
-    private Map<boolean[], Set<String>> sequences;
+    private Map<Pattern, Set<String>> sequences;
 
     public Filter(
             Path inputDirectory) {
         this.inputDirectory = inputDirectory;
-        sequences = new HashMap<boolean[], Set<String>>();
+        sequences = new HashMap<Pattern, Set<String>>();
     }
 
-    public boolean contains(String sequence, boolean[] pattern)
+    public boolean contains(String sequence, Pattern pattern)
             throws IOException {
         loadPattern(pattern);
 
         return sequences.get(pattern).contains(sequence);
     }
 
-    private void loadPattern(boolean[] pattern) throws IOException {
+    private void loadPattern(Pattern pattern) throws IOException {
         if (!sequences.containsKey(pattern)) {
-            String patternLabel = PatternTransformer.getStringPattern(pattern);
-            Path patternDirectory = inputDirectory.resolve(patternLabel);
+            Path patternDirectory = inputDirectory.resolve(pattern.toString());
 
             if (!Files.isDirectory(patternDirectory)) {
                 throw new IllegalStateException(

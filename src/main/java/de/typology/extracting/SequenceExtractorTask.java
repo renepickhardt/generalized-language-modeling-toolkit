@@ -10,6 +10,9 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternType;
+
 /**
  * Filters all files in an {@code inputDirectory} to only the lines that contain
  * a {@code sequence} from a set of {@code sequences}.
@@ -46,7 +49,7 @@ public class SequenceExtractorTask implements Runnable {
             Path inputDirectory,
             Path outputDirectory,
             Set<String> sequences,
-            boolean[] pattern,
+            Pattern pattern,
             String delimiter) throws IOException {
         this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
@@ -92,22 +95,22 @@ public class SequenceExtractorTask implements Runnable {
 
     private static Set<String> extractSequencesWithPattern(
             Set<String> origSequences,
-            boolean[] pattern) {
+            Pattern pattern) {
         Set<String> sequences = new HashSet<String>();
 
         for (String origSequence : origSequences) {
             // modify sequences for continuation
             // for each false at the start of pattern prepend "<dummy> "
-            for (int i = 0; i != pattern.length; ++i) {
-                if (pattern[i]) {
+            for (int i = 0; i != pattern.length(); ++i) {
+                if (pattern.get(i) == PatternType.CNT) {
                     break;
                 } else {
                     origSequence = "<dummy> " + origSequence;
                 }
             }
             // for each false at the end of pattern append " <dummy>"
-            for (int i = pattern.length - 1; i != -1; --i) {
-                if (pattern[i]) {
+            for (int i = pattern.length() - 1; i != -1; --i) {
+                if (pattern.get(i) == PatternType.CNT) {
                     break;
                 } else {
                     origSequence += " <dummy>";
@@ -115,13 +118,15 @@ public class SequenceExtractorTask implements Runnable {
             }
 
             String[] words = origSequence.split("\\s");
-            for (int pointer = 0; pointer <= words.length - pattern.length; ++pointer) {
+            for (int pointer = 0; pointer <= words.length - pattern.length(); ++pointer) {
                 // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
                 String sequence = "";
-                for (int i = 0; i != pattern.length; ++i) {
-                    if (pattern[i]) {
+                int i = 0;
+                for (PatternType p : pattern) {
+                    if (p == PatternType.CNT) {
                         sequence += words[pointer + i] + " ";
                     }
+                    ++i;
                 }
                 sequence = sequence.replaceFirst(" $", "");
                 sequences.add(sequence);

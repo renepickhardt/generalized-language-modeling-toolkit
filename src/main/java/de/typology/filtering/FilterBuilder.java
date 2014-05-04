@@ -10,8 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import de.typology.indexing.WordIndex;
-import de.typology.patterns.PatternBuilder;
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
 
 public class FilterBuilder {
 
@@ -53,21 +52,19 @@ public class FilterBuilder {
     }
 
     public void filter() throws IOException, InterruptedException {
-        List<boolean[]> patterns =
-                PatternBuilder.getGLMForSmoothingPatterns(modelLength);
+        List<Pattern> patterns =
+                Pattern.getGlmForSmoothingPatterns(modelLength);
 
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        for (boolean[] pattern : patterns) {
-            String patternLabel = PatternTransformer.getStringPattern(pattern);
-
+        for (Pattern pattern : patterns) {
             InputStream input = Files.newInputStream(inputFile);
 
             FiltererTask filtererTask =
-                    new FiltererTask(input,
-                            outputDirectory.resolve(patternLabel), wordIndex,
-                            pattern, beforeLine, afterLine, deleteTempFiles);
+                    new FiltererTask(input, outputDirectory.resolve(pattern
+                            .toString()), wordIndex, pattern, beforeLine,
+                            afterLine, deleteTempFiles);
             executorService.execute(filtererTask);
         }
 

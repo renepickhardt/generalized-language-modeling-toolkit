@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -21,6 +22,8 @@ import org.junit.Test;
 import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternType;
 
 public class SequencerTest {
 
@@ -63,9 +66,7 @@ public class SequencerTest {
     @Test
     public void squencing1Test() throws IOException {
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        boolean[] pattern = {
-            true
-        };
+        Pattern pattern = new Pattern(Arrays.asList(PatternType.CNT));
 
         try {
             InputStream inputStream = new FileInputStream(trainingFile);
@@ -103,9 +104,9 @@ public class SequencerTest {
     @Test
     public void squencing1101Test() throws IOException {
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        boolean[] pattern = {
-            true, true, false, true
-        };
+        Pattern pattern =
+                new Pattern(Arrays.asList(PatternType.CNT, PatternType.CNT,
+                        PatternType.SKP, PatternType.CNT));
 
         try {
             InputStream inputStream = new FileInputStream(trainingFile);

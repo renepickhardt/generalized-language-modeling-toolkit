@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
+import de.typology.patterns.Pattern;
 
 public class FiltererTask implements Runnable {
 
@@ -24,7 +25,7 @@ public class FiltererTask implements Runnable {
 
     private WordIndex wordIndex;
 
-    private boolean[] pattern;
+    private Pattern pattern;
 
     private String beforeLine;
 
@@ -36,7 +37,7 @@ public class FiltererTask implements Runnable {
             InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,
-            boolean[] pattern,
+            Pattern pattern,
             String beforeLine,
             String afterLine,
             boolean deleteTempFiles) throws IOException {

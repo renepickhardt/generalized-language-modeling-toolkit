@@ -27,4 +27,19 @@ public enum PatternType {
         }
     }
 
+    public static PatternType fromString(String type) {
+        switch (type) {
+            case "1":
+                return CNT;
+            case "0":
+                return SKP;
+            case "p":
+                return POS;
+            case "d":
+                return DEL;
+            default:
+                throw new IllegalStateException(
+                        "Unimplemented PatternType in PatternType#fromString.");
+        }
+    }
 }

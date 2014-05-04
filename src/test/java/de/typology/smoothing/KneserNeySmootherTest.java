@@ -17,7 +17,7 @@ import de.typology.counting.ContinuationCounter;
 import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
-import de.typology.patterns.PatternBuilder;
+import de.typology.patterns.Pattern;
 
 public class KneserNeySmootherTest {
 
@@ -55,9 +55,9 @@ public class KneserNeySmootherTest {
                 new AbsoluteCounter(trainingFile.toPath(),
                         absoluteDirectory.toPath(), wordIndex, filter, "\t",
                         "<fs> <s> ", " </s>", 2, true);
-        as.split(PatternBuilder.getGLMForSmoothingPatterns(5));
+        as.split(Pattern.getGlmForSmoothingPatterns(5));
 
-        List<boolean[]> lmPatterns = PatternBuilder.getReverseLMPatterns(5);
+        List<Pattern> lmPatterns = Pattern.getReverseLmPatterns(5);
         ContinuationCounter smoothingSplitter =
                 new ContinuationCounter(absoluteDirectory.toPath(),
                         continuationDirectory.toPath(), wordIndex, filter,

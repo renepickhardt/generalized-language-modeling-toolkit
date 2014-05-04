@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -19,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.typology.counting.SequenceModifierTask;
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternType;
 
 public class SequenceModifierTest {
 
@@ -64,9 +67,9 @@ public class SequenceModifierTest {
 
     @Test
     public void sequenceModifier101Test() {
-        boolean[] pattern = {
-            true, false, true
-        };
+        Pattern pattern =
+                new Pattern(Arrays.asList(PatternType.CNT, PatternType.SKP,
+                        PatternType.CNT));
 
         SequenceModifierTask sequenceModifier =
                 new SequenceModifierTask(workingDirectory.toPath(),

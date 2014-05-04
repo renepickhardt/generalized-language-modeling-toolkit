@@ -10,6 +10,8 @@ import java.util.Map;
 
 import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternType;
 
 /**
  * Splits an {@link InputStream} into a sequences of a pattern.
@@ -24,7 +26,7 @@ public class Sequencer {
 
     private Filter filter;
 
-    private boolean[] pattern;
+    private Pattern pattern;
 
     private String beforeLine;
 
@@ -79,7 +81,7 @@ public class Sequencer {
             Path outputDirectory,
             WordIndex wordIndex,
             Filter filter,
-            boolean[] pattern,
+            Pattern pattern,
             String beforeLine,
             String afterLine,
             boolean onlyLine,
@@ -118,14 +120,20 @@ public class Sequencer {
                     writer.write(line + "\n");
                 } else {
                     for (int pointer = 0; pointer <= words.length
-                            - pattern.length; ++pointer) {
+                            - pattern.length(); ++pointer) {
                         // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
                         String sequence = "";
-                        for (int i = 0; i != pattern.length; ++i) {
-                            if (pattern[i]) {
+                        //                        for (int i = 0; i != pattern.length(); ++i) {
+                        //                            if (pattern[i]) {
+                        int i = 0;
+                        for (PatternType p : pattern) {
+                            if (p == PatternType.CNT) {
                                 sequence += words[pointer + i] + " ";
                             }
+                            ++i;
                         }
+                        //                            }
+                        //                        }
                         sequence = sequence.replaceFirst(" $", "");
 
                         BufferedWriter writer =
