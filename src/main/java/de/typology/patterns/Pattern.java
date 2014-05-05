@@ -26,6 +26,42 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.size();
     }
 
+    public String apply(String sequence) {
+        String result = "";
+        String[] words = sequence.split("\\s");
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                result += first ? "" : " ";
+                first = false;
+            }
+
+            switch (elem) {
+                case CNT:
+                    result += words[i];
+                    break;
+                case SKP:
+                    result += "_";
+                    break;
+                case POS:
+                    throw new UnsupportedOperationException(
+                            "POS not yet implemented in Pattern#apply");
+                case DEL:
+                    break;
+
+                default:
+                    throw new IllegalStateException(
+                            "Unimplemted PatternElem in Pattern#apply: \""
+                                    + elem + "\".");
+            }
+
+            ++i;
+        }
+        return result;
+    }
+
     public PatternElem get(int index) {
         return pattern.get(index);
     }

@@ -1,25 +1,33 @@
 package de.typology.sequencing;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
 
-/**
- * Splits an {@link InputStream} into a sequences of a pattern.
- */
 public class Sequencer {
+
+    private static Logger logger = LogManager.getLogger();
 
     private Path inputFile;
 
     private Path outputDir;
 
     private WordIndex wordIndex;
-
-    private List<Pattern> patterns;
 
     private String beforeLine;
 
@@ -29,100 +37,99 @@ public class Sequencer {
 
     private String delimiter;
 
-    /**
-     * Expects an {@code input} where each line contains a number of words
-     * separated by whitespace. Extracts all sequence specified by
-     * {@code pattern} and writes them to <em>indexed files</em> in
-     * {@code outputDir}. Each output line has this format: {@code <Sequence>}.
-     * 
-     * @param input
-     *            {@link InputStream} to be read.
-     * @param outputDir
-     *            Dir where <em>indexed files</em> should be
-     *            written to.
-     * @param wordIndex
-     *            {@link WordIndex} of the corpus.
-     * @param patterns
-     *            Pattern specifying sequences.
-     * @param beforeLine
-     *            Prepended before each line before sequencing.
-     * @param afterLine
-     *            Appended after each line before sequencing.
-     * @param setCountToOne
-     *            If {@code false} will act as described above.
-     *            If {@code true} will also append {@code <Delimiter>1} after
-     *            each {@code <Sequence>}.
-     * @param delimiter
-     *            Delimiter between {@code Sequence} and {@code Count} in the
-     *            output. Can be {@code null} if {@code setCountToOne} is
-     *            {@code false}.
-     */
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
-            List<Pattern> patterns,
             String beforeLine,
             String afterLine,
             boolean setCountToOne,
-            String delimiter) {
+            String delimiter) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
-        this.patterns = patterns;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
         this.setCountToOne = setCountToOne;
         this.delimiter = delimiter;
+
+        Files.createDirectory(outputDir);
     }
 
-    /**
-     * Perform the actual splitting and writing output.
-     */
-    public void splitIntoFiles() throws IOException {
-        System.out.println("sequencing");
-        // TODO: bufferSize calculation
-        //        try (BufferedReader bufferedReader =
-        //                new BufferedReader(new InputStreamReader(inputFile),
-        //                        100 * 8 * 1024)) {
-        //            Map<Integer, BufferedWriter> writers =
-        //                    wordIndex.openWriters(outputDir);
-        //
-        //            String line;
-        //            while ((line = bufferedReader.readLine()) != null) {
-        //                line = beforeLine + line + afterLine;
-        //                String[] words = line.split("\\s");
-        //
-        //                if (onlyLine) {
-        //                    BufferedWriter writer =
-        //                            writers.get(wordIndex.rank(words[0]));
-        //                    writer.write(line + "\n");
-        //                } else {
-        //                    for (int pointer = 0; pointer <= words.length
-        //                            - pattern.length(); ++pointer) {
-        //                        // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
-        //                        String sequence = "";
-        //                        int i = 0;
-        //                        for (PatternElem elem : pattern) {
-        //                            if (elem == PatternElem.CNT) {
-        //                                sequence += words[pointer + i] + " ";
-        //                            }
-        //                            ++i;
-        //                        }
-        //                        sequence = sequence.replaceFirst(" $", "");
-        //
-        //                        BufferedWriter writer =
-        //                                writers.get(wordIndex.rank(sequence.split(" ")[0]));
-        //                        writer.write(sequence
-        //                                + (setCountToOne ? delimiter + "1" : "") + "\n");
-        //                    }
-        //                }
-        //            }
-        //
-        //            wordIndex.closeWriters(writers);
-        //        }
-        //
-        //        inputFile.close();
+    public void splitIntoFiles(Set<Pattern> inputPatterns) throws IOException {
+        logger.info("Building sequences.");
+        Map<Integer, Set<Pattern>> patternsByLength =
+                new TreeMap<Integer, Set<Pattern>>();
+        for (Pattern pattern : inputPatterns) {
+            Set<Pattern> patterns = patternsByLength.get(pattern.length());
+            if (patterns == null) {
+                patterns = new HashSet<Pattern>();
+                patternsByLength.put(pattern.length(), patterns);
+            }
+            patterns.add(pattern);
+        }
+
+        for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
+                .entrySet()) {
+            splitIntoFiles(entry.getKey(), entry.getValue());
+        }
     }
 
+    private void splitIntoFiles(int patternLength, Set<Pattern> patterns)
+            throws IOException {
+        logger.info("Building sequences with length: " + patternLength);
+
+        Map<Pattern, Map<Integer, BufferedWriter>> patternWriters =
+                new HashMap<Pattern, Map<Integer, BufferedWriter>>();
+        for (Pattern pattern : patterns) {
+            Path dir = outputDir.resolve(pattern.toString());
+            Files.createDirectory(dir);
+            Map<Integer, BufferedWriter> writers = wordIndex.openWriters(dir);
+            patternWriters.put(pattern, writers);
+        }
+
+        try (InputStream inputFileSteam = Files.newInputStream(inputFile);
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(inputFileSteam),
+                                100 * 8 * 1024)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = beforeLine + line + afterLine;
+                String[] words = line.split("\\s");
+
+                for (int pointer = 0; pointer <= words.length - patternLength; ++pointer) {
+                    String sequence = "";
+                    boolean first = true;
+                    for (int i = 0; i != patternLength; ++i) {
+                        sequence += (first ? "" : " ") + words[pointer + i];
+                        first = false;
+                    }
+
+                    for (Map.Entry<Pattern, Map<Integer, BufferedWriter>> entry : patternWriters
+                            .entrySet()) {
+                        Pattern pattern = entry.getKey();
+                        Map<Integer, BufferedWriter> writers = entry.getValue();
+
+                        String patternSequence = pattern.apply(sequence);
+                        int firstSpacePos = patternSequence.indexOf(" ");
+                        String firstWord =
+                                (firstSpacePos == -1
+                                        ? patternSequence
+                                        : patternSequence.substring(0,
+                                                firstSpacePos));
+
+                        writers.get(wordIndex.rank(firstWord))
+                                .write(patternSequence
+                                        + (setCountToOne ? delimiter + "1" : "")
+                                        + "\n");
+                    }
+                }
+            }
+        }
+
+        for (Map<Integer, BufferedWriter> writers : patternWriters.values()) {
+            wordIndex.closeWriters(writers);
+        }
+    }
 }
