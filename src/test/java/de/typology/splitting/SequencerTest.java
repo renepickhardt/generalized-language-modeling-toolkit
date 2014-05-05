@@ -23,7 +23,7 @@ import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternType;
+import de.typology.patterns.PatternElem;
 
 public class SequencerTest {
 
@@ -66,7 +66,7 @@ public class SequencerTest {
     @Test
     public void squencing1Test() throws IOException {
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        Pattern pattern = new Pattern(Arrays.asList(PatternType.CNT));
+        Pattern pattern = new Pattern(Arrays.asList(PatternElem.CNT));
 
         try {
             InputStream inputStream = new FileInputStream(trainingFile);
@@ -105,8 +105,8 @@ public class SequencerTest {
     public void squencing1101Test() throws IOException {
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
         Pattern pattern =
-                new Pattern(Arrays.asList(PatternType.CNT, PatternType.CNT,
-                        PatternType.SKP, PatternType.CNT));
+                new Pattern(Arrays.asList(PatternElem.CNT, PatternElem.CNT,
+                        PatternElem.SKP, PatternElem.CNT));
 
         try {
             InputStream inputStream = new FileInputStream(trainingFile);

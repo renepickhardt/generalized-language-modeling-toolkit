@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternType;
+import de.typology.patterns.PatternElem;
 
 /**
  * Counts continuation counts of sequences for a number of patterns using
@@ -133,14 +133,14 @@ public class ContinuationCounter {
         Pattern outputPattern = Pattern.newWithoutSkp(key);
         String outputPatternLabel = key.toString();
 
-        List<PatternType> patternForModifier = new ArrayList<PatternType>();
+        List<PatternElem> patternForModifier = new ArrayList<PatternElem>();
         for (int i = 0; i != value.length(); ++i) {
-            if (key.get(i) == PatternType.CNT
-                    && value.get(i) == PatternType.CNT) {
-                patternForModifier.add(PatternType.CNT);
-            } else if (key.get(i) == PatternType.SKP
-                    && value.get(i) == PatternType.CNT) {
-                patternForModifier.add(PatternType.SKP);
+            if (key.get(i) == PatternElem.CNT
+                    && value.get(i) == PatternElem.CNT) {
+                patternForModifier.add(PatternElem.CNT);
+            } else if (key.get(i) == PatternElem.SKP
+                    && value.get(i) == PatternElem.CNT) {
+                patternForModifier.add(PatternElem.SKP);
             }
         }
 
@@ -216,8 +216,8 @@ public class ContinuationCounter {
                 continue;
             }
 
-            if (key.length() > 2 && key.get(0) == PatternType.SKP
-                    && key.get(1) == PatternType.SKP) {
+            if (key.length() > 2 && key.get(0) == PatternElem.SKP
+                    && key.get(1) == PatternElem.SKP) {
                 continue;
             }
 
@@ -234,7 +234,7 @@ public class ContinuationCounter {
             int position) {
         if (position < pattern.length()) {
             Pattern newPattern = pattern.clone();
-            newPattern.set(position, PatternType.SKP);
+            newPattern.set(position, PatternElem.SKP);
             map.put(newPattern, pattern);
             map.put(pattern, oldPattern);
             addPatterns(map, newPattern, pattern, position + 1);

@@ -10,7 +10,7 @@ import java.util.Map;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternType;
+import de.typology.patterns.PatternElem;
 
 /**
  * Splits an {@link InputStream} into a sequences of a pattern.
@@ -114,17 +114,13 @@ public class Sequencer {
                             - pattern.length(); ++pointer) {
                         // TODO: refactor sequencing from Sequencer, SequenceModifier, SequenceExtraktorTask
                         String sequence = "";
-                        //                        for (int i = 0; i != pattern.length(); ++i) {
-                        //                            if (pattern[i]) {
                         int i = 0;
-                        for (PatternType p : pattern) {
-                            if (p == PatternType.CNT) {
+                        for (PatternElem elem : pattern) {
+                            if (elem == PatternElem.CNT) {
                                 sequence += words[pointer + i] + " ";
                             }
                             ++i;
                         }
-                        //                            }
-                        //                        }
                         sequence = sequence.replaceFirst(" $", "");
 
                         BufferedWriter writer =

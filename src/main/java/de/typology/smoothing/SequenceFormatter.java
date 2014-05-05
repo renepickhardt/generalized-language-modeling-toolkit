@@ -1,7 +1,7 @@
 package de.typology.smoothing;
 
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternType;
+import de.typology.patterns.PatternElem;
 
 public class SequenceFormatter {
 
@@ -32,8 +32,8 @@ public class SequenceFormatter {
         if (words.length == pattern.length()) {
             String resultString = "";
             int i = 0;
-            for (PatternType p : pattern) {
-                if (p == PatternType.CNT) {
+            for (PatternElem elem : pattern) {
+                if (elem == PatternElem.CNT) {
                     resultString += words[i] + " ";
                 }
                 ++i;

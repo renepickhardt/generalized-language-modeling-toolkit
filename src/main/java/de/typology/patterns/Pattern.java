@@ -5,20 +5,20 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class Pattern implements Iterable<PatternType>, Cloneable {
+public class Pattern implements Iterable<PatternElem>, Cloneable {
 
-    private List<PatternType> pattern;
+    private List<PatternElem> pattern;
 
     public Pattern(
-            List<PatternType> pattern) {
+            List<PatternElem> pattern) {
         this.pattern = pattern;
     }
 
     public Pattern(
-            String label) {
-        pattern = new ArrayList<PatternType>(label.length());
-        for (Character l : label.toCharArray()) {
-            pattern.add(PatternType.fromString(l.toString()));
+            String pattern) {
+        this.pattern = new ArrayList<PatternElem>(pattern.length());
+        for (Character elem : pattern.toCharArray()) {
+            this.pattern.add(PatternElem.fromString(elem.toString()));
         }
     }
 
@@ -26,18 +26,18 @@ public class Pattern implements Iterable<PatternType>, Cloneable {
         return pattern.size();
     }
 
-    public PatternType get(int index) {
+    public PatternElem get(int index) {
         return pattern.get(index);
     }
 
-    public void set(int index, PatternType type) {
-        pattern.set(index, type);
+    public void set(int index, PatternElem elem) {
+        pattern.set(index, elem);
     }
 
     public int numCnt() {
         int result = 0;
-        for (PatternType type : pattern) {
-            if (type == PatternType.CNT) {
+        for (PatternElem elem : pattern) {
+            if (elem == PatternElem.CNT) {
                 ++result;
             }
         }
@@ -45,8 +45,8 @@ public class Pattern implements Iterable<PatternType>, Cloneable {
     }
 
     public boolean containsNoSkp() {
-        for (PatternType type : pattern) {
-            if (type == PatternType.SKP) {
+        for (PatternElem elem : pattern) {
+            if (elem == PatternElem.SKP) {
                 return false;
             }
         }
@@ -55,7 +55,7 @@ public class Pattern implements Iterable<PatternType>, Cloneable {
 
     @Override
     public Pattern clone() {
-        return new Pattern(new ArrayList<PatternType>(pattern));
+        return new Pattern(new ArrayList<PatternElem>(pattern));
     }
 
     @Override
@@ -73,31 +73,31 @@ public class Pattern implements Iterable<PatternType>, Cloneable {
     @Override
     public String toString() {
         String result = "";
-        for (PatternType patternType : pattern) {
-            result += patternType;
+        for (PatternElem elem : pattern) {
+            result += elem;
         }
         return result;
     }
 
     @Override
-    public Iterator<PatternType> iterator() {
+    public Iterator<PatternElem> iterator() {
         return pattern.iterator();
     }
 
     public static Pattern newWithoutSkp(Pattern old) {
-        List<PatternType> pattern = new ArrayList<PatternType>();
-        for (PatternType type : old) {
-            if (type != PatternType.SKP) {
-                pattern.add(type);
+        List<PatternElem> pattern = new ArrayList<PatternElem>();
+        for (PatternElem elem : old) {
+            if (elem != PatternElem.SKP) {
+                pattern.add(elem);
             }
         }
         return new Pattern(pattern);
     }
 
     public static Pattern newWithCnt(int length) {
-        List<PatternType> pattern = new ArrayList<PatternType>(length + 1);
+        List<PatternElem> pattern = new ArrayList<PatternElem>(length + 1);
         for (int i = 0; i != length + 1; ++i) {
-            pattern.add(PatternType.CNT);
+            pattern.add(PatternElem.CNT);
         }
         return new Pattern(pattern);
     }
@@ -107,10 +107,10 @@ public class Pattern implements Iterable<PatternType>, Cloneable {
         List<Pattern> patterns = new ArrayList<Pattern>(pow);
         for (int i = 1; i != pow; ++i) {
             int length = Integer.SIZE - Integer.numberOfLeadingZeros(i);
-            List<PatternType> pattern = new ArrayList<PatternType>(length);
+            List<PatternElem> pattern = new ArrayList<PatternElem>(length);
             int n = i;
             do {
-                pattern.add((n & 1) != 0 ? PatternType.CNT : PatternType.SKP);
+                pattern.add((n & 1) != 0 ? PatternElem.CNT : PatternElem.SKP);
             } while ((n >>= 1) != 0);
             Collections.reverse(pattern);
             patterns.add(new Pattern(pattern));

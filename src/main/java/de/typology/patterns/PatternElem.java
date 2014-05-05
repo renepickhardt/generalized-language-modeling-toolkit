@@ -1,6 +1,6 @@
 package de.typology.patterns;
 
-public enum PatternType {
+public enum PatternElem {
 
     CNT,
 
@@ -23,12 +23,12 @@ public enum PatternType {
                 return "d";
             default:
                 throw new IllegalStateException(
-                        "Unimplemented PatternType in PatternType#toString.");
+                        "Unimplemented PatternElem in PatternElem#toString.");
         }
     }
 
-    public static PatternType fromString(String type) {
-        switch (type) {
+    public static PatternElem fromString(String elem) {
+        switch (elem) {
             case "1":
                 return CNT;
             case "_":
@@ -39,8 +39,8 @@ public enum PatternType {
                 return DEL;
             default:
                 throw new IllegalStateException(
-                        "Unimplemented PatternType in PatternType#fromString: \""
-                                + type + "\".");
+                        "Unimplemented PatternElem in PatternElem#fromString: \""
+                                + elem + "\".");
         }
     }
 }

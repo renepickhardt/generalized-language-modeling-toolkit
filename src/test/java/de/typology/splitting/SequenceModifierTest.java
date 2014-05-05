@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import de.typology.counting.SequenceModifierTask;
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternType;
+import de.typology.patterns.PatternElem;
 
 public class SequenceModifierTest {
 
@@ -68,8 +68,8 @@ public class SequenceModifierTest {
     @Test
     public void sequenceModifier101Test() {
         Pattern pattern =
-                new Pattern(Arrays.asList(PatternType.CNT, PatternType.SKP,
-                        PatternType.CNT));
+                new Pattern(Arrays.asList(PatternElem.CNT, PatternElem.SKP,
+                        PatternElem.CNT));
 
         SequenceModifierTask sequenceModifier =
                 new SequenceModifierTask(workingDirectory.toPath(),

@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternType;
+import de.typology.patterns.PatternElem;
 
 /**
  * A class for modifying the sequences in workingDirectory based on the given
@@ -63,7 +63,7 @@ public class SequenceModifierTask implements Runnable {
                             String sequence = "";
                             int i = 0;
                             for (String word : origSequence.split("\\s")) {
-                                if (pattern.get(i) == PatternType.CNT) {
+                                if (pattern.get(i) == PatternElem.CNT) {
                                     sequence += word + " ";
                                 }
                                 ++i;
@@ -92,15 +92,15 @@ public class SequenceModifierTask implements Runnable {
         // for kneser-ney smoothing: every sequence that starts with <fs>
         // counts as a new sequence
         if (origSequence.matches("^(<fs>|<fs>\\s.*)$")) {
-            if ((pattern.length() == 1 && pattern.get(0) == PatternType.SKP)
-                    || pattern.get(0) != PatternType.SKP) {
+            if ((pattern.length() == 1 && pattern.get(0) == PatternElem.SKP)
+                    || pattern.get(0) != PatternElem.SKP) {
                 return null;
             }
 
             // set <s> in _1 to zero
             // if (pattern == { false, true} && words[1].equals("<s>"))
-            if ((pattern.length() == 2 && pattern.get(0) == PatternType.SKP && pattern
-                    .get(1) != PatternType.SKP) && sequence.equals("<s>")) {
+            if ((pattern.length() == 2 && pattern.get(0) == PatternElem.SKP && pattern
+                    .get(1) != PatternElem.SKP) && sequence.equals("<s>")) {
                 return 0L;
             }
         } else if (setCountToOne) {
