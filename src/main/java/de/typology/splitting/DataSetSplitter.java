@@ -30,14 +30,14 @@ public class DataSetSplitter {
 
     private Logger logger = LogManager.getLogger();
 
-    private File directory;
+    private File dir;
 
     private String inputName;
 
     public DataSetSplitter(
-            File directory,
+            File dir,
             String inputName) {
-        this.directory = directory;
+        this.dir = dir;
         this.inputName = inputName;
     }
 
@@ -69,21 +69,21 @@ public class DataSetSplitter {
             String learningFileName,
             String testingFileName) throws IOException {
         logger.info("splitting into training, testing and learning file: "
-                + directory + "/" + inputName);
+                + dir + "/" + inputName);
         try (BufferedReader reader =
-                new BufferedReader(new FileReader(directory.getAbsolutePath()
+                new BufferedReader(new FileReader(dir.getAbsolutePath()
                         + "/" + inputName));
                 BufferedWriter trainingDataWriter =
                         new BufferedWriter(new FileWriter(
-                                directory.getAbsolutePath() + "/"
+                                dir.getAbsolutePath() + "/"
                                         + trainingFileName));
                 BufferedWriter learningDataWriter =
                         new BufferedWriter(new FileWriter(
-                                directory.getAbsolutePath() + "/"
+                                dir.getAbsolutePath() + "/"
                                         + learningFileName));
                 BufferedWriter testingDataWriter =
                         new BufferedWriter(new FileWriter(
-                                directory.getAbsolutePath() + "/"
+                                dir.getAbsolutePath() + "/"
                                         + testingFileName))) {
             int rand;
             String line;
@@ -128,7 +128,7 @@ public class DataSetSplitter {
                 new HashMap<Integer, BufferedWriter>();
         for (int i = 1; i <= maxSequenceLength; i++) {
             testSequenceFileWriters.put(i, new BufferedWriter(new FileWriter(
-                    new File(directory.getAbsolutePath() + "/"
+                    new File(dir.getAbsolutePath() + "/"
                             + fileNameSplit[0] + "-samples-" + i + "."
                             + fileNameSplit[1]))));
         }

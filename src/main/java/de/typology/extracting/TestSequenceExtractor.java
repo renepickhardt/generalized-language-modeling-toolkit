@@ -22,11 +22,11 @@ import de.typology.patterns.Pattern;
  */
 public class TestSequenceExtractor {
 
-    private Path absoluteDirectory;
+    private Path absoluteDir;
 
-    private Path continuationDirectory;
+    private Path continuationDir;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     private String delimiter;
 
@@ -38,20 +38,20 @@ public class TestSequenceExtractor {
 
     public TestSequenceExtractor(
             InputStream input,
-            Path absoluteDirectory,
-            Path continuationDirectory,
-            Path outputDirectory,
+            Path absoluteDir,
+            Path continuationDir,
+            Path outputDir,
             String delimiter,
             int modelLength,
             int numberOfCores) throws IOException {
-        this.absoluteDirectory = absoluteDirectory;
-        this.continuationDirectory = continuationDirectory;
-        this.outputDirectory = outputDirectory;
+        this.absoluteDir = absoluteDir;
+        this.continuationDir = continuationDir;
+        this.outputDir = outputDir;
         this.delimiter = delimiter;
         this.modelLength = modelLength;
         this.numberOfCores = numberOfCores;
 
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
 
         sequences = new HashSet<String>();
         try (BufferedReader reader =
@@ -71,17 +71,17 @@ public class TestSequenceExtractor {
         List<Pattern> patterns =
                 Pattern.getGlmForSmoothingPatterns(modelLength);
 
-        Path outputBaseDirectory =
-                outputDirectory.resolve(absoluteDirectory.getFileName());
-        Files.createDirectory(outputBaseDirectory);
+        Path outputBaseDir =
+                outputDir.resolve(absoluteDir.getFileName());
+        Files.createDirectory(outputBaseDir);
 
         for (Pattern pattern : patterns) {
-            Path inputDirectory = absoluteDirectory.resolve(pattern.toString());
-            Path outputDirectory =
-                    outputBaseDirectory.resolve(pattern.toString());
+            Path inputDir = absoluteDir.resolve(pattern.toString());
+            Path outputDir =
+                    outputBaseDir.resolve(pattern.toString());
 
             SequenceExtractorTask sequenceExtractorTask =
-                    new SequenceExtractorTask(inputDirectory, outputDirectory,
+                    new SequenceExtractorTask(inputDir, outputDir,
                             sequences, pattern, delimiter);
             executorService.execute(sequenceExtractorTask);
         }
@@ -95,25 +95,25 @@ public class TestSequenceExtractor {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        Path outputBaseDirectory =
-                outputDirectory.resolve(continuationDirectory.getFileName());
-        Files.createDirectory(outputBaseDirectory);
+        Path outputBaseDir =
+                outputDir.resolve(continuationDir.getFileName());
+        Files.createDirectory(outputBaseDir);
 
         try (DirectoryStream<Path> continuationFiles =
-                Files.newDirectoryStream(continuationDirectory)) {
-            for (Path inputDirectory : continuationFiles) {
-                String patternLabel = inputDirectory.getFileName().toString();
+                Files.newDirectoryStream(continuationDir)) {
+            for (Path inputDir : continuationFiles) {
+                String patternLabel = inputDir.getFileName().toString();
                 if (patternLabel.endsWith("-split")) {
                     continue;
                 }
 
                 Pattern pattern = new Pattern(patternLabel);
-                Path outputDirectory =
-                        outputBaseDirectory.resolve(patternLabel);
+                Path outputDir =
+                        outputBaseDir.resolve(patternLabel);
 
                 SequenceExtractorTask sequenceExtractorTask =
-                        new SequenceExtractorTask(inputDirectory,
-                                outputDirectory, sequences, pattern, delimiter);
+                        new SequenceExtractorTask(inputDir,
+                                outputDir, sequences, pattern, delimiter);
                 executorService.execute(sequenceExtractorTask);
             }
         }

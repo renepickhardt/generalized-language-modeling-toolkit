@@ -25,7 +25,7 @@ public class PatternCounterTask implements Runnable {
 
     private InputStream input;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     @SuppressWarnings("unused")
     private WordIndex wordIndex;
@@ -49,12 +49,12 @@ public class PatternCounterTask implements Runnable {
      * Expects an {@code input} where each line contains a number of words
      * separated by white space. Extract the counts of all distinct sequences
      * described by {@code pattern} and writes them to <em>indexed files</em> in
-     * {@code outputDirectory}.
+     * {@code outputDir}.
      * 
      * @param input
      *            {@link InputStream} to be read.
-     * @param outputDirectory
-     *            Directory where <em>indexed files</em> should be written to.
+     * @param outputDir
+     *            Dir where <em>indexed files</em> should be written to.
      * @param wordIndex
      *            {@link WordIndex} of the corpus.
      * @param pattern
@@ -76,7 +76,7 @@ public class PatternCounterTask implements Runnable {
      */
     public PatternCounterTask(
             InputStream input,
-            Path outputDirectory,
+            Path outputDir,
             WordIndex wordIndex,
             Pattern pattern,
             String delimiter,
@@ -85,7 +85,7 @@ public class PatternCounterTask implements Runnable {
             boolean isContinuation,
             boolean deleteTempFiles) throws IOException {
         this.input = input;
-        this.outputDirectory = outputDirectory;
+        this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
         this.delimiter = delimiter;
@@ -93,7 +93,7 @@ public class PatternCounterTask implements Runnable {
         this.afterLine = afterLine;
         this.isContinuation = isContinuation;
 
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
     }
 
     @Override
@@ -101,15 +101,15 @@ public class PatternCounterTask implements Runnable {
         try {
             // SEQUENCING //////////////////////////////////////////////////////
 
-            Path sequencerOutputDirectory =
-                    outputDirectory.getParent().resolve(
-                            outputDirectory.getFileName() + "-split");
-            Files.createDirectory(sequencerOutputDirectory);
+            Path sequencerOutputDir =
+                    outputDir.getParent().resolve(
+                            outputDir.getFileName() + "-split");
+            Files.createDirectory(sequencerOutputDir);
 
-            logger.info("sequencing:  " + sequencerOutputDirectory);
+            logger.info("sequencing:  " + sequencerOutputDir);
 
             //            Sequencer sequencer =
-            //                    new Sequencer(input, sequencerOutputDirectory, wordIndex,
+            //                    new Sequencer(input, sequencerOutputDir, wordIndex,
             //                            pattern, beforeLine, afterLine, isContinuation,
             //                            true, delimiter);
             //            sequencer.splitIntoFiles();
@@ -117,15 +117,15 @@ public class PatternCounterTask implements Runnable {
 
             // AGGREGATING /////////////////////////////////////////////////////
 
-            logger.info("aggregating: " + outputDirectory);
+            logger.info("aggregating: " + outputDir);
 
             try (DirectoryStream<Path> sequencerOutputFiles =
-                    Files.newDirectoryStream(sequencerOutputDirectory)) {
+                    Files.newDirectoryStream(sequencerOutputDir)) {
                 for (Path sequencerOutputFile : sequencerOutputFiles) {
                     try (InputStream input =
                             Files.newInputStream(sequencerOutputFile);
                             OutputStream output =
-                                    Files.newOutputStream(outputDirectory
+                                    Files.newOutputStream(outputDir
                                             .resolve(sequencerOutputFile
                                                     .getFileName()))) {
                         Aggregator aggregator =
@@ -136,10 +136,10 @@ public class PatternCounterTask implements Runnable {
                 }
             }
 
-            // delete sequencerOutputDirectory
+            // delete sequencerOutputDir
             if (deleteTempFiles) {
                 // TODO: replace by non legacy file api
-                FileUtils.deleteDirectory(sequencerOutputDirectory.toFile());
+                FileUtils.deleteDirectory(sequencerOutputDir.toFile());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

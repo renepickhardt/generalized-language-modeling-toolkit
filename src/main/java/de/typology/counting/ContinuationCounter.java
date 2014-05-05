@@ -32,9 +32,9 @@ public class ContinuationCounter {
 
     private static Logger logger = LogManager.getLogger();
 
-    private Path inputDirectory;
+    private Path inputDir;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     private WordIndex wordIndex;
 
@@ -45,20 +45,20 @@ public class ContinuationCounter {
     private boolean deleteTempFiles;
 
     public ContinuationCounter(
-            Path inputDirectory,
-            Path outputDirectory,
+            Path inputDir,
+            Path outputDir,
             WordIndex wordIndex,
             String delimiter,
             int numberOfCores,
             boolean deleteTempFiles) throws IOException {
-        this.inputDirectory = inputDirectory;
-        this.outputDirectory = outputDirectory;
+        this.inputDir = inputDir;
+        this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
 
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
     }
 
     public void split(List<Pattern> patterns) throws IOException,
@@ -112,12 +112,12 @@ public class ContinuationCounter {
         logger.info("calculate continuation counts for " + key
                 + "\tfrom absolute " + value);
 
-        Path inputDir = inputDirectory.resolve(value.toString());
+        Path inputDir = this.inputDir.resolve(value.toString());
 
         Pattern outputPattern = Pattern.newWithoutSkp(key);
         String outputPatternLabel = key.toString();
 
-        splitType(executorService, inputDir, outputDirectory, outputPattern,
+        splitType(executorService, inputDir, outputDir, outputPattern,
                 outputPatternLabel, key, wordIndex, true);
     }
 
@@ -128,7 +128,7 @@ public class ContinuationCounter {
         logger.info("calculate continuation counts for " + key
                 + "\tfrom continuation " + value);
 
-        Path inputDir = outputDirectory.resolve(value.toString());
+        Path inputDir = outputDir.resolve(value.toString());
 
         Pattern outputPattern = Pattern.newWithoutSkp(key);
         String outputPatternLabel = key.toString();
@@ -144,7 +144,7 @@ public class ContinuationCounter {
             }
         }
 
-        splitType(executorService, inputDir, outputDirectory, outputPattern,
+        splitType(executorService, inputDir, outputDir, outputPattern,
                 outputPatternLabel, new Pattern(patternForModifier), wordIndex,
                 false);
     }
@@ -170,12 +170,12 @@ public class ContinuationCounter {
 
         // CONSUMER ////////////////////////////////////////////////////////////
 
-        Path consumerOutputDirectory = outputDir.resolve(patternLabel);
+        Path consumerOutputDir = outputDir.resolve(patternLabel);
 
         // if pattern has only falses
         if (pattern.length() == 0) {
-            Files.createDirectory(consumerOutputDirectory);
-            Path lineCountOutputPath = consumerOutputDirectory.resolve("all");
+            Files.createDirectory(consumerOutputDir);
+            Path lineCountOutputPath = consumerOutputDir.resolve("all");
 
             OutputStream lineCounterOutput =
                     Files.newOutputStream(lineCountOutputPath);
@@ -187,9 +187,8 @@ public class ContinuationCounter {
         } else {
             // don't add tags here
             PatternCounterTask splitterTask =
-                    new PatternCounterTask(input, consumerOutputDirectory,
-                            wordIndex, pattern, delimiter, "", "", true,
-                            deleteTempFiles);
+                    new PatternCounterTask(input, consumerOutputDir, wordIndex,
+                            pattern, delimiter, "", "", true, deleteTempFiles);
             executorService.execute(splitterTask);
         }
     }

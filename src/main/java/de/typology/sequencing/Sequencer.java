@@ -15,11 +15,11 @@ public class Sequencer {
 
     private Path inputFile;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     private WordIndex wordIndex;
 
-    private List<Pattern> pattern;
+    private List<Pattern> patterns;
 
     private String beforeLine;
 
@@ -33,17 +33,16 @@ public class Sequencer {
      * Expects an {@code input} where each line contains a number of words
      * separated by whitespace. Extracts all sequence specified by
      * {@code pattern} and writes them to <em>indexed files</em> in
-     * {@code outputDirectory}. Each output line has this format:
-     * {@code <Sequence>}.
+     * {@code outputDir}. Each output line has this format: {@code <Sequence>}.
      * 
      * @param input
      *            {@link InputStream} to be read.
-     * @param outputDirectory
-     *            Directory where <em>indexed files</em> should be
+     * @param outputDir
+     *            Dir where <em>indexed files</em> should be
      *            written to.
      * @param wordIndex
      *            {@link WordIndex} of the corpus.
-     * @param pattern
+     * @param patterns
      *            Pattern specifying sequences.
      * @param beforeLine
      *            Prepended before each line before sequencing.
@@ -60,17 +59,17 @@ public class Sequencer {
      */
     public Sequencer(
             Path inputFile,
-            Path outputDirectory,
+            Path outputDir,
             WordIndex wordIndex,
-            List<Pattern> pattern,
+            List<Pattern> patterns,
             String beforeLine,
             String afterLine,
             boolean setCountToOne,
             String delimiter) {
         this.inputFile = inputFile;
-        this.outputDirectory = outputDirectory;
+        this.outputDir = outputDir;
         this.wordIndex = wordIndex;
-        this.pattern = pattern;
+        this.patterns = patterns;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
         this.setCountToOne = setCountToOne;
@@ -81,12 +80,13 @@ public class Sequencer {
      * Perform the actual splitting and writing output.
      */
     public void splitIntoFiles() throws IOException {
+        System.out.println("sequencing");
         // TODO: bufferSize calculation
         //        try (BufferedReader bufferedReader =
         //                new BufferedReader(new InputStreamReader(inputFile),
         //                        100 * 8 * 1024)) {
         //            Map<Integer, BufferedWriter> writers =
-        //                    wordIndex.openWriters(outputDirectory);
+        //                    wordIndex.openWriters(outputDir);
         //
         //            String line;
         //            while ((line = bufferedReader.readLine()) != null) {

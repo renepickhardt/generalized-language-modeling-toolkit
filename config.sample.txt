@@ -20,7 +20,7 @@
 ################################################################################
 
 # directory from which we will start to work
-outputDirectory = /media/mssd/datasets/glm/out/
+outputDir = /media/mssd/datasets/glm/out/
 
 # length of the model to be trained
 modelLength = 5
@@ -50,6 +50,9 @@ splitData = true
 # state if the index of words should be build. The index is used to create
 # subfiles for counting and aggregating sequences
 buildIndex = true
+
+# split trainingsdata into sequences
+buildSequences = true
 
 # if the absolute values for skipped sequences should be build
 buildGLM = true
