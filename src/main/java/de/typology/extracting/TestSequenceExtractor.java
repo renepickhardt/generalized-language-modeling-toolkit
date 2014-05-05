@@ -103,6 +103,10 @@ public class TestSequenceExtractor {
                 Files.newDirectoryStream(continuationDirectory)) {
             for (Path inputDirectory : continuationFiles) {
                 String patternLabel = inputDirectory.getFileName().toString();
+                if (patternLabel.endsWith("-split")) {
+                    continue;
+                }
+
                 Pattern pattern = new Pattern(patternLabel);
                 Path outputDirectory =
                         outputBaseDirectory.resolve(patternLabel);

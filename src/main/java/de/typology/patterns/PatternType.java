@@ -39,7 +39,8 @@ public enum PatternType {
                 return DEL;
             default:
                 throw new IllegalStateException(
-                        "Unimplemented PatternType in PatternType#fromString.");
+                        "Unimplemented PatternType in PatternType#fromString: \""
+                                + type + "\".");
         }
     }
 }

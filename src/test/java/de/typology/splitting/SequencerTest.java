@@ -72,7 +72,7 @@ public class SequencerTest {
             InputStream inputStream = new FileInputStream(trainingFile);
             Sequencer sequencer =
                     new Sequencer(inputStream,
-                            sequencerOutputDirectory.toPath(), wordIndex, null,
+                            sequencerOutputDirectory.toPath(), wordIndex,
                             pattern, "<fs> <s> ", " </s>", false, true, "\t");
 
             sequencer.splitIntoFiles();
@@ -112,7 +112,7 @@ public class SequencerTest {
             InputStream inputStream = new FileInputStream(trainingFile);
             Sequencer sequencer =
                     new Sequencer(inputStream,
-                            sequencerOutputDirectory.toPath(), wordIndex, null,
+                            sequencerOutputDirectory.toPath(), wordIndex,
                             pattern, "<fs> <s> ", " </s>", false, true, "\t");
             sequencer.splitIntoFiles();
 

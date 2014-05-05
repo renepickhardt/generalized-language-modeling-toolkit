@@ -64,10 +64,10 @@ public class FiltererTask implements Runnable {
 
             logger.info("sequencing:  " + sequencerOutputDirectory);
 
+            // set filter to null to still function
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
-                            null, pattern, beforeLine, afterLine, false, false,
-                            null);
+                            pattern, beforeLine, afterLine, false, false, null);
             sequencer.splitIntoFiles();
             input.close();
 

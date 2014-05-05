@@ -14,7 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
-import de.typology.filtering.Filter;
+import de.typology.extracting.TestSequenceExtractor;
 import de.typology.filtering.FilterBuilder;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
@@ -41,13 +41,10 @@ public class KneserNeyBuilder {
                 Paths.get(config.outputDirectory + config.inputDataSet);
         Path trainingFile = workingDirectory.resolve("training.txt");
         Path indexFile = workingDirectory.resolve("index.txt");
-        Path filterDirectory = workingDirectory.resolve("filter");
+        Path absoluteDirectory = workingDirectory.resolve("absolute");
+        Path continuationDirectory = workingDirectory.resolve("continuation");
         Path testingSamplesDirectory =
                 workingDirectory.resolve("testing-samples");
-        Files.createDirectory(testingSamplesDirectory);
-        Path absoluteDirectory = testingSamplesDirectory.resolve("absolute");
-        Path continuationDirectory =
-                testingSamplesDirectory.resolve("continuation");
 
         if (config.splitData) {
             logger.info("split data");
@@ -59,24 +56,30 @@ public class KneserNeyBuilder {
             buildIndex(trainingFile, indexFile);
         }
 
-        if (config.buildFilter) {
-            logger.info("extracting testing sequences");
-            buildFilter(
-                    workingDirectory.resolve("testing-samples-"
-                            + config.modelLength + ".txt"), filterDirectory,
-                    indexFile);
-        }
+        //        if (config.buildFilter) {
+        //            logger.info("extracting testing sequences");
+        //            buildFilter(
+        //                    workingDirectory.resolve("testing-samples-"
+        //                            + config.modelLength + ".txt"), filterDirectory,
+        //                    indexFile);
+        //        }
 
         if (config.buildGLM) {
             logger.info("split into GLM sequences");
-            buildGLM(trainingFile, indexFile, filterDirectory,
-                    absoluteDirectory);
+            buildGLM(trainingFile, indexFile, absoluteDirectory);
         }
 
         if (config.buildContinuationGLM) {
             logger.info("split into continuation sequences");
-            buildContinuationGLM(trainingFile, indexFile, filterDirectory,
-                    absoluteDirectory, continuationDirectory);
+            buildContinuationGLM(trainingFile, indexFile, absoluteDirectory,
+                    continuationDirectory);
+        }
+
+        if (config.extractContinuationGLM) {
+            logger.info("extract continuation sequences");
+            extractContinuationGLM(workingDirectory, indexFile,
+                    absoluteDirectory, continuationDirectory,
+                    testingSamplesDirectory);
         }
 
         if (config.buildKneserNey) {
@@ -104,9 +107,9 @@ public class KneserNeyBuilder {
 
         config.splitData = false;
         config.buildIndex = false;
-        config.buildFilter = false;
         config.buildGLM = false;
         config.buildContinuationGLM = false;
+        config.extractContinuationGLM = false;
         config.buildKneserNey = false;
         config.buildModKneserNey = false;
 
@@ -116,9 +119,9 @@ public class KneserNeyBuilder {
             } else if (stages[0].equals("all")) {
                 config.splitData = true;
                 config.buildIndex = true;
-                config.buildFilter = false;
                 config.buildGLM = true;
                 config.buildContinuationGLM = true;
+                config.extractContinuationGLM = true;
                 config.buildKneserNey = true;
                 config.buildModKneserNey = true;
                 return;
@@ -135,16 +138,16 @@ public class KneserNeyBuilder {
                     config.buildIndex = true;
                     break;
 
-                case "filter":
-                    config.buildFilter = true;
-                    break;
-
                 case "glm":
                     config.buildGLM = true;
                     break;
 
                 case "contglm":
                     config.buildContinuationGLM = true;
+                    break;
+
+                case "extract":
+                    config.extractContinuationGLM = true;
                     break;
 
                 case "kneserney":
@@ -180,6 +183,7 @@ public class KneserNeyBuilder {
         }
     }
 
+    @SuppressWarnings("unused")
     private void buildFilter(Path input, Path filterDirectory, Path indexFile)
             throws IOException, InterruptedException {
         WordIndex wordIndex;
@@ -197,28 +201,24 @@ public class KneserNeyBuilder {
     private void buildGLM(
             Path trainingFile,
             Path indexFile,
-            Path filterDirectory,
             Path absoluteDirectory) throws IOException, InterruptedException {
         WordIndex wordIndex;
         try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
             wordIndex = new WordIndex(wordIndexInput);
         }
 
-        Filter filter = new Filter(filterDirectory);
-
         List<Pattern> glmForSmoothingPatterns =
                 Pattern.getGlmForSmoothingPatterns(config.modelLength);
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(trainingFile, absoluteDirectory, wordIndex,
-                        filter, "\t", "<fs> <s> ", " </s>",
-                        config.numberOfCores, config.deleteTempFiles);
+                        "\t", "<fs> <s> ", " </s>", config.numberOfCores,
+                        config.deleteTempFiles);
         absoluteCounter.split(glmForSmoothingPatterns);
     }
 
     private void buildContinuationGLM(
             Path trainingFile,
             Path indexFile,
-            Path filterDirectory,
             Path absoluteDirectory,
             Path continuationDirectory) throws IOException,
             InterruptedException {
@@ -227,15 +227,33 @@ public class KneserNeyBuilder {
             wordIndex = new WordIndex(wordIndexInput);
         }
 
-        Filter filter = new Filter(filterDirectory);
-
         List<Pattern> lmPatterns =
                 Pattern.getReverseLmPatterns(config.modelLength);
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDirectory,
-                        continuationDirectory, wordIndex, filter, "\t",
+                        continuationDirectory, wordIndex, "\t",
                         config.numberOfCores, config.deleteTempFiles);
         continuationCounter.split(lmPatterns);
+    }
+
+    private void extractContinuationGLM(
+            Path workingDirectory,
+            Path indexFile,
+            Path absoluteDirectory,
+            Path continuationDirectory,
+            Path testExtractOutputDirectory) throws IOException,
+            InterruptedException {
+        try (InputStream input =
+                Files.newInputStream(workingDirectory
+                        .resolve("testing-samples-" + config.modelLength
+                                + ".txt"))) {
+            TestSequenceExtractor testSequenceExtractor =
+                    new TestSequenceExtractor(input, absoluteDirectory,
+                            continuationDirectory, testExtractOutputDirectory,
+                            "\t", config.modelLength, config.numberOfCores);
+            testSequenceExtractor.extractAbsoluteSequences();
+            testSequenceExtractor.extractContinuationSequences();
+        }
     }
 
     private KneserNeySmoother buildKneserNey(

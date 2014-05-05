@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.filtering.Filter;
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternType;
@@ -39,8 +38,6 @@ public class ContinuationCounter {
 
     private WordIndex wordIndex;
 
-    private Filter filter;
-
     private String delimiter;
 
     private int numberOfCores;
@@ -51,14 +48,12 @@ public class ContinuationCounter {
             Path inputDirectory,
             Path outputDirectory,
             WordIndex wordIndex,
-            Filter filter,
             String delimiter,
             int numberOfCores,
             boolean deleteTempFiles) throws IOException {
         this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
-        this.filter = filter;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
@@ -193,8 +188,8 @@ public class ContinuationCounter {
             // don't add tags here
             PatternCounterTask splitterTask =
                     new PatternCounterTask(input, consumerOutputDirectory,
-                            wordIndex, filter, pattern, delimiter, "", "",
-                            true, deleteTempFiles);
+                            wordIndex, pattern, delimiter, "", "", true,
+                            deleteTempFiles);
             executorService.execute(splitterTask);
         }
     }
