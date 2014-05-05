@@ -1,4 +1,4 @@
-package de.typology.counting;
+package de.typology.filtering;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,11 +15,7 @@ import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
 
-/**
- * A class for running {@link Sequencer} and {@link Aggregator} for a given
- * pattern.
- */
-public class PatternCounterTask implements Runnable {
+public class FiltererTask implements Runnable {
 
     private static Logger logger = LogManager.getLogger();
 
@@ -31,63 +27,26 @@ public class PatternCounterTask implements Runnable {
 
     private Pattern pattern;
 
-    private String delimiter;
-
     private String beforeLine;
 
     private String afterLine;
 
-    private boolean isContinuation;
-
     private boolean deleteTempFiles;
 
-    /**
-     * Expects an {@code input} where each line contains a number of words
-     * separated by white space. Extract the counts of all distinct sequences
-     * described by {@code pattern} and writes them to <em>indexed files</em> in
-     * {@code outputDirectory}.
-     * 
-     * @param input
-     *            {@link InputStream} to be read.
-     * @param outputDirectory
-     *            Directory where <em>indexed files</em> should be written to.
-     * @param wordIndex
-     *            {@link WordIndex} of the corpus.
-     * @param pattern
-     *            Pattern specifying sequences.
-     * @param delimiter
-     *            Delimiter that separates Sequences and Counts in output.
-     * @param beforeLine
-     *            Prepended before each line before sequencing.
-     * @param afterLine
-     *            Appended after each line before sequencing.
-     * @param isContinuation
-     *            Whether we are calculating this for continuation or absolute
-     *            counts. Absolute only has 1+ Counts (Continuation has 1+, 1,
-     *            2, 3+), Absolute counts completely, Continuation uses absolute
-     *            counts as input.
-     * @param deleteTempFiles
-     *            Whether temporary created files should be deleted (
-     *            {@link Sequencer} output).
-     */
-    public PatternCounterTask(
+    public FiltererTask(
             InputStream input,
             Path outputDirectory,
             WordIndex wordIndex,
             Pattern pattern,
-            String delimiter,
             String beforeLine,
             String afterLine,
-            boolean isContinuation,
             boolean deleteTempFiles) throws IOException {
         this.input = input;
         this.outputDirectory = outputDirectory;
         this.wordIndex = wordIndex;
         this.pattern = pattern;
-        this.delimiter = delimiter;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
-        this.isContinuation = isContinuation;
         this.deleteTempFiles = deleteTempFiles;
 
         Files.createDirectory(outputDirectory);
@@ -101,20 +60,20 @@ public class PatternCounterTask implements Runnable {
             Path sequencerOutputDirectory =
                     outputDirectory.getParent().resolve(
                             outputDirectory.getFileName() + "-split");
-            Files.createDirectory(sequencerOutputDirectory);
+            //Files.createDirectory(sequencerOutputDirectory);
 
             logger.info("sequencing:  " + sequencerOutputDirectory);
 
+            // set filter to null to still function
             Sequencer sequencer =
                     new Sequencer(input, sequencerOutputDirectory, wordIndex,
-                            pattern, beforeLine, afterLine, isContinuation,
-                            true, delimiter);
+                            pattern, beforeLine, afterLine, false, false, null);
             sequencer.splitIntoFiles();
             input.close();
 
-            // AGGREGATING /////////////////////////////////////////////////////
+            // REDUCING ////////////////////////////////////////////////////////
 
-            logger.info("aggregating: " + outputDirectory);
+            logger.info("reducing:    " + outputDirectory);
 
             try (DirectoryStream<Path> sequencerOutputFiles =
                     Files.newDirectoryStream(sequencerOutputDirectory)) {
@@ -125,10 +84,8 @@ public class PatternCounterTask implements Runnable {
                                     Files.newOutputStream(outputDirectory
                                             .resolve(sequencerOutputFile
                                                     .getFileName()))) {
-                        Aggregator aggregator =
-                                new Aggregator(input, output, delimiter,
-                                        isContinuation);
-                        aggregator.aggregate();
+                        Reducer reducer = new Reducer(input, output);
+                        reducer.reduce();
                     }
                 }
             }

@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -18,9 +19,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.typology.counting.Sequencer;
+import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
-import de.typology.indexing.WordIndexer;
+import de.typology.indexing.WordIndexBuilder;
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternElem;
 
 public class SequencerTest {
 
@@ -40,7 +43,7 @@ public class SequencerTest {
 
     @Before
     public void setUp() throws Exception {
-        WordIndexer wordIndexer = new WordIndexer();
+        WordIndexBuilder wordIndexer = new WordIndexBuilder();
         wordIndexer.buildIndex(Files.newInputStream(trainingFile.toPath()),
                 Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
                 " </s>");
@@ -63,16 +66,14 @@ public class SequencerTest {
     @Test
     public void squencing1Test() throws IOException {
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        boolean[] pattern = {
-            true
-        };
+        Pattern pattern = new Pattern(Arrays.asList(PatternElem.CNT));
 
         try {
             InputStream inputStream = new FileInputStream(trainingFile);
             Sequencer sequencer =
                     new Sequencer(inputStream,
                             sequencerOutputDirectory.toPath(), wordIndex,
-                            pattern, "<fs> <s> ", " </s>", "\t", false);
+                            pattern, "<fs> <s> ", " </s>", false, true, "\t");
 
             sequencer.splitIntoFiles();
 
@@ -103,16 +104,16 @@ public class SequencerTest {
     @Test
     public void squencing1101Test() throws IOException {
         WordIndex wordIndex = new WordIndex(new FileInputStream(indexFile));
-        boolean[] pattern = {
-            true, true, false, true
-        };
+        Pattern pattern =
+                new Pattern(Arrays.asList(PatternElem.CNT, PatternElem.CNT,
+                        PatternElem.SKP, PatternElem.CNT));
 
         try {
             InputStream inputStream = new FileInputStream(trainingFile);
             Sequencer sequencer =
                     new Sequencer(inputStream,
                             sequencerOutputDirectory.toPath(), wordIndex,
-                            pattern, "<fs> <s> ", " </s>", "\t", false);
+                            pattern, "<fs> <s> ", " </s>", false, true, "\t");
             sequencer.splitIntoFiles();
 
             // test file contents

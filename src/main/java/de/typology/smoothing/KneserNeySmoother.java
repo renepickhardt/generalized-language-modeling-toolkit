@@ -16,7 +16,7 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
 import de.typology.utils.Config;
 
 public class KneserNeySmoother {
@@ -121,8 +121,7 @@ public class KneserNeySmoother {
                     new BufferedWriter(new FileWriter(resultFile));
             String sequence;
             String sequenceStringPattern =
-                    PatternTransformer.getStringPattern(PatternTransformer
-                            .getBooleanPatternWithOnes(sequenceLength));
+                    Pattern.newWithCnt(sequenceLength).toString();
             while ((sequence = inputSequenceReader.readLine()) != null) {
                 double currentResult;
                 if (conditionalProbabilityOnly) {
@@ -677,9 +676,7 @@ public class KneserNeySmoother {
             long sequenceCount) {
         String stringPatternForBitcount =
                 sequenceStringPattern.replaceAll("_", "0");
-        if (Integer.bitCount(PatternTransformer
-                .getIntPattern(PatternTransformer
-                        .getBooleanPattern(stringPatternForBitcount))) > 1) {
+        if (new Pattern(stringPatternForBitcount).numCnt() > 1) {
             return discountTypeValuesMap.get(sequenceStringPattern).get("D1+");
         } else {
             return 0;

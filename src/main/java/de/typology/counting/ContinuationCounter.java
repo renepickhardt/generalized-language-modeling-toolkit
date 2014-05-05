@@ -6,7 +6,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,8 +21,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.typology.indexing.WordIndex;
-import de.typology.patterns.PatternBuilder;
-import de.typology.patterns.PatternTransformer;
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternElem;
 
 /**
  * Counts continuation counts of sequences for a number of patterns using
@@ -61,28 +61,28 @@ public class ContinuationCounter {
         Files.createDirectory(outputDirectory);
     }
 
-    public void split(List<boolean[]> patterns) throws IOException,
+    public void split(List<Pattern> patterns) throws IOException,
             InterruptedException {
-        Map<boolean[], boolean[]> continuationMap =
+        Map<Pattern, Pattern> continuationMap =
                 generateContinuationMap(patterns);
 
-        Set<boolean[]> finishedPatterns = new HashSet<boolean[]>();
+        Set<Pattern> finishedPatterns = new HashSet<Pattern>();
 
         while (finishedPatterns.size() != continuationMap.size()) {
             ExecutorService executorService =
                     Executors.newFixedThreadPool(numberOfCores);
 
-            Set<boolean[]> currentPatterns = new HashSet<boolean[]>();
+            Set<Pattern> currentPatterns = new HashSet<Pattern>();
 
-            for (Entry<boolean[], boolean[]> entry : continuationMap.entrySet()) {
-                boolean[] key = entry.getKey();
-                boolean[] value = entry.getValue();
+            for (Entry<Pattern, Pattern> entry : continuationMap.entrySet()) {
+                Pattern key = entry.getKey();
+                Pattern value = entry.getValue();
 
                 if (finishedPatterns.contains(key)) {
                     continue;
                 }
 
-                if (!PatternTransformer.getStringPattern(value).contains("0")) {
+                if (value.containsNoSkp()) {
                     currentPatterns.add(key);
                     calcFromAbsolute(executorService, key, value);
                 } else if (finishedPatterns.contains(value)) {
@@ -107,21 +107,15 @@ public class ContinuationCounter {
 
     private void calcFromAbsolute(
             ExecutorService executorService,
-            boolean[] key,
-            boolean[] value) throws IOException {
-        logger.info("calculate continuation counts for "
-                + PatternTransformer.getStringPattern(key) + "\tfrom absolute "
-                + PatternTransformer.getStringPattern(value));
+            Pattern key,
+            Pattern value) throws IOException {
+        logger.info("calculate continuation counts for " + key
+                + "\tfrom absolute " + value);
 
-        Path inputDir =
-                inputDirectory.resolve(PatternTransformer
-                        .getStringPattern(value));
+        Path inputDir = inputDirectory.resolve(value.toString());
 
-        boolean[] outputPattern =
-                PatternTransformer.getBooleanPattern(PatternTransformer
-                        .getStringPattern(key).replaceAll("0", ""));
-        String outputPatternLabel =
-                PatternTransformer.getStringPattern(key).replaceAll("0", "_");
+        Pattern outputPattern = Pattern.newWithoutSkp(key);
+        String outputPatternLabel = key.toString();
 
         splitType(executorService, inputDir, outputDirectory, outputPattern,
                 outputPatternLabel, key, wordIndex, true);
@@ -129,47 +123,39 @@ public class ContinuationCounter {
 
     private void calcFromContinuation(
             ExecutorService executorService,
-            boolean[] key,
-            boolean[] value) throws IOException {
-        logger.info("calculate continuation counts for "
-                + PatternTransformer.getStringPattern(key)
-                + "\tfrom continuation "
-                + PatternTransformer.getStringPattern(value));
+            Pattern key,
+            Pattern value) throws IOException {
+        logger.info("calculate continuation counts for " + key
+                + "\tfrom continuation " + value);
 
-        Path inputDir =
-                outputDirectory.resolve(PatternTransformer.getStringPattern(
-                        value).replaceAll("0", "_"));
+        Path inputDir = outputDirectory.resolve(value.toString());
 
-        boolean[] outputPattern =
-                PatternTransformer.getBooleanPattern(PatternTransformer
-                        .getStringPattern(key).replaceAll("0", ""));
-        String outputPatternLabel =
-                PatternTransformer.getStringPattern(key).replaceAll("0", "_");
+        Pattern outputPattern = Pattern.newWithoutSkp(key);
+        String outputPatternLabel = key.toString();
 
-        boolean[] patternForModifier =
-                new boolean[Integer.bitCount(PatternTransformer
-                        .getIntPattern(value))];
-        int patternPointer = 0;
-        for (int i = 0; i < value.length; i++) {
-            if (key[i] && value[i]) {
-                patternForModifier[patternPointer] = true;
-                ++patternPointer;
-            } else if (!key[i] && value[i]) {
-                patternForModifier[patternPointer] = false;
-                ++patternPointer;
+        List<PatternElem> patternForModifier = new ArrayList<PatternElem>();
+        for (int i = 0; i != value.length(); ++i) {
+            if (key.get(i) == PatternElem.CNT
+                    && value.get(i) == PatternElem.CNT) {
+                patternForModifier.add(PatternElem.CNT);
+            } else if (key.get(i) == PatternElem.SKP
+                    && value.get(i) == PatternElem.CNT) {
+                patternForModifier.add(PatternElem.SKP);
             }
         }
+
         splitType(executorService, inputDir, outputDirectory, outputPattern,
-                outputPatternLabel, patternForModifier, wordIndex, false);
+                outputPatternLabel, new Pattern(patternForModifier), wordIndex,
+                false);
     }
 
     private void splitType(
             ExecutorService executorService,
             Path inputDir,
             Path outputDir,
-            boolean[] pattern,
+            Pattern pattern,
             String patternLabel,
-            boolean[] patternForModifier,
+            Pattern patternForModifier,
             WordIndex wordIndex,
             boolean setCountToOne) throws IOException {
         PipedInputStream input = new PipedInputStream(100 * 8 * 1024);
@@ -187,7 +173,7 @@ public class ContinuationCounter {
         Path consumerOutputDirectory = outputDir.resolve(patternLabel);
 
         // if pattern has only falses
-        if (PatternTransformer.getIntPattern(pattern) == 0) {
+        if (pattern.length() == 0) {
             Files.createDirectory(consumerOutputDirectory);
             Path lineCountOutputPath = consumerOutputDirectory.resolve("all");
 
@@ -208,11 +194,11 @@ public class ContinuationCounter {
         }
     }
 
-    private static Map<boolean[], boolean[]> generateContinuationMap(
-            List<boolean[]> patterns) {
-        Map<boolean[], boolean[]> map = new HashMap<boolean[], boolean[]>();
+    private static Map<Pattern, Pattern> generateContinuationMap(
+            List<Pattern> patterns) {
+        Map<Pattern, Pattern> map = new HashMap<Pattern, Pattern>();
 
-        for (boolean[] pattern : patterns) {
+        for (Pattern pattern : patterns) {
             addPatterns(map, pattern, pattern, 0);
         }
 
@@ -220,18 +206,18 @@ public class ContinuationCounter {
         // - key == value
         // - !key[0] && !key[1]
 
-        Map<boolean[], boolean[]> filteredMap =
-                new HashMap<boolean[], boolean[]>();
+        Map<Pattern, Pattern> filteredMap = new HashMap<Pattern, Pattern>();
 
-        for (Entry<boolean[], boolean[]> entry : map.entrySet()) {
-            boolean[] key = entry.getKey();
-            boolean[] value = entry.getValue();
+        for (Entry<Pattern, Pattern> entry : map.entrySet()) {
+            Pattern key = entry.getKey();
+            Pattern value = entry.getValue();
 
-            if (Arrays.equals(key, value)) {
+            if (key.equals(value)) {
                 continue;
             }
 
-            if (key.length > 2 && !key[0] && !key[1]) {
+            if (key.length() > 2 && key.get(0) == PatternElem.SKP
+                    && key.get(1) == PatternElem.SKP) {
                 continue;
             }
 
@@ -242,13 +228,13 @@ public class ContinuationCounter {
     }
 
     private static void addPatterns(
-            Map<boolean[], boolean[]> map,
-            boolean[] pattern,
-            boolean[] oldPattern,
+            Map<Pattern, Pattern> map,
+            Pattern pattern,
+            Pattern oldPattern,
             int position) {
-        if (position < pattern.length) {
-            boolean[] newPattern = pattern.clone();
-            newPattern[position] = false;
+        if (position < pattern.length()) {
+            Pattern newPattern = pattern.clone();
+            newPattern.set(position, PatternElem.SKP);
             map.put(newPattern, pattern);
             map.put(pattern, oldPattern);
             addPatterns(map, newPattern, pattern, position + 1);
@@ -258,31 +244,28 @@ public class ContinuationCounter {
 
     // DEBUG FUNCTIONS /////////////////////////////////////////////////////////
 
-    private static void printMap(Map<boolean[], boolean[]> map) {
+    private static void printMap(Map<Pattern, Pattern> map) {
         System.out.println("Map: {");
-        for (Map.Entry<boolean[], boolean[]> entry : map.entrySet()) {
-            System.out.println("    "
-                    + PatternTransformer.getStringPattern(entry.getKey())
-                    + " -> "
-                    + PatternTransformer.getStringPattern(entry.getValue()));
+        for (Map.Entry<Pattern, Pattern> entry : map.entrySet()) {
+            System.out.println("    " + entry.getKey() + " -> "
+                    + entry.getValue());
         }
         System.out.println("}");
     }
 
-    private static void printList(List<boolean[]> list) {
+    private static void printList(List<Pattern> list) {
         System.out.println("List: {");
-        for (boolean[] pattern : list) {
-            System.out.println("    "
-                    + PatternTransformer.getStringPattern(pattern) + ",");
+        for (Pattern pattern : list) {
+            System.out.println("    " + pattern + ",");
         }
         System.out.println("}");
     }
 
     public static void main(String[] args) {
-        List<boolean[]> patterns = PatternBuilder.getReverseLMPatterns(5);
+        List<Pattern> patterns = Pattern.getReverseLmPatterns(5);
         printList(patterns);
 
-        Map<boolean[], boolean[]> continuationMap =
+        Map<Pattern, Pattern> continuationMap =
                 generateContinuationMap(patterns);
         printMap(continuationMap);
     }

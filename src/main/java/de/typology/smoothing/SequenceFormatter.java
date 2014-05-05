@@ -1,5 +1,8 @@
 package de.typology.smoothing;
 
+import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternElem;
+
 public class SequenceFormatter {
 
     /**
@@ -23,15 +26,17 @@ public class SequenceFormatter {
         return result;
     }
 
-    public static String removeWords(String inputString, boolean[] pattern) {
+    public static String removeWords(String inputString, Pattern pattern) {
         String[] words = inputString.split("\\s");
 
-        if (words.length == pattern.length) {
+        if (words.length == pattern.length()) {
             String resultString = "";
-            for (int i = 0; i < pattern.length; i++) {
-                if (pattern[i]) {
+            int i = 0;
+            for (PatternElem elem : pattern) {
+                if (elem == PatternElem.CNT) {
                     resultString += words[i] + " ";
                 }
+                ++i;
             }
             resultString = resultString.replaceFirst(" $", "");
             return resultString;

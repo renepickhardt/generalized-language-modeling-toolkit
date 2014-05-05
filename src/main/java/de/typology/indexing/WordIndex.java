@@ -11,11 +11,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
 /**
- * Class used to interface with the output of {@link WordIndexer}.
+ * Class used to interface with the output of {@link WordIndexBuilder}.
  */
 public class WordIndex {
 
@@ -26,7 +27,7 @@ public class WordIndex {
      * 
      * @param input
      *            {@link InputStream} to be read as the output of
-     *            {@link WordIndexer}.
+     *            {@link WordIndexBuilder}.
      */
     public WordIndex(
             InputStream input) throws IOException {
@@ -69,12 +70,12 @@ public class WordIndex {
         return (lo + hi) / 2;
     }
 
-    public HashMap<Integer, BufferedWriter> openWriters(Path outputDirectory)
+    public Map<Integer, BufferedWriter> openWriters(Path outputDirectory)
             throws IOException {
-        HashMap<Integer, BufferedWriter> writers =
+        Map<Integer, BufferedWriter> writers =
                 new HashMap<Integer, BufferedWriter>();
 
-        // TODO: research why we directories are written multiple times to.
+        // TODO: research why directories are written multiple times to.
         if (Files.exists(outputDirectory)) {
             // TODO: replace with non legacy api.
             FileUtils.deleteDirectory(outputDirectory.toFile());
@@ -92,7 +93,7 @@ public class WordIndex {
         return writers;
     }
 
-    public void closeWriters(HashMap<Integer, BufferedWriter> writers)
+    public void closeWriters(Map<Integer, BufferedWriter> writers)
             throws IOException {
         for (BufferedWriter writer : writers.values()) {
             writer.close();

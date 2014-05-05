@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.typology.indexing.WordIndex;
-import de.typology.indexing.WordIndexer;
+import de.typology.indexing.WordIndexBuilder;
 
 public class WordIndexTest {
 
@@ -35,7 +35,7 @@ public class WordIndexTest {
         if (indexFile.exists()) {
             indexFile.delete();
         }
-        WordIndexer wi = new WordIndexer();
+        WordIndexBuilder wi = new WordIndexBuilder();
         wi.buildIndex(Files.newInputStream(trainingFile.toPath()),
                 Files.newOutputStream(indexFile.toPath()), 10, "<fs> <s> ",
                 " </s>");
