@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
 import de.typology.extracting.TestSequenceExtractor;
-import de.typology.filtering.FilterBuilder;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
 import de.typology.patterns.Pattern;
@@ -181,21 +180,6 @@ public class KneserNeyBuilder {
             wordIndexer.buildIndex(input, output, config.maxCountDivider,
                     "<fs> <s> ", " </s>");
         }
-    }
-
-    @SuppressWarnings("unused")
-    private void buildFilter(Path input, Path filterDirectory, Path indexFile)
-            throws IOException, InterruptedException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
-        FilterBuilder filterer =
-                new FilterBuilder(input, filterDirectory, wordIndex,
-                        "<fs> <s> ", " </s>", config.modelLength,
-                        config.numberOfCores, config.deleteTempFiles);
-        filterer.filter();
     }
 
     private void buildGLM(

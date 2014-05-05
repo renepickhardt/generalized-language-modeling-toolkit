@@ -11,9 +11,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.Sequencer;
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
+import de.typology.sequencing.Sequencer;
 
 /**
  * A class for running {@link Sequencer} and {@link Aggregator} for a given
@@ -27,14 +27,18 @@ public class PatternCounterTask implements Runnable {
 
     private Path outputDirectory;
 
+    @SuppressWarnings("unused")
     private WordIndex wordIndex;
 
+    @SuppressWarnings("unused")
     private Pattern pattern;
 
     private String delimiter;
 
+    @SuppressWarnings("unused")
     private String beforeLine;
 
+    @SuppressWarnings("unused")
     private String afterLine;
 
     private boolean isContinuation;
@@ -88,7 +92,6 @@ public class PatternCounterTask implements Runnable {
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
         this.isContinuation = isContinuation;
-        this.deleteTempFiles = deleteTempFiles;
 
         Files.createDirectory(outputDirectory);
     }
@@ -105,11 +108,11 @@ public class PatternCounterTask implements Runnable {
 
             logger.info("sequencing:  " + sequencerOutputDirectory);
 
-            Sequencer sequencer =
-                    new Sequencer(input, sequencerOutputDirectory, wordIndex,
-                            pattern, beforeLine, afterLine, isContinuation,
-                            true, delimiter);
-            sequencer.splitIntoFiles();
+            //            Sequencer sequencer =
+            //                    new Sequencer(input, sequencerOutputDirectory, wordIndex,
+            //                            pattern, beforeLine, afterLine, isContinuation,
+            //                            true, delimiter);
+            //            sequencer.splitIntoFiles();
             input.close();
 
             // AGGREGATING /////////////////////////////////////////////////////
