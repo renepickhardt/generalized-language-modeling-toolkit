@@ -31,7 +31,7 @@ public enum PatternType {
         switch (type) {
             case "1":
                 return CNT;
-            case "0":
+            case "_":
                 return SKP;
             case "p":
                 return POS;
