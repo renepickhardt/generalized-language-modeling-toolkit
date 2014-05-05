@@ -173,7 +173,7 @@ public class ContinuationCounter {
         Path consumerOutputDirectory = outputDir.resolve(patternLabel);
 
         // if pattern has only falses
-        if (!pattern.containsNoSkp()) {
+        if (pattern.length() == 0) {
             Files.createDirectory(consumerOutputDirectory);
             Path lineCountOutputPath = consumerOutputDirectory.resolve("all");
 

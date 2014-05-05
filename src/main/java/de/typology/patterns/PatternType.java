@@ -16,7 +16,7 @@ public enum PatternType {
             case CNT:
                 return "1";
             case SKP:
-                return "0";
+                return "_";
             case POS:
                 return "p";
             case DEL:
