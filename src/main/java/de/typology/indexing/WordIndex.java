@@ -70,24 +70,24 @@ public class WordIndex {
         return (lo + hi) / 2;
     }
 
-    public Map<Integer, BufferedWriter> openWriters(Path outputDirectory)
+    public Map<Integer, BufferedWriter> openWriters(Path outputDir)
             throws IOException {
         Map<Integer, BufferedWriter> writers =
                 new HashMap<Integer, BufferedWriter>();
 
         // TODO: research why directories are written multiple times to.
-        if (Files.exists(outputDirectory)) {
+        if (Files.exists(outputDir)) {
             // TODO: replace with non legacy api.
-            FileUtils.deleteDirectory(outputDirectory.toFile());
+            FileUtils.deleteDirectory(outputDir.toFile());
         }
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
 
         for (Integer i = 0; i != index.size(); ++i) {
             // TODO: bufferSize calculation
             writers.put(
                     i,
                     new BufferedWriter(new OutputStreamWriter(Files
-                            .newOutputStream(outputDirectory.resolve(i
+                            .newOutputStream(outputDir.resolve(i
                                     .toString()))), 10 * 8 * 1024));
         }
         return writers;

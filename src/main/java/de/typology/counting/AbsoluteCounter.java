@@ -24,7 +24,7 @@ public class AbsoluteCounter {
 
     private Path input;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     private WordIndex wordIndex;
 
@@ -40,7 +40,7 @@ public class AbsoluteCounter {
 
     public AbsoluteCounter(
             Path input,
-            Path outputDirectory,
+            Path outputDir,
             WordIndex wordIndex,
             String delimiter,
             String beforeLine,
@@ -48,7 +48,7 @@ public class AbsoluteCounter {
             int numberOfCores,
             boolean deleteTempFiles) throws IOException {
         this.input = input;
-        this.outputDirectory = outputDirectory;
+        this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.beforeLine = beforeLine;
@@ -56,7 +56,7 @@ public class AbsoluteCounter {
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
 
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
     }
 
     public void split(List<Pattern> patterns) throws IOException,
@@ -73,7 +73,7 @@ public class AbsoluteCounter {
 
             PatternCounterTask patternCounterTask =
                     new PatternCounterTask(inputStream,
-                            outputDirectory.resolve(pattern.toString()),
+                            outputDir.resolve(pattern.toString()),
                             wordIndex, pattern, delimiter, beforeLine,
                             afterLine, false, deleteTempFiles);
             executorService.execute(patternCounterTask);

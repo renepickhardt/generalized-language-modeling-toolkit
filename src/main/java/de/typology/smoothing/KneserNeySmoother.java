@@ -24,17 +24,17 @@ public class KneserNeySmoother {
     private static Logger logger = LogManager.getLogger();
 
     // location of trained language models
-    protected File absoluteDirectory;
+    protected File absoluteDir;
 
-    private File continuationDirectory;
+    private File continuationDir;
 
     // location of extracted language models which are needed for smoothing lm
     // for test data
     // TODO: make non-public
-    public File extractedAbsoluteDirectory;
+    public File extractedAbsoluteDir;
 
     // TODO: make non-public
-    public File extractedContinuationDirectory;
+    public File extractedContinuationDir;
 
     private String delimiter;
 
@@ -61,29 +61,29 @@ public class KneserNeySmoother {
     // removed global config variable decimal places from Constructor. does that
     // make sense?
     public KneserNeySmoother(
-            File extractedSequenceDirectory,
-            File absoluteDirectory,
-            File continuationDirectory,
+            File extractedSequenceDir,
+            File absoluteDir,
+            File continuationDir,
             String delimiter) {
-        this.absoluteDirectory = absoluteDirectory;
-        this.continuationDirectory = continuationDirectory;
-        extractedAbsoluteDirectory =
-                new File(extractedSequenceDirectory.getAbsolutePath() + "/"
-                        + absoluteDirectory.getName());
-        extractedContinuationDirectory =
-                new File(extractedSequenceDirectory.getAbsolutePath() + "/"
-                        + continuationDirectory.getName());
+        this.absoluteDir = absoluteDir;
+        this.continuationDir = continuationDir;
+        extractedAbsoluteDir =
+                new File(extractedSequenceDir.getAbsolutePath() + "/"
+                        + absoluteDir.getName());
+        extractedContinuationDir =
+                new File(extractedSequenceDir.getAbsolutePath() + "/"
+                        + continuationDir.getName());
 
         this.delimiter = delimiter;
         decimalFormatter = new DecimalFormatter(Config.get().decimalPlaces);
 
         discountTypesValuesMapFile =
-                new File(this.absoluteDirectory.getParentFile()
+                new File(this.absoluteDir.getParentFile()
                         .getAbsolutePath() + "/discount-values-kneser-ney.ser");
         discountTypeValuesMap = null;
 
         totalUnigramCount =
-                Counter.aggregateCountsInDirectory(new File(absoluteDirectory
+                Counter.aggregateCountsInDir(new File(absoluteDir
                         .getAbsolutePath() + "/1"));
         logger.info("total unigram count: " + totalUnigramCount);
     };
@@ -106,8 +106,8 @@ public class KneserNeySmoother {
         logger.info("calculate or read discount values");
 
         discountTypeValuesMap =
-                this.calculateDiscountValues(absoluteDirectory,
-                        continuationDirectory);
+                this.calculateDiscountValues(absoluteDir,
+                        continuationDir);
 
         if (resultFile.exists()) {
             resultFile.delete();
@@ -146,13 +146,13 @@ public class KneserNeySmoother {
     }
 
     public HashMap<String, HashMap<String, Long>>
-        readAbsoluteValuesIntoHashMap(File workingDirectory) {
+        readAbsoluteValuesIntoHashMap(File workingDir) {
         HashMap<String, HashMap<String, Long>> typeSequenceValueMap =
                 new HashMap<String, HashMap<String, Long>>();
-        for (File typeDirectory : workingDirectory.listFiles()) {
+        for (File typeDir : workingDir.listFiles()) {
             HashMap<String, Long> sequenceValuesMap =
                     new HashMap<String, Long>();
-            for (File sequenceValueFile : typeDirectory.listFiles()) {
+            for (File sequenceValueFile : typeDir.listFiles()) {
                 try {
                     BufferedReader sequenceValueReader =
                             new BufferedReader(
@@ -177,14 +177,14 @@ public class KneserNeySmoother {
                 }
             }
             typeSequenceValueMap
-                    .put(typeDirectory.getName(), sequenceValuesMap);
+                    .put(typeDir.getName(), sequenceValuesMap);
 
         }
         // also add total count of 1grams
         HashMap<String, Long> aggregated1GramsMap = new HashMap<String, Long>();
         aggregated1GramsMap.put(
                 "",
-                Counter.aggregateCountsInDirectory(new File(absoluteDirectory
+                Counter.aggregateCountsInDir(new File(absoluteDir
                         .getAbsolutePath() + "/1")));
         typeSequenceValueMap.put("", aggregated1GramsMap);
         return typeSequenceValueMap;
@@ -192,14 +192,14 @@ public class KneserNeySmoother {
     }
 
     public HashMap<String, HashMap<String, Long[]>>
-        readContinuationValuesIntoHashMap(File workingDirectory) {
+        readContinuationValuesIntoHashMap(File workingDir) {
         HashMap<String, HashMap<String, Long[]>> typeSequenceValueMap =
                 new HashMap<String, HashMap<String, Long[]>>();
 
-        for (File typeDirectory : workingDirectory.listFiles()) {
+        for (File typeDir : workingDir.listFiles()) {
             HashMap<String, Long[]> sequenceValuesMap =
                     new HashMap<String, Long[]>();
-            for (File sequenceValueFile : typeDirectory.listFiles()) {
+            for (File sequenceValueFile : typeDir.listFiles()) {
                 try {
                     BufferedReader sequenceValueReader =
                             new BufferedReader(
@@ -253,7 +253,7 @@ public class KneserNeySmoother {
                 }
             }
             typeSequenceValueMap
-                    .put(typeDirectory.getName(), sequenceValuesMap);
+                    .put(typeDir.getName(), sequenceValuesMap);
 
         }
         return typeSequenceValueMap;
@@ -564,8 +564,8 @@ public class KneserNeySmoother {
      */
     @SuppressWarnings("unchecked")
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
-            File absoluteDirectory,
-            File continuationDirectory) {
+            File absoluteDir,
+            File continuationDir) {
 
         // calculate discount Values
         HashMap<String, HashMap<String, Double>> discountTypeValuesMap =
@@ -581,9 +581,9 @@ public class KneserNeySmoother {
                 ois.close();
             } else {
                 this.calculateDiscountValues(discountTypeValuesMap,
-                        absoluteDirectory);
+                        absoluteDir);
                 this.calculateDiscountValues(discountTypeValuesMap,
-                        continuationDirectory);
+                        continuationDir);
 
                 FileOutputStream fos =
                         new FileOutputStream(discountTypesValuesMapFile);
@@ -606,30 +606,30 @@ public class KneserNeySmoother {
      */
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
             HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
-            File workingDirectory) {
-        // an absoluteTypeDirectory could be a file handle e.g. to
+            File workingDir) {
+        // an absoluteTypeDir could be a file handle e.g. to
         // /inputpath/dataset/lang/absolut/11001
-        for (File absoluteTypeDirectory : workingDirectory.listFiles()) {
-            if (absoluteTypeDirectory.getName().contains("split")) {
+        for (File absoluteTypeDir : workingDir.listFiles()) {
+            if (absoluteTypeDir.getName().contains("split")) {
                 continue;
             }
             HashMap<String, Double> discountValuesMap =
                     new HashMap<String, Double>();
             long n1 =
-                    Counter.countCountsInDirectory(1, absoluteTypeDirectory,
+                    Counter.countCountsInDir(1, absoluteTypeDir,
                             "<fs>");
             long n2 =
-                    Counter.countCountsInDirectory(2, absoluteTypeDirectory,
+                    Counter.countCountsInDir(2, absoluteTypeDir,
                             "<fs>");
-            logger.info("n1 for " + absoluteTypeDirectory.getName() + ":" + n1);
-            logger.info("n2 for " + absoluteTypeDirectory.getName() + ":" + n2);
+            logger.info("n1 for " + absoluteTypeDir.getName() + ":" + n1);
+            logger.info("n2 for " + absoluteTypeDir.getName() + ":" + n2);
             // this.d1plus = 0.5;
             double d1plus = n1 / ((double) n1 + 2 * n2);
-            logger.info("D1+ for " + absoluteTypeDirectory.getName() + ":"
+            logger.info("D1+ for " + absoluteTypeDir.getName() + ":"
                     + d1plus);
             discountValuesMap.put("D1+", d1plus);
 
-            discountTypeValuesMap.put(absoluteTypeDirectory.getName(),
+            discountTypeValuesMap.put(absoluteTypeDir.getName(),
                     discountValuesMap);
         }
         return discountTypeValuesMap;

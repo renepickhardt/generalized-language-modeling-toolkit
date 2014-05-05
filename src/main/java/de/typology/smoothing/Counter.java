@@ -13,13 +13,13 @@ public class Counter {
 
     private static int columnNumberStartZero;
 
-    private static File directory;
+    private static File dir;
 
-    private static long currentCountForDirectory;
+    private static long currentCountForDir;
 
-    public static long countLinesInDirectory(File directory) {
+    public static long countLinesInDir(File dir) {
         long totalCount = 0;
-        for (File file : directory.listFiles()) {
+        for (File file : dir.listFiles()) {
             totalCount += countLines(file);
         }
         return totalCount;
@@ -58,20 +58,20 @@ public class Counter {
         return 0;
     }
 
-    public static long countColumnCountsInDirectory(
+    public static long countColumnCountsInDir(
             int columnNumberStartZero,
-            File directory) {
+            File dir) {
         if (columnNumberStartZero == Counter.columnNumberStartZero
-                && directory.equals(Counter.directory)) {
-            return Counter.currentCountForDirectory;
+                && dir.equals(Counter.dir)) {
+            return Counter.currentCountForDir;
         } else {
             long totalCount = 0;
-            for (File file : directory.listFiles()) {
+            for (File file : dir.listFiles()) {
                 totalCount += countColumnCounts(columnNumberStartZero, file);
             }
             Counter.columnNumberStartZero = columnNumberStartZero;
-            Counter.currentCountForDirectory = totalCount;
-            Counter.directory = directory;
+            Counter.currentCountForDir = totalCount;
+            Counter.dir = dir;
             return totalCount;
         }
     }
@@ -99,11 +99,11 @@ public class Counter {
     }
 
     /**
-     * used for aggregating the counts in a directory
+     * used for aggregating the counts in a dir
      */
-    public static long aggregateCountsInDirectory(File directory) {
+    public static long aggregateCountsInDir(File dir) {
         long totalCount = 0;
-        for (File file : directory.listFiles()) {
+        for (File file : dir.listFiles()) {
             totalCount += aggregateCounts(file);
         }
         return totalCount;
@@ -141,12 +141,12 @@ public class Counter {
     /**
      * used for calculating the count of counts in smoothing methods
      */
-    public static long countCountsInDirectory(
+    public static long countCountsInDir(
             int count,
-            File directory,
+            File dir,
             String skipSequence) {
         long totalCount = 0;
-        for (File file : directory.listFiles()) {
+        for (File file : dir.listFiles()) {
             if (!file.getName().contains("-split")) {
                 totalCount += countCounts(count, file, skipSequence);
             }

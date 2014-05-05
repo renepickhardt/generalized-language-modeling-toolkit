@@ -19,16 +19,16 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
     private double d3plus;
 
     public ModifiedKneserNeySmoother(
-            File extractedSequenceDirectory,
-            File absoluteDirectory,
-            File continuationDirectory,
+            File extractedSequenceDir,
+            File absoluteDir,
+            File continuationDir,
             String delimiter,
             int decimalPlaces) {
-        super(extractedSequenceDirectory, absoluteDirectory,
-                continuationDirectory, delimiter);
+        super(extractedSequenceDir, absoluteDir,
+                continuationDir, delimiter);
 
         discountTypesValuesMapFile =
-                new File(this.absoluteDirectory.getParentFile()
+                new File(this.absoluteDir.getParentFile()
                         .getAbsolutePath()
                         + "/discount-values-mod-kneser-ney.ser");
 
@@ -37,43 +37,43 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
     @Override
     protected HashMap<String, HashMap<String, Double>> calculateDiscountValues(
             HashMap<String, HashMap<String, Double>> discountTypeValuesMap,
-            File workingDirectory) {
-        for (File absoluteTypeDirectory : workingDirectory.listFiles()) {
-            if (absoluteTypeDirectory.getName().contains("split")) {
+            File workingDir) {
+        for (File absoluteTypeDir : workingDir.listFiles()) {
+            if (absoluteTypeDir.getName().contains("split")) {
                 continue;
             }
             HashMap<String, Double> discountValuesMap =
                     new HashMap<String, Double>();
             long n1 =
-                    Counter.countCountsInDirectory(1, absoluteTypeDirectory,
+                    Counter.countCountsInDir(1, absoluteTypeDir,
                             "<fs>");
             long n2 =
-                    Counter.countCountsInDirectory(2, absoluteTypeDirectory,
+                    Counter.countCountsInDir(2, absoluteTypeDir,
                             "<fs>");
             long n3 =
-                    Counter.countCountsInDirectory(3, absoluteTypeDirectory,
+                    Counter.countCountsInDir(3, absoluteTypeDir,
                             "<fs>");
             long n4 =
-                    Counter.countCountsInDirectory(4, absoluteTypeDirectory,
+                    Counter.countCountsInDir(4, absoluteTypeDir,
                             "<fs>");
-            logger.info("n1 for " + absoluteTypeDirectory.getName() + ":" + n1);
-            logger.info("n2 for " + absoluteTypeDirectory.getName() + ":" + n2);
-            logger.info("n3 for " + absoluteTypeDirectory.getName() + ":" + n3);
-            logger.info("n4 for " + absoluteTypeDirectory.getName() + ":" + n4);
+            logger.info("n1 for " + absoluteTypeDir.getName() + ":" + n1);
+            logger.info("n2 for " + absoluteTypeDir.getName() + ":" + n2);
+            logger.info("n3 for " + absoluteTypeDir.getName() + ":" + n3);
+            logger.info("n4 for " + absoluteTypeDir.getName() + ":" + n4);
             double y = n1 / ((double) n1 + 2 * n2);
             d1 = 1 - 2 * y * ((double) n2 / (double) n1);
             d2 = 2 - 3 * y * ((double) n3 / (double) n2);
             d3plus = 3 - 4 * y * ((double) n4 / (double) n3);
             // this.d1plus = 0.5;
-            logger.info("D1 for " + absoluteTypeDirectory.getName() + ":" + d1);
-            logger.info("D2 for " + absoluteTypeDirectory.getName() + ":" + d2);
-            logger.info("D3+ for " + absoluteTypeDirectory.getName() + ":"
+            logger.info("D1 for " + absoluteTypeDir.getName() + ":" + d1);
+            logger.info("D2 for " + absoluteTypeDir.getName() + ":" + d2);
+            logger.info("D3+ for " + absoluteTypeDir.getName() + ":"
                     + d3plus);
             discountValuesMap.put("D1", d1);
             discountValuesMap.put("D2", d2);
             discountValuesMap.put("D3+", d3plus);
 
-            discountTypeValuesMap.put(absoluteTypeDirectory.getName(),
+            discountTypeValuesMap.put(absoluteTypeDir.getName(),
                     discountValuesMap);
         }
         return discountTypeValuesMap;

@@ -14,12 +14,12 @@ import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 
 /**
- * A class for modifying the sequences in workingDirectory based on the given
+ * A class for modifying the sequences in workingDir based on the given
  * Pattern. The modified sequences are returned as an {@link OutputStream}.
  */
 public class SequenceModifierTask implements Runnable {
 
-    private Path inputDirectory;
+    private Path inputDir;
 
     private OutputStream output;
 
@@ -30,12 +30,12 @@ public class SequenceModifierTask implements Runnable {
     private boolean setCountToOne;
 
     public SequenceModifierTask(
-            Path inputDirectory,
+            Path inputDir,
             OutputStream output,
             String delimiter,
             Pattern pattern,
             boolean setCountToOne) {
-        this.inputDirectory = inputDirectory;
+        this.inputDir = inputDir;
         this.output = output;
         this.delimiter = delimiter;
         this.pattern = pattern;
@@ -48,7 +48,7 @@ public class SequenceModifierTask implements Runnable {
             try (BufferedWriter writer =
                     new BufferedWriter(new OutputStreamWriter(output));
                     DirectoryStream<Path> inputFiles =
-                            Files.newDirectoryStream(inputDirectory)) {
+                            Files.newDirectoryStream(inputDir)) {
                 for (Path inputFile : inputFiles) {
                     try (BufferedReader reader =
                             Files.newBufferedReader(inputFile,
