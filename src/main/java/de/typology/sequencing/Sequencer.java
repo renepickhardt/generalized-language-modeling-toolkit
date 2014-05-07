@@ -85,9 +85,10 @@ public class Sequencer {
                 BufferedReader reader =
                         new BufferedReader(
                                 new InputStreamReader(inputFileSteam),
-                                100 * 8 * 1024)) {
+                                100 * 1024 * 1024)) {
             String line;
             while ((line = reader.readLine()) != null) {
+            	//TODO: add n-1 beforeLine Tags
                 line = beforeLine + line + afterLine;
                 String[] words = line.split("\\s");
 

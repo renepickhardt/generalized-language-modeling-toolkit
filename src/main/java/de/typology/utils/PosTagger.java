@@ -20,11 +20,9 @@ public class PosTagger {
 
     public static void main(String[] args) throws IOException {
         Path model =
-                Paths.get("/home/lukas/Downloads/stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger");
-        Path input =
-                Paths.get("/home/lukas/Dropbox/langmodels/data/en0008t/training.txt");
-        Path output =
-                Paths.get("/home/lukas/Dropbox/langmodels/data/en0008t/tagged.txt");
+                Paths.get("stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger");
+        Path input = Paths.get(Config.get().outputDir + "/" + Config.get().inputDataSet + "/training.txt");
+        Path output = Paths.get(Config.get().outputDir + "/" + Config.get().inputDataSet +"/tagged.txt");
 
         try (BufferedReader reader =
                 Files.newBufferedReader(input, Charset.defaultCharset());

@@ -88,7 +88,7 @@ public class WordIndex {
                     i,
                     new BufferedWriter(new OutputStreamWriter(Files
                             .newOutputStream(outputDir.resolve(i
-                                    .toString()))), 10 * 8 * 1024));
+                                    .toString()))), 10 * 1024 * 1024));
         }
         return writers;
     }
