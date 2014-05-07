@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class AbsoluteCounterTask implements Runnable {
 
@@ -35,7 +34,8 @@ public class AbsoluteCounterTask implements Runnable {
                     new HashMap<String, Integer>();
 
             try (BufferedReader reader =
-                    new BufferedReader(new InputStreamReader(input),100*1024*1024)) {
+                    new BufferedReader(new InputStreamReader(input),
+                            100 * 1024 * 1024)) {
                 String sequence;
                 while ((sequence = reader.readLine()) != null) {
                     Integer count = sequenceCounts.get(sequence);
@@ -44,7 +44,8 @@ public class AbsoluteCounterTask implements Runnable {
             }
 
             try (BufferedWriter writer =
-                    new BufferedWriter(new OutputStreamWriter(output), 100*1024*1024)) {
+                    new BufferedWriter(new OutputStreamWriter(output),
+                            100 * 1024 * 1024)) {
                 for (Map.Entry<String, Integer> sequenceCount : sequenceCounts
                         .entrySet()) {
                     String sequence = sequenceCount.getKey();

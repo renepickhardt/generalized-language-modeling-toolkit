@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Test;
 
 public class PatternTest {
+
     @Test
     public void test() {
         System.out.println("GLM patterns: ");

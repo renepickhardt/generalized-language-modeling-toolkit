@@ -65,10 +65,8 @@ public class Sequencer {
             patterns.add(pattern);
         }
 
-        
-        
-        for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength.descendingMap()
-                .entrySet()) {
+        for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
+                .descendingMap().entrySet()) {
             sequence(entry.getKey(), entry.getValue());
         }
     }
@@ -93,7 +91,7 @@ public class Sequencer {
                                 100 * 1024 * 1024)) {
             String line;
             while ((line = reader.readLine()) != null) {
-            	//TODO: add n-1 beforeLine Tags
+                //TODO: add n-1 beforeLine Tags
                 line = beforeLine + line + afterLine;
 
                 String[] split = splitAtSpace(line);
