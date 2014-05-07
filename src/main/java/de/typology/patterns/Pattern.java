@@ -138,6 +138,46 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return new Pattern(pattern);
     }
 
+    public static List<Pattern> getCombinations(int modelLength) {
+        int size = 0;
+        for (int i = 0; i != modelLength; ++i) {
+            size += pow(3, i);
+        }
+        List<Pattern> patterns = new ArrayList<Pattern>(size);
+
+        for (int i = 1; i != modelLength + 1; ++i) {
+            for (int j = 0; j != pow(3, i); ++j) {
+                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
+                int n = j;
+                for (int k = 0; k != i; ++k) {
+                    switch (n % 3) {
+                        case 0:
+                            pattern.add(PatternElem.CNT);
+                            break;
+                        case 1:
+                            pattern.add(PatternElem.SKP);
+                            break;
+                        case 2:
+                            pattern.add(PatternElem.POS);
+                            break;
+                    }
+                    n /= 3;
+                }
+                patterns.add(new Pattern(pattern));
+            }
+        }
+
+        return patterns;
+    }
+
+    private static int pow(int base, int power) {
+        int result = 1;
+        for (int i = 0; i != power; ++i) {
+            result *= base;
+        }
+        return result;
+    }
+
     public static List<Pattern> getGlmForSmoothingPatterns(int modelLength) {
         int pow = 1 << modelLength; // 2^modelLength
         List<Pattern> patterns = new ArrayList<Pattern>(pow);
