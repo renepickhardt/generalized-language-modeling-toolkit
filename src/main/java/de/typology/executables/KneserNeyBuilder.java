@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +18,7 @@ import de.typology.extracting.TestSequenceExtractor;
 import de.typology.indexing.WordIndex;
 import de.typology.indexing.WordIndexBuilder;
 import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
 import de.typology.smoothing.KneserNeySmoother;
 import de.typology.smoothing.ModifiedKneserNeySmoother;
@@ -190,11 +190,13 @@ public class KneserNeyBuilder {
             Path trainingFile,
             Path sequencesDir,
             WordIndex wordIndex) throws IOException {
-        Set<Pattern> patterns = Pattern.getCombinations(config.modelLength);
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
                         "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>");
-        sequencer.sequence(patterns);
+        sequencer.sequence(Pattern.getCombinations(config.modelLength,
+                new PatternElem[] {
+                    PatternElem.CNT, PatternElem.SKP, PatternElem.POS
+                }));
     }
 
     private void buildGLM(

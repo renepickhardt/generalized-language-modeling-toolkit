@@ -66,7 +66,7 @@ public class Sequencer {
         }
 
         for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
-                .descendingMap().entrySet()) {
+                .entrySet()) {
             sequence(entry.getKey(), entry.getValue());
         }
     }

@@ -125,26 +125,18 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return new Pattern(pattern);
     }
 
-    public static Set<Pattern> getCombinations(int modelLength) {
+    public static Set<Pattern> getCombinations(
+            int modelLength,
+            PatternElem[] elems) {
         Set<Pattern> patterns = new HashSet<Pattern>();
 
         for (int i = 1; i != modelLength + 1; ++i) {
-            for (int j = 0; j != pow(3, i); ++j) {
+            for (int j = 0; j != pow(elems.length, i); ++j) {
                 List<PatternElem> pattern = new ArrayList<PatternElem>(i);
                 int n = j;
                 for (int k = 0; k != i; ++k) {
-                    switch (n % 3) {
-                        case 0:
-                            pattern.add(PatternElem.CNT);
-                            break;
-                        case 1:
-                            pattern.add(PatternElem.SKP);
-                            break;
-                        case 2:
-                            pattern.add(PatternElem.POS);
-                            break;
-                    }
-                    n /= 3;
+                    pattern.add(elems[n % elems.length]);
+                    n /= elems.length;
                 }
                 patterns.add(new Pattern(pattern));
             }

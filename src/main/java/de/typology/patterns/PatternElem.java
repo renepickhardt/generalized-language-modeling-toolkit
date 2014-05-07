@@ -1,14 +1,38 @@
 package de.typology.patterns;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum PatternElem {
 
-    CNT,
+    CNT("1"),
 
-    SKP,
+    SKP("0"),
 
-    POS,
+    POS("p"),
 
-    DEL;
+    WSKP("x"),
+
+    PSKP("y"),
+
+    WPOS("z"),
+
+    DEL("d");
+
+    private String string;
+
+    private static Map<String, PatternElem> fromString =
+            new HashMap<String, PatternElem>();
+    static {
+        for (PatternElem elem : PatternElem.values()) {
+            fromString.put(elem.toString(), elem);
+        }
+    }
+
+    private PatternElem(
+            String string) {
+        this.string = string;
+    }
 
     public String apply(String word, String pos) {
         switch (this) {
@@ -18,47 +42,20 @@ public enum PatternElem {
                 return "_";
             case POS:
                 return pos;
-            case DEL:
-                return null;
             default:
                 throw new IllegalStateException(
-                        "Unimplemted PatternElem in PatternElem#apply: \""
-                                + this + "\".");
+                        "Illegal PatternElem in PatternElem#apply: \"" + this
+                                + "\".");
         }
     }
 
     @Override
     public String toString() {
-        switch (this) {
-            case CNT:
-                return "1";
-            case SKP:
-                return "_";
-            case POS:
-                return "p";
-            case DEL:
-                return "d";
-            default:
-                throw new IllegalStateException(
-                        "Unimplemented PatternElem in PatternElem#toString.");
-        }
+        return string;
     }
 
     public static PatternElem fromString(String elem) {
-        switch (elem) {
-            case "1":
-                return CNT;
-            case "_":
-                return SKP;
-            case "p":
-                return POS;
-            case "d":
-                return DEL;
-            default:
-                throw new IllegalStateException(
-                        "Unimplemented PatternElem in PatternElem#fromString: \""
-                                + elem + "\".");
-        }
+        return fromString.get(elem);
     }
 
 }

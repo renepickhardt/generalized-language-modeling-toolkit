@@ -39,7 +39,7 @@ public class AbsoluteCounterTask implements Runnable {
                 String sequence;
                 while ((sequence = reader.readLine()) != null) {
                     Integer count = sequenceCounts.get(sequence);
-                    sequenceCounts.put(sequence, count == null ? 0 : count + 1);
+                    sequenceCounts.put(sequence, count == null ? 1 : count + 1);
                 }
             }
 
