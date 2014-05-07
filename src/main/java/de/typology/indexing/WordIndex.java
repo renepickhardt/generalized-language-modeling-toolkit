@@ -9,9 +9,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
@@ -70,10 +68,9 @@ public class WordIndex {
         return (lo + hi) / 2;
     }
 
-    public Map<Integer, BufferedWriter> openWriters(Path outputDir)
-            throws IOException {
-        Map<Integer, BufferedWriter> writers =
-                new HashMap<Integer, BufferedWriter>();
+    public List<BufferedWriter> openWriters(Path outputDir) throws IOException {
+        List<BufferedWriter> writers =
+                new ArrayList<BufferedWriter>(index.size());
 
         // TODO: research why directories are written multiple times to.
         if (Files.exists(outputDir)) {
@@ -83,20 +80,18 @@ public class WordIndex {
         Files.createDirectory(outputDir);
 
         for (Integer i = 0; i != index.size(); ++i) {
-            // TODO: bufferSize calculation
-            writers.put(
-                    i,
-                    new BufferedWriter(new OutputStreamWriter(Files
-                            .newOutputStream(outputDir.resolve(i
-                                    .toString()))), 10 * 1024 * 1024));
+            writers.add(new BufferedWriter(new OutputStreamWriter(Files
+                    .newOutputStream(outputDir.resolve(i.toString()))),
+                    10 * 1024 * 1024));
         }
+
         return writers;
     }
 
-    public void closeWriters(Map<Integer, BufferedWriter> writers)
-            throws IOException {
-        for (BufferedWriter writer : writers.values()) {
+    public void closeWriters(List<BufferedWriter> writers) throws IOException {
+        for (BufferedWriter writer : writers) {
             writer.close();
         }
     }
+
 }
