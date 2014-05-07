@@ -2,18 +2,16 @@ package de.typology.counting;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import de.typology.indexing.WordIndex;
-import de.typology.patterns.Pattern;
 
 /**
  * Counts absolute counts of sequences for a number of patterns.
@@ -22,64 +20,58 @@ public class AbsoluteCounter {
 
     private static Logger logger = LogManager.getLogger();
 
-    private Path input;
+    private Path inputDir;
 
     private Path outputDir;
 
-    private WordIndex wordIndex;
-
     private String delimiter;
-
-    private String beforeLine;
-
-    private String afterLine;
 
     private int numberOfCores;
 
-    private boolean deleteTempFiles;
-
     public AbsoluteCounter(
-            Path input,
+            Path inputDir,
             Path outputDir,
-            WordIndex wordIndex,
             String delimiter,
-            String beforeLine,
-            String afterLine,
-            int numberOfCores,
-            boolean deleteTempFiles) throws IOException {
-        this.input = input;
+            int numberOfCores) throws IOException {
+        this.inputDir = inputDir;
         this.outputDir = outputDir;
-        this.wordIndex = wordIndex;
         this.delimiter = delimiter;
-        this.beforeLine = beforeLine;
-        this.afterLine = afterLine;
         this.numberOfCores = numberOfCores;
-        this.deleteTempFiles = deleteTempFiles;
-
-        Files.createDirectory(outputDir);
     }
 
-    public void split(List<Pattern> patterns) throws IOException,
-            InterruptedException {
+    public void count() throws IOException, InterruptedException {
+        logger.info("Counting absolute counts of sequences.");
+
+        Files.createDirectory(outputDir);
+
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        for (Pattern pattern : patterns) {
-            logger.info("calculate absolute counts for " + pattern);
+        try (DirectoryStream<Path> patternDirs =
+                Files.newDirectoryStream(inputDir)) {
+            for (Path patternDir : patternDirs) {
+                Path patternOutputDir =
+                        outputDir.resolve(patternDir.getFileName());
+                Files.createDirectory(patternOutputDir);
 
-            // Need to create a new InputStream for each iteration, as
-            // SplitterTask will read complete stream on each pass.
-            InputStream inputStream = Files.newInputStream(input);
-
-            PatternCounterTask patternCounterTask =
-                    new PatternCounterTask(inputStream,
-                            outputDir.resolve(pattern.toString()),
-                            wordIndex, pattern, delimiter, beforeLine,
-                            afterLine, false, deleteTempFiles);
-            executorService.execute(patternCounterTask);
+                try (DirectoryStream<Path> patternFiles =
+                        Files.newDirectoryStream(patternDir)) {
+                    for (Path patternFile : patternFiles) {
+                        Path patternOutputFile =
+                                patternOutputDir.resolve(patternFile
+                                        .getFileName());
+                        InputStream input = Files.newInputStream(patternFile);
+                        OutputStream output =
+                                Files.newOutputStream(patternOutputFile);
+                        executorService.execute(new AbsoluteCounterTask(input,
+                                output, delimiter));
+                    }
+                }
+            }
         }
 
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
     }
+
 }

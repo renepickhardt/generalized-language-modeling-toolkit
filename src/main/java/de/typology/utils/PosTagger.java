@@ -21,35 +21,34 @@ public class PosTagger {
     public static void main(String[] args) throws IOException {
         Path model =
                 Paths.get("/home/lukas/Downloads/stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger");
-        Path input = Paths.get("/home/lukas/Downloads/en008t/training.txt");
-        Path output = Paths.get("/home/lukas/Downloads/en008t/tagged.txt");
+        Path input =
+                Paths.get("/home/lukas/Dropbox/langmodels/data/en0008t/training.txt");
+        Path output =
+                Paths.get("/home/lukas/Dropbox/langmodels/data/en0008t/tagged.txt");
 
-        try (BufferedReader r =
+        try (BufferedReader reader =
                 Files.newBufferedReader(input, Charset.defaultCharset());
-                BufferedWriter w =
+                BufferedWriter writer =
                         Files.newBufferedWriter(output,
                                 Charset.defaultCharset(),
                                 StandardOpenOption.CREATE)) {
             MaxentTagger tagger = new MaxentTagger(model.toString());
 
             String line;
-            while ((line = r.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 // Tag
-                String[] sentence = line.split(" ");
+                String[] sentence = line.split("\\s");
                 List<TaggedWord> taggedSentence =
                         tagger.tagSentence(arrayToListHasWords(sentence));
 
                 // Write
                 boolean first = true;
                 for (TaggedWord tagged : taggedSentence) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        w.write(" ");
-                    }
-                    w.write(tagged.word() + "/" + tagged.tag());
+                    writer.write((first ? "" : " ") + tagged.word() + "/"
+                            + tagged.tag());
+                    first = false;
                 }
-                w.write("\n");
+                writer.write("\n");
             }
         }
     }

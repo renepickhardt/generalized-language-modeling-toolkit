@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -57,25 +56,29 @@ public class KneserNeyBuilder {
             buildIndex(trainingFile, indexFile);
         }
 
+        WordIndex wordIndex;
+        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
+            wordIndex = new WordIndex(wordIndexInput);
+        }
+
         if (config.buildSequences) {
-            buildSequences(trainingFile, indexFile, sequencesDir);
+            buildSequences(trainingFile, sequencesDir, wordIndex);
         }
 
         if (config.buildGLM) {
-            logger.info("split into GLM sequences");
-            buildGLM(trainingFile, indexFile, absoluteDir);
+            buildGLM(sequencesDir, absoluteDir, wordIndex);
         }
 
         if (config.buildContinuationGLM) {
             logger.info("split into continuation sequences");
-            buildContinuationGLM(trainingFile, indexFile, absoluteDir,
+            buildContinuationGLM(trainingFile, wordIndex, absoluteDir,
                     continuationDir);
         }
 
         if (config.extractContinuationGLM) {
             logger.info("extract continuation sequences");
-            extractContinuationGLM(workingDir, indexFile, absoluteDir,
-                    continuationDir, testingSamplesDir);
+            extractContinuationGLM(workingDir, absoluteDir, continuationDir,
+                    testingSamplesDir);
         }
 
         if (config.buildKneserNey) {
@@ -185,48 +188,30 @@ public class KneserNeyBuilder {
 
     private void buildSequences(
             Path trainingFile,
-            Path indexFile,
-            Path sequencesDir) throws IOException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
-        Set<Pattern> patterns =
-                new HashSet<Pattern>(
-                        Pattern.getGlmForSmoothingPatterns(config.modelLength));
+            Path sequencesDir,
+            WordIndex wordIndex) throws IOException {
+        Set<Pattern> patterns = Pattern.getCombinations(config.modelLength);
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        "<fs> <s> ", " </s>", true, "\t");
-        sequencer.splitIntoFiles(patterns);
+                        "<fs> <s> ", " </s>");
+        sequencer.sequence(patterns);
     }
 
-    private void buildGLM(Path trainingFile, Path indexFile, Path absoluteDir)
-            throws IOException, InterruptedException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
-        List<Pattern> glmForSmoothingPatterns =
-                Pattern.getGlmForSmoothingPatterns(config.modelLength);
+    private void buildGLM(
+            Path sequencesDir,
+            Path absoluteDir,
+            WordIndex wordIndex) throws IOException, InterruptedException {
         AbsoluteCounter absoluteCounter =
-                new AbsoluteCounter(trainingFile, absoluteDir, wordIndex, "\t",
-                        "<fs> <s> ", " </s>", config.numberOfCores,
-                        config.deleteTempFiles);
-        absoluteCounter.split(glmForSmoothingPatterns);
+                new AbsoluteCounter(sequencesDir, absoluteDir, "\t",
+                        config.numberOfCores);
+        absoluteCounter.count();
     }
 
     private void buildContinuationGLM(
             Path trainingFile,
-            Path indexFile,
+            WordIndex wordIndex,
             Path absoluteDir,
             Path continuationDir) throws IOException, InterruptedException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
         List<Pattern> lmPatterns =
                 Pattern.getReverseLmPatterns(config.modelLength);
         ContinuationCounter continuationCounter =
@@ -238,7 +223,6 @@ public class KneserNeyBuilder {
 
     private void extractContinuationGLM(
             Path workingDir,
-            Path indexFile,
             Path absoluteDir,
             Path continuationDir,
             Path testExtractOutputDir) throws IOException, InterruptedException {

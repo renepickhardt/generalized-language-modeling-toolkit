@@ -2,8 +2,10 @@ package de.typology.patterns;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class Pattern implements Iterable<PatternElem>, Cloneable {
 
@@ -28,7 +30,19 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     public String apply(String sequence) {
         String result = "";
-        String[] words = sequence.split("\\s");
+        String[] sequenceSplit = sequence.split("\\s");
+        String[] words = new String[sequenceSplit.length];
+        String[] pos = new String[sequenceSplit.length];
+        for (int i = 0; i != sequenceSplit.length; ++i) {
+            int lastSlash = sequenceSplit[i].lastIndexOf('/');
+            if (lastSlash == -1) {
+                words[i] = sequenceSplit[i];
+                pos[i] = "UNK"; // unkown pos, not part of any pos-tagset
+            } else {
+                words[i] = sequenceSplit[i].substring(0, lastSlash);
+                pos[i] = sequenceSplit[i].substring(lastSlash + 1);
+            }
+        }
 
         boolean first = true;
         int i = 0;
@@ -46,8 +60,8 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
                     result += "_";
                     break;
                 case POS:
-                    throw new UnsupportedOperationException(
-                            "POS not yet implemented in Pattern#apply");
+                    result += pos[i];
+                    break;
                 case DEL:
                     break;
 
@@ -136,6 +150,42 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
             pattern.add(PatternElem.CNT);
         }
         return new Pattern(pattern);
+    }
+
+    public static Set<Pattern> getCombinations(int modelLength) {
+        Set<Pattern> patterns = new HashSet<Pattern>();
+
+        for (int i = 1; i != modelLength + 1; ++i) {
+            for (int j = 0; j != pow(3, i); ++j) {
+                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
+                int n = j;
+                for (int k = 0; k != i; ++k) {
+                    switch (n % 3) {
+                        case 0:
+                            pattern.add(PatternElem.CNT);
+                            break;
+                        case 1:
+                            pattern.add(PatternElem.SKP);
+                            break;
+                        case 2:
+                            pattern.add(PatternElem.POS);
+                            break;
+                    }
+                    n /= 3;
+                }
+                patterns.add(new Pattern(pattern));
+            }
+        }
+
+        return patterns;
+    }
+
+    private static int pow(int base, int power) {
+        int result = 1;
+        for (int i = 0; i != power; ++i) {
+            result *= base;
+        }
+        return result;
     }
 
     public static List<Pattern> getGlmForSmoothingPatterns(int modelLength) {

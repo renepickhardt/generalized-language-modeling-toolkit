@@ -33,31 +33,24 @@ public class Sequencer {
 
     private String afterLine;
 
-    private boolean setCountToOne;
-
-    private String delimiter;
-
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
             String beforeLine,
-            String afterLine,
-            boolean setCountToOne,
-            String delimiter) throws IOException {
+            String afterLine) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
-        this.setCountToOne = setCountToOne;
-        this.delimiter = delimiter;
-
-        Files.createDirectory(outputDir);
     }
 
-    public void splitIntoFiles(Set<Pattern> inputPatterns) throws IOException {
-        logger.info("Building sequences.");
+    public void sequence(Set<Pattern> inputPatterns) throws IOException {
+        logger.info("Sequencing training data.");
+
+        Files.createDirectory(outputDir);
+
         Map<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {
@@ -71,11 +64,11 @@ public class Sequencer {
 
         for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
                 .entrySet()) {
-            splitIntoFiles(entry.getKey(), entry.getValue());
+            sequence(entry.getKey(), entry.getValue());
         }
     }
 
-    private void splitIntoFiles(int patternLength, Set<Pattern> patterns)
+    private void sequence(int patternLength, Set<Pattern> patterns)
             throws IOException {
         logger.info("Building sequences with length: " + patternLength);
 
@@ -119,10 +112,8 @@ public class Sequencer {
                                         : patternSequence.substring(0,
                                                 firstSpacePos));
 
-                        writers.get(wordIndex.rank(firstWord))
-                                .write(patternSequence
-                                        + (setCountToOne ? delimiter + "1" : "")
-                                        + "\n");
+                        writers.get(wordIndex.rank(firstWord)).write(
+                                patternSequence + "\n");
                     }
                 }
             }
