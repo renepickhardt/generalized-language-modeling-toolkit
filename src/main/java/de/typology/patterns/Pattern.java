@@ -209,4 +209,10 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return patterns;
     }
 
+    public static void main(String[] args) {
+        for (Pattern pattern : getCombinations(5)) {
+            System.out.println(pattern);
+        }
+    }
+
 }

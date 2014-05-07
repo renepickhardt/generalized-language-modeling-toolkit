@@ -49,7 +49,7 @@ public class Sequencer {
     }
 
     public void splitIntoFiles(Set<Pattern> inputPatterns) throws IOException {
-        logger.info("Building sequences.");
+        logger.info("Sequencing training data.");
         Map<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {

@@ -63,12 +63,11 @@ public class KneserNeyBuilder {
         }
 
         if (config.buildSequences) {
-            buildSequences(trainingFile, wordIndex, sequencesDir);
+            buildSequences(trainingFile, sequencesDir, wordIndex);
         }
 
         if (config.buildGLM) {
-            logger.info("split into GLM sequences");
-            buildGLM(trainingFile, wordIndex, absoluteDir);
+            buildGLM(sequencesDir, absoluteDir, wordIndex);
         }
 
         if (config.buildContinuationGLM) {
@@ -190,8 +189,8 @@ public class KneserNeyBuilder {
 
     private void buildSequences(
             Path trainingFile,
-            WordIndex wordIndex,
-            Path sequencesDir) throws IOException {
+            Path sequencesDir,
+            WordIndex wordIndex) throws IOException {
         Set<Pattern> patterns =
                 new HashSet<Pattern>(
                         Pattern.getGlmForSmoothingPatterns(config.modelLength));
@@ -202,15 +201,14 @@ public class KneserNeyBuilder {
     }
 
     private void buildGLM(
-            Path trainingFile,
-            WordIndex wordIndex,
-            Path absoluteDir) throws IOException, InterruptedException {
+            Path sequencesDir,
+            Path absoluteDir,
+            WordIndex wordIndex) throws IOException, InterruptedException {
         List<Pattern> glmForSmoothingPatterns =
                 Pattern.getGlmForSmoothingPatterns(config.modelLength);
         AbsoluteCounter absoluteCounter =
-                new AbsoluteCounter(trainingFile, absoluteDir, wordIndex, "\t",
-                        "<fs> <s> ", " </s>", config.numberOfCores,
-                        config.deleteTempFiles);
+                new AbsoluteCounter(sequencesDir, absoluteDir, "\t",
+                        config.numberOfCores);
         absoluteCounter.split(glmForSmoothingPatterns);
     }
 
