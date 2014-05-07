@@ -28,39 +28,28 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.size();
     }
 
-    public String apply(String sequence) {
-        String result = "";
-        String[] sequenceSplit = sequence.split("\\s");
-        String[] words = new String[sequenceSplit.length];
-        String[] pos = new String[sequenceSplit.length];
-        for (int i = 0; i != sequenceSplit.length; ++i) {
-            int lastSlash = sequenceSplit[i].lastIndexOf('/');
-            if (lastSlash == -1) {
-                words[i] = sequenceSplit[i];
-                pos[i] = "UNK"; // unkown pos, not part of any pos-tagset
-            } else {
-                words[i] = sequenceSplit[i].substring(0, lastSlash);
-                pos[i] = sequenceSplit[i].substring(lastSlash + 1);
-            }
-        }
+    public String apply(String[] words, String[] pos, int begin) {
+        StringBuilder result = new StringBuilder();
 
         boolean first = true;
         int i = 0;
         for (PatternElem elem : pattern) {
             if (elem != PatternElem.DEL) {
-                result += first ? "" : " ";
+                if (!first) {
+                    result.append(' ');
+                }
                 first = false;
             }
 
             switch (elem) {
                 case CNT:
-                    result += words[i];
+                    result.append(words[begin + i]);
                     break;
                 case SKP:
-                    result += "_";
+                    result.append('_');
                     break;
                 case POS:
-                    result += pos[i];
+                    result.append(pos[begin + i]);
                     break;
                 case DEL:
                     break;
@@ -73,7 +62,8 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
             ++i;
         }
-        return result;
+
+        return result.toString();
     }
 
     public PatternElem get(int index) {

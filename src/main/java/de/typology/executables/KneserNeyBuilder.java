@@ -182,7 +182,7 @@ public class KneserNeyBuilder {
                 OutputStream output = Files.newOutputStream(indexFile)) {
             WordIndexBuilder wordIndexer = new WordIndexBuilder();
             wordIndexer.buildIndex(input, output, config.maxCountDivider,
-                    "<fs> <s> ", " </s>");
+                    "<fs> <s> ", " <ss>");
         }
     }
 
@@ -193,7 +193,7 @@ public class KneserNeyBuilder {
         Set<Pattern> patterns = Pattern.getCombinations(config.modelLength);
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        "<fs> <s> ", " </s>");
+                        "<fs> <s> ", " <ss>");
         sequencer.sequence(patterns);
     }
 
