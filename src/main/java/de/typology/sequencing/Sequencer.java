@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -53,7 +54,7 @@ public class Sequencer {
 
         Files.createDirectory(outputDir);
 
-        Map<Integer, Set<Pattern>> patternsByLength =
+        NavigableMap<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {
             Set<Pattern> patterns = patternsByLength.get(pattern.length());
@@ -64,7 +65,9 @@ public class Sequencer {
             patterns.add(pattern);
         }
 
-        for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
+        
+        
+        for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength.descendingMap()
                 .entrySet()) {
             sequence(entry.getKey(), entry.getValue());
         }
