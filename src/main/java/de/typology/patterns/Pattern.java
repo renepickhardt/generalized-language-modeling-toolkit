@@ -28,7 +28,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.size();
     }
 
-    public String apply(String[] words, String[] pos, int begin) {
+    public String apply(String[] words, String[] pos, int p) {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
@@ -41,24 +41,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
                 first = false;
             }
 
-            switch (elem) {
-                case CNT:
-                    result.append(words[begin + i]);
-                    break;
-                case SKP:
-                    result.append('_');
-                    break;
-                case POS:
-                    result.append(pos[begin + i]);
-                    break;
-                case DEL:
-                    break;
-
-                default:
-                    throw new IllegalStateException(
-                            "Unimplemted PatternElem in Pattern#apply: \""
-                                    + elem + "\".");
-            }
+            result.append(elem.apply(words[p + i], pos[p + i]));
 
             ++i;
         }

@@ -10,6 +10,23 @@ public enum PatternElem {
 
     DEL;
 
+    public String apply(String word, String pos) {
+        switch (this) {
+            case CNT:
+                return word;
+            case SKP:
+                return "_";
+            case POS:
+                return pos;
+            case DEL:
+                return null;
+            default:
+                throw new IllegalStateException(
+                        "Unimplemted PatternElem in PatternElem#apply: \""
+                                + this + "\".");
+        }
+    }
+
     @Override
     public String toString() {
         switch (this) {
@@ -43,4 +60,5 @@ public enum PatternElem {
                                 + elem + "\".");
         }
     }
+
 }
