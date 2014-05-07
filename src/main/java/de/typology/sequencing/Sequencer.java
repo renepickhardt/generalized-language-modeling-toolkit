@@ -33,25 +33,17 @@ public class Sequencer {
 
     private String afterLine;
 
-    private boolean setCountToOne;
-
-    private String delimiter;
-
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
             String beforeLine,
-            String afterLine,
-            boolean setCountToOne,
-            String delimiter) throws IOException {
+            String afterLine) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
-        this.setCountToOne = setCountToOne;
-        this.delimiter = delimiter;
 
         Files.createDirectory(outputDir);
     }
@@ -119,10 +111,8 @@ public class Sequencer {
                                         : patternSequence.substring(0,
                                                 firstSpacePos));
 
-                        writers.get(wordIndex.rank(firstWord))
-                                .write(patternSequence
-                                        + (setCountToOne ? delimiter + "1" : "")
-                                        + "\n");
+                        writers.get(wordIndex.rank(firstWord)).write(
+                                patternSequence + "\n");
                     }
                 }
             }

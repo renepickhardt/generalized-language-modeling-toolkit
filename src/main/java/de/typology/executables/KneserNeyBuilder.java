@@ -57,25 +57,30 @@ public class KneserNeyBuilder {
             buildIndex(trainingFile, indexFile);
         }
 
+        WordIndex wordIndex;
+        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
+            wordIndex = new WordIndex(wordIndexInput);
+        }
+
         if (config.buildSequences) {
-            buildSequences(trainingFile, indexFile, sequencesDir);
+            buildSequences(trainingFile, wordIndex, sequencesDir);
         }
 
         if (config.buildGLM) {
             logger.info("split into GLM sequences");
-            buildGLM(trainingFile, indexFile, absoluteDir);
+            buildGLM(trainingFile, wordIndex, absoluteDir);
         }
 
         if (config.buildContinuationGLM) {
             logger.info("split into continuation sequences");
-            buildContinuationGLM(trainingFile, indexFile, absoluteDir,
+            buildContinuationGLM(trainingFile, wordIndex, absoluteDir,
                     continuationDir);
         }
 
         if (config.extractContinuationGLM) {
             logger.info("extract continuation sequences");
-            extractContinuationGLM(workingDir, indexFile, absoluteDir,
-                    continuationDir, testingSamplesDir);
+            extractContinuationGLM(workingDir, absoluteDir, continuationDir,
+                    testingSamplesDir);
         }
 
         if (config.buildKneserNey) {
@@ -185,29 +190,21 @@ public class KneserNeyBuilder {
 
     private void buildSequences(
             Path trainingFile,
-            Path indexFile,
+            WordIndex wordIndex,
             Path sequencesDir) throws IOException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
         Set<Pattern> patterns =
                 new HashSet<Pattern>(
                         Pattern.getGlmForSmoothingPatterns(config.modelLength));
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        "<fs> <s> ", " </s>", true, "\t");
+                        "<fs> <s> ", " </s>");
         sequencer.splitIntoFiles(patterns);
     }
 
-    private void buildGLM(Path trainingFile, Path indexFile, Path absoluteDir)
-            throws IOException, InterruptedException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
+    private void buildGLM(
+            Path trainingFile,
+            WordIndex wordIndex,
+            Path absoluteDir) throws IOException, InterruptedException {
         List<Pattern> glmForSmoothingPatterns =
                 Pattern.getGlmForSmoothingPatterns(config.modelLength);
         AbsoluteCounter absoluteCounter =
@@ -219,14 +216,9 @@ public class KneserNeyBuilder {
 
     private void buildContinuationGLM(
             Path trainingFile,
-            Path indexFile,
+            WordIndex wordIndex,
             Path absoluteDir,
             Path continuationDir) throws IOException, InterruptedException {
-        WordIndex wordIndex;
-        try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
-        }
-
         List<Pattern> lmPatterns =
                 Pattern.getReverseLmPatterns(config.modelLength);
         ContinuationCounter continuationCounter =
@@ -238,7 +230,6 @@ public class KneserNeyBuilder {
 
     private void extractContinuationGLM(
             Path workingDir,
-            Path indexFile,
             Path absoluteDir,
             Path continuationDir,
             Path testExtractOutputDir) throws IOException, InterruptedException {
