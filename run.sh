@@ -1,2 +1,3 @@
 ulimit -v 20000000
-nice mvn clean compile exec:java -Dexec.mainClass="de.typology.executables.KneserNeyBuilder" -Dexec.args="$@" -Dfile.encoding=UTF-8
+export MAVEN_OPTS="-Xmx6144m"
+nice mvn clean compile exec:java -Dexec.args="$@" -Dfile.encoding=UTF-8

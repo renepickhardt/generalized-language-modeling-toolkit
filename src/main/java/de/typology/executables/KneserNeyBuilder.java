@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -191,25 +190,21 @@ public class KneserNeyBuilder {
             Path trainingFile,
             Path sequencesDir,
             WordIndex wordIndex) throws IOException {
-        Set<Pattern> patterns =
-                new HashSet<Pattern>(
-                        Pattern.getGlmForSmoothingPatterns(config.modelLength));
+        Set<Pattern> patterns = Pattern.getCombinations(config.modelLength);
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
                         "<fs> <s> ", " </s>");
-        sequencer.splitIntoFiles(patterns);
+        sequencer.sequence(patterns);
     }
 
     private void buildGLM(
             Path sequencesDir,
             Path absoluteDir,
             WordIndex wordIndex) throws IOException, InterruptedException {
-        List<Pattern> glmForSmoothingPatterns =
-                Pattern.getGlmForSmoothingPatterns(config.modelLength);
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(sequencesDir, absoluteDir, "\t",
                         config.numberOfCores);
-        absoluteCounter.split(glmForSmoothingPatterns);
+        absoluteCounter.count();
     }
 
     private void buildContinuationGLM(

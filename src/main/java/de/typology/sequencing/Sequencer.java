@@ -44,12 +44,13 @@ public class Sequencer {
         this.wordIndex = wordIndex;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
-
-        Files.createDirectory(outputDir);
     }
 
-    public void splitIntoFiles(Set<Pattern> inputPatterns) throws IOException {
+    public void sequence(Set<Pattern> inputPatterns) throws IOException {
         logger.info("Sequencing training data.");
+
+        Files.createDirectory(outputDir);
+
         Map<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {
@@ -63,11 +64,11 @@ public class Sequencer {
 
         for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
                 .entrySet()) {
-            splitIntoFiles(entry.getKey(), entry.getValue());
+            sequence(entry.getKey(), entry.getValue());
         }
     }
 
-    private void splitIntoFiles(int patternLength, Set<Pattern> patterns)
+    private void sequence(int patternLength, Set<Pattern> patterns)
             throws IOException {
         logger.info("Building sequences with length: " + patternLength);
 

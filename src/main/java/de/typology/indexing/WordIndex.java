@@ -32,10 +32,10 @@ public class WordIndex {
     public WordIndex(
             InputStream input) throws IOException {
         // read the index file
-        try (BufferedReader br =
+        try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(input))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 index.add(line.split("\t")[0]);
             }
         }

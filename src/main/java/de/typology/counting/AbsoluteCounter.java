@@ -6,15 +6,12 @@ import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import de.typology.patterns.Pattern;
 
 /**
  * Counts absolute counts of sequences for a number of patterns.
@@ -40,13 +37,12 @@ public class AbsoluteCounter {
         this.outputDir = outputDir;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
-
-        Files.createDirectory(outputDir);
     }
 
-    public void split(List<Pattern> patterns) throws IOException,
-            InterruptedException {
+    public void count() throws IOException, InterruptedException {
         logger.info("Counting absolute counts of sequences.");
+
+        Files.createDirectory(outputDir);
 
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
