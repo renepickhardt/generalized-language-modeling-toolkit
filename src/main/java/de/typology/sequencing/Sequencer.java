@@ -89,22 +89,29 @@ public class Sequencer {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = beforeLine + line + afterLine;
-                String[] words = line.split("\\s");
-
-                for (int pointer = 0; pointer <= words.length - patternLength; ++pointer) {
-                    String sequence = "";
-                    boolean first = true;
-                    for (int i = 0; i != patternLength; ++i) {
-                        sequence += (first ? "" : " ") + words[pointer + i];
-                        first = false;
+                String[] sequenceSplit = line.split("\\s");
+                String[] words = new String[sequenceSplit.length];
+                String[] pos = new String[sequenceSplit.length];
+                for (int i = 0; i != sequenceSplit.length; ++i) {
+                    int lastSlash = sequenceSplit[i].lastIndexOf('/');
+                    if (lastSlash == -1) {
+                        words[i] = sequenceSplit[i];
+                        pos[i] = "UNK"; // unkown pos, not part of any pos-tagset
+                    } else {
+                        words[i] = sequenceSplit[i].substring(0, lastSlash);
+                        pos[i] = sequenceSplit[i].substring(lastSlash + 1);
                     }
+                }
 
+                for (int pointer = 0; pointer <= sequenceSplit.length
+                        - patternLength; ++pointer) {
                     for (Map.Entry<Pattern, Map<Integer, BufferedWriter>> entry : patternWriters
                             .entrySet()) {
                         Pattern pattern = entry.getKey();
                         Map<Integer, BufferedWriter> writers = entry.getValue();
 
-                        String patternSequence = pattern.apply(sequence);
+                        String patternSequence =
+                                pattern.apply(words, pos, pointer);
                         int firstSpacePos = patternSequence.indexOf(" ");
                         String firstWord =
                                 (firstSpacePos == -1
