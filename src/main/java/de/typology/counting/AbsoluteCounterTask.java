@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,11 +69,14 @@ public class AbsoluteCounterTask implements Runnable {
                 }
             }
 
+            SortedMap<String, Integer> sortedSequenceCounts =
+                    new TreeMap<String, Integer>(sequenceCounts);
+
             try (OutputStream output = Files.newOutputStream(outputFile);
                     BufferedWriter writer =
                             new BufferedWriter(new OutputStreamWriter(output),
                                     bufferSize)) {
-                for (Map.Entry<String, Integer> sequenceCount : sequenceCounts
+                for (Map.Entry<String, Integer> sequenceCount : sortedSequenceCounts
                         .entrySet()) {
                     String sequence = sequenceCount.getKey();
                     Integer counter = sequenceCount.getValue();
