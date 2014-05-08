@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -21,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
+import de.typology.patterns.PatternElem;
 
 public class Sequencer {
 
@@ -62,7 +62,7 @@ public class Sequencer {
 
         Files.createDirectory(outputDir);
 
-        NavigableMap<Integer, Set<Pattern>> patternsByLength =
+        Map<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {
             Set<Pattern> patterns = patternsByLength.get(pattern.length());
@@ -190,9 +190,15 @@ public class Sequencer {
                 List<BufferedWriter> writers = entry.getValue();
 
                 String patternSequence = pattern.apply(words, pos, p);
-                String firstWord = pattern.get(0).apply(words[p], pos[p]);
 
-                writers.get(wordIndex.rank(firstWord)).write(
+                // get first word of sequence that isn't PatternElem.SKIPPED_WORD
+                String indexWord = PatternElem.SKIPPED_WORD;
+                for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
+                        && i != patternLength; ++i) {
+                    indexWord = pattern.get(i).apply(words[p + i], pos[p + i]);
+                }
+
+                writers.get(wordIndex.rank(indexWord)).write(
                         patternSequence + "\n");
             }
         }

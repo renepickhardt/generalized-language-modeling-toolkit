@@ -9,7 +9,7 @@ public enum PatternElem {
 
     SKP("0"),
 
-    POS("p"),
+    POS("2"),
 
     WSKP("x"),
 
@@ -19,7 +19,7 @@ public enum PatternElem {
 
     DEL("d");
 
-    private String string;
+    public static String SKIPPED_WORD = "_";
 
     private static Map<String, PatternElem> fromString =
             new HashMap<String, PatternElem>();
@@ -28,6 +28,8 @@ public enum PatternElem {
             fromString.put(elem.toString(), elem);
         }
     }
+
+    private String string;
 
     private PatternElem(
             String string) {
@@ -39,7 +41,7 @@ public enum PatternElem {
             case CNT:
                 return word;
             case SKP:
-                return "_";
+                return SKIPPED_WORD;
             case POS:
                 return pos;
             default:
