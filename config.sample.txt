@@ -19,6 +19,9 @@
 # basic settings which will be most certainly be needed to change
 ################################################################################
 
+# memory for this application
+memory = 4096
+
 # directory from which we will start to work
 outputDir = /media/mssd/datasets/glm/out/
 
