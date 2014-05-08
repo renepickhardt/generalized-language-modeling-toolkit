@@ -192,7 +192,8 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException {
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>");
+                        "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>",
+                        config.maxCountDivider);
         sequencer.sequence(Pattern.getCombinations(config.modelLength,
                 new PatternElem[] {
                     PatternElem.CNT, PatternElem.SKP, PatternElem.POS
@@ -205,7 +206,7 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException, InterruptedException {
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(sequencesDir, absoluteDir, "\t",
-                        config.numberOfCores);
+                        config.numberOfCores, config.deleteTempFiles);
         absoluteCounter.count();
     }
 

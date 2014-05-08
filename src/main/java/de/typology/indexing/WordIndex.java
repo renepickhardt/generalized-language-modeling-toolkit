@@ -68,7 +68,8 @@ public class WordIndex {
         return (lo + hi) / 2;
     }
 
-    public List<BufferedWriter> openWriters(Path outputDir) throws IOException {
+    public List<BufferedWriter> openWriters(Path outputDir, int buffersSizes)
+            throws IOException {
         List<BufferedWriter> writers =
                 new ArrayList<BufferedWriter>(index.size());
 
@@ -82,7 +83,7 @@ public class WordIndex {
         for (Integer i = 0; i != index.size(); ++i) {
             writers.add(new BufferedWriter(new OutputStreamWriter(Files
                     .newOutputStream(outputDir.resolve(i.toString()))),
-                    10 * 1024 * 1024));
+                    buffersSizes));
         }
 
         return writers;

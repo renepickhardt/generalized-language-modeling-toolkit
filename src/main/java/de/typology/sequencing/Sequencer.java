@@ -24,6 +24,10 @@ import de.typology.patterns.Pattern;
 
 public class Sequencer {
 
+    public static float MEMORY_FACTOR = 0.2f;
+
+    public static long UPDATE_INTERVAL = 5 * 1000; // 5s
+
     private static Logger logger = LogManager.getLogger();
 
     private Path inputFile;
@@ -36,17 +40,21 @@ public class Sequencer {
 
     private String afterLine;
 
+    private int maxCountDivider;
+
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
             String beforeLine,
-            String afterLine) throws IOException {
+            String afterLine,
+            int maxCountDivider) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.beforeLine = beforeLine;
         this.afterLine = afterLine;
+        this.maxCountDivider = maxCountDivider;
     }
 
     public void sequence(Set<Pattern> inputPatterns) throws IOException {
@@ -75,14 +83,22 @@ public class Sequencer {
             throws IOException {
         logger.info("Building sequences with length: " + patternLength);
 
+        int bufferSizes =
+                (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory()
+                        / patterns.size() / maxCountDivider));
         Map<Pattern, List<BufferedWriter>> patternWriters =
                 new HashMap<Pattern, List<BufferedWriter>>();
         for (Pattern pattern : patterns) {
             Path dir = outputDir.resolve(pattern.toString());
             Files.createDirectory(dir);
-            List<BufferedWriter> writers = wordIndex.openWriters(dir);
+            List<BufferedWriter> writers =
+                    wordIndex.openWriters(dir, bufferSizes);
             patternWriters.put(pattern, writers);
         }
+
+        float readSize = 0;
+        float totalSize = Files.size(inputFile);
+        long time = System.currentTimeMillis();
 
         try (InputStream inputFileSteam = Files.newInputStream(inputFile);
                 BufferedReader reader =
@@ -91,6 +107,8 @@ public class Sequencer {
                                 100 * 1024 * 1024)) {
             String line;
             while ((line = reader.readLine()) != null) {
+                readSize += line.getBytes().length;
+
                 //TODO: add n-1 beforeLine Tags
                 line = beforeLine + line + afterLine;
 
@@ -101,7 +119,16 @@ public class Sequencer {
                 generateWordsAndPos(split, words, pos);
 
                 writeSequences(patternLength, patternWriters, split, words, pos);
+
+                // if more then a minute since last update
+                if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
+                    time = System.currentTimeMillis();
+                    logger.info(String.format("%.2f", 100.f * readSize
+                            / totalSize)
+                            + "%");
+                }
             }
+            logger.info("100.00%");
         }
 
         for (List<BufferedWriter> writers : patternWriters.values()) {
