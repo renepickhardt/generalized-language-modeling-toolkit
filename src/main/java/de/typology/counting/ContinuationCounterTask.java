@@ -64,8 +64,6 @@ public class ContinuationCounterTask implements Runnable {
     @Override
     public void run() {
         try {
-            Files.createDirectory(outputDir);
-
             Map<String, Counter> sequenceCounts =
                     new HashMap<String, Counter>();
 
@@ -107,6 +105,7 @@ public class ContinuationCounterTask implements Runnable {
             SortedMap<String, Counter> sortedSequenceCounts =
                     new TreeMap<String, Counter>(sequenceCounts);
 
+            Files.createDirectory(outputDir);
             List<BufferedWriter> writers =
                     wordIndex.openWriters(outputDir, bufferSize);
 

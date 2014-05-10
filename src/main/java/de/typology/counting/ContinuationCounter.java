@@ -72,6 +72,10 @@ public class ContinuationCounter {
                     Pattern wskpPattern =
                             pattern.replace(PatternElem.SKP, PatternElem.WSKP);
                     patterns.put(wskpPattern, getSourcePattern(wskpPattern));
+
+                    Pattern pskpPattern =
+                            pattern.replace(PatternElem.SKP, PatternElem.PSKP);
+                    patterns.put(pskpPattern, getSourcePattern(pskpPattern));
                 }
             }
         }
@@ -121,7 +125,18 @@ public class ContinuationCounter {
     }
 
     private Pattern getSourcePattern(Pattern pattern) {
-        return pattern.replaceLast(PatternElem.WSKP, PatternElem.CNT);
+        Pattern sourcePattern = pattern.clone();
+        for (int i = sourcePattern.length() - 1; i != -1; --i) {
+            PatternElem elem = sourcePattern.get(i);
+            if (elem.equals(PatternElem.WSKP)) {
+                sourcePattern.set(i, PatternElem.CNT);
+                break;
+            } else if (elem.equals(PatternElem.PSKP)) {
+                sourcePattern.set(i, PatternElem.POS);
+                break;
+            }
+        }
+        return sourcePattern;
     }
 
     private Runnable calcFromAbsolute(Pattern dest, Pattern source) {
