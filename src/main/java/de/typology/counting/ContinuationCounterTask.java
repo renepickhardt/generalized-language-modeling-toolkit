@@ -26,6 +26,10 @@ public class ContinuationCounterTask implements Runnable {
 
     private static Logger logger = LogManager.getLogger();
 
+    private static int numTasks = 0;
+
+    private static int numCompleteTasks = 0;
+
     private Path inputDir;
 
     private Path outputDir;
@@ -125,10 +129,18 @@ public class ContinuationCounterTask implements Runnable {
 
             wordIndex.closeWriters(writers);
 
-            logger.info("Finished continuation counts for: "
+            ++numCompleteTasks;
+            logger.info(String.format("%6.2f", 100.f * numCompleteTasks
+                    / numTasks)
+                    + "% Finished continuation counts for: "
                     + outputDir.getFileName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    public static void setNumTasks(int numTasks) {
+        ContinuationCounterTask.numTasks = numTasks;
+    }
+
 }

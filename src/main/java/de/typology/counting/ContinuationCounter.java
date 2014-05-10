@@ -43,21 +43,17 @@ public class ContinuationCounter {
 
     private int numberOfCores;
 
-    private boolean deleteTempFiles;
-
     public ContinuationCounter(
             Path inputDir,
             Path outputDir,
             WordIndex wordIndex,
             String delimiter,
-            int numberOfCores,
-            boolean deleteTempFiles) throws IOException {
+            int numberOfCores) throws IOException {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
-        this.deleteTempFiles = deleteTempFiles;
     }
 
     public void count() throws IOException, InterruptedException {
@@ -80,6 +76,8 @@ public class ContinuationCounter {
             }
         }
 
+        ContinuationCounterTask.setNumTasks(patterns.size());
+
         while (true) {
             Set<Pattern> donePatterns = new HashSet<Pattern>();
 
@@ -91,17 +89,11 @@ public class ContinuationCounter {
                 Pattern source = entry.getValue();
 
                 if (!source.containsSkp()) {
-                    System.out.println("from absolute:     " + dest + " -> "
-                            + source);
                     donePatterns.add(dest);
                     executorService.execute(calcFromAbsolute(dest, source));
                 } else if (Files.exists(outputDir.resolve(source.toString()))) {
-                    System.out.println("from continuation: " + dest + " -> "
-                            + source);
                     donePatterns.add(dest);
                     executorService.execute(calcFromContinuation(dest, source));
-                } else {
-                    System.out.println("yolo");
                 }
             }
 
@@ -126,8 +118,6 @@ public class ContinuationCounter {
             }
             logger.error(error);
         }
-
-        logger.info("100.00%");
     }
 
     private Pattern getSourcePattern(Pattern pattern) {
@@ -137,6 +127,7 @@ public class ContinuationCounter {
     private Runnable calcFromAbsolute(Pattern dest, Pattern source) {
         Path sourceDir = inputDir.resolve(source.toString());
         Path destDir = outputDir.resolve(dest.toString());
+        // TODO: buffer size calculation
         return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
                 delimiter, 10 * 1024 * 1024, true);
     }
@@ -144,6 +135,7 @@ public class ContinuationCounter {
     private Runnable calcFromContinuation(Pattern dest, Pattern source) {
         Path sourceDir = outputDir.resolve(source.toString());
         Path destDir = outputDir.resolve(dest.toString());
+        // TODO: buffer size calculation
         return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
                 delimiter, 10 * 1024 * 1024, false);
     }
@@ -277,7 +269,7 @@ public class ContinuationCounter {
             // don't add tags here
             PatternCounterTask splitterTask =
                     new PatternCounterTask(input, consumerOutputDir, wordIndex,
-                            pattern, delimiter, "", "", true, deleteTempFiles);
+                            pattern, delimiter, "", "", true, true);
             executorService.execute(splitterTask);
         }
     }

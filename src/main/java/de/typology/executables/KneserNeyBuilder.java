@@ -215,8 +215,7 @@ public class KneserNeyBuilder {
             Path continuationDir) throws IOException, InterruptedException {
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDir, continuationDir,
-                        wordIndex, "\t", config.numberOfCores,
-                        config.deleteTempFiles);
+                        wordIndex, "\t", config.numberOfCores);
         continuationCounter.count();
     }
 

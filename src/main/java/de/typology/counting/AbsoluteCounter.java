@@ -87,8 +87,6 @@ public class AbsoluteCounter {
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
-        logger.info("100.00%");
-
         if (deleteTempFiles) {
             try (DirectoryStream<Path> patternDirs =
                     Files.newDirectoryStream(inputDir)) {

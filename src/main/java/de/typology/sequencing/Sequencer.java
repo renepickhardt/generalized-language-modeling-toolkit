@@ -96,8 +96,8 @@ public class Sequencer {
             patternWriters.put(pattern, writers);
         }
 
-        float readSize = 0;
-        float totalSize = Files.size(inputFile);
+        long readSize = 0;
+        long totalSize = Files.size(inputFile);
         long time = System.currentTimeMillis();
 
         try (InputStream inputFileSteam = Files.newInputStream(inputFile);
@@ -123,12 +123,11 @@ public class Sequencer {
                 // if more then a minute since last update
                 if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
                     time = System.currentTimeMillis();
-                    logger.info(String.format("%.2f", 100.f * readSize
+                    logger.info(String.format("%6.2f", 100.f * readSize
                             / totalSize)
                             + "%");
                 }
             }
-            logger.info("100.00%");
         }
 
         for (List<BufferedWriter> writers : patternWriters.values()) {

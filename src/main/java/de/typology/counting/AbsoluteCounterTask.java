@@ -21,9 +21,9 @@ public class AbsoluteCounterTask implements Runnable {
 
     private static Logger logger = LogManager.getLogger();
 
-    private static int numTasks;
+    private static int numTasks = 0;
 
-    private static int numCompleteTasks;
+    private static int numCompleteTasks = 0;
 
     private Path inputFile;
 
@@ -34,10 +34,6 @@ public class AbsoluteCounterTask implements Runnable {
     private int bufferSize;
 
     private boolean deleteTempFiles;
-
-    public static void setNumTasks(int numTasks) {
-        AbsoluteCounterTask.numTasks = numTasks;
-    }
 
     public AbsoluteCounterTask(
             Path inputFile,
@@ -89,9 +85,9 @@ public class AbsoluteCounterTask implements Runnable {
             }
 
             ++numCompleteTasks;
-            logger.info(String.format("%.2f", 100.f * numCompleteTasks
+            logger.info(String.format("%6.2f", 100.f * numCompleteTasks
                     / numTasks)
-                    + "% finished absolute counts for: "
+                    + "% Finished absolute counts for: "
                     + inputFile.getParent().getFileName()
                     + "/"
                     + inputFile.getFileName());
@@ -99,4 +95,9 @@ public class AbsoluteCounterTask implements Runnable {
             throw new RuntimeException(e);
         }
     }
+
+    public static void setNumTasks(int numTasks) {
+        AbsoluteCounterTask.numTasks = numTasks;
+    }
+
 }
