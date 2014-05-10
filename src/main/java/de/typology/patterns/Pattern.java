@@ -24,6 +24,27 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
     }
 
+    public String apply(String[] words) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply(words[i]));
+
+            ++i;
+        }
+
+        return result.toString();
+    }
+
     public String apply(String[] words, String[] pos, int p) {
         StringBuilder result = new StringBuilder();
 
@@ -59,7 +80,9 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     public boolean containsSkp() {
         for (PatternElem elem : pattern) {
-            if (elem == PatternElem.SKP) {
+            if (elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
+                    || elem.equals(PatternElem.PSKP)
+                    || elem.equals(PatternElem.WPOS)) {
                 return true;
             }
         }

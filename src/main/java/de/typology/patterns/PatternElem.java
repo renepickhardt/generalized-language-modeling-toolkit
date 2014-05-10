@@ -7,9 +7,9 @@ public enum PatternElem {
 
     CNT("1"),
 
-    SKP("0"),
-
     POS("2"),
+
+    SKP("0"),
 
     WSKP("x"),
 
@@ -36,18 +36,38 @@ public enum PatternElem {
         this.string = string;
     }
 
+    public String apply(String word) {
+        switch (this) {
+            case CNT:
+            case POS:
+                return word;
+            case SKP:
+            case WSKP:
+            case PSKP:
+            case WPOS:
+                return SKIPPED_WORD;
+            default:
+                throw new IllegalStateException(
+                        "Illegal PatternElem in PatternElem#apply(String): \""
+                                + this + "\".");
+        }
+    }
+
     public String apply(String word, String pos) {
         switch (this) {
             case CNT:
                 return word;
-            case SKP:
-                return SKIPPED_WORD;
             case POS:
                 return pos;
+            case SKP:
+            case WSKP:
+            case PSKP:
+            case WPOS:
+                return SKIPPED_WORD;
             default:
                 throw new IllegalStateException(
-                        "Illegal PatternElem in PatternElem#apply: \"" + this
-                                + "\".");
+                        "Illegal PatternElem in PatternElem#apply(String, String): \""
+                                + this + "\".");
         }
     }
 

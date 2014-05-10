@@ -69,7 +69,6 @@ public class KneserNeyBuilder {
         }
 
         if (config.buildContinuationGLM) {
-            logger.info("split into continuation sequences");
             buildContinuationGLM(trainingFile, wordIndex, absoluteDir,
                     continuationDir);
         }
@@ -215,8 +214,9 @@ public class KneserNeyBuilder {
             Path absoluteDir,
             Path continuationDir) throws IOException, InterruptedException {
         ContinuationCounter continuationCounter =
-                new ContinuationCounter(absoluteDir, continuationDir, "\t",
-                        config.numberOfCores, config.deleteTempFiles);
+                new ContinuationCounter(absoluteDir, continuationDir,
+                        wordIndex, "\t", config.numberOfCores,
+                        config.deleteTempFiles);
         continuationCounter.count();
     }
 

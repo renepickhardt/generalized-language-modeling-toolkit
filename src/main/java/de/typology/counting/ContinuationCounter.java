@@ -37,6 +37,8 @@ public class ContinuationCounter {
 
     private Path outputDir;
 
+    private WordIndex wordIndex;
+
     private String delimiter;
 
     private int numberOfCores;
@@ -46,11 +48,13 @@ public class ContinuationCounter {
     public ContinuationCounter(
             Path inputDir,
             Path outputDir,
+            WordIndex wordIndex,
             String delimiter,
             int numberOfCores,
             boolean deleteTempFiles) throws IOException {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
+        this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
@@ -60,9 +64,6 @@ public class ContinuationCounter {
         logger.info("Counting continuation counts of sequences.");
 
         Files.createDirectory(outputDir);
-
-        ExecutorService executorService =
-                Executors.newFixedThreadPool(numberOfCores);
 
         Map<Pattern, Pattern> patterns = new HashMap<Pattern, Pattern>();
 
@@ -79,20 +80,72 @@ public class ContinuationCounter {
             }
         }
 
-        for (Map.Entry<Pattern, Pattern> entry : patterns.entrySet()) {
-            Pattern dest = entry.getKey();
-            Pattern source = entry.getValue();
-            System.out.println(dest + " -> " + source);
+        while (true) {
+            Set<Pattern> donePatterns = new HashSet<Pattern>();
+
+            ExecutorService executorService =
+                    Executors.newFixedThreadPool(numberOfCores);
+
+            for (Map.Entry<Pattern, Pattern> entry : patterns.entrySet()) {
+                Pattern dest = entry.getKey();
+                Pattern source = entry.getValue();
+
+                if (!source.containsSkp()) {
+                    System.out.println("from absolute:     " + dest + " -> "
+                            + source);
+                    donePatterns.add(dest);
+                    executorService.execute(calcFromAbsolute(dest, source));
+                } else if (Files.exists(outputDir.resolve(source.toString()))) {
+                    System.out.println("from continuation: " + dest + " -> "
+                            + source);
+                    donePatterns.add(dest);
+                    executorService.execute(calcFromContinuation(dest, source));
+                } else {
+                    System.out.println("yolo");
+                }
+            }
+
+            executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+
+            for (Pattern pattern : donePatterns) {
+                patterns.remove(pattern);
+            }
+
+            if (!donePatterns.isEmpty()) {
+                logger.info("End of round of calculation.");
+            } else {
+                break;
+            }
         }
 
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+        if (!patterns.isEmpty()) {
+            String error = "Could not calculate these patterns: ";
+            for (Pattern pattern : patterns.keySet()) {
+                error += pattern + " ";
+            }
+            logger.error(error);
+        }
 
         logger.info("100.00%");
     }
 
     private Pattern getSourcePattern(Pattern pattern) {
         return pattern.replaceLast(PatternElem.WSKP, PatternElem.CNT);
+    }
+
+    private Runnable calcFromAbsolute(Pattern dest, Pattern source) {
+        Path sourceDir = inputDir.resolve(source.toString());
+        Path destDir = outputDir.resolve(dest.toString());
+        return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
+                delimiter, 10 * 1024 * 1024, true);
+    }
+
+    private Runnable calcFromContinuation(Pattern dest, Pattern source) {
+        Path sourceDir = outputDir.resolve(source.toString());
+        Path destDir = outputDir.resolve(dest.toString());
+        return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
+                delimiter, 10 * 1024 * 1024, false);
     }
 
     // LEGACY //////////////////////////////////////////////////////////////////

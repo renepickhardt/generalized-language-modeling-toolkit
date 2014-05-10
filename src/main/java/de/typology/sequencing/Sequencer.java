@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
+import de.typology.utils.StringUtils;
 
 public class Sequencer {
 
@@ -112,7 +112,7 @@ public class Sequencer {
                 //TODO: add n-1 beforeLine Tags
                 line = beforeLine + line + afterLine;
 
-                String[] split = splitAtSpace(line);
+                String[] split = StringUtils.splitAtSpace(line);
 
                 String[] words = new String[split.length];
                 String[] pos = new String[split.length];
@@ -134,31 +134,6 @@ public class Sequencer {
         for (List<BufferedWriter> writers : patternWriters.values()) {
             wordIndex.closeWriters(writers);
         }
-    }
-
-    private static String[] splitAtSpace(String s) {
-        List<String> result = new ArrayList<String>();
-
-        int sp1 = 0, sp2;
-        while (true) {
-            sp2 = s.indexOf(' ', sp1);
-
-            if (sp2 == -1) {
-                String substr = s.substring(sp1);
-                if (!substr.isEmpty()) {
-                    result.add(substr);
-                }
-                break;
-            } else {
-                String substr = s.substring(sp1, sp2);
-                if (!substr.isEmpty()) {
-                    result.add(substr);
-                }
-                sp1 = sp2 + 1;
-            }
-        }
-
-        return result.toArray(new String[result.size()]);
     }
 
     private void generateWordsAndPos(
