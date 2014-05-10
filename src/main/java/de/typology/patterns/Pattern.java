@@ -24,10 +24,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
     }
 
-    public int length() {
-        return pattern.size();
-    }
-
     public String apply(String[] words, String[] pos, int p) {
         StringBuilder result = new StringBuilder();
 
@@ -49,6 +45,10 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return result.toString();
     }
 
+    public int length() {
+        return pattern.size();
+    }
+
     public PatternElem get(int index) {
         return pattern.get(index);
     }
@@ -57,23 +57,34 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         pattern.set(index, elem);
     }
 
-    public int numCnt() {
-        int result = 0;
-        for (PatternElem elem : pattern) {
-            if (elem == PatternElem.CNT) {
-                ++result;
-            }
-        }
-        return result;
-    }
-
-    public boolean containsNoSkp() {
+    public boolean containsSkp() {
         for (PatternElem elem : pattern) {
             if (elem == PatternElem.SKP) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
+    }
+
+    public Pattern replace(PatternElem target, PatternElem replacement) {
+        Pattern newPattern = clone();
+        for (int i = newPattern.length() - 1; i != -1; --i) {
+            if (newPattern.get(i).equals(target)) {
+                newPattern.set(i, replacement);
+            }
+        }
+        return newPattern;
+    }
+
+    public Pattern replaceLast(PatternElem target, PatternElem replacement) {
+        Pattern newPattern = clone();
+        for (int i = newPattern.length() - 1; i != -1; --i) {
+            if (newPattern.get(i).equals(target)) {
+                newPattern.set(i, replacement);
+                break;
+            }
+        }
+        return newPattern;
     }
 
     @Override
@@ -107,24 +118,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.iterator();
     }
 
-    public static Pattern newWithoutSkp(Pattern old) {
-        List<PatternElem> pattern = new ArrayList<PatternElem>();
-        for (PatternElem elem : old) {
-            if (elem != PatternElem.SKP) {
-                pattern.add(elem);
-            }
-        }
-        return new Pattern(pattern);
-    }
-
-    public static Pattern newWithCnt(int length) {
-        List<PatternElem> pattern = new ArrayList<PatternElem>(length + 1);
-        for (int i = 0; i != length + 1; ++i) {
-            pattern.add(PatternElem.CNT);
-        }
-        return new Pattern(pattern);
-    }
-
     public static Set<Pattern> getCombinations(
             int modelLength,
             PatternElem[] elems) {
@@ -151,6 +144,45 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
             result *= base;
         }
         return result;
+    }
+
+    // LEGACY //////////////////////////////////////////////////////////////////
+
+    public int numCnt() {
+        int result = 0;
+        for (PatternElem elem : pattern) {
+            if (elem == PatternElem.CNT) {
+                ++result;
+            }
+        }
+        return result;
+    }
+
+    public boolean containsNoSkp() {
+        for (PatternElem elem : pattern) {
+            if (elem == PatternElem.SKP) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static Pattern newWithoutSkp(Pattern old) {
+        List<PatternElem> pattern = new ArrayList<PatternElem>();
+        for (PatternElem elem : old) {
+            if (elem != PatternElem.SKP) {
+                pattern.add(elem);
+            }
+        }
+        return new Pattern(pattern);
+    }
+
+    public static Pattern newWithCnt(int length) {
+        List<PatternElem> pattern = new ArrayList<PatternElem>(length + 1);
+        for (int i = 0; i != length + 1; ++i) {
+            pattern.add(PatternElem.CNT);
+        }
+        return new Pattern(pattern);
     }
 
     public static List<Pattern> getGlmForSmoothingPatterns(int modelLength) {

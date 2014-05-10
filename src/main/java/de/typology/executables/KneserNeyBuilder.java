@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -215,13 +214,10 @@ public class KneserNeyBuilder {
             WordIndex wordIndex,
             Path absoluteDir,
             Path continuationDir) throws IOException, InterruptedException {
-        List<Pattern> lmPatterns =
-                Pattern.getReverseLmPatterns(config.modelLength);
         ContinuationCounter continuationCounter =
-                new ContinuationCounter(absoluteDir, continuationDir,
-                        wordIndex, "\t", config.numberOfCores,
-                        config.deleteTempFiles);
-        continuationCounter.split(lmPatterns);
+                new ContinuationCounter(absoluteDir, continuationDir, "\t",
+                        config.numberOfCores, config.deleteTempFiles);
+        continuationCounter.count();
     }
 
     private void extractContinuationGLM(

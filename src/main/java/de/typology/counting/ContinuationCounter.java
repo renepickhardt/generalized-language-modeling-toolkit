@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -36,8 +37,6 @@ public class ContinuationCounter {
 
     private Path outputDir;
 
-    private WordIndex wordIndex;
-
     private String delimiter;
 
     private int numberOfCores;
@@ -47,19 +46,56 @@ public class ContinuationCounter {
     public ContinuationCounter(
             Path inputDir,
             Path outputDir,
-            WordIndex wordIndex,
             String delimiter,
             int numberOfCores,
             boolean deleteTempFiles) throws IOException {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
-        this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
+    }
+
+    public void count() throws IOException, InterruptedException {
+        logger.info("Counting continuation counts of sequences.");
 
         Files.createDirectory(outputDir);
+
+        ExecutorService executorService =
+                Executors.newFixedThreadPool(numberOfCores);
+
+        Map<Pattern, Pattern> patterns = new HashMap<Pattern, Pattern>();
+
+        try (DirectoryStream<Path> patternDirs =
+                Files.newDirectoryStream(inputDir)) {
+            for (Path patternDir : patternDirs) {
+                Pattern pattern =
+                        new Pattern(patternDir.getFileName().toString());
+                if (pattern.containsSkp()) {
+                    Pattern wskpPattern =
+                            pattern.replace(PatternElem.SKP, PatternElem.WSKP);
+                    patterns.put(wskpPattern, getSourcePattern(wskpPattern));
+                }
+            }
+        }
+
+        for (Map.Entry<Pattern, Pattern> entry : patterns.entrySet()) {
+            Pattern dest = entry.getKey();
+            Pattern source = entry.getValue();
+            System.out.println(dest + " -> " + source);
+        }
+
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+
+        logger.info("100.00%");
     }
+
+    private Pattern getSourcePattern(Pattern pattern) {
+        return pattern.replaceLast(PatternElem.WSKP, PatternElem.CNT);
+    }
+
+    // LEGACY //////////////////////////////////////////////////////////////////
 
     public void split(List<Pattern> patterns) throws IOException,
             InterruptedException {
@@ -118,7 +154,7 @@ public class ContinuationCounter {
         String outputPatternLabel = key.toString();
 
         splitType(executorService, inputDir, outputDir, outputPattern,
-                outputPatternLabel, key, wordIndex, true);
+                outputPatternLabel, key, null, true);
     }
 
     private void calcFromContinuation(
@@ -145,7 +181,7 @@ public class ContinuationCounter {
         }
 
         splitType(executorService, inputDir, outputDir, outputPattern,
-                outputPatternLabel, new Pattern(patternForModifier), wordIndex,
+                outputPatternLabel, new Pattern(patternForModifier), null,
                 false);
     }
 
