@@ -43,17 +43,21 @@ public class ContinuationCounter {
 
     private int numberOfCores;
 
+    private boolean sortCounts;
+
     public ContinuationCounter(
             Path inputDir,
             Path outputDir,
             WordIndex wordIndex,
             String delimiter,
-            int numberOfCores) throws IOException {
+            int numberOfCores,
+            boolean sortCounts) throws IOException {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
+        this.sortCounts = sortCounts;
     }
 
     public void count() throws IOException, InterruptedException {
@@ -144,7 +148,7 @@ public class ContinuationCounter {
         Path destDir = outputDir.resolve(dest.toString());
         // TODO: buffer size calculation
         return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
-                delimiter, 10 * 1024 * 1024, true);
+                delimiter, 10 * 1024 * 1024, true, sortCounts);
     }
 
     private Runnable calcFromContinuation(Pattern dest, Pattern source) {
@@ -152,7 +156,7 @@ public class ContinuationCounter {
         Path destDir = outputDir.resolve(dest.toString());
         // TODO: buffer size calculation
         return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
-                delimiter, 10 * 1024 * 1024, false);
+                delimiter, 10 * 1024 * 1024, false, sortCounts);
     }
 
     // LEGACY //////////////////////////////////////////////////////////////////

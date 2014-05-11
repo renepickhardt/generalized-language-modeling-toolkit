@@ -103,9 +103,8 @@ conditionalProbabilityOnly = false
 # should be used to save space
 deleteTempFiles = true
 
-# is useful for modified kneser ney smoothing
-addSentenceTags = true
-addFakeStartTag = true
+# sort absolute and continuation counts
+sortCounts = true
 
 # number of decimal places that will be used for calculation of smoothing
 # algorithms

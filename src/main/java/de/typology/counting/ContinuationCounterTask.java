@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,6 +43,8 @@ public class ContinuationCounterTask implements Runnable {
 
     private boolean fromAbsolute;
 
+    private boolean sortCounts;
+
     public ContinuationCounterTask(
             Path inputDir,
             Path outputDir,
@@ -51,7 +52,8 @@ public class ContinuationCounterTask implements Runnable {
             Pattern pattern,
             String delimiter,
             int bufferSize,
-            boolean fromAbsolute) {
+            boolean fromAbsolute,
+            boolean sortCounts) {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
@@ -59,6 +61,7 @@ public class ContinuationCounterTask implements Runnable {
         this.delimiter = delimiter;
         this.bufferSize = bufferSize;
         this.fromAbsolute = fromAbsolute;
+        this.sortCounts = sortCounts;
     }
 
     @Override
@@ -102,14 +105,15 @@ public class ContinuationCounterTask implements Runnable {
                 }
             }
 
-            SortedMap<String, Counter> sortedSequenceCounts =
-                    new TreeMap<String, Counter>(sequenceCounts);
+            if (sortCounts) {
+                sequenceCounts = new TreeMap<String, Counter>(sequenceCounts);
+            }
 
             Files.createDirectory(outputDir);
             List<BufferedWriter> writers =
                     wordIndex.openWriters(outputDir, bufferSize);
 
-            for (Map.Entry<String, Counter> sequenceCount : sortedSequenceCounts
+            for (Map.Entry<String, Counter> sequenceCount : sequenceCounts
                     .entrySet()) {
                 String sequence = sequenceCount.getKey();
                 Counter counter = sequenceCount.getValue();

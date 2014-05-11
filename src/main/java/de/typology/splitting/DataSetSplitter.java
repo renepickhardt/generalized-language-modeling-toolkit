@@ -71,20 +71,17 @@ public class DataSetSplitter {
         logger.info("splitting into training, testing and learning file: "
                 + dir + "/" + inputName);
         try (BufferedReader reader =
-                new BufferedReader(new FileReader(dir.getAbsolutePath()
-                        + "/" + inputName));
+                new BufferedReader(new FileReader(dir.getAbsolutePath() + "/"
+                        + inputName));
                 BufferedWriter trainingDataWriter =
-                        new BufferedWriter(new FileWriter(
-                                dir.getAbsolutePath() + "/"
-                                        + trainingFileName));
+                        new BufferedWriter(new FileWriter(dir.getAbsolutePath()
+                                + "/" + trainingFileName));
                 BufferedWriter learningDataWriter =
-                        new BufferedWriter(new FileWriter(
-                                dir.getAbsolutePath() + "/"
-                                        + learningFileName));
+                        new BufferedWriter(new FileWriter(dir.getAbsolutePath()
+                                + "/" + learningFileName));
                 BufferedWriter testingDataWriter =
-                        new BufferedWriter(new FileWriter(
-                                dir.getAbsolutePath() + "/"
-                                        + testingFileName))) {
+                        new BufferedWriter(new FileWriter(dir.getAbsolutePath()
+                                + "/" + testingFileName))) {
             int rand;
             String line;
             while ((line = reader.readLine()) != null) {
@@ -93,10 +90,8 @@ public class DataSetSplitter {
                     // keep data
                     rand = (int) (Math.random() * 100);
                     if (rand >= Config.get().splitDataRatio) {
-                        if (Config.get().addSentenceTags) {
-                            // TODO make this flexible
-                            line = "<s> " + line + " </s>";
-                        }
+                        // TODO make this flexible
+                        line = "<s> " + line + " </s>";
 
                         // store data in testing or learning file
                         rand = (int) (Math.random() * 100);
@@ -128,9 +123,8 @@ public class DataSetSplitter {
                 new HashMap<Integer, BufferedWriter>();
         for (int i = 1; i <= maxSequenceLength; i++) {
             testSequenceFileWriters.put(i, new BufferedWriter(new FileWriter(
-                    new File(dir.getAbsolutePath() + "/"
-                            + fileNameSplit[0] + "-samples-" + i + "."
-                            + fileNameSplit[1]))));
+                    new File(dir.getAbsolutePath() + "/" + fileNameSplit[0]
+                            + "-samples-" + i + "." + fileNameSplit[1]))));
         }
 
         // get total count from stats file

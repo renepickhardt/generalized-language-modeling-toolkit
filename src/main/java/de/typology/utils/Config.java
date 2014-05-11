@@ -146,14 +146,9 @@ public class Config extends Properties {
     public boolean deleteTempFiles;
 
     /**
-     * is useful for modified kneser ney smoothing
+     * sort absolute and continuation counts
      */
-    public boolean addSentenceTags;
-
-    /**
-     * is useful for modified kneser ney smoothing
-     */
-    public boolean addFakeStartTag;
+    public boolean sortCounts;
 
     /**
      * number of decimal places that will be used for calculation of smoothing

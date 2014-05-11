@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,17 +34,21 @@ public class AbsoluteCounterTask implements Runnable {
 
     private boolean deleteTempFiles;
 
+    private boolean sortCounts;
+
     public AbsoluteCounterTask(
             Path inputFile,
             Path outputFile,
             String delimiter,
             int bufferSize,
-            boolean deleteTempFiles) {
+            boolean deleteTempFiles,
+            boolean sortCounts) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
         this.delimiter = delimiter;
         this.bufferSize = bufferSize;
         this.deleteTempFiles = deleteTempFiles;
+        this.sortCounts = sortCounts;
     }
 
     @Override
@@ -65,14 +68,15 @@ public class AbsoluteCounterTask implements Runnable {
                 }
             }
 
-            SortedMap<String, Integer> sortedSequenceCounts =
-                    new TreeMap<String, Integer>(sequenceCounts);
+            if (sortCounts) {
+                sequenceCounts = new TreeMap<String, Integer>(sequenceCounts);
+            }
 
             try (OutputStream output = Files.newOutputStream(outputFile);
                     BufferedWriter writer =
                             new BufferedWriter(new OutputStreamWriter(output),
                                     bufferSize)) {
-                for (Map.Entry<String, Integer> sequenceCount : sortedSequenceCounts
+                for (Map.Entry<String, Integer> sequenceCount : sequenceCounts
                         .entrySet()) {
                     String sequence = sequenceCount.getKey();
                     Integer counter = sequenceCount.getValue();

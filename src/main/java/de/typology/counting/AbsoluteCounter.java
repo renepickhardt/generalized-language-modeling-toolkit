@@ -32,17 +32,21 @@ public class AbsoluteCounter {
 
     private boolean deleteTempFiles;
 
+    private boolean sortCounts;
+
     public AbsoluteCounter(
             Path inputDir,
             Path outputDir,
             String delimiter,
             int numberOfCores,
-            boolean deleteTempFiles) throws IOException {
+            boolean deleteTempFiles,
+            boolean sortCounts) throws IOException {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
+        this.sortCounts = sortCounts;
     }
 
     public void count() throws IOException, InterruptedException {
@@ -69,7 +73,7 @@ public class AbsoluteCounter {
                                         .getFileName());
                         tasks.add(new AbsoluteCounterTask(patternFile,
                                 patternOutputFile, delimiter, bufferSize,
-                                deleteTempFiles));
+                                deleteTempFiles, sortCounts));
                     }
                 }
             }

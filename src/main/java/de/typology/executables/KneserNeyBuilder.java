@@ -204,7 +204,8 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException, InterruptedException {
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(sequencesDir, absoluteDir, "\t",
-                        config.numberOfCores, config.deleteTempFiles);
+                        config.numberOfCores, config.deleteTempFiles,
+                        config.sortCounts);
         absoluteCounter.count();
     }
 
@@ -215,7 +216,8 @@ public class KneserNeyBuilder {
             Path continuationDir) throws IOException, InterruptedException {
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDir, continuationDir,
-                        wordIndex, "\t", config.numberOfCores);
+                        wordIndex, "\t", config.numberOfCores,
+                        config.sortCounts);
         continuationCounter.count();
     }
 
