@@ -36,24 +36,16 @@ public class Sequencer {
 
     private WordIndex wordIndex;
 
-    private String beforeLine;
-
-    private String afterLine;
-
     private int maxCountDivider;
 
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
-            String beforeLine,
-            String afterLine,
             int maxCountDivider) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
-        this.beforeLine = beforeLine;
-        this.afterLine = afterLine;
         this.maxCountDivider = maxCountDivider;
     }
 
@@ -62,6 +54,8 @@ public class Sequencer {
 
         Files.createDirectory(outputDir);
 
+        // group patterns by length
+        int maxPatternLength = 0;
         Map<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {
@@ -69,23 +63,31 @@ public class Sequencer {
             if (patterns == null) {
                 patterns = new HashSet<Pattern>();
                 patternsByLength.put(pattern.length(), patterns);
+                if (maxPatternLength < pattern.length()) {
+                    maxPatternLength = pattern.length();
+                }
             }
             patterns.add(pattern);
         }
 
+        // sequence by length-grouped patterns
         for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
                 .entrySet()) {
-            sequence(entry.getKey(), entry.getValue());
+            sequence(entry.getKey(), entry.getValue(), maxPatternLength);
         }
     }
 
-    private void sequence(int patternLength, Set<Pattern> patterns)
-            throws IOException {
+    private void sequence(
+            int patternLength,
+            Set<Pattern> patterns,
+            int maxPatternLength) throws IOException {
         logger.info("Building sequences with length: " + patternLength);
 
         int bufferSizes =
                 (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory()
                         / patterns.size() / maxCountDivider));
+
+        // open writers for patterns
         Map<Pattern, List<BufferedWriter>> patternWriters =
                 new HashMap<Pattern, List<BufferedWriter>>();
         for (Pattern pattern : patterns) {
@@ -109,8 +111,7 @@ public class Sequencer {
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
 
-                //TODO: add n-1 beforeLine Tags
-                line = beforeLine + line + afterLine;
+                line = surroundWithTokens(maxPatternLength, line);
 
                 String[] split = StringUtils.splitAtSpace(line);
 
@@ -118,7 +119,7 @@ public class Sequencer {
                 String[] pos = new String[split.length];
                 generateWordsAndPos(split, words, pos);
 
-                writeSequences(patternLength, patternWriters, split, words, pos);
+                writeSequences(patternLength, patternWriters, words, pos);
 
                 // if more then a minute since last update
                 if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
@@ -130,9 +131,26 @@ public class Sequencer {
             }
         }
 
+        // close writers for patterns
         for (List<BufferedWriter> writers : patternWriters.values()) {
             wordIndex.closeWriters(writers);
         }
+    }
+
+    private String surroundWithTokens(int maxPatternLength, String line) {
+        StringBuilder lineBuilder = new StringBuilder();
+        for (int i = 1; i != maxPatternLength; ++i) {
+            lineBuilder.append("<s");
+            lineBuilder.append(i);
+            lineBuilder.append(">/<BOS>");
+        }
+        lineBuilder.append(line);
+        for (int i = maxPatternLength - 1; i != 0; --i) {
+            lineBuilder.append("</s");
+            lineBuilder.append(i);
+            lineBuilder.append(">/<EOS>");
+        }
+        return lineBuilder.toString();
     }
 
     private void generateWordsAndPos(
@@ -154,10 +172,9 @@ public class Sequencer {
     private void writeSequences(
             int patternLength,
             Map<Pattern, List<BufferedWriter>> patternWriters,
-            String[] split,
             String[] words,
             String[] pos) throws IOException {
-        for (int p = 0; p <= split.length - patternLength; ++p) {
+        for (int p = 0; p <= words.length - patternLength; ++p) {
             for (Map.Entry<Pattern, List<BufferedWriter>> entry : patternWriters
                     .entrySet()) {
                 Pattern pattern = entry.getKey();

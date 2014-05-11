@@ -67,70 +67,13 @@ public class ContinuationCounterTask implements Runnable {
     @Override
     public void run() {
         try {
-            Map<String, Counter> sequenceCounts =
-                    new HashMap<String, Counter>();
-
-            try (DirectoryStream<Path> inputFiles =
-                    Files.newDirectoryStream(inputDir)) {
-                for (Path inputFile : inputFiles) {
-                    try (InputStream input = Files.newInputStream(inputFile);
-                            BufferedReader reader =
-                                    new BufferedReader(new InputStreamReader(
-                                            input), bufferSize)) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            int sequencePos = line.indexOf(delimiter);
-                            String sequence = line.substring(0, sequencePos);
-                            int count = 1; // count is 1 if reading absolute
-                            if (!fromAbsolute) {
-                                int countPos =
-                                        line.indexOf(delimiter, sequencePos + 1);
-                                count =
-                                        Integer.parseInt(line.substring(
-                                                sequencePos + 1, countPos));
-                            }
-
-                            String[] words = StringUtils.splitAtSpace(sequence);
-                            String patternSequence = pattern.apply(words);
-
-                            Counter counter =
-                                    sequenceCounts.get(patternSequence);
-                            if (counter == null) {
-                                counter = new Counter();
-                                sequenceCounts.put(patternSequence, counter);
-                            }
-                            counter.add(count);
-                        }
-                    }
-                }
-            }
+            Map<String, Counter> sequenceCounts = getSequenceCounts();
 
             if (sortCounts) {
                 sequenceCounts = new TreeMap<String, Counter>(sequenceCounts);
             }
 
-            Files.createDirectory(outputDir);
-            List<BufferedWriter> writers =
-                    wordIndex.openWriters(outputDir, bufferSize);
-
-            for (Map.Entry<String, Counter> sequenceCount : sequenceCounts
-                    .entrySet()) {
-                String sequence = sequenceCount.getKey();
-                Counter counter = sequenceCount.getValue();
-
-                String[] words = StringUtils.splitAtSpace(sequence);
-                String indexWord = PatternElem.SKIPPED_WORD;
-                for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
-                        && i != pattern.length(); ++i) {
-                    indexWord = pattern.get(i).apply(words[i]);
-                }
-
-                writers.get(wordIndex.rank(indexWord)).write(
-                        sequence + delimiter + counter.toString(delimiter)
-                                + "\n");
-            }
-
-            wordIndex.closeWriters(writers);
+            writeSequenceCounts(sequenceCounts);
 
             ++numCompleteTasks;
             logger.info(String.format("%6.2f", 100.f * numCompleteTasks
@@ -140,6 +83,75 @@ public class ContinuationCounterTask implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Map<String, Counter> getSequenceCounts() throws IOException {
+        Map<String, Counter> sequenceCounts = new HashMap<String, Counter>();
+
+        try (DirectoryStream<Path> inputFiles =
+                Files.newDirectoryStream(inputDir)) {
+            for (Path inputFile : inputFiles) {
+                try (InputStream input = Files.newInputStream(inputFile);
+                        BufferedReader reader =
+                                new BufferedReader(
+                                        new InputStreamReader(input),
+                                        bufferSize)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        int sequencePos = line.indexOf(delimiter);
+                        String sequence = line.substring(0, sequencePos);
+                        int count = 1; // count is 1 if reading absolute
+                        if (!fromAbsolute) {
+                            int countPos =
+                                    line.indexOf(delimiter, sequencePos + 1);
+                            count =
+                                    Integer.parseInt(line.substring(
+                                            sequencePos + 1, countPos));
+                        }
+
+                        String[] words = StringUtils.splitAtSpace(sequence);
+                        String patternSequence = pattern.apply(words);
+
+                        Counter counter = sequenceCounts.get(patternSequence);
+                        if (counter == null) {
+                            counter = new Counter();
+                            sequenceCounts.put(patternSequence, counter);
+                        }
+                        counter.add(count);
+                    }
+                }
+            }
+        }
+
+        return sequenceCounts;
+    }
+
+    private void writeSequenceCounts(Map<String, Counter> sequenceCounts)
+            throws IOException {
+        Files.createDirectory(outputDir);
+        List<BufferedWriter> writers =
+                wordIndex.openWriters(outputDir, bufferSize);
+
+        for (Map.Entry<String, Counter> sequenceCount : sequenceCounts
+                .entrySet()) {
+            String sequence = sequenceCount.getKey();
+            Counter counter = sequenceCount.getValue();
+
+            String[] words = StringUtils.splitAtSpace(sequence);
+            String indexWord = PatternElem.SKIPPED_WORD;
+            for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
+                    && i != pattern.length(); ++i) {
+                indexWord = pattern.get(i).apply(words[i]);
+            }
+
+            BufferedWriter writer = writers.get(wordIndex.rank(indexWord));
+            writer.write(sequence);
+            writer.write(delimiter);
+            writer.write(counter.toString(delimiter));
+            writer.write("\n");
+        }
+
+        wordIndex.closeWriters(writers);
     }
 
     public static void setNumTasks(int numTasks) {

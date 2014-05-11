@@ -57,7 +57,8 @@ public class AbsoluteCounter {
         int bufferSize =
                 (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory() / numberOfCores));
 
-        List<Runnable> tasks = new LinkedList<Runnable>();
+        // generate tasks
+        List<AbsoluteCounterTask> tasks = new LinkedList<AbsoluteCounterTask>();
         try (DirectoryStream<Path> patternDirs =
                 Files.newDirectoryStream(inputDir)) {
             for (Path patternDir : patternDirs) {
@@ -84,6 +85,7 @@ public class AbsoluteCounter {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
+        // execute tasks
         for (Runnable task : tasks) {
             executorService.execute(task);
         }

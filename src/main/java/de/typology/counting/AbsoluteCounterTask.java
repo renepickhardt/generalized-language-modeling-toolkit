@@ -54,35 +54,13 @@ public class AbsoluteCounterTask implements Runnable {
     @Override
     public void run() {
         try {
-            Map<String, Integer> sequenceCounts =
-                    new HashMap<String, Integer>();
-
-            try (InputStream input = Files.newInputStream(inputFile);
-                    BufferedReader reader =
-                            new BufferedReader(new InputStreamReader(input),
-                                    bufferSize)) {
-                String sequence;
-                while ((sequence = reader.readLine()) != null) {
-                    Integer count = sequenceCounts.get(sequence);
-                    sequenceCounts.put(sequence, count == null ? 1 : count + 1);
-                }
-            }
+            Map<String, Integer> sequenceCounts = getSequenceCounts();
 
             if (sortCounts) {
                 sequenceCounts = new TreeMap<String, Integer>(sequenceCounts);
             }
 
-            try (OutputStream output = Files.newOutputStream(outputFile);
-                    BufferedWriter writer =
-                            new BufferedWriter(new OutputStreamWriter(output),
-                                    bufferSize)) {
-                for (Map.Entry<String, Integer> sequenceCount : sequenceCounts
-                        .entrySet()) {
-                    String sequence = sequenceCount.getKey();
-                    Integer counter = sequenceCount.getValue();
-                    writer.write(sequence + delimiter + counter + "\n");
-                }
-            }
+            writeSequenceCounts(sequenceCounts);
 
             if (deleteTempFiles) {
                 Files.delete(inputFile);
@@ -97,6 +75,42 @@ public class AbsoluteCounterTask implements Runnable {
                     + inputFile.getFileName());
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, Integer> getSequenceCounts() throws IOException {
+        Map<String, Integer> sequenceCounts = new HashMap<String, Integer>();
+
+        try (InputStream input = Files.newInputStream(inputFile);
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(input),
+                                bufferSize)) {
+            String sequence;
+            while ((sequence = reader.readLine()) != null) {
+                Integer count = sequenceCounts.get(sequence);
+                sequenceCounts.put(sequence, count == null ? 1 : count + 1);
+            }
+        }
+
+        return sequenceCounts;
+    }
+
+    private void writeSequenceCounts(Map<String, Integer> sequenceCounts)
+            throws IOException {
+        try (OutputStream output = Files.newOutputStream(outputFile);
+                BufferedWriter writer =
+                        new BufferedWriter(new OutputStreamWriter(output),
+                                bufferSize)) {
+            for (Map.Entry<String, Integer> sequenceCount : sequenceCounts
+                    .entrySet()) {
+                String sequence = sequenceCount.getKey();
+                int count = sequenceCount.getValue();
+
+                writer.write(sequence);
+                writer.write(delimiter);
+                writer.write(count);
+                writer.write("\n");
+            }
         }
     }
 

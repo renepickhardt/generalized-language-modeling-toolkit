@@ -65,24 +65,7 @@ public class ContinuationCounter {
 
         Files.createDirectory(outputDir);
 
-        Map<Pattern, Pattern> patterns = new HashMap<Pattern, Pattern>();
-
-        try (DirectoryStream<Path> patternDirs =
-                Files.newDirectoryStream(inputDir)) {
-            for (Path patternDir : patternDirs) {
-                Pattern pattern =
-                        new Pattern(patternDir.getFileName().toString());
-                if (pattern.containsSkp()) {
-                    Pattern wskpPattern =
-                            pattern.replace(PatternElem.SKP, PatternElem.WSKP);
-                    patterns.put(wskpPattern, getSourcePattern(wskpPattern));
-
-                    Pattern pskpPattern =
-                            pattern.replace(PatternElem.SKP, PatternElem.PSKP);
-                    patterns.put(pskpPattern, getSourcePattern(pskpPattern));
-                }
-            }
-        }
+        Map<Pattern, Pattern> patterns = generateContinuationPatterns();
 
         ContinuationCounterTask.setNumTasks(patterns.size());
 
@@ -120,12 +103,43 @@ public class ContinuationCounter {
         }
 
         if (!patterns.isEmpty()) {
-            String error = "Could not calculate these patterns: ";
+            StringBuilder error =
+                    new StringBuilder("Could not calculate these patterns: ");
+            boolean first = true;
             for (Pattern pattern : patterns.keySet()) {
-                error += pattern + " ";
+                if (first) {
+                    first = false;
+                } else {
+                    error.append(", ");
+                }
+                error.append(pattern);
             }
             logger.error(error);
         }
+    }
+
+    private Map<Pattern, Pattern> generateContinuationPatterns()
+            throws IOException {
+        Map<Pattern, Pattern> patterns = new HashMap<Pattern, Pattern>();
+
+        try (DirectoryStream<Path> patternDirs =
+                Files.newDirectoryStream(inputDir)) {
+            for (Path patternDir : patternDirs) {
+                Pattern pattern =
+                        new Pattern(patternDir.getFileName().toString());
+                if (pattern.containsSkp()) {
+                    Pattern wskpPattern =
+                            pattern.replace(PatternElem.SKP, PatternElem.WSKP);
+                    patterns.put(wskpPattern, getSourcePattern(wskpPattern));
+
+                    Pattern pskpPattern =
+                            pattern.replace(PatternElem.SKP, PatternElem.PSKP);
+                    patterns.put(pskpPattern, getSourcePattern(pskpPattern));
+                }
+            }
+        }
+
+        return patterns;
     }
 
     private Pattern getSourcePattern(Pattern pattern) {

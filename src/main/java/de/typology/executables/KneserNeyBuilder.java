@@ -190,7 +190,6 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException {
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>",
                         config.maxCountDivider);
         sequencer.sequence(Pattern.getCombinations(config.modelLength,
                 new PatternElem[] {
