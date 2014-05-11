@@ -181,25 +181,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return result;
     }
 
-    public boolean containsNoSkp() {
-        for (PatternElem elem : pattern) {
-            if (elem == PatternElem.SKP) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static Pattern newWithoutSkp(Pattern old) {
-        List<PatternElem> pattern = new ArrayList<PatternElem>();
-        for (PatternElem elem : old) {
-            if (elem != PatternElem.SKP) {
-                pattern.add(elem);
-            }
-        }
-        return new Pattern(pattern);
-    }
-
     public static Pattern newWithCnt(int length) {
         List<PatternElem> pattern = new ArrayList<PatternElem>(length + 1);
         for (int i = 0; i != length + 1; ++i) {
@@ -220,21 +201,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
             } while ((n >>= 1) != 0);
             Collections.reverse(pattern);
             patterns.add(new Pattern(pattern));
-        }
-        return patterns;
-    }
-
-    public static List<Pattern> getReverseGlmForSmoothingPatterns(
-            int modelLength) {
-        List<Pattern> patterns = getGlmForSmoothingPatterns(modelLength);
-        Collections.reverse(patterns);
-        return patterns;
-    }
-
-    public static List<Pattern> getReverseLmPatterns(int modelLength) {
-        List<Pattern> patterns = new ArrayList<Pattern>(modelLength);
-        for (int i = modelLength - 1; i != -1; --i) {
-            patterns.add(newWithCnt(i));
         }
         return patterns;
     }
