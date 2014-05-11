@@ -1,9 +1,10 @@
 package de.typology.counting;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,74 +13,89 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.typology.indexing.WordIndex;
-import de.typology.patterns.Pattern;
-
 /**
  * Counts absolute counts of sequences for a number of patterns.
  */
 public class AbsoluteCounter {
 
+    public static float MEMORY_FACTOR = 0.2f;
+
     private static Logger logger = LogManager.getLogger();
 
-    private Path input;
+    private Path inputDir;
 
-    private Path outputDirectory;
-
-    private WordIndex wordIndex;
+    private Path outputDir;
 
     private String delimiter;
-
-    private String beforeLine;
-
-    private String afterLine;
 
     private int numberOfCores;
 
     private boolean deleteTempFiles;
 
     public AbsoluteCounter(
-            Path input,
-            Path outputDirectory,
-            WordIndex wordIndex,
+            Path inputDir,
+            Path outputDir,
             String delimiter,
-            String beforeLine,
-            String afterLine,
             int numberOfCores,
             boolean deleteTempFiles) throws IOException {
-        this.input = input;
-        this.outputDirectory = outputDirectory;
-        this.wordIndex = wordIndex;
+        this.inputDir = inputDir;
+        this.outputDir = outputDir;
         this.delimiter = delimiter;
-        this.beforeLine = beforeLine;
-        this.afterLine = afterLine;
         this.numberOfCores = numberOfCores;
         this.deleteTempFiles = deleteTempFiles;
-
-        Files.createDirectory(outputDirectory);
     }
 
-    public void split(List<Pattern> patterns) throws IOException,
-            InterruptedException {
+    public void count() throws IOException, InterruptedException {
+        logger.info("Counting absolute counts of sequences.");
+
+        Files.createDirectory(outputDir);
+
+        int bufferSize =
+                (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory() / numberOfCores));
+
+        List<Runnable> tasks = new LinkedList<Runnable>();
+        try (DirectoryStream<Path> patternDirs =
+                Files.newDirectoryStream(inputDir)) {
+            for (Path patternDir : patternDirs) {
+                Path patternOutputDir =
+                        outputDir.resolve(patternDir.getFileName());
+                Files.createDirectory(patternOutputDir);
+
+                try (DirectoryStream<Path> patternFiles =
+                        Files.newDirectoryStream(patternDir)) {
+                    for (Path patternFile : patternFiles) {
+                        Path patternOutputFile =
+                                patternOutputDir.resolve(patternFile
+                                        .getFileName());
+                        tasks.add(new AbsoluteCounterTask(patternFile,
+                                patternOutputFile, delimiter, bufferSize,
+                                deleteTempFiles));
+                    }
+                }
+            }
+        }
+
+        AbsoluteCounterTask.setNumTasks(tasks.size());
+
         ExecutorService executorService =
                 Executors.newFixedThreadPool(numberOfCores);
 
-        for (Pattern pattern : patterns) {
-            logger.info("calculate absolute counts for " + pattern);
-
-            // Need to create a new InputStream for each iteration, as
-            // SplitterTask will read complete stream on each pass.
-            InputStream inputStream = Files.newInputStream(input);
-
-            PatternCounterTask patternCounterTask =
-                    new PatternCounterTask(inputStream,
-                            outputDirectory.resolve(pattern.toString()),
-                            wordIndex, pattern, delimiter, beforeLine,
-                            afterLine, false, deleteTempFiles);
-            executorService.execute(patternCounterTask);
+        for (Runnable task : tasks) {
+            executorService.execute(task);
         }
 
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+
+        if (deleteTempFiles) {
+            try (DirectoryStream<Path> patternDirs =
+                    Files.newDirectoryStream(inputDir)) {
+                for (Path patternDir : patternDirs) {
+                    Files.delete(patternDir);
+                }
+            }
+            Files.delete(inputDir);
+        }
     }
+
 }

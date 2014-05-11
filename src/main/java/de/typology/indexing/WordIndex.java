@@ -9,9 +9,7 @@ import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
@@ -32,10 +30,10 @@ public class WordIndex {
     public WordIndex(
             InputStream input) throws IOException {
         // read the index file
-        try (BufferedReader br =
+        try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(input))) {
             String line;
-            while ((line = br.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 index.add(line.split("\t")[0]);
             }
         }
@@ -70,33 +68,31 @@ public class WordIndex {
         return (lo + hi) / 2;
     }
 
-    public Map<Integer, BufferedWriter> openWriters(Path outputDirectory)
+    public List<BufferedWriter> openWriters(Path outputDir, int bufferSizes)
             throws IOException {
-        Map<Integer, BufferedWriter> writers =
-                new HashMap<Integer, BufferedWriter>();
+        List<BufferedWriter> writers =
+                new ArrayList<BufferedWriter>(index.size());
 
         // TODO: research why directories are written multiple times to.
-        if (Files.exists(outputDirectory)) {
+        if (Files.exists(outputDir)) {
             // TODO: replace with non legacy api.
-            FileUtils.deleteDirectory(outputDirectory.toFile());
+            FileUtils.deleteDirectory(outputDir.toFile());
         }
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
 
         for (Integer i = 0; i != index.size(); ++i) {
-            // TODO: bufferSize calculation
-            writers.put(
-                    i,
-                    new BufferedWriter(new OutputStreamWriter(Files
-                            .newOutputStream(outputDirectory.resolve(i
-                                    .toString()))), 10 * 8 * 1024));
+            writers.add(new BufferedWriter(new OutputStreamWriter(Files
+                    .newOutputStream(outputDir.resolve(i.toString()))),
+                    bufferSizes));
         }
+
         return writers;
     }
 
-    public void closeWriters(Map<Integer, BufferedWriter> writers)
-            throws IOException {
-        for (BufferedWriter writer : writers.values()) {
+    public void closeWriters(List<BufferedWriter> writers) throws IOException {
+        for (BufferedWriter writer : writers) {
             writer.close();
         }
     }
+
 }

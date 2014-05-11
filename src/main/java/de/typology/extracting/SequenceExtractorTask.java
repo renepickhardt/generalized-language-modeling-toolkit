@@ -14,30 +14,30 @@ import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 
 /**
- * Filters all files in an {@code inputDirectory} to only the lines that contain
+ * Filters all files in an {@code inputDir} to only the lines that contain
  * a {@code sequence} from a set of {@code sequences}.
  */
 public class SequenceExtractorTask implements Runnable {
 
-    private Path inputDirectory;
+    private Path inputDir;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     private Set<String> sequences;
 
     private String delimiter;
 
     /**
-     * Expects an {@code inputDirectory} with files containing lines in
+     * Expects an {@code inputDir} with files containing lines in
      * the format of {@code <Sequence>(<Delimiter><Count>)*}. For each file in
-     * {@code inputDirectory} a file in {@code outputDirectory} will be created,
+     * {@code inputDir} a file in {@code outputDir} will be created,
      * containing all lines whose {@code <Sequence>} was an element in
      * {@code sequences} modified by {@code pattern}.
      * 
-     * @param inputDirectory
-     *            Directory to read files from.
-     * @param outputDirectory
-     *            Directory to write files to.
+     * @param inputDir
+     *            Dir to read files from.
+     * @param outputDir
+     *            Dir to write files to.
      * @param sequences
      *            Set of Sequences to be checked against.
      * @param pattern
@@ -46,27 +46,27 @@ public class SequenceExtractorTask implements Runnable {
      *            Delimiter separating {@code <Sequence>} and {@code <Count>}s.
      */
     public SequenceExtractorTask(
-            Path inputDirectory,
-            Path outputDirectory,
+            Path inputDir,
+            Path outputDir,
             Set<String> sequences,
             Pattern pattern,
             String delimiter) throws IOException {
-        this.inputDirectory = inputDirectory;
-        this.outputDirectory = outputDirectory;
+        this.inputDir = inputDir;
+        this.outputDir = outputDir;
         this.sequences = extractSequencesWithPattern(sequences, pattern);
         this.delimiter = delimiter;
 
-        Files.createDirectory(outputDirectory);
+        Files.createDirectory(outputDir);
     }
 
     @Override
     public void run() {
         try {
             try (DirectoryStream<Path> inputFiles =
-                    Files.newDirectoryStream(inputDirectory)) {
+                    Files.newDirectoryStream(inputDir)) {
                 for (Path inputFile : inputFiles) {
                     Path outputFile =
-                            outputDirectory.resolve(inputFile.getFileName());
+                            outputDir.resolve(inputFile.getFileName());
 
                     if (inputFile.getFileName().toString().equals("all")) {
                         Files.copy(inputFile, outputFile);

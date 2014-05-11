@@ -47,7 +47,8 @@ public class WordIndexBuilder {
         // calculate counts of words
         TreeMap<String, Long> wordCounts = new TreeMap<String, Long>();
         try (BufferedReader reader =
-                new BufferedReader(new InputStreamReader(input))) {
+                new BufferedReader(new InputStreamReader(input),
+                        100 * 1024 * 1024)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = beforeLine + line + afterLine;

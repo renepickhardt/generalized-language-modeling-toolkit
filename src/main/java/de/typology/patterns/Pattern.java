@@ -2,8 +2,10 @@ package de.typology.patterns;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class Pattern implements Iterable<PatternElem>, Cloneable {
 
@@ -22,6 +24,48 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
     }
 
+    public String apply(String[] words) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply(words[i]));
+
+            ++i;
+        }
+
+        return result.toString();
+    }
+
+    public String apply(String[] words, String[] pos, int p) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply(words[p + i], pos[p + i]));
+
+            ++i;
+        }
+
+        return result.toString();
+    }
+
     public int length() {
         return pattern.size();
     }
@@ -34,23 +78,36 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         pattern.set(index, elem);
     }
 
-    public int numCnt() {
-        int result = 0;
+    public boolean containsSkp() {
         for (PatternElem elem : pattern) {
-            if (elem == PatternElem.CNT) {
-                ++result;
+            if (elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
+                    || elem.equals(PatternElem.PSKP)
+                    || elem.equals(PatternElem.WPOS)) {
+                return true;
             }
         }
-        return result;
+        return false;
     }
 
-    public boolean containsNoSkp() {
-        for (PatternElem elem : pattern) {
-            if (elem == PatternElem.SKP) {
-                return false;
+    public Pattern replace(PatternElem target, PatternElem replacement) {
+        Pattern newPattern = clone();
+        for (int i = newPattern.length() - 1; i != -1; --i) {
+            if (newPattern.get(i).equals(target)) {
+                newPattern.set(i, replacement);
             }
         }
-        return true;
+        return newPattern;
+    }
+
+    public Pattern replaceLast(PatternElem target, PatternElem replacement) {
+        Pattern newPattern = clone();
+        for (int i = newPattern.length() - 1; i != -1; --i) {
+            if (newPattern.get(i).equals(target)) {
+                newPattern.set(i, replacement);
+                break;
+            }
+        }
+        return newPattern;
     }
 
     @Override
@@ -82,6 +139,55 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     @Override
     public Iterator<PatternElem> iterator() {
         return pattern.iterator();
+    }
+
+    public static Set<Pattern> getCombinations(
+            int modelLength,
+            PatternElem[] elems) {
+        Set<Pattern> patterns = new HashSet<Pattern>();
+
+        for (int i = 1; i != modelLength + 1; ++i) {
+            for (int j = 0; j != pow(elems.length, i); ++j) {
+                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
+                int n = j;
+                for (int k = 0; k != i; ++k) {
+                    pattern.add(elems[n % elems.length]);
+                    n /= elems.length;
+                }
+                patterns.add(new Pattern(pattern));
+            }
+        }
+
+        return patterns;
+    }
+
+    private static int pow(int base, int power) {
+        int result = 1;
+        for (int i = 0; i != power; ++i) {
+            result *= base;
+        }
+        return result;
+    }
+
+    // LEGACY //////////////////////////////////////////////////////////////////
+
+    public int numCnt() {
+        int result = 0;
+        for (PatternElem elem : pattern) {
+            if (elem == PatternElem.CNT) {
+                ++result;
+            }
+        }
+        return result;
+    }
+
+    public boolean containsNoSkp() {
+        for (PatternElem elem : pattern) {
+            if (elem == PatternElem.SKP) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static Pattern newWithoutSkp(Pattern old) {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,9 +33,9 @@ public class ContinuationCounter {
 
     private static Logger logger = LogManager.getLogger();
 
-    private Path inputDirectory;
+    private Path inputDir;
 
-    private Path outputDirectory;
+    private Path outputDir;
 
     private WordIndex wordIndex;
 
@@ -42,24 +43,119 @@ public class ContinuationCounter {
 
     private int numberOfCores;
 
-    private boolean deleteTempFiles;
-
     public ContinuationCounter(
-            Path inputDirectory,
-            Path outputDirectory,
+            Path inputDir,
+            Path outputDir,
             WordIndex wordIndex,
             String delimiter,
-            int numberOfCores,
-            boolean deleteTempFiles) throws IOException {
-        this.inputDirectory = inputDirectory;
-        this.outputDirectory = outputDirectory;
+            int numberOfCores) throws IOException {
+        this.inputDir = inputDir;
+        this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
-        this.deleteTempFiles = deleteTempFiles;
-
-        Files.createDirectory(outputDirectory);
     }
+
+    public void count() throws IOException, InterruptedException {
+        logger.info("Counting continuation counts of sequences.");
+
+        Files.createDirectory(outputDir);
+
+        Map<Pattern, Pattern> patterns = new HashMap<Pattern, Pattern>();
+
+        try (DirectoryStream<Path> patternDirs =
+                Files.newDirectoryStream(inputDir)) {
+            for (Path patternDir : patternDirs) {
+                Pattern pattern =
+                        new Pattern(patternDir.getFileName().toString());
+                if (pattern.containsSkp()) {
+                    Pattern wskpPattern =
+                            pattern.replace(PatternElem.SKP, PatternElem.WSKP);
+                    patterns.put(wskpPattern, getSourcePattern(wskpPattern));
+
+                    Pattern pskpPattern =
+                            pattern.replace(PatternElem.SKP, PatternElem.PSKP);
+                    patterns.put(pskpPattern, getSourcePattern(pskpPattern));
+                }
+            }
+        }
+
+        ContinuationCounterTask.setNumTasks(patterns.size());
+
+        while (true) {
+            Set<Pattern> donePatterns = new HashSet<Pattern>();
+
+            ExecutorService executorService =
+                    Executors.newFixedThreadPool(numberOfCores);
+
+            for (Map.Entry<Pattern, Pattern> entry : patterns.entrySet()) {
+                Pattern dest = entry.getKey();
+                Pattern source = entry.getValue();
+
+                if (!source.containsSkp()) {
+                    donePatterns.add(dest);
+                    executorService.execute(calcFromAbsolute(dest, source));
+                } else if (Files.exists(outputDir.resolve(source.toString()))) {
+                    donePatterns.add(dest);
+                    executorService.execute(calcFromContinuation(dest, source));
+                }
+            }
+
+            executorService.shutdown();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+
+            for (Pattern pattern : donePatterns) {
+                patterns.remove(pattern);
+            }
+
+            if (!donePatterns.isEmpty()) {
+                logger.info("End of round of calculation.");
+            } else {
+                break;
+            }
+        }
+
+        if (!patterns.isEmpty()) {
+            String error = "Could not calculate these patterns: ";
+            for (Pattern pattern : patterns.keySet()) {
+                error += pattern + " ";
+            }
+            logger.error(error);
+        }
+    }
+
+    private Pattern getSourcePattern(Pattern pattern) {
+        Pattern sourcePattern = pattern.clone();
+        for (int i = sourcePattern.length() - 1; i != -1; --i) {
+            PatternElem elem = sourcePattern.get(i);
+            if (elem.equals(PatternElem.WSKP)) {
+                sourcePattern.set(i, PatternElem.CNT);
+                break;
+            } else if (elem.equals(PatternElem.PSKP)) {
+                sourcePattern.set(i, PatternElem.POS);
+                break;
+            }
+        }
+        return sourcePattern;
+    }
+
+    private Runnable calcFromAbsolute(Pattern dest, Pattern source) {
+        Path sourceDir = inputDir.resolve(source.toString());
+        Path destDir = outputDir.resolve(dest.toString());
+        // TODO: buffer size calculation
+        return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
+                delimiter, 10 * 1024 * 1024, true);
+    }
+
+    private Runnable calcFromContinuation(Pattern dest, Pattern source) {
+        Path sourceDir = outputDir.resolve(source.toString());
+        Path destDir = outputDir.resolve(dest.toString());
+        // TODO: buffer size calculation
+        return new ContinuationCounterTask(sourceDir, destDir, wordIndex, dest,
+                delimiter, 10 * 1024 * 1024, false);
+    }
+
+    // LEGACY //////////////////////////////////////////////////////////////////
 
     public void split(List<Pattern> patterns) throws IOException,
             InterruptedException {
@@ -112,13 +208,13 @@ public class ContinuationCounter {
         logger.info("calculate continuation counts for " + key
                 + "\tfrom absolute " + value);
 
-        Path inputDir = inputDirectory.resolve(value.toString());
+        Path inputDir = this.inputDir.resolve(value.toString());
 
         Pattern outputPattern = Pattern.newWithoutSkp(key);
         String outputPatternLabel = key.toString();
 
-        splitType(executorService, inputDir, outputDirectory, outputPattern,
-                outputPatternLabel, key, wordIndex, true);
+        splitType(executorService, inputDir, outputDir, outputPattern,
+                outputPatternLabel, key, null, true);
     }
 
     private void calcFromContinuation(
@@ -128,7 +224,7 @@ public class ContinuationCounter {
         logger.info("calculate continuation counts for " + key
                 + "\tfrom continuation " + value);
 
-        Path inputDir = outputDirectory.resolve(value.toString());
+        Path inputDir = outputDir.resolve(value.toString());
 
         Pattern outputPattern = Pattern.newWithoutSkp(key);
         String outputPatternLabel = key.toString();
@@ -144,8 +240,8 @@ public class ContinuationCounter {
             }
         }
 
-        splitType(executorService, inputDir, outputDirectory, outputPattern,
-                outputPatternLabel, new Pattern(patternForModifier), wordIndex,
+        splitType(executorService, inputDir, outputDir, outputPattern,
+                outputPatternLabel, new Pattern(patternForModifier), null,
                 false);
     }
 
@@ -170,12 +266,12 @@ public class ContinuationCounter {
 
         // CONSUMER ////////////////////////////////////////////////////////////
 
-        Path consumerOutputDirectory = outputDir.resolve(patternLabel);
+        Path consumerOutputDir = outputDir.resolve(patternLabel);
 
         // if pattern has only falses
         if (pattern.length() == 0) {
-            Files.createDirectory(consumerOutputDirectory);
-            Path lineCountOutputPath = consumerOutputDirectory.resolve("all");
+            Files.createDirectory(consumerOutputDir);
+            Path lineCountOutputPath = consumerOutputDir.resolve("all");
 
             OutputStream lineCounterOutput =
                     Files.newOutputStream(lineCountOutputPath);
@@ -187,9 +283,8 @@ public class ContinuationCounter {
         } else {
             // don't add tags here
             PatternCounterTask splitterTask =
-                    new PatternCounterTask(input, consumerOutputDirectory,
-                            wordIndex, pattern, delimiter, "", "", true,
-                            deleteTempFiles);
+                    new PatternCounterTask(input, consumerOutputDir, wordIndex,
+                            pattern, delimiter, "", "", true, true);
             executorService.execute(splitterTask);
         }
     }

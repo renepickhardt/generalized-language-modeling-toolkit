@@ -33,9 +33,9 @@ public class Config extends Properties {
     // BASIC SETTINGS //////////////////////////////////////////////////////////
 
     /**
-     * directory from which we will start to work
+     * dir from which we will start to work
      */
-    public String outputDirectory;
+    public String outputDir;
 
     /**
      * length of the model to be trained
@@ -50,7 +50,7 @@ public class Config extends Properties {
 
     /**
      * name of the input data set (this is supposed to be a subfolder of
-     * outputDirectory) in this folder the trainingfile should be named
+     * outputDir) in this folder the trainingfile should be named
      * normalized.txt and should contain one sentence per line.
      */
     public String inputDataSet;
@@ -72,6 +72,11 @@ public class Config extends Properties {
      * subfiles for counting and aggregating sequences
      */
     public boolean buildIndex;
+
+    /**
+     * split trainingsdata into sequences
+     */
+    public boolean buildSequences;
 
     /**
      * if the absolute values for skipped sequences should be build

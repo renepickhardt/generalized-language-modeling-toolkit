@@ -13,23 +13,32 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
+          <fork>false</fork>
+          <meminitial>4096m</meminitial>
+          <maxmem>4096m</maxmem>
           <source>1.7</source>
           <target>1.7</target>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
+      
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.2.1</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.16</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
-          <argLine>-Xmx6024m</argLine>
+          <executable>de.typology.executables.KneserNeyBuilder</executable>
+          <mainClass>de.typology.executables.KneserNeyBuilder</mainClass>
         </configuration>
       </plugin>
+      
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
