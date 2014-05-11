@@ -70,7 +70,7 @@ public class ContinuationCounterTask implements Runnable {
             Map<String, Counter> sequenceCounts = getSequenceCounts();
 
             if (sortCounts) {
-                sequenceCounts = new TreeMap<String, Counter>(sequenceCounts);
+                sequenceCounts = sortCounts(sequenceCounts);
             }
 
             writeSequenceCounts(sequenceCounts);
@@ -123,6 +123,12 @@ public class ContinuationCounterTask implements Runnable {
             }
         }
 
+        return sequenceCounts;
+    }
+
+    private Map<String, Counter>
+        sortCounts(Map<String, Counter> sequenceCounts) {
+        sequenceCounts = new TreeMap<String, Counter>(sequenceCounts);
         return sequenceCounts;
     }
 

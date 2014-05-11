@@ -11,8 +11,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-
 /**
  * Class used to interface with the output of {@link WordIndexBuilder}.
  */
@@ -72,13 +70,6 @@ public class WordIndex {
             throws IOException {
         List<BufferedWriter> writers =
                 new ArrayList<BufferedWriter>(index.size());
-
-        // TODO: research why directories are written multiple times to.
-        if (Files.exists(outputDir)) {
-            // TODO: replace with non legacy api.
-            FileUtils.deleteDirectory(outputDir.toFile());
-        }
-        Files.createDirectory(outputDir);
 
         for (Integer i = 0; i != index.size(); ++i) {
             writers.add(new BufferedWriter(new OutputStreamWriter(Files

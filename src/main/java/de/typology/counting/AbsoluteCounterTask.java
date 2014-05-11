@@ -57,7 +57,7 @@ public class AbsoluteCounterTask implements Runnable {
             Map<String, Integer> sequenceCounts = getSequenceCounts();
 
             if (sortCounts) {
-                sequenceCounts = new TreeMap<String, Integer>(sequenceCounts);
+                sequenceCounts = sortCounts(sequenceCounts);
             }
 
             writeSequenceCounts(sequenceCounts);
@@ -95,6 +95,12 @@ public class AbsoluteCounterTask implements Runnable {
         return sequenceCounts;
     }
 
+    private Map<String, Integer>
+        sortCounts(Map<String, Integer> sequenceCounts) {
+        sequenceCounts = new TreeMap<String, Integer>(sequenceCounts);
+        return sequenceCounts;
+    }
+
     private void writeSequenceCounts(Map<String, Integer> sequenceCounts)
             throws IOException {
         try (OutputStream output = Files.newOutputStream(outputFile);
@@ -104,11 +110,11 @@ public class AbsoluteCounterTask implements Runnable {
             for (Map.Entry<String, Integer> sequenceCount : sequenceCounts
                     .entrySet()) {
                 String sequence = sequenceCount.getKey();
-                int count = sequenceCount.getValue();
+                Integer count = sequenceCount.getValue();
 
                 writer.write(sequence);
                 writer.write(delimiter);
-                writer.write(count);
+                writer.write(count.toString());
                 writer.write("\n");
             }
         }

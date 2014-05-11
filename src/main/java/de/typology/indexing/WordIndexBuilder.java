@@ -45,7 +45,8 @@ public class WordIndexBuilder {
             String beforeLine,
             String afterLine) throws IOException {
         // calculate counts of words
-        TreeMap<String, Long> wordCounts = new TreeMap<String, Long>();
+        TreeMap<String, Integer> wordCounts = new TreeMap<String, Integer>();
+        // TODO: buffer size calculation
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(input),
                         100 * 1024 * 1024)) {
@@ -55,19 +56,15 @@ public class WordIndexBuilder {
                 String[] words = line.split("\\s+");
 
                 for (String word : words) {
-                    Long count = wordCounts.get(word);
-                    if (count != null) {
-                        wordCounts.put(word, count + 1L);
-                    } else {
-                        wordCounts.put(word, 1L);
-                    }
+                    Integer count = wordCounts.get(word);
+                    wordCounts.put(word, count == null ? 1 : count + 1);
                 }
             }
         }
 
         // summarize all word counts
         long sumCount = 0L;
-        for (long count : wordCounts.values()) {
+        for (int count : wordCounts.values()) {
             sumCount += count;
         }
 
@@ -80,12 +77,12 @@ public class WordIndexBuilder {
         // build index
         try (BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(output))) {
-            long currentFileCount = 0L;
             int fileCount = 0;
+            long currentFileCount = 0L;
 
-            for (Map.Entry<String, Long> wordCount : wordCounts.entrySet()) {
+            for (Map.Entry<String, Integer> wordCount : wordCounts.entrySet()) {
                 String word = wordCount.getKey();
-                long count = wordCount.getValue();
+                int count = wordCount.getValue();
 
                 if (fileCount == 0
                         || currentFileCount + count > maxCountPerFile) {
