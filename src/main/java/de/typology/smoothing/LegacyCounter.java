@@ -9,7 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Counter {
+public class LegacyCounter {
 
     private static int columnNumberStartZero;
 
@@ -61,17 +61,17 @@ public class Counter {
     public static long countColumnCountsInDir(
             int columnNumberStartZero,
             File dir) {
-        if (columnNumberStartZero == Counter.columnNumberStartZero
-                && dir.equals(Counter.dir)) {
-            return Counter.currentCountForDir;
+        if (columnNumberStartZero == LegacyCounter.columnNumberStartZero
+                && dir.equals(LegacyCounter.dir)) {
+            return LegacyCounter.currentCountForDir;
         } else {
             long totalCount = 0;
             for (File file : dir.listFiles()) {
                 totalCount += countColumnCounts(columnNumberStartZero, file);
             }
-            Counter.columnNumberStartZero = columnNumberStartZero;
-            Counter.currentCountForDir = totalCount;
-            Counter.dir = dir;
+            LegacyCounter.columnNumberStartZero = columnNumberStartZero;
+            LegacyCounter.currentCountForDir = totalCount;
+            LegacyCounter.dir = dir;
             return totalCount;
         }
     }

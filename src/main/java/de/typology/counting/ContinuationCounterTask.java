@@ -109,7 +109,9 @@ public class ContinuationCounterTask implements Runnable {
                                             sequencePos + 1, countPos));
                         }
 
-                        String[] words = StringUtils.splitAtSpace(sequence);
+                        String[] words =
+                                (String[]) StringUtils.splitAtSpace(sequence)
+                                        .toArray();
                         String patternSequence = pattern.apply(words);
 
                         Counter counter = sequenceCounts.get(patternSequence);
@@ -143,7 +145,8 @@ public class ContinuationCounterTask implements Runnable {
             String sequence = sequenceCount.getKey();
             Counter counter = sequenceCount.getValue();
 
-            String[] words = StringUtils.splitAtSpace(sequence);
+            String[] words =
+                    (String[]) StringUtils.splitAtSpace(sequence).toArray();
             String indexWord = PatternElem.SKIPPED_WORD;
             for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
                     && i != pattern.length(); ++i) {

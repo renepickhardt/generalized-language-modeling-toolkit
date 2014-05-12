@@ -45,16 +45,16 @@ public class LegacyModifiedKneserNeySmoother extends LegacyKneserNeySmoother {
             HashMap<String, Double> discountValuesMap =
                     new HashMap<String, Double>();
             long n1 =
-                    Counter.countCountsInDir(1, absoluteTypeDir,
+                    LegacyCounter.countCountsInDir(1, absoluteTypeDir,
                             "<fs>");
             long n2 =
-                    Counter.countCountsInDir(2, absoluteTypeDir,
+                    LegacyCounter.countCountsInDir(2, absoluteTypeDir,
                             "<fs>");
             long n3 =
-                    Counter.countCountsInDir(3, absoluteTypeDir,
+                    LegacyCounter.countCountsInDir(3, absoluteTypeDir,
                             "<fs>");
             long n4 =
-                    Counter.countCountsInDir(4, absoluteTypeDir,
+                    LegacyCounter.countCountsInDir(4, absoluteTypeDir,
                             "<fs>");
             logger.info("n1 for " + absoluteTypeDir.getName() + ":" + n1);
             logger.info("n2 for " + absoluteTypeDir.getName() + ":" + n2);

@@ -5,7 +5,7 @@ import java.util.List;
 
 public class StringUtils {
 
-    public static String[] splitAtSpace(String s) {
+    public static List<String> splitAtSpace(String s) {
         List<String> result = new ArrayList<String>();
 
         int sp1 = 0, sp2;
@@ -27,7 +27,7 @@ public class StringUtils {
             }
         }
 
-        return result.toArray(new String[result.size()]);
+        return result;
     }
 
 }

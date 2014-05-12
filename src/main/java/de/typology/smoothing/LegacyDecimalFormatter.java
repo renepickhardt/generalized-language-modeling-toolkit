@@ -3,11 +3,11 @@ package de.typology.smoothing;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
-public class DecimalFormatter {
+public class LegacyDecimalFormatter {
 
     private DecimalFormat decimalFormat;
 
-    public DecimalFormatter(
+    public LegacyDecimalFormatter(
             int decimalPlaces) {
         String format = "###.";
         for (int i = 0; i < decimalPlaces; i++) {

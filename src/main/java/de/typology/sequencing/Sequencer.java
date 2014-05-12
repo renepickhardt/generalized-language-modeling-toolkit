@@ -119,7 +119,8 @@ public class Sequencer {
                     line = surroundWithTokens(maxPatternLength, line);
                 }
 
-                String[] split = StringUtils.splitAtSpace(line);
+                String[] split =
+                        (String[]) StringUtils.splitAtSpace(line).toArray();
 
                 String[] words = new String[split.length];
                 String[] pos = new String[split.length];

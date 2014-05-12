@@ -3,7 +3,7 @@ package de.typology.smoothing;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 
-public class SequenceFormatter {
+public class LegacySequenceFormatter {
 
     /**
      * Removes word at position removeWordAtPosition. Words are separated with

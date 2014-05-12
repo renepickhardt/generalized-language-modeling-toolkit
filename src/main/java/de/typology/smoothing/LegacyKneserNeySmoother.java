@@ -38,7 +38,7 @@ public class LegacyKneserNeySmoother {
 
     private String delimiter;
 
-    private DecimalFormatter decimalFormatter;
+    private LegacyDecimalFormatter decimalFormatter;
 
     // in memory index of extracted counts for training data
     // TODO: make non-public
@@ -75,7 +75,7 @@ public class LegacyKneserNeySmoother {
                         + continuationDir.getName());
 
         this.delimiter = delimiter;
-        decimalFormatter = new DecimalFormatter(Config.get().decimalPlaces);
+        decimalFormatter = new LegacyDecimalFormatter(Config.get().decimalPlaces);
 
         discountTypesValuesMapFile =
                 new File(this.absoluteDir.getParentFile()
@@ -83,7 +83,7 @@ public class LegacyKneserNeySmoother {
         discountTypeValuesMap = null;
 
         totalUnigramCount =
-                Counter.aggregateCountsInDir(new File(absoluteDir
+                LegacyCounter.aggregateCountsInDir(new File(absoluteDir
                         .getAbsolutePath() + "/1"));
         logger.info("total unigram count: " + totalUnigramCount);
     };
@@ -184,7 +184,7 @@ public class LegacyKneserNeySmoother {
         HashMap<String, Long> aggregated1GramsMap = new HashMap<String, Long>();
         aggregated1GramsMap.put(
                 "",
-                Counter.aggregateCountsInDir(new File(absoluteDir
+                LegacyCounter.aggregateCountsInDir(new File(absoluteDir
                         .getAbsolutePath() + "/1")));
         typeSequenceValueMap.put("", aggregated1GramsMap);
         return typeSequenceValueMap;
@@ -327,7 +327,7 @@ public class LegacyKneserNeySmoother {
             highestOrderNumerator = 0;
         }
         String sequenceWithoutLast =
-                SequenceFormatter.removeWord(sequence, sequenceLength - 1);
+                LegacySequenceFormatter.removeWord(sequence, sequenceLength - 1);
         String sequencePatternWithoutLast =
                 sequenceStringPattern.substring(0, sequenceLength - 1);
         long highestOrderDenominator =
@@ -405,12 +405,12 @@ public class LegacyKneserNeySmoother {
                                     Arrays.copyOfRange(lowerOrderCharPattern,
                                             1, lowerOrderCharPattern.length);
                             lowerOrderSequence =
-                                    SequenceFormatter.removeWord(
+                                    LegacySequenceFormatter.removeWord(
                                             higherOrderSequence, 0);
                         }
                     } else {
                         lowerOrderSequence =
-                                SequenceFormatter.removeWord(
+                                LegacySequenceFormatter.removeWord(
                                         higherOrderSequence, i - skippedZeros);
                     }
 
@@ -442,7 +442,7 @@ public class LegacyKneserNeySmoother {
             return result;
         } else {
             String lowerOrderSequence =
-                    SequenceFormatter.removeWord(higherOrderSequence, 0);
+                    LegacySequenceFormatter.removeWord(higherOrderSequence, 0);
             String lowerOrderStringPattern =
                     higherOrderStringPattern.substring(1);
 
@@ -483,7 +483,7 @@ public class LegacyKneserNeySmoother {
         }
 
         String sequenceWithoutLast =
-                SequenceFormatter.removeWord(sequence, sequenceLength - 1);
+                LegacySequenceFormatter.removeWord(sequence, sequenceLength - 1);
         String continuationReplacedLastStringPattern =
                 continuationPattern.substring(0,
                         continuationPattern.length() - 1) + "_";
@@ -616,10 +616,10 @@ public class LegacyKneserNeySmoother {
             HashMap<String, Double> discountValuesMap =
                     new HashMap<String, Double>();
             long n1 =
-                    Counter.countCountsInDir(1, absoluteTypeDir,
+                    LegacyCounter.countCountsInDir(1, absoluteTypeDir,
                             "<fs>");
             long n2 =
-                    Counter.countCountsInDir(2, absoluteTypeDir,
+                    LegacyCounter.countCountsInDir(2, absoluteTypeDir,
                             "<fs>");
             logger.info("n1 for " + absoluteTypeDir.getName() + ":" + n1);
             logger.info("n2 for " + absoluteTypeDir.getName() + ":" + n2);
@@ -689,7 +689,7 @@ public class LegacyKneserNeySmoother {
             String sequenceStringPattern,
             int countIndex) {
         String sequenceWithoutLast =
-                SequenceFormatter.removeWord(sequence, sequenceLength - 1);
+                LegacySequenceFormatter.removeWord(sequence, sequenceLength - 1);
         sequenceStringPattern = sequenceStringPattern.replaceAll("0", "_");
         String continuationLastPattern =
                 sequenceStringPattern.substring(0,
