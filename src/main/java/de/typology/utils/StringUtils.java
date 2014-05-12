@@ -3,8 +3,14 @@ package de.typology.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * methods for faster string processing
+ */
 public class StringUtils {
 
+	/**
+	 * this method should be used instead of string.split("\\s") since it is much more performant
+	 */
     public static String[] splitAtSpace(String s) {
         List<String> result = new ArrayList<String>();
 

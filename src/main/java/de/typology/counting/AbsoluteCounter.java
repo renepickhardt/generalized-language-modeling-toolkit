@@ -53,7 +53,8 @@ public class AbsoluteCounter {
         logger.info("Counting absolute counts of sequences.");
 
         Files.createDirectory(outputDir);
-
+        
+        // TODO: put calculation of possible buffer size towards a utils function
         int bufferSize =
                 (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory() / numberOfCores));
 
@@ -80,6 +81,7 @@ public class AbsoluteCounter {
             }
         }
 
+        // TODO: if we had a blockhere like thread.join we could omit this line and hope to set up all constructors?
         AbsoluteCounterTask.setNumTasks(tasks.size());
 
         ExecutorService executorService =
@@ -93,6 +95,7 @@ public class AbsoluteCounter {
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
+        // delets the folders where the raw data was stored
         if (deleteTempFiles) {
             try (DirectoryStream<Path> patternDirs =
                     Files.newDirectoryStream(inputDir)) {
