@@ -19,8 +19,8 @@ import de.typology.indexing.WordIndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
-import de.typology.smoothing.KneserNeySmoother;
-import de.typology.smoothing.ModifiedKneserNeySmoother;
+import de.typology.smoothing.LegacyKneserNeySmoother;
+import de.typology.smoothing.LegacyModifiedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
 import de.typology.utils.Config;
 
@@ -37,7 +37,8 @@ public class KneserNeyBuilder {
         config = Config.get();
         loadStages(args);
 
-        Path workingDir = Paths.get(config.outputDir + config.inputDataSet);
+        Path workingDir =
+                Paths.get(config.outputDir).resolve(config.inputDataSet);
         Path trainingFile = workingDir.resolve("training.txt");
         Path indexFile = workingDir.resolve("index.txt");
         Path sequencesDir = workingDir.resolve("sequences");
@@ -81,7 +82,7 @@ public class KneserNeyBuilder {
 
         if (config.buildKneserNey) {
             logger.info("build kneser ney");
-            KneserNeySmoother kns =
+            LegacyKneserNeySmoother kns =
                     buildKneserNey(workingDir, absoluteDir, continuationDir,
                             testingSamplesDir);
 
@@ -190,7 +191,7 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException {
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        config.maxCountDivider);
+                        config.maxCountDivider, config.surroundWithTokens);
         sequencer.sequence(Pattern.getCombinations(config.modelLength,
                 new PatternElem[] {
                     PatternElem.CNT, PatternElem.SKP, PatternElem.POS
@@ -237,13 +238,13 @@ public class KneserNeyBuilder {
         }
     }
 
-    private KneserNeySmoother buildKneserNey(
+    private LegacyKneserNeySmoother buildKneserNey(
             Path workingDir,
             Path absoluteDir,
             Path continuationDir,
             Path testExtractOutputDir) {
-        KneserNeySmoother knewserNeySmoother =
-                new KneserNeySmoother(testExtractOutputDir.toFile(),
+        LegacyKneserNeySmoother knewserNeySmoother =
+                new LegacyKneserNeySmoother(testExtractOutputDir.toFile(),
                         absoluteDir.toFile(), continuationDir.toFile(), "\t");
 
         // read absolute and continuation values into HashMaps
@@ -290,8 +291,8 @@ public class KneserNeyBuilder {
                 Path testExtractOutputDir,
                 HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap,
                 HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap) {
-        ModifiedKneserNeySmoother modifiedKneserNeySmoother =
-                new ModifiedKneserNeySmoother(testExtractOutputDir.toFile(),
+        LegacyModifiedKneserNeySmoother modifiedKneserNeySmoother =
+                new LegacyModifiedKneserNeySmoother(testExtractOutputDir.toFile(),
                         absoluteDir.toFile(), continuationDir.toFile(), "\t",
                         config.decimalPlaces);
 

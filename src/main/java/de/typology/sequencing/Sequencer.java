@@ -38,15 +38,19 @@ public class Sequencer {
 
     private int maxCountDivider;
 
+    private boolean surroundWithTokens;
+
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
-            int maxCountDivider) throws IOException {
+            int maxCountDivider,
+            boolean surroundWithTokens) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.maxCountDivider = maxCountDivider;
+        this.surroundWithTokens = surroundWithTokens;
     }
 
     public void sequence(Set<Pattern> inputPatterns) throws IOException {
@@ -111,7 +115,9 @@ public class Sequencer {
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
 
-                line = surroundWithTokens(maxPatternLength, line);
+                if (surroundWithTokens) {
+                    line = surroundWithTokens(maxPatternLength, line);
+                }
 
                 String[] split = StringUtils.splitAtSpace(line);
 
@@ -142,11 +148,11 @@ public class Sequencer {
         for (int i = 1; i != maxPatternLength; ++i) {
             lineBuilder.append("<s");
             lineBuilder.append(i);
-            lineBuilder.append(">/<BOS>");
+            lineBuilder.append(">/<BOS> ");
         }
         lineBuilder.append(line);
         for (int i = maxPatternLength - 1; i != 0; --i) {
-            lineBuilder.append("</s");
+            lineBuilder.append(" </s");
             lineBuilder.append(i);
             lineBuilder.append(">/<EOS>");
         }

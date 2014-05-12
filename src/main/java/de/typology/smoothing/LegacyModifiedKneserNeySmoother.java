@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.typology.patterns.Pattern;
 
-public class ModifiedKneserNeySmoother extends KneserNeySmoother {
+public class LegacyModifiedKneserNeySmoother extends LegacyKneserNeySmoother {
 
     private static Logger logger = LogManager.getLogger();
 
@@ -18,7 +18,7 @@ public class ModifiedKneserNeySmoother extends KneserNeySmoother {
 
     private double d3plus;
 
-    public ModifiedKneserNeySmoother(
+    public LegacyModifiedKneserNeySmoother(
             File extractedSequenceDir,
             File absoluteDir,
             File continuationDir,

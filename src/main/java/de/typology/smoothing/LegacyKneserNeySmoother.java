@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import de.typology.patterns.Pattern;
 import de.typology.utils.Config;
 
-public class KneserNeySmoother {
+public class LegacyKneserNeySmoother {
 
     private static Logger logger = LogManager.getLogger();
 
@@ -60,7 +60,7 @@ public class KneserNeySmoother {
 
     // removed global config variable decimal places from Constructor. does that
     // make sense?
-    public KneserNeySmoother(
+    public LegacyKneserNeySmoother(
             File extractedSequenceDir,
             File absoluteDir,
             File continuationDir,

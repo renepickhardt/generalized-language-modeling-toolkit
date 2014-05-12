@@ -103,6 +103,9 @@ conditionalProbabilityOnly = false
 # should be used to save space
 deleteTempFiles = true
 
+# if n-1 tokens should be added before and after sentences
+surroundWithTokens = false
+
 # sort absolute and continuation counts
 sortCounts = true
 

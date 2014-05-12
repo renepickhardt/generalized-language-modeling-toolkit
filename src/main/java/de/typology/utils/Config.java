@@ -146,6 +146,11 @@ public class Config extends Properties {
     public boolean deleteTempFiles;
 
     /**
+     * if n-1 tokens should be added before and after sentences
+     */
+    public boolean surroundWithTokens;
+
+    /**
      * sort absolute and continuation counts
      */
     public boolean sortCounts;
