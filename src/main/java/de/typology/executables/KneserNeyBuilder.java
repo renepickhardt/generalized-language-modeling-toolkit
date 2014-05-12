@@ -82,7 +82,7 @@ public class KneserNeyBuilder {
         }
 
         if (config.buildKneserNey) {
-            buildKneserNey();
+            buildKneserNey(absoluteDir, continuationDir);
         }
 
         logger.info("done");
@@ -229,9 +229,11 @@ public class KneserNeyBuilder {
         }
     }
 
-    private void buildKneserNey() {
+    private void buildKneserNey(Path absoluteDir, Path continuationDir)
+            throws IOException {
         InterpolatedKneserNeySmoother smoother =
-                new InterpolatedKneserNeySmoother();
+                new InterpolatedKneserNeySmoother(absoluteDir, continuationDir,
+                        "\t");
         double p = smoother.propability("a b c");
         System.out.println(p);
     }

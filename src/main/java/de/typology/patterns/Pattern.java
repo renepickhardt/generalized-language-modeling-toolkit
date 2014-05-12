@@ -18,6 +18,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     public Pattern(
             String pattern) {
+        // todo: doesn't error on PatternElem#fromString == null
         this.pattern = new ArrayList<PatternElem>(pattern.length());
         for (Character elem : pattern.toCharArray()) {
             this.pattern.add(PatternElem.fromString(elem.toString()));
