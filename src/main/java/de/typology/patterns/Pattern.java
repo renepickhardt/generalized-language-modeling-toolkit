@@ -90,6 +90,17 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return false;
     }
 
+    public boolean onlySkp() {
+        for (PatternElem elem : pattern) {
+            if (!(elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
+                    || elem.equals(PatternElem.PSKP) || elem
+                        .equals(PatternElem.WPOS))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Pattern replace(PatternElem target, PatternElem replacement) {
         Pattern newPattern = clone();
         for (int i = newPattern.length() - 1; i != -1; --i) {
@@ -126,6 +137,16 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
         Pattern o = (Pattern) other;
         return pattern.equals(o.pattern);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 93485;
+        int mult = 239;
+
+        hash += mult * pattern.hashCode();
+
+        return hash;
     }
 
     @Override

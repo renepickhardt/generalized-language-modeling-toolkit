@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import de.typology.counting.Counter;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
-import de.typology.utils.StringUtils;
 
 public class InterpolatedKneserNeySmoother extends Smoother {
 
@@ -30,6 +28,8 @@ public class InterpolatedKneserNeySmoother extends Smoother {
     protected double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence) {
+        System.out.print("  P( " + reqSequence + " | " + condSequence + " )");
+
         int n = reqSequence.size() + condSequence.size() - 1;
 
         List<String> sequence = new ArrayList<String>(n);
@@ -42,41 +42,73 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             history.add(PatternElem.SKIPPED_WORD);
         }
 
-        double numerator =
-                Math.max(
-                        getAbsolute(sequence) - discount(getPattern(sequence)),
-                        0.);
-        double denomintator = getAbsolute(sequence);
+        System.out.println("\t{ sequence = " + sequence + " ; history = "
+                + history + " }");
 
-        double lambda = lambda_high(history);
+        double sequenceCount = getAbsolute(sequence);
+        double historyCount = getAbsolute(history);
 
-        System.out.print("P( ");
-        for (String reqWord : reqSequence) {
-            System.out.print(reqWord + " ");
+        Double result;
+        Pattern historyPattern = getPattern(history);
+        if (historyPattern.onlySkp()) {
+            result = sequenceCount / historyCount;
+        } else {
+            double discount = discount(historyPattern);
+            double lambda = lambda_high(history);
+            double propbabilityCond2 =
+                    propabilityCond2(reqSequence,
+                            condSequence.subList(1, condSequence.size()));
+            result =
+                    Math.max(sequenceCount - discount, 0) / historyCount
+                            + lambda * propbabilityCond2;
         }
-        System.out.print("| ");
-        for (String condWord : condSequence) {
-            System.out.print(condWord + " ");
-        }
-        System.out.println(")");
-
-        System.out.print("sequence = ");
-        for (String word : sequence) {
-            System.out.print(word + " ");
-        }
-        System.out.print("; history = ");
-        for (String historyWord : history) {
-            System.out.print(historyWord + " ");
-        }
-        System.out.println(";");
-
-        return 0;
+        result = result.equals(Double.NaN) ? 0 : result;
+        System.out.println("  result = " + result);
+        return result;
     }
 
     private double propabilityCond2(
             List<String> reqSequence,
             List<String> condSequence) {
-        return 0;
+        System.out.print("    P2( " + reqSequence + " | " + condSequence + ")");
+
+        int n = reqSequence.size() + condSequence.size() - 1;
+
+        List<String> sequence = new ArrayList<String>(n);
+        sequence.add(PatternElem.SKIPPED_WORD);
+        sequence.addAll(condSequence);
+        sequence.addAll(reqSequence);
+
+        List<String> history = new ArrayList<String>(n);
+        history.add(PatternElem.SKIPPED_WORD);
+        history.addAll(condSequence);
+        for (int i = 0; i != reqSequence.size() - 1; ++i) {
+            history.add(PatternElem.SKIPPED_WORD);
+        }
+
+        System.out.println("\t{ sequence = " + sequence + " ; history = "
+                + history + " }");
+
+        double sequenceCount = getContinuation(sequence).getOnePlusCount();
+        double historyCount = getContinuation(history).getOnePlusCount();
+
+        Double result;
+        Pattern historyPattern = getPattern(history);
+        if (historyPattern.onlySkp()) {
+            result = sequenceCount / historyCount;
+        } else {
+            double discount = discount(historyPattern);
+            double lambda = lambda_mid(history);
+            double probabilityCond2 =
+                    propabilityCond2(reqSequence,
+                            condSequence.subList(1, condSequence.size()));
+            result =
+                    Math.max(sequenceCount - discount, 0) / historyCount
+                            + lambda * probabilityCond2;
+        }
+        result = result.equals(Double.NaN) ? 0 : result;
+        System.out.println("    result = " + result);
+        return result;
     }
 
     /**
@@ -84,6 +116,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
      *         exactly {@code times} often in the training data.
      */
     private int nGramTimesCount(Pattern pattern, int times) {
+        // TODO: check if is getOneCount from ContinuationCounts.
         Map<Integer, Integer> patternCache = nGramTimesCountCache.get(pattern);
         if (patternCache == null) {
             patternCache = new HashMap<Integer, Integer>();
@@ -101,6 +134,9 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             patternCache.put(times, count);
         }
 
+        System.out.println("      nGramTimesCount(" + pattern + "," + times
+                + ") = " + count);
+
         return count;
     }
 
@@ -112,49 +148,50 @@ public class InterpolatedKneserNeySmoother extends Smoother {
         if (discount == null) {
             double n_1 = nGramTimesCount(pattern, 1);
             double n_2 = nGramTimesCount(pattern, 2);
-            discount = n_1 / (n_1 + 2. * n_2);
+            if (n_1 == 0 && n_2 == 0) {
+                discount = 0.;
+            } else {
+                discount = n_1 / (n_1 + 2. * n_2);
+            }
             discountCache.put(pattern, discount);
         }
+
+        System.out.println("    discount(" + pattern + ") = " + discount);
 
         return discount;
     }
 
     private double lambda_high(List<String> history) {
-        // TODO: correct to use discount of history and not of sequence?
-        double d = discount(getPattern(history));
-        double n = getContinuation(history).getOneCount();
-        double c = getAbsolute(history);
-
-        return d * n / c;
+        Double result =
+                discount(getPattern(history))
+                        * getContinuation(history).getOneCount()
+                        / getAbsolute(history);
+        result = result.equals(Double.NaN) ? 0 : result;
+        System.out.println("    lambda_high(" + history + ") = " + "discount("
+                + getPattern(history) + ")  * getContinuation(" + history
+                + ").getOneCount() / getAbsolute(" + history + ") = " + result);
+        return result;
     }
 
     private double lambda_mid(List<String> history) {
-        return 0;
-    }
-
-    private Pattern getPattern(List<String> sequence) {
-        List<PatternElem> patternElems =
-                new ArrayList<PatternElem>(sequence.size());
-        for (String word : sequence) {
-            if (word.equals(PatternElem.SKIPPED_WORD)) {
-                patternElems.add(PatternElem.SKP);
-            } else {
-                patternElems.add(PatternElem.CNT);
+        List<String> skippedHistory = new ArrayList<String>(history);
+        for (int i = 0; i != skippedHistory.size(); ++i) {
+            if (skippedHistory.get(i) != PatternElem.SKIPPED_WORD) {
+                skippedHistory.set(i, PatternElem.SKIPPED_WORD);
+                break;
             }
         }
-        return new Pattern(patternElems);
-    }
 
-    private int getAbsolute(List<String> sequence) {
-        Pattern pattern = getPattern(sequence);
-        String string = StringUtils.join(sequence, " ");
-        return absoluteCounts.get(pattern).get(string);
-    }
-
-    private Counter getContinuation(List<String> sequence) {
-        Pattern pattern = getPattern(sequence);
-        String string = StringUtils.join(sequence, " ");
-        return continuationCounts.get(pattern).get(string);
+        Double result =
+                discount(getPattern(history))
+                        * getContinuation(history).getOneCount()
+                        / getContinuation(skippedHistory).getOnePlusCount();
+        result = result.equals(Double.NaN) ? 0 : result;
+        System.out.println("    lambda_mid(" + history + ") = " + "discount("
+                + getPattern(history) + ")  * " + "getContinuation(" + history
+                + ").getOneCount() / getContinuation(" + skippedHistory
+                + ").getOnePlusCount() = " + result);
+        return result;
     }
 
 }

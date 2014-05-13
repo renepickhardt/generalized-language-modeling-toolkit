@@ -7,6 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -234,8 +236,51 @@ public class KneserNeyBuilder {
         InterpolatedKneserNeySmoother smoother =
                 new InterpolatedKneserNeySmoother(absoluteDir, continuationDir,
                         "\t");
-        double p = smoother.propability("a b c");
-        System.out.println(p);
+
+        doProps(smoother, 1);
+        doProps(smoother, 2);
+        doProps(smoother, 3);
+    }
+
+    private void doProps(InterpolatedKneserNeySmoother smoother, int l) {
+        Map<String, Double> props = new LinkedHashMap<String, Double>();
+
+        for (int i = 0; i != ((int) Math.pow(3, l)); ++i) {
+            props.put(getSequence(i, l),
+                    smoother.propability(getSequence(i, l)));
+        }
+
+        double sum = 0;
+        for (Map.Entry<String, Double> entry : props.entrySet()) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+            sum += entry.getValue();
+        }
+        System.out.println("sum = " + sum);
+    }
+
+    private String getSequence(int c, int l) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (int k = 0; k != l; ++k) {
+            if (first) {
+                first = false;
+            } else {
+                result.append(" ");
+            }
+            switch (c % 3) {
+                case 0:
+                    result.append("a");
+                    break;
+                case 1:
+                    result.append("b");
+                    break;
+                case 2:
+                    result.append("c");
+                    break;
+            }
+            c /= 3;
+        }
+        return result.reverse().toString();
     }
 
     @SuppressWarnings("unused")

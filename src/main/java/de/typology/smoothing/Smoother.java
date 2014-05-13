@@ -34,6 +34,7 @@ public abstract class Smoother {
     }
 
     public double propability(String sequence) {
+        System.out.println("---probability(" + sequence + ")");
         List<String> words = StringUtils.splitAtSpace(sequence);
 
         double result = 1;
@@ -56,6 +57,7 @@ public abstract class Smoother {
             }
 
             result *= propabilityCond(reqSequence, condSequence);
+            System.out.println(result);
         }
         return result;
     }
@@ -63,6 +65,36 @@ public abstract class Smoother {
     protected abstract double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence);
+
+    protected Pattern getPattern(List<String> sequence) {
+        List<PatternElem> patternElems =
+                new ArrayList<PatternElem>(sequence.size());
+        for (String word : sequence) {
+            if (word.equals(PatternElem.SKIPPED_WORD)) {
+                patternElems.add(PatternElem.SKP);
+            } else {
+                patternElems.add(PatternElem.CNT);
+            }
+        }
+        return new Pattern(patternElems);
+    }
+
+    protected int getAbsolute(List<String> sequence) {
+        Pattern pattern = getPattern(sequence);
+        String string = StringUtils.join(sequence, " ");
+        Map<String, Integer> patternCounts = absoluteCounts.get(pattern);
+        Integer count = patternCounts.get(string);
+        return count == null ? 0 : count;
+    }
+
+    protected Counter getContinuation(List<String> sequence) {
+        Pattern pattern =
+                getPattern(sequence).replace(PatternElem.SKP, PatternElem.WSKP);
+        String string = StringUtils.join(sequence, " ");
+        Map<String, Counter> patternCounters = continuationCounts.get(pattern);
+        Counter counter = patternCounters.get(string);
+        return counter == null ? new Counter() : counter;
+    }
 
     private Map<Pattern, Map<String, Integer>> readAbsoluteCounts(
             Path absoluteDir) throws IOException {
