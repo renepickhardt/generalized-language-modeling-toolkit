@@ -25,7 +25,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
     }
 
-    public String apply(String[] words) {
+    public String apply(Object[] words) {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
@@ -38,7 +38,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
                 first = false;
             }
 
-            result.append(elem.apply(words[i]));
+            result.append(elem.apply((String)words[i]));
 
             ++i;
         }

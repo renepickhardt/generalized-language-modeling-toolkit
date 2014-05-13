@@ -132,8 +132,8 @@ public class Sequencer {
                     line = surroundWithTokens(maxPatternLength, line);
                 }
 
-                String[] split =
-                        (String[]) StringUtils.splitAtSpace(line).toArray();
+                Object[] split =
+                        StringUtils.splitAtSpace(line).toArray();
 
                 String[] words = new String[split.length];
                 String[] pos = new String[split.length];
@@ -174,17 +174,18 @@ public class Sequencer {
     }
 
     private void generateWordsAndPos(
-            String[] split,
+            Object[] split,
             String[] words,
             String[] pos) {
         for (int i = 0; i != split.length; ++i) {
-            int lastSlash = split[i].lastIndexOf('/');
+        	String currentWord = (String)split[i];
+            int lastSlash = currentWord.lastIndexOf('/');
             if (lastSlash == -1) {
-                words[i] = split[i];
+                words[i] = currentWord;
                 pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset
             } else {
-                words[i] = split[i].substring(0, lastSlash);
-                pos[i] = split[i].substring(lastSlash + 1);
+                words[i] = currentWord.substring(0, lastSlash);
+                pos[i] = currentWord.substring(lastSlash + 1);
             }
         }
     }
