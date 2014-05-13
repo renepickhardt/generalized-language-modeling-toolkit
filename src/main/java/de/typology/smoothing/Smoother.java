@@ -54,6 +54,22 @@ public abstract class Smoother {
             String word,
             List<String> givenSequence);
 
+    /**
+     * @return The total number of n-grams with {@code length} which appear
+     *         exactly {@code times} often in the training data.
+     */
+    protected int nGramTimesCount(int length, int times) {
+        // TODO: chache results
+        int count = 0;
+        for (int absoluteCount : absoluteCounts.get(
+                Pattern.getNGramPattern(length)).values()) {
+            if (absoluteCount == times) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     private Map<Pattern, Map<String, Integer>> readAbsoluteCounts(
             Path absoluteDir) throws IOException {
         Map<Pattern, Map<String, Integer>> absoluteCounts =

@@ -30,4 +30,18 @@ public class StringUtils {
         return result;
     }
 
+    public static String join(List<String> strings, String conjunction) {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean first = true;
+        for (String string : strings) {
+            if (first) {
+                first = false;
+            } else {
+                stringBuilder.append(conjunction);
+            }
+            stringBuilder.append(string);
+        }
+        return stringBuilder.toString();
+    }
+
 }
