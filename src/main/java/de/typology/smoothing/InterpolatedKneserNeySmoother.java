@@ -3,7 +3,9 @@ package de.typology.smoothing;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.typology.counting.Counter;
 import de.typology.patterns.Pattern;
@@ -11,6 +13,11 @@ import de.typology.patterns.PatternElem;
 import de.typology.utils.StringUtils;
 
 public class InterpolatedKneserNeySmoother extends Smoother {
+
+    private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =
+            new HashMap<Pattern, Map<Integer, Integer>>();
+
+    private Map<Pattern, Double> discountCache = new HashMap<Pattern, Double>();
 
     public InterpolatedKneserNeySmoother(
             Path absoluteDir,
@@ -41,7 +48,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                         0.);
         double denomintator = getAbsolute(sequence);
 
-        double lambda = lambda(history);
+        double lambda = lambda_high(history);
 
         System.out.print("P( ");
         for (String reqWord : reqSequence) {
@@ -77,13 +84,23 @@ public class InterpolatedKneserNeySmoother extends Smoother {
      *         exactly {@code times} often in the training data.
      */
     private int nGramTimesCount(Pattern pattern, int times) {
-        // TODO: chache results
-        int count = 0;
-        for (int absoluteCount : absoluteCounts.get(pattern).values()) {
-            if (absoluteCount == times) {
-                ++count;
-            }
+        Map<Integer, Integer> patternCache = nGramTimesCountCache.get(pattern);
+        if (patternCache == null) {
+            patternCache = new HashMap<Integer, Integer>();
+            nGramTimesCountCache.put(pattern, patternCache);
         }
+
+        Integer count = patternCache.get(times);
+        if (count == null) {
+            count = 0;
+            for (int absoluteCount : absoluteCounts.get(pattern).values()) {
+                if (absoluteCount == times) {
+                    ++count;
+                }
+            }
+            patternCache.put(times, count);
+        }
+
         return count;
     }
 
@@ -91,18 +108,28 @@ public class InterpolatedKneserNeySmoother extends Smoother {
      * @return The discount value for n-grams with {@code pattern}.
      */
     private double discount(Pattern pattern) {
-        double n_1 = nGramTimesCount(pattern, 1);
-        double n_2 = nGramTimesCount(pattern, 2);
-        return n_1 / (n_1 + 2. * n_2);
+        Double discount = discountCache.get(pattern);
+        if (discount == null) {
+            double n_1 = nGramTimesCount(pattern, 1);
+            double n_2 = nGramTimesCount(pattern, 2);
+            discount = n_1 / (n_1 + 2. * n_2);
+            discountCache.put(pattern, discount);
+        }
+
+        return discount;
     }
 
-    private double lambda(List<String> history) {
+    private double lambda_high(List<String> history) {
         // TODO: correct to use discount of history and not of sequence?
         double d = discount(getPattern(history));
         double n = getContinuation(history).getOneCount();
         double c = getAbsolute(history);
 
         return d * n / c;
+    }
+
+    private double lambda_mid(List<String> history) {
+        return 0;
     }
 
     private Pattern getPattern(List<String> sequence) {
