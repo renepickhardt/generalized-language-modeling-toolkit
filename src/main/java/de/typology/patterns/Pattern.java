@@ -142,14 +142,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.iterator();
     }
 
-    public static Pattern getNGramPattern(int length) {
-        List<PatternElem> pattern = new ArrayList<PatternElem>(length);
-        for (int i = 0; i != length; ++i) {
-            pattern.add(PatternElem.CNT);
-        }
-        return new Pattern(pattern);
-    }
-
     public static Set<Pattern> getCombinations(
             int modelLength,
             PatternElem[] elems) {

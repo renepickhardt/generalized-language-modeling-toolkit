@@ -6,8 +6,8 @@ import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,38 +37,32 @@ public abstract class Smoother {
         List<String> words = StringUtils.splitAtSpace(sequence);
 
         double result = 1;
+        List<String> reqSequence, condSequence = new ArrayList<String>(words);
         for (int i = 0; i != words.size(); ++i) {
-            String word = words.get(i);
-            List<String> givenSequence =
-                    new LinkedList<String>(words.subList(0, i));
-            for (int j = 0; j != words.size() - i - 1; ++j) {
-                givenSequence.add(PatternElem.SKIPPED_WORD);
+            // build reqSequence
+            reqSequence = new ArrayList<String>(i + 1);
+            reqSequence.add(condSequence.get(condSequence.size() - 1));
+            for (int j = 0; j != i; ++j) {
+                reqSequence.add(PatternElem.SKIPPED_WORD);
             }
 
-            result *= propability_given(word, givenSequence);
+            // build condSequence
+            if (condSequence.size() >= 1) {
+                condSequence =
+                        new ArrayList<String>(condSequence.subList(0,
+                                condSequence.size() - 1));
+            } else {
+                condSequence = new ArrayList<String>();
+            }
+
+            result *= propabilityCond(reqSequence, condSequence);
         }
         return result;
     }
 
-    protected abstract double propability_given(
-            String word,
-            List<String> givenSequence);
-
-    /**
-     * @return The total number of n-grams with {@code length} which appear
-     *         exactly {@code times} often in the training data.
-     */
-    protected int nGramTimesCount(int length, int times) {
-        // TODO: chache results
-        int count = 0;
-        for (int absoluteCount : absoluteCounts.get(
-                Pattern.getNGramPattern(length)).values()) {
-            if (absoluteCount == times) {
-                ++count;
-            }
-        }
-        return count;
-    }
+    protected abstract double propabilityCond(
+            List<String> reqSequence,
+            List<String> condSequence);
 
     private Map<Pattern, Map<String, Integer>> readAbsoluteCounts(
             Path absoluteDir) throws IOException {
