@@ -93,6 +93,7 @@ public class AbsoluteCounter {
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
+        // deletes the folders where the sequence counts were stored
         if (deleteTempFiles) {
             try (DirectoryStream<Path> patternDirs =
                     Files.newDirectoryStream(inputDir)) {

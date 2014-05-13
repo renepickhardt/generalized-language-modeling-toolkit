@@ -88,6 +88,7 @@ public class ContinuationCounterTask implements Runnable {
     private Map<String, Counter> getSequenceCounts() throws IOException {
         Map<String, Counter> sequenceCounts = new HashMap<String, Counter>();
 
+        // inputDir is the directory containing the files for one pattern
         try (DirectoryStream<Path> inputFiles =
                 Files.newDirectoryStream(inputDir)) {
             for (Path inputFile : inputFiles) {

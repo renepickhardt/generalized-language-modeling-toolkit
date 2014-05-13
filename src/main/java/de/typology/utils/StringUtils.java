@@ -5,6 +5,9 @@ import java.util.List;
 
 public class StringUtils {
 
+	/**
+	 * this method should be used instead of string.split(' ') since it is much more performant
+	 */
     public static List<String> splitAtSpace(String s) {
         List<String> result = new ArrayList<String>();
 

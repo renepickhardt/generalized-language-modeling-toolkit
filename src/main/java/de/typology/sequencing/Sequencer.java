@@ -22,6 +22,19 @@ import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.utils.StringUtils;
 
+/**
+ * takes input text of the format 1 sentence per line
+ * and each word currently must contain a part of speech tag.
+ *
+ * example:
+ *
+ * {@code word_1/pos_1 word_2/pos_2 word_3/pos_3 ... word_n/pos_n}
+ *
+ * all (skipped) sequences of all lengths are extracted and stored
+ * in various files (respecting the WordIndex)
+ *
+ * TODO: the sequences must work with and without part of speeches
+ */
 public class Sequencer {
 
     public static float MEMORY_FACTOR = 0.2f;
@@ -168,7 +181,7 @@ public class Sequencer {
             int lastSlash = split[i].lastIndexOf('/');
             if (lastSlash == -1) {
                 words[i] = split[i];
-                pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset 
+                pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset
             } else {
                 words[i] = split[i].substring(0, lastSlash);
                 pos[i] = split[i].substring(lastSlash + 1);
