@@ -82,7 +82,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
         List<String> history = new ArrayList<String>(n);
         history.add(PatternElem.SKIPPED_WORD);
         history.addAll(condSequence);
-        for (int i = 0; i != reqSequence.size() - 1; ++i) {
+        for (int i = 0; i != reqSequence.size(); ++i) {
             history.add(PatternElem.SKIPPED_WORD);
         }
 
