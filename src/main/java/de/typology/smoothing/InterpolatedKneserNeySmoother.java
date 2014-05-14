@@ -46,6 +46,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 + history + " }");
 
         double sequenceCount = getAbsolute(sequence);
+        // TODO discuss if it is really corret here to add a skipp at the history (this depends on many things in counting. in general I guess this is correct but for KN smoothing maybe not)
         double historyCount = getAbsolute(history);
 
         Double result;
@@ -54,6 +55,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             result = sequenceCount / historyCount;
         } else {
             double discount = discount(historyPattern);
+            // TODO: lamda is connected to the discount value. why is it not given as a parameter?
             double lambda = lambda_high(history);
             double propbabilityCond2 =
                     propabilityCond2(reqSequence,
@@ -146,6 +148,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
     private double discount(Pattern pattern) {
         Double discount = discountCache.get(pattern);
         if (discount == null) {
+        	// TODO: tbd. is it really true use pattern instead of history? TBD
             double n_1 = nGramTimesCount(pattern, 1);
             double n_2 = nGramTimesCount(pattern, 2);
             if (n_1 == 0 && n_2 == 0) {
