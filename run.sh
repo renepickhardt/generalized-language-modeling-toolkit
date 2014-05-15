@@ -1,6 +1,6 @@
 ulimit -v 20000000
 
-DEFAULT_MEMORY=12096
+DEFAULT_MEMORY=4096
 
 MEMORY=`grep -oP "^memory\s*=\s*\K\d+" config.txt`
 if [[ -z $MEMORY ]]; then

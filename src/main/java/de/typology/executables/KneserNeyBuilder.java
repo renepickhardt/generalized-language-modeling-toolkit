@@ -172,8 +172,8 @@ public class KneserNeyBuilder {
             throws IOException {
         try (InputStream input = Files.newInputStream(trainingFile);
                 OutputStream output = Files.newOutputStream(indexFile)) {
-            WordIndexBuilder wordIndexer = new WordIndexBuilder();
-            wordIndexer.buildIndex(input, output, config.maxCountDivider,
+            WordIndexBuilder wordIndexBuilder = new WordIndexBuilder();
+            wordIndexBuilder.buildIndex(input, output, config.maxCountDivider,
                     "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>");
         }
     }
