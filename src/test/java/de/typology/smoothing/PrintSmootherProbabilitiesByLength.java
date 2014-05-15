@@ -10,10 +10,19 @@ import org.junit.Test;
 public class PrintSmootherProbabilitiesByLength extends AbcCorpusTest {
 
     @Test
+    @Ignore
     public void printMaximumLikelihoodSmoother() throws IOException {
         Smoother smoother =
                 new MaximumLikelihoodSmoother(abcAbsoluteDir,
                         abcContinuationDir, "\t");
+        printProbabilitiesByLength(smoother, 5);
+    }
+
+    @Test
+    public void printDiscountSmoother() throws IOException {
+        Smoother smoother =
+                new DiscountSmoother(abcAbsoluteDir, abcContinuationDir, "\t",
+                        1.);
         printProbabilitiesByLength(smoother, 5);
     }
 

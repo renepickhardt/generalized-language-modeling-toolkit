@@ -9,8 +9,6 @@ import de.typology.patterns.PatternElem;
 
 public class MaximumLikelihoodSmoother extends Smoother {
 
-    public static boolean DEBUG = false;
-
     public MaximumLikelihoodSmoother(
             Path absoluteDir,
             Path continuationDir,
@@ -22,10 +20,7 @@ public class MaximumLikelihoodSmoother extends Smoother {
     protected double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence) {
-        if (DEBUG) {
-            System.out.print("  P( " + reqSequence + " | " + condSequence
-                    + " )");
-        }
+        debugP(reqSequence, condSequence);
 
         List<String> sequence = getSequence(reqSequence, condSequence);
         List<String> history = getHistory(reqSequence, condSequence);
@@ -33,20 +28,27 @@ public class MaximumLikelihoodSmoother extends Smoother {
         double sequenceCount = getAbsolute(sequence);
         double historyCount = getAbsolute(history);
 
-        if (DEBUG) {
-            System.out.println("\t { sequence = " + sequence + " (count = "
-                    + sequenceCount + ") ; history = " + history + " (count = "
-                    + historyCount + ") }");
-        }
+        debugSequenceHistory(sequence, history, sequenceCount, historyCount);
 
         if (sequenceCount == 0) {
             return 0;
         } else {
-            return sequenceCount / historyCount;
+            return calcResult(reqSequence, condSequence, sequence, history,
+                    sequenceCount, historyCount);
         }
     }
 
-    protected List<String> getSequence(
+    protected double calcResult(
+            List<String> reqSequence,
+            List<String> condSequence,
+            List<String> sequence,
+            List<String> history,
+            double sequenceCount,
+            double historyCount) {
+        return sequenceCount / historyCount;
+    }
+
+    protected final List<String> getSequence(
             List<String> reqSequence,
             List<String> condSequence) {
         int n = reqSequence.size() + condSequence.size() - 1;
@@ -58,7 +60,7 @@ public class MaximumLikelihoodSmoother extends Smoother {
         return sequence;
     }
 
-    protected List<String> getHistory(
+    protected final List<String> getHistory(
             List<String> reqSequence,
             List<String> condSequence) {
         int n = reqSequence.size() + condSequence.size() - 1;
@@ -70,6 +72,27 @@ public class MaximumLikelihoodSmoother extends Smoother {
         }
 
         return history;
+    }
+
+    protected final void debugP(
+            List<String> reqSequence,
+            List<String> condSequence) {
+        if (DEBUG) {
+            System.out.print("  P( " + reqSequence + " | " + condSequence
+                    + " )");
+        }
+    }
+
+    protected final void debugSequenceHistory(
+            List<String> sequence,
+            List<String> history,
+            double sequenceCount,
+            double historyCount) {
+        if (DEBUG) {
+            System.out.println("\t { sequence = " + sequence + " (count = "
+                    + sequenceCount + ") ; history = " + history + " (count = "
+                    + historyCount + ") }");
+        }
     }
 
 }
