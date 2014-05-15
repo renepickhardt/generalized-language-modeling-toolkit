@@ -240,6 +240,8 @@ public class KneserNeyBuilder {
         doProps(smoother, 1);
         doProps(smoother, 2);
         doProps(smoother, 3);
+        doProps(smoother, 4);
+        doProps(smoother, 5);
     }
 
     private void doProps(InterpolatedKneserNeySmoother smoother, int l) {

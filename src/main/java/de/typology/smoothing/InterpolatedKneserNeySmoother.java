@@ -48,21 +48,27 @@ public class InterpolatedKneserNeySmoother extends Smoother {
         double sequenceCount = getAbsolute(sequence);
         double historyCount = getAbsolute(history);
 
+        System.out.println("  sequenceCount = " + sequenceCount
+                + " ; historyCount = " + historyCount);
+
         Double result;
-        Pattern historyPattern = getPattern(history);
-        if (historyPattern.onlySkp()) {
-            result = sequenceCount / historyCount;
-        } else {
-            double discount = discount(historyPattern);
-            double lambda = lambda_high(history);
-            double propbabilityCond2 =
+        if (sequenceCount == 0) {
+            System.out.println("  sequence count is zero");
+            result =
                     propabilityCond2(reqSequence,
                             condSequence.subList(1, condSequence.size()));
-            result =
-                    Math.max(sequenceCount - discount, 0) / historyCount
-                            + lambda * propbabilityCond2;
+        } else {
+            double discount = discount(getPattern(history));
+            result = Math.max(sequenceCount - discount, 0) / historyCount;
+
+            double lambda = lambda_high(history);
+            if (lambda != 0) {
+                double propbabilityCond2 =
+                        propabilityCond2(reqSequence,
+                                condSequence.subList(1, condSequence.size()));
+                result += lambda * propbabilityCond2;
+            }
         }
-        result = result.equals(Double.NaN) ? 0 : result;
         System.out.println("  result = " + result);
         return result;
     }
@@ -92,21 +98,27 @@ public class InterpolatedKneserNeySmoother extends Smoother {
         double sequenceCount = getContinuation(sequence).getOnePlusCount();
         double historyCount = getContinuation(history).getOnePlusCount();
 
+        System.out.println("    sequenceCount = " + sequenceCount
+                + " ; historyCount = " + historyCount);
+
         Double result;
-        Pattern historyPattern = getPattern(history);
-        if (historyPattern.onlySkp()) {
-            result = sequenceCount / historyCount;
-        } else {
-            double discount = discount(historyPattern);
-            double lambda = lambda_mid(history);
-            double probabilityCond2 =
+        if (sequenceCount == 0) {
+            System.out.println("    sequence count is zero");
+            result =
                     propabilityCond2(reqSequence,
                             condSequence.subList(1, condSequence.size()));
-            result =
-                    Math.max(sequenceCount - discount, 0) / historyCount
-                            + lambda * probabilityCond2;
+        } else {
+            double discount = discount(getPattern(history));
+            result = Math.max(sequenceCount - discount, 0) / historyCount;
+
+            double lambda = lambda_mid(history);
+            if (lambda != 0) {
+                double probabilityCond2 =
+                        propabilityCond2(reqSequence,
+                                condSequence.subList(1, condSequence.size()));
+                result += lambda * probabilityCond2;
+            }
         }
-        result = result.equals(Double.NaN) ? 0 : result;
         System.out.println("    result = " + result);
         return result;
     }
@@ -166,7 +178,6 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 discount(getPattern(history))
                         * getContinuation(history).getOneCount()
                         / getAbsolute(history);
-        result = result.equals(Double.NaN) ? 0 : result;
         System.out.println("    lambda_high(" + history + ") = " + "discount("
                 + getPattern(history) + ")  * getContinuation(" + history
                 + ").getOneCount() / getAbsolute(" + history + ") = " + result);
@@ -174,22 +185,13 @@ public class InterpolatedKneserNeySmoother extends Smoother {
     }
 
     private double lambda_mid(List<String> history) {
-        List<String> skippedHistory = new ArrayList<String>(history);
-        for (int i = 0; i != skippedHistory.size(); ++i) {
-            if (skippedHistory.get(i) != PatternElem.SKIPPED_WORD) {
-                skippedHistory.set(i, PatternElem.SKIPPED_WORD);
-                break;
-            }
-        }
-
         Double result =
                 discount(getPattern(history))
                         * getContinuation(history).getOneCount()
-                        / getContinuation(skippedHistory).getOnePlusCount();
-        result = result.equals(Double.NaN) ? 0 : result;
+                        / getContinuation(history).getOnePlusCount();
         System.out.println("    lambda_mid(" + history + ") = " + "discount("
                 + getPattern(history) + ")  * " + "getContinuation(" + history
-                + ").getOneCount() / getContinuation(" + skippedHistory
+                + ").getOneCount() / getContinuation(" + history
                 + ").getOnePlusCount() = " + result);
         return result;
     }
