@@ -18,6 +18,8 @@ import de.typology.utils.StringUtils;
 
 public abstract class Smoother {
 
+    public static boolean DEBUG = false;
+
     protected Map<Pattern, Map<String, Integer>> absoluteCounts;
 
     protected Map<Pattern, Map<String, Counter>> continuationCounts;
@@ -34,7 +36,9 @@ public abstract class Smoother {
     }
 
     public double propability(String sequence) {
-        System.out.println("---probability(" + sequence + ")");
+        if (DEBUG) {
+            System.out.println("---probability(" + sequence + ")");
+        }
         List<String> words = StringUtils.splitAtSpace(sequence);
 
         double result = 1;
@@ -57,7 +61,9 @@ public abstract class Smoother {
             }
 
             result *= propabilityCond(reqSequence, condSequence);
-            System.out.println(result);
+            if (DEBUG) {
+                System.out.println(result);
+            }
         }
         return result;
     }

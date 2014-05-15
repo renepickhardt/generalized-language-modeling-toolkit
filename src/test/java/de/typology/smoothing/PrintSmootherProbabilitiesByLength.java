@@ -7,7 +7,15 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class SmootherTest extends AbcCorpusTest {
+public class PrintSmootherProbabilitiesByLength extends AbcCorpusTest {
+
+    @Test
+    public void printMaximumLikelihoodSmoother() throws IOException {
+        Smoother smoother =
+                new MaximumLikelihoodSmoother(abcAbsoluteDir,
+                        abcContinuationDir, "\t");
+        printProbabilitiesByLength(smoother, 5);
+    }
 
     @Test
     @Ignore
@@ -15,10 +23,13 @@ public class SmootherTest extends AbcCorpusTest {
         Smoother smoother =
                 new InterpolatedKneserNeySmoother(abcAbsoluteDir,
                         abcContinuationDir, "\t");
+        printProbabilitiesByLength(smoother, 5);
+    }
 
+    private void printProbabilitiesByLength(Smoother smoother, int length) {
         Map<Integer, Map<String, Double>> propabilitiesByLength =
                 new LinkedHashMap<Integer, Map<String, Double>>();
-        for (int i = 1; i != 6; ++i) {
+        for (int i = 1; i != length + 1; ++i) {
             propabilitiesByLength
                     .put(i, calcSequencePropabilities(smoother, i));
         }
@@ -51,7 +62,7 @@ public class SmootherTest extends AbcCorpusTest {
 
             sum += propability;
 
-            System.out.println(sequence + " ->" + propability);
+            System.out.println(sequence + " -> " + propability);
         }
         System.out.println("sum = " + sum);
     }

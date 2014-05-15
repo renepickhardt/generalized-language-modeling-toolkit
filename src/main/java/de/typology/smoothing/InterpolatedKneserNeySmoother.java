@@ -12,6 +12,8 @@ import de.typology.patterns.PatternElem;
 
 public class InterpolatedKneserNeySmoother extends Smoother {
 
+    public static boolean DEBUG = true;
+
     private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =
             new HashMap<Pattern, Map<Integer, Integer>>();
 
@@ -28,7 +30,10 @@ public class InterpolatedKneserNeySmoother extends Smoother {
     protected double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence) {
-        System.out.print("  P( " + reqSequence + " | " + condSequence + " )");
+        if (DEBUG) {
+            System.out.print("  P( " + reqSequence + " | " + condSequence
+                    + " )");
+        }
 
         int n = reqSequence.size() + condSequence.size() - 1;
 
@@ -42,8 +47,10 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             history.add(PatternElem.SKIPPED_WORD);
         }
 
-        System.out.println("\t{ sequence = " + sequence + " ; history = "
-                + history + " }");
+        if (DEBUG) {
+            System.out.println("\t{ sequence = " + sequence + " ; history = "
+                    + history + " }");
+        }
 
         double sequenceCount = getAbsolute(sequence);
         /*
@@ -53,12 +60,16 @@ public class InterpolatedKneserNeySmoother extends Smoother {
          */
         double historyCount = getAbsolute(history);
 
-        System.out.println("  sequenceCount = " + sequenceCount
-                + " ; historyCount = " + historyCount);
+        if (DEBUG) {
+            System.out.println("  sequenceCount = " + sequenceCount
+                    + " ; historyCount = " + historyCount);
+        }
 
         Double result;
         if (sequenceCount == 0) {
-            System.out.println("  sequence count is zero");
+            if (DEBUG) {
+                System.out.println("  sequence count is zero");
+            }
             result =
                     propabilityCond2(reqSequence,
                             condSequence.subList(1, condSequence.size()));
@@ -74,14 +85,19 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 result += lambda * propbabilityCond2;
             }
         }
-        System.out.println("  result = " + result);
+        if (DEBUG) {
+            System.out.println("  result = " + result);
+        }
         return result;
     }
 
     private double propabilityCond2(
             List<String> reqSequence,
             List<String> condSequence) {
-        System.out.print("    P2( " + reqSequence + " | " + condSequence + ")");
+        if (DEBUG) {
+            System.out.print("    P2( " + reqSequence + " | " + condSequence
+                    + ")");
+        }
 
         int n = reqSequence.size() + condSequence.size() - 1;
 
@@ -97,18 +113,24 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             history.add(PatternElem.SKIPPED_WORD);
         }
 
-        System.out.println("\t{ sequence = " + sequence + " ; history = "
-                + history + " }");
+        if (DEBUG) {
+            System.out.println("\t{ sequence = " + sequence + " ; history = "
+                    + history + " }");
+        }
 
         double sequenceCount = getContinuation(sequence).getOnePlusCount();
         double historyCount = getContinuation(history).getOnePlusCount();
 
-        System.out.println("    sequenceCount = " + sequenceCount
-                + " ; historyCount = " + historyCount);
+        if (DEBUG) {
+            System.out.println("    sequenceCount = " + sequenceCount
+                    + " ; historyCount = " + historyCount);
+        }
 
         Double result;
         if (sequenceCount == 0) {
-            System.out.println("    sequence count is zero");
+            if (DEBUG) {
+                System.out.println("    sequence count is zero");
+            }
             result =
                     propabilityCond2(reqSequence,
                             condSequence.subList(1, condSequence.size()));
@@ -124,7 +146,9 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 result += lambda * probabilityCond2;
             }
         }
-        System.out.println("    result = " + result);
+        if (DEBUG) {
+            System.out.println("    result = " + result);
+        }
         return result;
     }
 
@@ -151,8 +175,10 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             patternCache.put(times, count);
         }
 
-        System.out.println("      nGramTimesCount(" + pattern + "," + times
-                + ") = " + count);
+        if (DEBUG) {
+            System.out.println("      nGramTimesCount(" + pattern + "," + times
+                    + ") = " + count);
+        }
 
         return count;
     }
@@ -174,7 +200,9 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             discountCache.put(pattern, discount);
         }
 
-        System.out.println("    discount(" + pattern + ") = " + discount);
+        if (DEBUG) {
+            System.out.println("    discount(" + pattern + ") = " + discount);
+        }
 
         return discount;
     }
@@ -184,9 +212,13 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 discount(getPattern(history))
                         * getContinuation(history).getOneCount()
                         / getAbsolute(history);
-        System.out.println("    lambda_high(" + history + ") = " + "discount("
-                + getPattern(history) + ")  * getContinuation(" + history
-                + ").getOneCount() / getAbsolute(" + history + ") = " + result);
+        if (DEBUG) {
+            System.out.println("    lambda_high(" + history + ") = "
+                    + "discount(" + getPattern(history)
+                    + ")  * getContinuation(" + history
+                    + ").getOneCount() / getAbsolute(" + history + ") = "
+                    + result);
+        }
         return result;
     }
 
@@ -195,10 +227,13 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 discount(getPattern(history))
                         * getContinuation(history).getOneCount()
                         / getContinuation(history).getOnePlusCount();
-        System.out.println("    lambda_mid(" + history + ") = " + "discount("
-                + getPattern(history) + ")  * " + "getContinuation(" + history
-                + ").getOneCount() / getContinuation(" + history
-                + ").getOnePlusCount() = " + result);
+        if (DEBUG) {
+            System.out.println("    lambda_mid(" + history + ") = "
+                    + "discount(" + getPattern(history) + ")  * "
+                    + "getContinuation(" + history
+                    + ").getOneCount() / getContinuation(" + history
+                    + ").getOnePlusCount() = " + result);
+        }
         return result;
     }
 

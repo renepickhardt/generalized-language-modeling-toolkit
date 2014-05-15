@@ -32,7 +32,7 @@ public class AbcCorpusTest {
             InterruptedException {
         Path resourcesDir = Paths.get("src/test/resources");
 
-        Path abcTrainingFile = resourcesDir.resolve("abc.txt");
+        Path abcTaggedFile = resourcesDir.resolve("abc_tagged.txt");
 
         abcDir = resourcesDir.resolve("abc");
         if (!Files.exists(abcDir)) {
@@ -46,7 +46,7 @@ public class AbcCorpusTest {
 
         // index
         if (!Files.exists(abcWordIndexFile)) {
-            try (InputStream input = Files.newInputStream(abcTrainingFile);
+            try (InputStream input = Files.newInputStream(abcTaggedFile);
                     OutputStream output =
                             Files.newOutputStream(abcWordIndexFile)) {
                 WordIndexBuilder wordIndexBuilder = new WordIndexBuilder();
@@ -60,7 +60,7 @@ public class AbcCorpusTest {
         // sequences
         if (!Files.exists(abcSequencesDir)) {
             Sequencer sequencer =
-                    new Sequencer(abcTrainingFile, abcSequencesDir,
+                    new Sequencer(abcTaggedFile, abcSequencesDir,
                             abcWordIndex, 1, false);
             sequencer.sequence(Pattern.getCombinations(5, new PatternElem[] {
                 PatternElem.CNT, PatternElem.SKP, PatternElem.POS
