@@ -46,6 +46,11 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 + history + " }");
 
         double sequenceCount = getAbsolute(sequence);
+        /*
+         * TODO discuss if it is really correct here to add a skip at the
+         * history (this depends on many things in counting. in general I guess
+         * this is correct but for KN smoothing maybe not)
+         */
         double historyCount = getAbsolute(history);
 
         System.out.println("  sequenceCount = " + sequenceCount
@@ -158,6 +163,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
     private double discount(Pattern pattern) {
         Double discount = discountCache.get(pattern);
         if (discount == null) {
+            // TODO: tbd. is it really true use pattern instead of history? TBD
             double n_1 = nGramTimesCount(pattern, 1);
             double n_2 = nGramTimesCount(pattern, 2);
             if (n_1 == 0 && n_2 == 0) {
