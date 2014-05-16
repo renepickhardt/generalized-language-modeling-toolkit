@@ -60,8 +60,8 @@ public class AbcCorpusTest {
         // sequences
         if (!Files.exists(abcSequencesDir)) {
             Sequencer sequencer =
-                    new Sequencer(abcTaggedFile, abcSequencesDir,
-                            abcWordIndex, 1, false);
+                    new Sequencer(abcTaggedFile, abcSequencesDir, abcWordIndex,
+                            1, false);
             sequencer.sequence(Pattern.getCombinations(5, new PatternElem[] {
                 PatternElem.CNT, PatternElem.SKP, PatternElem.POS
             }));
@@ -83,4 +83,56 @@ public class AbcCorpusTest {
             continuationCounter.count();
         }
     }
+
+    public static String getAbcSequence(int num, int length) {
+        StringBuilder result = new StringBuilder();
+
+        boolean frist = true;
+        for (int k = 0; k != length; ++k) {
+            if (frist) {
+                frist = false;
+            } else {
+                result.append(" ");
+            }
+            switch (num % 3) {
+                case 0:
+                    result.append("a");
+                    break;
+                case 1:
+                    result.append("b");
+                    break;
+                case 2:
+                    result.append("c");
+                    break;
+            }
+            num /= 3;
+        }
+
+        return result.reverse().toString();
+    }
+
+    public static MaximumLikelihoodSmoother newMaximumLikelihoodSmoother()
+            throws IOException {
+        return new MaximumLikelihoodSmoother(abcAbsoluteDir,
+                abcContinuationDir, "\t");
+    }
+
+    public static DiscountSmoother newDiscountSmoother(double absoluteDiscount)
+            throws IOException {
+        return new DiscountSmoother(abcAbsoluteDir, abcContinuationDir, "\t",
+                absoluteDiscount);
+    }
+
+    public static PropabilityCond2Smoother newPropabilityCond2Smoother(
+            double absoluteDiscount) throws IOException {
+        return new PropabilityCond2Smoother(abcAbsoluteDir, abcContinuationDir,
+                "\t", absoluteDiscount);
+    }
+
+    public static InterpolatedKneserNeySmoother
+        newInterpolatedKneserNeySmoother() throws IOException {
+        return new InterpolatedKneserNeySmoother(abcAbsoluteDir,
+                abcContinuationDir, "\t");
+    }
+
 }

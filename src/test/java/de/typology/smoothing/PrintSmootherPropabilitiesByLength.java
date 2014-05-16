@@ -12,35 +12,27 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
     @Test
     @Ignore
     public void printMaximumLikelihoodSmoother() throws IOException {
-        Smoother smoother =
-                new MaximumLikelihoodSmoother(abcAbsoluteDir,
-                        abcContinuationDir, "\t");
+        Smoother smoother = newMaximumLikelihoodSmoother();
         printPropabilitiesByLength(smoother, 5);
     }
 
     @Test
     @Ignore
     public void printDiscountSmoother() throws IOException {
-        Smoother smoother =
-                new DiscountSmoother(abcAbsoluteDir, abcContinuationDir, "\t",
-                        1.);
+        Smoother smoother = newDiscountSmoother(1.);
         printPropabilitiesByLength(smoother, 5);
     }
 
     @Test
     @Ignore
     public void printPropabilityCond2Smoother() throws IOException {
-        Smoother smoother =
-                new PropabilityCond2Smoother(abcAbsoluteDir,
-                        abcContinuationDir, "\t", 1.);
+        Smoother smoother = newPropabilityCond2Smoother(1.);
         printPropabilitiesByLength(smoother, 5);
     }
 
     @Test
     public void printInterpolatedKneserNeySmoother() throws IOException {
-        Smoother smoother =
-                new InterpolatedKneserNeySmoother(abcAbsoluteDir,
-                        abcContinuationDir, "\t");
+        Smoother smoother = newInterpolatedKneserNeySmoother();
         printPropabilitiesByLength(smoother, 5);
     }
 
@@ -85,33 +77,6 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
             System.out.println(sequence + " -> " + propability);
         }
         System.out.println("sum = " + sum);
-    }
-
-    private String getAbcSequence(int num, int length) {
-        StringBuilder result = new StringBuilder();
-
-        boolean frist = true;
-        for (int k = 0; k != length; ++k) {
-            if (frist) {
-                frist = false;
-            } else {
-                result.append(" ");
-            }
-            switch (num % 3) {
-                case 0:
-                    result.append("a");
-                    break;
-                case 1:
-                    result.append("b");
-                    break;
-                case 2:
-                    result.append("c");
-                    break;
-            }
-            num /= 3;
-        }
-
-        return result.reverse().toString();
     }
 
 }
