@@ -31,11 +31,17 @@ public class MaximumLikelihoodSmoother extends Smoother {
         debugSequenceHistory(sequence, history, sequenceCount, historyCount);
 
         if (sequenceCount == 0) {
-            return 0;
+            return calcResultSequenceCount0(reqSequence, condSequence);
         } else {
             return calcResult(reqSequence, condSequence, sequence, history,
                     sequenceCount, historyCount);
         }
+    }
+
+    protected double calcResultSequenceCount0(
+            List<String> reqSequence,
+            List<String> condSequence) {
+        return 0;
     }
 
     protected double calcResult(

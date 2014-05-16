@@ -7,7 +7,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class PrintSmootherProbabilitiesByLength extends AbcCorpusTest {
+public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
 
     @Test
     @Ignore
@@ -15,27 +15,36 @@ public class PrintSmootherProbabilitiesByLength extends AbcCorpusTest {
         Smoother smoother =
                 new MaximumLikelihoodSmoother(abcAbsoluteDir,
                         abcContinuationDir, "\t");
-        printProbabilitiesByLength(smoother, 5);
-    }
-
-    @Test
-    public void printDiscountSmoother() throws IOException {
-        Smoother smoother =
-                new DiscountSmoother(abcAbsoluteDir, abcContinuationDir, "\t",
-                        1.);
-        printProbabilitiesByLength(smoother, 5);
+        printPropabilitiesByLength(smoother, 5);
     }
 
     @Test
     @Ignore
-    public void printInterpolatedKneserNey() throws IOException {
+    public void printDiscountSmoother() throws IOException {
+        Smoother smoother =
+                new DiscountSmoother(abcAbsoluteDir, abcContinuationDir, "\t",
+                        1.);
+        printPropabilitiesByLength(smoother, 5);
+    }
+
+    @Test
+    @Ignore
+    public void printPropabilityCond2Smoother() throws IOException {
+        Smoother smoother =
+                new PropabilityCond2Smoother(abcAbsoluteDir,
+                        abcContinuationDir, "\t", 1.);
+        printPropabilitiesByLength(smoother, 5);
+    }
+
+    @Test
+    public void printInterpolatedKneserNeySmoother() throws IOException {
         Smoother smoother =
                 new InterpolatedKneserNeySmoother(abcAbsoluteDir,
                         abcContinuationDir, "\t");
-        printProbabilitiesByLength(smoother, 5);
+        printPropabilitiesByLength(smoother, 5);
     }
 
-    private void printProbabilitiesByLength(Smoother smoother, int length) {
+    private void printPropabilitiesByLength(Smoother smoother, int length) {
         Map<Integer, Map<String, Double>> propabilitiesByLength =
                 new LinkedHashMap<Integer, Map<String, Double>>();
         for (int i = 1; i != length + 1; ++i) {
@@ -43,10 +52,12 @@ public class PrintSmootherProbabilitiesByLength extends AbcCorpusTest {
                     .put(i, calcSequencePropabilities(smoother, i));
         }
 
+        System.out.println(smoother.getClass().getSimpleName());
         for (Map<String, Double> propabilities : propabilitiesByLength.values()) {
             System.out.println("---");
             printPropabilities(propabilities);
         }
+        System.out.println("===\n");
     }
 
     private Map<String, Double> calcSequencePropabilities(

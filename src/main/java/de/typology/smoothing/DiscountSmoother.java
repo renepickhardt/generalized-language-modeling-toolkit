@@ -47,11 +47,8 @@ public class DiscountSmoother extends MaximumLikelihoodSmoother {
     protected double calcProbabilityCond2(
             List<String> reqSequence,
             List<String> condSequence) {
-        return propabilityCond(reqSequence, calcCondSequence2(condSequence));
-    }
-
-    protected List<String> calcCondSequence2(List<String> condSequence) {
-        return condSequence.subList(1, condSequence.size());
+        return propabilityCond(reqSequence,
+                condSequence.subList(1, condSequence.size()));
     }
 
     protected double discount(Pattern pattern) {
