@@ -2,11 +2,9 @@ package de.typology.smoothing;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.LinkedList;
 import java.util.List;
 
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternElem;
 
 public class DiscountSmoother extends MaximumLikelihoodSmoother {
 
@@ -34,9 +32,13 @@ public class DiscountSmoother extends MaximumLikelihoodSmoother {
 
         double lambda = lambda(history, historyCount);
         if (lambda != 0) {
-            double probabilityCond2 =
-                    calcProbabilityCond2(reqSequence, condSequence);
-            result += lambda * probabilityCond2;
+            if (condSequence.isEmpty()) {
+                return 1. / getVocabSize();
+            } else {
+                double probabilityCond2 =
+                        calcProbabilityCond2(reqSequence, condSequence);
+                result += lambda * probabilityCond2;
+            }
         }
 
         return result;
@@ -45,15 +47,7 @@ public class DiscountSmoother extends MaximumLikelihoodSmoother {
     protected double calcProbabilityCond2(
             List<String> reqSequence,
             List<String> condSequence) {
-        if (condSequence.isEmpty()) {
-            List<String> skippedList = new LinkedList<String>();
-            skippedList.add(PatternElem.SKIPPED_WORD);
-            double vocabSize = getContinuation(skippedList).getOnePlusCount();
-            return 1 / vocabSize;
-        } else {
-            return propabilityCond(reqSequence,
-                    calcCondSequence2(condSequence));
-        }
+        return propabilityCond(reqSequence, calcCondSequence2(condSequence));
     }
 
     protected List<String> calcCondSequence2(List<String> condSequence) {

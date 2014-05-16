@@ -85,6 +85,12 @@ public abstract class Smoother {
         return new Pattern(patternElems);
     }
 
+    protected long getVocabSize() {
+        List<String> skippedList = new ArrayList<>(1);
+        skippedList.add(PatternElem.SKIPPED_WORD);
+        return getContinuation(skippedList).getOnePlusCount();
+    }
+
     protected int getAbsolute(List<String> sequence) {
         Pattern pattern = getPattern(sequence);
         String string = StringUtils.join(sequence, " ");
