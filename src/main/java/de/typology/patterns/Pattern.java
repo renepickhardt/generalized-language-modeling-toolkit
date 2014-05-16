@@ -38,7 +38,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
                 first = false;
             }
 
-            result.append(elem.apply((String)words[i]));
+            result.append(elem.apply((String) words[i]));
 
             ++i;
         }
@@ -192,24 +192,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     }
 
     // LEGACY //////////////////////////////////////////////////////////////////
-
-    public int numCnt() {
-        int result = 0;
-        for (PatternElem elem : pattern) {
-            if (elem == PatternElem.CNT) {
-                ++result;
-            }
-        }
-        return result;
-    }
-
-    public static Pattern newWithCnt(int length) {
-        List<PatternElem> pattern = new ArrayList<PatternElem>(length + 1);
-        for (int i = 0; i != length + 1; ++i) {
-            pattern.add(PatternElem.CNT);
-        }
-        return new Pattern(pattern);
-    }
 
     public static List<Pattern> getGlmForSmoothingPatterns(int modelLength) {
         int pow = 1 << modelLength; // 2^modelLength
