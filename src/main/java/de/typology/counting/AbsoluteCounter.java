@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Counts absolute counts of sequences for a number of patterns.
@@ -20,7 +20,8 @@ public class AbsoluteCounter {
 
     public static float MEMORY_FACTOR = 0.2f;
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LoggerFactory
+            .getLogger(AbsoluteCounter.class);
 
     private Path inputDir;
 

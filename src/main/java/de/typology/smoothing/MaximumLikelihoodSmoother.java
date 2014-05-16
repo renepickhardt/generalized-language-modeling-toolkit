@@ -5,9 +5,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.typology.patterns.PatternElem;
 
 public class MaximumLikelihoodSmoother extends Smoother {
+
+    private static Logger logger = LoggerFactory
+            .getLogger(MaximumLikelihoodSmoother.class);
 
     public MaximumLikelihoodSmoother(
             Path absoluteDir,
@@ -83,10 +89,7 @@ public class MaximumLikelihoodSmoother extends Smoother {
     protected final void debugP(
             List<String> reqSequence,
             List<String> condSequence) {
-        if (DEBUG) {
-            System.out.print("  P( " + reqSequence + " | " + condSequence
-                    + " )");
-        }
+        logger.debug("  P( " + reqSequence + " | " + condSequence + " )");
     }
 
     protected final void debugSequenceHistory(
@@ -94,11 +97,9 @@ public class MaximumLikelihoodSmoother extends Smoother {
             List<String> history,
             double sequenceCount,
             double historyCount) {
-        if (DEBUG) {
-            System.out.println("\t { sequence = " + sequence + " (count = "
-                    + sequenceCount + ") ; history = " + history + " (count = "
-                    + historyCount + ") }");
-        }
+        logger.debug("\t { sequence = " + sequence + " (count = "
+                + sequenceCount + ") ; history = " + history + " (count = "
+                + historyCount + ") }");
     }
 
 }

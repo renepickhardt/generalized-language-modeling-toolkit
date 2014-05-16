@@ -4,8 +4,13 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SmootherSumTest extends AbcCorpusTest {
+
+    private static Logger logger = LoggerFactory
+            .getLogger(SmootherSumTest.class);
 
     @Test
     public void testMaximumLikelihoodSmoother() throws IOException {
@@ -32,13 +37,13 @@ public class SmootherSumTest extends AbcCorpusTest {
     }
 
     private void testSum(Smoother smoother, int length) {
-        System.out.println(smoother.getClass().getSimpleName());
+        logger.info(smoother.getClass().getSimpleName());
         for (int i = 1; i != length + 1; ++i) {
             double sum = 0;
             for (int j = 0; j != ((int) Math.pow(3, i)); ++j) {
                 sum += smoother.propability(getAbcSequence(j, i));
             }
-            System.out.println("Length = " + i + " ; sum = " + sum);
+            logger.info("Length = " + i + " ; sum = " + sum);
             Assert.assertEquals(1., sum, 0.01);
         }
     }

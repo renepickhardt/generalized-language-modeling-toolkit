@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.typology.counting.Counter;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
@@ -18,7 +21,7 @@ import de.typology.utils.StringUtils;
 
 public abstract class Smoother {
 
-    public static boolean DEBUG = false;
+    private static Logger logger = LoggerFactory.getLogger(Smoother.class);
 
     protected Map<Pattern, Map<String, Integer>> absoluteCounts;
 
@@ -36,9 +39,7 @@ public abstract class Smoother {
     }
 
     public double propability(String sequence) {
-        if (DEBUG) {
-            System.out.println("---probability(" + sequence + ")");
-        }
+        logger.debug("---probability(" + sequence + ")");
         List<String> words = StringUtils.splitAtSpace(sequence);
 
         double result = 1;
@@ -61,9 +62,7 @@ public abstract class Smoother {
             }
 
             result *= propabilityCond(reqSequence, condSequence);
-            if (DEBUG) {
-                System.out.println(result);
-            }
+            logger.debug(Double.toString(result));
         }
         return result;
     }

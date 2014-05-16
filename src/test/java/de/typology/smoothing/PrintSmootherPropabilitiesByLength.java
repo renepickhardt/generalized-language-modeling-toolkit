@@ -6,8 +6,13 @@ import java.util.Map;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
+
+    private static Logger logger = LoggerFactory
+            .getLogger(PrintSmootherPropabilitiesByLength.class);
 
     @Test
     @Ignore
@@ -44,12 +49,12 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
                     .put(i, calcSequencePropabilities(smoother, i));
         }
 
-        System.out.println(smoother.getClass().getSimpleName());
+        logger.info(smoother.getClass().getSimpleName());
         for (Map<String, Double> propabilities : propabilitiesByLength.values()) {
-            System.out.println("---");
+            logger.info("---");
             printPropabilities(propabilities);
         }
-        System.out.println("===\n");
+        logger.info("===\n");
     }
 
     private Map<String, Double> calcSequencePropabilities(
@@ -74,9 +79,9 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
 
             sum += propability;
 
-            System.out.println(sequence + " -> " + propability);
+            logger.info(sequence + " -> " + propability);
         }
-        System.out.println("sum = " + sum);
+        logger.info("sum = " + sum);
     }
 
 }

@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
@@ -23,7 +23,8 @@ import de.typology.utils.StringUtils;
 
 public class ContinuationCounterTask implements Runnable {
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LoggerFactory
+            .getLogger(ContinuationCounterTask.class);
 
     private static int numTasks = 0;
 
@@ -111,8 +112,7 @@ public class ContinuationCounterTask implements Runnable {
                         }
 
                         Object[] words =
-                                StringUtils.splitAtSpace(sequence)
-                                        .toArray();
+                                StringUtils.splitAtSpace(sequence).toArray();
                         String patternSequence = pattern.apply(words);
 
                         Counter counter = sequenceCounts.get(patternSequence);
@@ -146,12 +146,11 @@ public class ContinuationCounterTask implements Runnable {
             String sequence = sequenceCount.getKey();
             Counter counter = sequenceCount.getValue();
 
-            Object[] words =
-                   StringUtils.splitAtSpace(sequence).toArray();
+            Object[] words = StringUtils.splitAtSpace(sequence).toArray();
             String indexWord = PatternElem.SKIPPED_WORD;
             for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
                     && i != pattern.length(); ++i) {
-                indexWord = pattern.get(i).apply((String)words[i]);
+                indexWord = pattern.get(i).apply((String) words[i]);
             }
 
             BufferedWriter writer = writers.get(wordIndex.rank(indexWord));

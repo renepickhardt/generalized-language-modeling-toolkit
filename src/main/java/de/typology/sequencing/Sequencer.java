@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
@@ -25,14 +25,14 @@ import de.typology.utils.StringUtils;
 /**
  * takes input text of the format 1 sentence per line
  * and each word currently must contain a part of speech tag.
- *
+ * 
  * example:
- *
+ * 
  * {@code word_1/pos_1 word_2/pos_2 word_3/pos_3 ... word_n/pos_n}
- *
+ * 
  * all (skipped) sequences of all lengths are extracted and stored
  * in various files (respecting the WordIndex)
- *
+ * 
  * TODO: the sequences must work with and without part of speeches
  */
 public class Sequencer {
@@ -41,7 +41,7 @@ public class Sequencer {
 
     public static long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LoggerFactory.getLogger(Sequencer.class);
 
     private Path inputFile;
 
@@ -132,8 +132,7 @@ public class Sequencer {
                     line = surroundWithTokens(maxPatternLength, line);
                 }
 
-                Object[] split =
-                        StringUtils.splitAtSpace(line).toArray();
+                Object[] split = StringUtils.splitAtSpace(line).toArray();
 
                 String[] words = new String[split.length];
                 String[] pos = new String[split.length];
@@ -178,7 +177,7 @@ public class Sequencer {
             String[] words,
             String[] pos) {
         for (int i = 0; i != split.length; ++i) {
-        	String currentWord = (String)split[i];
+            String currentWord = (String) split[i];
             int lastSlash = currentWord.lastIndexOf('/');
             if (lastSlash == -1) {
                 words[i] = currentWord;

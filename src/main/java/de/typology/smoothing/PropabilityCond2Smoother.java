@@ -5,9 +5,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.typology.patterns.PatternElem;
 
 public class PropabilityCond2Smoother extends DiscountSmoother {
+
+    private Logger logger = LoggerFactory
+            .getLogger(PropabilityCond2Smoother.class);
 
     public PropabilityCond2Smoother(
             Path absoluteDir,
@@ -84,10 +90,7 @@ public class PropabilityCond2Smoother extends DiscountSmoother {
     protected final void debugP2(
             List<String> reqSequence,
             List<String> condSequence) {
-        if (DEBUG) {
-            System.out.print("    P2( " + reqSequence + " | " + condSequence
-                    + " )");
-        }
+        logger.debug("    P2( " + reqSequence + " | " + condSequence + " )");
     }
 
 }

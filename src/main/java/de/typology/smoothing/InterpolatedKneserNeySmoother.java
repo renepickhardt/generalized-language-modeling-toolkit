@@ -5,9 +5,15 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.typology.patterns.Pattern;
 
 public class InterpolatedKneserNeySmoother extends PropabilityCond2Smoother {
+
+    private static Logger logger = LoggerFactory
+            .getLogger(InterpolatedKneserNeySmoother.class);
 
     private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =
             new HashMap<Pattern, Map<Integer, Integer>>();
@@ -35,9 +41,7 @@ public class InterpolatedKneserNeySmoother extends PropabilityCond2Smoother {
             discountCache.put(pattern, discount);
         }
 
-        if (DEBUG) {
-            System.out.println("    discount(" + pattern + ") = " + discount);
-        }
+        logger.debug("    discount(" + pattern + ") = " + discount);
 
         return discount;
     }
@@ -65,10 +69,8 @@ public class InterpolatedKneserNeySmoother extends PropabilityCond2Smoother {
             patternCache.put(times, count);
         }
 
-        if (DEBUG) {
-            System.out.println("      nGramTimesCount(" + pattern + "," + times
-                    + ") = " + count);
-        }
+        logger.debug("      nGramTimesCount(" + pattern + "," + times + ") = "
+                + count);
 
         return count;
     }
