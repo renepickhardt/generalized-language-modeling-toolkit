@@ -6,10 +6,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
@@ -19,8 +18,7 @@ import de.typology.indexing.WordIndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
-import de.typology.smoothing.KneserNeySmoother;
-import de.typology.smoothing.ModifiedKneserNeySmoother;
+import de.typology.smoothing.InterpolatedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
 import de.typology.utils.Config;
 
@@ -28,7 +26,8 @@ public class KneserNeyBuilder {
 
     // TODO: share one ExecutorService across all stages
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LoggerFactory
+            .getLogger(KneserNeyBuilder.class);
 
     private Config config;
 
@@ -37,7 +36,8 @@ public class KneserNeyBuilder {
         config = Config.get();
         loadStages(args);
 
-        Path workingDir = Paths.get(config.outputDir + config.inputDataSet);
+        Path workingDir =
+                Paths.get(config.outputDir).resolve(config.inputDataSet);
         Path trainingFile = workingDir.resolve("training.txt");
         Path indexFile = workingDir.resolve("index.txt");
         Path sequencesDir = workingDir.resolve("sequences");
@@ -80,17 +80,7 @@ public class KneserNeyBuilder {
         }
 
         if (config.buildKneserNey) {
-            logger.info("build kneser ney");
-            KneserNeySmoother kns =
-                    buildKneserNey(workingDir, absoluteDir, continuationDir,
-                            testingSamplesDir);
-
-            if (config.buildModKneserNey) {
-                logger.info("build modified kneser ney");
-                buildModKneserNey(workingDir, absoluteDir, continuationDir,
-                        testingSamplesDir, kns.absoluteTypeSequenceValueMap,
-                        kns.continuationTypeSequenceValueMap);
-            }
+            buildKneserNey(absoluteDir, continuationDir);
         }
 
         logger.info("done");
@@ -178,8 +168,8 @@ public class KneserNeyBuilder {
             throws IOException {
         try (InputStream input = Files.newInputStream(trainingFile);
                 OutputStream output = Files.newOutputStream(indexFile)) {
-            WordIndexBuilder wordIndexer = new WordIndexBuilder();
-            wordIndexer.buildIndex(input, output, config.maxCountDivider,
+            WordIndexBuilder wordIndexBuilder = new WordIndexBuilder();
+            wordIndexBuilder.buildIndex(input, output, config.maxCountDivider,
                     "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>");
         }
     }
@@ -190,7 +180,7 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException {
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        config.maxCountDivider);
+                        config.maxCountDivider, config.surroundWithTokens);
         sequencer.sequence(Pattern.getCombinations(config.modelLength,
                 new PatternElem[] {
                     PatternElem.CNT, PatternElem.SKP, PatternElem.POS
@@ -237,106 +227,12 @@ public class KneserNeyBuilder {
         }
     }
 
-    private KneserNeySmoother buildKneserNey(
-            Path workingDir,
-            Path absoluteDir,
-            Path continuationDir,
-            Path testExtractOutputDir) {
-        KneserNeySmoother knewserNeySmoother =
-                new KneserNeySmoother(testExtractOutputDir.toFile(),
-                        absoluteDir.toFile(), continuationDir.toFile(), "\t");
-
-        // read absolute and continuation values into HashMaps
-        logger.info("read absolute and continuation values into HashMaps for kneser ney");
-        knewserNeySmoother.absoluteTypeSequenceValueMap =
-                knewserNeySmoother
-                        .readAbsoluteValuesIntoHashMap(knewserNeySmoother.extractedAbsoluteDir);
-        knewserNeySmoother.continuationTypeSequenceValueMap =
-                knewserNeySmoother
-                        .readContinuationValuesIntoHashMap(knewserNeySmoother.extractedContinuationDir);
-
-        for (int i = config.modelLength; i >= 1; i--) {
-            Path inputSequenceFile =
-                    workingDir.resolve("testing-samples-" + i + ".txt");
-
-            if (config.kneserNeySimple) {
-                Path resultFile =
-                        workingDir.resolve("kneser-ney-simple-backoffToCont-"
-                                + i + ".txt");
-                knewserNeySmoother.smooth(inputSequenceFile.toFile(),
-                        resultFile.toFile(), i, false,
-                        config.conditionalProbabilityOnly);
-            }
-
-            if (config.kneserNeyComplex) {
-                Path resultFile =
-                        workingDir.resolve("kneser-ney-complex-backoffToCont-"
-                                + i + ".txt");
-                knewserNeySmoother.smooth(inputSequenceFile.toFile(),
-                        resultFile.toFile(), i, true,
-                        config.conditionalProbabilityOnly);
-            }
-        }
-
-        return knewserNeySmoother;
-    }
-
-    private
-        void
-        buildModKneserNey(
-                Path workingDir,
-                Path absoluteDir,
-                Path continuationDir,
-                Path testExtractOutputDir,
-                HashMap<String, HashMap<String, Long>> absoluteTypeSequenceValueMap,
-                HashMap<String, HashMap<String, Long[]>> continuationTypeSequenceValueMap) {
-        ModifiedKneserNeySmoother modifiedKneserNeySmoother =
-                new ModifiedKneserNeySmoother(testExtractOutputDir.toFile(),
-                        absoluteDir.toFile(), continuationDir.toFile(), "\t",
-                        config.decimalPlaces);
-
-        if (absoluteTypeSequenceValueMap == null) {
-            // read absolute and continuation values into HashMaps
-
-            logger.info("read absolute and continuation values into HashMaps for mod kneser ney");
-            absoluteTypeSequenceValueMap =
-                    modifiedKneserNeySmoother
-                            .readAbsoluteValuesIntoHashMap(modifiedKneserNeySmoother.extractedAbsoluteDir);
-
-            continuationTypeSequenceValueMap =
-                    modifiedKneserNeySmoother
-                            .readContinuationValuesIntoHashMap(modifiedKneserNeySmoother.extractedContinuationDir);
-        }
-
-        modifiedKneserNeySmoother.absoluteTypeSequenceValueMap =
-                absoluteTypeSequenceValueMap;
-        modifiedKneserNeySmoother.continuationTypeSequenceValueMap =
-                continuationTypeSequenceValueMap;
-
-        for (int i = config.modelLength; i >= 1; i--) {
-            Path inputSequenceFile =
-                    workingDir.resolve("testing-samples-" + i + ".txt");
-
-            if (config.kneserNeySimple) {
-                Path resultFile =
-                        workingDir
-                                .resolve("mod-kneser-ney-simple-backoffToCont-"
-                                        + i + ".txt");
-                modifiedKneserNeySmoother.smooth(inputSequenceFile.toFile(),
-                        resultFile.toFile(), i, false,
-                        config.conditionalProbabilityOnly);
-            }
-
-            if (config.kneserNeyComplex) {
-                Path resultFile =
-                        workingDir
-                                .resolve("mod-kneser-ney-complex-backoffToCont-"
-                                        + i + ".txt");
-                modifiedKneserNeySmoother.smooth(inputSequenceFile.toFile(),
-                        resultFile.toFile(), i, true,
-                        config.conditionalProbabilityOnly);
-            }
-        }
+    private void buildKneserNey(Path absoluteDir, Path continuationDir)
+            throws IOException {
+        @SuppressWarnings("unused")
+        InterpolatedKneserNeySmoother smoother =
+                new InterpolatedKneserNeySmoother(absoluteDir, continuationDir,
+                        "\t");
     }
 
     public static void main(String[] args) throws IOException,

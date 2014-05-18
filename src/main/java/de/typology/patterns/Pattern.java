@@ -18,13 +18,14 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     public Pattern(
             String pattern) {
+        // todo: doesn't error on PatternElem#fromString == null
         this.pattern = new ArrayList<PatternElem>(pattern.length());
         for (Character elem : pattern.toCharArray()) {
             this.pattern.add(PatternElem.fromString(elem.toString()));
         }
     }
 
-    public String apply(String[] words) {
+    public String apply(Object[] words) {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
@@ -37,7 +38,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
                 first = false;
             }
 
-            result.append(elem.apply(words[i]));
+            result.append(elem.apply((String) words[i]));
 
             ++i;
         }
@@ -89,6 +90,17 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return false;
     }
 
+    public boolean onlySkp() {
+        for (PatternElem elem : pattern) {
+            if (!(elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
+                    || elem.equals(PatternElem.PSKP) || elem
+                        .equals(PatternElem.WPOS))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Pattern replace(PatternElem target, PatternElem replacement) {
         Pattern newPattern = clone();
         for (int i = newPattern.length() - 1; i != -1; --i) {
@@ -125,6 +137,16 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
         Pattern o = (Pattern) other;
         return pattern.equals(o.pattern);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 93485;
+        int mult = 239;
+
+        hash += mult * pattern.hashCode();
+
+        return hash;
     }
 
     @Override
@@ -170,24 +192,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     }
 
     // LEGACY //////////////////////////////////////////////////////////////////
-
-    public int numCnt() {
-        int result = 0;
-        for (PatternElem elem : pattern) {
-            if (elem == PatternElem.CNT) {
-                ++result;
-            }
-        }
-        return result;
-    }
-
-    public static Pattern newWithCnt(int length) {
-        List<PatternElem> pattern = new ArrayList<PatternElem>(length + 1);
-        for (int i = 0; i != length + 1; ++i) {
-            pattern.add(PatternElem.CNT);
-        }
-        return new Pattern(pattern);
-    }
 
     public static List<Pattern> getGlmForSmoothingPatterns(int modelLength) {
         int pow = 1 << modelLength; // 2^modelLength

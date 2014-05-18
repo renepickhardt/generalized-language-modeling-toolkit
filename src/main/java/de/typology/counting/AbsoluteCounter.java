@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Counts absolute counts of sequences for a number of patterns.
@@ -20,7 +20,8 @@ public class AbsoluteCounter {
 
     public static float MEMORY_FACTOR = 0.2f;
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LoggerFactory
+            .getLogger(AbsoluteCounter.class);
 
     private Path inputDir;
 
@@ -53,8 +54,7 @@ public class AbsoluteCounter {
         logger.info("Counting absolute counts of sequences.");
 
         Files.createDirectory(outputDir);
-        
-        // TODO: put calculation of possible buffer size towards a utils function
+
         int bufferSize =
                 (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory() / numberOfCores));
 
@@ -81,7 +81,6 @@ public class AbsoluteCounter {
             }
         }
 
-        // TODO: if we had a blockhere like thread.join we could omit this line and hope to set up all constructors?
         AbsoluteCounterTask.setNumTasks(tasks.size());
 
         ExecutorService executorService =
@@ -95,7 +94,7 @@ public class AbsoluteCounter {
         executorService.shutdown();
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
-        // delets the folders where the raw data was stored
+        // deletes the folders where the sequence counts were stored
         if (deleteTempFiles) {
             try (DirectoryStream<Path> patternDirs =
                     Files.newDirectoryStream(inputDir)) {

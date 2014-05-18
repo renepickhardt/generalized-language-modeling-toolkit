@@ -3,8 +3,8 @@
 /.settings
 /bin
 /config.txt
-/testDataset
 /logs
+/src/test/resources/abc/
 /target
 
 .ser

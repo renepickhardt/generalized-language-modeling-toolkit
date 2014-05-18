@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This is an interface class to the Config file for this project. For each
  * class field one java property must be defined in config.txt. The fields will
@@ -25,6 +28,8 @@ import java.util.Properties;
 public class Config extends Properties {
 
     private static final long serialVersionUID = -4439565094382127683L;
+
+    private static Logger logger = LoggerFactory.getLogger(Config.class);
 
     private static Config instance = null;
 
@@ -146,6 +151,11 @@ public class Config extends Properties {
     public boolean deleteTempFiles;
 
     /**
+     * if n-1 tokens should be added before and after sentences
+     */
+    public boolean surroundWithTokens;
+
+    /**
      * sort absolute and continuation counts
      */
     public boolean sortCounts;
@@ -213,7 +223,7 @@ public class Config extends Properties {
         Field[] fields = getClass().getFields();
         for (Field f : fields) {
             if (this.getProperty(f.getName()) == null) {
-                System.err.print("Property '" + f.getName()
+                logger.error("Property '" + f.getName()
                         + "' not defined in config file");
             }
             if (f.getType().equals(String.class)) {

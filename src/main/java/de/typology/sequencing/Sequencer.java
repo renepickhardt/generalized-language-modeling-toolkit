@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.typology.indexing.WordIndex;
 import de.typology.patterns.Pattern;
@@ -23,20 +23,17 @@ import de.typology.patterns.PatternElem;
 import de.typology.utils.StringUtils;
 
 /**
- * takes input text of the format 1 sentence per line 
- * and each word currently must contain a part of speech tag 
+ * takes input text of the format 1 sentence per line
+ * and each word currently must contain a part of speech tag.
  * 
- * example: 
+ * example:
  * 
- * word_1/pos_1 word_2/pos_2 word_3/pos_3 ... word_n/pos_n
+ * {@code word_1/pos_1 word_2/pos_2 word_3/pos_3 ... word_n/pos_n}
  * 
  * all (skipped) sequences of all lengths are extracted and stored
  * in various files (respecting the WordIndex)
  * 
  * TODO: the sequences must work with and without part of speeches
- * 
- * @author rpickhardt, lukasschmelzeisen
- *
  */
 public class Sequencer {
 
@@ -44,7 +41,7 @@ public class Sequencer {
 
     public static long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LogManager.getLogger();
+    private static Logger logger = LoggerFactory.getLogger(Sequencer.class);
 
     private Path inputFile;
 
@@ -54,15 +51,19 @@ public class Sequencer {
 
     private int maxCountDivider;
 
+    private boolean surroundWithTokens;
+
     public Sequencer(
             Path inputFile,
             Path outputDir,
             WordIndex wordIndex,
-            int maxCountDivider) throws IOException {
+            int maxCountDivider,
+            boolean surroundWithTokens) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.maxCountDivider = maxCountDivider;
+        this.surroundWithTokens = surroundWithTokens;
     }
 
     public void sequence(Set<Pattern> inputPatterns) throws IOException {
@@ -127,9 +128,11 @@ public class Sequencer {
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
 
-                line = surroundWithTokens(maxPatternLength, line);
+                if (surroundWithTokens) {
+                    line = surroundWithTokens(maxPatternLength, line);
+                }
 
-                String[] split = StringUtils.splitAtSpace(line);
+                Object[] split = StringUtils.splitAtSpace(line).toArray();
 
                 String[] words = new String[split.length];
                 String[] pos = new String[split.length];
@@ -158,11 +161,11 @@ public class Sequencer {
         for (int i = 1; i != maxPatternLength; ++i) {
             lineBuilder.append("<s");
             lineBuilder.append(i);
-            lineBuilder.append(">/<BOS>");
+            lineBuilder.append(">/<BOS> ");
         }
         lineBuilder.append(line);
         for (int i = maxPatternLength - 1; i != 0; --i) {
-            lineBuilder.append("</s");
+            lineBuilder.append(" </s");
             lineBuilder.append(i);
             lineBuilder.append(">/<EOS>");
         }
@@ -170,17 +173,18 @@ public class Sequencer {
     }
 
     private void generateWordsAndPos(
-            String[] split,
+            Object[] split,
             String[] words,
             String[] pos) {
         for (int i = 0; i != split.length; ++i) {
-            int lastSlash = split[i].lastIndexOf('/');
+            String currentWord = (String) split[i];
+            int lastSlash = currentWord.lastIndexOf('/');
             if (lastSlash == -1) {
-                words[i] = split[i];
-                pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset 
+                words[i] = currentWord;
+                pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset
             } else {
-                words[i] = split[i].substring(0, lastSlash);
-                pos[i] = split[i].substring(lastSlash + 1);
+                words[i] = currentWord.substring(0, lastSlash);
+                pos[i] = currentWord.substring(lastSlash + 1);
             }
         }
     }

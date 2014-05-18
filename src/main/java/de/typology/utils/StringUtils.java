@@ -3,15 +3,12 @@ package de.typology.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * methods for faster string processing
- */
 public class StringUtils {
 
 	/**
-	 * this method should be used instead of string.split("\\s") since it is much more performant
+	 * this method should be used instead of string.split(' ') since it is much more performant
 	 */
-    public static String[] splitAtSpace(String s) {
+    public static List<String> splitAtSpace(String s) {
         List<String> result = new ArrayList<String>();
 
         int sp1 = 0, sp2;
@@ -33,7 +30,21 @@ public class StringUtils {
             }
         }
 
-        return result.toArray(new String[result.size()]);
+        return result;
+    }
+
+    public static String join(List<String> strings, String conjunction) {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean first = true;
+        for (String string : strings) {
+            if (first) {
+                first = false;
+            } else {
+                stringBuilder.append(conjunction);
+            }
+            stringBuilder.append(string);
+        }
+        return stringBuilder.toString();
     }
 
 }
