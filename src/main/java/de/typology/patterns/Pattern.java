@@ -79,6 +79,15 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         pattern.set(index, elem);
     }
 
+    public boolean containsPos() {
+        for (PatternElem elem : pattern) {
+            if (elem.equals(PatternElem.POS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean containsSkp() {
         for (PatternElem elem : pattern) {
             if (elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)

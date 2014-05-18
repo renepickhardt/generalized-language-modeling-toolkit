@@ -151,6 +151,17 @@ public class Config extends Properties {
     public boolean deleteTempFiles;
 
     /**
+     * whether training should be part of speech tagged, and whether pos
+     * information should be used later on
+     */
+    public boolean withPos;
+
+    /**
+     * .tagger file used for tagging
+     */
+    public String model;
+
+    /**
      * if n-1 tokens should be added before and after sentences
      */
     public boolean surroundWithTokens;

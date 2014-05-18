@@ -51,6 +51,8 @@ public class Sequencer {
 
     private int maxCountDivider;
 
+    private boolean withPos;
+
     private boolean surroundWithTokens;
 
     public Sequencer(
@@ -58,11 +60,13 @@ public class Sequencer {
             Path outputDir,
             WordIndex wordIndex,
             int maxCountDivider,
+            boolean withPos,
             boolean surroundWithTokens) throws IOException {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.maxCountDivider = maxCountDivider;
+        this.withPos = withPos;
         this.surroundWithTokens = surroundWithTokens;
     }
 
@@ -76,6 +80,10 @@ public class Sequencer {
         Map<Integer, Set<Pattern>> patternsByLength =
                 new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : inputPatterns) {
+            if (!withPos && pattern.containsPos()) {
+                throw new IllegalStateException(
+                        "Cant have POS pattern without withPos = true.");
+            }
             Set<Pattern> patterns = patternsByLength.get(pattern.length());
             if (patterns == null) {
                 patterns = new HashSet<Pattern>();
@@ -178,13 +186,17 @@ public class Sequencer {
             String[] pos) {
         for (int i = 0; i != split.length; ++i) {
             String currentWord = (String) split[i];
-            int lastSlash = currentWord.lastIndexOf('/');
-            if (lastSlash == -1) {
-                words[i] = currentWord;
-                pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset
+            if (withPos) {
+                int lastSlash = currentWord.lastIndexOf('/');
+                if (lastSlash == -1) {
+                    words[i] = currentWord;
+                    pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset
+                } else {
+                    words[i] = currentWord.substring(0, lastSlash);
+                    pos[i] = currentWord.substring(lastSlash + 1);
+                }
             } else {
-                words[i] = currentWord.substring(0, lastSlash);
-                pos[i] = currentWord.substring(lastSlash + 1);
+                words[i] = currentWord;
             }
         }
     }

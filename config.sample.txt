@@ -103,6 +103,13 @@ conditionalProbabilityOnly = false
 # should be used to save space
 deleteTempFiles = true
 
+# whether training should be part of speech tagged, and whether pos information
+# should be used later on
+withPos = true 
+
+# .tagger file used for tagging
+model = stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger
+
 # if n-1 tokens should be added before and after sentences
 surroundWithTokens = false
 

@@ -38,6 +38,8 @@ public class ContinuationCounter {
 
     private int numberOfCores;
 
+    private boolean withPos;
+
     private boolean sortCounts;
 
     public ContinuationCounter(
@@ -46,12 +48,14 @@ public class ContinuationCounter {
             WordIndex wordIndex,
             String delimiter,
             int numberOfCores,
+            boolean withPos,
             boolean sortCounts) throws IOException {
         this.inputDir = inputDir;
         this.outputDir = outputDir;
         this.wordIndex = wordIndex;
         this.delimiter = delimiter;
         this.numberOfCores = numberOfCores;
+        this.withPos = withPos;
         this.sortCounts = sortCounts;
     }
 
@@ -127,9 +131,12 @@ public class ContinuationCounter {
                             pattern.replace(PatternElem.SKP, PatternElem.WSKP);
                     patterns.put(wskpPattern, getSourcePattern(wskpPattern));
 
-                    Pattern pskpPattern =
-                            pattern.replace(PatternElem.SKP, PatternElem.PSKP);
-                    patterns.put(pskpPattern, getSourcePattern(pskpPattern));
+                    if (withPos) {
+                        Pattern pskpPattern =
+                                pattern.replace(PatternElem.SKP,
+                                        PatternElem.PSKP);
+                        patterns.put(pskpPattern, getSourcePattern(pskpPattern));
+                    }
                 }
             }
         }

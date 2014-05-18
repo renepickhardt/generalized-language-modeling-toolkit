@@ -1,3 +1,0 @@
-a/P b/P c/P a/P a/P b/P
-b/P a/P a/P b/P c/P a/P
-c/P a/P b/P a/P b/P a/P

@@ -20,6 +20,7 @@ import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
 import de.typology.smoothing.InterpolatedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
+import de.typology.tagging.PosTagger;
 import de.typology.utils.Config;
 
 public class KneserNeyBuilder {
@@ -39,6 +40,7 @@ public class KneserNeyBuilder {
         Path workingDir =
                 Paths.get(config.outputDir).resolve(config.inputDataSet);
         Path trainingFile = workingDir.resolve("training.txt");
+        Path taggedTrainingFile = workingDir.resolve("tagged-training.txt");
         Path indexFile = workingDir.resolve("index.txt");
         Path sequencesDir = workingDir.resolve("sequences");
         Path absoluteDir = workingDir.resolve("absolute");
@@ -50,9 +52,14 @@ public class KneserNeyBuilder {
             splitData(workingDir);
         }
 
+        if (config.withPos) {
+            tagTraining(trainingFile, taggedTrainingFile);
+        }
+
         if (config.buildIndex) {
             logger.info("build word index");
-            buildIndex(trainingFile, indexFile);
+            buildIndex(config.withPos ? taggedTrainingFile : trainingFile,
+                    indexFile);
         }
 
         WordIndex wordIndex;
@@ -61,7 +68,8 @@ public class KneserNeyBuilder {
         }
 
         if (config.buildSequences) {
-            buildSequences(trainingFile, sequencesDir, wordIndex);
+            buildSequences(config.withPos ? taggedTrainingFile : trainingFile,
+                    sequencesDir, wordIndex);
         }
 
         if (config.buildGLM) {
@@ -69,8 +77,7 @@ public class KneserNeyBuilder {
         }
 
         if (config.buildContinuationGLM) {
-            buildContinuationGLM(trainingFile, wordIndex, absoluteDir,
-                    continuationDir);
+            buildContinuationGLM(absoluteDir, continuationDir, wordIndex);
         }
 
         if (config.extractContinuationGLM) {
@@ -164,6 +171,14 @@ public class KneserNeyBuilder {
                 config.modelLength, config.numberOfQueries);
     }
 
+    private void tagTraining(Path trainingFile, Path taggedTrainingFile)
+            throws IOException {
+        PosTagger tagger =
+                new PosTagger(trainingFile, taggedTrainingFile,
+                        Paths.get(config.model));
+        tagger.tag();
+    }
+
     private void buildIndex(Path trainingFile, Path indexFile)
             throws IOException {
         try (InputStream input = Files.newInputStream(trainingFile);
@@ -180,11 +195,19 @@ public class KneserNeyBuilder {
             WordIndex wordIndex) throws IOException {
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        config.maxCountDivider, config.surroundWithTokens);
-        sequencer.sequence(Pattern.getCombinations(config.modelLength,
-                new PatternElem[] {
-                    PatternElem.CNT, PatternElem.SKP, PatternElem.POS
-                }));
+                        config.maxCountDivider, config.withPos,
+                        config.surroundWithTokens);
+        if (config.withPos) {
+            sequencer.sequence(Pattern.getCombinations(config.modelLength,
+                    new PatternElem[] {
+                        PatternElem.CNT, PatternElem.SKP, PatternElem.POS
+                    }));
+        } else {
+            sequencer.sequence(Pattern.getCombinations(config.modelLength,
+                    new PatternElem[] {
+                        PatternElem.CNT, PatternElem.SKP
+                    }));
+        }
     }
 
     private void buildGLM(
@@ -199,13 +222,12 @@ public class KneserNeyBuilder {
     }
 
     private void buildContinuationGLM(
-            Path trainingFile,
-            WordIndex wordIndex,
             Path absoluteDir,
-            Path continuationDir) throws IOException, InterruptedException {
+            Path continuationDir,
+            WordIndex wordIndex) throws IOException, InterruptedException {
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDir, continuationDir,
-                        wordIndex, "\t", config.numberOfCores,
+                        wordIndex, "\t", config.numberOfCores, config.withPos,
                         config.sortCounts);
         continuationCounter.count();
     }

@@ -32,7 +32,7 @@ public class AbcCorpusTest {
             InterruptedException {
         Path resourcesDir = Paths.get("src/test/resources");
 
-        Path abcTaggedFile = resourcesDir.resolve("abc_tagged.txt");
+        Path abcTrainingFile = resourcesDir.resolve("abc.txt");
 
         abcDir = resourcesDir.resolve("abc");
         if (!Files.exists(abcDir)) {
@@ -46,7 +46,7 @@ public class AbcCorpusTest {
 
         // index
         if (!Files.exists(abcWordIndexFile)) {
-            try (InputStream input = Files.newInputStream(abcTaggedFile);
+            try (InputStream input = Files.newInputStream(abcTrainingFile);
                     OutputStream output =
                             Files.newOutputStream(abcWordIndexFile)) {
                 WordIndexBuilder wordIndexBuilder = new WordIndexBuilder();
@@ -60,10 +60,10 @@ public class AbcCorpusTest {
         // sequences
         if (!Files.exists(abcSequencesDir)) {
             Sequencer sequencer =
-                    new Sequencer(abcTaggedFile, abcSequencesDir, abcWordIndex,
-                            1, false);
+                    new Sequencer(abcTrainingFile, abcSequencesDir, abcWordIndex,
+                            1, false, false);
             sequencer.sequence(Pattern.getCombinations(5, new PatternElem[] {
-                PatternElem.CNT, PatternElem.SKP, PatternElem.POS
+                PatternElem.CNT, PatternElem.SKP
             }));
         }
 
@@ -79,7 +79,7 @@ public class AbcCorpusTest {
         if (!Files.exists(abcContinuationDir)) {
             ContinuationCounter continuationCounter =
                     new ContinuationCounter(abcAbsoluteDir, abcContinuationDir,
-                            abcWordIndex, "\t", 1, true);
+                            abcWordIndex, "\t", 1, false, true);
             continuationCounter.count();
         }
     }
