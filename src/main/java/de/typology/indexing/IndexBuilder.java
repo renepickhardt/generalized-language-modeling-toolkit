@@ -158,7 +158,7 @@ public class IndexBuilder {
                             || currentPosFileCount + count > maxCountPerPosFile) {
                         writer.write(pos);
                         writer.write("\t");
-                        writer.write(posFileCount);
+                        writer.write(Integer.toString(posFileCount));
                         writer.write("\n");
                         currentPosFileCount = count;
                         ++posFileCount;
