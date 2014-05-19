@@ -73,6 +73,11 @@ public class Config extends Properties {
     public boolean splitData;
 
     /**
+     * whether to tag the trainingdata (only effective if withPos = true)
+     */
+    public boolean tag;
+
+    /**
      * state if the index of words should be build. The index is used to create
      * subfiles for counting and aggregating sequences
      */

@@ -53,7 +53,12 @@ public class KneserNeyBuilder {
         }
 
         if (config.withPos) {
-            tagTraining(trainingFile, taggedTrainingFile);
+            if (config.tag) {
+                tagTraining(trainingFile, taggedTrainingFile);
+            } else if (!Files.exists(taggedTrainingFile)) {
+                // Assume training is tagged in this case
+                Files.copy(trainingFile, taggedTrainingFile);
+            }
         }
 
         if (config.buildIndex) {

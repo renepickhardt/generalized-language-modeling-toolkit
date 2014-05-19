@@ -50,6 +50,9 @@ languages = en
 # first the data sets are split to training and test data
 splitData = true
 
+# whether to tag the trainingdata (only effective if withPos = true)
+tag = true
+
 # state if the index of words should be build. The index is used to create
 # subfiles for counting and aggregating sequences
 buildIndex = true
