@@ -195,7 +195,7 @@ public class Config extends Properties {
      */
     public int maxWordCountDivider;
 
-    public int maxPosCountDivier;
+    public int maxPosCountDivider;
 
     // SPLITS //////////////////////////////////////////////////////////////////
 

@@ -192,7 +192,7 @@ public class KneserNeyBuilder {
                     new IndexBuilder(config.withPos, config.surroundWithTokens,
                             5);
             indexBuilder.buildIndex(input, output, config.maxWordCountDivider,
-                    config.maxPosCountDivier);
+                    config.maxPosCountDivider);
         }
     }
 
