@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
 import de.typology.extracting.TestSequenceExtractor;
-import de.typology.indexing.WordIndex;
-import de.typology.indexing.WordIndexBuilder;
+import de.typology.indexing.Index;
+import de.typology.indexing.IndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
@@ -62,9 +62,9 @@ public class KneserNeyBuilder {
                     indexFile);
         }
 
-        WordIndex wordIndex;
+        Index wordIndex;
         try (InputStream wordIndexInput = Files.newInputStream(indexFile)) {
-            wordIndex = new WordIndex(wordIndexInput);
+            wordIndex = new Index(wordIndexInput);
         }
 
         if (config.buildSequences) {
@@ -183,19 +183,21 @@ public class KneserNeyBuilder {
             throws IOException {
         try (InputStream input = Files.newInputStream(trainingFile);
                 OutputStream output = Files.newOutputStream(indexFile)) {
-            WordIndexBuilder wordIndexBuilder = new WordIndexBuilder();
-            wordIndexBuilder.buildIndex(input, output, config.maxCountDivider,
-                    "<fs>/<fs> <bos>/<bos> ", " <eos>/<eos>");
+            IndexBuilder indexBuilder =
+                    new IndexBuilder(config.withPos, config.surroundWithTokens,
+                            5);
+            indexBuilder.buildIndex(input, output, config.maxWordCountDivider,
+                    config.maxPosCountDivier);
         }
     }
 
     private void buildSequences(
             Path trainingFile,
             Path sequencesDir,
-            WordIndex wordIndex) throws IOException {
+            Index wordIndex) throws IOException {
         Sequencer sequencer =
                 new Sequencer(trainingFile, sequencesDir, wordIndex,
-                        config.maxCountDivider, config.withPos,
+                        config.maxWordCountDivider, config.withPos,
                         config.surroundWithTokens);
         if (config.withPos) {
             sequencer.sequence(Pattern.getCombinations(config.modelLength,
@@ -210,10 +212,8 @@ public class KneserNeyBuilder {
         }
     }
 
-    private void buildGLM(
-            Path sequencesDir,
-            Path absoluteDir,
-            WordIndex wordIndex) throws IOException, InterruptedException {
+    private void buildGLM(Path sequencesDir, Path absoluteDir, Index wordIndex)
+            throws IOException, InterruptedException {
         AbsoluteCounter absoluteCounter =
                 new AbsoluteCounter(sequencesDir, absoluteDir, "\t",
                         config.numberOfCores, config.deleteTempFiles,
@@ -224,7 +224,7 @@ public class KneserNeyBuilder {
     private void buildContinuationGLM(
             Path absoluteDir,
             Path continuationDir,
-            WordIndex wordIndex) throws IOException, InterruptedException {
+            Index wordIndex) throws IOException, InterruptedException {
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(absoluteDir, continuationDir,
                         wordIndex, "\t", config.numberOfCores, config.withPos,

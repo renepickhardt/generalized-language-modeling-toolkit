@@ -129,7 +129,8 @@ numberOfQueries = 100000
 
 # used for splitting files in which the skipped ngrams are stored and for index
 # building
-maxCountDivider = 1000
+maxWordCountDivider = 10
+maxPosCountDivier = 10
 
 ################################################################################
 # the following numbers are for creation of training, learning and testing data

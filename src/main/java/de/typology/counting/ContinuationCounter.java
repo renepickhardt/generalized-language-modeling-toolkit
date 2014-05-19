@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.typology.indexing.WordIndex;
+import de.typology.indexing.Index;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 
@@ -32,7 +32,7 @@ public class ContinuationCounter {
 
     private Path outputDir;
 
-    private WordIndex wordIndex;
+    private Index wordIndex;
 
     private String delimiter;
 
@@ -45,7 +45,7 @@ public class ContinuationCounter {
     public ContinuationCounter(
             Path inputDir,
             Path outputDir,
-            WordIndex wordIndex,
+            Index wordIndex,
             String delimiter,
             int numberOfCores,
             boolean withPos,
@@ -95,7 +95,8 @@ public class ContinuationCounter {
             }
 
             if (!donePatterns.isEmpty()) {
-                logger.info("End of round of calculation.");
+                logger.info("End of round of calculation. Reminaing Patterns: "
+                        + donePatterns.size());
             } else {
                 break;
             }

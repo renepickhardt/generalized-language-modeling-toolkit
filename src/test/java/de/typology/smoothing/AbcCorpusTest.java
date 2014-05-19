@@ -11,8 +11,8 @@ import org.junit.BeforeClass;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
-import de.typology.indexing.WordIndex;
-import de.typology.indexing.WordIndexBuilder;
+import de.typology.indexing.Index;
+import de.typology.indexing.IndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
@@ -21,7 +21,7 @@ public class AbcCorpusTest {
 
     protected static Path abcDir;
 
-    protected static WordIndex abcWordIndex;
+    protected static Index abcWordIndex;
 
     protected static Path abcAbsoluteDir;
 
@@ -49,19 +49,19 @@ public class AbcCorpusTest {
             try (InputStream input = Files.newInputStream(abcTrainingFile);
                     OutputStream output =
                             Files.newOutputStream(abcWordIndexFile)) {
-                WordIndexBuilder wordIndexBuilder = new WordIndexBuilder();
-                wordIndexBuilder.buildIndex(input, output, 1, "", "");
+                IndexBuilder indexBuilder = new IndexBuilder(false, false, 5);
+                indexBuilder.buildIndex(input, output, 1, 1);
             }
         }
         try (InputStream input = Files.newInputStream(abcWordIndexFile)) {
-            abcWordIndex = new WordIndex(input);
+            abcWordIndex = new Index(input);
         }
 
         // sequences
         if (!Files.exists(abcSequencesDir)) {
             Sequencer sequencer =
-                    new Sequencer(abcTrainingFile, abcSequencesDir, abcWordIndex,
-                            1, false, false);
+                    new Sequencer(abcTrainingFile, abcSequencesDir,
+                            abcWordIndex, 1, false, false);
             sequencer.sequence(Pattern.getCombinations(5, new PatternElem[] {
                 PatternElem.CNT, PatternElem.SKP
             }));

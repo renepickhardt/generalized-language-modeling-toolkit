@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -17,9 +16,9 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.typology.indexing.WordIndex;
+import de.typology.indexing.Index;
+import de.typology.indexing.IndexWriter;
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternElem;
 import de.typology.utils.StringUtils;
 
 /**
@@ -47,7 +46,7 @@ public class Sequencer {
 
     private Path outputDir;
 
-    private WordIndex wordIndex;
+    private Index wordIndex;
 
     private int maxCountDivider;
 
@@ -58,7 +57,7 @@ public class Sequencer {
     public Sequencer(
             Path inputFile,
             Path outputDir,
-            WordIndex wordIndex,
+            Index wordIndex,
             int maxCountDivider,
             boolean withPos,
             boolean surroundWithTokens) throws IOException {
@@ -113,14 +112,13 @@ public class Sequencer {
                         / patterns.size() / maxCountDivider));
 
         // open writers for patterns
-        Map<Pattern, List<BufferedWriter>> patternWriters =
-                new HashMap<Pattern, List<BufferedWriter>>();
+        Map<Pattern, IndexWriter> patternWriters =
+                new HashMap<Pattern, IndexWriter>();
         for (Pattern pattern : patterns) {
             Path dir = outputDir.resolve(pattern.toString());
             Files.createDirectory(dir);
-            List<BufferedWriter> writers =
-                    wordIndex.openWriters(dir, bufferSizes);
-            patternWriters.put(pattern, writers);
+            patternWriters.put(pattern,
+                    wordIndex.openIndexWriter(pattern, dir, bufferSizes));
         }
 
         long readSize = 0;
@@ -137,16 +135,18 @@ public class Sequencer {
                 readSize += line.getBytes().length;
 
                 if (surroundWithTokens) {
-                    line = surroundWithTokens(maxPatternLength, line);
+                    line =
+                            StringUtils.surroundWithTokens(maxPatternLength,
+                                    line);
                 }
 
                 Object[] split = StringUtils.splitAtSpace(line).toArray();
 
                 String[] words = new String[split.length];
-                String[] pos = new String[split.length];
-                generateWordsAndPos(split, words, pos);
+                String[] poses = new String[split.length];
+                StringUtils.generateWordsAndPos(split, words, poses, withPos);
 
-                writeSequences(patternLength, patternWriters, words, pos);
+                writeSequences(patternLength, patternWriters, words, poses);
 
                 // if more then a minute since last update
                 if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
@@ -159,70 +159,27 @@ public class Sequencer {
         }
 
         // close writers for patterns
-        for (List<BufferedWriter> writers : patternWriters.values()) {
-            wordIndex.closeWriters(writers);
-        }
-    }
-
-    private String surroundWithTokens(int maxPatternLength, String line) {
-        StringBuilder lineBuilder = new StringBuilder();
-        for (int i = 1; i != maxPatternLength; ++i) {
-            lineBuilder.append("<s");
-            lineBuilder.append(i);
-            lineBuilder.append(">/<BOS> ");
-        }
-        lineBuilder.append(line);
-        for (int i = maxPatternLength - 1; i != 0; --i) {
-            lineBuilder.append(" </s");
-            lineBuilder.append(i);
-            lineBuilder.append(">/<EOS>");
-        }
-        return lineBuilder.toString();
-    }
-
-    private void generateWordsAndPos(
-            Object[] split,
-            String[] words,
-            String[] pos) {
-        for (int i = 0; i != split.length; ++i) {
-            String currentWord = (String) split[i];
-            if (withPos) {
-                int lastSlash = currentWord.lastIndexOf('/');
-                if (lastSlash == -1) {
-                    words[i] = currentWord;
-                    pos[i] = "UNKP"; // unkown POS, not part of any pos-tagset
-                } else {
-                    words[i] = currentWord.substring(0, lastSlash);
-                    pos[i] = currentWord.substring(lastSlash + 1);
-                }
-            } else {
-                words[i] = currentWord;
-            }
+        for (IndexWriter indexWriter : patternWriters.values()) {
+            indexWriter.close();
         }
     }
 
     private void writeSequences(
             int patternLength,
-            Map<Pattern, List<BufferedWriter>> patternWriters,
+            Map<Pattern, IndexWriter> patternWriters,
             String[] words,
-            String[] pos) throws IOException {
+            String[] poses) throws IOException {
         for (int p = 0; p <= words.length - patternLength; ++p) {
-            for (Map.Entry<Pattern, List<BufferedWriter>> entry : patternWriters
+            for (Map.Entry<Pattern, IndexWriter> entry : patternWriters
                     .entrySet()) {
                 Pattern pattern = entry.getKey();
-                List<BufferedWriter> writers = entry.getValue();
+                IndexWriter indexWriter = entry.getValue();
 
-                String patternSequence = pattern.apply(words, pos, p);
+                String patternSequence = pattern.apply(words, poses, p);
 
-                // get first word of sequence that isn't PatternElem.SKIPPED_WORD
-                String indexWord = PatternElem.SKIPPED_WORD;
-                for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
-                        && i != patternLength; ++i) {
-                    indexWord = pattern.get(i).apply(words[p + i], pos[p + i]);
-                }
-
-                writers.get(wordIndex.rank(indexWord)).write(
-                        patternSequence + "\n");
+                BufferedWriter writer = indexWriter.get(words, poses, p);
+                writer.write(patternSequence);
+                writer.write("\n");
             }
         }
     }

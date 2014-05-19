@@ -75,6 +75,15 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.get(index);
     }
 
+    public PatternElem getFirstNonSkp() {
+        for (PatternElem elem : pattern) {
+            if (!elem.equals(PatternElem.SKP)) {
+                return elem;
+            }
+        }
+        return PatternElem.SKP;
+    }
+
     public void set(int index, PatternElem elem) {
         pattern.set(index, elem);
     }

@@ -9,16 +9,15 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.typology.indexing.WordIndex;
+import de.typology.indexing.Index;
+import de.typology.indexing.IndexWriter;
 import de.typology.patterns.Pattern;
-import de.typology.patterns.PatternElem;
 import de.typology.utils.StringUtils;
 
 public class ContinuationCounterTask implements Runnable {
@@ -34,7 +33,7 @@ public class ContinuationCounterTask implements Runnable {
 
     private Path outputDir;
 
-    private WordIndex wordIndex;
+    private Index wordIndex;
 
     private Pattern pattern;
 
@@ -49,7 +48,7 @@ public class ContinuationCounterTask implements Runnable {
     public ContinuationCounterTask(
             Path inputDir,
             Path outputDir,
-            WordIndex wordIndex,
+            Index wordIndex,
             Pattern pattern,
             String delimiter,
             int bufferSize,
@@ -138,29 +137,22 @@ public class ContinuationCounterTask implements Runnable {
     private void writeSequenceCounts(Map<String, Counter> sequenceCounts)
             throws IOException {
         Files.createDirectory(outputDir);
-        List<BufferedWriter> writers =
-                wordIndex.openWriters(outputDir, bufferSize);
+        try (IndexWriter indexWriter =
+                wordIndex.openIndexWriter(pattern, outputDir, bufferSize)) {
+            for (Map.Entry<String, Counter> sequenceCount : sequenceCounts
+                    .entrySet()) {
+                String sequence = sequenceCount.getKey();
+                Counter counter = sequenceCount.getValue();
 
-        for (Map.Entry<String, Counter> sequenceCount : sequenceCounts
-                .entrySet()) {
-            String sequence = sequenceCount.getKey();
-            Counter counter = sequenceCount.getValue();
+                Object[] words = StringUtils.splitAtSpace(sequence).toArray();
 
-            Object[] words = StringUtils.splitAtSpace(sequence).toArray();
-            String indexWord = PatternElem.SKIPPED_WORD;
-            for (int i = 0; indexWord.equals(PatternElem.SKIPPED_WORD)
-                    && i != pattern.length(); ++i) {
-                indexWord = pattern.get(i).apply((String) words[i]);
+                BufferedWriter writer = indexWriter.get(words);
+                writer.write(sequence);
+                writer.write(delimiter);
+                writer.write(counter.toString(delimiter));
+                writer.write("\n");
             }
-
-            BufferedWriter writer = writers.get(wordIndex.rank(indexWord));
-            writer.write(sequence);
-            writer.write(delimiter);
-            writer.write(counter.toString(delimiter));
-            writer.write("\n");
         }
-
-        wordIndex.closeWriters(writers);
     }
 
     public static void setNumTasks(int numTasks) {

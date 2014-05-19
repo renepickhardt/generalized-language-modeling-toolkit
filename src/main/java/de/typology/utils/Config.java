@@ -188,7 +188,9 @@ public class Config extends Properties {
      * used for splitting files in which the skipped ngrams are stored and for
      * index building
      */
-    public int maxCountDivider;
+    public int maxWordCountDivider;
+
+    public int maxPosCountDivier;
 
     // SPLITS //////////////////////////////////////////////////////////////////
 
