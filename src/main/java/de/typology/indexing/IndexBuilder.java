@@ -135,7 +135,7 @@ public class IndexBuilder {
                         || currentWordFileCount + count > maxCountPerWordFile) {
                     writer.write(word);
                     writer.write("\t");
-                    writer.write(wordFileCount);
+                    writer.write(Integer.toString(wordFileCount));
                     writer.write("\n");
                     currentWordFileCount = count;
                     ++wordFileCount;

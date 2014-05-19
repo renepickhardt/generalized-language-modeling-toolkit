@@ -190,7 +190,7 @@ public class KneserNeyBuilder {
                 OutputStream output = Files.newOutputStream(indexFile)) {
             IndexBuilder indexBuilder =
                     new IndexBuilder(config.withPos, config.surroundWithTokens,
-                            5);
+                            config.modelLength);
             indexBuilder.buildIndex(input, output, config.maxWordCountDivider,
                     config.maxPosCountDivider);
         }

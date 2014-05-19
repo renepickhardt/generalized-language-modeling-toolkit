@@ -22,9 +22,10 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
     }
 
     @Test
-    @Ignore
-    public void printDiscountSmoother() throws IOException {
-        Smoother smoother = newDiscountSmoother(1.);
+    //    @Ignore
+        public
+        void printDiscountSmoother() throws IOException {
+        Smoother smoother = newDiscountSmoother(.25);
         printPropabilitiesByLength(smoother, 5);
     }
 
@@ -36,6 +37,7 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
     }
 
     @Test
+    @Ignore
     public void printInterpolatedKneserNeySmoother() throws IOException {
         Smoother smoother = newInterpolatedKneserNeySmoother();
         printPropabilitiesByLength(smoother, 5);

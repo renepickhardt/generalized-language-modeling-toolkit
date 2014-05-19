@@ -20,7 +20,7 @@ public class SmootherSumTest extends AbcCorpusTest {
 
     @Test
     public void testDiscountSmoother() throws IOException {
-        Smoother smoother = newDiscountSmoother(1.);
+        Smoother smoother = newDiscountSmoother(0);
         testSum(smoother, 5);
     }
 

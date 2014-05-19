@@ -28,6 +28,13 @@ public class MaximumLikelihoodSmoother extends Smoother {
             List<String> condSequence) {
         debugP(reqSequence, condSequence);
 
+        if (!condSequence.isEmpty()) {
+            double conditionCount = getAbsolute(condSequence);
+            if (conditionCount == 0) { // otherwise P(reqSequence | condSequence) is not well defined.
+                logger.debug("condition count = 0 detected return 0 probability");
+                return 0;
+            }
+        }
         List<String> sequence = getSequence(reqSequence, condSequence);
         List<String> history = getHistory(reqSequence, condSequence);
 
@@ -37,7 +44,8 @@ public class MaximumLikelihoodSmoother extends Smoother {
         debugSequenceHistory(sequence, history, sequenceCount, historyCount);
 
         if (sequenceCount == 0) {
-            return calcResultSequenceCount0(reqSequence, condSequence);
+            return calcResultSequenceCount0(reqSequence, condSequence,
+                    sequence, history, sequenceCount, historyCount);
         } else {
             return calcResult(reqSequence, condSequence, sequence, history,
                     sequenceCount, historyCount);
@@ -46,7 +54,11 @@ public class MaximumLikelihoodSmoother extends Smoother {
 
     protected double calcResultSequenceCount0(
             List<String> reqSequence,
-            List<String> condSequence) {
+            List<String> condSequence,
+            List<String> sequence,
+            List<String> history,
+            double sequenceCount,
+            double historyCount) {
         return 0;
     }
 
