@@ -46,8 +46,15 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 + history + " }");
 
         double sequenceCount = getAbsolute(sequence);
-        // TODO discuss if it is really corret here to add a skipp at the history (this depends on many things in counting. in general I guess this is correct but for KN smoothing maybe not)
+        /*
+         * TODO discuss if it is really corret here to add a skipp at the
+         * history (this depends on many things in counting. in general I guess
+         * this is correct but for KN smoothing maybe not)
+         */
         double historyCount = getAbsolute(history);
+        if (historyCount == 0) {
+            return 0;
+        }
 
         Double result;
         Pattern historyPattern = getPattern(history);
@@ -55,7 +62,10 @@ public class InterpolatedKneserNeySmoother extends Smoother {
             result = sequenceCount / historyCount;
         } else {
             double discount = discount(historyPattern);
-            // TODO: lamda is connected to the discount value. why is it not given as a parameter?
+            /*
+             * TODO: lamda is connected to the discount value. why is it not
+             * given as a parameter?
+             */
             double lambda = lambda_high(history);
             double propbabilityCond2 =
                     propabilityCond2(reqSequence,
@@ -64,7 +74,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                     Math.max(sequenceCount - discount, 0) / historyCount
                             + lambda * propbabilityCond2;
         }
-        result = result.equals(Double.NaN) ? 0 : result;
+        //result = result.equals(Double.NaN) ? 0 : result;
         System.out.println("  result = " + result);
         return result;
     }
@@ -93,6 +103,9 @@ public class InterpolatedKneserNeySmoother extends Smoother {
 
         double sequenceCount = getContinuation(sequence).getOnePlusCount();
         double historyCount = getContinuation(history).getOnePlusCount();
+        if (historyCount == 0) {
+            return 0;
+        }
 
         Double result;
         Pattern historyPattern = getPattern(history);
@@ -108,7 +121,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                     Math.max(sequenceCount - discount, 0) / historyCount
                             + lambda * probabilityCond2;
         }
-        result = result.equals(Double.NaN) ? 0 : result;
+        //result = result.equals(Double.NaN) ? 0 : result;
         System.out.println("    result = " + result);
         return result;
     }
@@ -146,9 +159,12 @@ public class InterpolatedKneserNeySmoother extends Smoother {
      * @return The discount value for n-grams with {@code pattern}.
      */
     private double discount(Pattern pattern) {
+        if (true) {
+            return 0.25;
+        }
         Double discount = discountCache.get(pattern);
         if (discount == null) {
-        	// TODO: tbd. is it really true use pattern instead of history? TBD
+            // TODO: tbd. is it really true use pattern instead of history? TBD
             double n_1 = nGramTimesCount(pattern, 1);
             double n_2 = nGramTimesCount(pattern, 2);
             if (n_1 == 0 && n_2 == 0) {
@@ -165,11 +181,31 @@ public class InterpolatedKneserNeySmoother extends Smoother {
     }
 
     private double lambda_high(List<String> history) {
+        //        List<String> history = new ArrayList<String>(history2);
+        //        for (int i = history.size() - 1; i != -1; --i) {
+        //            if (history.get(i) == PatternElem.SKIPPED_WORD) {
+        //                history.remove(i);
+        //            } else {
+        //                break;
+        //            }
+        //        }
+        //        List<String> skippedHistory = new ArrayList<String>(history2);
+        //        for (int i = 0; i != skippedHistory.size(); ++i) {
+        //            if (skippedHistory.get(i) != PatternElem.SKIPPED_WORD) {
+        //                skippedHistory.set(i, PatternElem.SKIPPED_WORD);
+        //                break;
+        //            }
+        //        }
+        int denominator = getAbsolute(history);
         Double result =
                 discount(getPattern(history))
                         * getContinuation(history).getOneCount()
                         / getAbsolute(history);
-        result = result.equals(Double.NaN) ? 0 : result;
+        //result = result.equals(Double.NaN) ? 0 : result;
+        if (denominator == 0) {
+            System.out.println("####################### denominator 0 for: "
+                    + history);
+        }
         System.out.println("    lambda_high(" + history + ") = " + "discount("
                 + getPattern(history) + ")  * getContinuation(" + history
                 + ").getOneCount() / getAbsolute(" + history + ") = " + result);
@@ -189,7 +225,7 @@ public class InterpolatedKneserNeySmoother extends Smoother {
                 discount(getPattern(history))
                         * getContinuation(history).getOneCount()
                         / getContinuation(skippedHistory).getOnePlusCount();
-        result = result.equals(Double.NaN) ? 0 : result;
+        //result = result.equals(Double.NaN) ? 0 : result;
         System.out.println("    lambda_mid(" + history + ") = " + "discount("
                 + getPattern(history) + ")  * " + "getContinuation(" + history
                 + ").getOneCount() / getContinuation(" + skippedHistory
