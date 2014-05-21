@@ -11,7 +11,7 @@
   
   <!-- Application Loggers -->
   <logger name="de.typology">
-    <level value="info" />
+    <level value="debug" />
   </logger>
   
   <!-- Root Logger -->

@@ -16,6 +16,10 @@ import de.typology.indexing.IndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
+import de.typology.smoothing.legacy.DiscountSmoother;
+import de.typology.smoothing.legacy.InterpolatedKneserNeySmoother;
+import de.typology.smoothing.legacy.MaximumLikelihoodSmoother;
+import de.typology.smoothing.legacy.PropabilityCond2Smoother;
 
 public class AbcCorpusTest {
 

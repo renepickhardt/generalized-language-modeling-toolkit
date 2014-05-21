@@ -1,4 +1,4 @@
-package de.typology.smoothing;
+package de.typology.smoothing.legacy;
 
 import java.io.IOException;
 import java.nio.file.Path;

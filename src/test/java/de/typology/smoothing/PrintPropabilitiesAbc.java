@@ -4,56 +4,40 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.typology.smoothing.legacy.Smoother;
-
-public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
+public class PrintPropabilitiesAbc extends AbcCorpusTest {
 
     private static Logger logger = LoggerFactory
-            .getLogger(PrintSmootherPropabilitiesByLength.class);
+            .getLogger(PrintPropabilitiesAbc.class);
 
     @Test
-    @Ignore
-    public void printMaximumLikelihoodSmoother() throws IOException {
-        Smoother smoother = newMaximumLikelihoodSmoother();
-        printPropabilitiesByLength(smoother, 5);
+    public void print() throws IOException {
+        Corpus corpus = new Corpus(abcAbsoluteDir, abcContinuationDir, "\t");
+
+        MaximumLikelihoodEstimator mle = new MaximumLikelihoodEstimator(corpus);
+        FalseMaximumLikelihoodEstimator fmle =
+                new FalseMaximumLikelihoodEstimator(corpus);
+
+        SkipCalculator skipMle = new SkipCalculator(mle);
+        DeleteCalculator deleteMle = new DeleteCalculator(mle);
+        DeleteCalculator deleteFmle = new DeleteCalculator(fmle);
+
+        printPropabilities(skipMle, 3);
     }
 
-    @Test
-        @Ignore
-        public
-        void printDiscountSmoother() throws IOException {
-        Smoother smoother = newDiscountSmoother(.25);
-        printPropabilitiesByLength(smoother, 5);
-    }
-
-    @Test
-    @Ignore
-    public void printPropabilityCond2Smoother() throws IOException {
-        Smoother smoother = newPropabilityCond2Smoother(1.);
-        printPropabilitiesByLength(smoother, 5);
-    }
-
-    @Test
-    @Ignore
-    public void printInterpolatedKneserNeySmoother() throws IOException {
-        Smoother smoother = newInterpolatedKneserNeySmoother();
-        printPropabilitiesByLength(smoother, 5);
-    }
-
-    private void printPropabilitiesByLength(Smoother smoother, int length) {
+    private void
+        printPropabilities(PropabilityCalculator calculator, int length) {
         Map<Integer, Map<String, Double>> propabilitiesByLength =
                 new LinkedHashMap<Integer, Map<String, Double>>();
         for (int i = 1; i != length + 1; ++i) {
-            propabilitiesByLength
-                    .put(i, calcSequencePropabilities(smoother, i));
+            propabilitiesByLength.put(i,
+                    calcSequencePropabilities(calculator, i));
         }
 
-        logger.info(smoother.getClass().getSimpleName());
+        logger.info(calculator.getClass().getSimpleName());
         for (Map<String, Double> propabilities : propabilitiesByLength.values()) {
             logger.info("---");
             printPropabilities(propabilities);
@@ -62,13 +46,13 @@ public class PrintSmootherPropabilitiesByLength extends AbcCorpusTest {
     }
 
     private Map<String, Double> calcSequencePropabilities(
-            Smoother smooter,
+            PropabilityCalculator calculator,
             int length) {
         Map<String, Double> propabilities = new LinkedHashMap<String, Double>();
 
         for (int i = 0; i != ((int) Math.pow(3, length)); ++i) {
             String sequence = getAbcSequence(i, length);
-            propabilities.put(sequence, smooter.propability(sequence));
+            propabilities.put(sequence, calculator.propability(sequence));
         }
 
         return propabilities;

@@ -1,18 +1,12 @@
-package de.typology.smoothing;
+package de.typology.smoothing.legacy;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import de.typology.patterns.Pattern;
 
 public class DiscountSmoother extends MaximumLikelihoodSmoother {
-
-    private static Logger logger = LoggerFactory
-            .getLogger(DiscountSmoother.class);
 
     private double absoluteDiscount;
 

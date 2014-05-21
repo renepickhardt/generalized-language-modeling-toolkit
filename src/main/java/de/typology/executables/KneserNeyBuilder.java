@@ -18,7 +18,7 @@ import de.typology.indexing.IndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
-import de.typology.smoothing.InterpolatedKneserNeySmoother;
+import de.typology.smoothing.legacy.InterpolatedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
 import de.typology.tagging.PosTagger;
 import de.typology.utils.Config;
