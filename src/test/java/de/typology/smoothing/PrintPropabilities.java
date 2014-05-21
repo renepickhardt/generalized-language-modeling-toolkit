@@ -4,19 +4,31 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PrintPropabilitiesAbc extends AbcCorpusTest {
+public class PrintPropabilities {
 
     private static Logger logger = LoggerFactory
-            .getLogger(PrintPropabilitiesAbc.class);
+            .getLogger(PrintPropabilities.class);
+
+    private static TestCorpus testCorpus;
+
+    private static Corpus corpus;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws IOException,
+            InterruptedException {
+        testCorpus = new MobyDickTestCorpus();
+        corpus =
+                new Corpus(testCorpus.getAbsoluteDir(),
+                        testCorpus.getContinuationDir(), "\t");
+    }
 
     @Test
-    public void print() throws IOException {
-        Corpus corpus = new Corpus(abcAbsoluteDir, abcContinuationDir, "\t");
-
+    public void print() {
         MaximumLikelihoodEstimator mle = new MaximumLikelihoodEstimator(corpus);
         FalseMaximumLikelihoodEstimator fmle =
                 new FalseMaximumLikelihoodEstimator(corpus);
@@ -25,7 +37,7 @@ public class PrintPropabilitiesAbc extends AbcCorpusTest {
         DeleteCalculator deleteMle = new DeleteCalculator(mle);
         DeleteCalculator deleteFmle = new DeleteCalculator(fmle);
 
-        printPropabilities(skipMle, 3);
+        printPropabilities(skipMle, 5);
     }
 
     private void
@@ -50,8 +62,9 @@ public class PrintPropabilitiesAbc extends AbcCorpusTest {
             int length) {
         Map<String, Double> propabilities = new LinkedHashMap<String, Double>();
 
-        for (int i = 0; i != ((int) Math.pow(3, length)); ++i) {
-            String sequence = getAbcSequence(i, length);
+        for (int i = 0; i != ((int) Math.pow(testCorpus.getWords().length,
+                length)); ++i) {
+            String sequence = testCorpus.getSequence(i, length);
             propabilities.put(sequence, calculator.propability(sequence));
         }
 
@@ -60,6 +73,8 @@ public class PrintPropabilitiesAbc extends AbcCorpusTest {
 
     private void printPropabilities(Map<String, Double> propabilities) {
         double sum = 0;
+        int cntZero = 0;
+        int cntNonZero = 0;
         for (Map.Entry<String, Double> sequencePropability : propabilities
                 .entrySet()) {
             String sequence = sequencePropability.getKey();
@@ -67,9 +82,14 @@ public class PrintPropabilitiesAbc extends AbcCorpusTest {
 
             sum += propability;
 
-            logger.info(sequence + " -> " + propability);
+            if (propability == 0.0) {
+                ++cntZero;
+            } else {
+                ++cntNonZero;
+                logger.info(sequence + " -> " + propability);
+            }
         }
-        logger.info("sum = " + sum);
+        logger.info("sum = " + sum + " ; cntZero = " + cntZero
+                + " ; cntNonZero = " + cntNonZero);
     }
-
 }
