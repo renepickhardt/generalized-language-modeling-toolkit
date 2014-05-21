@@ -14,51 +14,84 @@ public class PrintPropabilities {
     private static Logger logger = LoggerFactory
             .getLogger(PrintPropabilities.class);
 
-    private static TestCorpus testCorpus;
+    private static int MAX_LENGTH = 5;
 
-    private static Corpus corpus;
+    private static TestCorpus abcTestCorpus;
+
+    private static Corpus abcCorpus;
+
+    private static TestCorpus mobyDickTestCorpus;
+
+    private static Corpus mobyDickCorpus;
 
     @BeforeClass
     public static void setUpBeforeClass() throws IOException,
             InterruptedException {
-        testCorpus = new MobyDickTestCorpus();
-        corpus =
-                new Corpus(testCorpus.getAbsoluteDir(),
-                        testCorpus.getContinuationDir(), "\t");
+        abcTestCorpus = new AbcTestCorpus();
+        abcCorpus = abcTestCorpus.getCorpus();
+        mobyDickTestCorpus = new MobyDickTestCorpus();
+        mobyDickCorpus = mobyDickTestCorpus.getCorpus();
     }
 
     @Test
     public void print() {
-        MaximumLikelihoodEstimator mle = new MaximumLikelihoodEstimator(corpus);
-        FalseMaximumLikelihoodEstimator fmle =
-                new FalseMaximumLikelihoodEstimator(corpus);
+        MaximumLikelihoodEstimator mleAbc =
+                new MaximumLikelihoodEstimator(abcCorpus);
+        FalseMaximumLikelihoodEstimator fmleAbc =
+                new FalseMaximumLikelihoodEstimator(abcCorpus);
+        MaximumLikelihoodEstimator mleMobyDick =
+                new MaximumLikelihoodEstimator(mobyDickCorpus);
+        FalseMaximumLikelihoodEstimator fmleMobyDick =
+                new FalseMaximumLikelihoodEstimator(mobyDickCorpus);
 
-        SkipCalculator skipMle = new SkipCalculator(mle);
-        DeleteCalculator deleteMle = new DeleteCalculator(mle);
-        DeleteCalculator deleteFmle = new DeleteCalculator(fmle);
+        logger.info("=== SkipMle ============================================");
+        SkipCalculator skipMle;
+        logger.info("# Abc Corpus");
+        skipMle = new SkipCalculator(mleAbc);
+        printPropabilities(skipMle, abcTestCorpus, 5);
+        logger.info("# MobyDick Corpus");
+        skipMle = new SkipCalculator(mleMobyDick);
+        printPropabilities(skipMle, mobyDickTestCorpus, 5);
 
-        printPropabilities(skipMle, 5);
+        logger.info("=== DeleteMle ==========================================");
+        DeleteCalculator deleteMle;
+        logger.info("# Abc Corpus");
+        deleteMle = new DeleteCalculator(mleAbc);
+        printPropabilities(deleteMle, abcTestCorpus, 5);
+        logger.info("# MobyDick Corpus");
+        deleteMle = new DeleteCalculator(mleMobyDick);
+        printPropabilities(deleteMle, mobyDickTestCorpus, 5);
+
+        logger.info("=== DeleteFmle =========================================");
+        DeleteCalculator deleteFmle;
+        logger.info("# Abc Corpus");
+        deleteFmle = new DeleteCalculator(fmleAbc);
+        printPropabilities(deleteFmle, abcTestCorpus, 5);
+        logger.info("# MobyDick Corpus");
+        deleteFmle = new DeleteCalculator(fmleMobyDick);
+        printPropabilities(deleteFmle, mobyDickTestCorpus, 5);
     }
 
-    private void
-        printPropabilities(PropabilityCalculator calculator, int length) {
+    private void printPropabilities(
+            PropabilityCalculator calculator,
+            TestCorpus testCorpus,
+            int length) {
         Map<Integer, Map<String, Double>> propabilitiesByLength =
                 new LinkedHashMap<Integer, Map<String, Double>>();
         for (int i = 1; i != length + 1; ++i) {
             propabilitiesByLength.put(i,
-                    calcSequencePropabilities(calculator, i));
+                    calcSequencePropabilities(calculator, testCorpus, i));
         }
 
-        logger.info(calculator.getClass().getSimpleName());
         for (Map<String, Double> propabilities : propabilitiesByLength.values()) {
-            logger.info("---");
             printPropabilities(propabilities);
+            logger.info("---");
         }
-        logger.info("===\n");
     }
 
     private Map<String, Double> calcSequencePropabilities(
             PropabilityCalculator calculator,
+            TestCorpus testCorpus,
             int length) {
         Map<String, Double> propabilities = new LinkedHashMap<String, Double>();
 

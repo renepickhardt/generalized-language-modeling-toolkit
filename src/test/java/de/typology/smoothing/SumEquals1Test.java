@@ -1,0 +1,99 @@
+package de.typology.smoothing;
+
+import java.io.IOException;
+
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SumEquals1Test {
+
+    private static Logger logger = LoggerFactory
+            .getLogger(SumEquals1Test.class);
+
+    private static int MAX_LENGTH = 5;
+
+    private static TestCorpus abcTestCorpus;
+
+    private static Corpus abcCorpus;
+
+    private static TestCorpus mobyDickTestCorpus;
+
+    private static Corpus mobyDickCorpus;
+
+    @BeforeClass
+    public static void setUpBeforeClass() throws IOException,
+            InterruptedException {
+        abcTestCorpus = new AbcTestCorpus();
+        abcCorpus = abcTestCorpus.getCorpus();
+        mobyDickTestCorpus = new MobyDickTestCorpus();
+        mobyDickCorpus = mobyDickTestCorpus.getCorpus();
+    }
+
+    @Test
+    public void testSkipMle() {
+        logger.info("=== SkipMle ============================================");
+
+        SkipCalculator skipMle;
+        MaximumLikelihoodEstimator mle;
+
+        logger.info("# Abc Corpus");
+
+        mle = new MaximumLikelihoodEstimator(abcCorpus);
+        skipMle = new SkipCalculator(mle);
+        for (int i = 1; i != MAX_LENGTH; ++i) {
+            assertSumEquals1(skipMle, abcTestCorpus, i);
+        }
+
+        logger.info("# MobyDick Corpus");
+
+        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
+        skipMle = new SkipCalculator(mle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipMle, mobyDickTestCorpus, i);
+        }
+
+        logger.info("passed");
+    }
+
+    @Test
+    public void testDeleteMle() {
+        logger.info("=== DeleteMle ==========================================");
+
+        DeleteCalculator deleteMle;
+        MaximumLikelihoodEstimator mle;
+
+        logger.info("# Abc Corpus");
+
+        mle = new MaximumLikelihoodEstimator(abcCorpus);
+        deleteMle = new DeleteCalculator(mle);
+        for (int i = 1; i != MAX_LENGTH; ++i) {
+            assertSumEquals1(deleteMle, abcTestCorpus, i);
+        }
+
+        logger.info("# MobyDick Corpus");
+
+        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
+        deleteMle = new DeleteCalculator(mle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(deleteMle, mobyDickTestCorpus, i);
+        }
+
+        logger.info("passed");
+    }
+
+    private void assertSumEquals1(
+            PropabilityCalculator calculator,
+            TestCorpus testCorpus,
+            int n) {
+        double sum = 0;
+        for (int i = 0; i != (int) Math.pow(testCorpus.getWords().length, n); ++i) {
+            String sequence = testCorpus.getSequence(i, n);
+            sum += calculator.propability(sequence);
+        }
+        logger.info("n=" + n + ": sum = " + sum);
+        Assert.assertEquals(1, sum, 0.01);
+    }
+}

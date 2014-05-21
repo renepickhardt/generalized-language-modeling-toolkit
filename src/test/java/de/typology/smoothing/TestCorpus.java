@@ -126,4 +126,8 @@ public abstract class TestCorpus {
         this.continuationDir = continuationDir;
     }
 
+    public Corpus getCorpus() throws IOException {
+        return new Corpus(getAbsoluteDir(), getContinuationDir(), "\t");
+    }
+
 }
