@@ -32,9 +32,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <mainClass>de.typology.executables.KneserNeyBuilder</mainClass>
-        </configuration>
       </plugin>
       
       <plugin>

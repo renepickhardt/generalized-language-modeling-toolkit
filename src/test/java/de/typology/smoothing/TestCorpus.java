@@ -1,8 +1,10 @@
 package de.typology.smoothing;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +36,8 @@ public abstract class TestCorpus {
     public TestCorpus(
             Path trainingFile,
             Path workingDir) throws IOException, InterruptedException {
+        this.workingDir = workingDir;
+
         if (!Files.exists(workingDir)) {
             Files.createDirectory(workingDir);
         }
@@ -128,6 +132,22 @@ public abstract class TestCorpus {
 
     public Corpus getCorpus() throws IOException {
         return new Corpus(getAbsoluteDir(), getContinuationDir(), "\t");
+    }
+
+    public Path getSequencesTestingSample(int length) throws IOException {
+        Path sequencesTestSample =
+                workingDir.resolve("sequences-testing-samples-" + length);
+        if (!Files.exists(sequencesTestSample)) {
+            try (BufferedWriter writer =
+                    Files.newBufferedWriter(sequencesTestSample,
+                            Charset.defaultCharset())) {
+                for (int i = 0; i != ((int) Math.pow(getWords().length, length)); ++i) {
+                    writer.write(getSequence(i, length));
+                    writer.write("\n");
+                }
+            }
+        }
+        return sequencesTestSample;
     }
 
 }

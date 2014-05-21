@@ -9,4 +9,4 @@ fi
 
 MAVEN_OPTS="-Xmx${MEMORY}m"
 
-nice mvn clean compile exec:java -Dexec.mainClass="de.typology.executables.KneserNeyBuilder" -Dexec.args="$@" -Dfile.encoding=UTF-8
+nice mvn clean compile exec:java -Dexec.mainClass="de.typology.executables.EntropyPrinter" -Dexec.args="$@" -Dfile.encoding=UTF-8
