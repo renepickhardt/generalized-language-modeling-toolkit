@@ -5,13 +5,13 @@ import java.io.IOException;
 public class AbcTestCorpus extends TestCorpus {
 
     public AbcTestCorpus() throws IOException, InterruptedException {
-        super(resourcesDir.resolve("ab.txt"), resourcesDir.resolve("ab"));
+        super(resourcesDir.resolve("abc.txt"), resourcesDir.resolve("abc"));
     }
 
     @Override
     public String[] getWords() {
         return new String[] {
-            "a", "b"//, "c"
+            "a", "b", "c"
         };
     }
 

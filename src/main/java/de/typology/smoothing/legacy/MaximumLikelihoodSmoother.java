@@ -32,7 +32,7 @@ public class MaximumLikelihoodSmoother extends Smoother {
             double conditionCount = getAbsolute(condSequence);
             if (conditionCount == 0) { // otherwise P(reqSequence | condSequence) is not well defined.
                 //TODO: here returning 1/vocabsize would be absolutely feasable. Always returning zero destroys probability functions. since they sum up to zero. One has to understand the condition as a prametrization. this should in the best case be configurable
-                logger.debug("condition count = 0 detected return 0 probability");
+                logger.info("condition count = 0 detected return 0 probability");
                 return 0;
             }
         }

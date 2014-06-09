@@ -56,20 +56,20 @@ public class PrintPropabilities {
         //        skipMle = new SkipCalculator(mleMobyDick);
         //        printPropabilities(skipMle, mobyDickTestCorpus, MAX_LENGTH);
 
-        //        logger.info("=== DeleteMle ==========================================");
-        //        DeleteCalculator deleteMle;
-        //        logger.info("# Abc Corpus");
-        //        deleteMle = new DeleteCalculator(mleAbc);
-        //        printPropabilities(deleteMle, abcTestCorpus, MAX_LENGTH);
+        logger.info("=== DeleteMle ==========================================");
+        DeleteCalculator deleteMle;
+        logger.info("# Abc Corpus");
+        deleteMle = new DeleteCalculator(mleAbc);
+        printPropabilities(deleteMle, abcTestCorpus, MAX_LENGTH);
         //        logger.info("# MobyDick Corpus");
         //        deleteMle = new DeleteCalculator(mleMobyDick);
         //        printPropabilities(deleteMle, mobyDickTestCorpus, MAX_LENGTH);
         //
-        //        logger.info("=== DeleteFmle =========================================");
-        //        DeleteCalculator deleteFmle;
-        //        logger.info("# Abc Corpus");
-        //        deleteFmle = new DeleteCalculator(fmleAbc);
-        //        printPropabilities(deleteFmle, abcTestCorpus, MAX_LENGTH);
+        logger.info("=== DeleteFmle =========================================");
+        DeleteCalculator deleteFmle;
+        logger.info("# Abc Corpus");
+        deleteFmle = new DeleteCalculator(fmleAbc);
+        printPropabilities(deleteFmle, abcTestCorpus, MAX_LENGTH);
         //        logger.info("# MobyDick Corpus");
         //        deleteFmle = new DeleteCalculator(fmleMobyDick);
         //        printPropabilities(deleteFmle, mobyDickTestCorpus, MAX_LENGTH);
