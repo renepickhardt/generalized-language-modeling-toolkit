@@ -43,7 +43,7 @@ public class SumEquals1Test {
 
         mle = new MaximumLikelihoodEstimator(abcCorpus);
         skipMle = new SkipCalculator(mle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
             assertSumEquals1(skipMle, abcTestCorpus, i);
         }
 
