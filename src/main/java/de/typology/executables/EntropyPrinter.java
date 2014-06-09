@@ -15,7 +15,6 @@ import de.typology.smoothing.DeleteCalculator;
 import de.typology.smoothing.FalseMaximumLikelihoodEstimator;
 import de.typology.smoothing.MaximumLikelihoodEstimator;
 import de.typology.smoothing.PropabilityCalculator;
-import de.typology.smoothing.SkipCalculator;
 
 public class EntropyPrinter {
 
@@ -79,10 +78,10 @@ public class EntropyPrinter {
 
     public static void main(String[] args) throws IOException {
         Path workingDir =
-                Paths.get("/home/lukas/Documents/langmodels/data/en0008t");
+                Paths.get("/home/rpickhardt/Documents/langmodels/data/en0008t");
         Path absoluteDir = workingDir.resolve("absolute");
         Path continuationDir = workingDir.resolve("continuation");
-        Path testingSample = workingDir.resolve("testing-samples-1.txt");
+        Path testingSample = workingDir.resolve("testing-samples-5.txt");
         EntropyPrinter entropyPrinter =
                 new EntropyPrinter(workingDir, absoluteDir, continuationDir,
                         testingSample);
@@ -92,16 +91,16 @@ public class EntropyPrinter {
         FalseMaximumLikelihoodEstimator fmle =
                 new FalseMaximumLikelihoodEstimator(entropyPrinter.getCorpus());
 
-        logger.info("=== SkipMle ============================================");
-        SkipCalculator skipMle = new SkipCalculator(mle);
-        entropyPrinter.printEntropy(skipMle);
+        //        logger.info("=== SkipMle ============================================");
+        //        SkipCalculator skipMle = new SkipCalculator(mle);
+        //        entropyPrinter.printEntropy(skipMle);
+        //
+        //        logger.info("=== DeleteMle ==========================================");
+        //        DeleteCalculator deleteMle = new DeleteCalculator(mle);
+        //        entropyPrinter.printEntropy(deleteMle);
 
-        logger.info("=== DeleteMle ==========================================");
-        DeleteCalculator deleteMle = new DeleteCalculator(mle);
-        entropyPrinter.printEntropy(deleteMle);
-
-        logger.info("=== SkipFmle ===========================================");
-        SkipCalculator skipFmle = new SkipCalculator(fmle);
+        logger.info("=== DeleteFmle ===========================================");
+        DeleteCalculator skipFmle = new DeleteCalculator(fmle);
         entropyPrinter.printEntropy(skipFmle);
 
     }
