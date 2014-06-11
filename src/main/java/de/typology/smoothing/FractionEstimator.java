@@ -20,7 +20,10 @@ public abstract class FractionEstimator extends Estimator {
         if (!condSequence.isEmpty() && corpus.getAbsolute(condSequence) == 0) {
             // Pcond(reqSequence | condSequence) is not well defined.
             logger.debug("    condSequenceCount = 0, returning 1/vocabSize");
-            //TODO: here returning 1/vocabsize would be absolutely feasable. Always returning zero destroys probability functions. since they sum up to zero. One has to understand the condition as a prametrization. this should in the best case be configurable
+            // TODO: here returning 1/vocabsize would be absolutely feasible.
+            // Always returning zero destroys probability functions. since they
+            // sum up to zero. One has to understand the condition as a
+            // parameterization. this should in the best case be configurable
             result = 1.0 / corpus.getVocabSize();
         } else {
             double denominator = getDenominator(reqSequence, condSequence);
