@@ -19,11 +19,15 @@ public abstract class FractionEstimator extends Estimator {
         // TODO: check if works with continuation counter mle
         if (!condSequence.isEmpty() && corpus.getAbsolute(condSequence) == 0) {
             // Pcond(reqSequence | condSequence) is not well defined.
-            logger.debug("    condSequenceCount = 0, returning 1/vocabSize");
+
             // TODO: here returning 1/vocabsize would be absolutely feasible.
             // Always returning zero destroys probability functions. since they
             // sum up to zero. One has to understand the condition as a
             // parameterization. this should in the best case be configurable
+            // TODO: actually return a uniform distribution here or rather 
+            // unigram distribution?
+
+            logger.debug("    condSequenceCount = 0, returning 1/vocabSize");
             result = 1.0 / corpus.getVocabSize();
         } else {
             double denominator = getDenominator(reqSequence, condSequence);

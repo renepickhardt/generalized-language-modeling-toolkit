@@ -36,8 +36,8 @@ public class SumEquals1Test {
     public void testSkipMle() {
         logger.info("=== SkipMle ============================================");
 
-        SkipCalculator skipMle;
         MaximumLikelihoodEstimator mle;
+        SkipCalculator skipMle;
 
         logger.info("# Abc Corpus");
 
@@ -62,8 +62,8 @@ public class SumEquals1Test {
     public void testDeleteMle() {
         logger.info("=== DeleteMle ==========================================");
 
-        DeleteCalculator deleteMle;
         MaximumLikelihoodEstimator mle;
+        DeleteCalculator deleteMle;
 
         logger.info("# Abc Corpus");
 
