@@ -67,7 +67,7 @@ public class EntropyPrinter {
             entropy /= cntNonZero;
             logger.info("entropy = " + entropy + " ; cntZero = " + cntZero
                     + getPercent((double) cntZero / (cntZero + cntNonZero))
-                    + ") ; cntNonZero = " + cntNonZero
+                    + " ; cntNonZero = " + cntNonZero
                     + getPercent((double) cntNonZero / (cntZero + cntNonZero)));
         }
     }
