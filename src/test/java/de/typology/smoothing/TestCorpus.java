@@ -19,7 +19,6 @@ import de.typology.indexing.IndexBuilder;
 import de.typology.patterns.Pattern;
 import de.typology.patterns.PatternElem;
 import de.typology.sequencing.Sequencer;
-import de.typology.utils.Config;
 import de.typology.utils.StringUtils;
 
 public abstract class TestCorpus {
@@ -65,10 +64,9 @@ public abstract class TestCorpus {
             Sequencer sequencer =
                     new Sequencer(trainingFile, sequencesDir, index, 1, false,
                             false);
-            sequencer.sequence(Pattern.getCombinations(
-                    Config.get().modelLength, new PatternElem[] {
-                        PatternElem.CNT, PatternElem.SKP
-                    }));
+            sequencer.sequence(Pattern.getCombinations(5, new PatternElem[] {
+                PatternElem.CNT, PatternElem.SKP
+            }));
         }
 
         // absolute

@@ -69,7 +69,7 @@ public class SumEquals1Test {
 
         mle = new MaximumLikelihoodEstimator(abcCorpus);
         deleteMle = new DeleteCalculator(mle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
             assertSumEquals1(deleteMle, abcTestCorpus, i);
         }
 
