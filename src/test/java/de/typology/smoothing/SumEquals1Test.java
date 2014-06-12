@@ -95,7 +95,7 @@ public class SumEquals1Test {
 
         cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
         skipMle = new SkipCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+        for (int i = 1; i != MAX_LENGTH; ++i) {
             assertSumEquals1(skipMle, abcTestCorpus, i);
         }
 
@@ -103,7 +103,7 @@ public class SumEquals1Test {
 
         cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
         skipMle = new SkipCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+        for (int i = 1; i != MAX_LENGTH; ++i) {
             assertSumEquals1(skipMle, mobyDickTestCorpus, i);
         }
 
@@ -121,7 +121,7 @@ public class SumEquals1Test {
 
         cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
         deleteMle = new DeleteCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+        for (int i = 1; i != MAX_LENGTH; ++i) {
             assertSumEquals1(deleteMle, abcTestCorpus, i);
         }
 
@@ -129,7 +129,7 @@ public class SumEquals1Test {
 
         cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
         deleteMle = new DeleteCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+        for (int i = 1; i != MAX_LENGTH; ++i) {
             assertSumEquals1(deleteMle, mobyDickTestCorpus, i);
         }
 

@@ -23,7 +23,7 @@ public class ContinuationMaximumLikelihoodEstimator extends
             List<String> reqSequence,
             List<String> condSequence) {
         List<String> sequence = getSequence(reqSequence, condSequence);
-        sequence.add(PatternElem.SKIPPED_WORD);
+        sequence.add(0, PatternElem.SKIPPED_WORD);
         double sequenceCount =
                 corpus.getContinuation(sequence).getOnePlusCount();
         debugSequence(sequence, sequenceCount);
@@ -36,7 +36,7 @@ public class ContinuationMaximumLikelihoodEstimator extends
             List<String> reqSequence,
             List<String> condSequence) {
         List<String> history = getHistory(reqSequence, condSequence);
-        history.add(PatternElem.SKIPPED_WORD);
+        history.add(0, PatternElem.SKIPPED_WORD);
         double historyCount = corpus.getContinuation(history).getOnePlusCount();
         debugHistory(history, historyCount);
 
