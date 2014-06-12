@@ -11,7 +11,7 @@ public abstract class FractionEstimator extends Estimator {
 
         UNIGRAM_CONTINUATION,
 
-        UNIFORM_DISTRIBUTION
+        UNIFORM
     }
 
     protected BackoffCalc backoffCalc;
@@ -65,7 +65,7 @@ public abstract class FractionEstimator extends Estimator {
                         / corpus.getVocabSize() / corpus.getVocabSize();
 
             default:
-            case UNIFORM_DISTRIBUTION:
+            case UNIFORM:
                 logger.debug("    returning uniform distribution (1/vocabSize)");
                 return 1.0 / corpus.getVocabSize();
         }
