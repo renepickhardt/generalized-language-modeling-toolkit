@@ -19,7 +19,7 @@ public abstract class FractionEstimator extends Estimator {
     public FractionEstimator(
             Corpus corpus) {
         super(corpus);
-        backoffCalc = BackoffCalc.UNIFORM_DISTRIBUTION;
+        backoffCalc = BackoffCalc.UNIGRAM_ABSOLUTE;
     }
 
     @Override
@@ -64,7 +64,7 @@ public abstract class FractionEstimator extends Estimator {
                 // you only want "x" use "reqSequence.subList(0, 1)" instead.
 
                 // This is how I think it should be, why does it fail?
-                return corpus.getAbsolute(reqSequence.subList(0, 1))
+                return corpus.getAbsolute(reqSequence.subList(0, 1)) * 1.0
                         / corpus.getNumWords();
 
                 // This shouldn't work but does for anything but DeleteMLE n=5,
