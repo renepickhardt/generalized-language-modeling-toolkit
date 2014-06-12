@@ -52,10 +52,20 @@ public class Corpus {
         return new Pattern(patternElems);
     }
 
+    /**
+     * Get the number of words in the corpus.
+     * 
+     * Aka absolute count of skip.
+     */
     public long getNumWords() {
         return getAbsolute(skippedList);
     }
 
+    /**
+     * Get the vocabulary size (number of different words) of the corpus.
+     * 
+     * Aka continuation count of skip.
+     */
     public long getVocabSize() {
         return getContinuation(skippedList).getOnePlusCount();
     }
