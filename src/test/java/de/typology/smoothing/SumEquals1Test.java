@@ -59,20 +59,6 @@ public class SumEquals1Test {
     }
 
     @Test
-    public void test5GramDeleteMle() {
-        logger.info("=== 5 gram deleteMle ==========================================");
-
-        MaximumLikelihoodEstimator mle;
-        DeleteCalculator deleteMle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        deleteMle = new DeleteCalculator(mle);
-        assertSumEquals1(deleteMle, abcTestCorpus, 5);
-    }
-
-    @Test
     public void testDeleteMle() {
         logger.info("=== DeleteMle ==========================================");
 
