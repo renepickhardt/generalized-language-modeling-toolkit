@@ -84,6 +84,58 @@ public class SumEquals1Test {
         logger.info("passed");
     }
 
+    @Test
+    public void testSkipCmle() {
+        logger.info("=== SkipCmle ===========================================");
+
+        ContinuationMaximumLikelihoodEstimator cmle;
+        SkipCalculator skipMle;
+
+        logger.info("# Abc Corpus");
+
+        cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
+        skipMle = new SkipCalculator(cmle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipMle, abcTestCorpus, i);
+        }
+
+        logger.info("# MobyDick Corpus");
+
+        cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
+        skipMle = new SkipCalculator(cmle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipMle, mobyDickTestCorpus, i);
+        }
+
+        logger.info("passed");
+    }
+
+    @Test
+    public void testDeleteCmle() {
+        logger.info("=== DeleteCmle =========================================");
+
+        ContinuationMaximumLikelihoodEstimator cmle;
+        DeleteCalculator deleteMle;
+
+        logger.info("# Abc Corpus");
+
+        cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
+        deleteMle = new DeleteCalculator(cmle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(deleteMle, abcTestCorpus, i);
+        }
+
+        logger.info("# MobyDick Corpus");
+
+        cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
+        deleteMle = new DeleteCalculator(cmle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(deleteMle, mobyDickTestCorpus, i);
+        }
+
+        logger.info("passed");
+    }
+
     private void assertSumEquals1(
             PropabilityCalculator calculator,
             TestCorpus testCorpus,

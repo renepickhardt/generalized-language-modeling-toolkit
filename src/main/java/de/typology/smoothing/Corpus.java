@@ -69,10 +69,19 @@ public class Corpus {
     }
 
     public Counter getContinuation(List<String> sequence) {
+        if (sequence.isEmpty()) {
+            return new Counter();
+        }
+
         Pattern pattern =
                 getPattern(sequence).replace(PatternElem.SKP, PatternElem.WSKP);
         String string = StringUtils.join(sequence, " ");
         Map<String, Counter> patternCounters = continuationCounts.get(pattern);
+        if (patternCounters == null) {
+            throw new NullPointerException(
+                    "No continuation counts in corpus for pattern: " + pattern
+                            + ".");
+        }
         Counter counter = patternCounters.get(string);
         return counter == null ? new Counter() : counter;
     }
