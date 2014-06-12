@@ -1,5 +1,6 @@
 package de.typology.smoothing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.typology.patterns.PatternElem;
@@ -15,6 +16,13 @@ public abstract class FractionEstimator extends Estimator {
     }
 
     protected BackoffCalc backoffCalc;
+
+    protected static List<String> doubleSkippedList;
+    static {
+        doubleSkippedList = new ArrayList<String>();
+        doubleSkippedList.add(PatternElem.SKIPPED_WORD);
+        doubleSkippedList.add(PatternElem.SKIPPED_WORD);
+    }
 
     public FractionEstimator(
             Corpus corpus) {
@@ -54,15 +62,20 @@ public abstract class FractionEstimator extends Estimator {
         switch (backoffCalc) {
             case UNIGRAM_ABSOLUTE:
                 logger.debug("    returning unigram distribution (absolute)");
-                return ((double) corpus.getAbsolute(reqSequence.subList(0, 1)))
+                return (double) corpus.getAbsolute(reqSequence.subList(0, 1))
                         / corpus.getNumWords();
 
             case UNIGRAM_CONTINUATION:
                 logger.debug("    returning unigram distribution (continuation)");
                 reqSequence.add(0, PatternElem.SKIPPED_WORD);
-                return ((double) corpus.getContinuation(
-                        reqSequence.subList(0, 1)).getOnePlusCount())
+                return (double) corpus.getContinuation(
+                        reqSequence.subList(0, 1)).getOnePlusCount()
                         / corpus.getVocabSize() / corpus.getVocabSize();
+                // TODO: Rene: why is this wrong
+                //return (double) corpus.getContinuation(
+                //        reqSequence.subList(0, 1)).getOnePlusCount()
+                //        / corpus.getContinuation(doubleSkippedList)
+                //                .getOnePlusCount();
 
             default:
             case UNIFORM:
