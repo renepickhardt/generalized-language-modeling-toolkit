@@ -53,7 +53,7 @@
   <dependencies>
     <dependency>
       <groupId>edu.stanford.nlp</groupId>
-      <artifactId>stanford-pos-tagger</artifactId>
+      <artifactId>stanford-corenlp</artifactId>
       <version>3.3.1</version>
     </dependency>
 
