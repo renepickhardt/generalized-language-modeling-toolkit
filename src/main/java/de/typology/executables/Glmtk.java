@@ -3,6 +3,9 @@ package de.typology.executables;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,16 +19,33 @@ public class Glmtk extends Executable {
 
     private Path corpus = null;
 
+    private static List<Option> optionsOrder;
+
     private static Options options;
+
     static {
         //@formatter:off
         Option help    = new Option("h", OPTION_HELP,    false, "Print this message.");
         Option version = new Option("v", OPTION_VERSION, false, "Print the version information and exit.");
         //@formatter:on
 
+        optionsOrder = new ArrayList<Option>();
+        optionsOrder.add(help);
+        optionsOrder.add(version);
+
         options = new Options();
-        options.addOption(help);
-        options.addOption(version);
+        for (Option option : optionsOrder) {
+            options.addOption(option);
+        }
+    }
+
+    private static class OptionComparator<T extends Option > implements
+            Comparator<T> {
+
+        @Override
+        public int compare(T o1, T o2) {
+            return optionsOrder.indexOf(o1) - optionsOrder.indexOf(o2);
+        }
     }
 
     public static void main(String[] args) {
@@ -43,6 +63,7 @@ public class Glmtk extends Executable {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setSyntaxPrefix("Usage: ");
                 formatter.setWidth(80);
+                formatter.setOptionComparator(new OptionComparator<Option>());
                 formatter.printHelp("glmtk [OPTION]... <CORPUS>", options);
                 return;
             }

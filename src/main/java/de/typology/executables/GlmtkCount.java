@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -61,7 +64,10 @@ public class GlmtkCount extends Executable {
 
     private boolean keepTemp = false;
 
+    private static List<Option> optionsOrder;
+
     private static Options options;
+
     static {
         //@formatter:off
         Option help         = new Option("h",  OPTION_HELP,          false, "Print this message.");
@@ -79,17 +85,31 @@ public class GlmtkCount extends Executable {
         Option keepTemp     = new Option(null, OPTION_KEEP_TEMP,     false, "If set, will not delete temp files.");
         //@formatter:on
 
+        optionsOrder = new ArrayList<Option>();
+        optionsOrder.add(help);
+        optionsOrder.add(version);
+        optionsOrder.add(output);
+        optionsOrder.add(modelLength);
+        optionsOrder.add(countPos);
+        optionsOrder.add(tagPos);
+        optionsOrder.add(patterns);
+        optionsOrder.add(noAbsCounts);
+        optionsOrder.add(noContCounts);
+        optionsOrder.add(keepTemp);
+
         options = new Options();
-        options.addOption(help);
-        options.addOption(version);
-        options.addOption(output);
-        options.addOption(modelLength);
-        options.addOption(countPos);
-        options.addOption(tagPos);
-        options.addOption(patterns);
-        options.addOption(noAbsCounts);
-        options.addOption(noContCounts);
-        options.addOption(keepTemp);
+        for (Option option : optionsOrder) {
+            options.addOption(option);
+        }
+    }
+
+    private static class OptionComparator<T extends Option > implements
+            Comparator<T> {
+
+        @Override
+        public int compare(T o1, T o2) {
+            return optionsOrder.indexOf(o1) - optionsOrder.indexOf(o2);
+        }
     }
 
     public static void main(String[] args) throws IOException {
@@ -107,6 +127,7 @@ public class GlmtkCount extends Executable {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.setSyntaxPrefix("Usage: ");
                 formatter.setWidth(80);
+                formatter.setOptionComparator(new OptionComparator<Option>());
                 formatter
                         .printHelp("glmtk-count [OPTION]... <CORPUS>", options);
                 return;
