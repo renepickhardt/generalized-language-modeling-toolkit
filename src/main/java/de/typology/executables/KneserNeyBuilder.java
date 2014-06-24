@@ -21,7 +21,7 @@ import de.typology.sequencing.Sequencer;
 import de.typology.smoothing.legacy.InterpolatedKneserNeySmoother;
 import de.typology.splitting.DataSetSplitter;
 import de.typology.tagging.PosTagger;
-import de.typology.utils.Config;
+import de.typology.utils.LegacyConfig;
 
 public class KneserNeyBuilder {
 
@@ -30,11 +30,11 @@ public class KneserNeyBuilder {
     private static Logger logger = LoggerFactory
             .getLogger(KneserNeyBuilder.class);
 
-    private Config config;
+    private LegacyConfig config;
 
     private KneserNeyBuilder(
             String[] args) throws IOException, InterruptedException {
-        config = Config.get();
+        config = LegacyConfig.get();
         loadStages(args);
 
         Path workingDir =

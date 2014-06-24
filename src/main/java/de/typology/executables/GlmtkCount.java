@@ -1,9 +1,15 @@
 package de.typology.executables;
 
-public class GlmtkCount {
+import java.io.IOException;
 
-    public static void main(String[] args) {
-        System.out.println("GlmtkCount");
+public class GlmtkCount extends Executable {
+
+    public static void main(String[] args) throws IOException {
+        new GlmtkCount().run();
+    }
+
+    @Override
+    protected void exec() {
     }
 
 }

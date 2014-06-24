@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.typology.sequencing.Sequencer;
-import de.typology.utils.Config;
+import de.typology.utils.LegacyConfig;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
@@ -27,11 +27,11 @@ public class PosTagger {
         Path model =
                 Paths.get("stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger");
         Path input =
-                Paths.get(Config.get().outputDir + "/"
-                        + Config.get().inputDataSet + "/training.txt");
+                Paths.get(LegacyConfig.get().outputDir + "/"
+                        + LegacyConfig.get().inputDataSet + "/training.txt");
         Path output =
-                Paths.get(Config.get().outputDir + "/"
-                        + Config.get().inputDataSet + "/tagged.txt");
+                Paths.get(LegacyConfig.get().outputDir + "/"
+                        + LegacyConfig.get().inputDataSet + "/tagged.txt");
 
         try (BufferedReader reader =
                 Files.newBufferedReader(input, Charset.defaultCharset());

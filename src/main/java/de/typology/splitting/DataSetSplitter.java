@@ -12,7 +12,7 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.typology.utils.Config;
+import de.typology.utils.LegacyConfig;
 
 /**
  * This class splits and samples a given input file into training and test data
@@ -86,16 +86,16 @@ public class DataSetSplitter {
             String line;
             while ((line = reader.readLine()) != null) {
                 rand = (int) (Math.random() * 100);
-                if (rand >= Config.get().sampleRate) {
+                if (rand >= LegacyConfig.get().sampleRate) {
                     // keep data
                     rand = (int) (Math.random() * 100);
-                    if (rand >= Config.get().splitDataRatio) {
+                    if (rand >= LegacyConfig.get().splitDataRatio) {
                         // TODO make this flexible
                         line = "<s> " + line + " </s>";
 
                         // store data in testing or learning file
                         rand = (int) (Math.random() * 100);
-                        if (rand >= Config.get().splitTestRatio) {
+                        if (rand >= LegacyConfig.get().splitTestRatio) {
                             learningDataWriter.write(line + "\n");
                         } else {
                             testingDataWriter.write(line + "\n");

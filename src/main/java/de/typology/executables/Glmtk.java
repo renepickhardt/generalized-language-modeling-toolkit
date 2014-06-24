@@ -1,9 +1,13 @@
 package de.typology.executables;
 
-public class Glmtk {
+public class Glmtk extends Executable {
 
     public static void main(String[] args) {
-        System.out.println("Glmtk");
+        new Glmtk().run();
+    }
+
+    @Override
+    protected void exec() {
     }
 
 }
