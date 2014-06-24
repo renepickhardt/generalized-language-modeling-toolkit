@@ -25,7 +25,7 @@ public abstract class Executable {
 
     protected Path log;
 
-    protected abstract void exec(CommandLine line);
+    protected abstract void exec(CommandLine line) throws Exception;
 
     public void run(CommandLine line, String[] args) {
         try {

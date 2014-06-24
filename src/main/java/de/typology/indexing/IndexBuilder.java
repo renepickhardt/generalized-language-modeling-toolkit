@@ -10,6 +10,9 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.typology.utils.StringUtils;
 
 /**
@@ -17,6 +20,8 @@ import de.typology.utils.StringUtils;
  * given text file based on the alphabetical distribution of its words.
  */
 public class IndexBuilder {
+
+    private static Logger logger = LoggerFactory.getLogger(IndexBuilder.class);
 
     private boolean withPos;
 
@@ -54,6 +59,8 @@ public class IndexBuilder {
             OutputStream output,
             int maxWordCountDivider,
             int maxPosCountDivider) throws IOException {
+        logger.info("Building word index.");
+
         // calculate counts of words and pos
         TreeMap<String, Integer> wordCounts = new TreeMap<String, Integer>();
         TreeMap<String, Integer> posCounts = new TreeMap<String, Integer>();
