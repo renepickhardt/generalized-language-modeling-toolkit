@@ -56,6 +56,7 @@ public class GlmtkCount extends Executable {
 
     private boolean tagPos = false;
 
+    @SuppressWarnings("unused")
     private String patterns = "cmbskp";
 
     private boolean noAbsCounts = false;
@@ -191,6 +192,9 @@ public class GlmtkCount extends Executable {
                             true);
             continuationCounter.count();
         }
+
+        // TODO: find better way to do this, system properties?
+        Files.copy(log, output.resolve("info.log"));
     }
 
     private void readOptions(CommandLine line) {
