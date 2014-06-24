@@ -14,40 +14,42 @@ import org.slf4j.LoggerFactory;
 
 public class GlmtkCount extends Executable {
 
-    private static Logger logger = LoggerFactory.getLogger(GlmtkCount.class);
+    private static final String OPTION_HELP = "help";
 
-    public static void main(String[] args) throws IOException {
-        Option help = new Option("h", "help", false, "Print this message.");
-        Option version =
-                new Option("v", "version", false,
-                        "Print the version information and exit.");
-        Option output =
-                new Option("o", "output", true,
-                        "Use given directory for output.");
-        output.setArgName("OUTPUTDIR");
-        Option modelLength =
-                new Option("n", "model-length", true,
-                        "Compute n-grams up to model length N.");
-        modelLength.setArgName("N");
-        Option countPos =
-                new Option("t", "count-pos", false,
-                        "If set, will include counts of part of speeches.");
-        Option tagPos =
-                new Option(
-                        "T",
-                        "tag-pos",
-                        false,
-                        "If set, corpus will be part of speech tagged before counting (automatically sets -t).");
-        Option patterns = new Option("p", "patterns", true, "noskp or cmbskp");
-        patterns.setArgName("PATTERNS");
-        Option noContCounts =
-                new Option("c", "no-contcounts", false,
-                        "If set, will not aggregate continuation counts.");
-        Option keepTemp =
-                new Option(null, "keep-temp", false,
-                        "If set, will not delete temp files.");
+    private static final String OPTION_VERSION = "version";
 
-        Options options = new Options();
+    private static final String OPTION_OUTPUT = "output";
+
+    private static final String OPTION_MODEL_LENGTH = "model-length";
+
+    private static final String OPTION_COUNT_POS = "count-pos";
+
+    private static final String OPTION_TAG_POS = "tag-pos";
+
+    private static final String OPTION_PATTERNS = "patterns";
+
+    private static final String OPTION_NO_CONTCOUNTS = "no-contcounts";
+
+    private static final String OPTION_KEEP_TEMP = "keep-temp";
+
+    private static Options options;
+    static {
+        //@formatter:off
+        Option help         = new Option("h",  OPTION_HELP,          false, "Print this message.");
+        Option version      = new Option("v",  OPTION_VERSION,       false, "Print the version information and exit.");
+        Option output       = new Option("o",  OPTION_OUTPUT,        true,  "Use given directory for output.");
+               output.setArgName("OUTPUTDIR");
+        Option modelLength  = new Option("n",  OPTION_MODEL_LENGTH,  true,  "Compute n-grams up to model length N.");
+               modelLength.setArgName("N");
+        Option countPos     = new Option("t",  OPTION_COUNT_POS,     false, "If set, will include counts of part of speeches.");
+        Option tagPos       = new Option("T",  OPTION_TAG_POS,       false, "If set, corpus will be part of speech tagged before counting (automatically sets -t).");
+        Option patterns     = new Option("p",  OPTION_PATTERNS,      true,  "noskp or cmbskp");
+               patterns.setArgName("PATTERNS");
+        Option noContCounts = new Option("c",  OPTION_NO_CONTCOUNTS, false, "If set, will not aggregate continuation counts.");
+        Option keepTemp     = new Option(null, OPTION_KEEP_TEMP,     false, "If set, will not delete temp files.");
+        //@formatter:on
+
+        options = new Options();
         options.addOption(help);
         options.addOption(version);
         options.addOption(output);
@@ -57,19 +59,25 @@ public class GlmtkCount extends Executable {
         options.addOption(patterns);
         options.addOption(noContCounts);
         options.addOption(keepTemp);
+    }
 
+    private static Logger logger = LoggerFactory.getLogger(GlmtkCount.class);
+
+    public static void main(String[] args) throws IOException {
         CommandLineParser parser = new PosixParser();
         try {
             CommandLine line = parser.parse(options, args);
 
-            if (line.hasOption("version")) {
+            if (line.hasOption(OPTION_VERSION)) {
                 System.out
                         .println("GLMTK (generalized language modeling toolkit) version 0.1.");
                 return;
             }
 
-            if (line.hasOption("help")) {
+            if (line.hasOption(OPTION_HELP)) {
                 HelpFormatter formatter = new HelpFormatter();
+                formatter.setSyntaxPrefix("Usage: ");
+                formatter.setWidth(80);
                 formatter
                         .printHelp("glmtk-count [OPTION]... <CORPUS>", options);
                 return;
