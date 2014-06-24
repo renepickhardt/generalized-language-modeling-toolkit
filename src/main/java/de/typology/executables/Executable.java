@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.commons.cli.CommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,9 @@ public abstract class Executable {
 
     protected Path log;
 
-    protected abstract void exec();
+    protected abstract void exec(CommandLine line);
 
-    public void run() {
+    public void run(CommandLine line) {
         try {
             SimpleDateFormat format =
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -35,7 +36,7 @@ public abstract class Executable {
             config = Config.get();
             logger.info("Config: " + config);
 
-            exec();
+            exec(line);
 
             logger.info("Done.");
         } catch (Exception e) {

@@ -11,4 +11,5 @@ fi
 
 MAVEN_OPTS="-Xmx${MAIN_MEMORY}m"
 
-nice mvn clean compile exec:java -Dexec.mainClass="de.typology.executables.GlmtkCount" -Dexec.args="$@" -Dfile.encoding="UTF-8"
+cmd="nice mvn clean compile exec:java -Dexec.mainClass=\"de.typology.executables.GlmtkCount\" -Dexec.args=\"$@\" -Dfile.encoding=\"UTF-8\""
+eval $cmd
