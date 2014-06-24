@@ -26,10 +26,6 @@ import de.typology.tagging.PosTagger;
 
 public class GlmtkCount extends Executable {
 
-    private static final String OPTION_HELP = "help";
-
-    private static final String OPTION_VERSION = "version";
-
     private static final String OPTION_OUTPUT = "output";
 
     private static final String OPTION_MODEL_LENGTH = "model-length";

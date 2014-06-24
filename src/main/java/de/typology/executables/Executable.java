@@ -19,6 +19,10 @@ import de.typology.utils.StringUtils;
 
 public abstract class Executable {
 
+    protected static final String OPTION_HELP = "help";
+
+    protected static final String OPTION_VERSION = "version";
+
     private static Logger logger = LoggerFactory.getLogger(Executable.class);
 
     protected Config config;
