@@ -1,6 +1,8 @@
 package de.typology.executables;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -31,6 +33,22 @@ public class GlmtkCount extends Executable {
     private static final String OPTION_NO_CONTCOUNTS = "no-contcounts";
 
     private static final String OPTION_KEEP_TEMP = "keep-temp";
+
+    private Path corpus = null;
+
+    private Path output = null;
+
+    private int modelLength = 5;
+
+    private boolean countPos = false;
+
+    private boolean tagPos = false;
+
+    private String patterns = "cmbskp";
+
+    private boolean noContCounts = false;
+
+    private boolean keepTemp = false;
 
     private static Options options;
     static {
@@ -89,7 +107,7 @@ public class GlmtkCount extends Executable {
                 return;
             }
 
-            new GlmtkCount().run(line);
+            new GlmtkCount().run(line, args);
         } catch (ParseException e) {
             System.err.println(e.getMessage());
         }
@@ -97,5 +115,44 @@ public class GlmtkCount extends Executable {
 
     @Override
     protected void exec(CommandLine line) {
+        readOptions(line);
+    }
+
+    private void readOptions(CommandLine line) {
+        corpus = Paths.get(line.getArgs()[0]);
+        // TODO: assert corpus is a readable file
+
+        if (line.hasOption(OPTION_OUTPUT)) {
+            output = Paths.get(line.getOptionValue(OPTION_OUTPUT));
+        } else {
+            output = Paths.get(corpus + ".out");
+        }
+        // TODO: assert that output does not exist
+
+        if (line.hasOption(OPTION_MODEL_LENGTH)) {
+            modelLength =
+                    Integer.parseInt(line.getOptionValue(OPTION_MODEL_LENGTH));
+        }
+
+        if (line.hasOption(OPTION_COUNT_POS)) {
+            countPos = true;
+        }
+
+        if (line.hasOption(OPTION_TAG_POS)) {
+            countPos = true;
+            tagPos = true;
+        }
+
+        if (line.hasOption(OPTION_PATTERNS)) {
+            patterns = line.getOptionValue(OPTION_PATTERNS);
+        }
+
+        if (line.hasOption(OPTION_NO_CONTCOUNTS)) {
+            noContCounts = true;
+        }
+
+        if (line.hasOption(OPTION_KEEP_TEMP)) {
+            keepTemp = false;
+        }
     }
 }

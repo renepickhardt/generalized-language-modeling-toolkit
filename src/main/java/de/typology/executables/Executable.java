@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.typology.utils.Config;
+import de.typology.utils.StringUtils;
 
 public abstract class Executable {
 
@@ -26,16 +27,19 @@ public abstract class Executable {
 
     protected abstract void exec(CommandLine line);
 
-    public void run(CommandLine line) {
+    public void run(CommandLine line, String[] args) {
         try {
             SimpleDateFormat format =
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String time = format.format(Calendar.getInstance().getTime());
             log = Paths.get("logs/" + time + ".log");
 
-            logger.info("Starting " + getClass().getSimpleName() + ".");
+            logger.info(StringUtils.repeat("=", 80));
+            logger.info(getClass().getSimpleName());
 
-            // log Git Commit
+            logger.info(StringUtils.repeat("-", 80));
+
+            // log git commit
             Process gitLogProc = Runtime.getRuntime().exec(new String[] {
                 "git", "log", "-1", "--format=%H: %s"
             });
@@ -47,9 +51,14 @@ public abstract class Executable {
                 logger.info("Git Commit: " + gitCommit);
             }
 
-            // log Config
+            // log Arguments
+            logger.info("Arguments: " + StringUtils.join(args, " "));
+
+            // log config
             config = Config.get();
             logger.info("Config: " + config);
+
+            logger.info(StringUtils.repeat("-", 80));
 
             exec(line);
 
