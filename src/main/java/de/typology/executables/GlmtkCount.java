@@ -6,17 +6,11 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
@@ -45,6 +39,28 @@ public class GlmtkCount extends Executable {
 
     private static final String OPTION_KEEP_TEMP = "keep-temp";
 
+    private static List<Option> options;
+    static {
+        //@formatter:off
+        Option help         = new Option("h",  OPTION_HELP,          false, "Print this message.");
+        Option version      = new Option("v",  OPTION_VERSION,       false, "Print the version information and exit.");
+        Option output       = new Option("o",  OPTION_OUTPUT,        true,  "Use given directory for output.");
+               output.setArgName("OUTPUTDIR");
+        Option modelLength  = new Option("n",  OPTION_MODEL_LENGTH,  true,  "Compute n-grams up to model length N.");
+               modelLength.setArgName("N");
+        Option countPos     = new Option("t",  OPTION_COUNT_POS,     false, "If set, will include counts of part of speeches.");
+        Option tagPos       = new Option("T",  OPTION_TAG_POS,       false, "If set, corpus will be part of speech tagged before counting (automatically also counts parts of speeches).");
+        Option patterns     = new Option("p",  OPTION_PATTERNS,      true,  "noskp or cmbskp");
+               patterns.setArgName("PATTERNS");
+        Option noAbsCounts  = new Option("a",  OPTION_NO_ABSCOUNTS,  false, "If set, will not aggregate absolute counts (forces no continuation counts).");
+        Option noContCounts = new Option("c",  OPTION_NO_CONTCOUNTS, false, "If set, will not aggregate continuation counts.");
+        Option keepTemp     = new Option(null, OPTION_KEEP_TEMP,     false, "If set, will not delete temp files.");
+        //@formatter:on
+        options =
+                Arrays.asList(help, version, output, modelLength, countPos,
+                        tagPos, patterns, noAbsCounts, noContCounts, keepTemp);
+    }
+
     private Path corpus = null;
 
     private Path output = null;
@@ -64,89 +80,28 @@ public class GlmtkCount extends Executable {
 
     private boolean keepTemp = false;
 
-    private static List<Option> optionsOrder;
-
-    private static Options options;
-
-    static {
-        //@formatter:off
-        Option help         = new Option("h",  OPTION_HELP,          false, "Print this message.");
-        Option version      = new Option("v",  OPTION_VERSION,       false, "Print the version information and exit.");
-        Option output       = new Option("o",  OPTION_OUTPUT,        true,  "Use given directory for output.");
-               output.setArgName("OUTPUTDIR");
-        Option modelLength  = new Option("n",  OPTION_MODEL_LENGTH,  true,  "Compute n-grams up to model length N.");
-               modelLength.setArgName("N");
-        Option countPos     = new Option("t",  OPTION_COUNT_POS,     false, "If set, will include counts of part of speeches.");
-        Option tagPos       = new Option("T",  OPTION_TAG_POS,       false, "If set, corpus will be part of speech tagged before counting (automatically also counts parts of speeches).");
-        Option patterns     = new Option("p",  OPTION_PATTERNS,      true,  "noskp or cmbskp");
-               patterns.setArgName("PATTERNS");
-        Option noAbsCounts  = new Option("a",  OPTION_NO_ABSCOUNTS,  false, "If set, will not aggregate absolute counts (forces no continuation counts).");
-        Option noContCounts = new Option("c",  OPTION_NO_CONTCOUNTS, false, "If set, will not aggregate continuation counts.");
-        Option keepTemp     = new Option(null, OPTION_KEEP_TEMP,     false, "If set, will not delete temp files.");
-        //@formatter:on
-
-        optionsOrder = new ArrayList<Option>();
-        optionsOrder.add(help);
-        optionsOrder.add(version);
-        optionsOrder.add(output);
-        optionsOrder.add(modelLength);
-        optionsOrder.add(countPos);
-        optionsOrder.add(tagPos);
-        optionsOrder.add(patterns);
-        optionsOrder.add(noAbsCounts);
-        optionsOrder.add(noContCounts);
-        optionsOrder.add(keepTemp);
-
-        options = new Options();
-        for (Option option : optionsOrder) {
-            options.addOption(option);
-        }
-    }
-
-    private static class OptionComparator<T extends Option > implements
-            Comparator<T> {
-
-        @Override
-        public int compare(T o1, T o2) {
-            return optionsOrder.indexOf(o1) - optionsOrder.indexOf(o2);
-        }
-    }
-
     public static void main(String[] args) throws IOException {
-        CommandLineParser parser = new PosixParser();
-        try {
-            CommandLine line = parser.parse(options, args);
-
-            if (line.hasOption(OPTION_VERSION)) {
-                System.out
-                        .println("GLMTK (generalized language modeling toolkit) version 0.1.");
-                return;
-            }
-
-            if (line.hasOption(OPTION_HELP)) {
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.setSyntaxPrefix("Usage: ");
-                formatter.setWidth(80);
-                formatter.setOptionComparator(new OptionComparator<Option>());
-                formatter
-                        .printHelp("glmtk-count [OPTION]... <CORPUS>", options);
-                return;
-            }
-
-            if (line.getArgs() == null || line.getArgs().length == 0) {
-                System.err.println("glmtk-count: missing corpus\n"
-                        + "Try 'glmtk-count --help' for more information.");
-                return;
-            }
-
-            new GlmtkCount().run(line, args);
-        } catch (ParseException e) {
-            System.err.println(e.getMessage());
-        }
+        new GlmtkCount().run(args);
     }
 
     @Override
-    protected void exec(CommandLine line) throws Exception {
+    protected List<Option> getOptions() {
+        return options;
+    }
+
+    @Override
+    protected String getUsage() {
+        return "glmtk-count [OPTION]... <CORPUS>";
+    }
+
+    @Override
+    protected String getArgError() {
+        return "glmtk-count: missing corpus\n"
+                + "Try 'glmtk-count --help' for more information.";
+    }
+
+    @Override
+    protected void exec() throws Exception {
         readOptions(line);
 
         Files.createDirectories(output);
@@ -270,4 +225,5 @@ public class GlmtkCount extends Executable {
             keepTemp = true;
         }
     }
+
 }
