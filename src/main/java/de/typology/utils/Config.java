@@ -12,9 +12,11 @@ import org.ini4j.Ini;
 
 public class Config {
 
-    private static final Path CONFIG_LOCATION = Paths.get("config.ini");
+    private static final String CONFIG_LOCATION = "config.ini";
 
     private static Config instance = null;
+
+    private Path glmtkDir;
 
     private Map<String, Map<String, Object>> sections =
             new LinkedHashMap<String, Map<String, Object>>();
@@ -27,8 +29,10 @@ public class Config {
     }
 
     private Config() throws IOException {
+        glmtkDir = Paths.get(System.getProperty("glmtk.dir"));
+
         Ini ini = new Ini();
-        ini.load(Files.newBufferedReader(CONFIG_LOCATION,
+        ini.load(Files.newBufferedReader(glmtkDir.resolve(CONFIG_LOCATION),
                 Charset.defaultCharset()));
 
         // general
@@ -107,6 +111,10 @@ public class Config {
             result.append("}; ");
         }
         return result.toString();
+    }
+
+    public Path getGlmtkDir() {
+        return glmtkDir;
     }
 
     // GENERAL /////////////////////////////////////////////////////////////////
