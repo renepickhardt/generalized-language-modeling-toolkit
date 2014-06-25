@@ -49,7 +49,7 @@ public class GlmtkCount extends Executable {
                modelLength.setArgName("N");
         Option countPos     = new Option("t",  OPTION_COUNT_POS,     false, "If set, will include counts of part of speeches.");
         Option tagPos       = new Option("T",  OPTION_TAG_POS,       false, "If set, corpus will be part of speech tagged before counting (automatically also counts parts of speeches).");
-        Option patterns     = new Option("p",  OPTION_PATTERNS,      true,  "noskp or cmbskp");
+        Option patterns     = new Option("p",  OPTION_PATTERNS,      true,  "noskp, cmbskp.");
                patterns.setArgName("PATTERNS");
         Option noAbsCounts  = new Option("a",  OPTION_NO_ABSCOUNTS,  false, "If set, will not aggregate absolute counts (forces no continuation counts).");
         Option noContCounts = new Option("c",  OPTION_NO_CONTCOUNTS, false, "If set, will not aggregate continuation counts.");
