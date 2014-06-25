@@ -43,8 +43,6 @@ public abstract class Executable {
 
     protected abstract String getUsage();
 
-    protected abstract String getArgError();
-
     protected abstract void exec() throws Exception;
 
     public void run(String[] args) {
@@ -55,13 +53,12 @@ public abstract class Executable {
             log = Paths.get("logs/" + time + ".log");
             config = Config.get();
 
-            if (parseArguments(args)) {
-                return;
-            }
-
+            parseArguments(args);
             printLogHeader(args);
             exec();
             printLogFooter();
+        } catch (Termination e) {
+            // Terminate
         } catch (Exception e) {
             try (StringWriter stackTrace = new StringWriter();
                     PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
@@ -72,10 +69,7 @@ public abstract class Executable {
         }
     }
 
-    /**
-     * @return If true, program should terminate.
-     */
-    private boolean parseArguments(String[] args) {
+    protected void parseArguments(String[] args) {
         Options options = new Options();
         for (Option option : getOptions()) {
             options.addOption(option);
@@ -86,13 +80,13 @@ public abstract class Executable {
             line = parser.parse(options, args);
         } catch (ParseException e) {
             System.err.println(e.getMessage());
-            return true;
+            throw new Termination();
         }
 
         if (line.hasOption(OPTION_VERSION)) {
             System.out
                     .println("GLMTK (generalized language modeling toolkit) version 0.1.");
-            return true;
+            throw new Termination();
         }
 
         if (line.hasOption(OPTION_HELP)) {
@@ -108,15 +102,8 @@ public abstract class Executable {
 
             });
             formatter.printHelp(getUsage(), options);
-            return true;
+            throw new Termination();
         }
-
-        if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println(getArgError());
-            return true;
-        }
-
-        return false;
     }
 
     private void printLogHeader(String[] args) throws IOException,

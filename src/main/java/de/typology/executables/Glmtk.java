@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 public class Glmtk extends Executable {
@@ -37,30 +36,31 @@ public class Glmtk extends Executable {
     }
 
     @Override
-    protected String getArgError() {
-        return "glmtk: misssing corpus\n"
-                + "Try 'glmtk-count --help' for more information.";
+    protected void exec() {
     }
 
     @Override
-    protected void exec() {
-        readOptions(line);
-    }
+    protected void parseArguments(String[] args) {
+        super.parseArguments(args);
 
-    private void readOptions(CommandLine line) {
+        if (line.getArgs() == null || line.getArgs().length == 0) {
+            System.err.println("Missing corpus\n"
+                    + "Try 'glmtk-count --help' for more information.");
+            throw new Termination();
+        }
+
         corpus = Paths.get(line.getArgs()[0]);
         if (!Files.exists(corpus)) {
-            throw new IllegalStateException("Given corpus \"" + corpus
-                    + "\" does not exist.");
+            System.err.println("Corpus \"" + corpus + "\" does not exist.");
+            throw new Termination();
         }
         if (!Files.isDirectory(corpus)) {
-            throw new IllegalStateException("Given corpus \"" + corpus
-                    + "\" is not a directory.");
+            System.err.println("Corpus \"" + corpus + "\" is not a directory.");
+            throw new Termination();
         }
         if (!Files.isReadable(corpus)) {
-            throw new IllegalStateException("Given corpus \"" + corpus
-                    + "\" is not readable.");
+            System.err.println("Corpus \"" + corpus + "\" is not readable.");
+            throw new Termination();
         }
     }
-
 }

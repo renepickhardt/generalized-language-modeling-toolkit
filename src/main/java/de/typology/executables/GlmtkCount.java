@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 
 import de.typology.counting.AbsoluteCounter;
@@ -95,15 +94,7 @@ public class GlmtkCount extends Executable {
     }
 
     @Override
-    protected String getArgError() {
-        return "glmtk-count: missing corpus\n"
-                + "Try 'glmtk-count --help' for more information.";
-    }
-
-    @Override
     protected void exec() throws Exception {
-        readOptions(line);
-
         Files.createDirectories(output);
         Path trainingFile = output.resolve("training.txt");
         Path indexFile = output.resolve("index.txt");
@@ -169,19 +160,28 @@ public class GlmtkCount extends Executable {
         Files.copy(log, output.resolve("info.log"));
     }
 
-    private void readOptions(CommandLine line) {
+    @Override
+    protected void parseArguments(String[] args) {
+        super.parseArguments(args);
+
+        if (line.getArgs() == null || line.getArgs().length == 0) {
+            System.err.println("Missing corpus\n"
+                    + "Try 'glmtk-count --help' for more information.");
+            throw new Termination();
+        }
+
         corpus = Paths.get(line.getArgs()[0]);
         if (!Files.exists(corpus)) {
-            throw new IllegalStateException("Given corpus \"" + corpus
-                    + "\" does not exist.");
+            System.err.println("Corpus \"" + corpus + "\" does not exist.");
+            throw new Termination();
         }
         if (Files.isDirectory(corpus)) {
-            throw new IllegalStateException("Given corpus \"" + corpus
-                    + "\" is a directory.");
+            System.err.println("Corpus \"" + corpus + "\" is a directory.");
+            throw new Termination();
         }
         if (!Files.isReadable(corpus)) {
-            throw new IllegalStateException("Given corpus \"" + corpus
-                    + "\" is not readable.");
+            System.err.println("Corpus \"" + corpus + "\" is not readable.");
+            throw new Termination();
         }
 
         if (line.hasOption(OPTION_OUTPUT)) {
@@ -190,8 +190,8 @@ public class GlmtkCount extends Executable {
             output = Paths.get(corpus + ".out");
         }
         if (!Files.notExists(output)) {
-            throw new IllegalStateException("Given output \"" + output
-                    + "\" already exists.");
+            System.err.println("Output \"" + output + "\" already exists.");
+            throw new Termination();
         }
 
         if (line.hasOption(OPTION_MODEL_LENGTH)) {
