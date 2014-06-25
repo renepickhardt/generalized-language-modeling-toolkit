@@ -32,7 +32,7 @@ public class Glmtk extends Executable {
 
     @Override
     protected String getUsage() {
-        return "glmtk [OPTION]... <CORPUS>";
+        return "glmtk [OPTION]... [CORPUS]";
     }
 
     @Override
@@ -40,12 +40,10 @@ public class Glmtk extends Executable {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println("Missing corpus\n"
-                    + "Try 'glmtk-count --help' for more information.");
-            throw new Termination();
+            corpus = Paths.get(".");
+        } else {
+            corpus = Paths.get(line.getArgs()[0]);
         }
-
-        corpus = Paths.get(line.getArgs()[0]);
         if (!Files.exists(corpus)) {
             System.err.println("Corpus \"" + corpus + "\" does not exist.");
             throw new Termination();
