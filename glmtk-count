@@ -1,15 +1,3 @@
 #!/bin/bash
-
-ulimit -v 20000000
-
-DEFAULT_MAIN_MEMORY=6096
-
-MAIN_MEMORY=`grep -oP "^mainMemory\s*=\s*\K\d+" config.ini`
-if [[ -z $MAIN_MEMORY ]]; then
-    MAIN_MEMORY=$DEFAULT_MAIN_MEMORY
-fi
-
-MAVEN_OPTS="-Xmx${MAIN_MEMORY}m"
-
-cmd="nice mvn clean compile exec:java -Dexec.mainClass=\"de.typology.executables.GlmtkCount\" -Dexec.args=\"$@\" -Dfile.encoding=\"UTF-8\""
-eval $cmd
+cd `readlink -f $BASH_SOURCE | xargs dirname`
+./run.sh de.typology.executables.GlmtkCount $@
