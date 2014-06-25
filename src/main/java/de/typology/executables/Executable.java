@@ -125,7 +125,13 @@ public abstract class Executable {
             logger.info("Git Commit: " + gitCommit);
         }
 
-        // log Arguments
+        // log user dir
+        logger.info("User Dir: " + config.getUserDir());
+
+        // log glmtk dir
+        logger.info("Glmtk Dir: " + config.getGlmtkDir());
+
+        // log arguments
         logger.info("Arguments: " + StringUtils.join(args, " "));
 
         // log config

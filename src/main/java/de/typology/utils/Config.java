@@ -16,6 +16,8 @@ public class Config {
 
     private static Config instance = null;
 
+    private Path userDir;
+
     private Path glmtkDir;
 
     private Map<String, Map<String, Object>> sections =
@@ -29,6 +31,7 @@ public class Config {
     }
 
     private Config() throws IOException {
+        userDir = Paths.get(System.getProperty("user.dir"));
         glmtkDir = Paths.get(System.getProperty("glmtk.dir"));
 
         Ini ini = new Ini();
@@ -111,6 +114,10 @@ public class Config {
             result.append("}; ");
         }
         return result.toString();
+    }
+
+    public Path getUserDir() {
+        return userDir;
     }
 
     public Path getGlmtkDir() {
