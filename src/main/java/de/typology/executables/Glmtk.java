@@ -26,6 +26,8 @@ public class Glmtk extends Executable {
 
     private static final String OPTION_SMOOTHER = "smoother";
 
+    private static final String OPTION_TESTING = "testing";
+
     private static List<Option> options;
     static {
         //@formatter:off
@@ -33,15 +35,22 @@ public class Glmtk extends Executable {
         Option version  = new Option("v", OPTION_VERSION,  false, "Print the version information and exit.");
         Option smoother = new Option("s", OPTION_SMOOTHER, true,  StringUtils.join(SMOOTHERS, ", ") + ".");
                smoother.setArgName("SMOOTHER");
+        Option testing  = new Option("t", OPTION_TESTING,  true,  "File to take testing sequences from instead of cross product of all known words.");
+               testing.setArgName("TESTING");
         //@formatter:on
-        options = Arrays.asList(help, version, smoother);
+        options = Arrays.asList(help, version, smoother, testing);
     }
 
     private Path corpusDir = null;
 
-    private Corpus corpus = null;
-
     private String smoother = "mle";
+
+    /**
+     * If {@code null} test against cross product of all known words.
+     */
+    private Path testing = null;
+
+    private Corpus corpus = null;
 
     private PropabilityCalculator calculator = null;
 
@@ -91,6 +100,25 @@ public class Glmtk extends Executable {
                     + StringUtils.join(SMOOTHERS, ", ") + ".");
             throw new Termination();
         }
+
+        if (line.hasOption(OPTION_TESTING)) {
+            testing = Paths.get(line.getOptionValue(OPTION_TESTING));
+            if (!Files.exists(testing)) {
+                System.err.println("Testing file \"" + testing
+                        + "\" does not exist.");
+                throw new Termination();
+            }
+            if (Files.isDirectory(testing)) {
+                System.err.println("Testing file \"" + testing
+                        + "\" is a directory.");
+                throw new Termination();
+            }
+            if (!Files.isReadable(testing)) {
+                System.err.println("Testing file \"" + testing
+                        + "\" is not readable.");
+                throw new Termination();
+            }
+        }
     }
 
     @Override
@@ -98,7 +126,7 @@ public class Glmtk extends Executable {
         Path absoluteDir = corpusDir.resolve("absolute");
         Path continuationDir = corpusDir.resolve("continuation");
 
-        Corpus corpus = new Corpus(absoluteDir, continuationDir, "\t");
+        corpus = new Corpus(absoluteDir, continuationDir, "\t");
 
         Estimator estimator = null;
         switch (smoother) {
