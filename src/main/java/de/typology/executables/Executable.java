@@ -55,7 +55,10 @@ public abstract class Executable {
             log = Paths.get("logs/" + time + ".log");
             config = Config.get();
 
-            parseArguments(args);
+            if (parseArguments(args)) {
+                return;
+            }
+
             printLogHeader(args);
             exec();
             printLogFooter();
@@ -69,7 +72,10 @@ public abstract class Executable {
         }
     }
 
-    private void parseArguments(String[] args) {
+    /**
+     * @return If true, program should terminate.
+     */
+    private boolean parseArguments(String[] args) {
         Options options = new Options();
         for (Option option : getOptions()) {
             options.addOption(option);
@@ -80,13 +86,13 @@ public abstract class Executable {
             line = parser.parse(options, args);
         } catch (ParseException e) {
             System.err.println(e.getMessage());
-            System.exit(1);
+            return true;
         }
 
         if (line.hasOption(OPTION_VERSION)) {
             System.out
                     .println("GLMTK (generalized language modeling toolkit) version 0.1.");
-            System.exit(0);
+            return true;
         }
 
         if (line.hasOption(OPTION_HELP)) {
@@ -102,13 +108,15 @@ public abstract class Executable {
 
             });
             formatter.printHelp(getUsage(), options);
-            System.exit(0);
+            return true;
         }
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
             System.err.println(getArgError());
-            System.exit(1);
+            return true;
         }
+
+        return false;
     }
 
     private void printLogHeader(String[] args) throws IOException,
