@@ -94,6 +94,72 @@ public class GlmtkCount extends Executable {
     }
 
     @Override
+    protected void parseArguments(String[] args) {
+        super.parseArguments(args);
+
+        if (line.getArgs() == null || line.getArgs().length == 0) {
+            System.err.println("Missing corpus\n"
+                    + "Try 'glmtk-count --help' for more information.");
+            throw new Termination();
+        }
+
+        corpus = Paths.get(line.getArgs()[0]);
+        if (!Files.exists(corpus)) {
+            System.err.println("Corpus \"" + corpus + "\" does not exist.");
+            throw new Termination();
+        }
+        if (Files.isDirectory(corpus)) {
+            System.err.println("Corpus \"" + corpus + "\" is a directory.");
+            throw new Termination();
+        }
+        if (!Files.isReadable(corpus)) {
+            System.err.println("Corpus \"" + corpus + "\" is not readable.");
+            throw new Termination();
+        }
+
+        if (line.hasOption(OPTION_OUTPUT)) {
+            output = Paths.get(line.getOptionValue(OPTION_OUTPUT));
+        } else {
+            output = Paths.get(corpus + ".out");
+        }
+        if (!Files.notExists(output)) {
+            System.err.println("Output \"" + output + "\" already exists.");
+            throw new Termination();
+        }
+
+        if (line.hasOption(OPTION_MODEL_LENGTH)) {
+            modelLength =
+                    Integer.parseInt(line.getOptionValue(OPTION_MODEL_LENGTH));
+        }
+
+        if (line.hasOption(OPTION_COUNT_POS)) {
+            countPos = true;
+        }
+
+        if (line.hasOption(OPTION_TAG_POS)) {
+            countPos = true;
+            tagPos = true;
+        }
+
+        if (line.hasOption(OPTION_PATTERNS)) {
+            patterns = line.getOptionValue(OPTION_PATTERNS);
+        }
+
+        if (line.hasOption(OPTION_NO_ABSCOUNTS)) {
+            noAbsCounts = true;
+            noContCounts = true;
+        }
+
+        if (line.hasOption(OPTION_NO_CONTCOUNTS)) {
+            noContCounts = true;
+        }
+
+        if (line.hasOption(OPTION_KEEP_TEMP)) {
+            keepTemp = true;
+        }
+    }
+
+    @Override
     protected void exec() throws Exception {
         Files.createDirectories(output);
         Path trainingFile = output.resolve("training.txt");
@@ -158,72 +224,6 @@ public class GlmtkCount extends Executable {
 
         // TODO: find better way to do this, system properties?
         Files.copy(log, output.resolve("info.log"));
-    }
-
-    @Override
-    protected void parseArguments(String[] args) {
-        super.parseArguments(args);
-
-        if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println("Missing corpus\n"
-                    + "Try 'glmtk-count --help' for more information.");
-            throw new Termination();
-        }
-
-        corpus = Paths.get(line.getArgs()[0]);
-        if (!Files.exists(corpus)) {
-            System.err.println("Corpus \"" + corpus + "\" does not exist.");
-            throw new Termination();
-        }
-        if (Files.isDirectory(corpus)) {
-            System.err.println("Corpus \"" + corpus + "\" is a directory.");
-            throw new Termination();
-        }
-        if (!Files.isReadable(corpus)) {
-            System.err.println("Corpus \"" + corpus + "\" is not readable.");
-            throw new Termination();
-        }
-
-        if (line.hasOption(OPTION_OUTPUT)) {
-            output = Paths.get(line.getOptionValue(OPTION_OUTPUT));
-        } else {
-            output = Paths.get(corpus + ".out");
-        }
-        if (!Files.notExists(output)) {
-            System.err.println("Output \"" + output + "\" already exists.");
-            throw new Termination();
-        }
-
-        if (line.hasOption(OPTION_MODEL_LENGTH)) {
-            modelLength =
-                    Integer.parseInt(line.getOptionValue(OPTION_MODEL_LENGTH));
-        }
-
-        if (line.hasOption(OPTION_COUNT_POS)) {
-            countPos = true;
-        }
-
-        if (line.hasOption(OPTION_TAG_POS)) {
-            countPos = true;
-            tagPos = true;
-        }
-
-        if (line.hasOption(OPTION_PATTERNS)) {
-            patterns = line.getOptionValue(OPTION_PATTERNS);
-        }
-
-        if (line.hasOption(OPTION_NO_ABSCOUNTS)) {
-            noAbsCounts = true;
-            noContCounts = true;
-        }
-
-        if (line.hasOption(OPTION_NO_CONTCOUNTS)) {
-            noContCounts = true;
-        }
-
-        if (line.hasOption(OPTION_KEEP_TEMP)) {
-            keepTemp = true;
-        }
     }
 
 }

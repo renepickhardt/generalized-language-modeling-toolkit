@@ -36,10 +36,6 @@ public class Glmtk extends Executable {
     }
 
     @Override
-    protected void exec() {
-    }
-
-    @Override
     protected void parseArguments(String[] args) {
         super.parseArguments(args);
 
@@ -63,4 +59,9 @@ public class Glmtk extends Executable {
             throw new Termination();
         }
     }
+
+    @Override
+    protected void exec() {
+    }
+
 }
