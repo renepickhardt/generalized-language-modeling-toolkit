@@ -23,6 +23,8 @@ import de.typology.utils.StringUtils;
 
 public abstract class TestCorpus {
 
+    // TODO: incorporate Corpus#getWords()
+
     protected static Path resourcesDir = Paths.get("src/test/resources");
 
     protected Path workingDir;

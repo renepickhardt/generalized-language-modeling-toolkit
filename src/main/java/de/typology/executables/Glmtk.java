@@ -156,6 +156,14 @@ public class Glmtk extends Executable {
                 // not happen
                 throw new IllegalStateException("Missing case statement.");
         }
+
+        if (testing != null) {
+            // check against testing file
+            System.out.println("have testing");
+        } else {
+            // check against cross product of all known words
+            System.out.println(corpus.getWords());
+        }
     }
 
 }
