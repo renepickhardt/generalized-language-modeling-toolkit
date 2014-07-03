@@ -35,17 +35,39 @@ public class StringUtils {
     }
 
     public static String join(List<String> strings, String conjunction) {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         boolean first = true;
         for (String string : strings) {
             if (first) {
                 first = false;
             } else {
-                stringBuilder.append(conjunction);
+                result.append(conjunction);
             }
-            stringBuilder.append(string);
+            result.append(string);
         }
-        return stringBuilder.toString();
+        return result.toString();
+    }
+
+    public static String join(String[] strings, String conjunction) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (String string : strings) {
+            if (first) {
+                first = false;
+            } else {
+                result.append(conjunction);
+            }
+            result.append(string);
+        }
+        return result.toString();
+    }
+
+    public static String repeat(String string, int times) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i != times; ++i) {
+            result.append(string);
+        }
+        return result.toString();
     }
 
     public static String surroundWithTokens(int maxPatternLength, String line) {

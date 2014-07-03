@@ -1,0 +1,3 @@
+#!/bin/bash
+GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
+$GLMTK_DIR/run.sh de.typology.executables.GlmtkCount $@

@@ -7,9 +7,12 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import de.typology.counting.Counter;
 import de.typology.patterns.Pattern;
@@ -29,6 +32,9 @@ public class Corpus {
         skippedList = new ArrayList<>(1);
         skippedList.add(PatternElem.SKIPPED_WORD);
     }
+
+    private static Pattern cntPattern = new Pattern(
+            Arrays.asList(PatternElem.CNT));
 
     public Corpus(
             Path absoluteDir,
@@ -68,6 +74,10 @@ public class Corpus {
      */
     public long getVocabSize() {
         return getContinuation(skippedList).getOnePlusCount();
+    }
+
+    public SortedSet<String> getWords() {
+        return new TreeSet<String>(absoluteCounts.get(cntPattern).keySet());
     }
 
     public int getAbsolute(List<String> sequence) {
