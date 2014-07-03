@@ -41,13 +41,13 @@ public abstract class FractionEstimator extends Estimator {
         if (!condSequence.isEmpty() && corpus.getAbsolute(condSequence) == 0) {
             // Pcond(reqSequence | condSequence) is not well defined.
             logger.debug("    condSequenceCount = 0");
-            result = substituePropability(reqSequence);
+            result = substitutePropability(reqSequence);
         } else {
             double denominator = getDenominator(reqSequence, condSequence);
             // TODO: Rene: check if this is formally correct
             if (denominator == 0) {
                 logger.debug("    denominator = 0");
-                result = substituePropability(reqSequence);
+                result = substitutePropability(reqSequence);
             } else {
                 double numerator = getNumerator(reqSequence, condSequence);
                 result = numerator / denominator;
@@ -58,7 +58,7 @@ public abstract class FractionEstimator extends Estimator {
         return result;
     }
 
-    protected double substituePropability(List<String> reqSequence) {
+    protected double substitutePropability(List<String> reqSequence) {
         switch (backoffCalc) {
             case UNIGRAM_ABSOLUTE:
                 logger.debug("    returning unigram distribution (absolute)");
