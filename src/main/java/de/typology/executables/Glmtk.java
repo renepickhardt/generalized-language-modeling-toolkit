@@ -17,6 +17,7 @@ import org.apache.commons.cli.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.typology.smoothing.BackoffEstimator;
 import de.typology.smoothing.ContinuationMaximumLikelihoodEstimator;
 import de.typology.smoothing.Corpus;
 import de.typology.smoothing.DeleteCalculator;
@@ -32,7 +33,7 @@ public class Glmtk extends Executable {
     private static final int LOG_BASE = 10;
 
     private static final List<String> SMOOTHERS = Arrays.asList("mle", "dmle",
-            "fmle", "cmle", "dcmle");
+            "fmle", "cmle", "dcmle", "bmle", "dbmle");
 
     private static final String OPTION_SMOOTHER = "smoother";
 
@@ -151,6 +152,7 @@ public class Glmtk extends Executable {
         corpus = new Corpus(absoluteDir, continuationDir, "\t");
 
         Estimator estimator = null;
+        MaximumLikelihoodEstimator mle = null;
         switch (smoother) {
             case "mle":
                 estimator = new MaximumLikelihoodEstimator(corpus);
@@ -172,6 +174,15 @@ public class Glmtk extends Executable {
                 estimator = new ContinuationMaximumLikelihoodEstimator(corpus);
                 calculator = new DeleteCalculator(estimator);
                 break;
+            case "bmle":
+                mle = new MaximumLikelihoodEstimator(corpus);
+                estimator = new BackoffEstimator(corpus, mle, mle);
+                calculator = new SkipCalculator(estimator);
+                break;
+            case "dbmle":
+                mle = new MaximumLikelihoodEstimator(corpus);
+                estimator = new BackoffEstimator(corpus, mle, mle);
+                calculator = new DeleteCalculator(estimator);
 
             default:
                 // We check for valid smoothers options before, so this should
