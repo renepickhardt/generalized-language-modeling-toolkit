@@ -2,7 +2,9 @@ package de.typology.smoothing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.typology.utils.StringUtils;
 
@@ -11,6 +13,9 @@ public class BackoffEstimator extends Estimator {
     private Estimator alpha;
 
     private Estimator beta;
+
+    private Map<List<String>, Double> gammaCache =
+            new HashMap<List<String>, Double>();
 
     public BackoffEstimator(
             Corpus corpus,
@@ -67,6 +72,13 @@ public class BackoffEstimator extends Estimator {
                 + condSequence + ")");
         ++depth;
 
+        Double result = gammaCache.get(condSequence);
+        if (result != null) {
+            logger.debug(StringUtils.repeat("  ", depth)
+                    + "returning cached = " + result);
+            return result;
+        }
+
         double sumAlpha = 0;
         double sumBeta = 0;
 
@@ -94,9 +106,15 @@ public class BackoffEstimator extends Estimator {
 
         if (sumBeta == 0) {
             // TODO: Rene: marker for double check
-            return 0;
+            result = 0.;
+        } else {
+            result = (1 - sumAlpha) / sumBeta;
         }
 
-        return (1 - sumAlpha) / sumBeta;
+        gammaCache.put(condSequence, result);
+
+        logger.debug(StringUtils.repeat("  ", depth)
+                + "returning (1 - sumAlpha) / sumBeta = " + result);
+        return result;
     }
 }
