@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.typology.patterns.PatternElem;
+import de.typology.utils.StringUtils;
 
 public class MaximumLikelihoodEstimator extends FractionEstimator {
 
@@ -15,10 +16,11 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     protected double getNumerator(
             List<String> reqSequence,
-            List<String> condSequence) {
+            List<String> condSequence,
+            int depth) {
         List<String> sequence = getSequence(reqSequence, condSequence);
         double sequenceCount = corpus.getAbsolute(sequence);
-        debugSequence(sequence, sequenceCount);
+        debugSequence(sequence, sequenceCount, depth);
 
         return sequenceCount;
     }
@@ -26,7 +28,8 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     protected double getDenominator(
             List<String> reqSequence,
-            List<String> condSequence) {
+            List<String> condSequence,
+            int depth) {
         List<String> history = getHistory(reqSequence, condSequence);
         double historyCount;
         if (history.isEmpty()) {
@@ -34,7 +37,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
         } else {
             historyCount = corpus.getAbsolute(history);
         }
-        debugHistory(history, historyCount);
+        debugHistory(history, historyCount, depth);
 
         return historyCount;
     }
@@ -71,14 +74,20 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
         return history;
     }
 
-    protected void debugSequence(List<String> sequence, double sequenceCount) {
-        logger.debug("    sequence = " + sequence + "(count = " + sequenceCount
-                + ")");
+    protected void debugSequence(
+            List<String> sequence,
+            double sequenceCount,
+            int depth) {
+        logger.debug(StringUtils.repeat("  ", depth) + "sequence = " + sequence
+                + "(count = " + sequenceCount + ")");
     }
 
-    protected void debugHistory(List<String> history, double historyCount) {
-        logger.debug("    history = " + history + "(count = " + historyCount
-                + ")");
+    protected void debugHistory(
+            List<String> history,
+            double historyCount,
+            int depth) {
+        logger.debug(StringUtils.repeat("  ", depth) + "history = " + history
+                + "(count = " + historyCount + ")");
     }
 
 }

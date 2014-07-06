@@ -5,6 +5,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.typology.utils.StringUtils;
+
 public abstract class Estimator {
 
     protected static Logger logger = LoggerFactory.getLogger(Estimator.class);
@@ -16,14 +18,23 @@ public abstract class Estimator {
         this.corpus = corpus;
     }
 
-    public abstract double propabilityCond(
+    public final double propabilityCond(
             List<String> reqSequence,
-            List<String> condSequence);
+            List<String> condSequence) {
+        return propabilityCond(reqSequence, condSequence, 1);
+    }
+
+    protected abstract double propabilityCond(
+            List<String> reqSequence,
+            List<String> condSequence,
+            int depth);
 
     protected void debugPropabilityCond(
             List<String> reqSequence,
-            List<String> condSequence) {
-        logger.debug("  " + getClass().getSimpleName() + "#propabilityCond("
+            List<String> condSequence,
+            int depth) {
+        logger.debug(StringUtils.repeat("  ", depth)
+                + getClass().getSimpleName() + "#propabilityCond("
                 + reqSequence + ", " + condSequence + ")");
     }
 

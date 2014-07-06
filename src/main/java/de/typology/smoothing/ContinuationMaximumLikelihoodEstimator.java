@@ -21,12 +21,13 @@ public class ContinuationMaximumLikelihoodEstimator extends
     @Override
     protected double getNumerator(
             List<String> reqSequence,
-            List<String> condSequence) {
+            List<String> condSequence,
+            int depth) {
         List<String> sequence = getSequence(reqSequence, condSequence);
         sequence.add(0, PatternElem.SKIPPED_WORD);
         double sequenceCount =
                 corpus.getContinuation(sequence).getOnePlusCount();
-        debugSequence(sequence, sequenceCount);
+        debugSequence(sequence, sequenceCount, depth);
 
         return sequenceCount;
     }
@@ -34,11 +35,12 @@ public class ContinuationMaximumLikelihoodEstimator extends
     @Override
     protected double getDenominator(
             List<String> reqSequence,
-            List<String> condSequence) {
+            List<String> condSequence,
+            int depth) {
         List<String> history = getHistory(reqSequence, condSequence);
         history.add(0, PatternElem.SKIPPED_WORD);
         double historyCount = corpus.getContinuation(history).getOnePlusCount();
-        debugHistory(history, historyCount);
+        debugHistory(history, historyCount, depth);
 
         return historyCount;
     }
