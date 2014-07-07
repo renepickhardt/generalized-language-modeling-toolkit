@@ -69,7 +69,7 @@ public class BackoffEstimator extends Estimator {
 
             double betaVal =
                     beta.propabilityCond(reqSequence, condSequence2, recDepth);
-            double gammaVal = calcGamma(condSequence, recDepth);
+            double gammaVal = gamma(condSequence, recDepth);
             double result = gammaVal * betaVal;
             logger.debug(StringUtils.repeat("  ", recDepth) + "gamma("
                     + condSequence + ") = " + gammaVal);
@@ -88,8 +88,8 @@ public class BackoffEstimator extends Estimator {
         }
     }
 
-    public double calcGamma(List<String> condSequence, int recDepth) {
-        logger.debug(StringUtils.repeat("  ", recDepth) + "calcGamma("
+    public double gamma(List<String> condSequence, int recDepth) {
+        logger.debug(StringUtils.repeat("  ", recDepth) + "gamma("
                 + condSequence + ")");
         ++recDepth;
 
@@ -129,7 +129,7 @@ public class BackoffEstimator extends Estimator {
 
         if (sumBeta == 0) {
             // TODO: Rene: marker for double check
-            result = 0.;
+            result = 0.0;
         } else {
             result = (1 - sumAlpha) / sumBeta;
         }
