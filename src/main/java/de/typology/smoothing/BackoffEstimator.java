@@ -10,17 +10,20 @@ import de.typology.utils.StringUtils;
 
 public class BackoffEstimator extends Estimator {
 
+    private static Map<Corpus, Map<List<String>, Double>> globalGammaCache =
+            new HashMap<Corpus, Map<List<String>, Double>>();
+
+    private Map<List<String>, Double> gammaCache;
+
     private Estimator alpha;
 
     private Estimator beta;
-
-    private Map<List<String>, Double> gammaCache =
-            new HashMap<List<String>, Double>();
 
     public BackoffEstimator(
             Corpus corpus,
             Estimator alpha) {
         super(corpus);
+        initGammaCache();
         this.alpha = alpha;
         beta = this;
     }
@@ -30,8 +33,17 @@ public class BackoffEstimator extends Estimator {
             Estimator alpha,
             Estimator beta) {
         super(corpus);
+        initGammaCache();
         this.alpha = alpha;
         this.beta = beta;
+    }
+
+    private void initGammaCache() {
+        gammaCache = globalGammaCache.get(corpus);
+        if (gammaCache == null) {
+            gammaCache = new HashMap<List<String>, Double>();
+            globalGammaCache.put(corpus, gammaCache);
+        }
     }
 
     @Override
