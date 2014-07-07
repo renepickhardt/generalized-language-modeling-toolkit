@@ -27,13 +27,13 @@ public abstract class Estimator {
     protected abstract double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth);
+            int recDepth);
 
     protected void debugPropabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth) {
-        logger.debug(StringUtils.repeat("  ", depth)
+            int recDepth) {
+        logger.debug(StringUtils.repeat("  ", recDepth)
                 + getClass().getSimpleName() + "#propabilityCond("
                 + reqSequence + ", " + condSequence + ")");
     }

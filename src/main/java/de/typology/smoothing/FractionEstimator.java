@@ -35,46 +35,46 @@ public abstract class FractionEstimator extends Estimator {
     public double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth) {
-        debugPropabilityCond(reqSequence, condSequence, depth);
-        ++depth;
+            int recDepth) {
+        debugPropabilityCond(reqSequence, condSequence, recDepth);
+        ++recDepth;
 
         double result;
         // TODO: check if works with continuation counter mle
         if (!condSequence.isEmpty() && corpus.getAbsolute(condSequence) == 0) {
             // Pcond(reqSequence | condSequence) is not well defined.
-            logger.debug(StringUtils.repeat("  ", depth)
+            logger.debug(StringUtils.repeat("  ", recDepth)
                     + "condSequenceCount = 0");
-            result = substitutePropability(reqSequence, depth);
+            result = substitutePropability(reqSequence, recDepth);
         } else {
             double denominator =
-                    getDenominator(reqSequence, condSequence, depth);
+                    getDenominator(reqSequence, condSequence, recDepth);
             // TODO: Rene: check if this is formally correct
             if (denominator == 0) {
-                logger.debug(StringUtils.repeat("  ", depth)
+                logger.debug(StringUtils.repeat("  ", recDepth)
                         + "denominator = 0");
-                result = substitutePropability(reqSequence, depth);
+                result = substitutePropability(reqSequence, recDepth);
             } else {
                 double numerator =
-                        getNumerator(reqSequence, condSequence, depth);
+                        getNumerator(reqSequence, condSequence, recDepth);
                 result = numerator / denominator;
             }
         }
 
-        logger.debug(StringUtils.repeat("  ", depth) + "result = " + result);
+        logger.debug(StringUtils.repeat("  ", recDepth) + "result = " + result);
         return result;
     }
 
-    protected double substitutePropability(List<String> reqSequence, int depth) {
+    protected double substitutePropability(List<String> reqSequence, int recDepth) {
         switch (backoffCalc) {
             case UNIGRAM_ABSOLUTE:
-                logger.debug(StringUtils.repeat("  ", depth)
+                logger.debug(StringUtils.repeat("  ", recDepth)
                         + "returning unigram distribution (absolute)");
                 return (double) corpus.getAbsolute(reqSequence.subList(0, 1))
                         / corpus.getNumWords();
 
             case UNIGRAM_CONTINUATION:
-                logger.debug(StringUtils.repeat("  ", depth)
+                logger.debug(StringUtils.repeat("  ", recDepth)
                         + "returning unigram distribution (continuation)");
                 reqSequence.add(0, PatternElem.SKIPPED_WORD);
                 return (double) corpus.getContinuation(
@@ -88,7 +88,7 @@ public abstract class FractionEstimator extends Estimator {
 
             default:
             case UNIFORM:
-                logger.debug(StringUtils.repeat("  ", depth)
+                logger.debug(StringUtils.repeat("  ", recDepth)
                         + "returning uniform distribution (1/vocabSize)");
                 return 1.0 / corpus.getVocabSize();
         }
@@ -97,11 +97,11 @@ public abstract class FractionEstimator extends Estimator {
     protected abstract double getNumerator(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth);
+            int recDepth);
 
     protected abstract double getDenominator(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth);
+            int recDepth);
 
 }

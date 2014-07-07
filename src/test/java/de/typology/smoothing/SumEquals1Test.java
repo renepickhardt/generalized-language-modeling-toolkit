@@ -194,6 +194,64 @@ public class SumEquals1Test {
         logger.info("passed");
     }
 
+    @Test
+    public void testSkipBackoffMleRec() {
+        logger.info("=== SkipBackoffMleRec ==================================");
+
+        MaximumLikelihoodEstimator mle;
+        BackoffEstimator backoffMle;
+        SkipCalculator skipBackoffMle;
+
+        logger.info("# Abc Corpus");
+
+        mle = new MaximumLikelihoodEstimator(abcCorpus);
+        backoffMle = new BackoffEstimator(abcCorpus, mle);
+        skipBackoffMle = new SkipCalculator(backoffMle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipBackoffMle, abcTestCorpus, i);
+        }
+
+        logger.info("# Moby Dick Corpus");
+
+        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
+        backoffMle = new BackoffEstimator(mobyDickCorpus, mle);
+        skipBackoffMle = new SkipCalculator(backoffMle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipBackoffMle, mobyDickTestCorpus, i);
+        }
+
+        logger.info("passed");
+    }
+
+    @Test
+    public void testDeleteBackoffMleRec() {
+        logger.info("=== DeleteBackoffMleRec ================================");
+
+        MaximumLikelihoodEstimator mle;
+        BackoffEstimator backoffMle;
+        DeleteCalculator skipBackoffMle;
+
+        logger.info("# Abc Corpus");
+
+        mle = new MaximumLikelihoodEstimator(abcCorpus);
+        backoffMle = new BackoffEstimator(abcCorpus, mle);
+        skipBackoffMle = new DeleteCalculator(backoffMle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipBackoffMle, abcTestCorpus, i);
+        }
+
+        logger.info("# Moby Dick Corpus");
+
+        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
+        backoffMle = new BackoffEstimator(mobyDickCorpus, mle);
+        skipBackoffMle = new DeleteCalculator(backoffMle);
+        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
+            assertSumEquals1(skipBackoffMle, mobyDickTestCorpus, i);
+        }
+
+        logger.info("passed");
+    }
+
     private void assertSumEquals1(
             PropabilityCalculator calculator,
             TestCorpus testCorpus,

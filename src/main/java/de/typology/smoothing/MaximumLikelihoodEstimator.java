@@ -17,10 +17,10 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     protected double getNumerator(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth) {
+            int recDepth) {
         List<String> sequence = getSequence(reqSequence, condSequence);
         double sequenceCount = corpus.getAbsolute(sequence);
-        debugSequence(sequence, sequenceCount, depth);
+        debugSequence(sequence, sequenceCount, recDepth);
 
         return sequenceCount;
     }
@@ -29,7 +29,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     protected double getDenominator(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth) {
+            int recDepth) {
         List<String> history = getHistory(reqSequence, condSequence);
         double historyCount;
         if (history.isEmpty()) {
@@ -37,7 +37,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
         } else {
             historyCount = corpus.getAbsolute(history);
         }
-        debugHistory(history, historyCount, depth);
+        debugHistory(history, historyCount, recDepth);
 
         return historyCount;
     }
@@ -77,16 +77,16 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     protected void debugSequence(
             List<String> sequence,
             double sequenceCount,
-            int depth) {
-        logger.debug(StringUtils.repeat("  ", depth) + "sequence = " + sequence
+            int recDepth) {
+        logger.debug(StringUtils.repeat("  ", recDepth) + "sequence = " + sequence
                 + "(count = " + sequenceCount + ")");
     }
 
     protected void debugHistory(
             List<String> history,
             double historyCount,
-            int depth) {
-        logger.debug(StringUtils.repeat("  ", depth) + "history = " + history
+            int recDepth) {
+        logger.debug(StringUtils.repeat("  ", recDepth) + "history = " + history
                 + "(count = " + historyCount + ")");
     }
 

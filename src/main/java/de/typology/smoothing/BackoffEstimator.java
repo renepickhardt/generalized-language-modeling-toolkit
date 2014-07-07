@@ -19,6 +19,14 @@ public class BackoffEstimator extends Estimator {
 
     public BackoffEstimator(
             Corpus corpus,
+            Estimator alpha) {
+        super(corpus);
+        this.alpha = alpha;
+        beta = this;
+    }
+
+    public BackoffEstimator(
+            Corpus corpus,
             Estimator alpha,
             Estimator beta) {
         super(corpus);
@@ -30,9 +38,9 @@ public class BackoffEstimator extends Estimator {
     public double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
-            int depth) {
-        debugPropabilityCond(reqSequence, condSequence, depth);
-        ++depth;
+            int recDepth) {
+        debugPropabilityCond(reqSequence, condSequence, recDepth);
+        ++recDepth;
 
         List<String> sequence = new ArrayList<String>();
         sequence.addAll(condSequence);
@@ -48,33 +56,34 @@ public class BackoffEstimator extends Estimator {
                     condSequence.subList(1, condSequence.size());
 
             double betaVal =
-                    beta.propabilityCond(reqSequence, condSequence2, depth);
-            double gammaVal = calcGamma(condSequence, depth);
+                    beta.propabilityCond(reqSequence, condSequence2, recDepth);
+            double gammaVal = calcGamma(condSequence, recDepth);
             double result = gammaVal * betaVal;
-            logger.debug(StringUtils.repeat("  ", depth) + "gamma("
+            logger.debug(StringUtils.repeat("  ", recDepth) + "gamma("
                     + condSequence + ") = " + gammaVal);
-            logger.debug(StringUtils.repeat("  ", depth) + "beta("
+            logger.debug(StringUtils.repeat("  ", recDepth) + "beta("
                     + reqSequence + ", " + condSequence2 + ") = " + betaVal);
-            logger.debug(StringUtils.repeat("  ", depth)
+            logger.debug(StringUtils.repeat("  ", recDepth)
                     + "returning gamma * beta = " + result);
             return result;
         } else {
             double alphaVal =
-                    alpha.propabilityCond(reqSequence, condSequence, depth);
-            logger.debug(StringUtils.repeat("  ", depth) + "returning alpha("
-                    + reqSequence + ", " + condSequence + ") = " + alphaVal);
+                    alpha.propabilityCond(reqSequence, condSequence, recDepth);
+            logger.debug(StringUtils.repeat("  ", recDepth)
+                    + "returning alpha(" + reqSequence + ", " + condSequence
+                    + ") = " + alphaVal);
             return alphaVal;
         }
     }
 
-    public double calcGamma(List<String> condSequence, int depth) {
-        logger.debug(StringUtils.repeat("  ", depth) + "calcGamma("
+    public double calcGamma(List<String> condSequence, int recDepth) {
+        logger.debug(StringUtils.repeat("  ", recDepth) + "calcGamma("
                 + condSequence + ")");
-        ++depth;
+        ++recDepth;
 
         Double result = gammaCache.get(condSequence);
         if (result != null) {
-            logger.debug(StringUtils.repeat("  ", depth)
+            logger.debug(StringUtils.repeat("  ", recDepth)
                     + "returning cached = " + result);
             return result;
         }
@@ -93,16 +102,18 @@ public class BackoffEstimator extends Estimator {
             if (corpus.getAbsolute(sequence) == 0) {
                 sumBeta +=
                         beta.propabilityCond(Arrays.asList(word),
-                                condSequence2, depth);
+                                condSequence2, recDepth);
             } else {
                 sumAlpha +=
                         alpha.propabilityCond(Arrays.asList(word),
-                                condSequence, depth);
+                                condSequence, recDepth);
             }
         }
 
-        logger.debug(StringUtils.repeat("  ", depth) + "sumAlpha = " + sumAlpha);
-        logger.debug(StringUtils.repeat("  ", depth) + "sumBeta = " + sumBeta);
+        logger.debug(StringUtils.repeat("  ", recDepth) + "sumAlpha = "
+                + sumAlpha);
+        logger.debug(StringUtils.repeat("  ", recDepth) + "sumBeta = "
+                + sumBeta);
 
         if (sumBeta == 0) {
             // TODO: Rene: marker for double check
@@ -113,7 +124,7 @@ public class BackoffEstimator extends Estimator {
 
         gammaCache.put(condSequence, result);
 
-        logger.debug(StringUtils.repeat("  ", depth)
+        logger.debug(StringUtils.repeat("  ", recDepth)
                 + "returning (1 - sumAlpha) / sumBeta = " + result);
         return result;
     }
