@@ -54,9 +54,7 @@ public class BackoffEstimator extends Estimator {
         debugPropabilityCond(reqSequence, condSequence, recDepth);
         ++recDepth;
 
-        List<String> sequence = new ArrayList<String>();
-        sequence.addAll(condSequence);
-        sequence.addAll(reqSequence);
+        List<String> sequence = getSequence(reqSequence, condSequence);
 
         if (corpus.getAbsolute(sequence) == 0) {
             if (condSequence.isEmpty()) {
