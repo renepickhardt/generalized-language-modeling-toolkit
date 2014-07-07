@@ -16,8 +16,15 @@ public class Config {
 
     private static Config instance = null;
 
+    /**
+     * The directory the user started the program from.
+     */
     private Path userDir;
 
+    /**
+     * The directory where the GLMTK bundle resides (e.g. directory where config
+     * file is).
+     */
     private Path glmtkDir;
 
     private Map<String, Map<String, Object>> sections =

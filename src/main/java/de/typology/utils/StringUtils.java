@@ -6,8 +6,11 @@ import java.util.List;
 public class StringUtils {
 
     /**
-     * this method should be used instead of string.split(' ') since it is much
-     * more performant
+     * Takes a string and returns a list containing all substrings which are
+     * separated by space.
+     * 
+     * This method should be used instead of string.split(' ') since it is much
+     * more performant.
      */
     public static List<String> splitAtSpace(String s) {
         List<String> result = new ArrayList<String>();
@@ -34,6 +37,10 @@ public class StringUtils {
         return result;
     }
 
+    /**
+     * Takes a list of strings and concatenates them to one, putting
+     * {@code conjunction} in between.
+     */
     public static String join(List<String> strings, String conjunction) {
         StringBuilder result = new StringBuilder();
         boolean first = true;
@@ -48,6 +55,10 @@ public class StringUtils {
         return result.toString();
     }
 
+    /**
+     * Takes an array of strings and concatenates them to one, putting
+     * {@code conjunction} in between.
+     */
     public static String join(String[] strings, String conjunction) {
         StringBuilder result = new StringBuilder();
         boolean first = true;
@@ -62,6 +73,9 @@ public class StringUtils {
         return result.toString();
     }
 
+    /**
+     * Takes a string a returns the same string repeated for given times.
+     */
     public static String repeat(String string, int times) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i != times; ++i) {
@@ -70,6 +84,10 @@ public class StringUtils {
         return result.toString();
     }
 
+    /**
+     * Puts {@code <s1/>}, {@code <s2/>}, ... up to {@code maxPatternLength}
+     * tokens around {@code line}.
+     */
     public static String surroundWithTokens(int maxPatternLength, String line) {
         StringBuilder lineBuilder = new StringBuilder();
         for (int i = 1; i != maxPatternLength; ++i) {
