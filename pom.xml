@@ -39,7 +39,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>de.typology.executables.KneserNeyBuilder</mainClass>
+              <mainClass>de.typology.executables.MainClass</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # cd into script location
 GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
