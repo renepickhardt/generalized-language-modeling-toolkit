@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.counting.Counter;
 import de.typology.patterns.Pattern;
@@ -21,7 +21,7 @@ import de.typology.utils.StringUtils;
 
 public abstract class Smoother {
 
-    private static Logger logger = LoggerFactory.getLogger(Smoother.class);
+    private static Logger logger = LogManager.getLogger(Smoother.class);
 
     protected Map<Pattern, Map<String, Integer>> absoluteCounts;
 

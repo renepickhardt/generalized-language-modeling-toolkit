@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.indexing.Index;
 import de.typology.indexing.IndexWriter;
@@ -40,7 +40,7 @@ public class Sequencer {
 
     public static long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LoggerFactory.getLogger(Sequencer.class);
+    private static Logger logger = LogManager.getLogger(Sequencer.class);
 
     private Path inputFile;
 

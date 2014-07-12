@@ -14,8 +14,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.cli.Option;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.smoothing.BackoffEstimator;
 import de.typology.smoothing.ContinuationMaximumLikelihoodEstimator;
@@ -41,7 +41,7 @@ public class Glmtk extends Executable {
 
     private static final String OPTION_CROSSPRODUCT = "cross-product";
 
-    private static Logger logger = LoggerFactory.getLogger(Glmtk.class);
+    private static Logger logger = LogManager.getLogger(Glmtk.class);
 
     private static List<Option> options;
     static {

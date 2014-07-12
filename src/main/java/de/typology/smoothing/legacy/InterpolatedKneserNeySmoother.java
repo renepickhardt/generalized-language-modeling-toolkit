@@ -5,14 +5,14 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.patterns.Pattern;
 
 public class InterpolatedKneserNeySmoother extends PropabilityCond2Smoother {
 
-    private static Logger logger = LoggerFactory
+    private static Logger logger = LogManager
             .getLogger(InterpolatedKneserNeySmoother.class);
 
     private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =

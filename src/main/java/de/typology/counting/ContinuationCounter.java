@@ -12,8 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.indexing.Index;
 import de.typology.patterns.Pattern;
@@ -25,7 +25,7 @@ import de.typology.patterns.PatternElem;
  */
 public class ContinuationCounter {
 
-    private static Logger logger = LoggerFactory
+    private static Logger logger = LogManager
             .getLogger(ContinuationCounter.class);
 
     private Path inputDir;

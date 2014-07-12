@@ -19,8 +19,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.utils.Config;
 import de.typology.utils.StringUtils;
@@ -31,7 +31,7 @@ public abstract class Executable {
 
     protected static final String OPTION_VERSION = "version";
 
-    private static Logger logger = LoggerFactory.getLogger(Executable.class);
+    private static Logger logger = LogManager.getLogger(Executable.class);
 
     protected Path log;
 

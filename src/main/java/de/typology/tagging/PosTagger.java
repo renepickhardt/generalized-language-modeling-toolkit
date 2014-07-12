@@ -10,8 +10,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.sequencing.Sequencer;
 import edu.stanford.nlp.ling.HasWord;
@@ -23,7 +23,7 @@ public class PosTagger {
 
     public static long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LoggerFactory.getLogger(Sequencer.class);
+    private static Logger logger = LogManager.getLogger(Sequencer.class);
 
     private Path inputFile;
 

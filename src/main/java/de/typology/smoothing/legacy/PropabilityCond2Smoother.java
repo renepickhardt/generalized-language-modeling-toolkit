@@ -5,14 +5,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.patterns.PatternElem;
 
 public class PropabilityCond2Smoother extends DiscountSmoother {
 
-    private Logger logger = LoggerFactory
+    private Logger logger = LogManager
             .getLogger(PropabilityCond2Smoother.class);
 
     public PropabilityCond2Smoother(

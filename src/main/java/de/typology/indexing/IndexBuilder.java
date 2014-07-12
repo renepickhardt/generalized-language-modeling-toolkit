@@ -10,8 +10,8 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.typology.utils.StringUtils;
 
@@ -21,7 +21,7 @@ import de.typology.utils.StringUtils;
  */
 public class IndexBuilder {
 
-    private static Logger logger = LoggerFactory.getLogger(IndexBuilder.class);
+    private static Logger logger = LogManager.getLogger(IndexBuilder.class);
 
     private boolean withPos;
 
