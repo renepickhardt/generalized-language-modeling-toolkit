@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# cd into script location
+# get script location
 GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
 
 DEFAULT_MAIN_MEMORY=6096
@@ -11,12 +11,6 @@ if [[ -z $MAIN_MEMORY ]]; then
     MAIN_MEMORY=$DEFAULT_MAIN_MEMORY
 fi
 
-# Read arguments
-MAIN_CLASS=$1
-shift
-ARGS=$@
-
 MAVEN_OPTS="-Xmx${MAIN_MEMORY}m"
 ulimit -v 20000000
-# Need to use eval since ARGS is an array and " will not work
-eval "nice mvn -f $GLMTK_DIR/pom.xml clean compile exec:java -Dexec.mainClass=\"$MAIN_CLASS\" -Dexec.args=\"$ARGS\" -Dfile.encoding=\"UTF-8\" -Dglmtk.dir=\"$GLMTK_DIR\""
+nice java -Dglmtk.dir="$GLMTK_DIR" -Dfile.encoding="UTF-8" -jar $GLMTK_DIR/target/typology-0.0.1-SNAPSHOT-jar-with-dependencies.jar $@
