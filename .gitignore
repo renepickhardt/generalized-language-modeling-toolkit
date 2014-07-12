@@ -7,16 +7,3 @@
 /src/test/resources/mobydick/
 /target
 /stanford-postagger-full-2014-01-04
-
-.ser
-mod*
-kneser*
-normalized*
-training.txt
-learning.txt
-absolute
-continuation
-parsed.txt
-brownPlain.txt
-brownTagged.txt
-\$\{sys\:glmtk.dir\}/
