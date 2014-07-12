@@ -8,7 +8,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class SumEquals1Test {
+public class SumEquals1Test extends LoggingTest {
 
     private static Logger logger = LogManager.getLogger(SumEquals1Test.class);
 
