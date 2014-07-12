@@ -80,7 +80,7 @@ public class GlmtkCount extends Executable {
 
     private boolean keepTemp = false;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         new GlmtkCount().run(args);
     }
 
@@ -95,13 +95,13 @@ public class GlmtkCount extends Executable {
     }
 
     @Override
-    protected void configureLogging() throws IOException {
+    protected void configureLogging() {
         super.configureLogging();
         Logging.addLocalFileAppender(output.resolve("log"));
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
+    protected void parseArguments(String[] args) {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {

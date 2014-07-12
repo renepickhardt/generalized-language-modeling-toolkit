@@ -1,6 +1,5 @@
 package de.typology;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -51,7 +50,7 @@ public class Logging {
     private static LoggerConfig loggerConfig = configuration
             .getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
 
-    public static void configureExecLogging() throws IOException {
+    public static void configureExecLogging() {
         Layout<String> layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,
                         Charset.defaultCharset(), true, true, null, null);

@@ -63,11 +63,11 @@ public abstract class Executable {
         }
     }
 
-    protected void configureLogging() throws IOException {
+    protected void configureLogging() {
         Logging.configureExecLogging();
     }
 
-    protected void parseArguments(String[] args) throws Exception {
+    protected void parseArguments(String[] args) {
         Options options = new Options();
         for (Option option : getOptions()) {
             options.addOption(option);

@@ -1,11 +1,10 @@
 package de.typology.executables;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 public class MainClass {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length == 0) {
             throw new IllegalStateException("No main class specified.");
         }

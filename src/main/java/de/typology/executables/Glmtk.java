@@ -85,7 +85,7 @@ public class Glmtk extends Executable {
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
+    protected void parseArguments(String[] args) {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
