@@ -116,7 +116,7 @@ public abstract class Executable {
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
             "git", "log", "-1", "--format=%H: %s"
-        });
+        }, null, config.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =
                 new BufferedReader(new InputStreamReader(
