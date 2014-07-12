@@ -2,16 +2,15 @@ package de.typology.smoothing;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 public class SumEquals1Test {
 
-    private static Logger logger = LoggerFactory
-            .getLogger(SumEquals1Test.class);
+    private static Logger logger = LogManager.getLogger(SumEquals1Test.class);
 
     private static final int MAX_LENGTH = 5;
 
@@ -401,7 +400,7 @@ public class SumEquals1Test {
             String sequence = testCorpus.getSequence(i, n);
             sum += calculator.propability(sequence);
         }
-        logger.info("n=" + n + ": sum = " + sum);
+        logger.info("n={}: sum = {}", n, sum);
         Assert.assertEquals(1, sum, 0.01);
     }
 }

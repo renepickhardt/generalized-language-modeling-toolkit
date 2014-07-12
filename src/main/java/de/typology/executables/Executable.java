@@ -122,20 +122,20 @@ public abstract class Executable {
                 new BufferedReader(new InputStreamReader(
                         gitLogProc.getInputStream()))) {
             String gitCommit = gitLogReader.readLine();
-            logger.info("Git Commit: " + gitCommit);
+            logger.info("Git Commit: {}", gitCommit);
         }
 
         // log user dir
-        logger.info("User Dir: " + config.getUserDir());
+        logger.info("User Dir: {}", config.getUserDir());
 
         // log glmtk dir
-        logger.info("Glmtk Dir: " + config.getGlmtkDir());
+        logger.info("Glmtk Dir: {}", config.getGlmtkDir());
 
         // log arguments
-        logger.info("Arguments: " + StringUtils.join(args, " "));
+        logger.info("Arguments: {}", StringUtils.join(args, " "));
 
         // log config
-        logger.info("Config: " + config);
+        logger.info("Config: {}", config);
 
         logger.info(StringUtils.repeat("-", 80));
     }

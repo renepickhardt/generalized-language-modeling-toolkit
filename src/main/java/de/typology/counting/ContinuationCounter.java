@@ -95,8 +95,9 @@ public class ContinuationCounter {
             }
 
             if (!donePatterns.isEmpty()) {
-                logger.info("End of round of calculation. Completed Patterns: "
-                        + donePatterns.size());
+                logger.info(
+                        "End of round of calculation. Completed Patterns: {}",
+                        donePatterns.size());
             } else {
                 break;
             }

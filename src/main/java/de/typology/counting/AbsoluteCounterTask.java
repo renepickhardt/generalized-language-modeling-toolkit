@@ -34,7 +34,7 @@ public class AbsoluteCounterTask implements Runnable {
     private static Logger logger = LogManager
             .getLogger(AbsoluteCounterTask.class);
 
-    private static int numTasks = 0;
+    private static int numTasks = 1;
 
     private static int numCompleteTasks = 0;
 
@@ -110,9 +110,9 @@ public class AbsoluteCounterTask implements Runnable {
             }
 
             ++numCompleteTasks;
-            logger.info(displayProgress() + "% Finished absolute counts for: "
-                    + inputFile.getParent().getFileName() + "/"
-                    + inputFile.getFileName());
+            logger.info("%6.2f%% Finished absolute counts for: {}/{}", 100.f
+                    * numCompleteTasks / numTasks, inputFile.getParent()
+                    .getFileName(), inputFile.getFileName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -133,7 +133,9 @@ public class AbsoluteCounterTask implements Runnable {
                         new BufferedReader(new InputStreamReader(input),
                                 bufferSize)) {
             String sequence;
-            // TODO: watch memory consumption. This Map here can become very large and if it does not fit into main memory we need a different strategy.
+            // TODO: watch memory consumption. This Map here can become very
+            // large and if it does not fit into main memory we need a different
+            // strategy.
             while ((sequence = reader.readLine()) != null) {
                 Integer count = sequenceCounts.get(sequence);
                 sequenceCounts.put(sequence, count == null ? 1 : count + 1);
@@ -188,19 +190,6 @@ public class AbsoluteCounterTask implements Runnable {
      */
     public static void setNumTasks(int numTasks) {
         AbsoluteCounterTask.numTasks = numTasks;
-    }
-
-    /**
-     * returns the progress of the Calculation.
-     * setNumTasks should be called before calling this method
-     * 
-     * @return String containing a Progress Message
-     */
-    private String displayProgress() {
-        if (numTasks == 0) {
-            return "CompletedTasks: " + numCompleteTasks;
-        }
-        return String.format("%6.2f", 100.f * numCompleteTasks / numTasks);
     }
 
 }

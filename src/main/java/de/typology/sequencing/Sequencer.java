@@ -105,7 +105,7 @@ public class Sequencer {
             int patternLength,
             Set<Pattern> patterns,
             int maxPatternLength) throws IOException {
-        logger.info("Building sequences with length: " + patternLength);
+        logger.info("Building sequences with length: {}", patternLength);
 
         int bufferSizes =
                 (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory()
@@ -151,9 +151,7 @@ public class Sequencer {
                 // if more then a minute since last update
                 if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
                     time = System.currentTimeMillis();
-                    logger.info(String.format("%6.2f", 100.f * readSize
-                            / totalSize)
-                            + "%");
+                    logger.info("%6.2f%%", 100.f * readSize / totalSize);
                 }
             }
         }

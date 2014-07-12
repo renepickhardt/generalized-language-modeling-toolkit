@@ -221,8 +221,7 @@ public class Glmtk extends Executable {
                     ++cntNonZero;
                     sumPropabilities += propability;
                     entropy -= Math.log(propability) / logBase;
-                    logger.info("Propability(" + sequence + ") = "
-                            + propability);
+                    logger.info("Propability({}) = {}", sequence, propability);
                 }
             }
 
@@ -230,14 +229,12 @@ public class Glmtk extends Executable {
 
             logger.info(StringUtils.repeat("-", 80));
 
-            logger.info("Count Zero-Propablity Sequences = " + cntZero
-                    + getPercentLog((double) cntZero / (cntZero + cntNonZero)));
-            logger.info("Count Non-Zero-Propability Sequences = "
-                    + cntNonZero
-                    + getPercentLog((double) cntNonZero
-                            / (cntZero + cntNonZero)));
-            logger.info("Sum of Propabilities = " + sumPropabilities);
-            logger.info("Entropy = " + entropy);
+            logger.info("Count Zero-Propablity Sequences = {} (%6.2f%%)",
+                    cntZero, +(double) cntZero / (cntZero + cntNonZero));
+            logger.info("Count Non-Zero-Propability Sequences = {} (%6.2f%%)",
+                    cntNonZero, (double) cntNonZero / (cntZero + cntNonZero));
+            logger.info("Sum of Propabilities = {}", sumPropabilities);
+            logger.info("Entropy = {}", entropy);
 
             logger.info(StringUtils.repeat("-", 80));
         }
@@ -266,10 +263,6 @@ public class Glmtk extends Executable {
         }
         Collections.reverse(sequence);
         return StringUtils.join(sequence, " ");
-    }
-
-    private static String getPercentLog(double percent) {
-        return " (" + String.format("%.2f", percent * 100) + "%)";
     }
 
 }

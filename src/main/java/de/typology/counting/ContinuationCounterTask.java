@@ -76,10 +76,8 @@ public class ContinuationCounterTask implements Runnable {
             writeSequenceCounts(sequenceCounts);
 
             ++numCompleteTasks;
-            logger.info(String.format("%6.2f", 100.f * numCompleteTasks
-                    / numTasks)
-                    + "% Finished continuation counts for: "
-                    + outputDir.getFileName());
+            logger.info("%6.2f%% Finished continuation counts for: {}", 100.f
+                    * numCompleteTasks / numTasks, outputDir.getFileName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -79,9 +79,7 @@ public class PosTagger {
 
                 if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
                     time = System.currentTimeMillis();
-                    logger.info(String.format("%6.2f", 100.f * readSize
-                            / totalSize)
-                            + "%");
+                    logger.info("%6.2f%%", 100.f * readSize / totalSize);
                 }
             }
         }
