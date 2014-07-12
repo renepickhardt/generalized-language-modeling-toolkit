@@ -1,25 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="30">
-  <Properties>
-    <Property name="level">info</Property>
-    <Property name="pattern">%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n</Property>
-  </Properties>
-  <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%highlight{${pattern}}{FATAL=red, ERROR=red, WARN=yellow, INFO=normal, DEBUG=green, TRACE=blue}"/>
-    </Console>
-    <File name="FileAll" fileName="${sys:glmtk.dir}/logs/all.log">
-      <PatternLayout pattern="${pattern}"/>
-    </File>
-    <File name="FileOwn" fileName="${sys:glmtk.dir}/logs/${date:yyyy-MM-dd HH:mm:ss}.log">
-      <PatternLayout pattern="${pattern}"/>
-    </File>
-  </Appenders>
   <Loggers>
-    <Root level="${level}">
-      <AppenderRef ref="Console"/>
-      <AppenderRef ref="FileAll"/>
-      <AppenderRef ref="FileOwn"/>
-    </Root>
+    <Root level="info" />
   </Loggers>
 </Configuration>

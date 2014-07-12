@@ -5,10 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,6 +18,7 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.typology.Logging;
 import de.typology.utils.Config;
 import de.typology.utils.StringUtils;
 
@@ -32,8 +29,6 @@ public abstract class Executable {
     protected static final String OPTION_VERSION = "version";
 
     private static Logger logger = LogManager.getLogger(Executable.class);
-
-    protected Path log;
 
     protected Config config;
 
@@ -47,13 +42,12 @@ public abstract class Executable {
 
     public void run(String[] args) {
         try {
-            SimpleDateFormat format =
-                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String time = format.format(Calendar.getInstance().getTime());
-            log = Paths.get("logs/" + time + ".log");
             config = Config.get();
 
             parseArguments(args);
+
+            configureLogging();
+
             printLogHeader(args);
             exec();
             printLogFooter();
@@ -69,7 +63,11 @@ public abstract class Executable {
         }
     }
 
-    protected void parseArguments(String[] args) {
+    protected void configureLogging() throws IOException {
+        Logging.configureExecLogging();
+    }
+
+    protected void parseArguments(String[] args) throws Exception {
         Options options = new Options();
         for (Option option : getOptions()) {
             options.addOption(option);

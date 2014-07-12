@@ -27,20 +27,30 @@ public class Config {
      */
     private Path glmtkDir;
 
+    /**
+     * The directory where log files are saved.
+     */
+    private Path logDir;
+
     private Map<String, Map<String, Object>> sections =
             new LinkedHashMap<String, Map<String, Object>>();
 
-    public static Config get() throws IOException {
-        if (instance == null) {
-            instance = new Config();
+    public static Config get() {
+        try {
+            if (instance == null) {
+                instance = new Config();
+            }
+            return instance;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return instance;
     }
 
     private Config() throws IOException {
         userDir = Paths.get(System.getProperty("user.dir"));
         glmtkDir =
                 Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
+        logDir = glmtkDir.resolve("logs");
 
         Ini ini = new Ini();
         ini.load(Files.newBufferedReader(glmtkDir.resolve(CONFIG_LOCATION),
@@ -130,6 +140,10 @@ public class Config {
 
     public Path getGlmtkDir() {
         return glmtkDir;
+    }
+
+    public Path getLogDir() {
+        return logDir;
     }
 
     // GENERAL /////////////////////////////////////////////////////////////////

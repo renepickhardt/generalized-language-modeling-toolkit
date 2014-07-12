@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.apache.commons.cli.Option;
 
+import de.typology.Logging;
 import de.typology.counting.AbsoluteCounter;
 import de.typology.counting.ContinuationCounter;
 import de.typology.indexing.Index;
@@ -94,7 +95,13 @@ public class GlmtkCount extends Executable {
     }
 
     @Override
-    protected void parseArguments(String[] args) {
+    protected void configureLogging() throws IOException {
+        super.configureLogging();
+        Logging.addLocalFileAppender(output.resolve("log"));
+    }
+
+    @Override
+    protected void parseArguments(String[] args) throws Exception {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
@@ -160,7 +167,7 @@ public class GlmtkCount extends Executable {
     }
 
     @Override
-    protected void exec() throws Exception {
+    protected void exec() throws IOException, InterruptedException {
         Files.createDirectories(output);
         Path trainingFile = output.resolve("training.txt");
         Path indexFile = output.resolve("index.txt");
@@ -221,9 +228,6 @@ public class GlmtkCount extends Executable {
                             true);
             continuationCounter.count();
         }
-
-        // TODO: find better way to do this, system properties?
-        Files.copy(log, output.resolve("info.log"));
     }
 
 }
