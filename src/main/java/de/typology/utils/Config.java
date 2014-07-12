@@ -39,7 +39,8 @@ public class Config {
 
     private Config() throws IOException {
         userDir = Paths.get(System.getProperty("user.dir"));
-        glmtkDir = Paths.get(System.getProperty("glmtk.dir"));
+        glmtkDir =
+                Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
 
         Ini ini = new Ini();
         ini.load(Files.newBufferedReader(glmtkDir.resolve(CONFIG_LOCATION),
