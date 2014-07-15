@@ -5,11 +5,6 @@ import java.util.List;
 
 public class FalseMaximumLikelihoodEstimator extends MaximumLikelihoodEstimator {
 
-    public FalseMaximumLikelihoodEstimator(
-            Corpus corpus) {
-        super(corpus);
-    }
-
     /**
      * {@code sequence = condSequence + reqSequence}
      */

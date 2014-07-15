@@ -7,11 +7,6 @@ import de.typology.patterns.PatternElem;
 public class ContinuationMaximumLikelihoodEstimator extends
         MaximumLikelihoodEstimator {
 
-    public ContinuationMaximumLikelihoodEstimator(
-            Corpus corpus) {
-        super(corpus);
-    }
-
     // In order to have continuation counts defined we need to add a skip
     // somewhere. Where? I chose to add a skip at the end of both sequence and
     // history, which seems to pass SumEquals1Test. However for n=5 we would
@@ -44,4 +39,5 @@ public class ContinuationMaximumLikelihoodEstimator extends
 
         return historyCount;
     }
+
 }

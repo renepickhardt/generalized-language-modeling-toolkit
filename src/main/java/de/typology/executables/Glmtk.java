@@ -155,33 +155,40 @@ public class Glmtk extends Executable {
         MaximumLikelihoodEstimator mle = null;
         switch (smoother) {
             case "mle":
-                estimator = new MaximumLikelihoodEstimator(corpus);
+                estimator = new MaximumLikelihoodEstimator();
+                estimator.setCorpus(corpus);
                 calculator = new SkipCalculator(estimator);
                 break;
             case "dmle":
-                estimator = new MaximumLikelihoodEstimator(corpus);
+                estimator = new MaximumLikelihoodEstimator();
+                estimator.setCorpus(corpus);
                 calculator = new DeleteCalculator(estimator);
                 break;
             case "fmle":
-                estimator = new FalseMaximumLikelihoodEstimator(corpus);
+                estimator = new FalseMaximumLikelihoodEstimator();
+                estimator.setCorpus(corpus);
                 calculator = new DeleteCalculator(estimator);
                 break;
             case "cmle":
-                estimator = new ContinuationMaximumLikelihoodEstimator(corpus);
+                estimator = new ContinuationMaximumLikelihoodEstimator();
+                estimator.setCorpus(corpus);
                 calculator = new SkipCalculator(estimator);
                 break;
             case "dcmle":
-                estimator = new ContinuationMaximumLikelihoodEstimator(corpus);
+                estimator = new ContinuationMaximumLikelihoodEstimator();
+                estimator.setCorpus(corpus);
                 calculator = new DeleteCalculator(estimator);
                 break;
             case "bmle":
-                mle = new MaximumLikelihoodEstimator(corpus);
-                estimator = new BackoffEstimator(corpus, mle, mle);
+                mle = new MaximumLikelihoodEstimator();
+                estimator = new BackoffEstimator(mle, mle);
+                estimator.setCorpus(corpus);
                 calculator = new SkipCalculator(estimator);
                 break;
             case "dbmle":
-                mle = new MaximumLikelihoodEstimator(corpus);
-                estimator = new BackoffEstimator(corpus, mle, mle);
+                mle = new MaximumLikelihoodEstimator();
+                estimator = new BackoffEstimator(mle, mle);
+                estimator.setCorpus(corpus);
                 calculator = new DeleteCalculator(estimator);
 
             default:

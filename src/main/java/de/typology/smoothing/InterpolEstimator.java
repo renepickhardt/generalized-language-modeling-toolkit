@@ -11,20 +11,27 @@ public abstract class InterpolEstimator extends Estimator {
     private Estimator beta;
 
     public InterpolEstimator(
-            Corpus corpus,
             Estimator alpha) {
-        super(corpus);
         this.alpha = alpha;
         beta = this;
     }
 
     public InterpolEstimator(
-            Corpus corpus,
             Estimator alpha,
             Estimator beta) {
-        super(corpus);
         this.alpha = alpha;
         this.beta = beta;
+    }
+
+    @Override
+    public void setCorpus(Corpus corpus) {
+        super.setCorpus(corpus);
+        if (alpha != this) {
+            alpha.setCorpus(corpus);
+        }
+        if (beta != this) {
+            beta.setCorpus(corpus);
+        }
     }
 
     @Override

@@ -20,25 +20,28 @@ public class BackoffEstimator extends Estimator {
     private Estimator beta;
 
     public BackoffEstimator(
-            Corpus corpus,
             Estimator alpha) {
-        super(corpus);
-        initGammaCache();
         this.alpha = alpha;
         beta = this;
     }
 
     public BackoffEstimator(
-            Corpus corpus,
             Estimator alpha,
             Estimator beta) {
-        super(corpus);
-        initGammaCache();
         this.alpha = alpha;
         this.beta = beta;
     }
 
-    private void initGammaCache() {
+    @Override
+    public void setCorpus(Corpus corpus) {
+        super.setCorpus(corpus);
+        if (alpha != this) {
+            alpha.setCorpus(corpus);
+        }
+        if (beta != this) {
+            beta.setCorpus(corpus);
+        }
+
         gammaCache = globalGammaCache.get(corpus);
         if (gammaCache == null) {
             gammaCache = new HashMap<List<String>, Double>();

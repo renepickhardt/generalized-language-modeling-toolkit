@@ -7,19 +7,17 @@ public class AbsoluteInterpolEstimator extends InterpolEstimator {
     private double lambda;
 
     public AbsoluteInterpolEstimator(
-            Corpus corpus,
             Estimator alpha,
             double lambda) {
-        super(corpus, alpha);
+        super(alpha);
         this.lambda = lambda;
     }
 
     public AbsoluteInterpolEstimator(
-            Corpus corpus,
             Estimator alpha,
             Estimator beta,
             double lambda) {
-        super(corpus, alpha, beta);
+        super(alpha, beta);
         this.lambda = lambda;
     }
 

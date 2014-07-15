@@ -16,19 +16,13 @@ public abstract class FractionEstimator extends Estimator {
         UNIFORM
     }
 
-    protected BackoffCalc backoffCalc;
+    protected BackoffCalc backoffCalc = BackoffCalc.UNIGRAM_ABSOLUTE;
 
     protected static List<String> doubleSkippedList;
     static {
         doubleSkippedList = new ArrayList<String>();
         doubleSkippedList.add(PatternElem.SKIPPED_WORD);
         doubleSkippedList.add(PatternElem.SKIPPED_WORD);
-    }
-
-    public FractionEstimator(
-            Corpus corpus) {
-        super(corpus);
-        backoffCalc = BackoffCalc.UNIGRAM_ABSOLUTE;
     }
 
     @Override
@@ -65,7 +59,9 @@ public abstract class FractionEstimator extends Estimator {
         return result;
     }
 
-    protected double substitutePropability(List<String> reqSequence, int recDepth) {
+    protected double substitutePropability(
+            List<String> reqSequence,
+            int recDepth) {
         switch (backoffCalc) {
             case UNIGRAM_ABSOLUTE:
                 logger.debug(StringUtils.repeat("  ", recDepth)

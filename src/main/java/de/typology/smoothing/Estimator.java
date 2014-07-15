@@ -13,10 +13,9 @@ public abstract class Estimator {
 
     protected static Logger logger = LogManager.getLogger(Estimator.class);
 
-    protected Corpus corpus;
+    protected Corpus corpus = null;
 
-    public Estimator(
-            Corpus corpus) {
+    public void setCorpus(Corpus corpus) {
         this.corpus = corpus;
     }
 

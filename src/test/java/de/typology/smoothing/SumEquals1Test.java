@@ -12,7 +12,7 @@ public class SumEquals1Test extends LoggingTest {
 
     private static Logger logger = LogManager.getLogger(SumEquals1Test.class);
 
-    private static final int MAX_LENGTH = 5;
+    private static final int HIGHEST_TEST_ORDER = 5;
 
     private static final double ABS_INTERPOL_LAMBDA = .5;
 
@@ -34,373 +34,90 @@ public class SumEquals1Test extends LoggingTest {
     }
 
     @Test
-    public void testSkipMle() {
-        logger.info("=== SkipMle ============================================");
-
-        MaximumLikelihoodEstimator mle;
-        SkipCalculator skipMle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        skipMle = new SkipCalculator(mle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(skipMle, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        skipMle = new SkipCalculator(mle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(skipMle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    public void testMle() {
+        assertEstimatorSumEquals1("MaximumLikelihoodEstimator",
+                new MaximumLikelihoodEstimator(), HIGHEST_TEST_ORDER + 1);
     }
 
     @Test
-    public void testDeleteMle() {
-        logger.info("=== DeleteMle ==========================================");
-
-        MaximumLikelihoodEstimator mle;
-        DeleteCalculator deleteMle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        deleteMle = new DeleteCalculator(mle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(deleteMle, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        deleteMle = new DeleteCalculator(mle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(deleteMle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    public void testCmle() {
+        assertEstimatorSumEquals1("ContinuationMaximumLikelihoodEstimator",
+                new ContinuationMaximumLikelihoodEstimator(),
+                HIGHEST_TEST_ORDER);
     }
 
     @Test
-    public void testSkipCmle() {
-        logger.info("=== SkipCmle ===========================================");
-
-        ContinuationMaximumLikelihoodEstimator cmle;
-        SkipCalculator skipMle;
-
-        logger.info("# Abc Corpus");
-
-        cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
-        skipMle = new SkipCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(skipMle, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
-        skipMle = new SkipCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(skipMle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    public void testBackoffMle() {
+        assertEstimatorSumEquals1("BackoffEstimator(MLE, MLE)",
+                new BackoffEstimator(new MaximumLikelihoodEstimator(),
+                        new MaximumLikelihoodEstimator()),
+                HIGHEST_TEST_ORDER + 1);
     }
 
     @Test
-    public void testDeleteCmle() {
-        logger.info("=== DeleteCmle =========================================");
-
-        ContinuationMaximumLikelihoodEstimator cmle;
-        DeleteCalculator deleteMle;
-
-        logger.info("# Abc Corpus");
-
-        cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
-        deleteMle = new DeleteCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(deleteMle, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
-        deleteMle = new DeleteCalculator(cmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(deleteMle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    public void testBackoffMleRec() {
+        assertEstimatorSumEquals1("recursive BackoffEstimator(MLE)",
+                new BackoffEstimator(new MaximumLikelihoodEstimator()),
+                HIGHEST_TEST_ORDER + 1);
     }
 
     @Test
-    public void testSkipBackoffMle() {
-        logger.info("=== SkipBackoffMle =====================================");
-
-        MaximumLikelihoodEstimator mle;
-        BackoffEstimator backoffMle;
-        SkipCalculator skipBackoffMle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        backoffMle = new BackoffEstimator(abcCorpus, mle, mle);
-        skipBackoffMle = new SkipCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(skipBackoffMle, abcTestCorpus, i);
-        }
-
-        logger.info("# Moby Dick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        backoffMle = new BackoffEstimator(mobyDickCorpus, mle, mle);
-        skipBackoffMle = new SkipCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(skipBackoffMle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    public void testAbsInterpolMleCmle() {
+        assertEstimatorSumEquals1("AbsoluteInterpolEstimator(MLE, CMLE)",
+                new AbsoluteInterpolEstimator(new MaximumLikelihoodEstimator(),
+                        new ContinuationMaximumLikelihoodEstimator(),
+                        ABS_INTERPOL_LAMBDA), HIGHEST_TEST_ORDER);
     }
 
     @Test
-    public void testDeleteBackoffMle() {
-        logger.info("=== DeleteBackoffMle ====================================");
-
-        MaximumLikelihoodEstimator mle;
-        BackoffEstimator backoffMle;
-        DeleteCalculator deleteBackoffMle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        backoffMle = new BackoffEstimator(abcCorpus, mle, mle);
-        deleteBackoffMle = new DeleteCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(deleteBackoffMle, abcTestCorpus, i);
-        }
-
-        logger.info("# Moby Dick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        backoffMle = new BackoffEstimator(mobyDickCorpus, mle, mle);
-        deleteBackoffMle = new DeleteCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(deleteBackoffMle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    public void testAbsInterpolMleRec() {
+        assertEstimatorSumEquals1("recursive AbsoluteInterpolEstimator(MLE)",
+                new AbsoluteInterpolEstimator(new MaximumLikelihoodEstimator(),
+                        ABS_INTERPOL_LAMBDA), HIGHEST_TEST_ORDER + 1);
     }
 
-    @Test
-    public void testSkipBackoffMleRec() {
-        logger.info("=== SkipBackoffMleRec ==================================");
-
-        MaximumLikelihoodEstimator mle;
-        BackoffEstimator backoffMle;
-        SkipCalculator skipBackoffMleRec;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        backoffMle = new BackoffEstimator(abcCorpus, mle);
-        skipBackoffMleRec = new SkipCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(skipBackoffMleRec, abcTestCorpus, i);
-        }
-
-        logger.info("# Moby Dick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        backoffMle = new BackoffEstimator(mobyDickCorpus, mle);
-        skipBackoffMleRec = new SkipCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(skipBackoffMleRec, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
+    private void assertEstimatorSumEquals1(
+            String testName,
+            Estimator estimator,
+            int maxOrder) {
+        logger.info("===== {} =====", testName);
+        assertCalculatorSumEquals1(estimator, new SkipCalculator(estimator),
+                maxOrder);
+        assertCalculatorSumEquals1(estimator, new DeleteCalculator(estimator),
+                maxOrder);
     }
 
-    @Test
-    public void testDeleteBackoffMleRec() {
-        logger.info("=== DeleteBackoffMleRec ================================");
-
-        MaximumLikelihoodEstimator mle;
-        BackoffEstimator backoffMle;
-        DeleteCalculator deleteBackoffMleRec;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        backoffMle = new BackoffEstimator(abcCorpus, mle);
-        deleteBackoffMleRec = new DeleteCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(deleteBackoffMleRec, abcTestCorpus, i);
-        }
-
-        logger.info("# Moby Dick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        backoffMle = new BackoffEstimator(mobyDickCorpus, mle);
-        deleteBackoffMleRec = new DeleteCalculator(backoffMle);
-        for (int i = 1; i != MAX_LENGTH + 1; ++i) {
-            assertSumEquals1(deleteBackoffMleRec, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
-    }
-
-    @Test
-    public void testSkipAbsInterpolMleCmle() {
-        logger.info("=== SkipAbsInterpolMleCmle =============================");
-
-        MaximumLikelihoodEstimator mle;
-        ContinuationMaximumLikelihoodEstimator cmle;
-        AbsoluteInterpolEstimator absInterpolMleCmle;
-        SkipCalculator skipAbsInterpolMleCmle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
-        absInterpolMleCmle =
-                new AbsoluteInterpolEstimator(abcCorpus, mle, cmle,
-                        ABS_INTERPOL_LAMBDA);
-        skipAbsInterpolMleCmle = new SkipCalculator(absInterpolMleCmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(skipAbsInterpolMleCmle, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
-        absInterpolMleCmle =
-                new AbsoluteInterpolEstimator(mobyDickCorpus, mle, cmle,
-                        ABS_INTERPOL_LAMBDA);
-        skipAbsInterpolMleCmle = new SkipCalculator(absInterpolMleCmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(skipAbsInterpolMleCmle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
-    }
-
-    @Test
-    public void testDeleteAbsInterpolMleCmle() {
-        logger.info("=== DeleteAbsInterpolMleCmle ===========================");
-
-        MaximumLikelihoodEstimator mle;
-        ContinuationMaximumLikelihoodEstimator cmle;
-        AbsoluteInterpolEstimator absInterpolMleCmle;
-        DeleteCalculator deleteAbsInterpolMleCmle;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        cmle = new ContinuationMaximumLikelihoodEstimator(abcCorpus);
-        absInterpolMleCmle =
-                new AbsoluteInterpolEstimator(abcCorpus, mle, cmle,
-                        ABS_INTERPOL_LAMBDA);
-        deleteAbsInterpolMleCmle = new DeleteCalculator(absInterpolMleCmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(deleteAbsInterpolMleCmle, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        cmle = new ContinuationMaximumLikelihoodEstimator(mobyDickCorpus);
-        absInterpolMleCmle =
-                new AbsoluteInterpolEstimator(mobyDickCorpus, mle, cmle,
-                        ABS_INTERPOL_LAMBDA);
-        deleteAbsInterpolMleCmle = new DeleteCalculator(absInterpolMleCmle);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(deleteAbsInterpolMleCmle, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
-    }
-
-    @Test
-    public void testSkipAbsInterpolMleRec() {
-        logger.info("=== SkipAbsInterpolMleRec ==============================");
-
-        MaximumLikelihoodEstimator mle;
-        AbsoluteInterpolEstimator absInterpolMleRec;
-        SkipCalculator skipAbsInterpolMleRec;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        absInterpolMleRec =
-                new AbsoluteInterpolEstimator(abcCorpus, mle,
-                        ABS_INTERPOL_LAMBDA);
-        skipAbsInterpolMleRec = new SkipCalculator(absInterpolMleRec);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(skipAbsInterpolMleRec, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        absInterpolMleRec =
-                new AbsoluteInterpolEstimator(mobyDickCorpus, mle,
-                        ABS_INTERPOL_LAMBDA);
-        skipAbsInterpolMleRec = new SkipCalculator(absInterpolMleRec);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(skipAbsInterpolMleRec, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
-    }
-
-    @Test
-    public void testDeleteAbsInterpolMleRec() {
-        logger.info("=== DeleteAbsInterpolMleRec ============================");
-
-        MaximumLikelihoodEstimator mle;
-        AbsoluteInterpolEstimator absInterpolMleRec;
-        DeleteCalculator deleteAbsInterpolMleRec;
-
-        logger.info("# Abc Corpus");
-
-        mle = new MaximumLikelihoodEstimator(abcCorpus);
-        absInterpolMleRec =
-                new AbsoluteInterpolEstimator(abcCorpus, mle,
-                        ABS_INTERPOL_LAMBDA);
-        deleteAbsInterpolMleRec = new DeleteCalculator(absInterpolMleRec);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(deleteAbsInterpolMleRec, abcTestCorpus, i);
-        }
-
-        logger.info("# MobyDick Corpus");
-
-        mle = new MaximumLikelihoodEstimator(mobyDickCorpus);
-        absInterpolMleRec =
-                new AbsoluteInterpolEstimator(mobyDickCorpus, mle,
-                        ABS_INTERPOL_LAMBDA);
-        deleteAbsInterpolMleRec = new DeleteCalculator(absInterpolMleRec);
-        for (int i = 1; i != MAX_LENGTH; ++i) {
-            assertSumEquals1(deleteAbsInterpolMleRec, mobyDickTestCorpus, i);
-        }
-
-        logger.info("passed");
-    }
-
-    private void assertSumEquals1(
+    private void assertCalculatorSumEquals1(
+            Estimator estimator,
             PropabilityCalculator calculator,
-            TestCorpus testCorpus,
-            int n) {
-        double sum = 0;
-        for (int i = 0; i != (int) Math.pow(testCorpus.getWords().length, n); ++i) {
-            String sequence = testCorpus.getSequence(i, n);
-            sum += calculator.propability(sequence);
-        }
-        logger.info("n={}: sum = {}", n, sum);
-        Assert.assertEquals(1, sum, 0.01);
+            int maxOrder) {
+        logger.info("=== {}", calculator.getClass().getSimpleName());
+        assertCorpusSumEquals1(estimator, calculator, abcCorpus, abcTestCorpus,
+                maxOrder);
+        assertCorpusSumEquals1(estimator, calculator, mobyDickCorpus,
+                mobyDickTestCorpus, maxOrder);
     }
+
+    private void assertCorpusSumEquals1(
+            Estimator estimator,
+            PropabilityCalculator calculator,
+            Corpus corpus,
+            TestCorpus testCorpus,
+            int maxOrder) {
+        logger.info("# {} corpus", testCorpus.getWorkingDir().getFileName());
+
+        estimator.setCorpus(corpus);
+        for (int order = 1; order != maxOrder; ++order) {
+            double sum = 0;
+            for (int i = 0; i != (int) Math.pow(testCorpus.getWords().length,
+                    order); ++i) {
+                String sequence = testCorpus.getSequence(i, order);
+                sum += calculator.propability(sequence);
+            }
+            logger.info("n={}: sum = {}", order, sum);
+            Assert.assertEquals(1, sum, 0.01);
+        }
+        logger.info("passed");
+    }
+
 }

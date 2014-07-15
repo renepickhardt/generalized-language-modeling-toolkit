@@ -4,11 +4,6 @@ import java.util.List;
 
 public class MaximumLikelihoodEstimator extends FractionEstimator {
 
-    public MaximumLikelihoodEstimator(
-            Corpus corpus) {
-        super(corpus);
-    }
-
     @Override
     protected double getNumerator(
             List<String> reqSequence,
