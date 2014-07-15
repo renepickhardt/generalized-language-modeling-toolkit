@@ -16,10 +16,10 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.utils.StringUtils;
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexWriter;
 import de.glmtk.patterns.Pattern;
+import de.glmtk.utils.StringUtils;
 
 /**
  * takes input text of the format 1 sentence per line
@@ -40,7 +40,8 @@ public class Sequencer {
 
     public static long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LogManager.getLogger(Sequencer.class);
+    private static Logger logger = LogManager
+            .getFormatterLogger(Sequencer.class);
 
     private Path inputFile;
 
@@ -105,7 +106,7 @@ public class Sequencer {
             int patternLength,
             Set<Pattern> patterns,
             int maxPatternLength) throws IOException {
-        logger.info("Building sequences with length: {}", patternLength);
+        logger.info("Building sequences with length: %s", patternLength);
 
         int bufferSizes =
                 (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory()

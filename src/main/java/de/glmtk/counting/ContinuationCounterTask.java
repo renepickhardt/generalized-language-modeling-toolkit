@@ -15,15 +15,15 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.utils.StringUtils;
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexWriter;
 import de.glmtk.patterns.Pattern;
+import de.glmtk.utils.StringUtils;
 
 public class ContinuationCounterTask implements Runnable {
 
     private static Logger logger = LogManager
-            .getLogger(ContinuationCounterTask.class);
+            .getFormatterLogger(ContinuationCounterTask.class);
 
     private static int numTasks = 0;
 
@@ -76,7 +76,7 @@ public class ContinuationCounterTask implements Runnable {
             writeSequenceCounts(sequenceCounts);
 
             ++numCompleteTasks;
-            logger.info("%6.2f%% Finished continuation counts for: {}", 100.f
+            logger.info("%6.2f%% Finished continuation counts for: %s", 100.f
                     * numCompleteTasks / numTasks, outputDir.getFileName());
         } catch (IOException e) {
             throw new RuntimeException(e);

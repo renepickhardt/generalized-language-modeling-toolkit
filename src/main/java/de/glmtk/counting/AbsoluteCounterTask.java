@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 public class AbsoluteCounterTask implements Runnable {
 
     private static Logger logger = LogManager
-            .getLogger(AbsoluteCounterTask.class);
+            .getFormatterLogger(AbsoluteCounterTask.class);
 
     private static int numTasks = 1;
 
@@ -110,7 +110,7 @@ public class AbsoluteCounterTask implements Runnable {
             }
 
             ++numCompleteTasks;
-            logger.info("%6.2f%% Finished absolute counts for: {}/{}", 100.f
+            logger.info("%6.2f%% Finished absolute counts for: %s/%s", 100.f
                     * numCompleteTasks / numTasks, inputFile.getParent()
                     .getFileName(), inputFile.getFileName());
         } catch (IOException e) {

@@ -23,7 +23,8 @@ public class PosTagger {
 
     public static long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LogManager.getLogger(Sequencer.class);
+    private static Logger logger = LogManager
+            .getFormatterLogger(Sequencer.class);
 
     private Path inputFile;
 

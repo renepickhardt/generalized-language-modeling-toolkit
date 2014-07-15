@@ -41,7 +41,7 @@ public class Glmtk extends Executable {
 
     private static final String OPTION_CROSSPRODUCT = "cross-product";
 
-    private static Logger logger = LogManager.getLogger(Glmtk.class);
+    private static Logger logger = LogManager.getFormatterLogger(Glmtk.class);
 
     private static List<Option> options;
     static {
@@ -236,9 +236,9 @@ public class Glmtk extends Executable {
 
             logger.info(StringUtils.repeat("-", 80));
 
-            logger.info("Count Zero-Propablity Sequences = {} (%6.2f%%)",
+            logger.info("Count Zero-Propablity Sequences = %s (%6.2f%%)",
                     cntZero, +(double) cntZero / (cntZero + cntNonZero));
-            logger.info("Count Non-Zero-Propability Sequences = {} (%6.2f%%)",
+            logger.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero));
             logger.info("Sum of Propabilities = {}", sumPropabilities);
             logger.info("Entropy = {}", entropy);
