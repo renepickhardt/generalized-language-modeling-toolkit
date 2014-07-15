@@ -1,9 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>de.typology</groupId>
-  <artifactId>typology</artifactId>
+  <groupId>de.glmtk</groupId>
+  <artifactId>glmtk</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  
+  <name>Generalized Language Modeling Toolkit</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,7 +41,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>de.typology.executables.MainClass</mainClass>
+              <mainClass>de.glmtk.executables.MainClass</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

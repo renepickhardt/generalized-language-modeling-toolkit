@@ -13,4 +13,4 @@ fi
 
 MAVEN_OPTS="-Xmx${MAIN_MEMORY}m"
 ulimit -v 20000000
-nice java -Dglmtk.dir="$GLMTK_DIR" -Dfile.encoding="UTF-8" -jar $GLMTK_DIR/target/typology-0.0.1-SNAPSHOT-jar-with-dependencies.jar $@
+nice java -Dglmtk.dir="$GLMTK_DIR" -Dfile.encoding="UTF-8" -jar $GLMTK_DIR/target/glmtk-0.0.1-SNAPSHOT-jar-with-dependencies.jar $@
