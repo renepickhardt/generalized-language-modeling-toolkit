@@ -90,14 +90,18 @@ public abstract class TestCorpus {
 
     public abstract String[] getWords();
 
-    public String getSequence(int n, int length) {
+    public List<String> getSequenceList(int n, int length) {
         List<String> result = new LinkedList<String>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);
             n /= getWords().length;
         }
         Collections.reverse(result);
-        return StringUtils.join(result, " ");
+        return result;
+    }
+
+    public String getSequenceString(int n, int length) {
+        return StringUtils.join(getSequenceList(n, length), " ");
     }
 
     public Path getWorkingDir() {
@@ -144,7 +148,7 @@ public abstract class TestCorpus {
                     Files.newBufferedWriter(sequencesTestSample,
                             Charset.defaultCharset())) {
                 for (int i = 0; i != ((int) Math.pow(getWords().length, length)); ++i) {
-                    writer.write(getSequence(i, length));
+                    writer.write(getSequenceString(i, length));
                     writer.write("\n");
                 }
             }
