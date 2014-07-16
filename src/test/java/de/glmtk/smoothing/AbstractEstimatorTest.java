@@ -7,13 +7,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.glmtk.smoothing.AbsoluteInterpolEstimator;
-import de.glmtk.smoothing.BackoffEstimator;
-import de.glmtk.smoothing.ContinuationMaximumLikelihoodEstimator;
-import de.glmtk.smoothing.Corpus;
-import de.glmtk.smoothing.Estimator;
-import de.glmtk.smoothing.MaximumLikelihoodEstimator;
-
 public abstract class AbstractEstimatorTest extends LoggingTest {
 
     protected static Logger logger = LogManager
@@ -22,6 +15,8 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     protected static final int HIGHEST_TEST_ORDER = 5;
 
     protected static final double ABS_INTERPOL_LAMBDA = .75;
+
+    protected static final double ABS_DISCOUNT = .5;
 
     protected static TestCorpus abcTestCorpus;
 
@@ -78,6 +73,15 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
         testEstimator("recursive AbsoluteInterpolEstimator(MLE)",
                 new AbsoluteInterpolEstimator(new MaximumLikelihoodEstimator(),
                         ABS_INTERPOL_LAMBDA), HIGHEST_TEST_ORDER + 1);
+    }
+
+    @Test
+    public void testBackoffAbsDiscountMle() {
+        testEstimator("BackoffAbsulteDiscountEstimator(MLE)",
+                new BackoffEstimator(new AbsoluteDiscountEstimator(
+                        new MaximumLikelihoodEstimator(), ABS_DISCOUNT),
+                        new MaximumLikelihoodEstimator()),
+                HIGHEST_TEST_ORDER + 1);
     }
 
     // add more estimators here
