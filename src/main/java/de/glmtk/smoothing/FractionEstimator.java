@@ -1,32 +1,17 @@
 package de.glmtk.smoothing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.glmtk.utils.StringUtils;
-import de.glmtk.patterns.PatternElem;
 
 public abstract class FractionEstimator extends Estimator {
 
-    public enum BackoffCalc {
-        UNIGRAM_ABSOLUTE,
-
-        UNIGRAM_CONTINUATION,
-
-        UNIFORM
-    }
-
-    protected BackoffCalc backoffCalc = BackoffCalc.UNIGRAM_ABSOLUTE;
-
-    protected static List<String> doubleSkippedList;
-    static {
-        doubleSkippedList = new ArrayList<String>();
-        doubleSkippedList.add(PatternElem.SKIPPED_WORD);
-        doubleSkippedList.add(PatternElem.SKIPPED_WORD);
-    }
-
+    /**
+     * If you changes this, double check
+     * {@link DiscountEstimator#propabilityCond(List, List, int)}
+     */
     @Override
-    public double propabilityCond(
+    protected double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
             int recDepth) {
@@ -57,37 +42,6 @@ public abstract class FractionEstimator extends Estimator {
 
         logger.debug(StringUtils.repeat("  ", recDepth) + "result = " + result);
         return result;
-    }
-
-    protected double substitutePropability(
-            List<String> reqSequence,
-            int recDepth) {
-        switch (backoffCalc) {
-            case UNIGRAM_ABSOLUTE:
-                logger.debug(StringUtils.repeat("  ", recDepth)
-                        + "returning unigram distribution (absolute)");
-                return (double) corpus.getAbsolute(reqSequence.subList(0, 1))
-                        / corpus.getNumWords();
-
-            case UNIGRAM_CONTINUATION:
-                logger.debug(StringUtils.repeat("  ", recDepth)
-                        + "returning unigram distribution (continuation)");
-                reqSequence.add(0, PatternElem.SKIPPED_WORD);
-                return (double) corpus.getContinuation(
-                        reqSequence.subList(0, 1)).getOnePlusCount()
-                        / corpus.getVocabSize() / corpus.getVocabSize();
-                // TODO: Rene: why is this wrong
-                //return (double) corpus.getContinuation(
-                //        reqSequence.subList(0, 1)).getOnePlusCount()
-                //        / corpus.getContinuation(doubleSkippedList)
-                //                .getOnePlusCount();
-
-            default:
-            case UNIFORM:
-                logger.debug(StringUtils.repeat("  ", recDepth)
-                        + "returning uniform distribution (1/vocabSize)");
-                return 1.0 / corpus.getVocabSize();
-        }
     }
 
     protected abstract double getNumerator(

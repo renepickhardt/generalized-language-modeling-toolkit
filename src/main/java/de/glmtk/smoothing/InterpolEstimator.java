@@ -35,7 +35,7 @@ public abstract class InterpolEstimator extends Estimator {
     }
 
     @Override
-    public double propabilityCond(
+    protected double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
             int recDepth) {

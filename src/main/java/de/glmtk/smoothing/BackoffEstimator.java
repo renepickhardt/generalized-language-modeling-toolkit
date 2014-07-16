@@ -50,7 +50,7 @@ public class BackoffEstimator extends Estimator {
     }
 
     @Override
-    public double propabilityCond(
+    protected double propabilityCond(
             List<String> reqSequence,
             List<String> condSequence,
             int recDepth) {
@@ -89,7 +89,7 @@ public class BackoffEstimator extends Estimator {
         }
     }
 
-    public double gamma(List<String> condSequence, int recDepth) {
+    protected double gamma(List<String> condSequence, int recDepth) {
         logger.debug(StringUtils.repeat("  ", recDepth) + "gamma("
                 + condSequence + ")");
         ++recDepth;
