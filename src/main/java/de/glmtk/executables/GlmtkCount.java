@@ -12,14 +12,14 @@ import java.util.List;
 import org.apache.commons.cli.Option;
 
 import de.glmtk.Logging;
-import de.glmtk.sequencing.Sequencer;
-import de.glmtk.tagging.PosTagger;
 import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexBuilder;
 import de.glmtk.patterns.Pattern;
 import de.glmtk.patterns.PatternElem;
+import de.glmtk.sequencing.Sequencer;
+import de.glmtk.tagging.PosTagger;
 
 public class GlmtkCount extends Executable {
 

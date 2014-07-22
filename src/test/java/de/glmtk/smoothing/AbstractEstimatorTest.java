@@ -77,7 +77,7 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
 
     @Test
     public void testBackoffAbsDiscountMle() {
-        testEstimator("BackoffAbsulteDiscountEstimator(MLE)",
+        testEstimator("BackoffAbsoluteDiscountEstimator(MLE)",
                 new BackoffEstimator(new AbsoluteDiscountEstimator(
                         new MaximumLikelihoodEstimator(), ABS_DISCOUNT),
                         new MaximumLikelihoodEstimator()),
@@ -88,6 +88,12 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     public void testKatzEstimator() {
         testEstimator("KatzEstimator", new KatzEstimator(),
                 HIGHEST_TEST_ORDER + 1);
+    }
+
+    @Test
+    public void testTestEstimator() {
+        testEstimator("TestEstimator", new TestEstimator(.75,
+                new MaximumLikelihoodEstimator()), HIGHEST_TEST_ORDER + 1);
     }
 
     // add more estimators here

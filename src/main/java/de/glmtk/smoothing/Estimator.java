@@ -65,6 +65,7 @@ public abstract class Estimator {
     /**
      * {@code history = condSequence + skp (reqSequence.size)}
      */
+    // TODO: put skps in front
     protected List<String> getHistory(
             List<String> reqSequence,
             List<String> condSequence) {

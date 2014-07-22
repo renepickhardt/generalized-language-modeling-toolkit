@@ -53,9 +53,12 @@ public abstract class DiscountEstimator extends Estimator {
                 double numerator =
                         fractionEstimator.getNumerator(reqSequence,
                                 condSequence, recDepth);
-                result =
-                        (numerator - discount(reqSequence, condSequence,
-                                recDepth)) / denominator;
+                double discount = discount(reqSequence, condSequence, recDepth);
+                if (discount > numerator) {
+                    result = 0;
+                } else {
+                    result = (numerator - discount) / denominator;
+                }
             }
         }
 
