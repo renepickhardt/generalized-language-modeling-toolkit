@@ -9,7 +9,7 @@ import de.glmtk.smoothing.NGram;
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override
-    protected double numerator(NGram sequence, NGram history, int recDepth) {
+    protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram contFullSequence =
                 new NGram(PatternElem.SKIPPED_WORD).concat(getFullSequence(
                         sequence, history));
@@ -21,7 +21,7 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double denominator(NGram sequence, NGram history, int recDepth) {
+    protected double calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram contFullHistory =
                 new NGram(PatternElem.SKIPPED_WORD).concat(getFullHistory(
                         sequence, history));

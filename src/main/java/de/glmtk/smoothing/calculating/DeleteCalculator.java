@@ -28,7 +28,7 @@ public class DeleteCalculator extends SequenceCalculator {
                 h = new ArrayList<String>();
             }
 
-            result *= estimator.propability(new NGram(s), new NGram(h));
+            result *= estimator.probability(new NGram(s), new NGram(h));
         }
 
         return result;

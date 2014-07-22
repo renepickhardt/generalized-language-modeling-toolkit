@@ -45,7 +45,7 @@ public class FixedHistoryPropabilitySumEqualsOneTest extends
                     List<String> sequence =
                             Arrays.asList(testCorpus.getWords()[j]);
                     sum +=
-                            estimator.propability(new NGram(sequence),
+                            estimator.probability(new NGram(sequence),
                                     new NGram(history));
                 }
                 Assert.assertEquals(1.0, sum, 0.01);

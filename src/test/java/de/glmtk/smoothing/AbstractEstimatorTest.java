@@ -30,41 +30,42 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     }
 
     @Test
-    public void testUniformEstimator() {
-        testEstimator("UniformEstimator", Estimators.UNIFORM_ESTIMATOR,
+    public void testUniform() {
+        testEstimator("Uniform", Estimators.UNIFORM, HIGHEST_TEST_ORDER);
+    }
+
+    @Test
+    public void testAbsoluteUnigram() {
+        testEstimator("AbsoluteUnigram", Estimators.ABSOLUTE_UNIGRAM,
                 HIGHEST_TEST_ORDER);
     }
 
     @Test
-    public void testAbsoluteUnigramEstimator() {
-        testEstimator("AbsoluteUnigramEstimator",
-                Estimators.ABSOLUTE_UNIGRAM_ESTIMATOR, HIGHEST_TEST_ORDER);
-    }
-
-    @Test
-    public void testContinuationUnigramEstimator() {
-        testEstimator("ContinuationUnigramEstimator",
-                Estimators.CONTINUATION_UNIGRAM_ESTIMATOR,
+    public void testContinuationUnigram() {
+        testEstimator("ContinuationUnigram", Estimators.CONTINUATION_UNIGRAM,
                 HIGHEST_TEST_ORDER - 1);
     }
 
     @Test
-    public void testMaximumLikelihoodEstimator() {
-        testEstimator("MaximumLikelihoodEstimator", Estimators.MLE,
-                HIGHEST_TEST_ORDER);
+    public void testMLE() {
+        testEstimator("MLE", Estimators.MLE, HIGHEST_TEST_ORDER);
     }
 
     @Test
-    public void testContinuationMaximumLikelihoodEstimator() {
-        testEstimator("ContinuationMaximumLikelihoodEstimator",
-                Estimators.CMLE, HIGHEST_TEST_ORDER - 1);
+    public void testCMLE() {
+        testEstimator("CMLE", Estimators.CMLE, HIGHEST_TEST_ORDER - 1);
     }
 
     @Ignore
     @Test
-    public void testFalseMaximumLikelihoodEstimator() {
-        testEstimator("FalseMaximumLikelihoodEstimator", Estimators.FMLE,
-                HIGHEST_TEST_ORDER);
+    public void testFMLE() {
+        testEstimator("FMLE", Estimators.FMLE, HIGHEST_TEST_ORDER);
+    }
+
+    @Test
+    public void testInterpolAbsDiscountMle() {
+        testEstimator("InterpolAbsDiscountMle",
+                Estimators.INTERPOL_ABS_DISCOUNT_MLE, HIGHEST_TEST_ORDER);
     }
 
     protected abstract void testEstimator(

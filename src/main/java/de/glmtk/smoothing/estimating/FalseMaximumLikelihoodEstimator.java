@@ -3,12 +3,14 @@ package de.glmtk.smoothing.estimating;
 import de.glmtk.smoothing.NGram;
 
 /**
- * {@code P_FMLE(s | h) = c(fs) / c(h)}
+ * {@link FalseMaximumLikelihoodEstimator} is a marginal probability.
+ * 
+ * {@code P_FMLE(s | h) = P_Frac(s | h) [ n = c(fs) , d = c(h) ]}
  */
 public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override
-    protected double numerator(NGram sequence, NGram history, int recDepth) {
+    protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
         int fullSequenceCount = corpus.getAbsolute(fullSequence);
         logDebug(recDepth, "fullSequence = {} ({})", fullSequence,
@@ -17,7 +19,7 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double denominator(NGram sequence, NGram history, int recDepth) {
+    protected double calcDenominator(NGram sequence, NGram history, int recDepth) {
         int historyCount;
         if (history.isEmpty()) {
             historyCount = corpus.getNumWords();

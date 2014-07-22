@@ -7,6 +7,9 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.smoothing.estimating.Estimator;
 
+/**
+ * P(a b c)
+ */
 public abstract class SequenceCalculator {
 
     private final static Logger LOGGER = LogManager

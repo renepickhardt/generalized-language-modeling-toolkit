@@ -8,6 +8,9 @@ import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.utils.StringUtils;
 
+/**
+ * {@code P(s | h)}
+ */
 public abstract class Estimator {
 
     /**
@@ -16,8 +19,8 @@ public abstract class Estimator {
      */
     private static final Logger LOGGER = LogManager.getLogger(Estimator.class);
 
-    protected static final Estimator SUBSTITUTE_ESTIMATOR =
-            Estimators.ABSOLUTE_UNIGRAM_ESTIMATOR;
+    protected final Estimator SUBSTITUTE_ESTIMATOR =
+            Estimators.ABSOLUTE_UNIGRAM;
 
     protected Corpus corpus = null;
 
@@ -30,13 +33,17 @@ public abstract class Estimator {
     }
 
     /**
-     * {@code P(s|h)}
+     * Easy public api for {@link #probability(NGram, NGram, int)}.
      */
-    public final double propability(NGram sequence, NGram history) {
-        return propability(sequence, history, 1);
+    public final double probability(NGram sequence, NGram history) {
+        return probability(sequence, history, 1);
     }
 
-    protected final double propability(
+    /**
+     * Wrapper around {@link #calcProbability(NGram, NGram, int)} to add
+     * logging.
+     */
+    protected final double probability(
             NGram sequence,
             NGram history,
             int recDepth) {
@@ -44,13 +51,13 @@ public abstract class Estimator {
                 sequence, history);
         ++recDepth;
 
-        double result = calcPropability(sequence, history, recDepth);
+        double result = calcProbability(sequence, history, recDepth);
         logDebug(recDepth, "result = {}", result);
 
         return result;
     }
 
-    protected abstract double calcPropability(
+    protected abstract double calcProbability(
             NGram sequence,
             NGram history,
             int recDepth);
@@ -69,14 +76,14 @@ public abstract class Estimator {
     }
 
     /**
-     * {@code fullSequence = history + sequence}
+     * {@code fs = h . s}
      */
     protected static final NGram getFullSequence(NGram sequence, NGram history) {
         return history.concat(sequence);
     }
 
     /**
-     * {@code fullHistory = history + SKPs (num sequence.size())}
+     * {@code fh = h . SKPs (#s)}
      */
     protected static final NGram getFullHistory(NGram sequence, NGram history) {
         NGram fullHistory = history;

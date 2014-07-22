@@ -9,7 +9,7 @@ public class UniformEstimator extends Estimator {
 
     @Override
     protected double
-        calcPropability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         return 1.0 / corpus.getVocabSize();
     }
 

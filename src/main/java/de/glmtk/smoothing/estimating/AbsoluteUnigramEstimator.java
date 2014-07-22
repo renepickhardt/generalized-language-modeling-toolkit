@@ -9,7 +9,7 @@ public class AbsoluteUnigramEstimator extends Estimator {
 
     @Override
     protected double
-        calcPropability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         return (double) corpus.getAbsolute(sequence.firstWord())
                 / corpus.getNumWords();
     }

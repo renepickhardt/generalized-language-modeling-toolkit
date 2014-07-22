@@ -3,12 +3,12 @@ package de.glmtk.smoothing.estimating;
 import de.glmtk.smoothing.NGram;
 
 /**
- * {@code P_MLE(s | h) = c(fs) / c(fh)}
+ * {@code P_MLE(s | h) = P_Frac(s | h) [ n = c(fs) , d = c(fh) ]}
  */
 public class MaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override
-    protected double numerator(NGram sequence, NGram history, int recDepth) {
+    protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
         int fullSequenceCount = corpus.getAbsolute(fullSequence);
         logDebug(recDepth, "fullSequence = {} ({})", fullSequence,
@@ -17,7 +17,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double denominator(NGram sequence, NGram history, int recDepth) {
+    protected double calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
         int fullHistoryCount;
         if (fullHistory.isEmpty()) {
