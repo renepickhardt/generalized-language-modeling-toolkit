@@ -109,12 +109,20 @@ public class Corpus {
         return count;
     }
 
+    public int getAbsolute(NGram sequence) {
+        return getAbsolute(sequence.toList());
+    }
+
     public int getAbsolute(List<String> sequence) {
         Pattern pattern = getPattern(sequence);
         String string = StringUtils.join(sequence, " ");
         Map<String, Integer> patternCounts = absoluteCounts.get(pattern);
         Integer count = patternCounts.get(string);
         return count == null ? 0 : count;
+    }
+
+    public Counter getContinuation(NGram sequence) {
+        return getContinuation(sequence.toList());
     }
 
     public Counter getContinuation(List<String> sequence) {
