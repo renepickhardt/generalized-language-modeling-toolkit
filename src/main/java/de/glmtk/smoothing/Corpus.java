@@ -14,12 +14,15 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import de.glmtk.utils.StringUtils;
 import de.glmtk.counting.Counter;
 import de.glmtk.patterns.Pattern;
 import de.glmtk.patterns.PatternElem;
+import de.glmtk.utils.StringUtils;
 
 public class Corpus {
+
+    private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =
+            new HashMap<Pattern, Map<Integer, Integer>>();
 
     private Map<Pattern, Map<String, Integer>> absoluteCounts;
 
@@ -27,13 +30,13 @@ public class Corpus {
 
     private String delimiter;
 
-    private static List<String> skippedList;
+    public static final List<String> SKIPPED_LIST;
     static {
-        skippedList = new ArrayList<>(1);
-        skippedList.add(PatternElem.SKIPPED_WORD);
+        SKIPPED_LIST = new ArrayList<>(1);
+        SKIPPED_LIST.add(PatternElem.SKIPPED_WORD);
     }
 
-    private static Pattern cntPattern = new Pattern(
+    public static final Pattern CNT_PATTERN = new Pattern(
             Arrays.asList(PatternElem.CNT));
 
     public Corpus(
@@ -63,8 +66,8 @@ public class Corpus {
      * 
      * Aka absolute count of skip.
      */
-    public long getNumWords() {
-        return getAbsolute(skippedList);
+    public int getNumWords() {
+        return getAbsolute(SKIPPED_LIST);
     }
 
     /**
@@ -73,11 +76,37 @@ public class Corpus {
      * Aka continuation count of skip.
      */
     public long getVocabSize() {
-        return getContinuation(skippedList).getOnePlusCount();
+        return getContinuation(SKIPPED_LIST).getOnePlusCount();
     }
 
     public SortedSet<String> getWords() {
-        return new TreeSet<String>(absoluteCounts.get(cntPattern).keySet());
+        return new TreeSet<String>(absoluteCounts.get(CNT_PATTERN).keySet());
+    }
+
+    /**
+     * @return The total number of n-grams with {@code pattern} which appear
+     *         exactly {@code times} often in the training data.
+     */
+    protected int getNGramTimesCount(Pattern pattern, int times) {
+        // TODO: check if is getOneCount from ContinuationCounts.
+        Map<Integer, Integer> patternCache = nGramTimesCountCache.get(pattern);
+        if (patternCache == null) {
+            patternCache = new HashMap<Integer, Integer>();
+            nGramTimesCountCache.put(pattern, patternCache);
+        }
+
+        Integer count = patternCache.get(times);
+        if (count == null) {
+            count = 0;
+            for (int absoluteCount : absoluteCounts.get(pattern).values()) {
+                if (absoluteCount == times) {
+                    ++count;
+                }
+            }
+            patternCache.put(times, count);
+        }
+
+        return count;
     }
 
     public int getAbsolute(List<String> sequence) {

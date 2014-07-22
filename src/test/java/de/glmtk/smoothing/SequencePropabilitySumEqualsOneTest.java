@@ -4,12 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.smoothing.Corpus;
-import de.glmtk.smoothing.DeleteCalculator;
-import de.glmtk.smoothing.Estimator;
-import de.glmtk.smoothing.PropabilityCalculator;
-import de.glmtk.smoothing.SkipCalculator;
-
 public class SequencePropabilitySumEqualsOneTest extends AbstractEstimatorTest {
 
     protected static Logger logger = LogManager

@@ -84,6 +84,12 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
                 HIGHEST_TEST_ORDER + 1);
     }
 
+    @Test
+    public void testKatzEstimator() {
+        testEstimator("KatzEstimator", new KatzEstimator(),
+                HIGHEST_TEST_ORDER + 1);
+    }
+
     // add more estimators here
 
     protected abstract void testEstimator(
