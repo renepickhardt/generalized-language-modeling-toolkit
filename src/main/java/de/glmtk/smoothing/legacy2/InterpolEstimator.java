@@ -1,7 +1,8 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.legacy2;
 
 import java.util.List;
 
+import de.glmtk.smoothing.Corpus;
 import de.glmtk.utils.StringUtils;
 
 public abstract class InterpolEstimator extends Estimator {

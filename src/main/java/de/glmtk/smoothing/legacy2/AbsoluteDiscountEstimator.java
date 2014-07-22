@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.legacy2;
 
 import java.util.List;
 

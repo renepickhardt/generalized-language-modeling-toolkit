@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.glmtk.sequencing.Sequencer;
-import de.glmtk.smoothing.Corpus;
 import de.glmtk.utils.StringUtils;
 import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.ContinuationCounter;

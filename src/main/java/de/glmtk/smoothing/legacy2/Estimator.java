@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.legacy2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.patterns.PatternElem;
+import de.glmtk.smoothing.Corpus;
 import de.glmtk.utils.StringUtils;
 
 public abstract class Estimator {

@@ -87,7 +87,7 @@ public class Corpus {
      * @return The total number of n-grams with {@code pattern} which appear
      *         exactly {@code times} often in the training data.
      */
-    protected int getNGramTimesCount(Pattern pattern, int times) {
+    public int getNGramTimesCount(Pattern pattern, int times) {
         // TODO: check if is getOneCount from ContinuationCounts.
         Map<Integer, Integer> patternCache = nGramTimesCountCache.get(pattern);
         if (patternCache == null) {

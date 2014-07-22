@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.legacy2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.glmtk.smoothing.Corpus;
 import de.glmtk.utils.StringUtils;
 
 public class BackoffEstimator extends Estimator {

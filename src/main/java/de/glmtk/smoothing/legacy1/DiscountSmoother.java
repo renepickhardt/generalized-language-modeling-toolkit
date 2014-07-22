@@ -1,4 +1,4 @@
-package de.glmtk.smoothing.legacy;
+package de.glmtk.smoothing.legacy1;
 
 import java.io.IOException;
 import java.nio.file.Path;

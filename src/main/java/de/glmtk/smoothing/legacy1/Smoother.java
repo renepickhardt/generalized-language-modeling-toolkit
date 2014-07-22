@@ -1,4 +1,4 @@
-package de.glmtk.smoothing.legacy;
+package de.glmtk.smoothing.legacy1;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -17,15 +17,15 @@ import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.smoothing.BackoffEstimator;
-import de.glmtk.smoothing.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.smoothing.Corpus;
-import de.glmtk.smoothing.DeleteCalculator;
-import de.glmtk.smoothing.Estimator;
-import de.glmtk.smoothing.FalseMaximumLikelihoodEstimator;
-import de.glmtk.smoothing.MaximumLikelihoodEstimator;
-import de.glmtk.smoothing.PropabilityCalculator;
-import de.glmtk.smoothing.SkipCalculator;
+import de.glmtk.smoothing.legacy2.BackoffEstimator;
+import de.glmtk.smoothing.legacy2.ContinuationMaximumLikelihoodEstimator;
+import de.glmtk.smoothing.legacy2.DeleteCalculator;
+import de.glmtk.smoothing.legacy2.Estimator;
+import de.glmtk.smoothing.legacy2.FalseMaximumLikelihoodEstimator;
+import de.glmtk.smoothing.legacy2.MaximumLikelihoodEstimator;
+import de.glmtk.smoothing.legacy2.PropabilityCalculator;
+import de.glmtk.smoothing.legacy2.SkipCalculator;
 import de.glmtk.utils.StringUtils;
 
 public class Glmtk extends Executable {
