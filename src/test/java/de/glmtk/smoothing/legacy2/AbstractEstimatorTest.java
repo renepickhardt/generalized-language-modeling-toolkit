@@ -12,14 +12,6 @@ import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.LoggingTest;
 import de.glmtk.smoothing.MobyDickTestCorpus;
 import de.glmtk.smoothing.TestCorpus;
-import de.glmtk.smoothing.legacy2.AbsoluteDiscountEstimator;
-import de.glmtk.smoothing.legacy2.AbsoluteInterpolEstimator;
-import de.glmtk.smoothing.legacy2.BackoffEstimator;
-import de.glmtk.smoothing.legacy2.ContinuationMaximumLikelihoodEstimator;
-import de.glmtk.smoothing.legacy2.Estimator;
-import de.glmtk.smoothing.legacy2.KatzEstimator;
-import de.glmtk.smoothing.legacy2.MaximumLikelihoodEstimator;
-import de.glmtk.smoothing.legacy2.TestEstimator;
 
 public abstract class AbstractEstimatorTest extends LoggingTest {
 
@@ -108,6 +100,13 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     public void testTestEstimator() {
         testEstimator("TestEstimator", new TestEstimator(.75,
                 new MaximumLikelihoodEstimator()), HIGHEST_TEST_ORDER + 1);
+    }
+
+    @Test
+    public void testBackoffCmle() {
+        testEstimator("BackoffCmle", new BackoffEstimator(
+                new ContinuationMaximumLikelihoodEstimator()),
+                HIGHEST_TEST_ORDER);
     }
 
     // add more estimators here

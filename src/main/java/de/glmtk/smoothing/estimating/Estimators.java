@@ -26,4 +26,10 @@ public class Estimators {
     public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE =
             new InterpolationEstimator(ABS_DISCOUNT_MLE, MLE);
 
+    public static final BackoffEstimator BACKOFF_CMLE = new BackoffEstimator(
+            CMLE, CMLE);
+
+    public static final BackoffEstimator BACKOFF_CMLE_REC =
+            new BackoffEstimator(CMLE);
+
 }

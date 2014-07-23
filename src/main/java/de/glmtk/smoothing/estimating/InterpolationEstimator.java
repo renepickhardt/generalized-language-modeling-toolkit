@@ -18,26 +18,37 @@ public class InterpolationEstimator extends Estimator {
         this.beta = beta;
     }
 
+    public InterpolationEstimator(
+            DiscountEstimator alpha) {
+        this.alpha = alpha;
+        beta = this;
+    }
+
     @Override
     public void setCorpus(Corpus corpus) {
         super.setCorpus(corpus);
         alpha.setCorpus(corpus);
-        beta.setCorpus(corpus);
+        if (beta != this) {
+            beta.setCorpus(corpus);
+        }
     }
 
     @Override
     protected double
         calcProbability(NGram sequence, NGram history, int recDepth) {
+        // TODO: Rene: can we really just backoff how far we want here without worry?
         // TODO: Test what yields better entropy: substitute or backoff?
-        history = backoffUntilSeen(history);
-        if (history.isEmpty()) {
+        NGram backoffHistory = backoffUntilSeen(history);
+        if (backoffHistory.isEmpty()) {
             logDebug(recDepth, "history empty, substituting:");
             return SUBSTITUTE_ESTIMATOR
                     .probability(sequence, history, recDepth);
         } else {
-            double alphaVal = alpha.probability(sequence, history, recDepth);
-            double betaVal = beta.probability(sequence, history, recDepth);
-            double gammaVal = gamma(sequence, history, recDepth);
+            double alphaVal =
+                    alpha.probability(sequence, backoffHistory, recDepth);
+            double betaVal =
+                    beta.probability(sequence, backoffHistory, recDepth);
+            double gammaVal = gamma(sequence, backoffHistory, recDepth);
 
             return alphaVal + gammaVal * betaVal;
         }

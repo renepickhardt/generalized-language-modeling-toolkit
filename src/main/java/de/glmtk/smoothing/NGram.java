@@ -3,6 +3,8 @@ package de.glmtk.smoothing;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.glmtk.patterns.Pattern;
+
 public class NGram {
 
     public final List<String> ngram;
@@ -68,6 +70,28 @@ public class NGram {
             result.append(word);
         }
         return result.toString();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        } else if (other == null || other.getClass() != Pattern.class) {
+            return false;
+        }
+
+        NGram o = (NGram) other;
+        return ngram.equals(o.ngram);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 25215;
+        int mult = 389;
+
+        hash += mult * ngram.hashCode();
+
+        return hash;
     }
 
 }

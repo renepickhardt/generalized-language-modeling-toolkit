@@ -47,25 +47,38 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     }
 
     @Test
-    public void testMLE() {
-        testEstimator("MLE", Estimators.MLE, HIGHEST_TEST_ORDER);
+    public void testMle() {
+        testEstimator("Mle", Estimators.MLE, HIGHEST_TEST_ORDER);
     }
 
     @Test
-    public void testCMLE() {
-        testEstimator("CMLE", Estimators.CMLE, HIGHEST_TEST_ORDER - 1);
+    public void testCmle() {
+        testEstimator("Cmle", Estimators.CMLE, HIGHEST_TEST_ORDER - 1);
     }
 
     @Ignore
     @Test
-    public void testFMLE() {
-        testEstimator("FMLE", Estimators.FMLE, HIGHEST_TEST_ORDER);
+    public void testFmle() {
+        testEstimator("Fmle", Estimators.FMLE, HIGHEST_TEST_ORDER);
     }
 
     @Test
     public void testInterpolAbsDiscountMle() {
         testEstimator("InterpolAbsDiscountMle",
                 Estimators.INTERPOL_ABS_DISCOUNT_MLE, HIGHEST_TEST_ORDER);
+    }
+
+    @Test
+    public void testBackoffCmle() {
+        testEstimator("BackoffCmle", Estimators.BACKOFF_CMLE,
+                HIGHEST_TEST_ORDER - 1);
+    }
+
+    @Ignore
+    @Test
+    public void testBackoffCmleRec() {
+        testEstimator("BackoffCmleRec", Estimators.BACKOFF_CMLE_REC,
+                HIGHEST_TEST_ORDER - 1);
     }
 
     protected abstract void testEstimator(
