@@ -36,8 +36,8 @@ public class SequencePropabilitiesSumEqualsOneTest extends
         LOGGER.info("=== {}", calculator.getClass().getSimpleName());
         testEstimatorCalculatorCorpus(estimator, calculator, abcCorpus,
                 abcTestCorpus, maxOrder);
-        testEstimatorCalculatorCorpus(estimator, calculator, mobyDickCorpus,
-                mobyDickTestCorpus, maxOrder);
+        //        testEstimatorCalculatorCorpus(estimator, calculator, mobyDickCorpus,
+        //                mobyDickTestCorpus, maxOrder);
     }
 
     private void testEstimatorCalculatorCorpus(
