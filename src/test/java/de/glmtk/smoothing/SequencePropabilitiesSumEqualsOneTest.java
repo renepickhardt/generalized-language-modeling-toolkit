@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.smoothing.calculating.DeleteCalculator;
 import de.glmtk.smoothing.calculating.SequenceCalculator;
 import de.glmtk.smoothing.calculating.SkipCalculator;
 import de.glmtk.smoothing.estimating.Estimator;
@@ -26,7 +25,7 @@ public class SequencePropabilitiesSumEqualsOneTest extends
             int maxOrder) {
         LOGGER.info("===== {} =====", testName);
         testEstimatorCalculator(estimator, new SkipCalculator(), maxOrder);
-        testEstimatorCalculator(estimator, new DeleteCalculator(), maxOrder);
+        //testEstimatorCalculator(estimator, new DeleteCalculator(), maxOrder);
     }
 
     private void testEstimatorCalculator(
@@ -36,8 +35,8 @@ public class SequencePropabilitiesSumEqualsOneTest extends
         LOGGER.info("=== {}", calculator.getClass().getSimpleName());
         testEstimatorCalculatorCorpus(estimator, calculator, abcCorpus,
                 abcTestCorpus, maxOrder);
-        //        testEstimatorCalculatorCorpus(estimator, calculator, mobyDickCorpus,
-        //                mobyDickTestCorpus, maxOrder);
+        testEstimatorCalculatorCorpus(estimator, calculator, mobyDickCorpus,
+                mobyDickTestCorpus, maxOrder);
     }
 
     private void testEstimatorCalculatorCorpus(
