@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.helper;
 
 import org.junit.BeforeClass;
 

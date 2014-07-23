@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
 import de.glmtk.smoothing.estimating.Estimator;
+import de.glmtk.smoothing.helper.AbstractEstimatorTest;
+import de.glmtk.smoothing.helper.TestCorpus;
 
 public class FixedHistoryPropabilitySumEqualsOneTest extends
         AbstractEstimatorTest {

@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.helper;
 
 import java.io.IOException;
 
@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.estimating.Estimator;
 import de.glmtk.smoothing.estimating.Estimators;
 

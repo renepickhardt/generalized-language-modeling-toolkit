@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
 import de.glmtk.smoothing.Corpus;
-import de.glmtk.smoothing.TestCorpus;
+import de.glmtk.smoothing.helper.TestCorpus;
 import de.glmtk.smoothing.legacy2.DeleteCalculator;
 import de.glmtk.smoothing.legacy2.Estimator;
 import de.glmtk.smoothing.legacy2.PropabilityCalculator;

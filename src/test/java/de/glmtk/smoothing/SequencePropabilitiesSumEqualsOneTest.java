@@ -10,6 +10,8 @@ import de.glmtk.smoothing.calculating.DeleteCalculator;
 import de.glmtk.smoothing.calculating.SequenceCalculator;
 import de.glmtk.smoothing.calculating.SkipCalculator;
 import de.glmtk.smoothing.estimating.Estimator;
+import de.glmtk.smoothing.helper.AbstractEstimatorTest;
+import de.glmtk.smoothing.helper.TestCorpus;
 
 public class SequencePropabilitiesSumEqualsOneTest extends
         AbstractEstimatorTest {

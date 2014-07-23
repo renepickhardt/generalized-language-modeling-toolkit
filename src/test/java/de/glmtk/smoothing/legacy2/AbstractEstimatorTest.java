@@ -7,11 +7,11 @@ import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.glmtk.smoothing.AbcTestCorpus;
 import de.glmtk.smoothing.Corpus;
-import de.glmtk.smoothing.LoggingTest;
-import de.glmtk.smoothing.MobyDickTestCorpus;
-import de.glmtk.smoothing.TestCorpus;
+import de.glmtk.smoothing.helper.AbcTestCorpus;
+import de.glmtk.smoothing.helper.LoggingTest;
+import de.glmtk.smoothing.helper.MobyDickTestCorpus;
+import de.glmtk.smoothing.helper.TestCorpus;
 
 public abstract class AbstractEstimatorTest extends LoggingTest {
 
