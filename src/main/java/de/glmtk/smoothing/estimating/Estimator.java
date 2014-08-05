@@ -66,27 +66,6 @@ public abstract class Estimator {
             NGram history,
             int recDepth);
 
-    /**
-     * Returns {@code true} if {@code sequence} is either empty or has count
-     * greater zero.
-     */
-    protected final boolean seen(NGram sequence) {
-        return sequence.isEmpty() || corpus.getAbsolute(sequence) != 0;
-    }
-
-    /**
-     * Backoffs {@code sequence} until absolute count of it is greater zero. If
-     * not possible returns zero. Returned sequence may be empty.
-     */
-    protected final NGram backoffUntilSeen(NGram sequence) {
-        while (true) {
-            if (seen(sequence)) {
-                return sequence;
-            }
-            sequence = sequence.backoff();
-        }
-    }
-
     protected static final NGram getFullSequence(NGram sequence, NGram history) {
         return history.concat(sequence);
     }

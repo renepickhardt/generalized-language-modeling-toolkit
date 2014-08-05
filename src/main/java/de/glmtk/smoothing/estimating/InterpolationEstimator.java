@@ -48,7 +48,7 @@ public class InterpolationEstimator extends Estimator {
         calcProbability(NGram sequence, NGram history, int recDepth) {
         // TODO: Rene: can we really just backoff how far we want here without worry?
         // TODO: Test what yields better entropy: substitute or backoff?
-        NGram backoffHistory = backoffUntilSeen(history);
+        NGram backoffHistory = history.backoffUntilSeen(corpus);
         if (backoffHistory.isEmpty()) {
             logDebug(recDepth, "history empty, substituting:");
             return SUBSTITUTE_ESTIMATOR

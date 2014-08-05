@@ -7,7 +7,7 @@ public abstract class FractionEstimator extends Estimator {
     @Override
     protected double
         calcProbability(NGram sequence, NGram history, int recDepth) {
-        if (!seen(history)) {
+        if (!history.seen(corpus)) {
             // TODO: Rene: Tests only work if we substitute here, but this goes
             // against what you tried to prove to me. Why is returning 0 wrong?
             logDebug(recDepth, "history unseen, substituting:");

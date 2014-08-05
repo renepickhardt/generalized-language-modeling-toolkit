@@ -32,33 +32,52 @@ public class NGram {
         return size() == 0;
     }
 
+    /**
+     * Returns {@code true} if either empty or has count greater zero.
+     */
+    public boolean seen(Corpus corpus) {
+        return isEmpty() || corpus.getAbsolute(this) != 0;
+    }
+
+    /**
+     * Backoffs {@code sequence} until absolute count of it is greater zero. If
+     * not possible returns zero. Returned sequence may be empty.
+     */
+    public NGram backoffUntilSeen(Corpus corpus) {
+        NGram result = this;
+        while (!result.seen(corpus)) {
+            result = result.backoff();
+        }
+        return result;
+    }
+
     public NGram concat(String word) {
-        List<String> newNGram = new ArrayList<String>(ngram);
-        newNGram.add(word);
-        return new NGram(newNGram);
+        List<String> result = new ArrayList<String>(ngram);
+        result.add(word);
+        return new NGram(result);
     }
 
     public NGram concat(NGram other) {
-        List<String> newNGram = new ArrayList<String>(ngram);
-        newNGram.addAll(other.ngram);
-        return new NGram(newNGram);
+        List<String> result = new ArrayList<String>(ngram);
+        result.addAll(other.ngram);
+        return new NGram(result);
     }
 
     public NGram backoff() {
         // TODO: Rene: do we add SKPs for deleted words or not?
         return new NGram(ngram.subList(1, ngram.size()));
 
-        //        List<String> newNGram = new ArrayList<String>(ngram.size());
+        //        List<String> result = new ArrayList<String>(ngram.size());
         //        boolean replaced = false;
         //        for (String word : ngram) {
         //            if (!replaced && !word.equals(PatternElem.SKIPPED_WORD)) {
-        //                newNGram.add(PatternElem.SKIPPED_WORD);
+        //                result.add(PatternElem.SKIPPED_WORD);
         //                replaced = true;
         //            } else {
-        //                newNGram.add(word);
+        //                result.add(word);
         //            }
         //        }
-        //        return new NGram(newNGram);
+        //        return new NGram(result);
     }
 
     public List<String> toList() {
