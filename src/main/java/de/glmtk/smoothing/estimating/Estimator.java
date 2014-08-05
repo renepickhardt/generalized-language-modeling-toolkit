@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.patterns.PatternElem;
+import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.utils.StringUtils;
@@ -35,23 +36,29 @@ public abstract class Estimator {
     /**
      * Easy public api for {@link #probability(NGram, NGram, int)}.
      */
-    public final double probability(NGram sequence, NGram history) {
-        return probability(sequence, history, 1);
+    public final double probability(
+            NGram sequence,
+            NGram history,
+            CalculatingMode calculatingMode) {
+        return probability(sequence, history, calculatingMode, 1);
     }
 
     /**
-     * Wrapper around {@link #calcProbability(NGram, NGram, int)} to add
+     * Wrapper around
+     * {@link #calcProbability(NGram, NGram, CalculatingMode, int)} to add
      * logging.
      */
     protected final double probability(
             NGram sequence,
             NGram history,
+            CalculatingMode calculatingMode,
             int recDepth) {
         logDebug(recDepth, "{}#propability({},{})", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
 
-        double result = calcProbability(sequence, history, recDepth);
+        double result =
+                calcProbability(sequence, history, calculatingMode, recDepth);
         logDebug(recDepth, "result = {}", result);
 
         return result;
@@ -60,6 +67,7 @@ public abstract class Estimator {
     protected abstract double calcProbability(
             NGram sequence,
             NGram history,
+            CalculatingMode calculatingMode,
             int recDepth);
 
     /**

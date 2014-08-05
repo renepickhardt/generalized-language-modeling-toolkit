@@ -6,8 +6,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.smoothing.calculating.SequenceCalculator;
-import de.glmtk.smoothing.calculating.SkipCalculator;
 import de.glmtk.smoothing.estimating.Estimator;
 import de.glmtk.smoothing.helper.AbstractEstimatorTest;
 import de.glmtk.smoothing.helper.TestCorpus;
@@ -24,24 +22,29 @@ public class SequencePropabilitiesSumEqualsOneTest extends
             Estimator estimator,
             int maxOrder) {
         LOGGER.info("===== {} =====", testName);
-        testEstimatorCalculator(estimator, new SkipCalculator(), maxOrder);
-        //testEstimatorCalculator(estimator, new DeleteCalculator(), maxOrder);
+        SequenceCalculator sequenceCalculator = new SequenceCalculator();
+        testEstimatorCalculator(estimator, sequenceCalculator,
+                CalculatingMode.SKIP, maxOrder);
+        testEstimatorCalculator(estimator, sequenceCalculator,
+                CalculatingMode.DELETE, maxOrder);
     }
 
     private void testEstimatorCalculator(
             Estimator estimator,
-            SequenceCalculator calculator,
+            SequenceCalculator sequenceCalculator,
+            CalculatingMode calculatingMode,
             int maxOrder) {
-        LOGGER.info("=== {}", calculator.getClass().getSimpleName());
-        testEstimatorCalculatorCorpus(estimator, calculator, abcCorpus,
+        LOGGER.info("=== {}", calculatingMode);
+        sequenceCalculator.setCalculatingMode(calculatingMode);
+        testEstimatorCalculatorCorpus(estimator, sequenceCalculator, abcCorpus,
                 abcTestCorpus, maxOrder);
-        testEstimatorCalculatorCorpus(estimator, calculator, mobyDickCorpus,
-                mobyDickTestCorpus, maxOrder);
+        testEstimatorCalculatorCorpus(estimator, sequenceCalculator,
+                mobyDickCorpus, mobyDickTestCorpus, maxOrder);
     }
 
     private void testEstimatorCalculatorCorpus(
             Estimator estimator,
-            SequenceCalculator calculator,
+            SequenceCalculator sequenceCalculator,
             Corpus corpus,
             TestCorpus testCorpus,
             int maxOrder) {
@@ -53,7 +56,7 @@ public class SequencePropabilitiesSumEqualsOneTest extends
             for (int i = 0; i != (int) Math.pow(testCorpus.getWords().length,
                     order); ++i) {
                 List<String> sequence = testCorpus.getSequenceList(i, order);
-                sum += calculator.propability(estimator, sequence);
+                sum += sequenceCalculator.propability(estimator, sequence);
             }
             LOGGER.info("n={}: sum = {}", order, sum);
             Assert.assertEquals(1, sum, 0.01);

@@ -6,8 +6,6 @@ import java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.glmtk.smoothing.calculating.SequenceCalculator;
-import de.glmtk.smoothing.calculating.SkipCalculator;
 import de.glmtk.smoothing.estimating.Estimator;
 import de.glmtk.smoothing.estimating.Estimators;
 import de.glmtk.smoothing.helper.AbcTestCorpus;
@@ -36,7 +34,8 @@ public class QuickTest extends LoggingTest {
     @Test
     public void test() {
         Estimator e = Estimators.INTERPOL_ABS_DISCOUNT_MLE;
-        SequenceCalculator c = new SkipCalculator();
+        SequenceCalculator c = new SequenceCalculator();
+        c.setCalculatingMode(CalculatingMode.SKIP);
         e.setCorpus(abcCorpus);
         System.out.println(c.propability(e,
                 Arrays.asList("a", "a", "a", "a", "a")));

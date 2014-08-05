@@ -23,13 +23,25 @@ public class FixedHistoryPropabilitySumEqualsOneTest extends
             Estimator estimator,
             int maxOrder) {
         LOGGER.info("===== {} =====", testName);
-        testEstimatorCorpus(estimator, abcCorpus, abcTestCorpus, maxOrder);
-        testEstimatorCorpus(estimator, mobyDickCorpus, mobyDickTestCorpus,
+        testEstimatorCalculatingMode(estimator, CalculatingMode.SKIP, maxOrder);
+        testEstimatorCalculatingMode(estimator, CalculatingMode.DELETE,
                 maxOrder);
     }
 
-    private void testEstimatorCorpus(
+    private void testEstimatorCalculatingMode(
             Estimator estimator,
+            CalculatingMode calculatingMode,
+            int maxOrder) {
+        LOGGER.info("=== {}", calculatingMode);
+        testEstimatorCalculatingModeCorpus(estimator, calculatingMode,
+                abcCorpus, abcTestCorpus, maxOrder);
+        testEstimatorCalculatingModeCorpus(estimator, calculatingMode,
+                mobyDickCorpus, mobyDickTestCorpus, maxOrder);
+    }
+
+    private void testEstimatorCalculatingModeCorpus(
+            Estimator estimator,
+            CalculatingMode calculatingMode,
             Corpus corpus,
             TestCorpus testCorpus,
             int maxOrder) {
@@ -48,7 +60,7 @@ public class FixedHistoryPropabilitySumEqualsOneTest extends
                             Arrays.asList(testCorpus.getWords()[j]);
                     sum +=
                             estimator.probability(new NGram(sequence),
-                                    new NGram(history));
+                                    new NGram(history), calculatingMode);
                 }
                 Assert.assertEquals(1.0, sum, 0.01);
             }

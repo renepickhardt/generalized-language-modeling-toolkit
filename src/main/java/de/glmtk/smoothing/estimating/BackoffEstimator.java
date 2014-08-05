@@ -3,6 +3,7 @@ package de.glmtk.smoothing.estimating;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 
@@ -43,38 +44,49 @@ public class BackoffEstimator extends Estimator {
     }
 
     @Override
-    protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    protected double calcProbability(
+            NGram sequence,
+            NGram history,
+            CalculatingMode calculatingMode,
+            int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
         if (corpus.getAbsolute(fullSequence) == 0) {
             if (history.isEmpty()) {
                 // TODO: Rene: marker for double check
                 logDebug(recDepth, "history empty returning 0...");
                 return 0;
-                //                return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
-                //                        recDepth);
+                //return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
+                //        recDepth);
             }
 
             NGram backoffHistory = history.backoff();
 
             double betaVal =
-                    beta.probability(sequence, backoffHistory, recDepth);
-            double gammaVal = gamma(sequence, history, recDepth);
+                    beta.probability(sequence, backoffHistory, calculatingMode,
+                            recDepth);
+            double gammaVal =
+                    gamma(sequence, history, calculatingMode, recDepth);
             logDebug(recDepth, "beta = {}", betaVal);
             logDebug(recDepth, "gamma = {}", gammaVal);
             return gammaVal * betaVal;
         } else {
-            double alphaVal = alpha.probability(sequence, history, recDepth);
+            double alphaVal =
+                    alpha.probability(sequence, history, calculatingMode,
+                            recDepth);
             logDebug(recDepth, "alpha = {}", alphaVal);
             return alphaVal;
         }
     }
 
     /**
-     * Wrapper around {@link #calcGamma(NGram, NGram, int)} to add logging and
-     * caching.
+     * Wrapper around {@link #calcGamma(NGram, NGram, CalculatingMode, int)} to
+     * add logging and caching.
      */
-    protected double gamma(NGram sequence, NGram history, int recDepth) {
+    protected double gamma(
+            NGram sequence,
+            NGram history,
+            CalculatingMode calculatingMode,
+            int recDepth) {
         logDebug(recDepth, "gamma({},{})", sequence, history);
         ++recDepth;
 
@@ -83,14 +95,18 @@ public class BackoffEstimator extends Estimator {
             logDebug(recDepth, "result = {} was chached.", result);
             return result;
         } else {
-            result = calcGamma(sequence, history, recDepth);
+            result = calcGamma(sequence, history, calculatingMode, recDepth);
             gammaCache.put(history, result);
             logDebug(recDepth, "result = {}", result);
             return result;
         }
     }
 
-    protected double calcGamma(NGram sequence, NGram history, int recDepth) {
+    protected double calcGamma(
+            NGram sequence,
+            NGram history,
+            CalculatingMode calculatingMode,
+            int recDepth) {
         double sumAlpha = 0;
         double sumBeta = 0;
 
@@ -99,10 +115,11 @@ public class BackoffEstimator extends Estimator {
             if (corpus.getAbsolute(s) == 0) {
                 sumBeta +=
                         beta.probability(new NGram(word), history.backoff(),
-                                recDepth);
+                                calculatingMode, recDepth);
             } else {
                 sumAlpha +=
-                        alpha.probability(new NGram(word), history, recDepth);
+                        alpha.probability(new NGram(word), history,
+                                calculatingMode, recDepth);
             }
         }
 

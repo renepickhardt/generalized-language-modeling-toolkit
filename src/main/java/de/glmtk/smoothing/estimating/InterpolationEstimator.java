@@ -1,6 +1,7 @@
 package de.glmtk.smoothing.estimating;
 
 import de.glmtk.patterns.PatternElem;
+import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 
@@ -34,20 +35,25 @@ public class InterpolationEstimator extends Estimator {
     }
 
     @Override
-    protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    protected double calcProbability(
+            NGram sequence,
+            NGram history,
+            CalculatingMode calculatingMode,
+            int recDepth) {
         // TODO: Rene: can we really just backoff how far we want here without worry?
         // TODO: Test what yields better entropy: substitute or backoff?
         NGram backoffHistory = backoffUntilSeen(history);
         if (backoffHistory.isEmpty()) {
             logDebug(recDepth, "history empty, substituting:");
-            return SUBSTITUTE_ESTIMATOR
-                    .probability(sequence, history, recDepth);
+            return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
+                    calculatingMode, recDepth);
         } else {
             double alphaVal =
-                    alpha.probability(sequence, backoffHistory, recDepth);
+                    alpha.probability(sequence, backoffHistory,
+                            calculatingMode, recDepth);
             double betaVal =
-                    beta.probability(sequence, backoffHistory, recDepth);
+                    beta.probability(sequence, backoffHistory, calculatingMode,
+                            recDepth);
             double gammaVal = gamma(sequence, backoffHistory, recDepth);
 
             return alphaVal + gammaVal * betaVal;
