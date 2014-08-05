@@ -17,7 +17,8 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double calcDenominator(NGram sequence, NGram history, int recDepth) {
+    protected double
+        calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
         int fullHistoryCount;
         if (fullHistory.isEmpty()) {

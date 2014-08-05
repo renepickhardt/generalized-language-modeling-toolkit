@@ -19,7 +19,8 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double calcDenominator(NGram sequence, NGram history, int recDepth) {
+    protected double
+        calcDenominator(NGram sequence, NGram history, int recDepth) {
         int historyCount;
         if (history.isEmpty()) {
             historyCount = corpus.getNumWords();

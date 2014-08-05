@@ -1,5 +1,6 @@
 package de.glmtk.smoothing.estimating;
 
+import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 
@@ -24,6 +25,12 @@ public abstract class DiscountEstimator extends FractionEstimator {
     public void setCorpus(Corpus corpus) {
         super.setCorpus(corpus);
         fractionEstimator.setCorpus(corpus);
+    }
+
+    @Override
+    public void setCalculatingMode(CalculatingMode calculatingMode) {
+        super.setCalculatingMode(calculatingMode);
+        fractionEstimator.setCalculatingMode(calculatingMode);
     }
 
     /**

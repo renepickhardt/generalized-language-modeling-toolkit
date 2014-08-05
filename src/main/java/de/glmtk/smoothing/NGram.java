@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
 
 public class NGram {
 
@@ -47,19 +46,19 @@ public class NGram {
 
     public NGram backoff() {
         // TODO: Rene: do we add SKPs for deleted words or not?
-        //return new NGram(ngram.subList(1, ngram.size()));
+        return new NGram(ngram.subList(1, ngram.size()));
 
-        List<String> newNGram = new ArrayList<String>(ngram.size());
-        boolean replaced = false;
-        for (String word : ngram) {
-            if (!replaced && !word.equals(PatternElem.SKIPPED_WORD)) {
-                newNGram.add(PatternElem.SKIPPED_WORD);
-                replaced = true;
-            } else {
-                newNGram.add(word);
-            }
-        }
-        return new NGram(newNGram);
+        //        List<String> newNGram = new ArrayList<String>(ngram.size());
+        //        boolean replaced = false;
+        //        for (String word : ngram) {
+        //            if (!replaced && !word.equals(PatternElem.SKIPPED_WORD)) {
+        //                newNGram.add(PatternElem.SKIPPED_WORD);
+        //                replaced = true;
+        //            } else {
+        //                newNGram.add(word);
+        //            }
+        //        }
+        //        return new NGram(newNGram);
     }
 
     public List<String> toList() {

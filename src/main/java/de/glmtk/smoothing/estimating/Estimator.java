@@ -25,6 +25,8 @@ public abstract class Estimator {
 
     protected Corpus corpus = null;
 
+    protected CalculatingMode calculatingMode = null;
+
     public void setCorpus(Corpus corpus) {
         this.corpus = corpus;
 
@@ -33,32 +35,34 @@ public abstract class Estimator {
         }
     }
 
-    /**
-     * Easy public api for {@link #probability(NGram, NGram, int)}.
-     */
-    public final double probability(
-            NGram sequence,
-            NGram history,
-            CalculatingMode calculatingMode) {
-        return probability(sequence, history, calculatingMode, 1);
+    public void setCalculatingMode(CalculatingMode calculatingMode) {
+        this.calculatingMode = calculatingMode;
+
+        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
+            SUBSTITUTE_ESTIMATOR.setCalculatingMode(calculatingMode);
+        }
     }
 
     /**
-     * Wrapper around
-     * {@link #calcProbability(NGram, NGram, CalculatingMode, int)} to add
+     * Easy public api for {@link #probability(NGram, NGram, int)}.
+     */
+    public final double probability(NGram sequence, NGram history) {
+        return probability(sequence, history, 1);
+    }
+
+    /**
+     * Wrapper around {@link #calcProbability(NGram, NGram, int)} to add
      * logging.
      */
     protected final double probability(
             NGram sequence,
             NGram history,
-            CalculatingMode calculatingMode,
             int recDepth) {
         logDebug(recDepth, "{}#propability({},{})", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
 
-        double result =
-                calcProbability(sequence, history, calculatingMode, recDepth);
+        double result = calcProbability(sequence, history, recDepth);
         logDebug(recDepth, "result = {}", result);
 
         return result;
@@ -67,7 +71,6 @@ public abstract class Estimator {
     protected abstract double calcProbability(
             NGram sequence,
             NGram history,
-            CalculatingMode calculatingMode,
             int recDepth);
 
     /**

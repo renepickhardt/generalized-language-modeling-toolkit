@@ -14,7 +14,10 @@ public class AbsoluteDiscountEstimator extends DiscountEstimator {
     }
 
     @Override
-    protected double calcDiscount(NGram sequence, NGram history, int recDepth) {
+    protected double calcDiscount(
+            NGram sequence,
+            NGram history,
+            int recDepth) {
         return discount;
     }
 

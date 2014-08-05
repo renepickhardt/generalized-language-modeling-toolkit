@@ -29,15 +29,17 @@ public class CombinationEstimator extends Estimator {
     }
 
     @Override
-    protected double calcProbability(
-            NGram sequence,
-            NGram history,
-            CalculatingMode calculatingMode,
-            int recDepth) {
-        double alphaVal =
-                alpha.probability(sequence, history, calculatingMode, recDepth);
-        double betaVal =
-                beta.probability(sequence, history, calculatingMode, recDepth);
+    public void setCalculatingMode(CalculatingMode calculatingMode) {
+        super.setCalculatingMode(calculatingMode);
+        alpha.setCalculatingMode(calculatingMode);
+        beta.setCalculatingMode(calculatingMode);
+    }
+
+    @Override
+    protected double
+        calcProbability(NGram sequence, NGram history, int recDepth) {
+        double alphaVal = alpha.probability(sequence, history, recDepth);
+        double betaVal = beta.probability(sequence, history, recDepth);
         logDebug(recDepth, "alpha = {}", alphaVal);
         logDebug(recDepth, "beta = {}", betaVal);
         return lambda * alphaVal * (1.0 - lambda) * betaVal;

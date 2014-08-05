@@ -44,11 +44,19 @@ public class BackoffEstimator extends Estimator {
     }
 
     @Override
-    protected double calcProbability(
-            NGram sequence,
-            NGram history,
-            CalculatingMode calculatingMode,
-            int recDepth) {
+    public void setCalculatingMode(CalculatingMode calculatingMode) {
+        super.setCalculatingMode(calculatingMode);
+        alpha.setCalculatingMode(calculatingMode);
+        if (beta != this) {
+            beta.setCalculatingMode(calculatingMode);
+        }
+
+        gammaCache = new HashMap<NGram, Double>();
+    }
+
+    @Override
+    protected double
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
         if (corpus.getAbsolute(fullSequence) == 0) {
             if (history.isEmpty()) {
@@ -62,31 +70,23 @@ public class BackoffEstimator extends Estimator {
             NGram backoffHistory = history.backoff();
 
             double betaVal =
-                    beta.probability(sequence, backoffHistory, calculatingMode,
-                            recDepth);
-            double gammaVal =
-                    gamma(sequence, history, calculatingMode, recDepth);
+                    beta.probability(sequence, backoffHistory, recDepth);
+            double gammaVal = gamma(sequence, history, recDepth);
             logDebug(recDepth, "beta = {}", betaVal);
             logDebug(recDepth, "gamma = {}", gammaVal);
             return gammaVal * betaVal;
         } else {
-            double alphaVal =
-                    alpha.probability(sequence, history, calculatingMode,
-                            recDepth);
+            double alphaVal = alpha.probability(sequence, history, recDepth);
             logDebug(recDepth, "alpha = {}", alphaVal);
             return alphaVal;
         }
     }
 
     /**
-     * Wrapper around {@link #calcGamma(NGram, NGram, CalculatingMode, int)} to
+     * Wrapper around {@link #calcGamma(NGram, NGram, int)} to
      * add logging and caching.
      */
-    protected double gamma(
-            NGram sequence,
-            NGram history,
-            CalculatingMode calculatingMode,
-            int recDepth) {
+    protected double gamma(NGram sequence, NGram history, int recDepth) {
         logDebug(recDepth, "gamma({},{})", sequence, history);
         ++recDepth;
 
@@ -95,18 +95,14 @@ public class BackoffEstimator extends Estimator {
             logDebug(recDepth, "result = {} was chached.", result);
             return result;
         } else {
-            result = calcGamma(sequence, history, calculatingMode, recDepth);
+            result = calcGamma(sequence, history, recDepth);
             gammaCache.put(history, result);
             logDebug(recDepth, "result = {}", result);
             return result;
         }
     }
 
-    protected double calcGamma(
-            NGram sequence,
-            NGram history,
-            CalculatingMode calculatingMode,
-            int recDepth) {
+    protected double calcGamma(NGram sequence, NGram history, int recDepth) {
         double sumAlpha = 0;
         double sumBeta = 0;
 
@@ -115,11 +111,10 @@ public class BackoffEstimator extends Estimator {
             if (corpus.getAbsolute(s) == 0) {
                 sumBeta +=
                         beta.probability(new NGram(word), history.backoff(),
-                                calculatingMode, recDepth);
+                                recDepth);
             } else {
                 sumAlpha +=
-                        alpha.probability(new NGram(word), history,
-                                calculatingMode, recDepth);
+                        alpha.probability(new NGram(word), history, recDepth);
             }
         }
 

@@ -21,7 +21,8 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double calcDenominator(NGram sequence, NGram history, int recDepth) {
+    protected double
+        calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram contFullHistory =
                 new NGram(PatternElem.SKIPPED_WORD).concat(getFullHistory(
                         sequence, history));
