@@ -35,6 +35,8 @@ public class SequenceCalculator {
         LOGGER.debug("{}#propability({},{})", getClass().getSimpleName(),
                 estimator.getClass().getSimpleName(), sequence);
 
+        estimator.setCalculatingMode(calculatingMode);
+
         double result = 1;
         List<String> s, h = new ArrayList<String>(sequence);
         for (int i = 0; i != sequence.size(); ++i) {
@@ -54,9 +56,7 @@ public class SequenceCalculator {
                 h = new ArrayList<String>();
             }
 
-            result *=
-                    estimator.probability(new NGram(s), new NGram(h),
-                            calculatingMode);
+            result *= estimator.probability(new NGram(s), new NGram(h));
         }
 
         LOGGER.debug("  result = {}", result);

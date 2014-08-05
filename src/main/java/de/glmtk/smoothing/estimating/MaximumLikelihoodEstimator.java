@@ -2,9 +2,6 @@ package de.glmtk.smoothing.estimating;
 
 import de.glmtk.smoothing.NGram;
 
-/**
- * {@code P_MLE(s | h) = P_Frac(s | h) [ n = c(fs) , d = c(fh) ]}
- */
 public class MaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override

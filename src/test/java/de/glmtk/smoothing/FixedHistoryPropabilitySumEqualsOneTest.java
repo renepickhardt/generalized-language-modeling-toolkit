@@ -33,6 +33,7 @@ public class FixedHistoryPropabilitySumEqualsOneTest extends
             CalculatingMode calculatingMode,
             int maxOrder) {
         LOGGER.info("=== {}", calculatingMode);
+        estimator.setCalculatingMode(calculatingMode);
         testEstimatorCalculatingModeCorpus(estimator, calculatingMode,
                 abcCorpus, abcTestCorpus, maxOrder);
         testEstimatorCalculatingModeCorpus(estimator, calculatingMode,
@@ -60,7 +61,7 @@ public class FixedHistoryPropabilitySumEqualsOneTest extends
                             Arrays.asList(testCorpus.getWords()[j]);
                     sum +=
                             estimator.probability(new NGram(sequence),
-                                    new NGram(history), calculatingMode);
+                                    new NGram(history));
                 }
                 Assert.assertEquals(1.0, sum, 0.01);
             }

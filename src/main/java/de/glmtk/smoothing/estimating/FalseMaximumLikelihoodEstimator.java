@@ -4,8 +4,6 @@ import de.glmtk.smoothing.NGram;
 
 /**
  * {@link FalseMaximumLikelihoodEstimator} is a marginal probability.
- * 
- * {@code P_FMLE(s | h) = P_Frac(s | h) [ n = c(fs) , d = c(h) ]}
  */
 public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
 

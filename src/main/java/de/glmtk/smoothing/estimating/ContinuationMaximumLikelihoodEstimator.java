@@ -3,9 +3,6 @@ package de.glmtk.smoothing.estimating;
 import de.glmtk.patterns.PatternElem;
 import de.glmtk.smoothing.NGram;
 
-/**
- * {@code P_CMLE(s | h) = N_1p(fs) / N_1p(fh)}
- */
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override

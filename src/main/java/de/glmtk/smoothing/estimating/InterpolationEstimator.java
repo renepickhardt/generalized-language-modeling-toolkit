@@ -54,11 +54,10 @@ public class InterpolationEstimator extends Estimator {
             return SUBSTITUTE_ESTIMATOR
                     .probability(sequence, history, recDepth);
         } else {
-            double alphaVal =
-                    alpha.probability(sequence, backoffHistory, recDepth);
+            double alphaVal = alpha.probability(sequence, history, recDepth);
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);
-            double gammaVal = gamma(sequence, backoffHistory, recDepth);
+            double gammaVal = gamma(sequence, history, recDepth);
 
             return alphaVal + gammaVal * betaVal;
         }

@@ -3,9 +3,6 @@ package de.glmtk.smoothing.estimating;
 import de.glmtk.patterns.PatternElem;
 import de.glmtk.smoothing.NGram;
 
-/**
- * {@code P_ContUnigram(s | h) = P_Frac(s | h) = [ n = N_1p(_ s_1) , d =  N_1p(_ _) ]}
- */
 public class ContinuationUnigramEstimator extends Estimator {
 
     @Override
@@ -20,4 +17,5 @@ public class ContinuationUnigramEstimator extends Estimator {
                                 .concat(PatternElem.SKIPPED_WORD))
                         .getOnePlusCount();
     }
+
 }

@@ -83,8 +83,8 @@ public class BackoffEstimator extends Estimator {
     }
 
     /**
-     * Wrapper around {@link #calcGamma(NGram, NGram, int)} to
-     * add logging and caching.
+     * Wrapper around {@link #calcGamma(NGram, NGram, int)} to add logging and
+     * caching.
      */
     protected double gamma(NGram sequence, NGram history, int recDepth) {
         logDebug(recDepth, "gamma({},{})", sequence, history);

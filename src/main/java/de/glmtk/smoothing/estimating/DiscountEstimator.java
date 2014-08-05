@@ -7,10 +7,7 @@ import de.glmtk.smoothing.NGram;
 /**
  * {@link DiscountEstimator}s do not return a probability distribution.
  * 
- * Currently only useable in combination with {@link InterpolationEstimator}.
- * 
- * {@code P_Frac(s | h) [ D , P_Frac [ n , d ] ] = P_Frac [ n = max(0, n - D) ; d = d ]
-
+ * Currently only usable in combination with {@link InterpolationEstimator}.
  */
 public abstract class DiscountEstimator extends FractionEstimator {
 

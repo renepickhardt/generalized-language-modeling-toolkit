@@ -2,16 +2,12 @@ package de.glmtk.smoothing.estimating;
 
 import de.glmtk.smoothing.NGram;
 
-/**
- * {@code P_Frac(s|h) [ n , d ] = if (h unseen || d == 0) P_Substitute(s|h) else n / d}
- */
 public abstract class FractionEstimator extends Estimator {
 
     @Override
     protected double
         calcProbability(NGram sequence, NGram history, int recDepth) {
-        // if history is unseen (empty history counts as seen)
-        if (!history.isEmpty() && corpus.getAbsolute(history) == 0) {
+        if (!seen(history)) {
             // TODO: Rene: Tests only work if we substitute here, but this goes
             // against what you tried to prove to me. Why is returning 0 wrong?
             logDebug(recDepth, "history unseen, substituting:");

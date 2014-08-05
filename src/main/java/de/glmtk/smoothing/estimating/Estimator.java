@@ -9,15 +9,8 @@ import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.utils.StringUtils;
 
-/**
- * {@code P(s | h)}
- */
 public abstract class Estimator {
 
-    /**
-     * Each subclass should overwrite this, in order to display the correct
-     * class while logging.
-     */
     private static final Logger LOGGER = LogManager.getLogger(Estimator.class);
 
     protected final Estimator SUBSTITUTE_ESTIMATOR =
@@ -44,7 +37,7 @@ public abstract class Estimator {
     }
 
     /**
-     * Easy public api for {@link #probability(NGram, NGram, int)}.
+     * Simpler public method for {@link #probability(NGram, NGram, int)}.
      */
     public final double probability(NGram sequence, NGram history) {
         return probability(sequence, history, 1);
@@ -74,28 +67,30 @@ public abstract class Estimator {
             int recDepth);
 
     /**
+     * Returns {@code true} if {@code sequence} is either empty or has count
+     * greater zero.
+     */
+    protected final boolean seen(NGram sequence) {
+        return sequence.isEmpty() || corpus.getAbsolute(sequence) != 0;
+    }
+
+    /**
      * Backoffs {@code sequence} until absolute count of it is greater zero. If
      * not possible returns zero. Returned sequence may be empty.
      */
     protected final NGram backoffUntilSeen(NGram sequence) {
         while (true) {
-            if (sequence.isEmpty() || corpus.getAbsolute(sequence) != 0) {
+            if (seen(sequence)) {
                 return sequence;
             }
             sequence = sequence.backoff();
         }
     }
 
-    /**
-     * {@code fs = h . s}
-     */
     protected static final NGram getFullSequence(NGram sequence, NGram history) {
         return history.concat(sequence);
     }
 
-    /**
-     * {@code fh = h . SKPs (#s)}
-     */
     protected static final NGram getFullHistory(NGram sequence, NGram history) {
         NGram fullHistory = history;
         for (int i = 0; i != sequence.size(); ++i) {
