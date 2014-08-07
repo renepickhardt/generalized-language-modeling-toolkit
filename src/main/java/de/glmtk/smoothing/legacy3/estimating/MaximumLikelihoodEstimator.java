@@ -1,11 +1,8 @@
-package de.glmtk.smoothing.estimating;
+package de.glmtk.smoothing.legacy3.estimating;
 
 import de.glmtk.smoothing.NGram;
 
-/**
- * {@link FalseMaximumLikelihoodEstimator} is a marginal probability.
- */
-public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
+public class MaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override
     protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
@@ -19,14 +16,16 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     protected double
         calcDenominator(NGram sequence, NGram history, int recDepth) {
-        int historyCount;
-        if (history.isEmpty()) {
-            historyCount = corpus.getNumWords();
+        NGram fullHistory = getFullHistory(sequence, history);
+        int fullHistoryCount;
+        if (fullHistory.isEmpty()) {
+            fullHistoryCount = corpus.getNumWords();
         } else {
-            historyCount = corpus.getAbsolute(history);
+            fullHistoryCount = corpus.getAbsolute(fullHistory);
         }
-        logDebug(recDepth, "history = {} ({})", history, historyCount);
-        return historyCount;
+        logDebug(recDepth, "fullHistory = {} ({})", fullHistory,
+                fullHistoryCount);
+        return fullHistoryCount;
     }
 
 }

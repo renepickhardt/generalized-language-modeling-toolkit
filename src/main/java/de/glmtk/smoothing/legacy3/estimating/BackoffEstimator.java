@@ -1,11 +1,11 @@
-package de.glmtk.smoothing.estimating;
+package de.glmtk.smoothing.legacy3.estimating;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
+import de.glmtk.smoothing.legacy3.CalculatingMode;
 
 /**
  * Tests fail for this. But it's literally the same code as

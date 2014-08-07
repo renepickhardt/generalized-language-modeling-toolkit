@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.legacy3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.patterns.PatternElem;
-import de.glmtk.smoothing.estimating.Estimator;
+import de.glmtk.smoothing.NGram;
+import de.glmtk.smoothing.legacy3.estimating.Estimator;
 
 /**
  * P(a b c)

@@ -1,4 +1,4 @@
-package de.glmtk.smoothing.estimating;
+package de.glmtk.smoothing.legacy3.estimating;
 
 import de.glmtk.patterns.PatternElem;
 import de.glmtk.smoothing.NGram;

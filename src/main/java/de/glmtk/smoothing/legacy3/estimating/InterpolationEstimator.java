@@ -1,9 +1,9 @@
-package de.glmtk.smoothing.estimating;
+package de.glmtk.smoothing.legacy3.estimating;
 
 import de.glmtk.patterns.PatternElem;
-import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
+import de.glmtk.smoothing.legacy3.CalculatingMode;
 
 // TODO: Why does SkipCalculator SequenceSum Test fail for n=5?
 public class InterpolationEstimator extends Estimator {

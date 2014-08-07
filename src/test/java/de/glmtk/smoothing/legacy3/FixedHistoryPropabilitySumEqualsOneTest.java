@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.smoothing.legacy3;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,9 +7,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.smoothing.estimating.Estimator;
-import de.glmtk.smoothing.helper.AbstractEstimatorTest;
+import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.smoothing.legacy3.CalculatingMode;
+import de.glmtk.smoothing.legacy3.estimating.Estimator;
+import de.glmtk.smoothing.legacy3.helper.AbstractEstimatorTest;
 
 public class FixedHistoryPropabilitySumEqualsOneTest extends
         AbstractEstimatorTest {

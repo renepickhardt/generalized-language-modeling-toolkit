@@ -1,4 +1,4 @@
-package de.glmtk.smoothing.helper;
+package de.glmtk.smoothing.legacy3.helper;
 
 import java.io.IOException;
 
@@ -7,8 +7,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.glmtk.smoothing.Corpus;
-import de.glmtk.smoothing.estimating.Estimator;
-import de.glmtk.smoothing.estimating.Estimators;
+import de.glmtk.smoothing.helper.AbcTestCorpus;
+import de.glmtk.smoothing.helper.LoggingTest;
+import de.glmtk.smoothing.helper.MobyDickTestCorpus;
+import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.smoothing.legacy3.estimating.Estimator;
+import de.glmtk.smoothing.legacy3.estimating.Estimators;
 
 public abstract class AbstractEstimatorTest extends LoggingTest {
 

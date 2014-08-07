@@ -1,8 +1,8 @@
-package de.glmtk.smoothing.estimating;
+package de.glmtk.smoothing.legacy3.estimating;
 
-import de.glmtk.smoothing.CalculatingMode;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
+import de.glmtk.smoothing.legacy3.CalculatingMode;
 
 /**
  * {@link DiscountEstimator}s do not return a probability distribution.

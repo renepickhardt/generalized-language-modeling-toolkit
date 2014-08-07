@@ -6,12 +6,14 @@ import java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.glmtk.smoothing.estimating.Estimator;
-import de.glmtk.smoothing.estimating.Estimators;
 import de.glmtk.smoothing.helper.AbcTestCorpus;
 import de.glmtk.smoothing.helper.LoggingTest;
 import de.glmtk.smoothing.helper.MobyDickTestCorpus;
 import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.smoothing.legacy3.CalculatingMode;
+import de.glmtk.smoothing.legacy3.SequenceCalculator;
+import de.glmtk.smoothing.legacy3.estimating.Estimator;
+import de.glmtk.smoothing.legacy3.estimating.Estimators;
 
 public class QuickTest extends LoggingTest {
 
