@@ -6,14 +6,12 @@ import java.util.Arrays;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.smoothing.estimator.Estimators;
 import de.glmtk.smoothing.helper.AbcTestCorpus;
 import de.glmtk.smoothing.helper.LoggingTest;
 import de.glmtk.smoothing.helper.MobyDickTestCorpus;
 import de.glmtk.smoothing.helper.TestCorpus;
-import de.glmtk.smoothing.legacy3.CalculatingMode;
-import de.glmtk.smoothing.legacy3.SequenceCalculator;
-import de.glmtk.smoothing.legacy3.estimating.Estimator;
-import de.glmtk.smoothing.legacy3.estimating.Estimators;
 
 public class QuickTest extends LoggingTest {
 
@@ -35,12 +33,13 @@ public class QuickTest extends LoggingTest {
 
     @Test
     public void test() {
-        Estimator e = Estimators.INTERPOL_ABS_DISCOUNT_MLE;
-        SequenceCalculator c = new SequenceCalculator();
-        c.setCalculatingMode(CalculatingMode.SKIP);
+        Estimator e = Estimators.CMLE;
         e.setCorpus(abcCorpus);
-        System.out.println(c.propability(e,
-                Arrays.asList("a", "a", "a", "a", "a")));
+        e.setProbMode(ProbMode.COND);
+        NGram history = new NGram(Arrays.asList("b", "a", "a"));
+        NGram sequence = new NGram("b");
+        System.out.println(history.seen(abcCorpus));
+        System.out.println(e.probability(sequence, history));
     }
 
 }

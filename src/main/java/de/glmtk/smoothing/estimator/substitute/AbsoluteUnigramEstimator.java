@@ -1,8 +1,8 @@
-package de.glmtk.smoothing.legacy3.estimating;
+package de.glmtk.smoothing.estimator.substitute;
 
 import de.glmtk.smoothing.NGram;
 
-public class AbsoluteUnigramEstimator extends Estimator {
+public class AbsoluteUnigramEstimator extends SubstituteEstimator {
 
     @Override
     protected double
@@ -10,5 +10,4 @@ public class AbsoluteUnigramEstimator extends Estimator {
         return (double) corpus.getAbsolute(sequence.get(0))
                 / corpus.getNumWords();
     }
-
 }

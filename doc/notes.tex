@@ -1,0 +1,191 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{mathtools}
+\usepackage{amssymb}
+
+\usepackage[parfill]{parskip}
+
+\usepackage{hyperref}
+
+\newcommand{\notimplies}{%
+  \mathrel{{\ooalign{\hidewidth$\not\phantom{=}$\hidewidth\cr$\implies$}}}}
+
+\newcommand{\Seq}{\mathcal{S}}
+\newcommand{\Hist}{\mathcal{H}}
+\newcommand{\SeqF}{\mathcal{S}_F}
+\newcommand{\HistF}{\mathcal{H}_F}
+\newcommand{\Skp}{\rule{7pt}{.5pt}}
+
+\title{GLMTK --- Notes}
+\author{Lukas Schmelzeisen \\ \texttt{lukas@uni-koblenz.de}}
+\date{\today}
+
+\begin{document}
+  \maketitle
+  \tableofcontents
+  \clearpage
+
+  \section{Notation}
+
+  \begin{tabular}{ l l }
+    $\Sigma^n$  & Set of all $n$-Grams \\
+    $\Skp$ & Skipped Word \\
+    $\Seq_i$ & $i$-th Word in Sequence \\
+    $|\Seq|$ & Number of Words in Sequence \\
+    $c(\Seq)$ & Absolute Count of Sequence \\
+    $N_{1+}(\Seq)$ & Continuation Count of Sequence \\
+    $N = c(\Skp)$ & Number of Words \\
+    $V = N_{1+}(\Skp)$ & Vocabulary Size \\
+  \end{tabular}
+
+  \section{$n$-Gram Probability Estimators}
+
+  A $n$-Gram Probability Estimator is a function $P :\Sigma^n \to [0,1]$ which
+  returns the probability of a $n$-Gram \emph{Sequence} $\Seq$ for a fixed
+  $n$-Gram \emph{History} $\Hist$.
+
+  For easier handling we define the \emph{Full Sequence} as the concatenation
+  of history and sequence ($\SeqF = \Hist * \Seq$), and the \emph{Full History}
+  as the concatenation of history and skipped sequence
+  ($\HistF = \Hist * \underbrace{~ \Skp \dotso ~}_{\mathclap{|\Seq| ~ \text{many}}}$)
+
+  An observation on the counts of $n$-Grams:
+  \begin{equation}
+    c(\Hist) = 0 \implies c(\HistF) = 0 \implies c(\SeqF) = 0
+  \end{equation}
+
+  For histories we define the predicate of a (un-)seen history. Note that this
+  defines the empty history as ``seen'', which is a choice that was made in
+  order to make the definitions and implementations of estimators more natural.
+  \begin{equation}
+    \begin{aligned}
+      \Hist ~ \mathrm{seen} &\iff \Hist = \varnothing \lor c(\Hist) \neq 0 \\
+      \Hist ~ \mathrm{unseen} &\iff \Hist \neq \varnothing \land c(\Hist) = 0
+    \end{aligned}
+  \end{equation}
+
+  \subsection{Kinds of Probability Estimators}
+
+  $n$-Gram probability estimators can be separated into two categories,
+  according to which mathematical type of probability they implement:
+  \emph{Conditional Probabilities} or \emph{Marginal Probabilities}. How you
+  actually estimate the probability of a sequence depends on what kind of
+  estimator you are using.
+
+  $n$-Gram probability with conditional probability estimators:
+  \begin{equation}
+    P(w_1^n) = P(w_n | w_1^{n-1}) \cdot P(w_{n-1} ~ \Skp ~ | w_1^{n-2}) \dotsm P(w_1 ~ \Skp ~ \Skp ~ \dotso)
+  \end{equation}
+
+  $n$-Gram probability with marginal probability estimators:
+  \begin{equation}
+    P(w_1^n) = P(w_n | w_1^{n-1}) \cdot P(w_{n-1} | w_1^{n-2}) \dotsm P(w_1)
+  \end{equation}
+
+  Conditional and marginal probabilities differ  on how they handle the case of
+  an unseen history. Conditional probabilities have
+  $P(\Seq | \Hist ~ \mathrm{unseen}) = 0$
+  while marginal probabilities have
+  $P(\Seq | \Hist ~ \mathrm{unseen}) = P_\mathrm{Substitute}(\Seq | \Hist)$.
+  % TODO: Check if this statement is true for unseen histories or just for P(H) = 0.
+
+  \subsection{Tests for Probability Estimators}
+
+  In order for probability estimators to be probability measures, the
+  following equations / tests should hold:
+
+  \texttt{NGramProbabilitiesSumTest}:
+  \begin{equation}
+    \sum_{\Seq \in \Sigma^n} P(\Seq) = 1
+  \end{equation}
+
+  \texttt{FixedHistoryProbabilitiesSumTest}:
+  \begin{alignat}{2}
+    \intertext{Conditional:}
+    \forall \Hist \in \Sigma^n :
+    ~&(\Hist ~ \Skp ~ \mathrm{seen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 1)  ~ \land \\
+    ~&(\Hist ~ \Skp ~ \mathrm{unseen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 0) \notag \\
+    \intertext{Marginal:}
+    \forall \Hist \in \Sigma^n:
+    ~&\sum_{\Seq \in \Sigma} P(\Seq | \Hist&&) = 1
+  \end{alignat}
+
+  \subsection{Substitute Probability Estimators}
+
+  Substitute Probability Estimators are used in a context where other
+  probability estimators cannot use their usual algorithm to estimate the
+  probability of a sequence. They then instead use $P_\mathrm{Substitute}$ to
+  calculate that probability.
+
+  Let $P_\mathrm{Substitute} \in \big\{ P_\mathrm{Uniform} , P_\mathrm{AbsUnigram} , P_\mathrm{ContUnigram}\big\}$
+  fixed globally at program start.
+  \begin{align}
+    P_\mathrm{Uniform}(\Seq | \Hist) &= \frac{1}{V} \\
+    P_\mathrm{AbsUnigram}(\Seq | \Hist) &= \frac{c\big(\Seq_1\Big)}{N} \\
+    P_\mathrm{ContUnigram}(\Seq | \Hist) &= \frac{N_{1+}\big(\Skp ~ \Seq_1\big)}{N_{1+}\big(\Skp ~ \Skp\big)}
+  \end{align}
+
+  All substitute probability estimators are marginal probability estimators.
+
+  \subsection{Fraction Estimators}
+
+  Fraction Estimators are probability estimators that have the form $\frac{n}{d}$.
+  \begin{alignat}{2}
+    \intertext{Conditional:}
+    P_\mathrm{Frac}{\scriptstyle[n , d]}(\Seq | \Hist) &= \begin{cases}
+      0\hphantom{_\mathrm{Substitute}(\Seq | \Hist)} & \text{if} ~ \Hist ~ \mathrm{unseen} \lor d = 0 \\
+      \frac{n}{d} & \text{else}
+    \end{cases} \\
+    \intertext{Marginal:}
+    P_\mathrm{Frac}{\scriptstyle[n , d]}(\Seq | \Hist) &= \begin{cases}
+      P_\mathrm{Substitute}(\Seq | \Hist) & \text{if} ~ \Hist ~ \mathrm{unseen} \lor d = 0 \\
+      \frac{n}{d} & \text{else}
+    \end{cases}
+  \end{alignat}
+
+  \subsubsection{MaximumLikelihoodEstimator}
+
+  \begin{equation}
+    P_\mathrm{MLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\HistF)]}(\Seq | \Hist)
+  \end{equation}
+  % TODO: If history is empty we use c(\Skp) instead of c(\HistF).
+
+  \subsubsection{``False''MaximumLikelihoodEstimator}
+  % TODO: Find better name.
+
+  FMLE only works in the marginal probability setting.
+
+  \begin{equation}
+    P_\mathrm{FMLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\Hist)]}(\Seq | \Hist)
+  \end{equation}
+  % TODO: If history is empty we use c(\Skp) instead of c(\Hist).
+
+  \subsubsection{ContinuationMaximumLikelihoodEstimator}
+
+  \begin{equation}
+    P_\mathrm{CMLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[N_{1+}(\Skp ~ \SeqF) , N_{1+}(\Skp ~ \HistF)]}(\Seq | \Hist)
+  \end{equation}
+
+  % TODO: FixedHistoryProbabilitiesSumTest has _ H _ check.
+
+  \subsection{DiscountEstimator}
+
+  A Discount Estimator takes any kind of fraction estimator and subtracts some
+  discount from the numerator, in order to free probability mass to be used for
+  smoothing. Obviously this means, that discount estimators are no longer
+  probability estimators, and will not pass tests. Instead they have to be used
+  in conjunction with an Interpolation Estimator.
+
+  \begin{equation}
+    P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[\max(0,n-D),d]}(\Seq | \Hist)
+  \end{equation}
+  With $D: \Hist \to \mathbb{R}$ and $D(\Hist)<1 ~ \forall \Hist$.
+
+  \subsubsection{AbsoluteDiscountEstimator}
+
+  \begin{equation}
+    P_\mathrm{AbsDiscount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist) = P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist)
+  \end{equation}
+  With $D \in \mathbb{R}$ and $D < 1$.
+
+\end{document}

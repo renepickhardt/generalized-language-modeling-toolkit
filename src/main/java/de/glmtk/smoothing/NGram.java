@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.glmtk.patterns.Pattern;
+import de.glmtk.patterns.PatternElem;
 
 public class NGram {
+
+    public static NGram SKIPPED_WORD_NGRAM =
+            new NGram(PatternElem.SKIPPED_WORD);
 
     public final List<String> ngram;
 
@@ -84,8 +88,8 @@ public class NGram {
         return ngram;
     }
 
-    public NGram firstWord() {
-        return new NGram(ngram.subList(0, 1));
+    public NGram get(int index) {
+        return new NGram(ngram.get(index));
     }
 
     @Override
