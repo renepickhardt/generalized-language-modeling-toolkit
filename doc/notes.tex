@@ -47,7 +47,7 @@
   For easier handling we define the \emph{Full Sequence} as the concatenation
   of history and sequence ($\SeqF = \Hist * \Seq$), and the \emph{Full History}
   as the concatenation of history and skipped sequence
-  ($\HistF = \Hist * \underbrace{~ \Skp \dotso ~}_{\mathclap{|\Seq| ~ \text{many}}}$)
+  ($\HistF = \Hist * \underbrace{\: \Skp \dotso \:}_{\mathclap{|\Seq| \: \text{many}}}$)
 
   An observation on the counts of $n$-Grams:
   \begin{equation}
@@ -59,8 +59,8 @@
   order to make the definitions and implementations of estimators more natural.
   \begin{equation}
     \begin{aligned}
-      \Hist ~ \mathrm{seen} &\iff \Hist = \varnothing \lor c(\Hist) \neq 0 \\
-      \Hist ~ \mathrm{unseen} &\iff \Hist \neq \varnothing \land c(\Hist) = 0
+      \Hist \: \mathrm{seen} &\iff \Hist = \varnothing \lor c(\Hist) \neq 0 \\
+      \Hist \: \mathrm{unseen} &\iff \Hist \neq \varnothing \land c(\Hist) = 0
     \end{aligned}
   \end{equation}
 
@@ -74,7 +74,7 @@
 
   $n$-Gram probability with conditional probability estimators:
   \begin{equation}
-    P(w_1^n) = P(w_n | w_1^{n-1}) \cdot P(w_{n-1} ~ \Skp ~ | w_1^{n-2}) \dotsm P(w_1 ~ \Skp ~ \Skp ~ \dotso)
+    P(w_1^n) = P(w_n | w_1^{n-1}) \cdot P(w_{n-1} \: \Skp \: | w_1^{n-2}) \dotsm P(w_1 \: \Skp \: \Skp \: \dotso)
   \end{equation}
 
   $n$-Gram probability with marginal probability estimators:
@@ -84,9 +84,9 @@
 
   Conditional and marginal probabilities differ  on how they handle the case of
   an unseen history. Conditional probabilities have
-  $P(\Seq | \Hist ~ \mathrm{unseen}) = 0$
+  $P(\Seq \, | \, \Hist \: \mathrm{unseen}) = 0$
   while marginal probabilities have
-  $P(\Seq | \Hist ~ \mathrm{unseen}) = P_\mathrm{Substitute}(\Seq | \Hist)$.
+  $P(\Seq \, | \, \Hist \: \mathrm{unseen}) = P_\mathrm{Substitute}(\Seq | \Hist)$.
   % TODO: Check if this statement is true for unseen histories or just for P(H) = 0.
 
   \subsection{Tests for Probability Estimators}
@@ -102,12 +102,12 @@
   \texttt{FixedHistoryProbabilitiesSumTest}:
   \begin{alignat}{2}
     \intertext{Conditional:}
-    \forall \Hist \in \Sigma^n :
-    ~&(\Hist ~ \Skp ~ \mathrm{seen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 1)  ~ \land \\
-    ~&(\Hist ~ \Skp ~ \mathrm{unseen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 0) \notag \\
+    \forall \Hist \in \Sigma^n:
+    \enspace&(\Hist \, \Skp \enspace \mathrm{seen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 1) \enspace \land \\
+    \enspace&(\Hist \, \Skp \enspace \mathrm{unseen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 0) \notag \\
     \intertext{Marginal:}
     \forall \Hist \in \Sigma^n:
-    ~&\sum_{\Seq \in \Sigma} P(\Seq | \Hist&&) = 1
+    \enspace&\sum_{\Seq \in \Sigma} P(\Seq | \Hist&&) = 1
   \end{alignat}
 
   \subsection{Substitute Probability Estimators}
@@ -122,7 +122,7 @@
   \begin{align}
     P_\mathrm{Uniform}(\Seq | \Hist) &= \frac{1}{V} \\
     P_\mathrm{AbsUnigram}(\Seq | \Hist) &= \frac{c\big(\Seq_1\Big)}{N} \\
-    P_\mathrm{ContUnigram}(\Seq | \Hist) &= \frac{N_{1+}\big(\Skp ~ \Seq_1\big)}{N_{1+}\big(\Skp ~ \Skp\big)}
+    P_\mathrm{ContUnigram}(\Seq | \Hist) &= \frac{N_{1+}\big(\Skp \, \Seq_1\big)}{N_{1+}\big(\Skp \, \Skp\big)}
   \end{align}
 
   All substitute probability estimators are marginal probability estimators.
@@ -133,12 +133,12 @@
   \begin{alignat}{2}
     \intertext{Conditional:}
     P_\mathrm{Frac}{\scriptstyle[n , d]}(\Seq | \Hist) &= \begin{cases}
-      0\hphantom{_\mathrm{Substitute}(\Seq | \Hist)} & \text{if} ~ \Hist ~ \mathrm{unseen} \lor d = 0 \\
+      0\hphantom{_\mathrm{Substitute}(\Seq | \Hist)} & \text{if} \enspace \Hist \: \mathrm{unseen} \lor d = 0 \\
       \frac{n}{d} & \text{else}
     \end{cases} \\
     \intertext{Marginal:}
     P_\mathrm{Frac}{\scriptstyle[n , d]}(\Seq | \Hist) &= \begin{cases}
-      P_\mathrm{Substitute}(\Seq | \Hist) & \text{if} ~ \Hist ~ \mathrm{unseen} \lor d = 0 \\
+      P_\mathrm{Substitute}(\Seq | \Hist) & \text{if} \enspace \Hist \: \mathrm{unseen} \lor d = 0 \\
       \frac{n}{d} & \text{else}
     \end{cases}
   \end{alignat}
@@ -163,7 +163,7 @@
   \subsubsection{ContinuationMaximumLikelihoodEstimator}
 
   \begin{equation}
-    P_\mathrm{CMLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[N_{1+}(\Skp ~ \SeqF) , N_{1+}(\Skp ~ \HistF)]}(\Seq | \Hist)
+    P_\mathrm{CMLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[N_{1+}(\Skp \, \SeqF) , N_{1+}(\Skp \, \HistF)]}(\Seq | \Hist)
   \end{equation}
 
   % TODO: FixedHistoryProbabilitiesSumTest has _ H _ check.
@@ -179,7 +179,7 @@
   \begin{equation}
     P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[\max(0,n-D),d]}(\Seq | \Hist)
   \end{equation}
-  With $D: \Hist \to \mathbb{R}$ and $D(\Hist)<1 ~ \forall \Hist$.
+  With $D: \Hist \to \mathbb{R}$ and $D(\Hist)<1 \enspace \forall \Hist$.
 
   \subsubsection{AbsoluteDiscountEstimator}
 

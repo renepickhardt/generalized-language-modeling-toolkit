@@ -11,3 +11,4 @@
 /doc/*.log
 /doc/*.out
 /doc/*.toc
+/doc/*.tex.backup
