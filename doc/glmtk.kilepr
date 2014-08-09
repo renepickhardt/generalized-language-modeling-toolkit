@@ -17,7 +17,7 @@ MakeIndex=
 QuickBuild=PDFLaTeX+ForwardPDF
 
 [document-settings,item:notes.tex]
-Bookmarks=127
+Bookmarks=
 Encoding=UTF-8
 Highlighting=LaTeX
 Indentation Mode=normal
@@ -38,16 +38,16 @@ archive=true
 column=0
 encoding=UTF-8
 highlight=LaTeX
-line=111
+line=157
 mode=LaTeX
 open=true
 order=0
 
 [view-settings,view=0,item:notes.tex]
 CursorColumn=0
-CursorLine=111
+CursorLine=157
 JumpList=118,2
-ViMarks=.,126,0,<,121,15,>,121,15,[,126,0,],126,0,^,127,76
-ViRegisterContents=\n,  %For conditional probability estimators equation\n  %\\\\eqref{eqn:FixedHistoryProbabilitiesSumEqualsOneTestConditional} should hold.\\\\\\\\\n  %For marginal probability estimators equation\n  %\\\\eqref{eqn:FixedHistoryProbabilitiesSumEqualsOneTestMarginal} should hold.\n,probability estimators are marginal probability estimators.
-ViRegisterFlags=1,1,0
+ViMarks=.,232,0,<,149,40,>,157,0,[,232,0,],232,0,^,190,19,a,129,0
+ViRegisterContents=\n,  \\\\begin{equation}\n    P_\\\\mathrm{CMLE}(\\\\Seq | \\\\Hist) = P_\\\\mathrm{Frac}{\\\\scriptstyle[N_{1+}(\\\\Skp ~ \\\\SeqF) \\, N_{1+}(\\\\Skp ~ \\\\HistF)]}(\\\\Seq | \\\\Hist)\n,[0\\,1]
+ViRegisterFlags=1,0,0
 ViRegisterNames=-,0,^

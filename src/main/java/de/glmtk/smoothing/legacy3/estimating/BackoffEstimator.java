@@ -5,6 +5,7 @@ import java.util.Map;
 
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
+import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.legacy3.CalculatingMode;
 
 /**
@@ -67,7 +68,7 @@ public class BackoffEstimator extends Estimator {
                 //        recDepth);
             }
 
-            NGram backoffHistory = history.backoff();
+            NGram backoffHistory = history.backoff(ProbMode.MARG);
 
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);
@@ -110,8 +111,8 @@ public class BackoffEstimator extends Estimator {
             NGram s = history.concat(word);
             if (corpus.getAbsolute(s) == 0) {
                 sumBeta +=
-                        beta.probability(new NGram(word), history.backoff(),
-                                recDepth);
+                        beta.probability(new NGram(word),
+                                history.backoff(ProbMode.MARG), recDepth);
             } else {
                 sumAlpha +=
                         alpha.probability(new NGram(word), history, recDepth);

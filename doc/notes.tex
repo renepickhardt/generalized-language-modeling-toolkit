@@ -15,6 +15,7 @@
 \newcommand{\SeqF}{\mathcal{S}_F}
 \newcommand{\HistF}{\mathcal{H}_F}
 \newcommand{\Skp}{\rule{7pt}{.5pt}}
+\newcommand{\SmallSkp}{\rule{5pt}{.3pt}}
 
 \title{GLMTK --- Notes}
 \author{Lukas Schmelzeisen \\ \texttt{lukas@uni-koblenz.de}}
@@ -107,7 +108,7 @@
     \enspace&(\Hist \, \Skp \enspace \mathrm{unseen} &&\implies \sum_{\Seq \in \Sigma} P(\Seq | \Hist) = 0) \notag \\
     \intertext{Marginal:}
     \forall \Hist \in \Sigma^n:
-    \enspace&\sum_{\Seq \in \Sigma} P(\Seq | \Hist&&) = 1
+    \enspace&\sum_{\Seq \in \Sigma} P(\Seq | \Hist) &&= 1
   \end{alignat}
 
   \subsection{Substitute Probability Estimators}
@@ -120,9 +121,9 @@
   Let $P_\mathrm{Substitute} \in \big\{ P_\mathrm{Uniform} , P_\mathrm{AbsUnigram} , P_\mathrm{ContUnigram}\big\}$
   fixed globally at program start.
   \begin{align}
-    P_\mathrm{Uniform}(\Seq | \Hist) &= \frac{1}{V} \\
-    P_\mathrm{AbsUnigram}(\Seq | \Hist) &= \frac{c\big(\Seq_1\Big)}{N} \\
-    P_\mathrm{ContUnigram}(\Seq | \Hist) &= \frac{N_{1+}\big(\Skp \, \Seq_1\big)}{N_{1+}\big(\Skp \, \Skp\big)}
+    P_\mathrm{Uniform}\big(\Seq | \Hist\big) &= \frac{1}{V} \\
+    P_\mathrm{AbsUnigram}\big(\Seq | \Hist\big) &= \frac{c\big(\Seq_1\Big)}{N} \\
+    P_\mathrm{ContUnigram}\big(\Seq | \Hist\big) &= \frac{N_{1+}\big(\Skp \, \Seq_1\big)}{N_{1+}\big(\Skp \, \Skp\big)}
   \end{align}
 
   All substitute probability estimators are marginal probability estimators.
@@ -132,12 +133,12 @@
   Fraction Estimators are probability estimators that have the form $\frac{n}{d}$.
   \begin{alignat}{2}
     \intertext{Conditional:}
-    P_\mathrm{Frac}{\scriptstyle[n , d]}(\Seq | \Hist) &= \begin{cases}
+    P_\mathrm{Frac}{\scriptstyle[n , d]}\big(\Seq | \Hist\big) &= \begin{cases}
       0\hphantom{_\mathrm{Substitute}(\Seq | \Hist)} & \text{if} \enspace \Hist \: \mathrm{unseen} \lor d = 0 \\
       \frac{n}{d} & \text{else}
     \end{cases} \\
     \intertext{Marginal:}
-    P_\mathrm{Frac}{\scriptstyle[n , d]}(\Seq | \Hist) &= \begin{cases}
+    P_\mathrm{Frac}{\scriptstyle[n , d]}\big(\Seq | \Hist\big) &= \begin{cases}
       P_\mathrm{Substitute}(\Seq | \Hist) & \text{if} \enspace \Hist \: \mathrm{unseen} \lor d = 0 \\
       \frac{n}{d} & \text{else}
     \end{cases}
@@ -146,7 +147,7 @@
   \subsubsection{MaximumLikelihoodEstimator}
 
   \begin{equation}
-    P_\mathrm{MLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\HistF)]}(\Seq | \Hist)
+    P_\mathrm{MLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\HistF)]}\big(\Seq | \Hist\big)
   \end{equation}
   % TODO: If history is empty we use c(\Skp) instead of c(\HistF).
 
@@ -156,36 +157,88 @@
   FMLE only works in the marginal probability setting.
 
   \begin{equation}
-    P_\mathrm{FMLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\Hist)]}(\Seq | \Hist)
+    P_\mathrm{FMLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\Hist)]}\big(\Seq | \Hist\big)
   \end{equation}
   % TODO: If history is empty we use c(\Skp) instead of c(\Hist).
 
   \subsubsection{ContinuationMaximumLikelihoodEstimator}
 
   \begin{equation}
-    P_\mathrm{CMLE}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[N_{1+}(\Skp \, \SeqF) , N_{1+}(\Skp \, \HistF)]}(\Seq | \Hist)
+    P_\mathrm{CMLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[N_{1+}(\SmallSkp \, \SeqF) , N_{1+}(\SmallSkp \, \HistF)]}\big(\Seq | \Hist\big)
   \end{equation}
 
   % TODO: FixedHistoryProbabilitiesSumTest has _ H _ check.
 
-  \subsection{DiscountEstimator}
+  \subsection{Discount Estimators}
 
   A Discount Estimator takes any kind of fraction estimator and subtracts some
   discount from the numerator, in order to free probability mass to be used for
   smoothing. Obviously this means, that discount estimators are no longer
   probability estimators, and will not pass tests. Instead they have to be used
-  in conjunction with an Interpolation Estimator.
+  in conjunction with an Interpolation Estimator. Discount estimators are still
+  fraction estimators though.
 
   \begin{equation}
-    P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist) = P_\mathrm{Frac}{\scriptstyle[\max(0,n-D),d]}(\Seq | \Hist)
+    P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[\max(0,n-D),d]}\big(\Seq | \Hist\big)
   \end{equation}
-  With $D: \Hist \to \mathbb{R}$ and $D(\Hist)<1 \enspace \forall \Hist$.
+  With $D: \Hist \to [0,1]$.
 
   \subsubsection{AbsoluteDiscountEstimator}
 
   \begin{equation}
-    P_\mathrm{AbsDiscount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist) = P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}(\Seq | \Hist)
+    P_\mathrm{AbsDiscount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big) = P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big)
   \end{equation}
-  With $D \in \mathbb{R}$ and $D < 1$.
+  With $D \in [0,1]$.
+
+  \subsection{Interpolation Estimators}
+
+  \begin{alignat}{2}
+    &P_\mathrm{Interpol}{\scriptstyle[P_\mathrm{Discount}[D,P_\mathrm{Frac}[n,d]],P_\beta]}\big(\Seq | \Hist\big) = \\
+    &\qquad\begin{cases}
+      P_\mathrm{Frac}{\scriptstyle[n,d]}\big(\Seq | \Hist\big) \hspace{80pt} \text{if} \enspace \Hist = \varnothing \: \lor \: \Hist \:\text{contains only} \: \Skp\\
+      P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big) \: + \: \gamma(D,d,H) \cdot P_\beta\big(\Seq | \Hist\big) \hfill \text{else}
+    \end{cases} \notag
+  \end{alignat}
+  %\begin{alignat}{2}
+  %  \intertext{Conditional:}
+  %  &P_\mathrm{Interpol}{\scriptstyle[P_\mathrm{Discount}[D,P_\mathrm{Frac}[n,d]],P_\beta]}\big(\Seq | \Hist\big) = \\
+  %  &\qquad\begin{cases}
+  %    0 & \text{if} \enspace \Hist = \varnothing \\
+  %    P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big) \: + \: \gamma(D,d,H) \cdot P_\beta\big(\Seq | \Hist\big) & \text{else}
+  %  \end{cases} \notag
+  %  \intertext{Marginal:}
+  %  &P_\mathrm{Interpol}{\scriptstyle[P_\mathrm{Discount}[D,P_\mathrm{Frac}[n,d]],P_\beta]}\big(\Seq | \Hist\big) = \\
+  %  &\qquad\begin{cases}
+  %    P_\mathrm{Substitute}(\Seq | \Hist) & \text{if} \enspace \Hist = \varnothing \\
+  %    P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big) \: + \: \gamma(D,d,H) \cdot P_\beta\big(\Seq | \hat\Hist\big) & \text{else}
+  %  \end{cases} \notag
+  %\end{alignat}
+
+  With the $P_\beta$ any probability estimator and
+  \emph{interpolation coefficient $\gamma$}:
+  \begin{equation}
+    \gamma(D,d,H) = \begin{cases}
+      0 & \text{if} \enspace d = 0 \\
+      \frac{D \cdot N_{1+}(\Hist \, \SmallSkp)}{d} & \text{else}
+    \end{cases}
+  \end{equation}
+
+  \subsection{Combination Estimator}
+
+  A Combination Estimator mixes two other probability estimators.
+  \begin{equation}
+    P_\mathrm{Comb}{\scriptstyle[\lambda,P_\alpha,P_\beta]}\big(\Seq | \Hist\big) = \lambda \cdot P_\alpha\big(\Seq | \Hist\big) \enspace + \enspace (1 - \lambda) \cdot P_\beta\big(\Seq | \Hist\big)
+  \end{equation}
+  With $P_\alpha,P_\beta$ any probability estimators and $\lambda \in [0,1]$.
+
+  \section{TODO}
+
+  \begin{itemize}
+    \item Interpol estimator still fails test for conditional case.
+    \item FMLE still doesn't pass any tests.
+    \item How to make \texttt{FixedHistoryProbabilitiesSumTest} with Continuation Estimators not be a mess?
+    \item How to do \texttt{FixedHistoryProbabilitiesSumTest} with Combination Estimator.
+  \end{itemize}
+
 
 \end{document}

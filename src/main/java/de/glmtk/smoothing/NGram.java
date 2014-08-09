@@ -36,6 +36,18 @@ public class NGram {
         return size() == 0;
     }
 
+    public boolean isEmptyOrOnlySkips() {
+        if (isEmpty()) {
+            return true;
+        }
+        for (String word : ngram) {
+            if (!word.equals(PatternElem.SKIPPED_WORD)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Returns {@code true} if either empty or has count greater zero.
      */
@@ -44,13 +56,14 @@ public class NGram {
     }
 
     /**
-     * Backoffs {@code sequence} until absolute count of it is greater zero. If
-     * not possible returns zero. Returned sequence may be empty.
+     * Backoffs {@code sequence} at least once, and then until absolute count of
+     * it is greater zero. If not possible returns zero. Returned sequence may
+     * be empty.
      */
-    public NGram backoffUntilSeen(Corpus corpus) {
-        NGram result = this;
+    public NGram backoffUntilSeen(ProbMode probMode, Corpus corpus) {
+        NGram result = backoff(probMode);
         while (!result.seen(corpus)) {
-            result = result.backoff();
+            result = result.backoff(probMode);
         }
         return result;
     }
@@ -67,21 +80,33 @@ public class NGram {
         return new NGram(result);
     }
 
-    public NGram backoff() {
-        // TODO: Rene: do we add SKPs for deleted words or not?
-        return new NGram(ngram.subList(1, ngram.size()));
+    public NGram backoff(ProbMode probMode) {
+        if (isEmpty()) {
+            throw new IllegalStateException("Can't backoff empty ngram.");
+        }
 
-        //        List<String> result = new ArrayList<String>(ngram.size());
-        //        boolean replaced = false;
-        //        for (String word : ngram) {
-        //            if (!replaced && !word.equals(PatternElem.SKIPPED_WORD)) {
-        //                result.add(PatternElem.SKIPPED_WORD);
-        //                replaced = true;
-        //            } else {
-        //                result.add(word);
-        //            }
-        //        }
-        //        return new NGram(result);
+        switch (probMode) {
+            case COND:
+                List<String> result = new ArrayList<String>(ngram.size());
+                boolean replaced = false;
+                for (String word : ngram) {
+                    if (!replaced && !word.equals(PatternElem.SKIPPED_WORD)) {
+                        result.add(PatternElem.SKIPPED_WORD);
+                        replaced = true;
+                    } else {
+                        result.add(word);
+                    }
+                }
+                if (!replaced) {
+                    throw new IllegalStateException(
+                            "Can't backoff ngram only containing skips.");
+                }
+                return new NGram(result);
+            case MARG:
+                return new NGram(ngram.subList(1, ngram.size()));
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     public List<String> toList() {

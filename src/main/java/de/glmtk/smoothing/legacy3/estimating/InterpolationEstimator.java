@@ -3,6 +3,7 @@ package de.glmtk.smoothing.legacy3.estimating;
 import de.glmtk.patterns.PatternElem;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
+import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.legacy3.CalculatingMode;
 
 // TODO: Why does SkipCalculator SequenceSum Test fail for n=5?
@@ -45,10 +46,10 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    calcProbability(NGram sequence, NGram history, int recDepth) {
         // TODO: Rene: can we really just backoff how far we want here without worry?
         // TODO: Test what yields better entropy: substitute or backoff?
-        NGram backoffHistory = history.backoffUntilSeen(corpus);
+        NGram backoffHistory = history.backoffUntilSeen(ProbMode.MARG, corpus);
         if (backoffHistory.isEmpty()) {
             logDebug(recDepth, "history empty, substituting:");
             return SUBSTITUTE_ESTIMATOR
@@ -71,7 +72,7 @@ public class InterpolationEstimator extends Estimator {
         double denominator = alpha.denominator(sequence, history, recDepth);
         double n_1p =
                 corpus.getContinuation(history.concat(PatternElem.SKIPPED_WORD))
-                        .getOnePlusCount();
+                .getOnePlusCount();
 
         if (denominator == 0) {
             logDebug(recDepth, "denominator = 0, setting gamma = 0:");

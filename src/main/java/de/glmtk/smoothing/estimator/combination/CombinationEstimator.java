@@ -1,8 +1,9 @@
-package de.glmtk.smoothing.legacy3.estimating;
+package de.glmtk.smoothing.estimator.combination;
 
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
-import de.glmtk.smoothing.legacy3.CalculatingMode;
+import de.glmtk.smoothing.ProbMode;
+import de.glmtk.smoothing.estimator.Estimator;
 
 public class CombinationEstimator extends Estimator {
 
@@ -29,10 +30,10 @@ public class CombinationEstimator extends Estimator {
     }
 
     @Override
-    public void setCalculatingMode(CalculatingMode calculatingMode) {
-        super.setCalculatingMode(calculatingMode);
-        alpha.setCalculatingMode(calculatingMode);
-        beta.setCalculatingMode(calculatingMode);
+    public void setProbMode(ProbMode probMode) {
+        super.setProbMode(probMode);
+        alpha.setProbMode(probMode);
+        beta.setProbMode(probMode);
     }
 
     @Override

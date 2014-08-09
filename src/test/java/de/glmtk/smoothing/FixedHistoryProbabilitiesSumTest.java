@@ -58,6 +58,8 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                     sum += estimator.probability(sequence, history);
                 }
 
+                LOGGER.debug("history = {}, sum = {}", history, sum);
+
                 switch (probMode) {
                     case COND:
                         NGram checkHistory =
