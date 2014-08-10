@@ -60,12 +60,12 @@ public abstract class Estimator {
     /**
      * This method should only be called from other estimators. All other
      * users probably want to call {@link #probability(NGram, NGram)}.
-     * 
+     *
      * Wrapper around {@link #calcProbability(NGram, NGram, int)} to add
      * logging.
      */
     public final double
-        probability(NGram sequence, NGram history, int recDepth) {
+    probability(NGram sequence, NGram history, int recDepth) {
         logDebug(recDepth, "{}#probability({},{})", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;

@@ -26,6 +26,14 @@
   \tableofcontents
   \clearpage
 
+  \section{Attribution}
+
+  I learned about most matter described in this document during my
+  conversations with \textsc{Rene Pickhardt}. Most of the formulas described
+  here can be attributed to his research.
+
+  Besides that, much stems from other language modeling research papers.
+
   \section{Notation}
 
   \begin{tabular}{ l l }
@@ -190,6 +198,30 @@
   \end{equation}
   With $D \in [0,1]$.
 
+  \subsection{Backoff Estimators}
+
+  \begin{alignat}{2}
+    \intertext{Conditional:}
+    P_\mathrm{Backoff}{\scriptstyle[P_\alpha,P_\beta]}\big(\Seq | \Hist\big) = \begin{cases}
+      0 & \text{if} \enspace \Hist = \varnothing \\
+      \gamma(\Hist) \cdot P_\beta\big(\Seq | \hat \Hist\big)& \text{if} \enspace c(\SeqF) = 0 \\
+      P_\alpha\big(\Seq | \Hist\big) & \text{else}
+    \end{cases}
+    \intertext{Marginal:}
+    P_\mathrm{Backoff}{\scriptstyle[P_\alpha,P_\beta]}\big(\Seq | \Hist\big) = \begin{cases}
+      P_\mathrm{Substitute}\big(\Seq | \Hist\big) & \text{if} \enspace \Hist = \varnothing \\
+      \gamma(\Hist) \cdot P_\beta\big(\Seq | \hat \Hist\big)& \text{if} \enspace c(\SeqF) = 0 \\
+      P_\alpha\big(\Seq | \Hist\big) & \text{else}
+    \end{cases}
+  \end{alignat}
+
+  With $P_\alpha,P_\beta$ any probability estimators and
+  \emph{backoff coefficient $\gamma$}:
+  \begin{equation}
+    \gamma(\Hist) = \frac{1 - \sum_{\Seq \in \Sigma : c(\Hist \Seq) > 0}P_\alpha\big(\Seq | \Hist\big)}{\sum_{\Seq \in \Sigma : c(\Hist\Seq) = 0}P_\beta\big(\Seq | \hat \Hist\big)}
+  \end{equation}
+  % TODO: if lower sum = 0: return 0.
+
   \subsection{Interpolation Estimators}
 
   \begin{alignat}{2}
@@ -239,6 +271,5 @@
     \item How to make \texttt{FixedHistoryProbabilitiesSumTest} with Continuation Estimators not be a mess?
     \item How to do \texttt{FixedHistoryProbabilitiesSumTest} with Combination Estimator.
   \end{itemize}
-
 
 \end{document}

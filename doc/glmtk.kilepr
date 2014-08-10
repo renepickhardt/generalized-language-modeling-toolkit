@@ -17,7 +17,7 @@ MakeIndex=
 QuickBuild=PDFLaTeX+ForwardPDF
 
 [document-settings,item:notes.tex]
-Bookmarks=
+Bookmarks=129
 Encoding=UTF-8
 Highlighting=LaTeX
 Indentation Mode=normal
@@ -35,19 +35,19 @@ order=-1
 
 [item:notes.tex]
 archive=true
-column=0
+column=15
 encoding=UTF-8
 highlight=LaTeX
-line=157
+line=222
 mode=LaTeX
 open=true
 order=0
 
 [view-settings,view=0,item:notes.tex]
-CursorColumn=0
-CursorLine=157
+CursorColumn=15
+CursorLine=222
 JumpList=118,2
-ViMarks=.,232,0,<,149,40,>,157,0,[,232,0,],232,0,^,190,19,a,129,0
-ViRegisterContents=\n,  \\\\begin{equation}\n    P_\\\\mathrm{CMLE}(\\\\Seq | \\\\Hist) = P_\\\\mathrm{Frac}{\\\\scriptstyle[N_{1+}(\\\\Skp ~ \\\\SeqF) \\, N_{1+}(\\\\Skp ~ \\\\HistF)]}(\\\\Seq | \\\\Hist)\n,[0\\,1]
-ViRegisterFlags=1,0,0
-ViRegisterNames=-,0,^
+ViMarks=.,238,28,<,223,16,>,223,16,[,238,28,],238,29,^,238,29,a,129,0
+ViRegisterContents=COND ,t
+ViRegisterFlags=0,0
+ViRegisterNames=-,^

@@ -1,5 +1,6 @@
 package de.glmtk.smoothing.estimator;
 
+import de.glmtk.smoothing.estimator.backoff.BackoffEstimator;
 import de.glmtk.smoothing.estimator.combination.CombinationEstimator;
 import de.glmtk.smoothing.estimator.discount.AbsoluteDiscountEstimator;
 import de.glmtk.smoothing.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
@@ -37,6 +38,14 @@ public class Estimators {
 
     public static final AbsoluteDiscountEstimator ABS_DISCOUNT_MLE =
             new AbsoluteDiscountEstimator(MLE, 0.75);
+
+    // Backoff Estimators
+
+    public static final BackoffEstimator BACKOFF_CMLE = new BackoffEstimator(
+            CMLE, CMLE);
+
+    public static final BackoffEstimator BACKOFF_CMLE_REC =
+            new BackoffEstimator(CMLE);
 
     // Interpolation Estimators
 
