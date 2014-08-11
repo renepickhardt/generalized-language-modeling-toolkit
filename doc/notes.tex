@@ -5,6 +5,8 @@
 
 \usepackage[parfill]{parskip}
 
+\usepackage{color}
+
 \usepackage{hyperref}
 
 \newcommand{\notimplies}{%
@@ -17,8 +19,9 @@
 \newcommand{\Skp}{\rule{7pt}{.5pt}}
 \newcommand{\SmallSkp}{\rule{5pt}{.3pt}}
 
-\newcommand{\rp}[1]{\textbf{Rene: #1}}
+\newcommand{\rp}[1]{\textcolor{red}{Rene: #1}}
 %newcommand{\rp}[1]{}
+\newcommand{\ls}[1]{\textcolor{blue}{Lukas: #1}}
 
 
 \title{GLMTK --- Notes}
@@ -107,6 +110,7 @@
   differently. Even though they might all be calculated as a fraction or MLE
   they are indeed very different functions from different spaces. I corrected
   this in the following.}
+
   $n$-Gram probability with marginal probability estimators:
   \begin{equation}
     P_{marginal}(w_1^n) = P_n(w_n | w_1^{n-1}) \cdot P_{n-1}(w_{n-1} | w_1^{n-2}) \dotsm P_1(w_1)
@@ -145,8 +149,10 @@
   \begin{equation}
     \sum_{\Seq \in \Sigma^n} P(\Seq) = 1
   \end{equation}
+
   \rp{note for myself. this should be very soon theoretically "proofed" by me.
   Just also to have a proper formulation of everything in a probabilistic way}
+
   \texttt{FixedHistoryProbabilitiesSumTest}:
   \begin{alignat}{2}
     \intertext{Conditional:}
@@ -164,6 +170,7 @@
   probability estimators cannot use their usual algorithm to estimate the
   probability of a sequence. They then instead use $P_\mathrm{Substitute}$ to
   calculate that probability.
+
   \rp{better: In the case of marginal probabilities we have to define a
   probability function for each value the history can take. It now can happen
   that if a certain history value was unssen that the formula for calculation
@@ -186,6 +193,7 @@
   AbsUnigram or even uniform}
 
   All substitute probability estimators are marginal probability estimators.
+
   \rp{I do not understand how this statement is true. It could be that we have a
   different definition of marginal probability estimator in mind... btw. we need
   terms for the full product and the factors in the marginal settings. I also
@@ -193,8 +201,8 @@
 
   \begin{equation}
     P_n(w_n|w_i^{n-1})= \begin{cases}
-      e.g. MLE & \Hist_{seen}  \\
-      substitute & \Hist_{unseen}
+      e.g. MLE & \Hist \: \mathrm{seen}  \\
+      substitute & \Hist \: \mathrm{unseen}
     \end{cases}
   \end{equation}
 
@@ -299,6 +307,9 @@
 
   \rp{why is there no difference in conditional and marginal case. I just see
   there is latex comments where you tried this...}
+
+  \ls{The difference is in $P_\mathrm{Frac}$, this definition should span both
+  cases although it is still buggy.}
 
   \begin{alignat}{2}
     &P_\mathrm{Interpol}{\scriptstyle[P_\mathrm{Discount}[D,P_\mathrm{Frac}[n,d]],P_\beta]}\big(\Seq | \Hist\big) = \\
