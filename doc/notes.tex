@@ -19,9 +19,10 @@
 \newcommand{\Skp}{\rule{7pt}{.5pt}}
 \newcommand{\SmallSkp}{\rule{5pt}{.3pt}}
 
-\newcommand{\rp}[1]{\textcolor{red}{Rene: #1}}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO}: #1}}
+\newcommand{\rp}[1]{\textcolor{blue}{Rene: #1}}
 %newcommand{\rp}[1]{}
-\newcommand{\ls}[1]{\textcolor{blue}{Lukas: #1}}
+\newcommand{\ls}[1]{\textcolor{magenta}{Lukas: #1}}
 
 
 \title{GLMTK --- Notes}
@@ -121,7 +122,9 @@
   $P(\Seq \, | \, \Hist \: \mathrm{unseen}) = 0$
   while marginal probabilities have
   $P(\Seq \, | \, \Hist \: \mathrm{unseen}) = P_\mathrm{Substitute}(\Seq | \Hist)$.
-  % TODO: Check if this statement is true for unseen histories or just for P(H) = 0.
+
+  \todo{Check if this statement is true for unseen histories or just for
+  $P(\Hist) = 0$.}
 
   \rp{Here we need to discuss what is really happening. I understand where the
   substitute probability function comes from. But I do not like this as a
@@ -233,17 +236,18 @@
   \begin{equation}
     P_\mathrm{MLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\HistF)]}\big(\Seq | \Hist\big)
   \end{equation}
-  % TODO: If history is empty we use c(\Skp) instead of c(\HistF).
+  \todo{If history is empty we use $c(\Skp)$ instead of $c(\HistF)$.}
 
   \subsubsection{``False''MaximumLikelihoodEstimator}
-  % TODO: Find better name.
+
+  \todo{Find better name.}
 
   FMLE only works in the marginal probability setting.
 
   \begin{equation}
     P_\mathrm{FMLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\Hist)]}\big(\Seq | \Hist\big)
   \end{equation}
-  % TODO: If history is empty we use c(\Skp) instead of c(\Hist).
+  \todo{If history is empty we use $c(\Skp)$ instead of $c(\Hist)$.}
 
   \subsubsection{ContinuationMaximumLikelihoodEstimator}
 
@@ -251,7 +255,7 @@
     P_\mathrm{CMLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[N_{1+}(\SmallSkp \, \SeqF) , N_{1+}(\SmallSkp \, \HistF)]}\big(\Seq | \Hist\big)
   \end{equation}
 
-  % TODO: FixedHistoryProbabilitiesSumTest has _ H _ check.
+  \todo{\texttt{FixedHistoryProbabilitiesSumTest} has $\Skp \Hist \Skp$ check.}
 
   \subsection{Discount Estimators}
 
@@ -301,7 +305,7 @@
   \begin{equation}
     \gamma(\Hist) = \frac{1 - \sum_{\Seq \in \Sigma : c(\Hist \Seq) > 0}P_\alpha\big(\Seq | \Hist\big)}{\sum_{\Seq \in \Sigma : c(\Hist\Seq) = 0}P_\beta\big(\Seq | \hat \Hist\big)}
   \end{equation}
-  % TODO: if lower sum = 0: return 0.
+  \todo{if lower sum = 0: return 0,}
 
   \subsection{Interpolation Estimators}
 
