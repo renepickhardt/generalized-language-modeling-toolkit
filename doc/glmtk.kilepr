@@ -17,7 +17,7 @@ MakeIndex=
 QuickBuild=PDFLaTeX+ForwardPDF
 
 [document-settings,item:notes.tex]
-Bookmarks=129
+Bookmarks=137
 Encoding=UTF-8
 Highlighting=LaTeX
 Indentation Mode=normal
@@ -35,19 +35,19 @@ order=-1
 
 [item:notes.tex]
 archive=true
-column=15
+column=57
 encoding=UTF-8
 highlight=LaTeX
-line=222
+line=30
 mode=LaTeX
 open=true
 order=0
 
 [view-settings,view=0,item:notes.tex]
-CursorColumn=15
-CursorLine=222
+CursorColumn=57
+CursorLine=30
 JumpList=118,2
-ViMarks=.,238,28,<,223,16,>,223,16,[,238,28,],238,29,^,238,29,a,129,0
-ViRegisterContents=COND ,t
+ViMarks=.,33,0,<,34,72,>,35,0,[,33,0,],33,0,^,31,51,a,137,0
+ViRegisterContents=Much ,Most\s
 ViRegisterFlags=0,0
 ViRegisterNames=-,^
