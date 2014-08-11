@@ -17,6 +17,10 @@
 \newcommand{\Skp}{\rule{7pt}{.5pt}}
 \newcommand{\SmallSkp}{\rule{5pt}{.3pt}}
 
+\newcommand{\rp}[1]{\textbf{Rene: #1}}
+%newcommand{\rp}[1]{}
+
+
 \title{GLMTK --- Notes}
 \author{Lukas Schmelzeisen \\ \texttt{lukas@uni-koblenz.de}}
 \date{\today}
@@ -53,6 +57,10 @@
   returns the probability of a $n$-Gram \emph{Sequence} $\Seq$ for a fixed
   $n$-Gram \emph{History} $\Hist$.
 
+\rp{not to be confused with a $P_\HIST:\Sigma \to [0,1]$ which is what many papers describe as an n-gram model. I do not have a word for this object yet. Maybe one could call it NextWord-n-gram Model because it only focuses on the next word. This would be only one factor in the chainrule for marginal probabilities (I know the term is not defined here)}
+
+\rp{Even though I think that you have a clear understanding of the following it is not 100\% obvious from the text: I am not clear how you define a Sequence here. Is $|\Seq|=n$ in your case or is $|\SeqFull|=n$ in your case? In any case we need to define that an n-gram is an n-gram is a sequence plus and additional count how often the sequence occured.}
+
   For easier handling we define the \emph{Full Sequence} as the concatenation
   of history and sequence ($\SeqF = \Hist * \Seq$), and the \emph{Full History}
   as the concatenation of history and skipped sequence
@@ -76,7 +84,7 @@
   \subsection{Kinds of Probability Estimators}
 
   $n$-Gram probability estimators can be separated into two categories,
-  according to which mathematical type of probability they implement:
+  according to which mathematical type of probability they implement \rp{I did not know there are different kinds of mathematical probabilities}:
   \emph{Conditional Probabilities} or \emph{Marginal Probabilities}. How you
   actually estimate the probability of a sequence depends on what kind of
   estimator you are using.
@@ -86,9 +94,10 @@
     P(w_1^n) = P(w_n | w_1^{n-1}) \cdot P(w_{n-1} \: \Skp \: | w_1^{n-2}) \dotsm P(w_1 \: \Skp \: \Skp \: \dotso)
   \end{equation}
 
+\rp{in the following it becomes crucial to name all probability functions differently. Even though they might all be calculated as a fraction or MLE they are indeed very different functions from different spaces. I corrected this in the following.}
   $n$-Gram probability with marginal probability estimators:
   \begin{equation}
-    P(w_1^n) = P(w_n | w_1^{n-1}) \cdot P(w_{n-1} | w_1^{n-2}) \dotsm P(w_1)
+    P_{marginal}(w_1^n) = P_n(w_n | w_1^{n-1}) \cdot P_{n-1}(w_{n-1} | w_1^{n-2}) \dotsm P_1(w_1)
   \end{equation}
 
   Conditional and marginal probabilities differ  on how they handle the case of
@@ -97,6 +106,10 @@
   while marginal probabilities have
   $P(\Seq \, | \, \Hist \: \mathrm{unseen}) = P_\mathrm{Substitute}(\Seq | \Hist)$.
   % TODO: Check if this statement is true for unseen histories or just for P(H) = 0.
+
+\rp{Here we need to discuss what is really happening. I understand where the substitute probability function comes from. But I do not like this as a definition. If above in the marginal probability case was defined that each factor has to be a probability function in $\Seq$ it would be clear that if the functions are calculated as fractions and $\Hist$ was unseen that this case cannot be handled like the conditional probability case. I don't have internet here but I guess there is a theorem explaining exactly what has to be required for a product measure to be a probability function (id est explaining the chain rule of probability in the marginal case)}
+
+\rp{I still do not fully like the fact that we have a sequence and not a word as an argument we will predict. I understand that this is necessary for theory building especially with skips and rescuing conditional probabilities. Also I see that this comes from implementation details yet it feels somewhat unnatural. It could be though that I am just biased by the sheer amount of papers going only for a word as an argument}
 
   \subsection{Tests for Probability Estimators}
 
@@ -107,7 +120,7 @@
   \begin{equation}
     \sum_{\Seq \in \Sigma^n} P(\Seq) = 1
   \end{equation}
-
+\rp{note for myself. this should be very soon theoretically "proofed" by me. Just also to have a proper formulation of everything in a probabilistic way}
   \texttt{FixedHistoryProbabilitiesSumTest}:
   \begin{alignat}{2}
     \intertext{Conditional:}
@@ -125,6 +138,7 @@
   probability estimators cannot use their usual algorithm to estimate the
   probability of a sequence. They then instead use $P_\mathrm{Substitute}$ to
   calculate that probability.
+\rp{better: In the case of marginal probabilities we have to define a probability function for each value the history can take. It now can happen that if a certain history value was unssen that the formula for calculation breaks and we do not receive a probability function. In those cases we just guess (as we btw do in all other cases too) a probability function}
 
   Let $P_\mathrm{Substitute} \in \big\{ P_\mathrm{Uniform} , P_\mathrm{AbsUnigram} , P_\mathrm{ContUnigram}\big\}$
   fixed globally at program start.
@@ -134,9 +148,20 @@
     P_\mathrm{ContUnigram}\big(\Seq | \Hist\big) &= \frac{N_{1+}\big(\Skp \, \Seq_1\big)}{N_{1+}\big(\Skp \, \Skp\big)}
   \end{align}
 
-  All substitute probability estimators are marginal probability estimators.
+\rp{here isbackoff missing. AbsUnigram is a special case of backoff where we backoff all the way to the unigram distribuion. The main reason why backoff methods work and why people can play with this in implementations seems to be that they are in the marginal setting and need a substitute function. Backing off seems most accurate since it comprises more knowledge / information thatn AbsUnigram or even uniform}
+
+  All substitute probability estimators are marginal probability estimators. \rp{I do not understand how this statement is true. It could be that we have a different definition of marginal probability estimator in mind... btw. we need terms for the full product and the factors in the marginal settings. I also like the following defintion in the marginal setting:}
+
+\[ P_n(w_n|w_i^{n-1})= 
+\begin{cases}
+  e.g. MLE & \Hist_{seen}  \\
+  substitute & \Hist_{unseen}
+\end{cases}
+. \]
+
 
   \subsection{Fraction Estimators}
+\rp{the following is very nice from the point of view of abstraction and imiplementation detail. I am not sure if I would build up the theory from this angle. It seem s tempting though to be driven by implementation details because this ensures that every side talks about the same thing.}
 
   Fraction Estimators are probability estimators that have the form $\frac{n}{d}$.
   \begin{alignat}{2}
@@ -186,6 +211,8 @@
   in conjunction with an Interpolation Estimator. Discount estimators are still
   fraction estimators though.
 
+\rp{I would not be sure if we should say it like this. I understand that we basically always have fraction estimators in mind since everything starts with this and modifies and combines this in some way. still I guess discounting an many other methods could work with other models too}
+
   \begin{equation}
     P_\mathrm{Discount}{\scriptstyle[D,P_\mathrm{Frac}[n,d]]}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[\max(0,n-D),d]}\big(\Seq | \Hist\big)
   \end{equation}
@@ -223,6 +250,8 @@
   % TODO: if lower sum = 0: return 0.
 
   \subsection{Interpolation Estimators}
+
+\rp{why is there no difference in conditional and marginal case. I just see there is latex comments where you tried this...}
 
   \begin{alignat}{2}
     &P_\mathrm{Interpol}{\scriptstyle[P_\mathrm{Discount}[D,P_\mathrm{Frac}[n,d]],P_\beta]}\big(\Seq | \Hist\big) = \\
@@ -270,6 +299,7 @@
     \item FMLE still doesn't pass any tests.
     \item How to make \texttt{FixedHistoryProbabilitiesSumTest} with Continuation Estimators not be a mess?
     \item How to do \texttt{FixedHistoryProbabilitiesSumTest} with Combination Estimator.
+    \item \rp{how to introduce skips on a general basis (also with POS?)}
   \end{itemize}
 
 \end{document}
