@@ -18,6 +18,9 @@ public class MainClass {
             case "glmtk":
                 Glmtk.main(args);
                 break;
+            case "glmtk-new":
+                GlmtkNew.main(args);
+                break;
 
             default:
                 throw new IllegalStateException("Unkown main class specified.");

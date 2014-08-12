@@ -3,7 +3,7 @@
 # get script location
 GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
 
-DEFAULT_MAIN_MEMORY=6096
+DEFAULT_MAIN_MEMORY=4096
 
 # Calculate main memory
 MAIN_MEMORY=`grep -oP "^mainMemory\s*=\s*\K\d+" $GLMTK_DIR/config.ini`

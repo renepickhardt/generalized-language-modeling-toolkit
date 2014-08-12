@@ -18,8 +18,8 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Config;
 import de.glmtk.Logging;
-import de.glmtk.utils.Config;
 import de.glmtk.utils.StringUtils;
 
 public abstract class Executable {
@@ -28,7 +28,7 @@ public abstract class Executable {
 
     protected static final String OPTION_VERSION = "version";
 
-    private static Logger logger = LogManager.getLogger(Executable.class);
+    private static Logger LOGGER = LogManager.getLogger(Executable.class);
 
     protected Config config;
 
@@ -57,7 +57,7 @@ public abstract class Executable {
             try (StringWriter stackTrace = new StringWriter();
                     PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
                 e.printStackTrace(stackTraceWriter);
-                logger.error("Exception " + stackTrace.toString());
+                LOGGER.error("Exception " + stackTrace.toString());
             } catch (IOException ee) {
             }
         }
@@ -106,10 +106,10 @@ public abstract class Executable {
 
     private void printLogHeader(String[] args) throws IOException,
             InterruptedException {
-        logger.info(StringUtils.repeat("=", 80));
-        logger.info(getClass().getSimpleName());
+        LOGGER.info(StringUtils.repeat("=", 80));
+        LOGGER.info(getClass().getSimpleName());
 
-        logger.info(StringUtils.repeat("-", 80));
+        LOGGER.info(StringUtils.repeat("-", 80));
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
@@ -120,26 +120,26 @@ public abstract class Executable {
                 new BufferedReader(new InputStreamReader(
                         gitLogProc.getInputStream()))) {
             String gitCommit = gitLogReader.readLine();
-            logger.info("Git Commit: {}", gitCommit);
+            LOGGER.info("Git Commit: {}", gitCommit);
         }
 
         // log user dir
-        logger.info("User Dir: {}", config.getUserDir());
+        LOGGER.info("User Dir: {}", config.getUserDir());
 
         // log glmtk dir
-        logger.info("Glmtk Dir: {}", config.getGlmtkDir());
+        LOGGER.info("Glmtk Dir: {}", config.getGlmtkDir());
 
         // log arguments
-        logger.info("Arguments: {}", StringUtils.join(args, " "));
+        LOGGER.info("Arguments: {}", StringUtils.join(args, " "));
 
         // log config
-        logger.info("Config: {}", config);
+        LOGGER.info("Config: {}", config);
 
-        logger.info(StringUtils.repeat("-", 80));
+        LOGGER.info(StringUtils.repeat("-", 80));
     }
 
     private void printLogFooter() {
-        logger.info("Done.");
+        LOGGER.info("Done.");
     }
 
 }
