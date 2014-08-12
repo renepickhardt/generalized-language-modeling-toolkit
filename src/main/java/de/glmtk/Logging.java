@@ -110,7 +110,7 @@ public class Logging {
                         Charset.defaultCharset(), true, true, null, null);
 
         Appender fileLocalAppender =
-                FileAppender.createAppender(localLogFile.toString(), "false",
+                FileAppender.createAppender(localLogFile.toString(), "true",
                         "false", "FileLocal", "false", "false", "true", "8192",
                         layout, null, "false", "false", configuration);
         fileLocalAppender.start();

@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.cli.Option;
 
 import de.glmtk.Logging;
+import de.glmtk.Status;
 
 public class GlmtkNew extends Executable {
 
@@ -28,6 +29,8 @@ public class GlmtkNew extends Executable {
     private Path corpus = null;
 
     private Path output = null;
+
+    private Status status = null;
 
     public static void main(String[] args) {
         new GlmtkNew().run(args);
@@ -70,8 +73,8 @@ public class GlmtkNew extends Executable {
         }
         if (Files.isDirectory(corpus)) {
             // TODO: Allow corpus to be directory.
-            System.err
-            .println("Specifying a corpus as a directory is not supported yet.");
+            System.err.println("Specifying a corpus "
+                    + "as a directory is not supported yet.");
             throw new Termination();
         }
 
@@ -80,10 +83,20 @@ public class GlmtkNew extends Executable {
         } else {
             output = Paths.get(corpus + ".out");
         }
+        if (Files.exists(output) && !Files.isDirectory(output)) {
+            System.err.println("Output file '" + output
+                    + "' already exists but is not a directory.");
+        }
     }
 
     @Override
     protected void exec() throws Exception {
+        if (!Files.exists(output)) {
+            Files.createDirectories(output);
+        }
+
+        status = new Status(output.resolve("status"));
+        status.update();
     }
 
 }
