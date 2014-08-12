@@ -1,4 +1,4 @@
-package de.glmtk.sequencing;
+package de.glmtk.legacy.sequencing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexWriter;
-import de.glmtk.patterns.Pattern;
+import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StringUtils;
 
 /**
@@ -141,7 +141,7 @@ public class Sequencer {
                                     line);
                 }
 
-                Object[] split = StringUtils.splitAtSpace(line).toArray();
+                Object[] split = StringUtils.splitAtChar(line, ' ').toArray();
 
                 String[] words = new String[split.length];
                 String[] poses = new String[split.length];

@@ -3,7 +3,7 @@ package de.glmtk.smoothing.legacy2;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.utils.StringUtils;
 

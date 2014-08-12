@@ -1,7 +1,7 @@
-package de.glmtk.patterns;
+package de.glmtk.pattern;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -112,7 +112,20 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         for (PatternElem elem : pattern) {
             if (!(elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
                     || elem.equals(PatternElem.PSKP) || elem
-                        .equals(PatternElem.WPOS))) {
+                    .equals(PatternElem.WPOS))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether pattern only contains CNT and SKP.
+     */
+    public boolean isAbsolute() {
+        for (PatternElem elem : pattern) {
+            if (elem.equals(PatternElem.WSKP) || elem.equals(PatternElem.PSKP)
+                    || elem.equals(PatternElem.WPOS)) {
                 return false;
             }
         }
@@ -181,18 +194,28 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return pattern.iterator();
     }
 
+    public static int getModelLength(Set<Pattern> patterns) {
+        int modelLength = 0;
+        for (Pattern pattern : patterns) {
+            if (pattern.length() > modelLength) {
+                modelLength = pattern.length();
+            }
+        }
+        return modelLength;
+    }
+
     public static Set<Pattern> getCombinations(
             int modelLength,
-            PatternElem[] elems) {
+            List<PatternElem> elems) {
         Set<Pattern> patterns = new HashSet<Pattern>();
 
         for (int i = 1; i != modelLength + 1; ++i) {
-            for (int j = 0; j != pow(elems.length, i); ++j) {
+            for (int j = 0; j != pow(elems.size(), i); ++j) {
                 List<PatternElem> pattern = new ArrayList<PatternElem>(i);
                 int n = j;
                 for (int k = 0; k != i; ++k) {
-                    pattern.add(elems[n % elems.length]);
-                    n /= elems.length;
+                    pattern.add(elems.get(n % elems.size()));
+                    n /= elems.size();
                 }
                 patterns.add(new Pattern(pattern));
             }
@@ -209,22 +232,36 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return result;
     }
 
-    // LEGACY //////////////////////////////////////////////////////////////////
+    public static Set<Pattern> replaceTargetWithElems(
+            Set<Pattern> inputPatterns,
+            PatternElem target,
+            List<PatternElem> elems) throws IOException {
+        Set<Pattern> patterns = new HashSet<Pattern>();
 
-    public static List<Pattern> getGlmForSmoothingPatterns(int modelLength) {
-        int pow = 1 << modelLength; // 2^modelLength
-        List<Pattern> patterns = new ArrayList<Pattern>(pow);
-        for (int i = 1; i != pow; ++i) {
-            int length = Integer.SIZE - Integer.numberOfLeadingZeros(i);
-            List<PatternElem> pattern = new ArrayList<PatternElem>(length);
-            int n = i;
-            do {
-                pattern.add((n & 1) != 0 ? PatternElem.CNT : PatternElem.SKP);
-            } while ((n >>= 1) != 0);
-            Collections.reverse(pattern);
-            patterns.add(new Pattern(pattern));
+        for (Pattern pattern : inputPatterns) {
+            if (pattern.containsSkp()) {
+                for (PatternElem elem : elems) {
+                    patterns.add(pattern.replace(target, elem));
+                }
+            }
         }
+
         return patterns;
+    }
+
+    public static Pattern getContinuationSourcePattern(Pattern pattern) {
+        Pattern sourcePattern = pattern.clone();
+        for (int i = sourcePattern.length() - 1; i != -1; --i) {
+            PatternElem elem = sourcePattern.get(i);
+            if (elem.equals(PatternElem.WSKP)) {
+                sourcePattern.set(i, PatternElem.CNT);
+                break;
+            } else if (elem.equals(PatternElem.PSKP)) {
+                sourcePattern.set(i, PatternElem.POS);
+                break;
+            }
+        }
+        return sourcePattern;
     }
 
 }

@@ -9,11 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.StringUtils;
 
 public class Status {
 
@@ -41,36 +45,73 @@ public class Status {
 
     private TrainingStatus training;
 
+    private Set<Pattern> sequenced;
+
+    private Set<Pattern> absolute;
+
+    private Set<Pattern> continuation;
+
     public Status(
             Path file,
             Path corpus) throws IOException {
         this.file = file;
         this.corpus = corpus;
 
-        hash = generateFileHash(corpus);
+        hash = generateFileHash(this.corpus);
 
+        setDefaultSettings();
         if (Files.exists(file)) {
             readStatusFromFile();
-        } else {
-            setDefaultSettings();
         }
     }
 
     private void setDefaultSettings() {
         training = TrainingStatus.NONE;
+        sequenced = new HashSet<Pattern>();
+        absolute = new HashSet<Pattern>();
+        continuation = new HashSet<Pattern>();
     }
 
     public TrainingStatus getTraining() {
         return training;
     }
 
-    public void setTraining(TrainingStatus training) {
+    public void setTraining(TrainingStatus training) throws IOException {
         this.training = training;
+
         // Reset all other options
+        sequenced = new HashSet<Pattern>();
+        absolute = new HashSet<Pattern>();
+        continuation = new HashSet<Pattern>();
+
+        writeStatusToFile();
     }
 
-    public void update() throws IOException {
-        Files.deleteIfExists(file);
+    public Set<Pattern> getSequenced() {
+        return sequenced;
+    }
+
+    public void setSequenced(Set<Pattern> sequenced) {
+        this.sequenced = sequenced;
+    }
+
+    public Set<Pattern> getAbsolute() {
+        return absolute;
+    }
+
+    public void setAbsolute(Set<Pattern> absolute) throws IOException {
+        this.absolute = absolute;
+
+        writeStatusToFile();
+    }
+
+    public Set<Pattern> getContinuation() {
+        return continuation;
+    }
+
+    public void setContinuation(Set<Pattern> continuation) throws IOException {
+        this.continuation = continuation;
+
         writeStatusToFile();
     }
 
@@ -85,7 +126,7 @@ public class Status {
 
                 Matcher matcher;
 
-                matcher = Pattern.compile(getPattern("hash")).matcher(line);
+                matcher = getPattern("hash").matcher(line);
                 if (matcher.matches()) {
                     String statusHash = matcher.group(1);
                     if (!hash.equals(statusHash)) {
@@ -93,25 +134,65 @@ public class Status {
                         LOGGER.warn("New Hash didn't match old one. Overwriting.");
                         break;
                     }
+                    continue;
                 }
 
-                matcher = Pattern.compile(getPattern("training")).matcher(line);
+                matcher = getPattern("training").matcher(line);
                 if (matcher.matches()) {
                     training = TrainingStatus.fromString(matcher.group(1));
+                    continue;
+                }
+
+                matcher = getPattern("sequenced").matcher(line);
+                if (matcher.matches()) {
+                    sequenced = new HashSet<Pattern>();
+                    for (String pattern : StringUtils.splitAtChar(
+                            matcher.group(1), ',')) {
+                        sequenced.add(new Pattern(pattern));
+                    }
+                    continue;
+                }
+
+                matcher = getPattern("absolute").matcher(line);
+                if (matcher.matches()) {
+                    absolute = new HashSet<Pattern>();
+                    for (String pattern : StringUtils.splitAtChar(
+                            matcher.group(1), ',')) {
+                        absolute.add(new Pattern(pattern));
+                    }
+                    continue;
+                }
+
+                matcher = getPattern("continuation").matcher(line);
+                if (matcher.matches()) {
+                    continuation = new HashSet<Pattern>();
+                    for (String pattern : StringUtils.splitAtChar(
+                            matcher.group(1), ',')) {
+                        continuation.add(new Pattern(pattern));
+                    }
+                    continue;
                 }
             }
         }
     }
 
-    private static String getPattern(String option) {
-        return "^" + option + "\\s*=\\s*(\\w+)\\s*$";
+    private static java.util.regex.Pattern getPattern(String option) {
+        return java.util.regex.Pattern.compile("^" + option
+                + "\\s*=\\s*(\\S+)\\s*$");
     }
 
     private void writeStatusToFile() throws IOException {
+        Files.deleteIfExists(file);
         try (BufferedWriter writer =
                 Files.newBufferedWriter(file, Charset.defaultCharset())) {
             writer.append("hash = " + hash + "\n");
             writer.append("training = " + training + "\n");
+            writer.append("sequenced = " + StringUtils.join(sequenced, ",")
+                    + "\n");
+            writer.append("absolute = " + StringUtils.join(absolute, ",")
+                    + "\n");
+            writer.append("continuation = "
+                    + StringUtils.join(continuation, ",") + "\n");
         }
     }
 

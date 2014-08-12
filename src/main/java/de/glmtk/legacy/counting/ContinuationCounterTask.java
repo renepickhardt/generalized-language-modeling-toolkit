@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.legacy.counting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,9 +15,10 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.counting.Counter;
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexWriter;
-import de.glmtk.patterns.Pattern;
+import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StringUtils;
 
 public class ContinuationCounterTask implements Runnable {
@@ -109,7 +110,7 @@ public class ContinuationCounterTask implements Runnable {
                         }
 
                         Object[] words =
-                                StringUtils.splitAtSpace(sequence).toArray();
+                                StringUtils.splitAtChar(sequence, ' ').toArray();
                         String patternSequence = pattern.apply(words);
 
                         Counter counter = sequenceCounts.get(patternSequence);
@@ -142,7 +143,7 @@ public class ContinuationCounterTask implements Runnable {
                 String sequence = sequenceCount.getKey();
                 Counter counter = sequenceCount.getValue();
 
-                Object[] words = StringUtils.splitAtSpace(sequence).toArray();
+                Object[] words = StringUtils.splitAtChar(sequence, ' ').toArray();
 
                 BufferedWriter writer = indexWriter.get(words);
                 writer.write(sequence);

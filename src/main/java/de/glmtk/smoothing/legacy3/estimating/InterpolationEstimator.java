@@ -1,6 +1,6 @@
 package de.glmtk.smoothing.legacy3.estimating;
 
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;

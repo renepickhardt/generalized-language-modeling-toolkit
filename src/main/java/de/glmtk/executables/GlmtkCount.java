@@ -12,13 +12,13 @@ import java.util.List;
 import org.apache.commons.cli.Option;
 
 import de.glmtk.Logging;
-import de.glmtk.counting.AbsoluteCounter;
-import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexBuilder;
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
-import de.glmtk.sequencing.Sequencer;
+import de.glmtk.legacy.counting.AbsoluteCounter;
+import de.glmtk.legacy.counting.ContinuationCounter;
+import de.glmtk.legacy.sequencing.Sequencer;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.tagging.PosTagger;
 
 public class GlmtkCount extends Executable {
@@ -200,15 +200,13 @@ public class GlmtkCount extends Executable {
                 new Sequencer(trainingFile, sequencesDir, index, 1, countPos,
                         false);
         if (countPos) {
-            sequencer.sequence(Pattern.getCombinations(modelLength,
-                    new PatternElem[] {
-                    PatternElem.CNT, PatternElem.SKP, PatternElem.POS
-            }));
+            sequencer
+                    .sequence(Pattern.getCombinations(modelLength, Arrays
+                            .asList(PatternElem.CNT, PatternElem.SKP,
+                                    PatternElem.POS)));
         } else {
             sequencer.sequence(Pattern.getCombinations(modelLength,
-                    new PatternElem[] {
-                    PatternElem.CNT, PatternElem.SKP
-            }));
+                    Arrays.asList(PatternElem.CNT, PatternElem.SKP)));
         }
 
         // Absolute

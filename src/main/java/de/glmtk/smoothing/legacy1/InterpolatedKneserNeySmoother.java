@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.patterns.Pattern;
+import de.glmtk.pattern.Pattern;
 
 public class InterpolatedKneserNeySmoother extends PropabilityCond2Smoother {
 

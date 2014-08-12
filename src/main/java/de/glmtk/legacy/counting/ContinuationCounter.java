@@ -1,10 +1,8 @@
-package de.glmtk.counting;
+package de.glmtk.legacy.counting;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,8 +14,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.indexing.Index;
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
 
 /**
  * Counts continuation counts of sequences for a number of patterns using
@@ -38,6 +36,7 @@ public class ContinuationCounter {
 
     private int numberOfCores;
 
+    @SuppressWarnings("unused")
     private boolean withPos;
 
     private boolean sortCounts;
@@ -59,12 +58,13 @@ public class ContinuationCounter {
         this.sortCounts = sortCounts;
     }
 
+    @SuppressWarnings("null")
     public void count() throws IOException, InterruptedException {
         logger.info("Counting continuation counts of sequences.");
 
         Files.createDirectory(outputDir);
 
-        Map<Pattern, Pattern> patterns = generateContinuationPatterns();
+        Map<Pattern, Pattern> patterns = null;
 
         ContinuationCounterTask.setNumTasks(patterns.size());
 
@@ -119,33 +119,7 @@ public class ContinuationCounter {
         }
     }
 
-    private Map<Pattern, Pattern> generateContinuationPatterns()
-            throws IOException {
-        Map<Pattern, Pattern> patterns = new HashMap<Pattern, Pattern>();
-
-        try (DirectoryStream<Path> patternDirs =
-                Files.newDirectoryStream(inputDir)) {
-            for (Path patternDir : patternDirs) {
-                Pattern pattern =
-                        new Pattern(patternDir.getFileName().toString());
-                if (pattern.containsSkp()) {
-                    Pattern wskpPattern =
-                            pattern.replace(PatternElem.SKP, PatternElem.WSKP);
-                    patterns.put(wskpPattern, getSourcePattern(wskpPattern));
-
-                    if (withPos) {
-                        Pattern pskpPattern =
-                                pattern.replace(PatternElem.SKP,
-                                        PatternElem.PSKP);
-                        patterns.put(pskpPattern, getSourcePattern(pskpPattern));
-                    }
-                }
-            }
-        }
-
-        return patterns;
-    }
-
+    @SuppressWarnings("unused")
     private Pattern getSourcePattern(Pattern pattern) {
         Pattern sourcePattern = pattern.clone();
         for (int i = sourcePattern.length() - 1; i != -1; --i) {

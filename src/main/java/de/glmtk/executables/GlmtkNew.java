@@ -6,12 +6,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.Option;
 
 import de.glmtk.Logging;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.tagging.PosTagger;
 
 public class GlmtkNew extends Executable {
@@ -96,15 +99,37 @@ public class GlmtkNew extends Executable {
             Files.createDirectories(output);
         }
 
-        Path trainingFile = output.resolve("training.txt");
+        Path trainingFile = output.resolve("training");
         Path sequencesDir = output.resolve("sequences");
         Path absoluteDir = output.resolve("absolute");
         Path continuationDir = output.resolve("continuation");
 
         Status status = new Status(output.resolve("status"), corpus);
 
+        // Request /////////////////////////////////////////////////////////////
+
         // Whether the corpus should be tagged with POS.
         boolean needTrainingPos = true;
+        // Absolute Patterns we need
+        Set<Pattern> neededAbsolutePatterns =
+                Pattern.getCombinations(5,
+                        Arrays.asList(PatternElem.CNT, PatternElem.SKP));
+        // Continuation Patterns we need
+        Set<Pattern> neededContinuationPatterns =
+                Pattern.replaceTargetWithElems(neededAbsolutePatterns,
+                        PatternElem.SKP,
+                        Arrays.asList(PatternElem.WSKP, PatternElem.PSKP));
+
+        // Add patterns to absolute that are needed to generate continuation.
+        for (Pattern pattern : neededContinuationPatterns) {
+            Pattern sourcePattern =
+                    Pattern.getContinuationSourcePattern(pattern);
+            if (sourcePattern.isAbsolute()) {
+                neededAbsolutePatterns.add(sourcePattern);
+            }
+        }
+
+        // Training / Tagging //////////////////////////////////////////////////
 
         if (needTrainingPos) {
             if (status.getTraining() != TrainingStatus.DONE_WITH_POS) {
@@ -118,6 +143,26 @@ public class GlmtkNew extends Executable {
             status.setTraining(TrainingStatus.DONE);
         }
 
-        status.update();
+        // Sequencing //////////////////////////////////////////////////////////
+
+        if (!status.getAbsolute().equals(neededAbsolutePatterns)
+                && !status.getSequenced().equals(neededAbsolutePatterns)) {
+            // TODO: do sequencing
+            status.setSequenced(neededAbsolutePatterns);
+        }
+
+        // Absolute ////////////////////////////////////////////////////////////
+
+        if (!status.getAbsolute().equals(neededAbsolutePatterns)) {
+            // TODO: do absolute
+            status.setAbsolute(neededAbsolutePatterns);
+        }
+
+        // Continuation ////////////////////////////////////////////////////////
+
+        if (!status.getContinuation().equals(neededContinuationPatterns)) {
+            // TODO: do continuation
+            status.setContinuation(neededContinuationPatterns);
+        }
     }
 }

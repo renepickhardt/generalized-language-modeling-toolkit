@@ -77,7 +77,7 @@ public class IndexBuilder {
                                     line);
                 }
 
-                Object[] split = StringUtils.splitAtSpace(line).toArray();
+                Object[] split = StringUtils.splitAtChar(line, ' ').toArray();
 
                 String[] words = new String[split.length];
                 String[] poses = new String[split.length];

@@ -8,19 +8,20 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.glmtk.sequencing.Sequencer;
-import de.glmtk.smoothing.Corpus;
-import de.glmtk.utils.StringUtils;
-import de.glmtk.counting.AbsoluteCounter;
-import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.indexing.Index;
 import de.glmtk.indexing.IndexBuilder;
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.legacy.counting.AbsoluteCounter;
+import de.glmtk.legacy.counting.ContinuationCounter;
+import de.glmtk.legacy.sequencing.Sequencer;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
+import de.glmtk.smoothing.Corpus;
+import de.glmtk.utils.StringUtils;
 
 public abstract class TestCorpus {
 
@@ -67,9 +68,8 @@ public abstract class TestCorpus {
             Sequencer sequencer =
                     new Sequencer(trainingFile, sequencesDir, index, 1, false,
                             false);
-            sequencer.sequence(Pattern.getCombinations(5, new PatternElem[] {
-                PatternElem.CNT, PatternElem.SKP
-            }));
+            sequencer.sequence(Pattern.getCombinations(5,
+                    Arrays.asList(PatternElem.CNT, PatternElem.SKP)));
         }
 
         // absolute

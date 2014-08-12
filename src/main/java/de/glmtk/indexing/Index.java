@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.patterns.Pattern;
+import de.glmtk.pattern.Pattern;
 
 /**
  * Class used to interface with the output of {@link IndexBuilder}.

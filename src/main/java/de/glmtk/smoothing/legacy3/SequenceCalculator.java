@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.legacy3.estimating.Estimator;
 

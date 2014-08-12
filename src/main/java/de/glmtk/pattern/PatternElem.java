@@ -1,4 +1,4 @@
-package de.glmtk.patterns;
+package de.glmtk.pattern;
 
 import java.util.HashMap;
 import java.util.Map;

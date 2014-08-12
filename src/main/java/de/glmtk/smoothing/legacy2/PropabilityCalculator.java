@@ -22,7 +22,7 @@ public abstract class PropabilityCalculator {
     public abstract double propability(String sequence);
 
     protected List<String> getWords(String sequence) {
-        return StringUtils.splitAtSpace(sequence);
+        return StringUtils.splitAtChar(sequence, ' ');
     }
 
     protected void debugPropability(String sequence) {

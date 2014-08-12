@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import de.glmtk.patterns.Pattern;
+import de.glmtk.pattern.Pattern;
 
 public class DiscountSmoother extends MaximumLikelihoodSmoother {
 

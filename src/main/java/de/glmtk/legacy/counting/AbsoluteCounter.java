@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.legacy.counting;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
