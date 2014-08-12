@@ -17,12 +17,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     protected double
         calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
-        int fullHistoryCount;
-        if (fullHistory.isEmpty()) {
-            fullHistoryCount = corpus.getNumWords();
-        } else {
-            fullHistoryCount = corpus.getAbsolute(fullHistory);
-        }
+        int fullHistoryCount = corpus.getAbsolute(fullHistory);
         logDebug(recDepth, "fullHistory = {} ({})", fullHistory,
                 fullHistoryCount);
         return fullHistoryCount;

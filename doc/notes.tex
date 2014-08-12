@@ -213,7 +213,7 @@
   \subsection{Fraction Estimators}
 
   \rp{the following is very nice from the point of view of abstraction and
-  imiplementation detail. I am not sure if I would build up the theory from this
+  implementation detail. I am not sure if I would build up the theory from this
   angle. It seem s tempting though to be driven by implementation details
   because this ensures that every side talks about the same thing.}
 
@@ -236,7 +236,6 @@
   \begin{equation}
     P_\mathrm{MLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\HistF)]}\big(\Seq | \Hist\big)
   \end{equation}
-  \todo{If history is empty we use $c(\Skp)$ instead of $c(\HistF)$.}
 
   \subsubsection{``False''MaximumLikelihoodEstimator}
 
@@ -247,7 +246,9 @@
   \begin{equation}
     P_\mathrm{FMLE}\big(\Seq | \Hist\big) = P_\mathrm{Frac}{\scriptstyle[c(\SeqF) , c(\Hist)]}\big(\Seq | \Hist\big)
   \end{equation}
-  \todo{If history is empty we use $c(\Skp)$ instead of $c(\Hist)$.}
+
+  \todo{If history is empty we use $c(\Skp)$ instead of $c(\Hist)$. Added do we
+  really have to?}
 
   \subsubsection{ContinuationMaximumLikelihoodEstimator}
 
