@@ -159,7 +159,8 @@ public class Config {
     // GLMTK-COUNT /////////////////////////////////////////////////////////////
 
     public Path getModel() {
-        return (Path) sections.get("glmtk-count").get("model");
+        return glmtkDir
+                .resolve((Path) sections.get("glmtk-count").get("model"));
     }
 
     // GLMTK ///////////////////////////////////////////////////////////////////

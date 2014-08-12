@@ -6,14 +6,12 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.sequencing.Sequencer;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
@@ -21,29 +19,20 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 public class PosTagger {
 
-    public static long UPDATE_INTERVAL = 5 * 1000; // 5s
+    public static final long UPDATE_INTERVAL = 5 * 1000; // 5s
 
-    private static Logger logger = LogManager
-            .getFormatterLogger(Sequencer.class);
-
-    private Path inputFile;
-
-    private Path outputFile;
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(PosTagger.class);
 
     private MaxentTagger tagger;
 
     public PosTagger(
-            Path inputFile,
-            Path outputFile,
             Path modelFile) {
-        this.inputFile = inputFile;
-        this.outputFile = outputFile;
-
         tagger = new MaxentTagger(modelFile.toString());
     }
 
-    public void tag() throws IOException {
-        logger.info("Tagging training data.");
+    public void tag(Path inputFile, Path outputFile) throws IOException {
+        LOGGER.info("Tagging: %s -> %s", inputFile, outputFile);
 
         long readSize = 0;
         long totalSize = Files.size(inputFile);
@@ -53,8 +42,7 @@ public class PosTagger {
                 Files.newBufferedReader(inputFile, Charset.defaultCharset());
                 BufferedWriter writer =
                         Files.newBufferedWriter(outputFile,
-                                Charset.defaultCharset(),
-                                StandardOpenOption.CREATE)) {
+                                Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
@@ -80,10 +68,12 @@ public class PosTagger {
 
                 if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
                     time = System.currentTimeMillis();
-                    logger.info("%6.2f%%", 100.f * readSize / totalSize);
+                    LOGGER.info("%6.2f%%", 100.f * readSize / totalSize);
                 }
             }
         }
+
+        LOGGER.info("Tagging: done.");
     }
 
     private static List<HasWord> arrayToListHasWords(String[] array) {
@@ -93,4 +83,5 @@ public class PosTagger {
         }
         return result;
     }
+
 }

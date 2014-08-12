@@ -1,5 +1,6 @@
 package de.glmtk.executables;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,6 +11,8 @@ import org.apache.commons.cli.Option;
 
 import de.glmtk.Logging;
 import de.glmtk.Status;
+import de.glmtk.Status.TrainingStatus;
+import de.glmtk.tagging.PosTagger;
 
 public class GlmtkNew extends Executable {
 
@@ -29,8 +32,6 @@ public class GlmtkNew extends Executable {
     private Path corpus = null;
 
     private Path output = null;
-
-    private Status status = null;
 
     public static void main(String[] args) {
         new GlmtkNew().run(args);
@@ -90,13 +91,33 @@ public class GlmtkNew extends Executable {
     }
 
     @Override
-    protected void exec() throws Exception {
+    protected void exec() throws IOException {
         if (!Files.exists(output)) {
             Files.createDirectories(output);
         }
 
-        status = new Status(output.resolve("status"));
+        Path trainingFile = output.resolve("training.txt");
+        Path sequencesDir = output.resolve("sequences");
+        Path absoluteDir = output.resolve("absolute");
+        Path continuationDir = output.resolve("continuation");
+
+        Status status = new Status(output.resolve("status"), corpus);
+
+        // Whether the corpus should be tagged with POS.
+        boolean needTrainingPos = true;
+
+        if (needTrainingPos) {
+            if (status.getTraining() != TrainingStatus.DONE_WITH_POS) {
+                Files.deleteIfExists(trainingFile);
+                PosTagger tagger = new PosTagger(config.getModel());
+                tagger.tag(corpus, trainingFile);
+                status.setTraining(TrainingStatus.DONE_WITH_POS);
+            }
+        } else if (status.getTraining() == TrainingStatus.NONE) {
+            Files.copy(corpus, trainingFile);
+            status.setTraining(TrainingStatus.DONE);
+        }
+
         status.update();
     }
-
 }

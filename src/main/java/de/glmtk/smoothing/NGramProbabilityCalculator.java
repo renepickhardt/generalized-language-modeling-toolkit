@@ -11,7 +11,7 @@ import de.glmtk.smoothing.estimator.Estimator;
 
 public class NGramProbabilityCalculator {
 
-    private final static Logger LOGGER = LogManager
+    private static final Logger LOGGER = LogManager
             .getLogger(NGramProbabilityCalculator.class);
 
     private Estimator estimator = null;

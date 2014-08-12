@@ -15,7 +15,7 @@ import de.glmtk.smoothing.legacy3.estimating.Estimator;
  */
 public class SequenceCalculator {
 
-    private final static Logger LOGGER = LogManager
+    private static final Logger LOGGER = LogManager
             .getLogger(SequenceCalculator.class);
 
     private CalculatingMode calculatingMode = null;
