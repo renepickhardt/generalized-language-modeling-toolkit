@@ -57,17 +57,20 @@ public class Sequencer {
 
     private int numberOfCores;
 
+    private int updateInterval;
+
     private Map<Integer, Set<Pattern>> patternsByLength;
 
     private boolean readingDone = false;
 
     private boolean calculatingDone = false;
 
-    // TODO: Add percent display.
     public Sequencer(
             int numberOfCores,
+            int updateInterval,
             Set<Pattern> patterns) {
         this.numberOfCores = numberOfCores;
+        this.updateInterval = updateInterval;
 
         patternsByLength = new TreeMap<Integer, Set<Pattern>>();
         for (Pattern pattern : patterns) {
@@ -106,7 +109,7 @@ public class Sequencer {
 
         SequencerReadTask readTask =
                 new SequencerReadTask(this, readQueue, inputFile,
-                        patternsByLength, hasPos, readerMemory);
+                        patternsByLength, hasPos, readerMemory, updateInterval);
         List<SequencerCalculateTask> calculateTasks =
                 new LinkedList<SequencerCalculateTask>();
         for (int i = 0; i != Math.max(numberOfCores - 2, 1); ++i) {
@@ -152,6 +155,10 @@ public class Sequencer {
 
     /* package */void calculatingDone() {
         calculatingDone = true;
+    }
+
+    /* package */void logPercent(float percent) {
+        LOGGER.info("%6.2f%%", percent);
     }
 
 }

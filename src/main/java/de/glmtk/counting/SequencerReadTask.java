@@ -33,19 +33,23 @@ public class SequencerReadTask implements Runnable {
 
     private long readerMemory;
 
+    private int updateInterval;
+
     public SequencerReadTask(
             Sequencer sequencer,
             BlockingQueue<ReadQueueItem> readQueue,
             Path inputFile,
             Map<Integer, Set<Pattern>> patternsByLength,
             boolean hasPos,
-            long readerMemory) {
+            long readerMemory,
+            int updateInterval) {
         this.sequencer = sequencer;
         this.readQueue = readQueue;
         this.inputFile = inputFile;
         this.patternsByLength = patternsByLength;
         this.hasPos = hasPos;
         this.readerMemory = readerMemory;
+        this.updateInterval = updateInterval;
     }
 
     @Override
@@ -53,8 +57,14 @@ public class SequencerReadTask implements Runnable {
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                         Files.newInputStream(inputFile)), (int) readerMemory)) {
+            long readSize = 0;
+            long totalSize = Files.size(inputFile);
+            long time = System.currentTimeMillis();
+
             String line;
             while ((line = reader.readLine()) != null) {
+                readSize += line.getBytes().length;
+
                 String[] split =
                         StringUtils.splitAtChar(line, ' ').toArray(
                                 new String[0]);
@@ -62,6 +72,14 @@ public class SequencerReadTask implements Runnable {
                 String[] poses = new String[split.length];
                 extractWordAndPosesFromSplit(split, words, poses);
                 generateReadStatusItems(words, poses);
+
+                if (updateInterval != 0) {
+                    long t = System.currentTimeMillis();
+                    if (t - time >= updateInterval) {
+                        time = t;
+                        sequencer.logPercent(100.0f * readSize / totalSize);
+                    }
+                }
             }
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);

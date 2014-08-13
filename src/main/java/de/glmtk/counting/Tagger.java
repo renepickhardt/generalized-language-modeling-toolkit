@@ -3,7 +3,8 @@ package de.glmtk.counting;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
@@ -19,30 +20,44 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 public class Tagger {
 
-    public static final long UPDATE_INTERVAL = 5 * 1000; // 5s
-
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Tagger.class);
+
+    private static final int MEMORY_PERCENT = 30;
+
+    private int updateInterval;
 
     private MaxentTagger tagger;
 
     public Tagger(
+            int updateInterval,
             Path modelFile) {
+        this.updateInterval = updateInterval;
         tagger = new MaxentTagger(modelFile.toString());
     }
 
     public void tag(Path inputFile, Path outputFile) throws IOException {
         LOGGER.info("Tagging: %s -> %s", inputFile, outputFile);
 
+        Runtime r = Runtime.getRuntime();
+        r.gc();
+        long totalFreeMemory = r.maxMemory() - r.totalMemory() + r.freeMemory();
+        long memory = (MEMORY_PERCENT * totalFreeMemory) / 100;
+
+        long readerMemory = memory * 50 / 100;
+        long writerMemory = memory * 50 / 100;
+
         long readSize = 0;
         long totalSize = Files.size(inputFile);
         long time = System.currentTimeMillis();
 
         try (BufferedReader reader =
-                Files.newBufferedReader(inputFile, Charset.defaultCharset());
+                new BufferedReader(new InputStreamReader(
+                        Files.newInputStream(inputFile)), (int) readerMemory);
                 BufferedWriter writer =
-                        Files.newBufferedWriter(outputFile,
-                                Charset.defaultCharset())) {
+                        new BufferedWriter(new OutputStreamWriter(
+                                Files.newOutputStream(outputFile)),
+                                (int) writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
@@ -66,9 +81,12 @@ public class Tagger {
                 }
                 writer.write("\n");
 
-                if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
-                    time = System.currentTimeMillis();
-                    LOGGER.info("%6.2f%%", 100.f * readSize / totalSize);
+                if (updateInterval != 0) {
+                    long t = System.currentTimeMillis();
+                    if (t - time >= updateInterval) {
+                        time = t;
+                        LOGGER.info("%6.2f%%", 100.f * readSize / totalSize);
+                    }
                 }
             }
         }

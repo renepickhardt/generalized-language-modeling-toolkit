@@ -177,7 +177,8 @@ public class GlmtkCount extends Executable {
 
         // Tagging
         if (countPos && tagPos) {
-            Tagger tagger = new Tagger(config.getModel());
+            Tagger tagger =
+                    new Tagger(config.getUpdateInterval(), config.getModel());
             tagger.tag(corpus, trainingFile);
         } else {
             Files.copy(corpus, trainingFile);
@@ -201,9 +202,9 @@ public class GlmtkCount extends Executable {
                         false);
         if (countPos) {
             sequencer
-                    .sequence(Pattern.getCombinations(modelLength, Arrays
-                            .asList(PatternElem.CNT, PatternElem.SKP,
-                                    PatternElem.POS)));
+            .sequence(Pattern.getCombinations(modelLength, Arrays
+                    .asList(PatternElem.CNT, PatternElem.SKP,
+                            PatternElem.POS)));
         } else {
             sequencer.sequence(Pattern.getCombinations(modelLength,
                     Arrays.asList(PatternElem.CNT, PatternElem.SKP)));

@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -138,7 +139,9 @@ public class GlmtkNew extends Executable {
         if (needToTagTraining) {
             if (status.getTraining() != TrainingStatus.DONE_WITH_POS) {
                 Files.deleteIfExists(trainingFile);
-                Tagger tagger = new Tagger(config.getModel());
+                Tagger tagger =
+                        new Tagger(config.getUpdateInterval(),
+                                config.getModel());
                 tagger.tag(corpus, trainingFile);
                 status.setTraining(TrainingStatus.DONE_WITH_POS);
             }
@@ -151,10 +154,11 @@ public class GlmtkNew extends Executable {
 
         if (!status.getAbsolute().equals(neededAbsolutePatterns)
                 && !status.getSequenced().equals(neededAbsolutePatterns)) {
-            Files.deleteIfExists(sequencesDir);
             Sequencer sequencer =
                     new Sequencer(config.getNumberOfCores(),
-                            neededAbsolutePatterns);
+                            config.getUpdateInterval(), symetricDifference(
+                                    neededAbsolutePatterns,
+                                    status.getSequenced()));
             sequencer.sequence(trainingFile, sequencesDir,
                     status.getTraining() == TrainingStatus.DONE_WITH_POS);
             status.setSequenced(neededAbsolutePatterns);
@@ -178,4 +182,24 @@ public class GlmtkNew extends Executable {
         // somewhere else in the code.
         StatisticalNumberHelper.print();
     }
+
+    /**
+     * Return a setminus b.
+     *
+     * @see <a
+     *      href="http://stackoverflow.com/questions/9698652/subtraction-of-two-sets-in-java">Stackoverflow:
+     *      subtraction of two sets in java</a>
+     */
+    private <T >Set<T> symetricDifference(Set<T> a, Set<T> b) {
+        Set<T> symetricDifference = new HashSet<T>(a);
+        symetricDifference.addAll(b);
+        // symetricDifference contains (a union b)
+
+        Set<T> intersection = new HashSet<T>(a);
+        intersection.retainAll(b);
+
+        symetricDifference.removeAll(intersection);
+        return symetricDifference;
+    }
+
 }

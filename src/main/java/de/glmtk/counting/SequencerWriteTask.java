@@ -46,10 +46,13 @@ public class SequencerWriteTask implements Runnable {
         writers = new HashMap<Pattern, BufferedWriter>();
         for (Set<Pattern> patterns : patternsByLength.values()) {
             for (Pattern pattern : patterns) {
+                Path patternSequenceFile =
+                        outputDir.resolve(pattern.toString());
+                Files.deleteIfExists(patternSequenceFile);
                 BufferedWriter writer =
                         new BufferedWriter(new OutputStreamWriter(
-                                Files.newOutputStream(outputDir.resolve(pattern
-                                        .toString()))), memoryPerWriter);
+                                Files.newOutputStream(patternSequenceFile)),
+                                memoryPerWriter);
                 writers.put(pattern, writer);
             }
         }

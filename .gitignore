@@ -7,6 +7,8 @@
 /src/test/resources/mobydick/
 /target
 /stanford-postagger-full-2014-01-04
+/scripts/brownPlain.txt
+/scripts/brownTagged.txt
 /doc/*.aux
 /doc/*.log
 /doc/*.out

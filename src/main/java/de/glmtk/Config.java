@@ -59,6 +59,7 @@ public class Config {
         // general
         read(ini, "general", "mainMemory", Integer.class);
         read(ini, "general", "numberOfCores", Integer.class);
+        read(ini, "general", "updateInterval", Integer.class);
 
         // glmtk-count
         read(ini, "glmtk-count", "model", Path.class);
@@ -154,6 +155,10 @@ public class Config {
 
     public int getNumberOfCores() {
         return (int) sections.get("general").get("numberOfCores");
+    }
+
+    public int getUpdateInterval() {
+        return 1000 * ((int) sections.get("general").get("updateInterval"));
     }
 
     // GLMTK-COUNT /////////////////////////////////////////////////////////////
