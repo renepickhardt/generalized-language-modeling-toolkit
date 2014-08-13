@@ -1,4 +1,4 @@
-package de.glmtk.tagging;
+package de.glmtk.counting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,16 +17,16 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public class PosTagger {
+public class Tagger {
 
     public static final long UPDATE_INTERVAL = 5 * 1000; // 5s
 
     private static final Logger LOGGER = LogManager
-            .getFormatterLogger(PosTagger.class);
+            .getFormatterLogger(Tagger.class);
 
     private MaxentTagger tagger;
 
-    public PosTagger(
+    public Tagger(
             Path modelFile) {
         tagger = new MaxentTagger(modelFile.toString());
     }

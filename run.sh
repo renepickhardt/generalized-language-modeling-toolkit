@@ -11,6 +11,8 @@ if [[ -z $MAIN_MEMORY ]]; then
     MAIN_MEMORY=$DEFAULT_MAIN_MEMORY
 fi
 
-MAVEN_OPTS="-Xmx${MAIN_MEMORY}m"
+# Variable named MAVEN_OPTS, because maven listens to this environmen variable
+MAVEN_OPTS="-Xmx${MAIN_MEMORY}m" # -javaagent:$GLMTK_DIR/lib/classmexer.jar
+
 ulimit -v 20000000
-nice java -Dglmtk.dir="$GLMTK_DIR" -Dfile.encoding="UTF-8" -jar $GLMTK_DIR/target/glmtk-0.0.1-SNAPSHOT-jar-with-dependencies.jar $@
+nice java $MAVEN_OPTS -Dglmtk.dir="$GLMTK_DIR" -Dfile.encoding="UTF-8" -jar $GLMTK_DIR/target/glmtk-0.0.1-SNAPSHOT-jar-with-dependencies.jar $@

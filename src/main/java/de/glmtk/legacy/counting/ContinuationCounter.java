@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.indexing.Index;
+import de.glmtk.legacy.indexing.Index;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
 

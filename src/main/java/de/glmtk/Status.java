@@ -28,6 +28,7 @@ public class Status {
     private Path corpus;
 
     public static enum TrainingStatus {
+
         NONE, DONE, DONE_WITH_POS;
 
         public static TrainingStatus fromString(String trainginStatus) {
@@ -39,6 +40,7 @@ public class Status {
                 return NONE;
             }
         }
+
     }
 
     private String hash;

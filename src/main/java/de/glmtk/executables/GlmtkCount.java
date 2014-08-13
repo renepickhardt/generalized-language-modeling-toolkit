@@ -12,14 +12,14 @@ import java.util.List;
 import org.apache.commons.cli.Option;
 
 import de.glmtk.Logging;
-import de.glmtk.indexing.Index;
-import de.glmtk.indexing.IndexBuilder;
+import de.glmtk.counting.Tagger;
 import de.glmtk.legacy.counting.AbsoluteCounter;
 import de.glmtk.legacy.counting.ContinuationCounter;
+import de.glmtk.legacy.indexing.Index;
+import de.glmtk.legacy.indexing.IndexBuilder;
 import de.glmtk.legacy.sequencing.Sequencer;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
-import de.glmtk.tagging.PosTagger;
 
 public class GlmtkCount extends Executable {
 
@@ -177,7 +177,7 @@ public class GlmtkCount extends Executable {
 
         // Tagging
         if (countPos && tagPos) {
-            PosTagger tagger = new PosTagger(config.getModel());
+            Tagger tagger = new Tagger(config.getModel());
             tagger.tag(corpus, trainingFile);
         } else {
             Files.copy(corpus, trainingFile);

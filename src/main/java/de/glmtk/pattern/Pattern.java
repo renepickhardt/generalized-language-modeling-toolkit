@@ -25,7 +25,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
     }
 
-    public String apply(Object[] words) {
+    public String apply(String[] words, String[] pos) {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
@@ -38,28 +38,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
                 first = false;
             }
 
-            result.append(elem.apply((String) words[i]));
-
-            ++i;
-        }
-
-        return result.toString();
-    }
-
-    public String apply(String[] words, String[] pos, int p) {
-        StringBuilder result = new StringBuilder();
-
-        boolean first = true;
-        int i = 0;
-        for (PatternElem elem : pattern) {
-            if (elem != PatternElem.DEL) {
-                if (!first) {
-                    result.append(' ');
-                }
-                first = false;
-            }
-
-            result.append(elem.apply(words[p + i], pos[p + i]));
+            result.append(elem.apply(words[i], pos[i]));
 
             ++i;
         }
@@ -112,7 +91,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         for (PatternElem elem : pattern) {
             if (!(elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
                     || elem.equals(PatternElem.PSKP) || elem
-                    .equals(PatternElem.WPOS))) {
+                        .equals(PatternElem.WPOS))) {
                 return false;
             }
         }
@@ -262,6 +241,52 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
             }
         }
         return sourcePattern;
+    }
+
+    // Legacy //////////////////////////////////////////////////////////////////
+
+    @Deprecated
+    public String apply(Object[] words) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply((String) words[i]));
+
+            ++i;
+        }
+
+        return result.toString();
+    }
+
+    @Deprecated
+    public String apply(String[] words, String[] pos, int p) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply(words[p + i], pos[p + i]));
+
+            ++i;
+        }
+
+        return result.toString();
     }
 
 }

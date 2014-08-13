@@ -16,8 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.counting.Counter;
-import de.glmtk.indexing.Index;
-import de.glmtk.indexing.IndexWriter;
+import de.glmtk.legacy.indexing.Index;
+import de.glmtk.legacy.indexing.IndexWriter;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StringUtils;
 
@@ -84,6 +84,7 @@ public class ContinuationCounterTask implements Runnable {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private Map<String, Counter> getSequenceCounts() throws IOException {
         Map<String, Counter> sequenceCounts = new HashMap<String, Counter>();
 
@@ -110,7 +111,8 @@ public class ContinuationCounterTask implements Runnable {
                         }
 
                         Object[] words =
-                                StringUtils.splitAtChar(sequence, ' ').toArray();
+                                StringUtils.splitAtChar(sequence, ' ')
+                                        .toArray();
                         String patternSequence = pattern.apply(words);
 
                         Counter counter = sequenceCounts.get(patternSequence);
@@ -128,7 +130,7 @@ public class ContinuationCounterTask implements Runnable {
     }
 
     private Map<String, Counter>
-        sortCounts(Map<String, Counter> sequenceCounts) {
+    sortCounts(Map<String, Counter> sequenceCounts) {
         sequenceCounts = new TreeMap<String, Counter>(sequenceCounts);
         return sequenceCounts;
     }
@@ -143,7 +145,8 @@ public class ContinuationCounterTask implements Runnable {
                 String sequence = sequenceCount.getKey();
                 Counter counter = sequenceCount.getValue();
 
-                Object[] words = StringUtils.splitAtChar(sequence, ' ').toArray();
+                Object[] words =
+                        StringUtils.splitAtChar(sequence, ' ').toArray();
 
                 BufferedWriter writer = indexWriter.get(words);
                 writer.write(sequence);

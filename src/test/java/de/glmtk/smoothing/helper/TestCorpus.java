@@ -13,10 +13,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.glmtk.indexing.Index;
-import de.glmtk.indexing.IndexBuilder;
 import de.glmtk.legacy.counting.AbsoluteCounter;
 import de.glmtk.legacy.counting.ContinuationCounter;
+import de.glmtk.legacy.indexing.Index;
+import de.glmtk.legacy.indexing.IndexBuilder;
 import de.glmtk.legacy.sequencing.Sequencer;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;

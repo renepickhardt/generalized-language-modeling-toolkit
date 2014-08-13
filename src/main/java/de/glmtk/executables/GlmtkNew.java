@@ -13,9 +13,11 @@ import org.apache.commons.cli.Option;
 import de.glmtk.Logging;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.counting.Sequencer;
+import de.glmtk.counting.Tagger;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
-import de.glmtk.tagging.PosTagger;
+import de.glmtk.utils.StatisticalNumberHelper;
 
 public class GlmtkNew extends Executable {
 
@@ -109,11 +111,11 @@ public class GlmtkNew extends Executable {
         // Request /////////////////////////////////////////////////////////////
 
         // Whether the corpus should be tagged with POS.
-        boolean needTrainingPos = true;
+        boolean needToTagTraining = true;
         // Absolute Patterns we need
         Set<Pattern> neededAbsolutePatterns =
-                Pattern.getCombinations(5,
-                        Arrays.asList(PatternElem.CNT, PatternElem.SKP));
+                Pattern.getCombinations(5, Arrays.asList(PatternElem.CNT,
+                        PatternElem.SKP, PatternElem.POS));
         // Continuation Patterns we need
         Set<Pattern> neededContinuationPatterns =
                 Pattern.replaceTargetWithElems(neededAbsolutePatterns,
@@ -131,10 +133,12 @@ public class GlmtkNew extends Executable {
 
         // Training / Tagging //////////////////////////////////////////////////
 
-        if (needTrainingPos) {
+        // TODO: doesn't detect the setting that user changed from untagged
+        // training file, to tagged file with same corpus.
+        if (needToTagTraining) {
             if (status.getTraining() != TrainingStatus.DONE_WITH_POS) {
                 Files.deleteIfExists(trainingFile);
-                PosTagger tagger = new PosTagger(config.getModel());
+                Tagger tagger = new Tagger(config.getModel());
                 tagger.tag(corpus, trainingFile);
                 status.setTraining(TrainingStatus.DONE_WITH_POS);
             }
@@ -147,7 +151,12 @@ public class GlmtkNew extends Executable {
 
         if (!status.getAbsolute().equals(neededAbsolutePatterns)
                 && !status.getSequenced().equals(neededAbsolutePatterns)) {
-            // TODO: do sequencing
+            Files.deleteIfExists(sequencesDir);
+            Sequencer sequencer =
+                    new Sequencer(config.getNumberOfCores(),
+                            neededAbsolutePatterns);
+            sequencer.sequence(trainingFile, sequencesDir,
+                    status.getTraining() == TrainingStatus.DONE_WITH_POS);
             status.setSequenced(neededAbsolutePatterns);
         }
 
@@ -164,5 +173,9 @@ public class GlmtkNew extends Executable {
             // TODO: do continuation
             status.setContinuation(neededContinuationPatterns);
         }
+
+        // Used for debugging. Will only print output if averages are added
+        // somewhere else in the code.
+        StatisticalNumberHelper.print();
     }
 }

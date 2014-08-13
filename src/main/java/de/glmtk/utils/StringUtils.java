@@ -107,7 +107,10 @@ public class StringUtils {
         return lineBuilder.toString();
     }
 
+    // Legacy //////////////////////////////////////////////////////////////////
+
     // TODO: revert to receive String[] split.
+    @Deprecated
     public static void generateWordsAndPos(
             Object[] split,
             String[] words,

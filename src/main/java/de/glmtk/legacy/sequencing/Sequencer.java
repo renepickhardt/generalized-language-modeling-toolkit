@@ -16,22 +16,22 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.indexing.Index;
-import de.glmtk.indexing.IndexWriter;
+import de.glmtk.legacy.indexing.Index;
+import de.glmtk.legacy.indexing.IndexWriter;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StringUtils;
 
 /**
  * takes input text of the format 1 sentence per line
  * and each word currently must contain a part of speech tag.
- * 
+ *
  * example:
- * 
+ *
  * {@code word_1/pos_1 word_2/pos_2 word_3/pos_3 ... word_n/pos_n}
- * 
+ *
  * all (skipped) sequences of all lengths are extracted and stored
  * in various files (respecting the WordIndex)
- * 
+ *
  * TODO: the sequences must work with and without part of speeches
  */
 public class Sequencer {
@@ -102,6 +102,7 @@ public class Sequencer {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void sequence(
             int patternLength,
             Set<Pattern> patterns,
@@ -163,6 +164,7 @@ public class Sequencer {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void writeSequences(
             int patternLength,
             Map<Pattern, IndexWriter> patternWriters,
