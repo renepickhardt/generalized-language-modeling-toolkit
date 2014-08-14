@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.cli.Option;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Logging;
 import de.glmtk.Status;
@@ -21,6 +23,8 @@ import de.glmtk.pattern.PatternElem;
 import de.glmtk.utils.StatisticalNumberHelper;
 
 public class GlmtkNew extends Executable {
+
+    private static final Logger LOGGER = LogManager.getLogger(GlmtkNew.class);
 
     private static final String OPTION_OUTPUT = "output";
 
@@ -109,6 +113,12 @@ public class GlmtkNew extends Executable {
 
         Status status = new Status(output.resolve("status"), corpus);
 
+        LOGGER.debug("Status ------------------------------------------------");
+        LOGGER.debug("status.getTraining     = {}", status.getTraining());
+        LOGGER.debug("status.getSequenced    = {}", status.getSequenced());
+        LOGGER.debug("status.getAbsolute     = {}", status.getAbsolute());
+        LOGGER.debug("status.getContinuation = {}", status.getContinuation());
+
         // Request /////////////////////////////////////////////////////////////
 
         // Whether the corpus should be tagged with POS.
@@ -132,12 +142,20 @@ public class GlmtkNew extends Executable {
             }
         }
 
+        LOGGER.debug("Request -----------------------------------------------");
+        LOGGER.debug("needToTagTraning           = {}", needToTagTraining);
+        LOGGER.debug("neededAbsolutePatters      = {}", neededAbsolutePatterns);
+        LOGGER.debug("neededContinuationPatterns = {}",
+                neededContinuationPatterns);
+
         // Training / Tagging //////////////////////////////////////////////////
 
         // TODO: doesn't detect the setting that user changed from untagged
         // training file, to tagged file with same corpus.
         if (needToTagTraining) {
-            if (status.getTraining() != TrainingStatus.DONE_WITH_POS) {
+            if (status.getTraining() == TrainingStatus.DONE_WITH_POS) {
+                LOGGER.info("Detected tagged training already present, skipping tagging.");
+            } else {
                 Files.deleteIfExists(trainingFile);
                 Tagger tagger =
                         new Tagger(config.getUpdateInterval(),
@@ -145,20 +163,31 @@ public class GlmtkNew extends Executable {
                 tagger.tag(corpus, trainingFile);
                 status.setTraining(TrainingStatus.DONE_WITH_POS);
             }
-        } else if (status.getTraining() == TrainingStatus.NONE) {
-            Files.copy(corpus, trainingFile);
-            status.setTraining(TrainingStatus.DONE);
+        } else {
+            if (status.getTraining() != TrainingStatus.NONE) {
+                LOGGER.info("Detected training already present, skipping copying training.");
+            } else {
+                Files.deleteIfExists(trainingFile);
+                Files.copy(corpus, trainingFile);
+                status.setTraining(TrainingStatus.DONE);
+            }
         }
 
         // Sequencing //////////////////////////////////////////////////////////
 
-        if (!status.getAbsolute().equals(neededAbsolutePatterns)
-                && !status.getSequenced().equals(neededAbsolutePatterns)) {
+        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
+            LOGGER.info("Detected necessary absolute counts already present, skipping sequencing.");
+        } else if (status.getSequenced().equals(neededAbsolutePatterns)) {
+            LOGGER.info("Detected necessary sequenced patterns already present, skipping sequencing.");
+        } else {
+            Set<Pattern> patternsToSequence =
+                    symetricDifference(neededAbsolutePatterns,
+                            status.getSequenced());
+            LOGGER.debug("Going to sequence patterns: {}", patternsToSequence);
+
             Sequencer sequencer =
                     new Sequencer(config.getNumberOfCores(),
-                            config.getUpdateInterval(), symetricDifference(
-                                    neededAbsolutePatterns,
-                                    status.getSequenced()));
+                            config.getUpdateInterval(), patternsToSequence);
             sequencer.sequence(trainingFile, sequencesDir,
                     status.getTraining() == TrainingStatus.DONE_WITH_POS);
             status.setSequenced(neededAbsolutePatterns);
@@ -166,14 +195,30 @@ public class GlmtkNew extends Executable {
 
         // Absolute ////////////////////////////////////////////////////////////
 
-        if (!status.getAbsolute().equals(neededAbsolutePatterns)) {
+        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
+            LOGGER.info("Detected necessary absolute counts already present, skipping counting absolute.");
+        } else {
+            Set<Pattern> patternsToCountAbsolute =
+                    symetricDifference(neededAbsolutePatterns,
+                            status.getAbsolute());
+            LOGGER.debug("Going to absolute count patterns: {}",
+                    patternsToCountAbsolute);
+
             // TODO: do absolute
             status.setAbsolute(neededAbsolutePatterns);
         }
 
         // Continuation ////////////////////////////////////////////////////////
 
-        if (!status.getContinuation().equals(neededContinuationPatterns)) {
+        if (status.getContinuation().equals(neededContinuationPatterns)) {
+            LOGGER.info("Detected necessary continuation counts already present, skipping counting continuation.");
+        } else {
+            Set<Pattern> patternsToCountContinuation =
+                    symetricDifference(neededContinuationPatterns,
+                            status.getContinuation());
+            LOGGER.debug("Going to continuation count patterns: {}",
+                    patternsToCountContinuation);
+
             // TODO: do continuation
             status.setContinuation(neededContinuationPatterns);
         }

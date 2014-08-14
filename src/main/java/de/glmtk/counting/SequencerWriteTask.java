@@ -11,16 +11,21 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Logging;
 import de.glmtk.counting.Sequencer.WriteQueueItem;
 import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.StatisticalNumberHelper;
 
 public class SequencerWriteTask implements Runnable {
 
     private static final Logger LOGGER = LogManager
             .getLogger(SequencerWriteTask.class);
+
+    private static final long IDLE_TIME = 10;
 
     private Sequencer sequencer;
 
@@ -63,8 +68,14 @@ public class SequencerWriteTask implements Runnable {
         try {
             while (!(sequencer.isCalculatingDone() && writeQueue.isEmpty())) {
                 WriteQueueItem witem =
-                        writeQueue.poll(10, TimeUnit.MILLISECONDS);
-                if (witem != null) {
+                        writeQueue.poll(IDLE_TIME, TimeUnit.MILLISECONDS);
+                if (witem == null) {
+                    LOGGER.trace("SequencerWriteTask idle.");
+                    if (Logging.getLogLevel() == Level.ALL
+                            || Logging.getLogLevel() == Level.TRACE) {
+                        StatisticalNumberHelper.count("IdleSequencerWriteTask");
+                    }
+                } else {
                     BufferedWriter writer = writers.get(witem.pattern);
                     writer.write(witem.sequence);
                     writer.write('\n');

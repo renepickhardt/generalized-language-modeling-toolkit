@@ -8,18 +8,24 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Logging;
 import de.glmtk.counting.Sequencer.ReadQueueItem;
 import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
 public class SequencerReadTask implements Runnable {
 
     private static final Logger LOGGER = LogManager
             .getLogger(SequencerReadTask.class);
+
+    private static final long IDLE_TIME = 10;
 
     private Sequencer sequencer;
 
@@ -126,7 +132,15 @@ public class SequencerReadTask implements Runnable {
                     ritem.pattern = pattern;
                     ritem.words = w;
                     ritem.poses = p;
-                    readQueue.put(ritem);
+                    while (!readQueue.offer(ritem, IDLE_TIME,
+                            TimeUnit.MILLISECONDS)) {
+                        LOGGER.trace("SequencerReadTask idle.");
+                        if (Logging.getLogLevel() == Level.ALL
+                                || Logging.getLogLevel() == Level.TRACE) {
+                            StatisticalNumberHelper
+                                    .count("IdleSequencerReadTask");
+                        }
+                    }
 
                     // To get memory average of ReadQueueItem. Don't forget to:
                     // - add import

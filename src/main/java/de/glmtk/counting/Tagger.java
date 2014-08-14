@@ -23,6 +23,12 @@ public class Tagger {
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Tagger.class);
 
+    /**
+     * How much percent of total free memory to be allocated.
+     *
+     * Careful: Java allocates memory for other tasks, so we can't just set this
+     * to 100%. I manually tested estimated this number experimentally.
+     */
     private static final int MEMORY_PERCENT = 30;
 
     private int updateInterval;
@@ -37,7 +43,7 @@ public class Tagger {
     }
 
     public void tag(Path inputFile, Path outputFile) throws IOException {
-        LOGGER.info("Tagging: %s -> %s", inputFile, outputFile);
+        LOGGER.info("Tagging '%s' -> '%s'.", inputFile, outputFile);
 
         Runtime r = Runtime.getRuntime();
         r.gc();
@@ -91,7 +97,7 @@ public class Tagger {
             }
         }
 
-        LOGGER.info("Tagging: done.");
+        LOGGER.info("Tagging done.");
     }
 
     private static List<HasWord> arrayToListHasWords(String[] array) {

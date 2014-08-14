@@ -3,16 +3,21 @@ package de.glmtk.counting;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Logging;
 import de.glmtk.counting.Sequencer.ReadQueueItem;
 import de.glmtk.counting.Sequencer.WriteQueueItem;
+import de.glmtk.utils.StatisticalNumberHelper;
 
 public class SequencerCalculateTask implements Runnable {
 
     private static final Logger LOGGER = LogManager
             .getLogger(SequencerCalculateTask.class);
+
+    private static final long IDLE_TIME = 10;
 
     private Sequencer sequencer;
 
@@ -33,8 +38,16 @@ public class SequencerCalculateTask implements Runnable {
     public void run() {
         try {
             while (!(sequencer.isReadingDone() && readQueue.isEmpty())) {
-                ReadQueueItem ritem = readQueue.poll(10, TimeUnit.MILLISECONDS);
-                if (ritem != null) {
+                ReadQueueItem ritem =
+                        readQueue.poll(IDLE_TIME, TimeUnit.MILLISECONDS);
+                if (ritem == null) {
+                    LOGGER.trace("SequencerCalculateTask idle.");
+                    if (Logging.getLogLevel() == Level.ALL
+                            || Logging.getLogLevel() == Level.TRACE) {
+                        StatisticalNumberHelper
+                                .count("IdleSequencerCalculateTask");
+                    }
+                } else {
                     WriteQueueItem witem = new WriteQueueItem();
                     witem.pattern = ritem.pattern;
                     witem.sequence =

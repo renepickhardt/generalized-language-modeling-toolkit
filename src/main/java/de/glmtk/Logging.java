@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Layout;
@@ -47,6 +48,10 @@ public class Logging {
      */
     private static LoggerConfig loggerConfig = configuration
             .getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+
+    public static Level getLogLevel() {
+        return loggerConfig.getLevel();
+    }
 
     public static void configureExecLogging() {
         Layout<String> layout =

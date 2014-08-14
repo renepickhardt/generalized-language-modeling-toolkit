@@ -14,7 +14,7 @@ public class StatisticalNumberHelper {
     private static final Logger LOGGER = LogManager
             .getLogger(StatisticalNumberHelper.class);
 
-    private static class Item {
+    private static class AverageItem {
 
         public long max = Long.MIN_VALUE;
 
@@ -26,35 +26,56 @@ public class StatisticalNumberHelper {
 
     }
 
-    private static Map<String, Item> items = new HashMap<String, Item>();
+    private static Map<String, Long> counters = new HashMap<String, Long>();
 
-    public static void add(String name, long number) {
-        Item item = items.get(name);
-        if (item == null) {
-            item = new Item();
-            items.put(name, item);
+    private static Map<String, AverageItem> averages =
+            new HashMap<String, AverageItem>();
+
+    public static void count(String name) {
+        count(name, 1);
+    }
+
+    public static void count(String name, long number) {
+        Long counter = counters.get(name);
+        if (counter == null) {
+            counter = 0L;
         }
-        if (number > item.max) {
-            item.max = number;
+        counter += number;
+        counters.put(name, counter);
+    }
+
+    public static void average(String name, long number) {
+        AverageItem average = averages.get(name);
+        if (average == null) {
+            average = new AverageItem();
+            averages.put(name, average);
         }
-        if (number < item.min) {
-            item.min = number;
+        if (number > average.max) {
+            average.max = number;
         }
-        item.number += number;
-        ++item.count;
+        if (number < average.min) {
+            average.min = number;
+        }
+        average.number += number;
+        ++average.count;
     }
 
     public static void print() {
-        for (Map.Entry<String, Item> entry : items.entrySet()) {
+        for (Map.Entry<String, Long> entry : counters.entrySet()) {
             String name = entry.getKey();
-            Item item = entry.getValue();
-            LOGGER.debug(name + " = " + item.number / item.count + " (min="
-                    + item.min + " max=" + item.max + ")");
+            Long counter = entry.getValue();
+            LOGGER.debug(name + "Counter = " + counter);
+        }
+        for (Map.Entry<String, AverageItem> entry : averages.entrySet()) {
+            String name = entry.getKey();
+            AverageItem average = entry.getValue();
+            LOGGER.debug(name + "Average = " + average.number / average.count
+                    + " (min=" + average.min + " max=" + average.max + ")");
         }
     }
 
     public static void reset() {
-        items = new HashMap<String, Item>();
+        averages = new HashMap<String, AverageItem>();
     }
 
 }
