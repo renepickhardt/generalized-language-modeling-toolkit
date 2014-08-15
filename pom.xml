@@ -68,6 +68,11 @@
       <artifactId>commons-cli</artifactId>
       <version>1.2</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.trove4j</groupId>
+      <artifactId>trove4j</artifactId>
+      <version>3.0.3</version>
+    </dependency>
 
     <!-- Logging -->
     <dependency>
@@ -89,7 +94,6 @@
       <scope>test</scope>
     </dependency>
     
-    <!--
     <dependency>
       <groupId>classmexer</groupId>
       <artifactId>classmexer</artifactId>
@@ -97,6 +101,5 @@
       <scope>system</scope>
       <systemPath>${basedir}/lib/classmexer.jar</systemPath>
     </dependency>
-    -->
   </dependencies>
 </project>

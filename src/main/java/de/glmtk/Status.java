@@ -7,9 +7,15 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -47,11 +53,9 @@ public class Status {
 
     private TrainingStatus training;
 
-    private Set<Pattern> sequenced;
+    private Map<Pattern, Queue<Path>> absoluteChunked;
 
-    private Set<Pattern> absolute;
-
-    private Set<Pattern> continuation;
+    private Set<Pattern> absoluteCounted;
 
     public Status(
             Path file,
@@ -69,9 +73,8 @@ public class Status {
 
     private void setDefaultSettings() {
         training = TrainingStatus.NONE;
-        sequenced = new HashSet<Pattern>();
-        absolute = new HashSet<Pattern>();
-        continuation = new HashSet<Pattern>();
+        absoluteChunked = new HashMap<Pattern, Queue<Path>>();
+        absoluteCounted = new HashSet<Pattern>();
     }
 
     public TrainingStatus getTraining() {
@@ -82,39 +85,67 @@ public class Status {
         this.training = training;
 
         // Reset all other options
-        sequenced = new HashSet<Pattern>();
-        absolute = new HashSet<Pattern>();
-        continuation = new HashSet<Pattern>();
+        absoluteChunked = new HashMap<Pattern, Queue<Path>>();
+        absoluteCounted = new HashSet<Pattern>();
 
         writeStatusToFile();
     }
 
-    public Set<Pattern> getSequenced() {
-        return sequenced;
+    public Map<Pattern, Queue<Path>> getAbsoluteChunked() {
+        return absoluteChunked;
     }
 
-    public void setSequenced(Set<Pattern> sequenced) {
-        this.sequenced = sequenced;
+    public void setAbsoluteChunked(Map<Pattern, Queue<Path>> absoluteChunked) {
+        this.absoluteChunked = absoluteChunked;
     }
 
-    public Set<Pattern> getAbsolute() {
-        return absolute;
+    public Set<Pattern> getAbsoluteCounted() {
+        return absoluteCounted;
     }
 
-    public void setAbsolute(Set<Pattern> absolute) throws IOException {
-        this.absolute = absolute;
-
-        writeStatusToFile();
+    public void setAbsoluteCounted(Set<Pattern> absoluteCounted) {
+        this.absoluteCounted = absoluteCounted;
     }
 
-    public Set<Pattern> getContinuation() {
-        return continuation;
+    public void logStatus() {
+        LOGGER.debug("Status {}", StringUtils.repeat("-", 80 - 7));
+        LOGGER.debug("hash            = {}", hash);
+        LOGGER.debug("training        = {}", training);
+        LOGGER.debug("absoluteChunked = {}", absoluteChunked);
+        LOGGER.debug("absoluteCounted = {}", absoluteCounted);
     }
 
-    public void setContinuation(Set<Pattern> continuation) throws IOException {
-        this.continuation = continuation;
+    public void writeStatusToFile() throws IOException {
+        Files.deleteIfExists(file);
+        try (BufferedWriter writer =
+                Files.newBufferedWriter(file, Charset.defaultCharset())) {
+            // Hash
+            writer.append("hash = " + hash + "\n");
 
-        writeStatusToFile();
+            // Training
+            writer.append("training = " + training + "\n");
+
+            // Absolute Chunked
+            writer.append("absoluteChunked = ");
+            boolean first = true;
+            for (Map.Entry<Pattern, Queue<Path>> entry : absoluteChunked
+                    .entrySet()) {
+                Pattern pattern = entry.getKey();
+                Queue<Path> chunks = entry.getValue();
+                if (first) {
+                    first = false;
+                } else {
+                    writer.append(',');
+                }
+                writer.append(pattern + ":[" + StringUtils.join(chunks, ";")
+                        + "]");
+            }
+            writer.append('\n');
+
+            // Absolute Couted
+            writer.append("absoluteCounted = "
+                    + StringUtils.join(absoluteCounted, ",") + "\n");
+        }
     }
 
     private void readStatusFromFile() throws IOException {
@@ -145,32 +176,30 @@ public class Status {
                     continue;
                 }
 
-                matcher = getPattern("sequenced").matcher(line);
+                matcher = getPattern("absoluteChunked").matcher(line);
                 if (matcher.matches()) {
-                    sequenced = new HashSet<Pattern>();
-                    for (String pattern : StringUtils.splitAtChar(
+                    absoluteChunked = new HashMap<Pattern, Queue<Path>>();
+                    for (String patternAndChunks : StringUtils.splitAtChar(
                             matcher.group(1), ',')) {
-                        sequenced.add(new Pattern(pattern));
+                        List<String> split =
+                                StringUtils.splitAtChar(patternAndChunks, ':');
+                        Pattern pattern = new Pattern(split.get(0));
+                        Queue<Path> chunks = new LinkedList<Path>();
+                        for (String chunk : StringUtils.splitAtChar(
+                                split.get(1), ';')) {
+                            chunks.add(Paths.get(chunk));
+                        }
+                        absoluteChunked.put(pattern, chunks);
                     }
                     continue;
                 }
 
-                matcher = getPattern("absolute").matcher(line);
+                matcher = getPattern("absoluteCounted").matcher(line);
                 if (matcher.matches()) {
-                    absolute = new HashSet<Pattern>();
+                    absoluteCounted = new HashSet<Pattern>();
                     for (String pattern : StringUtils.splitAtChar(
                             matcher.group(1), ',')) {
-                        absolute.add(new Pattern(pattern));
-                    }
-                    continue;
-                }
-
-                matcher = getPattern("continuation").matcher(line);
-                if (matcher.matches()) {
-                    continuation = new HashSet<Pattern>();
-                    for (String pattern : StringUtils.splitAtChar(
-                            matcher.group(1), ',')) {
-                        continuation.add(new Pattern(pattern));
+                        absoluteCounted.add(new Pattern(pattern));
                     }
                     continue;
                 }
@@ -181,21 +210,6 @@ public class Status {
     private static java.util.regex.Pattern getPattern(String option) {
         return java.util.regex.Pattern.compile("^" + option
                 + "\\s*=\\s*(\\S+)\\s*$");
-    }
-
-    private void writeStatusToFile() throws IOException {
-        Files.deleteIfExists(file);
-        try (BufferedWriter writer =
-                Files.newBufferedWriter(file, Charset.defaultCharset())) {
-            writer.append("hash = " + hash + "\n");
-            writer.append("training = " + training + "\n");
-            writer.append("sequenced = " + StringUtils.join(sequenced, ",")
-                    + "\n");
-            writer.append("absolute = " + StringUtils.join(absolute, ",")
-                    + "\n");
-            writer.append("continuation = "
-                    + StringUtils.join(continuation, ",") + "\n");
-        }
     }
 
     /**
@@ -225,7 +239,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                        .substring(1);
+                                .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {

@@ -1,60 +1,74 @@
-package de.glmtk.counting;
+package de.glmtk.counting.absolute;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.counting.Sequencer.ReadQueueItem;
+import de.glmtk.counting.absolute.Chunker.ReadQueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
-public class SequencerReadThread implements Runnable {
+public class ChunkerReadingThread implements Runnable {
 
-    private static final long QUEUE_WAIT_TIME = 10;
+    private static final long QUEUE_WAIT_TIME = 1;
+
+    private static final String UNKOWN_POS = "UNKP";
 
     private static final Logger LOGGER = LogManager
-            .getLogger(SequencerReadThread.class);
+            .getFormatterLogger(ChunkerReadingThread.class);
 
-    private Sequencer sequencer;
+    private Chunker chunker;
 
     private BlockingQueue<ReadQueueItem> readQueue;
 
-    private Path inputFile;
-
     private Map<Integer, Set<Pattern>> patternsByLength;
 
-    private boolean hasPos;
+    private Path inputFile;
+
+    private boolean inputFileHasPos;
 
     private long readerMemory;
 
     private int updateInterval;
 
-    public SequencerReadThread(
-            Sequencer sequencer,
+    public ChunkerReadingThread(
+            Chunker chunker,
             BlockingQueue<ReadQueueItem> readQueue,
+            Set<Pattern> patterns,
             Path inputFile,
-            Map<Integer, Set<Pattern>> patternsByLength,
-            boolean hasPos,
+            boolean inputFileHasPos,
             long readerMemory,
             int updateInterval) {
-        this.sequencer = sequencer;
+        this.chunker = chunker;
         this.readQueue = readQueue;
         this.inputFile = inputFile;
-        this.patternsByLength = patternsByLength;
-        this.hasPos = hasPos;
+        this.inputFileHasPos = inputFileHasPos;
         this.readerMemory = readerMemory;
         this.updateInterval = updateInterval;
+
+        patternsByLength = new HashMap<Integer, Set<Pattern>>();
+        for (Pattern pattern : patterns) {
+            Set<Pattern> patternsWithLength =
+                    patternsByLength.get(pattern.length());
+            if (patternsWithLength == null) {
+                patternsWithLength = new HashSet<Pattern>();
+                patternsByLength.put(pattern.length(), patternsWithLength);
+            }
+            patternsWithLength.add(pattern);
+        }
+
     }
 
     @Override
@@ -69,48 +83,48 @@ public class SequencerReadThread implements Runnable {
             String line;
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
+                if (updateInterval != 0) {
+                    long curTime = System.currentTimeMillis();
+                    if (curTime - time >= updateInterval) {
+                        time = curTime;
+                        LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
+                    }
+                }
 
                 String[] split =
                         StringUtils.splitAtChar(line, ' ').toArray(
                                 new String[0]);
                 String[] words = new String[split.length];
                 String[] poses = new String[split.length];
-                extractWordAndPosesFromSplit(split, words, poses);
+                extractWordsAndPosesFromSplit(split, words, poses);
                 generateReadStatusItems(words, poses);
-
-                if (updateInterval != 0) {
-                    long t = System.currentTimeMillis();
-                    if (t - time >= updateInterval) {
-                        time = t;
-                        sequencer.logPercent(100.0f * readSize / totalSize);
-                    }
-                }
             }
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
         }
 
-        sequencer.readingDone();
-        LOGGER.debug("SequencerReadThread finished.");
+        chunker.readingIsDone();
+        LOGGER.debug("ChunkerReadingThread finished.");
     }
 
-    private void extractWordAndPosesFromSplit(
+    private void extractWordsAndPosesFromSplit(
             String[] split,
             String[] words,
             String[] poses) {
         for (int i = 0; i != split.length; ++i) {
             String word = split[i];
-            if (hasPos) {
+            if (inputFileHasPos) {
                 int lastSlash = word.lastIndexOf('/');
                 if (lastSlash == -1) {
                     words[i] = word;
-                    poses[i] = "UNKP"; // Unkown POS, not part of any POS-tagset.
+                    poses[i] = UNKOWN_POS;
                 } else {
                     words[i] = word.substring(0, lastSlash);
                     poses[i] = word.substring(lastSlash + 1);
                 }
             } else {
                 words[i] = word;
+                poses[i] = UNKOWN_POS;
             }
         }
     }
@@ -127,28 +141,22 @@ public class SequencerReadThread implements Runnable {
                 System.arraycopy(words, i, w, 0, patternLength);
                 System.arraycopy(poses, i, p, 0, patternLength);
                 for (Pattern pattern : patterns) {
-                    ReadQueueItem ritem = new ReadQueueItem();
-                    ritem.pattern = pattern;
-                    ritem.words = w;
-                    ritem.poses = p;
+                    ReadQueueItem ritem = new ReadQueueItem(pattern, w, p);
                     while (!readQueue.offer(ritem, QUEUE_WAIT_TIME,
                             TimeUnit.MILLISECONDS)) {
-                        if (LOGGER.getLevel().isLessSpecificThan(Level.TRACE)) {
-                            LOGGER.trace("SequencerReadThread idle.");
-                            StatisticalNumberHelper
-                            .count("IdleSequencerReadThread");
-                        }
+                        LOGGER.trace("ChunkerReadingThread idle, because ReadQueue full.");
+                        StatisticalNumberHelper
+                                .count("Idle ChunkerReadingThread cecause ReadQueue full");
                     }
 
                     // To get memory average of ReadQueueItem. Don't forget to:
                     // - add import
                     // - uncomment classmexer.jar in pom
                     // - add javaagent in run.sh to MAVEN_OPTS.
-                    //StatisticalNumberHelper.add("ReadQueueItem", MemoryUtil
+                    //StatisticalNumberHelper.average("ReadQueueItem", MemoryUtil
                     //        .deepMemoryUsageOf(ritem, VisibilityFilter.ALL));
                 }
             }
         }
     }
-
 }

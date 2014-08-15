@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.counting.legacy;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -7,8 +7,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.counting.Sequencer.ReadQueueItem;
-import de.glmtk.counting.Sequencer.WriteQueueItem;
+import de.glmtk.counting.legacy.Sequencer.ReadQueueItem;
+import de.glmtk.counting.legacy.Sequencer.WriteQueueItem;
 import de.glmtk.utils.StatisticalNumberHelper;
 
 public class SequencerCalculateThread implements Runnable {

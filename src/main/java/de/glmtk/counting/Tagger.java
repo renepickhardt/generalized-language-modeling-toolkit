@@ -88,9 +88,9 @@ public class Tagger {
                 writer.write("\n");
 
                 if (updateInterval != 0) {
-                    long t = System.currentTimeMillis();
-                    if (t - time >= updateInterval) {
-                        time = t;
+                    long curTime = System.currentTimeMillis();
+                    if (curTime - time >= updateInterval) {
+                        time = curTime;
                         LOGGER.info("%6.2f%%", 100.f * readSize / totalSize);
                     }
                 }

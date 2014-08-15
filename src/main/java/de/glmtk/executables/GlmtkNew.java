@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,12 +15,12 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Logging;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
-import de.glmtk.counting.AbsoluteCounter;
-import de.glmtk.counting.Sequencer;
 import de.glmtk.counting.Tagger;
+import de.glmtk.counting.absolute.AbsoluteCounter;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
 import de.glmtk.utils.StatisticalNumberHelper;
+import de.glmtk.utils.StringUtils;
 
 public class GlmtkNew extends Executable {
 
@@ -108,20 +107,18 @@ public class GlmtkNew extends Executable {
         }
 
         Path trainingFile = output.resolve("training");
-        Path sequencesDir = output.resolve("sequences");
         Path absoluteDir = output.resolve("absolute");
+        Path absoluteTmpDir = output.resolve("absolute.tmp");
+        @SuppressWarnings("unused")
         Path continuationDir = output.resolve("continuation");
+        @SuppressWarnings("unused")
+        Path continuationTmpDir = output.resolve("continuation.tmp");
 
         Status status = new Status(output.resolve("status"), corpus);
+        status.logStatus();
 
         // TODO: check file system if status is accurate.
         // TODO: update status with smaller increments (each completed pattern).
-
-        LOGGER.debug("Status ------------------------------------------------");
-        LOGGER.debug("status.getTraining     = {}", status.getTraining());
-        LOGGER.debug("status.getSequenced    = {}", status.getSequenced());
-        LOGGER.debug("status.getAbsolute     = {}", status.getAbsolute());
-        LOGGER.debug("status.getContinuation = {}", status.getContinuation());
 
         // Request /////////////////////////////////////////////////////////////
 
@@ -146,7 +143,7 @@ public class GlmtkNew extends Executable {
             }
         }
 
-        LOGGER.debug("Request -----------------------------------------------");
+        LOGGER.debug("Request {}", StringUtils.repeat("-", 80 - 8));
         LOGGER.debug("needToTagTraning           = {}", needToTagTraining);
         LOGGER.debug("neededAbsolutePatterns     = {}", neededAbsolutePatterns);
         LOGGER.debug("neededContinuationPatterns = {}",
@@ -177,81 +174,70 @@ public class GlmtkNew extends Executable {
             }
         }
 
+        // Absolute ////////////////////////////////////////////////////////////
+
+        AbsoluteCounter absoluteCounter =
+                new AbsoluteCounter(neededAbsolutePatterns,
+                        config.getNumberOfCores(), config.getUpdateInterval());
+        absoluteCounter
+        .count(trainingFile, absoluteDir, absoluteTmpDir, status);
+
         // Sequencing //////////////////////////////////////////////////////////
 
-        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
-            LOGGER.info("Detected necessary absolute counts already present, skipping sequencing.");
-        } else if (status.getSequenced().equals(neededAbsolutePatterns)) {
-            LOGGER.info("Detected necessary sequenced patterns already present, skipping sequencing.");
-        } else {
-            Set<Pattern> patternsToSequence =
-                    symetricDifference(neededAbsolutePatterns,
-                            status.getSequenced());
-            LOGGER.debug("Going to sequence patterns: {}", patternsToSequence);
-
-            Sequencer sequencer =
-                    new Sequencer(config.getNumberOfCores(),
-                            config.getUpdateInterval(), patternsToSequence);
-            sequencer.sequence(trainingFile, sequencesDir,
-                    status.getTraining() == TrainingStatus.DONE_WITH_POS);
-            status.setSequenced(neededAbsolutePatterns);
-        }
+        //        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
+        //            LOGGER.info("Detected necessary absolute counts already present, skipping sequencing.");
+        //        } else if (status.getSequenced().equals(neededAbsolutePatterns)) {
+        //            LOGGER.info("Detected necessary sequenced patterns already present, skipping sequencing.");
+        //        } else {
+        //            Set<Pattern> patternsToSequence =
+        //                    symetricDifference(neededAbsolutePatterns,
+        //                            status.getSequenced());
+        //            LOGGER.debug("Going to sequence patterns: {}", patternsToSequence);
+        //
+        //            Sequencer sequencer =
+        //                    new Sequencer(config.getNumberOfCores(),
+        //                            config.getUpdateInterval(), patternsToSequence);
+        //            sequencer.sequence(trainingFile, sequencesDir,
+        //                    status.getTraining() == TrainingStatus.DONE_WITH_POS);
+        //            status.setSequenced(neededAbsolutePatterns);
+        //        }
 
         // Absolute ////////////////////////////////////////////////////////////
 
-        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
-            LOGGER.info("Detected necessary absolute counts already present, skipping counting absolute.");
-        } else {
-            Set<Pattern> patternsToCountAbsolute =
-                    symetricDifference(neededAbsolutePatterns,
-                            status.getAbsolute());
-            LOGGER.debug("Going to absolute count patterns: {}",
-                    patternsToCountAbsolute);
-
-            AbsoluteCounter absoluteCounter =
-                    new AbsoluteCounter(config.getNumberOfCores(),
-                            config.getUpdateInterval(), patternsToCountAbsolute);
-            absoluteCounter.count(sequencesDir, absoluteDir);
-            status.setAbsolute(neededAbsolutePatterns);
-        }
+        //        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
+        //            LOGGER.info("Detected necessary absolute counts already present, skipping counting absolute.");
+        //        } else {
+        //            Set<Pattern> patternsToCountAbsolute =
+        //                    symetricDifference(neededAbsolutePatterns,
+        //                            status.getAbsolute());
+        //            LOGGER.debug("Going to absolute count patterns: {}",
+        //                    patternsToCountAbsolute);
+        //
+        //            AbsoluteCounter absoluteCounter =
+        //                    new AbsoluteCounter(config.getNumberOfCores(),
+        //                            config.getUpdateInterval(), patternsToCountAbsolute);
+        //            absoluteCounter.count(sequencesDir, absoluteDir);
+        //            status.setAbsolute(neededAbsolutePatterns);
+        //        }
 
         // Continuation ////////////////////////////////////////////////////////
 
-        if (status.getContinuation().equals(neededContinuationPatterns)) {
-            LOGGER.info("Detected necessary continuation counts already present, skipping counting continuation.");
-        } else {
-            Set<Pattern> patternsToCountContinuation =
-                    symetricDifference(neededContinuationPatterns,
-                            status.getContinuation());
-            LOGGER.debug("Going to continuation count patterns: {}",
-                    patternsToCountContinuation);
-
-            // TODO: do continuation
-            status.setContinuation(neededContinuationPatterns);
-        }
+        //        if (status.getContinuation().equals(neededContinuationPatterns)) {
+        //            LOGGER.info("Detected necessary continuation counts already present, skipping counting continuation.");
+        //        } else {
+        //            Set<Pattern> patternsToCountContinuation =
+        //                    symetricDifference(neededContinuationPatterns,
+        //                            status.getContinuation());
+        //            LOGGER.debug("Going to continuation count patterns: {}",
+        //                    patternsToCountContinuation);
+        //
+        //            // TODO: do continuation
+        //            status.setContinuation(neededContinuationPatterns);
+        //        }
 
         // Used for debugging. Will only print output if averages are added
         // somewhere else in the code.
         StatisticalNumberHelper.print();
-    }
-
-    /**
-     * Return a setminus b.
-     *
-     * @see <a
-     *      href="http://stackoverflow.com/questions/9698652/subtraction-of-two-sets-in-java">Stackoverflow:
-     *      subtraction of two sets in java</a>
-     */
-    private <T >Set<T> symetricDifference(Set<T> a, Set<T> b) {
-        Set<T> symetricDifference = new HashSet<T>(a);
-        symetricDifference.addAll(b);
-        // symetricDifference contains (a union b)
-
-        Set<T> intersection = new HashSet<T>(a);
-        intersection.retainAll(b);
-
-        symetricDifference.removeAll(intersection);
-        return symetricDifference;
     }
 
 }

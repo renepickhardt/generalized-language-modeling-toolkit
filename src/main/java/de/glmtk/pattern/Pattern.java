@@ -11,9 +11,16 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     private List<PatternElem> pattern;
 
+    private String asString;
+
     public Pattern(
             List<PatternElem> pattern) {
         this.pattern = pattern;
+        StringBuilder asStringBuilder = new StringBuilder();
+        for (PatternElem elem : pattern) {
+            asStringBuilder.append(elem);
+        }
+        asString = asStringBuilder.toString();
     }
 
     public Pattern(
@@ -23,6 +30,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         for (Character elem : pattern.toCharArray()) {
             this.pattern.add(PatternElem.fromString(elem.toString()));
         }
+        asString = pattern;
     }
 
     public String apply(String[] words, String[] pos) {
@@ -91,7 +99,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         for (PatternElem elem : pattern) {
             if (!(elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
                     || elem.equals(PatternElem.PSKP) || elem
-                        .equals(PatternElem.WPOS))) {
+                    .equals(PatternElem.WPOS))) {
                 return false;
             }
         }
@@ -134,7 +142,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     @Override
     public Pattern clone() {
-        return new Pattern(new ArrayList<PatternElem>(pattern));
+        return new Pattern(asString);
     }
 
     @Override
@@ -151,21 +159,12 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     @Override
     public int hashCode() {
-        int hash = 93485;
-        int mult = 239;
-
-        hash += mult * pattern.hashCode();
-
-        return hash;
+        return asString.hashCode();
     }
 
     @Override
     public String toString() {
-        String result = "";
-        for (PatternElem elem : pattern) {
-            result += elem;
-        }
-        return result;
+        return asString;
     }
 
     @Override
