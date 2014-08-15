@@ -15,17 +15,16 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Logging;
 import de.glmtk.counting.Sequencer.WriteQueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 
-public class SequencerWriteTask implements Runnable {
+public class SequencerWriteThread implements Runnable {
+
+    private static final long QUEUE_WAIT_TIME = 10;
 
     private static final Logger LOGGER = LogManager
-            .getLogger(SequencerWriteTask.class);
-
-    private static final long IDLE_TIME = 10;
+            .getLogger(SequencerWriteThread.class);
 
     private Sequencer sequencer;
 
@@ -33,7 +32,7 @@ public class SequencerWriteTask implements Runnable {
 
     private Map<Pattern, BufferedWriter> writers;
 
-    public SequencerWriteTask(
+    public SequencerWriteThread(
             Sequencer sequencer,
             BlockingQueue<WriteQueueItem> writeQueue,
             Path outputDir,
@@ -68,12 +67,12 @@ public class SequencerWriteTask implements Runnable {
         try {
             while (!(sequencer.isCalculatingDone() && writeQueue.isEmpty())) {
                 WriteQueueItem witem =
-                        writeQueue.poll(IDLE_TIME, TimeUnit.MILLISECONDS);
+                        writeQueue.poll(QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS);
                 if (witem == null) {
-                    LOGGER.trace("SequencerWriteTask idle.");
-                    if (Logging.getLogLevel() == Level.ALL
-                            || Logging.getLogLevel() == Level.TRACE) {
-                        StatisticalNumberHelper.count("IdleSequencerWriteTask");
+                    if (LOGGER.getLevel().isLessSpecificThan(Level.TRACE)) {
+                        LOGGER.trace("SequencerWriteThread idle.");
+                        StatisticalNumberHelper
+                        .count("IdleSequencerWriteThread");
                     }
                 } else {
                     BufferedWriter writer = writers.get(witem.pattern);
@@ -89,7 +88,7 @@ public class SequencerWriteTask implements Runnable {
             throw new IllegalStateException(e);
         }
 
-        LOGGER.debug("Sequencer writing done.");
+        LOGGER.debug("SequencerWriteThread finished.");
     }
 
 }

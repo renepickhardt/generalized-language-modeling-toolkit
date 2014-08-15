@@ -14,18 +14,17 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Logging;
 import de.glmtk.counting.Sequencer.ReadQueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
-public class SequencerReadTask implements Runnable {
+public class SequencerReadThread implements Runnable {
+
+    private static final long QUEUE_WAIT_TIME = 10;
 
     private static final Logger LOGGER = LogManager
-            .getLogger(SequencerReadTask.class);
-
-    private static final long IDLE_TIME = 10;
+            .getLogger(SequencerReadThread.class);
 
     private Sequencer sequencer;
 
@@ -41,7 +40,7 @@ public class SequencerReadTask implements Runnable {
 
     private int updateInterval;
 
-    public SequencerReadTask(
+    public SequencerReadThread(
             Sequencer sequencer,
             BlockingQueue<ReadQueueItem> readQueue,
             Path inputFile,
@@ -92,7 +91,7 @@ public class SequencerReadTask implements Runnable {
         }
 
         sequencer.readingDone();
-        LOGGER.debug("Sequencer reading done.");
+        LOGGER.debug("SequencerReadThread finished.");
     }
 
     private void extractWordAndPosesFromSplit(
@@ -132,13 +131,12 @@ public class SequencerReadTask implements Runnable {
                     ritem.pattern = pattern;
                     ritem.words = w;
                     ritem.poses = p;
-                    while (!readQueue.offer(ritem, IDLE_TIME,
+                    while (!readQueue.offer(ritem, QUEUE_WAIT_TIME,
                             TimeUnit.MILLISECONDS)) {
-                        LOGGER.trace("SequencerReadTask idle.");
-                        if (Logging.getLogLevel() == Level.ALL
-                                || Logging.getLogLevel() == Level.TRACE) {
+                        if (LOGGER.getLevel().isLessSpecificThan(Level.TRACE)) {
+                            LOGGER.trace("SequencerReadThread idle.");
                             StatisticalNumberHelper
-                                    .count("IdleSequencerReadTask");
+                            .count("IdleSequencerReadThread");
                         }
                     }
 

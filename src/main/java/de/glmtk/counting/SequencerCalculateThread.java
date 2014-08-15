@@ -7,17 +7,16 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Logging;
 import de.glmtk.counting.Sequencer.ReadQueueItem;
 import de.glmtk.counting.Sequencer.WriteQueueItem;
 import de.glmtk.utils.StatisticalNumberHelper;
 
-public class SequencerCalculateTask implements Runnable {
+public class SequencerCalculateThread implements Runnable {
+
+    private static final long QUEUE_WAIT_TIME = 10;
 
     private static final Logger LOGGER = LogManager
-            .getLogger(SequencerCalculateTask.class);
-
-    private static final long IDLE_TIME = 10;
+            .getLogger(SequencerCalculateThread.class);
 
     private Sequencer sequencer;
 
@@ -25,7 +24,7 @@ public class SequencerCalculateTask implements Runnable {
 
     private BlockingQueue<WriteQueueItem> writeQueue;
 
-    public SequencerCalculateTask(
+    public SequencerCalculateThread(
             Sequencer sequencer,
             BlockingQueue<ReadQueueItem> readQueue,
             BlockingQueue<WriteQueueItem> writeQueue) {
@@ -39,13 +38,12 @@ public class SequencerCalculateTask implements Runnable {
         try {
             while (!(sequencer.isReadingDone() && readQueue.isEmpty())) {
                 ReadQueueItem ritem =
-                        readQueue.poll(IDLE_TIME, TimeUnit.MILLISECONDS);
+                        readQueue.poll(QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS);
                 if (ritem == null) {
-                    LOGGER.trace("SequencerCalculateTask idle.");
-                    if (Logging.getLogLevel() == Level.ALL
-                            || Logging.getLogLevel() == Level.TRACE) {
+                    if (LOGGER.getLevel().isLessSpecificThan(Level.TRACE)) {
+                        LOGGER.trace("SequencerCalculateThread idle.");
                         StatisticalNumberHelper
-                                .count("IdleSequencerCalculateTask");
+                        .count("IdleSequencerCalculateThread");
                     }
                 } else {
                     WriteQueueItem witem = new WriteQueueItem();
@@ -67,7 +65,7 @@ public class SequencerCalculateTask implements Runnable {
         }
 
         sequencer.calculatingDone();
-        LOGGER.debug("Sequencer calculating done.");
+        LOGGER.debug("SequencerCalculateThread finished.");
     }
 
 }

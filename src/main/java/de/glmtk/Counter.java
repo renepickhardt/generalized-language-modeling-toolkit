@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk;
 
 public class Counter {
 

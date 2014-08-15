@@ -21,9 +21,9 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.pattern.Pattern;
 
 /**
- * Sequencer will spawn {@code 1} {@link SequencerReadTask}, {@code 1}
- * {@link SequencerWriteTask} and {@code max(1, n-2)}
- * {@link SequencerCalculateTask}, where {@code n} is the number of available
+ * Sequencer will spawn {@code 1} {@link SequencerReadThread}, {@code 1}
+ * {@link SequencerWriteThread} and {@code max(1, n-2)}
+ * {@link SequencerCalculateThread}, where {@code n} is the number of available
  * cores.
  */
 public class Sequencer {
@@ -86,6 +86,8 @@ public class Sequencer {
      */
     private static final long WRITE_QUEUE_ITEM_MEMORY = 400;
 
+    private static final long MB = 1024 * 1024;
+
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Sequencer.class);
 
@@ -145,12 +147,20 @@ public class Sequencer {
         Runtime r = Runtime.getRuntime();
         r.gc();
         long totalFreeMemory = r.maxMemory() - r.totalMemory() + r.freeMemory();
-        long memory = (MEMORY_PERCENT * totalFreeMemory) / 100;
+        long sequencerMemory = (MEMORY_PERCENT * totalFreeMemory) / 100;
+        long readerMemory = (READER_MEMORY_PERCENT * sequencerMemory) / 100;
+        long writerMemory = (WRITER_MEMORY_PERCENT * sequencerMemory) / 100;
+        long readQueueMemory =
+                (READ_QUEUE_MEMORY_PERCENT * sequencerMemory) / 100;
+        long writeQueueMemory =
+                (WRITE_QUEUE_MEMORY_PERCENT * sequencerMemory) / 100;
 
-        long readerMemory = memory * READER_MEMORY_PERCENT / 100;
-        long writerMemory = memory * WRITER_MEMORY_PERCENT / 100;
-        long readQueueMemory = memory * READ_QUEUE_MEMORY_PERCENT / 100;
-        long writeQueueMemory = memory * WRITE_QUEUE_MEMORY_PERCENT / 100;
+        LOGGER.debug("totalFreeMemory  = %sMB", totalFreeMemory / MB);
+        LOGGER.debug("sequencerMemory  = %sMB", sequencerMemory / MB);
+        LOGGER.debug("readerMemory     = %sMB", readerMemory / MB);
+        LOGGER.debug("writerMemory     = %sMB", writerMemory / MB);
+        LOGGER.debug("readQueueMemory  = %sMB", readQueueMemory / MB);
+        LOGGER.debug("writeQueueMemory = %sMB", writeQueueMemory / MB);
 
         BlockingQueue<ReadQueueItem> readQueue =
                 new ArrayBlockingQueue<ReadQueueItem>(
@@ -159,17 +169,17 @@ public class Sequencer {
                 new ArrayBlockingQueue<WriteQueueItem>(
                         (int) (writeQueueMemory / WRITE_QUEUE_ITEM_MEMORY));
 
-        SequencerReadTask readTask =
-                new SequencerReadTask(this, readQueue, inputFile,
+        SequencerReadThread readThread =
+                new SequencerReadThread(this, readQueue, inputFile,
                         patternsByLength, hasPos, readerMemory, updateInterval);
-        List<SequencerCalculateTask> calculateTasks =
-                new LinkedList<SequencerCalculateTask>();
+        List<SequencerCalculateThread> calculateThreads =
+                new LinkedList<SequencerCalculateThread>();
         for (int i = 0; i != Math.max(numberOfCores - 2, 1); ++i) {
-            calculateTasks.add(new SequencerCalculateTask(this, readQueue,
+            calculateThreads.add(new SequencerCalculateThread(this, readQueue,
                     writeQueue));
         }
-        SequencerWriteTask writeTask =
-                new SequencerWriteTask(this, writeQueue, outputDir,
+        SequencerWriteThread writeThread =
+                new SequencerWriteThread(this, writeQueue, outputDir,
                         patternsByLength, writerMemory);
 
         readingDone = false;
@@ -178,11 +188,11 @@ public class Sequencer {
             ExecutorService executorService =
                     Executors.newFixedThreadPool(numberOfCores);
 
-            executorService.execute(readTask);
-            for (SequencerCalculateTask calculateTask : calculateTasks) {
-                executorService.execute(calculateTask);
+            executorService.execute(readThread);
+            for (SequencerCalculateThread calculateThread : calculateThreads) {
+                executorService.execute(calculateThread);
             }
-            executorService.execute(writeTask);
+            executorService.execute(writeThread);
 
             executorService.shutdown();
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);

@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Logging;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.Sequencer;
 import de.glmtk.counting.Tagger;
 import de.glmtk.pattern.Pattern;
@@ -113,6 +114,9 @@ public class GlmtkNew extends Executable {
 
         Status status = new Status(output.resolve("status"), corpus);
 
+        // TODO: check file system if status is accurate.
+        // TODO: update status with smaller increments (each completed pattern).
+
         LOGGER.debug("Status ------------------------------------------------");
         LOGGER.debug("status.getTraining     = {}", status.getTraining());
         LOGGER.debug("status.getSequenced    = {}", status.getSequenced());
@@ -144,7 +148,7 @@ public class GlmtkNew extends Executable {
 
         LOGGER.debug("Request -----------------------------------------------");
         LOGGER.debug("needToTagTraning           = {}", needToTagTraining);
-        LOGGER.debug("neededAbsolutePatters      = {}", neededAbsolutePatterns);
+        LOGGER.debug("neededAbsolutePatterns     = {}", neededAbsolutePatterns);
         LOGGER.debug("neededContinuationPatterns = {}",
                 neededContinuationPatterns);
 
@@ -204,7 +208,10 @@ public class GlmtkNew extends Executable {
             LOGGER.debug("Going to absolute count patterns: {}",
                     patternsToCountAbsolute);
 
-            // TODO: do absolute
+            AbsoluteCounter absoluteCounter =
+                    new AbsoluteCounter(config.getNumberOfCores(),
+                            config.getUpdateInterval(), patternsToCountAbsolute);
+            absoluteCounter.count(sequencesDir, absoluteDir);
             status.setAbsolute(neededAbsolutePatterns);
         }
 

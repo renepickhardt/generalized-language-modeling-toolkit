@@ -14,8 +14,8 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Counter;
 import de.glmtk.utils.StringUtils;
-import de.glmtk.counting.Counter;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
 

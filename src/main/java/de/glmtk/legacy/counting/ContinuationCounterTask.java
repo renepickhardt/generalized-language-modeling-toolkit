@@ -15,7 +15,7 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.counting.Counter;
+import de.glmtk.Counter;
 import de.glmtk.legacy.indexing.Index;
 import de.glmtk.legacy.indexing.IndexWriter;
 import de.glmtk.pattern.Pattern;
