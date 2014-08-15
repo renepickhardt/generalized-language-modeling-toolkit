@@ -164,7 +164,6 @@ public class Sequencer {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private void writeSequences(
             int patternLength,
             Map<Pattern, IndexWriter> patternWriters,

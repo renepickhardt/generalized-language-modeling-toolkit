@@ -15,25 +15,23 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.counting.absolute.Chunker.ReadQueueItem;
+import de.glmtk.counting.absolute.Chunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
-public class ChunkerReadingThread implements Runnable {
+public class ChunkerSequencingThread implements Runnable {
 
-    private static final long QUEUE_WAIT_TIME = 1;
+    private static final long QUEUE_WAIT_TIME = 10;
 
     private static final String UNKOWN_POS = "UNKP";
 
     private static final Logger LOGGER = LogManager
-            .getFormatterLogger(ChunkerReadingThread.class);
+            .getFormatterLogger(ChunkerSequencingThread.class);
 
     private Chunker chunker;
 
-    private BlockingQueue<ReadQueueItem> readQueue;
-
-    private Map<Integer, Set<Pattern>> patternsByLength;
+    private Map<Pattern, BlockingQueue<QueueItem>> queues;
 
     private Path inputFile;
 
@@ -43,16 +41,18 @@ public class ChunkerReadingThread implements Runnable {
 
     private int updateInterval;
 
-    public ChunkerReadingThread(
+    private Map<Integer, Set<Pattern>> patternsByLength;
+
+    public ChunkerSequencingThread(
             Chunker chunker,
-            BlockingQueue<ReadQueueItem> readQueue,
+            Map<Pattern, BlockingQueue<QueueItem>> queues,
             Set<Pattern> patterns,
             Path inputFile,
             boolean inputFileHasPos,
             long readerMemory,
             int updateInterval) {
         this.chunker = chunker;
-        this.readQueue = readQueue;
+        this.queues = queues;
         this.inputFile = inputFile;
         this.inputFileHasPos = inputFileHasPos;
         this.readerMemory = readerMemory;
@@ -96,18 +96,18 @@ public class ChunkerReadingThread implements Runnable {
                                 new String[0]);
                 String[] words = new String[split.length];
                 String[] poses = new String[split.length];
-                extractWordsAndPosesFromSplit(split, words, poses);
-                generateReadStatusItems(words, poses);
+                extractWordsAndPoses(split, words, poses);
+                generateAndQueueSequences(words, poses);
             }
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
         }
 
-        chunker.readingIsDone();
-        LOGGER.debug("ChunkerReadingThread finished.");
+        chunker.sequencingIsDone();
+        LOGGER.debug("ChunkerSequecingThread finished.");
     }
 
-    private void extractWordsAndPosesFromSplit(
+    private void extractWordsAndPoses(
             String[] split,
             String[] words,
             String[] poses) {
@@ -129,24 +129,21 @@ public class ChunkerReadingThread implements Runnable {
         }
     }
 
-    private void generateReadStatusItems(String[] words, String[] poses)
+    private void generateAndQueueSequences(String[] words, String[] poses)
             throws InterruptedException {
         for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
                 .entrySet()) {
             int patternLength = entry.getKey();
             Set<Pattern> patterns = entry.getValue();
-            for (int i = 0; i <= words.length - patternLength; ++i) {
-                String[] w = new String[patternLength];
-                String[] p = new String[patternLength];
-                System.arraycopy(words, i, w, 0, patternLength);
-                System.arraycopy(poses, i, p, 0, patternLength);
+            for (int p = 0; p <= words.length - patternLength; ++p) {
                 for (Pattern pattern : patterns) {
-                    ReadQueueItem ritem = new ReadQueueItem(pattern, w, p);
-                    while (!readQueue.offer(ritem, QUEUE_WAIT_TIME,
+                    String sequence = pattern.apply(words, poses, p);
+                    QueueItem item = new QueueItem(pattern, sequence);
+                    while (!queues.get(pattern).offer(item, QUEUE_WAIT_TIME,
                             TimeUnit.MILLISECONDS)) {
-                        LOGGER.trace("ChunkerReadingThread idle, because ReadQueue full.");
+                        LOGGER.trace("ChunkerReadingThread idle, because queue full.");
                         StatisticalNumberHelper
-                                .count("Idle ChunkerReadingThread cecause ReadQueue full");
+                        .count("Idle ChunkerReadingThread cecause queue full");
                     }
 
                     // To get memory average of ReadQueueItem. Don't forget to:
@@ -154,7 +151,7 @@ public class ChunkerReadingThread implements Runnable {
                     // - uncomment classmexer.jar in pom
                     // - add javaagent in run.sh to MAVEN_OPTS.
                     //StatisticalNumberHelper.average("ReadQueueItem", MemoryUtil
-                    //        .deepMemoryUsageOf(ritem, VisibilityFilter.ALL));
+                    //        .deepMemoryUsageOf(witem, VisibilityFilter.ALL));
                 }
             }
         }

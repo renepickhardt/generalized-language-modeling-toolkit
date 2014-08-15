@@ -19,36 +19,36 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.counting.absolute.Chunker.WriteQueueItem;
+import de.glmtk.counting.absolute.Chunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 
 public class ChunkerAggregatingThread implements Runnable {
 
+    @SuppressWarnings("unused")
     private static final long AVERAGE_SEQUENCE_SIZE = 15;
 
-    private static final long QUEUE_WAIT_TIME = 1;
+    private static final long QUEUE_WAIT_TIME = 10;
 
     private static final int TAB_COUNT_NL_BYTES = "\t10\n".getBytes().length;
 
     private static final Logger LOGGER = LogManager
             .getLogger(ChunkerAggregatingThread.class);
 
-    private class Chunk {
+    private static class Chunk {
 
         public int size = 0;
 
         public int counter = 0;
 
         public TObjectLongMap<String> sequenceCounts =
-                new TObjectLongHashMap<String>(
-                        (int) (chunkSize / AVERAGE_SEQUENCE_SIZE));
+                new TObjectLongHashMap<String>();
 
     }
 
     private Chunker chunker;
 
-    private BlockingQueue<WriteQueueItem> writeQueue;
+    private BlockingQueue<QueueItem> queue;
 
     private Path outputDir;
 
@@ -62,12 +62,12 @@ public class ChunkerAggregatingThread implements Runnable {
 
     public ChunkerAggregatingThread(
             Chunker chunker,
-            BlockingQueue<WriteQueueItem> writeQueue,
+            BlockingQueue<QueueItem> queue,
             Path outputDir,
             long chunkSize,
             Status status) {
         this.chunker = chunker;
-        this.writeQueue = writeQueue;
+        this.queue = queue;
         this.outputDir = outputDir;
         this.chunkSize = chunkSize;
         this.status = status;
@@ -79,39 +79,37 @@ public class ChunkerAggregatingThread implements Runnable {
     @Override
     public void run() {
         try {
-            while (!(chunker.isProcessingDone() && writeQueue.isEmpty())) {
-                WriteQueueItem witem =
-                        writeQueue.poll(QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS);
-                if (witem == null) {
-                    LOGGER.trace("ChunkerAggregatingThread idle, because write queue empty.");
+            while (!(chunker.isSequencingDone() && queue.isEmpty())) {
+                QueueItem item =
+                        queue.poll(QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS);
+                if (item == null) {
+                    LOGGER.trace("ChunkerAggregatingThread idle, because queue empty.");
                     StatisticalNumberHelper
-                    .count("Idle ChunkerAggregatingThread because WriteQueue empty");
+                            .count("Idle ChunkerAggregatingThread because queue empty");
                     continue;
                 }
 
-                Chunk chunk = chunks.get(witem.pattern);
+                Chunk chunk = chunks.get(item.pattern);
                 if (chunk == null) {
                     chunk = new Chunk();
-                    chunks.put(witem.pattern, chunk);
-                    chunkFiles.put(witem.pattern, new LinkedList<Path>());
+                    chunks.put(item.pattern, chunk);
+                    chunkFiles.put(item.pattern, new LinkedList<Path>());
                 }
 
-                if (chunk.sequenceCounts.adjustOrPutValue(witem.sequence, 1, 1) == 1) {
+                if (chunk.sequenceCounts.adjustOrPutValue(item.sequence, 1, 1) == 1) {
                     chunk.size +=
-                            witem.sequence.getBytes().length
-                            + TAB_COUNT_NL_BYTES;
+                            item.sequence.getBytes().length
+                                    + TAB_COUNT_NL_BYTES;
                 }
 
                 if (chunk.size > chunkSize) {
-                    writeChunkToFile(witem.pattern, chunk);
+                    writeChunkToFile(item.pattern, chunk);
                     int counter = chunk.counter + 1;
                     chunk = new Chunk();
                     chunk.counter = counter;
-                    chunks.put(witem.pattern, chunk);
+                    chunks.put(item.pattern, chunk);
                 }
             }
-
-            LOGGER.debug("Chunking finished, saving remaining chunks to disk.");
 
             for (Map.Entry<Pattern, Chunk> entry : chunks.entrySet()) {
                 writeChunkToFile(entry.getKey(), entry.getValue());

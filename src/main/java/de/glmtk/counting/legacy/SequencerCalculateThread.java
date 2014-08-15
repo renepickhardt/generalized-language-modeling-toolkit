@@ -43,13 +43,13 @@ public class SequencerCalculateThread implements Runnable {
                     if (LOGGER.getLevel().isLessSpecificThan(Level.TRACE)) {
                         LOGGER.trace("SequencerCalculateThread idle.");
                         StatisticalNumberHelper
-                        .count("IdleSequencerCalculateThread");
+                                .count("IdleSequencerCalculateThread");
                     }
                 } else {
                     WriteQueueItem witem = new WriteQueueItem();
                     witem.pattern = ritem.pattern;
                     witem.sequence =
-                            ritem.pattern.apply(ritem.words, ritem.poses);
+                            ritem.pattern.apply(ritem.words, ritem.poses, 0);
                     writeQueue.put(witem);
 
                     // To get memory average of WriteQueueItem. Don't forget to:
