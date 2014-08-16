@@ -45,7 +45,7 @@ public class AbsoluteCounter {
         countingPatterns.removeAll(status.getAbsoluteCounted());
 
         Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
-        chunkingPatterns.removeAll(status.getAbsoluteChunked().keySet());
+        chunkingPatterns.removeAll(status.getAbsoluteChunkedPatterns());
 
         LOGGER.info("1/2 Chunking:");
         chunker.chunk(chunkingPatterns, inputFile, tmpDir, status);

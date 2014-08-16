@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     private Map<Pattern, Chunk> chunks;
 
-    private Map<Pattern, Queue<Path>> chunkFiles;
+    private Map<Pattern, List<Path>> chunkFiles;
 
     public ChunkerAggregatingThread(
             Chunker chunker,
@@ -71,7 +71,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
         this.status = status;
 
         chunks = new HashMap<Pattern, Chunk>();
-        chunkFiles = new HashMap<Pattern, Queue<Path>>();
+        chunkFiles = new HashMap<Pattern, List<Path>>();
     }
 
     @Override
@@ -83,7 +83,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 if (item == null) {
                     LOGGER.trace("ChunkerAggregatingThread idle, because queue empty.");
                     StatisticalNumberHelper
-                    .count("Idle ChunkerAggregatingThread because queue empty");
+                            .count("Idle ChunkerAggregatingThread because queue empty");
                     continue;
                 }
 
@@ -98,7 +98,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 if (count == null) {
                     chunk.size +=
                             item.sequence.getBytes().length
-                                    + TAB_COUNT_NL_BYTES;
+                            + TAB_COUNT_NL_BYTES;
                     chunk.sequenceCounts.put(item.sequence, 1L);
                 } else {
                     chunk.sequenceCounts.put(item.sequence, count + 1L);
@@ -117,8 +117,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 writeChunkToFile(entry.getKey(), entry.getValue());
             }
 
-            status.getAbsoluteChunked().putAll(chunkFiles);
-            status.writeStatusToFile();
+            status.addAbsoluteChunked(chunkFiles);
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
         }

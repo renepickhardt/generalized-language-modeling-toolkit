@@ -1,9 +1,9 @@
 package de.glmtk;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,17 +11,18 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.executables.Termination;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StringUtils;
 
@@ -55,7 +56,7 @@ public class Status {
 
     private TrainingStatus training;
 
-    private Map<Pattern, Queue<Path>> absoluteChunked;
+    private Map<Pattern, List<Path>> absoluteChunked;
 
     private Set<Pattern> absoluteCounted;
 
@@ -77,10 +78,8 @@ public class Status {
 
     private void setDefaultSettings() {
         training = TrainingStatus.NONE;
-        absoluteChunked = new ConcurrentHashMap<Pattern, Queue<Path>>();
-        absoluteCounted =
-                Collections
-                        .newSetFromMap(new ConcurrentHashMap<Pattern, Boolean>());
+        absoluteChunked = new HashMap<Pattern, List<Path>>();
+        absoluteCounted = new HashSet<Pattern>();
     }
 
     public TrainingStatus getTraining() {
@@ -88,23 +87,55 @@ public class Status {
     }
 
     public void setTraining(TrainingStatus training) throws IOException {
-        this.training = training;
+        synchronized (this) {
+            this.training = training;
 
-        // Reset all other options
-        absoluteChunked = new ConcurrentHashMap<Pattern, Queue<Path>>();
-        absoluteCounted =
-                Collections
-                        .newSetFromMap(new ConcurrentHashMap<Pattern, Boolean>());
+            // Reset all other options
+            absoluteChunked = new HashMap<Pattern, List<Path>>();
+            absoluteCounted = new HashSet<Pattern>();
 
-        writeStatusToFile();
+            writeStatusToFile();
+        }
     }
 
-    public Map<Pattern, Queue<Path>> getAbsoluteChunked() {
-        return absoluteChunked;
+    public Set<Pattern> getAbsoluteChunkedPatterns() {
+        return Collections.unmodifiableSet(absoluteChunked.keySet());
+    }
+
+    public List<Path> getAbsoluteChunks(Pattern pattern) {
+        return Collections.unmodifiableList(absoluteChunked.get(pattern));
+    }
+
+    public void addAbsoluteChunked(Map<Pattern, List<Path>> absoluteChunked)
+            throws IOException {
+        synchronized (this) {
+            this.absoluteChunked.putAll(absoluteChunked);
+            writeStatusToFile();
+        }
+    }
+
+    public void performAbsoluteChunkedMerge(
+            Pattern pattern,
+            List<Path> mergedChunks,
+            Path mergeFile) throws IOException {
+        synchronized (this) {
+            List<Path> chunks = absoluteChunked.get(pattern);
+            chunks.removeAll(mergedChunks);
+            chunks.add(mergeFile);
+            writeStatusToFile();
+        }
+    }
+
+    public void finishAbsoluteChunkedMerge(Pattern pattern) throws IOException {
+        synchronized (this) {
+            absoluteChunked.remove(pattern);
+            absoluteCounted.add(pattern);
+            writeStatusToFile();
+        }
     }
 
     public Set<Pattern> getAbsoluteCounted() {
-        return absoluteCounted;
+        return Collections.unmodifiableSet(absoluteCounted);
     }
 
     public void logStatus() {
@@ -115,10 +146,10 @@ public class Status {
         LOGGER.debug("absoluteCounted = {}", absoluteCounted);
     }
 
-    public void writeStatusToFile() throws IOException {
+    private void writeStatusToFile() throws IOException {
         Files.deleteIfExists(tmpFile);
-        try (BufferedWriter writer =
-                Files.newBufferedWriter(tmpFile, Charset.defaultCharset())) {
+        try (OutputStreamWriter writer =
+                new OutputStreamWriter(Files.newOutputStream(tmpFile))) {
             // Hash
             writer.append("hash = " + hash + "\n");
 
@@ -128,10 +159,10 @@ public class Status {
             // Absolute Chunked
             writer.append("absoluteChunked = ");
             boolean first = true;
-            for (Map.Entry<Pattern, Queue<Path>> entry : absoluteChunked
+            for (Map.Entry<Pattern, List<Path>> entry : absoluteChunked
                     .entrySet()) {
                 Pattern pattern = entry.getKey();
-                Queue<Path> chunks = entry.getValue();
+                List<Path> chunks = entry.getValue();
                 if (first) {
                     first = false;
                 } else {
@@ -141,7 +172,7 @@ public class Status {
             }
             writer.append('\n');
 
-            // Absolute Couted
+            // Absolute Counted
             writer.append("absoluteCounted = "
                     + StringUtils.join(absoluteCounted, ",") + "\n");
         }
@@ -179,15 +210,20 @@ public class Status {
 
                 matcher = getPattern("absoluteChunked").matcher(line);
                 if (matcher.matches()) {
-                    absoluteChunked =
-                            new ConcurrentHashMap<Pattern, Queue<Path>>();
+                    absoluteChunked = new HashMap<Pattern, List<Path>>();
                     for (String patternAndChunks : StringUtils.splitAtChar(
                             matcher.group(1), ',')) {
-                        System.out.println(patternAndChunks);
                         List<String> split =
                                 StringUtils.splitAtChar(patternAndChunks, ':');
+                        if (split.size() != 2) {
+                            LOGGER.error(
+                                    "Illegal format for 'absoluteChunked': {}",
+                                    patternAndChunks);
+                            throw new Termination();
+                        }
+
                         Pattern pattern = new Pattern(split.get(0));
-                        Queue<Path> chunks = new LinkedList<Path>();
+                        List<Path> chunks = new LinkedList<Path>();
                         for (String chunk : StringUtils.splitAtChar(
                                 split.get(1), ';')) {
                             chunks.add(Paths.get(chunk));
@@ -199,9 +235,7 @@ public class Status {
 
                 matcher = getPattern("absoluteCounted").matcher(line);
                 if (matcher.matches()) {
-                    absoluteCounted =
-                            Collections
-                            .newSetFromMap(new ConcurrentHashMap<Pattern, Boolean>());
+                    absoluteCounted = new HashSet<Pattern>();
                     for (String pattern : StringUtils.splitAtChar(
                             matcher.group(1), ',')) {
                         absoluteCounted.add(new Pattern(pattern));
@@ -244,7 +278,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                        .substring(1);
+                                .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {

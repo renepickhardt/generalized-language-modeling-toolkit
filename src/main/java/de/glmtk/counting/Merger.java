@@ -24,7 +24,7 @@ public class Merger {
 
     private static final long MB = 1024 * KB;
 
-    private static final int AVAILABLE_MEMORY_PERCENT = 50;
+    private static final int AVAILABLE_MEMORY_PERCENT = 40;
 
     private static final int NUM_PARALLEL_READERS = 10;
 

@@ -9,8 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -85,35 +85,34 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
                 Path patternDir = inputDir.resolve(pattern.toString());
 
-                Queue<Path> chunks = status.getAbsoluteChunked().get(pattern);
-                for (int mergeCounter = 0; chunks.size() != 1; ++mergeCounter) {
-                    Queue<Path> curChunks = new LinkedList<Path>();
-                    for (int i = 0; i != numParallelReaders
-                            && !chunks.isEmpty(); ++i) {
-                        curChunks.add(chunks.poll());
-                    }
+                int mergeCounter = 0;
+                List<Path> chunks;
+                while ((chunks = status.getAbsoluteChunks(pattern)).size() != 1) {
+                    List<Path> curChunks =
+                            new LinkedList<Path>(
+                                    chunks.subList(
+                                            0,
+                                            Math.min(numParallelReaders,
+                                                    chunks.size())));
 
                     Path mergeFile = Paths.get("merge" + mergeCounter);
-
                     LOGGER.debug("Merging pattern {}: {} -> {}.", pattern,
                             curChunks, mergeFile);
-                    mergeChunksToFile(patternDir, curChunks,
-                            patternDir.resolve(mergeFile));
+                    mergeChunksToFile(patternDir, curChunks, mergeFile);
+                    status.performAbsoluteChunkedMerge(pattern, curChunks,
+                            mergeFile);
 
-                    chunks.add(mergeFile);
-                    status.writeStatusToFile();
+                    ++mergeCounter;
                 }
 
-                Path src = patternDir.resolve(chunks.poll());
+                Path src = patternDir.resolve(chunks.get(0));
                 Path dest = outputDir.resolve(pattern.toString());
                 LOGGER.debug("Finishing pattern {}: {} -> {}.", pattern, src,
                         dest);
                 Files.deleteIfExists(dest);
                 Files.move(src, dest);
 
-                status.getAbsoluteChunked().remove(pattern);
-                status.getAbsoluteCounted().add(pattern);
-                status.writeStatusToFile();
+                status.finishAbsoluteChunkedMerge(pattern);
             }
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
@@ -124,12 +123,14 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     private void mergeChunksToFile(
             Path patternDir,
-            Queue<Path> curChunks,
+            List<Path> curChunks,
             Path mergeFile) throws IOException {
-        Files.deleteIfExists(mergeFile);
+        Files.deleteIfExists(patternDir.resolve(mergeFile));
+
         try (BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(
-                        Files.newOutputStream(mergeFile)), (int) writerMemory)) {
+                        Files.newOutputStream(patternDir.resolve(mergeFile))),
+                        (int) writerMemory)) {
             PriorityQueue<SequencerCountReader> readerQueue =
                     new PriorityQueue<SequencerCountReader>(numParallelReaders,
                             SequencerCountReader.COMPARATOR);
