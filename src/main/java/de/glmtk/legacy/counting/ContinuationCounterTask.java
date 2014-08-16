@@ -112,7 +112,7 @@ public class ContinuationCounterTask implements Runnable {
 
                         Object[] words =
                                 StringUtils.splitAtChar(sequence, ' ')
-                                        .toArray();
+                                .toArray();
                         String patternSequence = pattern.apply(words);
 
                         Counter counter = sequenceCounts.get(patternSequence);
@@ -130,11 +130,12 @@ public class ContinuationCounterTask implements Runnable {
     }
 
     private Map<String, Counter>
-    sortCounts(Map<String, Counter> sequenceCounts) {
+        sortCounts(Map<String, Counter> sequenceCounts) {
         sequenceCounts = new TreeMap<String, Counter>(sequenceCounts);
         return sequenceCounts;
     }
 
+    @SuppressWarnings("deprecation")
     private void writeSequenceCounts(Map<String, Counter> sequenceCounts)
             throws IOException {
         Files.createDirectory(outputDir);

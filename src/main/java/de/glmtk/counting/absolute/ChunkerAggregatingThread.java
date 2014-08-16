@@ -1,9 +1,5 @@
 package de.glmtk.counting.absolute;
 
-import gnu.trove.iterator.TObjectLongIterator;
-import gnu.trove.map.TObjectLongMap;
-import gnu.trove.map.hash.TObjectLongHashMap;
-
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
@@ -12,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +20,9 @@ import de.glmtk.counting.absolute.Chunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 
-public class ChunkerAggregatingThread implements Runnable {
+// TODO: find better estimate for map size, to make chunnks more memory
+// effecient.
+/* package */class ChunkerAggregatingThread implements Runnable {
 
     @SuppressWarnings("unused")
     private static final long AVERAGE_SEQUENCE_SIZE = 15;
@@ -41,8 +40,7 @@ public class ChunkerAggregatingThread implements Runnable {
 
         public int counter = 0;
 
-        public TObjectLongMap<String> sequenceCounts =
-                new TObjectLongHashMap<String>();
+        public Map<String, Long> sequenceCounts = new HashMap<String, Long>();
 
     }
 
@@ -85,7 +83,7 @@ public class ChunkerAggregatingThread implements Runnable {
                 if (item == null) {
                     LOGGER.trace("ChunkerAggregatingThread idle, because queue empty.");
                     StatisticalNumberHelper
-                            .count("Idle ChunkerAggregatingThread because queue empty");
+                    .count("Idle ChunkerAggregatingThread because queue empty");
                     continue;
                 }
 
@@ -96,10 +94,14 @@ public class ChunkerAggregatingThread implements Runnable {
                     chunkFiles.put(item.pattern, new LinkedList<Path>());
                 }
 
-                if (chunk.sequenceCounts.adjustOrPutValue(item.sequence, 1, 1) == 1) {
+                Long count = chunk.sequenceCounts.get(item.sequence);
+                if (count == null) {
                     chunk.size +=
                             item.sequence.getBytes().length
                                     + TAB_COUNT_NL_BYTES;
+                    chunk.sequenceCounts.put(item.sequence, 1L);
+                } else {
+                    chunk.sequenceCounts.put(item.sequence, count + 1L);
                 }
 
                 if (chunk.size > chunkSize) {
@@ -132,12 +134,13 @@ public class ChunkerAggregatingThread implements Runnable {
         Files.deleteIfExists(file);
         try (OutputStreamWriter writer =
                 new OutputStreamWriter(Files.newOutputStream((file)))) {
-            TObjectLongIterator<String> it = chunk.sequenceCounts.iterator();
-            for (int i = 0; i != chunk.sequenceCounts.size(); ++i) {
-                it.advance();
-                writer.write(it.key());
+            Map<String, Long> sortedSequenceCounts =
+                    new TreeMap<String, Long>(chunk.sequenceCounts);
+            for (Map.Entry<String, Long> entry : sortedSequenceCounts
+                    .entrySet()) {
+                writer.write(entry.getKey());
                 writer.write('\t');
-                writer.write(((Long) it.value()).toString());
+                writer.write(entry.getValue().toString());
                 writer.write('\n');
             }
         }

@@ -114,7 +114,9 @@ public class GlmtkNew extends Executable {
         @SuppressWarnings("unused")
         Path continuationTmpDir = output.resolve("continuation.tmp");
 
-        Status status = new Status(output.resolve("status"), corpus);
+        Status status =
+                new Status(output.resolve("status"),
+                        output.resolve("status.tmp"), corpus);
         status.logStatus();
 
         // TODO: check file system if status is accurate.
@@ -180,7 +182,7 @@ public class GlmtkNew extends Executable {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-        .count(trainingFile, absoluteDir, absoluteTmpDir, status);
+                .count(trainingFile, absoluteDir, absoluteTmpDir, status);
 
         // Sequencing //////////////////////////////////////////////////////////
 

@@ -20,7 +20,7 @@ import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
-public class ChunkerSequencingThread implements Runnable {
+/* package */class ChunkerSequencingThread implements Runnable {
 
     private static final long QUEUE_WAIT_TIME = 10;
 
@@ -68,7 +68,6 @@ public class ChunkerSequencingThread implements Runnable {
             }
             patternsWithLength.add(pattern);
         }
-
     }
 
     @Override
@@ -143,7 +142,7 @@ public class ChunkerSequencingThread implements Runnable {
                             TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("ChunkerReadingThread idle, because queue full.");
                         StatisticalNumberHelper
-                        .count("Idle ChunkerReadingThread cecause queue full");
+                                .count("Idle ChunkerReadingThread because queue full");
                     }
 
                     // To get memory average of ReadQueueItem. Don't forget to:

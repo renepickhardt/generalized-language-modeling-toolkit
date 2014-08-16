@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
+import de.glmtk.counting.Merger;
 import de.glmtk.pattern.Pattern;
 
 public class AbsoluteCounter {
@@ -21,12 +22,15 @@ public class AbsoluteCounter {
 
     private Chunker chunker;
 
+    private Merger merger;
+
     public AbsoluteCounter(
             Set<Pattern> neededPatterns,
             int numberOfCores,
             int updateInterval) {
         this.neededPatterns = neededPatterns;
         chunker = new Chunker(numberOfCores, updateInterval);
+        merger = new Merger(numberOfCores, updateInterval);
     }
 
     public void
@@ -47,16 +51,9 @@ public class AbsoluteCounter {
         chunker.chunk(chunkingPatterns, inputFile, tmpDir, status);
 
         LOGGER.info("2/2 Merging:");
-        merging(tmpDir, outputDir, status, countingPatterns);
+        merger.merge(countingPatterns, tmpDir, outputDir, status);
 
         LOGGER.info("Absolute counting done.");
-    }
-
-    private void merging(
-            Path tmpDir,
-            Path outputDir,
-            Status status,
-            Set<Pattern> patterns) {
     }
 
 }

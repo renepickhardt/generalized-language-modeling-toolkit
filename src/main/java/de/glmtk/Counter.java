@@ -41,6 +41,27 @@ public class Counter {
         }
     }
 
+    public void add(Counter counter) {
+        onePlusCount += counter.onePlusCount;
+        oneCount += counter.oneCount;
+        twoCount += counter.twoCount;
+        threePlusCount += counter.threePlusCount;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(Long.toString(onePlusCount));
+        result.append('\t');
+        result.append(Long.toString(oneCount));
+        result.append('\t');
+        result.append(Long.toString(twoCount));
+        result.append('\t');
+        result.append(Long.toString(threePlusCount));
+        return result.toString();
+    }
+
+    @Deprecated
     public String toString(String delimiter) {
         return onePlusCount + delimiter + oneCount + delimiter + twoCount
                 + delimiter + threePlusCount;

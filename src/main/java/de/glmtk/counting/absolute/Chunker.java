@@ -22,7 +22,7 @@ import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.pattern.Pattern;
 
-public class Chunker {
+/* package */class Chunker {
 
     private static final long B = 1L;
 
@@ -65,7 +65,7 @@ public class Chunker {
 
     private boolean sequencingDone;
 
-    /* package */Chunker(
+    public Chunker(
             int numberOfCores,
             int updateInterval) {
         this.numberOfCores = numberOfCores;
@@ -81,12 +81,13 @@ public class Chunker {
             LOGGER.debug("No patterns to chunk, returning.");
             return;
         }
-        LOGGER.debug("patterns = " + patterns);
+        LOGGER.debug("patterns = {}", patterns);
         for (Pattern pattern : patterns) {
             Files.createDirectories(outputDir.resolve(pattern.toString()));
         }
 
         // Calculate Memory ////////////////////////////////////////////////////
+        LOGGER.debug("Calculating Memory...");
         Runtime r = Runtime.getRuntime();
         r.gc();
 
@@ -110,6 +111,7 @@ public class Chunker {
         LOGGER.debug("chunkSize       = {}KB", chunkSize / KB);
 
         // Prepare Threads /////////////////////////////////////////////////////
+        LOGGER.debug("Praparing Threads...");
         Map<Pattern, BlockingQueue<QueueItem>> queues =
                 new HashMap<Pattern, BlockingQueue<QueueItem>>();
 
@@ -134,13 +136,14 @@ public class Chunker {
                     queues.put(patternsQueue.poll(), queue);
                 }
             } else {
-                for (int j = 0; j != patternsQueue.size(); ++j) {
-                    queues.put(patternsQueue.poll(), queue);
+                for (Pattern pattern : patternsQueue) {
+                    queues.put(pattern, queue);
                 }
             }
         }
 
-        // Launch Threads //////////////////////////////////////////////////////
+        // Launch Threads /////////////////////////////////////////////////////
+        LOGGER.debug("Launching Threads...");
         sequencingDone = false;
         try {
             ExecutorService executorService =

@@ -10,13 +10,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 import org.apache.logging.log4j.LogManager;
@@ -30,6 +30,8 @@ public class Status {
     private static final Logger LOGGER = LogManager.getLogger(Status.class);
 
     private Path file;
+
+    private Path tmpFile;
 
     private Path corpus;
 
@@ -59,8 +61,10 @@ public class Status {
 
     public Status(
             Path file,
+            Path tmpFile,
             Path corpus) throws IOException {
         this.file = file;
+        this.tmpFile = tmpFile;
         this.corpus = corpus;
 
         hash = generateFileHash(this.corpus);
@@ -73,8 +77,10 @@ public class Status {
 
     private void setDefaultSettings() {
         training = TrainingStatus.NONE;
-        absoluteChunked = new HashMap<Pattern, Queue<Path>>();
-        absoluteCounted = new HashSet<Pattern>();
+        absoluteChunked = new ConcurrentHashMap<Pattern, Queue<Path>>();
+        absoluteCounted =
+                Collections
+                        .newSetFromMap(new ConcurrentHashMap<Pattern, Boolean>());
     }
 
     public TrainingStatus getTraining() {
@@ -85,8 +91,10 @@ public class Status {
         this.training = training;
 
         // Reset all other options
-        absoluteChunked = new HashMap<Pattern, Queue<Path>>();
-        absoluteCounted = new HashSet<Pattern>();
+        absoluteChunked = new ConcurrentHashMap<Pattern, Queue<Path>>();
+        absoluteCounted =
+                Collections
+                        .newSetFromMap(new ConcurrentHashMap<Pattern, Boolean>());
 
         writeStatusToFile();
     }
@@ -95,16 +103,8 @@ public class Status {
         return absoluteChunked;
     }
 
-    public void setAbsoluteChunked(Map<Pattern, Queue<Path>> absoluteChunked) {
-        this.absoluteChunked = absoluteChunked;
-    }
-
     public Set<Pattern> getAbsoluteCounted() {
         return absoluteCounted;
-    }
-
-    public void setAbsoluteCounted(Set<Pattern> absoluteCounted) {
-        this.absoluteCounted = absoluteCounted;
     }
 
     public void logStatus() {
@@ -116,9 +116,9 @@ public class Status {
     }
 
     public void writeStatusToFile() throws IOException {
-        Files.deleteIfExists(file);
+        Files.deleteIfExists(tmpFile);
         try (BufferedWriter writer =
-                Files.newBufferedWriter(file, Charset.defaultCharset())) {
+                Files.newBufferedWriter(tmpFile, Charset.defaultCharset())) {
             // Hash
             writer.append("hash = " + hash + "\n");
 
@@ -137,8 +137,7 @@ public class Status {
                 } else {
                     writer.append(',');
                 }
-                writer.append(pattern + ":[" + StringUtils.join(chunks, ";")
-                        + "]");
+                writer.append(pattern + ":" + StringUtils.join(chunks, ";"));
             }
             writer.append('\n');
 
@@ -146,6 +145,8 @@ public class Status {
             writer.append("absoluteCounted = "
                     + StringUtils.join(absoluteCounted, ",") + "\n");
         }
+        Files.deleteIfExists(file);
+        Files.move(tmpFile, file);
     }
 
     private void readStatusFromFile() throws IOException {
@@ -178,9 +179,11 @@ public class Status {
 
                 matcher = getPattern("absoluteChunked").matcher(line);
                 if (matcher.matches()) {
-                    absoluteChunked = new HashMap<Pattern, Queue<Path>>();
+                    absoluteChunked =
+                            new ConcurrentHashMap<Pattern, Queue<Path>>();
                     for (String patternAndChunks : StringUtils.splitAtChar(
                             matcher.group(1), ',')) {
+                        System.out.println(patternAndChunks);
                         List<String> split =
                                 StringUtils.splitAtChar(patternAndChunks, ':');
                         Pattern pattern = new Pattern(split.get(0));
@@ -196,7 +199,9 @@ public class Status {
 
                 matcher = getPattern("absoluteCounted").matcher(line);
                 if (matcher.matches()) {
-                    absoluteCounted = new HashSet<Pattern>();
+                    absoluteCounted =
+                            Collections
+                            .newSetFromMap(new ConcurrentHashMap<Pattern, Boolean>());
                     for (String pattern : StringUtils.splitAtChar(
                             matcher.group(1), ',')) {
                         absoluteCounted.add(new Pattern(pattern));
@@ -239,7 +244,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                                .substring(1);
+                        .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {
