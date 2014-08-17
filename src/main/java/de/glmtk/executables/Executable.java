@@ -19,10 +19,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Config;
-import de.glmtk.Logging;
+import de.glmtk.utils.Logging;
 import de.glmtk.utils.StringUtils;
 
-public abstract class Executable {
+/* package */abstract class Executable {
 
     protected static final String OPTION_HELP = "help";
 
@@ -83,7 +83,7 @@ public abstract class Executable {
 
         if (line.hasOption(OPTION_VERSION)) {
             System.out
-            .println("GLMTK (generalized language modeling toolkit) version 0.1.");
+                    .println("GLMTK (generalized language modeling toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -105,7 +105,7 @@ public abstract class Executable {
     }
 
     private void printLogHeader(String[] args) throws IOException,
-    InterruptedException {
+            InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -113,7 +113,7 @@ public abstract class Executable {
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-                "git", "log", "-1", "--format=%H: %s"
+            "git", "log", "-1", "--format=%H: %s"
         }, null, config.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =

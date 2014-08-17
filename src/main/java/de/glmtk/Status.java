@@ -60,6 +60,10 @@ public class Status {
 
     private Set<Pattern> absoluteCounted;
 
+    private Map<Pattern, List<Path>> continuationChunked;
+
+    private Set<Pattern> continuationCounted;
+
     public Status(
             Path file,
             Path tmpFile,
@@ -70,16 +74,20 @@ public class Status {
 
         hash = generateFileHash(this.corpus);
 
-        setDefaultSettings();
+        setDefaultSettings(true);
         if (Files.exists(file)) {
             readStatusFromFile();
         }
     }
 
-    private void setDefaultSettings() {
-        training = TrainingStatus.NONE;
+    private void setDefaultSettings(boolean withTraning) {
+        if (withTraning) {
+            training = TrainingStatus.NONE;
+        }
         absoluteChunked = new HashMap<Pattern, List<Path>>();
         absoluteCounted = new HashSet<Pattern>();
+        continuationChunked = new HashMap<Pattern, List<Path>>();
+        continuationCounted = new HashSet<Pattern>();
     }
 
     public TrainingStatus getTraining() {
@@ -89,61 +97,70 @@ public class Status {
     public void setTraining(TrainingStatus training) throws IOException {
         synchronized (this) {
             this.training = training;
-
-            // Reset all other options
-            absoluteChunked = new HashMap<Pattern, List<Path>>();
-            absoluteCounted = new HashSet<Pattern>();
-
+            setDefaultSettings(false);
             writeStatusToFile();
         }
     }
 
-    public Set<Pattern> getAbsoluteChunkedPatterns() {
-        return Collections.unmodifiableSet(absoluteChunked.keySet());
+    private Map<Pattern, List<Path>> chunked(boolean continuation) {
+        return continuation ? continuationChunked : absoluteChunked;
     }
 
-    public List<Path> getAbsoluteChunks(Pattern pattern) {
-        return Collections.unmodifiableList(absoluteChunked.get(pattern));
+    private Set<Pattern> counted(boolean continuation) {
+        return continuation ? continuationCounted : absoluteCounted;
     }
 
-    public void addAbsoluteChunked(Map<Pattern, List<Path>> absoluteChunked)
-            throws IOException {
+    public Set<Pattern> getChunkedPatterns(boolean continuation) {
+        return Collections.unmodifiableSet(chunked(continuation).keySet());
+    }
+
+    public List<Path> getChunks(boolean continuation, Pattern pattern) {
+        return Collections.unmodifiableList(chunked(continuation).get(pattern));
+    }
+
+    public void addChunked(
+            boolean continuation,
+            Map<Pattern, List<Path>> chunked) throws IOException {
         synchronized (this) {
-            this.absoluteChunked.putAll(absoluteChunked);
+            chunked(continuation).putAll(chunked);
             writeStatusToFile();
         }
     }
 
-    public void performAbsoluteChunkedMerge(
+    public void performChunkedMerge(
+            boolean continuation,
             Pattern pattern,
             List<Path> mergedChunks,
             Path mergeFile) throws IOException {
         synchronized (this) {
-            List<Path> chunks = absoluteChunked.get(pattern);
+            List<Path> chunks = chunked(continuation).get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
             writeStatusToFile();
         }
     }
 
-    public void finishAbsoluteChunkedMerge(Pattern pattern) throws IOException {
+    public void finishChunkedMerge(boolean continuation, Pattern pattern)
+            throws IOException {
         synchronized (this) {
-            absoluteChunked.remove(pattern);
-            absoluteCounted.add(pattern);
+            chunked(continuation).remove(pattern);
+            counted(continuation).add(pattern);
             writeStatusToFile();
         }
     }
 
-    public Set<Pattern> getAbsoluteCounted() {
-        return Collections.unmodifiableSet(absoluteCounted);
+    public Set<Pattern> getCounted(boolean continuation) {
+        return Collections.unmodifiableSet(counted(continuation));
     }
 
     public void logStatus() {
         LOGGER.debug("Status {}", StringUtils.repeat("-", 80 - 7));
-        LOGGER.debug("hash            = {}", hash);
-        LOGGER.debug("training        = {}", training);
-        LOGGER.debug("absoluteChunked = {}", absoluteChunked);
-        LOGGER.debug("absoluteCounted = {}", absoluteCounted);
+        LOGGER.debug("hash                = {}", hash);
+        LOGGER.debug("training            = {}", training);
+        LOGGER.debug("absoluteChunked     = {}", absoluteChunked);
+        LOGGER.debug("absoluteCounted     = {}", absoluteCounted);
+        LOGGER.debug("continuationChunked = {}", continuationChunked);
+        LOGGER.debug("continuationCounted = {}", continuationCounted);
     }
 
     private void writeStatusToFile() throws IOException {
@@ -157,27 +174,49 @@ public class Status {
             writer.append("training = " + training + "\n");
 
             // Absolute Chunked
-            writer.append("absoluteChunked = ");
-            boolean first = true;
-            for (Map.Entry<Pattern, List<Path>> entry : absoluteChunked
-                    .entrySet()) {
-                Pattern pattern = entry.getKey();
-                List<Path> chunks = entry.getValue();
-                if (first) {
-                    first = false;
-                } else {
-                    writer.append(',');
-                }
-                writer.append(pattern + ":" + StringUtils.join(chunks, ";"));
-            }
-            writer.append('\n');
+            writeChunked(writer, "absoluteChunked", absoluteChunked);
 
             // Absolute Counted
-            writer.append("absoluteCounted = "
-                    + StringUtils.join(absoluteCounted, ",") + "\n");
+            writeCounted(writer, "absoluteCounted", absoluteCounted);
+
+            // Continuation Chunked
+            writeChunked(writer, "continuationChunked", continuationChunked);
+
+            // Continuation Counted
+            writeCounted(writer, "continuationCounted", continuationCounted);
         }
         Files.deleteIfExists(file);
         Files.move(tmpFile, file);
+    }
+
+    private void writeChunked(
+            OutputStreamWriter writer,
+            String name,
+            Map<Pattern, List<Path>> chunked) throws IOException {
+        writer.append(name);
+        writer.append(" = ");
+        boolean first = true;
+        for (Map.Entry<Pattern, List<Path>> entry : chunked.entrySet()) {
+            Pattern pattern = entry.getKey();
+            List<Path> chunks = entry.getValue();
+            if (first) {
+                first = false;
+            } else {
+                writer.append(',');
+            }
+            writer.append(pattern + ":" + StringUtils.join(chunks, ";"));
+        }
+        writer.append('\n');
+    }
+
+    private void writeCounted(
+            OutputStreamWriter writer,
+            String name,
+            Set<Pattern> counted) throws IOException {
+        writer.append(name);
+        writer.append(" = ");
+        writer.append(StringUtils.join(counted, ","));
+        writer.append('\n');
     }
 
     private void readStatusFromFile() throws IOException {
@@ -195,7 +234,7 @@ public class Status {
                 if (matcher.matches()) {
                     String statusHash = matcher.group(1);
                     if (!hash.equals(statusHash)) {
-                        setDefaultSettings();
+                        setDefaultSettings(true);
                         LOGGER.warn("New Hash didn't match old one. Overwriting.");
                         break;
                     }
@@ -278,7 +317,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                                .substring(1);
+                        .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {

@@ -1,7 +1,16 @@
 package de.glmtk.pattern;
 
+import static de.glmtk.pattern.PatternElem.CNT;
+import static de.glmtk.pattern.PatternElem.DEL;
+import static de.glmtk.pattern.PatternElem.POS;
+import static de.glmtk.pattern.PatternElem.PSKP;
+import static de.glmtk.pattern.PatternElem.SKP;
+import static de.glmtk.pattern.PatternElem.WPOS;
+import static de.glmtk.pattern.PatternElem.WSKP;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,11 +25,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     public Pattern(
             List<PatternElem> pattern) {
         this.pattern = pattern;
-        StringBuilder asStringBuilder = new StringBuilder();
-        for (PatternElem elem : pattern) {
-            asStringBuilder.append(elem);
-        }
-        asString = asStringBuilder.toString();
+        updateAsString();
     }
 
     public Pattern(
@@ -33,25 +38,12 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         asString = pattern;
     }
 
-    public String apply(String[] words, String[] pos, int p) {
-        StringBuilder result = new StringBuilder();
-
-        boolean first = true;
-        int i = 0;
+    private void updateAsString() {
+        StringBuilder asStringBuilder = new StringBuilder();
         for (PatternElem elem : pattern) {
-            if (elem != PatternElem.DEL) {
-                if (!first) {
-                    result.append(' ');
-                }
-                first = false;
-            }
-
-            result.append(elem.apply(words[p + i], pos[p + i]));
-
-            ++i;
+            asStringBuilder.append(elem);
         }
-
-        return result.toString();
+        asString = asStringBuilder.toString();
     }
 
     public int length() {
@@ -73,55 +65,89 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     public void set(int index, PatternElem elem) {
         pattern.set(index, elem);
+        updateAsString();
     }
 
-    public boolean containsPos() {
-        for (PatternElem elem : pattern) {
-            if (elem.equals(PatternElem.POS)) {
+    @Override
+    public Pattern clone() {
+        return new Pattern(asString);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        } else if (other == null || other.getClass() != Pattern.class) {
+            return false;
+        }
+
+        Pattern o = (Pattern) other;
+        return asString.equals(o.asString);
+    }
+
+    @Override
+    public int hashCode() {
+        return asString.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return asString;
+    }
+
+    @Override
+    public Iterator<PatternElem> iterator() {
+        return pattern.iterator();
+    }
+
+    public boolean contains(PatternElem elem) {
+        for (PatternElem e : pattern) {
+            if (e.equals(elem)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean containsSkp() {
-        for (PatternElem elem : pattern) {
-            if (elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
-                    || elem.equals(PatternElem.PSKP)
-                    || elem.equals(PatternElem.WPOS)) {
-                return true;
+    public boolean contains(List<PatternElem> elems) {
+        for (PatternElem e : pattern) {
+            for (PatternElem e2 : elems) {
+                if (e.equals(e2)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public boolean onlySkp() {
-        for (PatternElem elem : pattern) {
-            if (!(elem.equals(PatternElem.SKP) || elem.equals(PatternElem.WSKP)
-                    || elem.equals(PatternElem.PSKP) || elem
-                        .equals(PatternElem.WPOS))) {
+    public boolean containsOnly(PatternElem elem) {
+        for (PatternElem e : pattern) {
+            if (!e.equals(elem)) {
                 return false;
             }
         }
         return true;
     }
 
-    /**
-     * Whether pattern only contains CNT and SKP.
-     */
+    public boolean containsOnly(List<PatternElem> elems) {
+        for (PatternElem e : pattern) {
+            for (PatternElem e2 : elems) {
+                if (e.equals(e2)) {
+                    continue;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
     public boolean isAbsolute() {
-        for (PatternElem elem : pattern) {
-            if (elem.equals(PatternElem.WSKP) || elem.equals(PatternElem.PSKP)
-                    || elem.equals(PatternElem.WPOS)) {
-                return false;
-            }
-        }
-        return true;
+        return containsOnly(Arrays.asList(CNT, SKP, POS));
     }
 
     public Pattern replace(PatternElem target, PatternElem replacement) {
         Pattern newPattern = clone();
-        for (int i = newPattern.length() - 1; i != -1; --i) {
+        for (int i = 0; i != newPattern.length(); ++i) {
             if (newPattern.get(i).equals(target)) {
                 newPattern.set(i, replacement);
             }
@@ -140,37 +166,28 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return newPattern;
     }
 
-    @Override
-    public Pattern clone() {
-        return new Pattern(asString);
-    }
+    public String apply(String[] words, String[] pos, int p) {
+        StringBuilder result = new StringBuilder();
 
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        } else if (other == null || other.getClass() != Pattern.class) {
-            return false;
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply(words[p + i], pos[p + i]));
+
+            ++i;
         }
 
-        Pattern o = (Pattern) other;
-        return pattern.equals(o.pattern);
+        return result.toString();
     }
 
-    @Override
-    public int hashCode() {
-        return asString.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return asString;
-    }
-
-    @Override
-    public Iterator<PatternElem> iterator() {
-        return pattern.iterator();
-    }
+    // Static //////////////////////////////////////////////////////////////////
 
     public static int getModelLength(Set<Pattern> patterns) {
         int modelLength = 0;
@@ -217,7 +234,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         Set<Pattern> patterns = new HashSet<Pattern>();
 
         for (Pattern pattern : inputPatterns) {
-            if (pattern.containsSkp()) {
+            if (pattern.contains(target)) {
                 for (PatternElem elem : elems) {
                     patterns.add(pattern.replace(target, elem));
                 }
@@ -264,6 +281,21 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
 
         return result.toString();
+    }
+
+    @Deprecated
+    public boolean containsPos() {
+        for (PatternElem elem : pattern) {
+            if (elem.equals(PatternElem.POS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Deprecated
+    public boolean containsSkp() {
+        return contains(Arrays.asList(SKP, WSKP, PSKP, WPOS));
     }
 
 }

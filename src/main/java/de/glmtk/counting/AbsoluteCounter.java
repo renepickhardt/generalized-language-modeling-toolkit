@@ -1,7 +1,6 @@
-package de.glmtk.counting.absolute;
+package de.glmtk.counting;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +9,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.counting.Merger;
 import de.glmtk.pattern.Pattern;
 
 public class AbsoluteCounter {
@@ -20,7 +18,7 @@ public class AbsoluteCounter {
 
     private Set<Pattern> neededPatterns;
 
-    private Chunker chunker;
+    private AbsoluteChunker absoluteChunker;
 
     private Merger merger;
 
@@ -29,8 +27,8 @@ public class AbsoluteCounter {
             int numberOfCores,
             int updateInterval) {
         this.neededPatterns = neededPatterns;
-        chunker = new Chunker(numberOfCores, updateInterval);
-        merger = new Merger(numberOfCores, updateInterval);
+        absoluteChunker = new AbsoluteChunker(numberOfCores, updateInterval);
+        merger = new Merger(numberOfCores, updateInterval, false);
     }
 
     public void
@@ -38,17 +36,14 @@ public class AbsoluteCounter {
             throws IOException {
         LOGGER.info("Absolute counting '{}' -> '{}'.", inputFile, outputDir);
 
-        Files.createDirectories(outputDir);
-        Files.createDirectories(tmpDir);
-
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
-        countingPatterns.removeAll(status.getAbsoluteCounted());
+        countingPatterns.removeAll(status.getCounted(false));
 
         Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
-        chunkingPatterns.removeAll(status.getAbsoluteChunkedPatterns());
+        chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.info("1/2 Chunking:");
-        chunker.chunk(chunkingPatterns, inputFile, tmpDir, status);
+        absoluteChunker.chunk(chunkingPatterns, inputFile, tmpDir, status);
 
         LOGGER.info("2/2 Merging:");
         merger.merge(countingPatterns, tmpDir, outputDir, status);

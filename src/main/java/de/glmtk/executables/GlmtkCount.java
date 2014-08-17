@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.apache.commons.cli.Option;
 
-import de.glmtk.Logging;
 import de.glmtk.counting.Tagger;
 import de.glmtk.legacy.counting.AbsoluteCounter;
 import de.glmtk.legacy.counting.ContinuationCounter;
@@ -20,6 +19,7 @@ import de.glmtk.legacy.indexing.IndexBuilder;
 import de.glmtk.legacy.sequencing.Sequencer;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
+import de.glmtk.utils.Logging;
 
 public class GlmtkCount extends Executable {
 

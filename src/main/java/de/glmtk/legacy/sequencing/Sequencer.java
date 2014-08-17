@@ -70,6 +70,7 @@ public class Sequencer {
         this.surroundWithTokens = surroundWithTokens;
     }
 
+    @SuppressWarnings("deprecation")
     public void sequence(Set<Pattern> inputPatterns) throws IOException {
         logger.info("Sequencing training data.");
 

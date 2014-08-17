@@ -58,7 +58,9 @@ public class ContinuationCounter {
         this.sortCounts = sortCounts;
     }
 
-    @SuppressWarnings("null")
+    @SuppressWarnings({
+        "null", "deprecation"
+    })
     public void count() throws IOException, InterruptedException {
         logger.info("Counting continuation counts of sequences.");
 

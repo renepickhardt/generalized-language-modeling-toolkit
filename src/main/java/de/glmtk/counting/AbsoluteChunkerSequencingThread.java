@@ -1,4 +1,4 @@
-package de.glmtk.counting.absolute;
+package de.glmtk.counting;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,21 +15,21 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.counting.absolute.Chunker.QueueItem;
+import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
-/* package */class ChunkerSequencingThread implements Runnable {
+/* package */class AbsoluteChunkerSequencingThread implements Runnable {
 
     private static final long QUEUE_WAIT_TIME = 10;
 
     private static final String UNKOWN_POS = "UNKP";
 
     private static final Logger LOGGER = LogManager
-            .getFormatterLogger(ChunkerSequencingThread.class);
+            .getFormatterLogger(AbsoluteChunkerSequencingThread.class);
 
-    private Chunker chunker;
+    private AbsoluteChunker absoluteChunker;
 
     private Map<Pattern, BlockingQueue<QueueItem>> queues;
 
@@ -43,15 +43,15 @@ import de.glmtk.utils.StringUtils;
 
     private Map<Integer, Set<Pattern>> patternsByLength;
 
-    public ChunkerSequencingThread(
-            Chunker chunker,
+    public AbsoluteChunkerSequencingThread(
+            AbsoluteChunker absoluteChunker,
             Map<Pattern, BlockingQueue<QueueItem>> queues,
             Set<Pattern> patterns,
             Path inputFile,
             boolean inputFileHasPos,
             long readerMemory,
             int updateInterval) {
-        this.chunker = chunker;
+        this.absoluteChunker = absoluteChunker;
         this.queues = queues;
         this.inputFile = inputFile;
         this.inputFileHasPos = inputFileHasPos;
@@ -102,7 +102,7 @@ import de.glmtk.utils.StringUtils;
             throw new IllegalStateException(e);
         }
 
-        chunker.sequencingIsDone();
+        absoluteChunker.sequencingIsDone();
         LOGGER.debug("ChunkerSequecingThread finished.");
     }
 
@@ -142,7 +142,7 @@ import de.glmtk.utils.StringUtils;
                             TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("ChunkerReadingThread idle, because queue full.");
                         StatisticalNumberHelper
-                                .count("Idle ChunkerReadingThread because queue full");
+                        .count("Idle ChunkerReadingThread because queue full");
                     }
 
                     // To get memory average of ReadQueueItem. Don't forget to:

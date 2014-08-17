@@ -1,4 +1,4 @@
-package de.glmtk.counting.absolute;
+package de.glmtk.counting;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -16,13 +16,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.counting.absolute.Chunker.QueueItem;
+import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 
 // TODO: find better estimate for map size, to make chunks more memory
 // effecient.
-/* package */class ChunkerAggregatingThread implements Runnable {
+/* package */class AbsoluteChunkerAggregatingThread implements Runnable {
 
     @SuppressWarnings("unused")
     private static final long AVERAGE_SEQUENCE_SIZE = 15;
@@ -32,7 +32,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
     private static final int TAB_COUNT_NL_BYTES = "\t10\n".getBytes().length;
 
     private static final Logger LOGGER = LogManager
-            .getLogger(ChunkerAggregatingThread.class);
+            .getLogger(AbsoluteChunkerAggregatingThread.class);
 
     private static class Chunk {
 
@@ -44,7 +44,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     }
 
-    private Chunker chunker;
+    private AbsoluteChunker absoluteChunker;
 
     private BlockingQueue<QueueItem> queue;
 
@@ -58,13 +58,13 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     private Map<Pattern, List<Path>> chunkFiles;
 
-    public ChunkerAggregatingThread(
-            Chunker chunker,
+    public AbsoluteChunkerAggregatingThread(
+            AbsoluteChunker absoluteChunker,
             BlockingQueue<QueueItem> queue,
             Path outputDir,
             long chunkSize,
             Status status) {
-        this.chunker = chunker;
+        this.absoluteChunker = absoluteChunker;
         this.queue = queue;
         this.outputDir = outputDir;
         this.chunkSize = chunkSize;
@@ -77,13 +77,13 @@ import de.glmtk.utils.StatisticalNumberHelper;
     @Override
     public void run() {
         try {
-            while (!(chunker.isSequencingDone() && queue.isEmpty())) {
+            while (!(absoluteChunker.isSequencingDone() && queue.isEmpty())) {
                 QueueItem item =
                         queue.poll(QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS);
                 if (item == null) {
-                    LOGGER.trace("ChunkerAggregatingThread idle, because queue empty.");
+                    LOGGER.trace("AbsoluteChunkerAggregatingThread idle, because queue empty.");
                     StatisticalNumberHelper
-                    .count("Idle ChunkerAggregatingThread because queue empty");
+                    .count("Idle AbsoluteChunkerAggregatingThread because queue empty");
                     continue;
                 }
 
@@ -117,12 +117,12 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 writeChunkToFile(entry.getKey(), entry.getValue());
             }
 
-            status.addAbsoluteChunked(chunkFiles);
+            status.addChunked(false, chunkFiles);
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
         }
 
-        LOGGER.debug("ChunkerAggregatingThread finished.");
+        LOGGER.debug("AbsoluteChunkerAggregatingThread finished.");
     }
 
     private void writeChunkToFile(Pattern pattern, Chunk chunk)

@@ -12,13 +12,14 @@ import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Logging;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.counting.AbsoluteCounter;
+import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.Tagger;
-import de.glmtk.counting.absolute.AbsoluteCounter;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
+import de.glmtk.utils.Logging;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
@@ -109,9 +110,7 @@ public class GlmtkNew extends Executable {
         Path trainingFile = output.resolve("training");
         Path absoluteDir = output.resolve("absolute");
         Path absoluteTmpDir = output.resolve("absolute.tmp");
-        @SuppressWarnings("unused")
         Path continuationDir = output.resolve("continuation");
-        @SuppressWarnings("unused")
         Path continuationTmpDir = output.resolve("continuation.tmp");
 
         Status status =
@@ -131,10 +130,12 @@ public class GlmtkNew extends Executable {
                 Pattern.getCombinations(5, Arrays.asList(PatternElem.CNT,
                         PatternElem.SKP, PatternElem.POS));
         // Continuation Patterns we need
+        System.out.println(neededAbsolutePatterns.size());
         Set<Pattern> neededContinuationPatterns =
                 Pattern.replaceTargetWithElems(neededAbsolutePatterns,
                         PatternElem.SKP,
                         Arrays.asList(PatternElem.WSKP, PatternElem.PSKP));
+        System.out.println(neededContinuationPatterns.size());
 
         // Add patterns to absolute that are needed to generate continuation.
         for (Pattern pattern : neededContinuationPatterns) {
@@ -184,58 +185,13 @@ public class GlmtkNew extends Executable {
         absoluteCounter
                 .count(trainingFile, absoluteDir, absoluteTmpDir, status);
 
-        // Sequencing //////////////////////////////////////////////////////////
-
-        //        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
-        //            LOGGER.info("Detected necessary absolute counts already present, skipping sequencing.");
-        //        } else if (status.getSequenced().equals(neededAbsolutePatterns)) {
-        //            LOGGER.info("Detected necessary sequenced patterns already present, skipping sequencing.");
-        //        } else {
-        //            Set<Pattern> patternsToSequence =
-        //                    symetricDifference(neededAbsolutePatterns,
-        //                            status.getSequenced());
-        //            LOGGER.debug("Going to sequence patterns: {}", patternsToSequence);
-        //
-        //            Sequencer sequencer =
-        //                    new Sequencer(config.getNumberOfCores(),
-        //                            config.getUpdateInterval(), patternsToSequence);
-        //            sequencer.sequence(trainingFile, sequencesDir,
-        //                    status.getTraining() == TrainingStatus.DONE_WITH_POS);
-        //            status.setSequenced(neededAbsolutePatterns);
-        //        }
-
-        // Absolute ////////////////////////////////////////////////////////////
-
-        //        if (status.getAbsolute().equals(neededAbsolutePatterns)) {
-        //            LOGGER.info("Detected necessary absolute counts already present, skipping counting absolute.");
-        //        } else {
-        //            Set<Pattern> patternsToCountAbsolute =
-        //                    symetricDifference(neededAbsolutePatterns,
-        //                            status.getAbsolute());
-        //            LOGGER.debug("Going to absolute count patterns: {}",
-        //                    patternsToCountAbsolute);
-        //
-        //            AbsoluteCounter absoluteCounter =
-        //                    new AbsoluteCounter(config.getNumberOfCores(),
-        //                            config.getUpdateInterval(), patternsToCountAbsolute);
-        //            absoluteCounter.count(sequencesDir, absoluteDir);
-        //            status.setAbsolute(neededAbsolutePatterns);
-        //        }
-
         // Continuation ////////////////////////////////////////////////////////
 
-        //        if (status.getContinuation().equals(neededContinuationPatterns)) {
-        //            LOGGER.info("Detected necessary continuation counts already present, skipping counting continuation.");
-        //        } else {
-        //            Set<Pattern> patternsToCountContinuation =
-        //                    symetricDifference(neededContinuationPatterns,
-        //                            status.getContinuation());
-        //            LOGGER.debug("Going to continuation count patterns: {}",
-        //                    patternsToCountContinuation);
-        //
-        //            // TODO: do continuation
-        //            status.setContinuation(neededContinuationPatterns);
-        //        }
+        ContinuationCounter continuationCounter =
+                new ContinuationCounter(neededContinuationPatterns,
+                        config.getNumberOfCores(), config.getUpdateInterval());
+        continuationCounter.count(absoluteDir, continuationDir,
+                continuationTmpDir, status);
 
         // Used for debugging. Will only print output if averages are added
         // somewhere else in the code.

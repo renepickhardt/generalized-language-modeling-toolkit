@@ -88,7 +88,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
                 int mergeCounter = 0;
                 List<Path> chunks, curChunks = null;
-                while ((chunks = status.getAbsoluteChunks(pattern)).size() != 1) {
+                while ((chunks = status.getChunks(false, pattern)).size() != 1) {
                     curChunks =
                             new LinkedList<Path>(
                                     chunks.subList(
@@ -100,7 +100,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                     LOGGER.debug("Merging pattern {}: {} -> {}.", pattern,
                             curChunks, mergeFile);
                     mergeChunksToFile(patternDir, curChunks, mergeFile);
-                    status.performAbsoluteChunkedMerge(pattern, curChunks,
+                    status.performChunkedMerge(false, pattern, curChunks,
                             mergeFile);
 
                     for (Path chunk : curChunks) {
@@ -117,7 +117,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 Files.deleteIfExists(dest);
                 Files.move(src, dest);
 
-                status.finishAbsoluteChunkedMerge(pattern);
+                status.finishChunkedMerge(false, pattern);
 
                 if (NioUtils.isDirEmpty(patternDir)) {
                     Files.delete(patternDir);

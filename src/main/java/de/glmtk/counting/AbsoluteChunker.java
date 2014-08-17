@@ -1,4 +1,4 @@
-package de.glmtk.counting.absolute;
+package de.glmtk.counting;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +22,7 @@ import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.pattern.Pattern;
 
-/* package */class Chunker {
+/* package */class AbsoluteChunker {
 
     private static final long B = 1L;
 
@@ -42,7 +42,8 @@ import de.glmtk.pattern.Pattern;
 
     private static final int QUEUE_MEMORY_PERCENT = 50;
 
-    private static final Logger LOGGER = LogManager.getLogger(Chunker.class);
+    private static final Logger LOGGER = LogManager
+            .getLogger(AbsoluteChunker.class);
 
     /* package */static class QueueItem {
 
@@ -65,7 +66,7 @@ import de.glmtk.pattern.Pattern;
 
     private boolean sequencingDone;
 
-    public Chunker(
+    public AbsoluteChunker(
             int numberOfCores,
             int updateInterval) {
         this.numberOfCores = numberOfCores;
@@ -82,6 +83,7 @@ import de.glmtk.pattern.Pattern;
             return;
         }
         LOGGER.debug("patterns = {}", patterns);
+        Files.createDirectories(outputDir);
         for (Pattern pattern : patterns) {
             Files.createDirectories(outputDir.resolve(pattern.toString()));
         }
@@ -115,21 +117,22 @@ import de.glmtk.pattern.Pattern;
         Map<Pattern, BlockingQueue<QueueItem>> queues =
                 new HashMap<Pattern, BlockingQueue<QueueItem>>();
 
-        ChunkerSequencingThread readingThread =
-                new ChunkerSequencingThread(this, queues, patterns, inputFile,
+        AbsoluteChunkerSequencingThread readingThread =
+                new AbsoluteChunkerSequencingThread(this, queues, patterns,
+                        inputFile,
                         status.getTraining() == TrainingStatus.DONE_WITH_POS,
                         readerMemory, updateInterval);
 
         Queue<Pattern> patternsQueue = new LinkedList<Pattern>(patterns);
         int numQueues = Math.max(1, numberOfCores - 1);
-        List<ChunkerAggregatingThread> aggregatingThreads =
-                new LinkedList<ChunkerAggregatingThread>();
+        List<AbsoluteChunkerAggregatingThread> aggregatingThreads =
+                new LinkedList<AbsoluteChunkerAggregatingThread>();
         for (int i = 0; i != numQueues; ++i) {
             BlockingQueue<QueueItem> queue =
                     new ArrayBlockingQueue<QueueItem>(
                             (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE));
-            aggregatingThreads.add(new ChunkerAggregatingThread(this, queue,
-                    outputDir, chunkSize, status));
+            aggregatingThreads.add(new AbsoluteChunkerAggregatingThread(this,
+                    queue, outputDir, chunkSize, status));
 
             if (i != numQueues - 1) {
                 for (int j = 0; j != patterns.size() / numQueues; ++j) {
@@ -150,7 +153,7 @@ import de.glmtk.pattern.Pattern;
                     Executors.newFixedThreadPool(numberOfCores);
 
             executorService.execute(readingThread);
-            for (ChunkerAggregatingThread aggregatingThread : aggregatingThreads) {
+            for (AbsoluteChunkerAggregatingThread aggregatingThread : aggregatingThreads) {
                 executorService.execute(aggregatingThread);
             }
 

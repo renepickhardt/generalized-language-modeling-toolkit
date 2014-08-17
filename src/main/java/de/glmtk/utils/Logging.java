@@ -1,4 +1,4 @@
-package de.glmtk;
+package de.glmtk.utils;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -15,6 +15,8 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+
+import de.glmtk.Config;
 
 public class Logging {
 

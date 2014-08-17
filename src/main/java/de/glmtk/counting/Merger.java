@@ -19,7 +19,7 @@ import de.glmtk.Status;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.NioUtils;
 
-public class Merger {
+/* package */class Merger {
 
     private static final long B = 1L;
 
@@ -37,11 +37,15 @@ public class Merger {
 
     private int updateInterval;
 
+    private boolean continuation;
+
     public Merger(
             int numberOfCores,
-            int updateInterval) {
+            int updateInterval,
+            boolean continuation) {
         this.numberOfCores = numberOfCores;
         this.updateInterval = updateInterval;
+        this.continuation = continuation;
     }
 
     public void merge(
@@ -54,6 +58,7 @@ public class Merger {
             return;
         }
         LOGGER.debug("patterns = {}", patterns);
+        Files.createDirectories(outputDir);
 
         // Calculate Memory ////////////////////////////////////////////////////
         LOGGER.debug("Calculating Memory...");
