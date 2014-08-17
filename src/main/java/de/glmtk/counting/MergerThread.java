@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Counter;
 import de.glmtk.Status;
 import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.StatisticalNumberHelper;
 
 /* package */class MergerThread implements Runnable {
@@ -86,9 +87,9 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 Path patternDir = inputDir.resolve(pattern.toString());
 
                 int mergeCounter = 0;
-                List<Path> chunks;
+                List<Path> chunks, curChunks = null;
                 while ((chunks = status.getAbsoluteChunks(pattern)).size() != 1) {
-                    List<Path> curChunks =
+                    curChunks =
                             new LinkedList<Path>(
                                     chunks.subList(
                                             0,
@@ -102,6 +103,10 @@ import de.glmtk.utils.StatisticalNumberHelper;
                     status.performAbsoluteChunkedMerge(pattern, curChunks,
                             mergeFile);
 
+                    for (Path chunk : curChunks) {
+                        Files.delete(patternDir.resolve(chunk));
+                    }
+
                     ++mergeCounter;
                 }
 
@@ -113,6 +118,10 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 Files.move(src, dest);
 
                 status.finishAbsoluteChunkedMerge(pattern);
+
+                if (NioUtils.isDirEmpty(patternDir)) {
+                    Files.delete(patternDir);
+                }
             }
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
@@ -170,4 +179,5 @@ import de.glmtk.utils.StatisticalNumberHelper;
             }
         }
     }
+
 }

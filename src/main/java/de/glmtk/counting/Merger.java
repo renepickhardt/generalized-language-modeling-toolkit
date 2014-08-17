@@ -1,5 +1,7 @@
 package de.glmtk.counting;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
 import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.NioUtils;
 
 public class Merger {
 
@@ -45,7 +48,7 @@ public class Merger {
             Set<Pattern> patterns,
             Path inputDir,
             Path outputDir,
-            Status status) {
+            Status status) throws IOException {
         if (patterns.isEmpty()) {
             LOGGER.debug("No chunks to merge, returning.");
             return;
@@ -93,6 +96,10 @@ public class Merger {
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);
+        }
+
+        if (NioUtils.isDirEmpty(inputDir)) {
+            Files.deleteIfExists(inputDir);
         }
     }
 }

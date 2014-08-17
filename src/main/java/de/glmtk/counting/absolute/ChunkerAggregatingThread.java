@@ -20,7 +20,7 @@ import de.glmtk.counting.absolute.Chunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 
-// TODO: find better estimate for map size, to make chunnks more memory
+// TODO: find better estimate for map size, to make chunks more memory
 // effecient.
 /* package */class ChunkerAggregatingThread implements Runnable {
 
@@ -83,7 +83,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 if (item == null) {
                     LOGGER.trace("ChunkerAggregatingThread idle, because queue empty.");
                     StatisticalNumberHelper
-                            .count("Idle ChunkerAggregatingThread because queue empty");
+                    .count("Idle ChunkerAggregatingThread because queue empty");
                     continue;
                 }
 
@@ -98,7 +98,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 if (count == null) {
                     chunk.size +=
                             item.sequence.getBytes().length
-                            + TAB_COUNT_NL_BYTES;
+                                    + TAB_COUNT_NL_BYTES;
                     chunk.sequenceCounts.put(item.sequence, 1L);
                 } else {
                     chunk.sequenceCounts.put(item.sequence, count + 1L);
