@@ -1,5 +1,9 @@
 package de.glmtk;
 
+import java.util.List;
+
+import de.glmtk.utils.StringUtils;
+
 public class Counter {
 
     private long onePlusCount;
@@ -97,6 +101,28 @@ public class Counter {
 
     public void setThreePlusCount(long threePlusCount) {
         this.threePlusCount = threePlusCount;
+    }
+
+    public static String getSequenceAndCounter(String line, Counter counter) {
+        List<String> split = StringUtils.splitAtChar(line, '\t');
+        if (split.size() == 2) {
+            // absolute
+            counter.setOnePlusCount(Long.valueOf(split.get(1)));
+            counter.setOneCount(0L);
+            counter.setTwoCount(0L);
+            counter.setThreePlusCount(0L);
+        } else if (split.size() == 5) {
+            // continuation
+            counter.setOnePlusCount(Long.valueOf(split.get(1)));
+            counter.setOneCount(Long.valueOf(split.get(2)));
+            counter.setTwoCount(Long.valueOf(split.get(3)));
+            counter.setThreePlusCount(Long.valueOf(split.get(4)));
+        } else {
+            throw new IllegalArgumentException(
+                    "Couldn't not get Sequence and Counter of line '" + line
+                            + "'.");
+        }
+        return split.get(0);
     }
 
 }

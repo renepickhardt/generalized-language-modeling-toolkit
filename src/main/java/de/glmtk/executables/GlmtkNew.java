@@ -139,8 +139,7 @@ public class GlmtkNew extends Executable {
 
         // Add patterns to absolute that are needed to generate continuation.
         for (Pattern pattern : neededContinuationPatterns) {
-            Pattern sourcePattern =
-                    Pattern.getContinuationSourcePattern(pattern);
+            Pattern sourcePattern = pattern.getContinuationSource();
             if (sourcePattern.isAbsolute()) {
                 neededAbsolutePatterns.add(sourcePattern);
             }
@@ -190,7 +189,7 @@ public class GlmtkNew extends Executable {
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(neededContinuationPatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
-        continuationCounter.count(absoluteDir, continuationDir,
+        continuationCounter.count(absoluteDir, absoluteTmpDir, continuationDir,
                 continuationTmpDir, status);
 
         // Used for debugging. Will only print output if averages are added

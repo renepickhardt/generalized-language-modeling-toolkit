@@ -18,7 +18,7 @@ public class AbsoluteCounter {
 
     private Set<Pattern> neededPatterns;
 
-    private AbsoluteChunker absoluteChunker;
+    private AbsoluteChunker chunker;
 
     private Merger merger;
 
@@ -27,14 +27,14 @@ public class AbsoluteCounter {
             int numberOfCores,
             int updateInterval) {
         this.neededPatterns = neededPatterns;
-        absoluteChunker = new AbsoluteChunker(numberOfCores, updateInterval);
+        chunker = new AbsoluteChunker(numberOfCores, updateInterval);
         merger = new Merger(numberOfCores, updateInterval, false);
     }
 
     public void
-    count(Path inputFile, Path outputDir, Path tmpDir, Status status)
-            throws IOException {
-        LOGGER.info("Absolute counting '{}' -> '{}'.", inputFile, outputDir);
+        count(Path inputFile, Path countedDir, Path chunkDir, Status status)
+                throws IOException {
+        LOGGER.info("Absolute counting '{}' -> '{}'.", inputFile, countedDir);
 
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(false));
@@ -43,10 +43,10 @@ public class AbsoluteCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.info("1/2 Chunking:");
-        absoluteChunker.chunk(chunkingPatterns, inputFile, tmpDir, status);
+        chunker.chunk(chunkingPatterns, inputFile, chunkDir, status);
 
         LOGGER.info("2/2 Merging:");
-        merger.merge(countingPatterns, tmpDir, outputDir, status);
+        merger.merge(countingPatterns, chunkDir, countedDir, status);
 
         LOGGER.info("Absolute counting done.");
     }

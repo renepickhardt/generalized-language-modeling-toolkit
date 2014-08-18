@@ -76,16 +76,16 @@ import de.glmtk.pattern.Pattern;
     public void chunk(
             Set<Pattern> patterns,
             Path inputFile,
-            Path outputDir,
+            Path chunkDir,
             Status status) throws IOException {
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
             return;
         }
         LOGGER.debug("patterns = {}", patterns);
-        Files.createDirectories(outputDir);
+        Files.createDirectories(chunkDir);
         for (Pattern pattern : patterns) {
-            Files.createDirectories(outputDir.resolve(pattern.toString()));
+            Files.createDirectories(chunkDir.resolve(pattern.toString()));
         }
 
         // Calculate Memory ////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ import de.glmtk.pattern.Pattern;
         Map<Pattern, BlockingQueue<QueueItem>> queues =
                 new HashMap<Pattern, BlockingQueue<QueueItem>>();
 
-        AbsoluteChunkerSequencingThread readingThread =
+        AbsoluteChunkerSequencingThread sequencingThread =
                 new AbsoluteChunkerSequencingThread(this, queues, patterns,
                         inputFile,
                         status.getTraining() == TrainingStatus.DONE_WITH_POS,
@@ -132,7 +132,7 @@ import de.glmtk.pattern.Pattern;
                     new ArrayBlockingQueue<QueueItem>(
                             (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE));
             aggregatingThreads.add(new AbsoluteChunkerAggregatingThread(this,
-                    queue, outputDir, chunkSize, status));
+                    queue, chunkDir, chunkSize, status));
 
             if (i != numQueues - 1) {
                 for (int j = 0; j != patterns.size() / numQueues; ++j) {
@@ -152,7 +152,7 @@ import de.glmtk.pattern.Pattern;
             ExecutorService executorService =
                     Executors.newFixedThreadPool(numberOfCores);
 
-            executorService.execute(readingThread);
+            executorService.execute(sequencingThread);
             for (AbsoluteChunkerAggregatingThread aggregatingThread : aggregatingThreads) {
                 executorService.execute(aggregatingThread);
             }

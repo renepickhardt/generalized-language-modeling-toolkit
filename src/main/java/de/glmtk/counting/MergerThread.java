@@ -127,7 +127,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
             throw new IllegalStateException(e);
         }
 
-        LOGGER.debug("MergerThread finished.");
+        LOGGER.debug("{} finished.", Merger.class.getSimpleName());
     }
 
     private void mergeChunksToFile(
@@ -141,8 +141,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                         Files.newOutputStream(patternDir.resolve(mergeFile))),
                         (int) writerMemory)) {
             PriorityQueue<SequencerCountReader> readerQueue =
-                    new PriorityQueue<SequencerCountReader>(numParallelReaders,
-                            SequencerCountReader.COMPARATOR);
+                    new PriorityQueue<SequencerCountReader>(numParallelReaders);
             for (Path chunk : curChunks) {
                 readerQueue.add(new SequencerCountReader(new BufferedReader(
                         new InputStreamReader(Files.newInputStream(patternDir

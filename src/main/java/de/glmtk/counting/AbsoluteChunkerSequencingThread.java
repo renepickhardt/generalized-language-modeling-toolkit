@@ -98,12 +98,13 @@ import de.glmtk.utils.StringUtils;
                 extractWordsAndPoses(split, words, poses);
                 generateAndQueueSequences(words, poses);
             }
+
+            absoluteChunker.sequencingIsDone();
+            LOGGER.debug("{} finished.",
+                    AbsoluteChunkerSequencingThread.class.getSimpleName());
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
         }
-
-        absoluteChunker.sequencingIsDone();
-        LOGGER.debug("ChunkerSequecingThread finished.");
     }
 
     private void extractWordsAndPoses(
@@ -142,7 +143,7 @@ import de.glmtk.utils.StringUtils;
                             TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("ChunkerReadingThread idle, because queue full.");
                         StatisticalNumberHelper
-                        .count("Idle ChunkerReadingThread because queue full");
+                                .count("Idle ChunkerReadingThread because queue full");
                     }
 
                     // To get memory average of ReadQueueItem. Don't forget to:

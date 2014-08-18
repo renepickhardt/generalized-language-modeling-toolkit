@@ -127,6 +127,16 @@ public class Status {
         }
     }
 
+    public void addChunked(
+            boolean continuation,
+            Pattern pattern,
+            List<Path> chunks) throws IOException {
+        synchronized (this) {
+            chunked(continuation).put(pattern, chunks);
+            writeStatusToFile();
+        }
+    }
+
     public void performChunkedMerge(
             boolean continuation,
             Pattern pattern,
@@ -317,7 +327,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                        .substring(1);
+                                .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {

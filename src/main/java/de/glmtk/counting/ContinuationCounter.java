@@ -18,7 +18,7 @@ public class ContinuationCounter {
 
     private Set<Pattern> neededPatterns;
 
-    private ContinuationChunker continuationChunker;
+    private ContinuationChunker chunker;
 
     private Merger merger;
 
@@ -27,15 +27,18 @@ public class ContinuationCounter {
             int numberOfCores,
             int updateInterval) {
         this.neededPatterns = neededPatterns;
-        continuationChunker =
-                new ContinuationChunker(numberOfCores, updateInterval);
+        chunker = new ContinuationChunker(numberOfCores, updateInterval);
         merger = new Merger(numberOfCores, updateInterval, true);
     }
 
-    public void
-        count(Path inputDir, Path outputDir, Path tmpDir, Status status)
-            throws IOException {
-        LOGGER.info("Continuation counting '{}' -> '{}'.", inputDir, outputDir);
+    public void count(
+            Path absoluteCountedDir,
+            Path absoluteChunkedDir,
+            Path continuationCountedDir,
+            Path continuationChunkedDir,
+            Status status) throws IOException {
+        LOGGER.info("Continuation counting '{}' -> '{}'.", absoluteCountedDir,
+                continuationCountedDir);
 
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(true));
@@ -44,6 +47,8 @@ public class ContinuationCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.info("1/2 Chunking:");
+        chunker.chunk(chunkingPatterns, absoluteCountedDir, absoluteChunkedDir,
+                continuationCountedDir, continuationChunkedDir, status);
 
         LOGGER.info("2/2 Merging:");
 

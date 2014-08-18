@@ -1,7 +1,10 @@
 package de.glmtk.pattern;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public enum PatternElem {
 
@@ -19,13 +22,20 @@ public enum PatternElem {
 
     DEL("d");
 
-    public static String SKIPPED_WORD = "_";
+    public static final String SKIPPED_WORD = "_";
 
-    private static Map<String, PatternElem> fromString =
+    public static final Set<PatternElem> CSKIP_ELEMS =
+            new HashSet<PatternElem>();
+    static {
+        CSKIP_ELEMS.addAll(Arrays.asList(PatternElem.WSKP, PatternElem.PSKP,
+                PatternElem.WPOS));
+    }
+
+    private static final Map<String, PatternElem> FROM_STRING =
             new HashMap<String, PatternElem>();
     static {
         for (PatternElem elem : PatternElem.values()) {
-            fromString.put(elem.toString(), elem);
+            FROM_STRING.put(elem.toString(), elem);
         }
     }
 
@@ -77,7 +87,7 @@ public enum PatternElem {
     }
 
     public static PatternElem fromString(String elem) {
-        return fromString.get(elem);
+        return FROM_STRING.get(elem);
     }
 
 }

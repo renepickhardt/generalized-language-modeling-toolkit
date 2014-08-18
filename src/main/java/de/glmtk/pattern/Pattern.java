@@ -11,6 +11,7 @@ import static de.glmtk.pattern.PatternElem.WSKP;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +78,7 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     public boolean equals(Object other) {
         if (other == this) {
             return true;
-        } else if (other == null || other.getClass() != Pattern.class) {
+        } else if (other == null || !other.getClass().equals(Pattern.class)) {
             return false;
         }
 
@@ -101,15 +102,10 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     }
 
     public boolean contains(PatternElem elem) {
-        for (PatternElem e : pattern) {
-            if (e.equals(elem)) {
-                return true;
-            }
-        }
-        return false;
+        return contains(Arrays.asList(elem));
     }
 
-    public boolean contains(List<PatternElem> elems) {
+    public boolean contains(Collection<PatternElem> elems) {
         for (PatternElem e : pattern) {
             for (PatternElem e2 : elems) {
                 if (e.equals(e2)) {
@@ -121,28 +117,38 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     }
 
     public boolean containsOnly(PatternElem elem) {
-        for (PatternElem e : pattern) {
-            if (!e.equals(elem)) {
-                return false;
-            }
-        }
-        return true;
+        return contains(Arrays.asList(elem));
     }
 
-    public boolean containsOnly(List<PatternElem> elems) {
-        for (PatternElem e : pattern) {
+    public boolean containsOnly(Collection<PatternElem> elems) {
+        outerLoop:
+            for (PatternElem e : pattern) {
             for (PatternElem e2 : elems) {
                 if (e.equals(e2)) {
-                    continue;
+                    continue outerLoop;
                 }
             }
             return false;
         }
-        return true;
+    return true;
     }
 
     public boolean isAbsolute() {
         return containsOnly(Arrays.asList(CNT, SKP, POS));
+    }
+
+    public int numElems(Collection<PatternElem> elems) {
+        int result = 0;
+        outerLoop:
+        for (PatternElem e : pattern) {
+            for (PatternElem e2 : elems) {
+                if (e.equals(e2)) {
+                    ++result;
+                    continue outerLoop;
+                }
+            }
+        }
+        return result;
     }
 
     public Pattern replace(PatternElem target, PatternElem replacement) {
@@ -185,6 +191,43 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
 
         return result.toString();
+    }
+
+    public String apply(String[] words) {
+        StringBuilder result = new StringBuilder();
+
+        boolean first = true;
+        int i = 0;
+        for (PatternElem elem : pattern) {
+            if (elem != PatternElem.DEL) {
+                if (!first) {
+                    result.append(' ');
+                }
+                first = false;
+            }
+
+            result.append(elem.apply(words[i]));
+
+            ++i;
+        }
+
+        return result.toString();
+    }
+
+    public Pattern getContinuationSource() {
+        Pattern sourcePattern = clone();
+        for (int i = length() - 1; i != -1; --i) {
+            PatternElem elem = get(i);
+            if (elem.equals(PatternElem.WSKP)) {
+                sourcePattern.set(i, PatternElem.CNT);
+                return sourcePattern;
+            } else if (elem.equals(PatternElem.PSKP)) {
+                sourcePattern.set(i, PatternElem.POS);
+                return sourcePattern;
+            }
+        }
+        throw new IllegalArgumentException("Pattern '" + this
+                + "' is not a continuation pattern.");
     }
 
     // Static //////////////////////////////////////////////////////////////////
@@ -244,21 +287,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         return patterns;
     }
 
-    public static Pattern getContinuationSourcePattern(Pattern pattern) {
-        Pattern sourcePattern = pattern.clone();
-        for (int i = sourcePattern.length() - 1; i != -1; --i) {
-            PatternElem elem = sourcePattern.get(i);
-            if (elem.equals(PatternElem.WSKP)) {
-                sourcePattern.set(i, PatternElem.CNT);
-                break;
-            } else if (elem.equals(PatternElem.PSKP)) {
-                sourcePattern.set(i, PatternElem.POS);
-                break;
-            }
-        }
-        return sourcePattern;
-    }
-
     // Legacy //////////////////////////////////////////////////////////////////
 
     @Deprecated
@@ -296,6 +324,22 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     @Deprecated
     public boolean containsSkp() {
         return contains(Arrays.asList(SKP, WSKP, PSKP, WPOS));
+    }
+
+    @Deprecated
+    public static Pattern getContinuationSourcePattern(Pattern pattern) {
+        Pattern sourcePattern = pattern.clone();
+        for (int i = sourcePattern.length() - 1; i != -1; --i) {
+            PatternElem elem = sourcePattern.get(i);
+            if (elem.equals(PatternElem.WSKP)) {
+                sourcePattern.set(i, PatternElem.CNT);
+                break;
+            } else if (elem.equals(PatternElem.PSKP)) {
+                sourcePattern.set(i, PatternElem.POS);
+                break;
+            }
+        }
+        return sourcePattern;
     }
 
 }

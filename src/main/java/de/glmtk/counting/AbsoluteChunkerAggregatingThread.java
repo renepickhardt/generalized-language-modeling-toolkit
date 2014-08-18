@@ -48,7 +48,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     private BlockingQueue<QueueItem> queue;
 
-    private Path outputDir;
+    private Path chunkDir;
 
     private long chunkSize;
 
@@ -61,12 +61,12 @@ import de.glmtk.utils.StatisticalNumberHelper;
     public AbsoluteChunkerAggregatingThread(
             AbsoluteChunker absoluteChunker,
             BlockingQueue<QueueItem> queue,
-            Path outputDir,
+            Path chunkDir,
             long chunkSize,
             Status status) {
         this.absoluteChunker = absoluteChunker;
         this.queue = queue;
-        this.outputDir = outputDir;
+        this.chunkDir = chunkDir;
         this.chunkSize = chunkSize;
         this.status = status;
 
@@ -83,7 +83,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 if (item == null) {
                     LOGGER.trace("AbsoluteChunkerAggregatingThread idle, because queue empty.");
                     StatisticalNumberHelper
-                    .count("Idle AbsoluteChunkerAggregatingThread because queue empty");
+                            .count("Idle AbsoluteChunkerAggregatingThread because queue empty");
                     continue;
                 }
 
@@ -98,7 +98,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 if (count == null) {
                     chunk.size +=
                             item.sequence.getBytes().length
-                                    + TAB_COUNT_NL_BYTES;
+                            + TAB_COUNT_NL_BYTES;
                     chunk.sequenceCounts.put(item.sequence, 1L);
                 } else {
                     chunk.sequenceCounts.put(item.sequence, count + 1L);
@@ -106,9 +106,9 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
                 if (chunk.size > chunkSize) {
                     writeChunkToFile(item.pattern, chunk);
-                    int counter = chunk.counter + 1;
+                    int chunkCounter = chunk.counter + 1;
                     chunk = new Chunk();
-                    chunk.counter = counter;
+                    chunk.counter = chunkCounter;
                     chunks.put(item.pattern, chunk);
                 }
             }
@@ -122,13 +122,14 @@ import de.glmtk.utils.StatisticalNumberHelper;
             throw new IllegalStateException(e);
         }
 
-        LOGGER.debug("AbsoluteChunkerAggregatingThread finished.");
+        LOGGER.debug("{} finished.",
+                AbsoluteChunkerAggregatingThread.class.getSimpleName());
     }
 
     private void writeChunkToFile(Pattern pattern, Chunk chunk)
             throws IOException {
         Path file =
-                outputDir.resolve(pattern.toString()).resolve(
+                chunkDir.resolve(pattern.toString()).resolve(
                         "chunk" + chunk.counter);
         Files.deleteIfExists(file);
         try (OutputStreamWriter writer =
