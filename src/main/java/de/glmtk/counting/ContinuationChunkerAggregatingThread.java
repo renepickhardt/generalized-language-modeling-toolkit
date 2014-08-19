@@ -86,10 +86,10 @@ import de.glmtk.utils.StringUtils;
                 if (item == null) {
                     LOGGER.trace("{} idle, because queue empty.",
                             ContinuationChunkerAggregatingThread.class
-                                    .getSimpleName());
+                            .getSimpleName());
                     StatisticalNumberHelper.count("Idle "
                             + ContinuationChunkerAggregatingThread.class
-                                    .getSimpleName() + " because queue empty");
+                            .getSimpleName() + " because queue empty");
                     continue;
                 }
 
@@ -102,10 +102,10 @@ import de.glmtk.utils.StringUtils;
                     }
 
                     if (item.sequence == null) {
-                        LOGGER.debug("Finishing pattern '{}'.", pattern);
                         writeChunkToFile(pattern, chunk);
-                        status.addChunked(true, pattern,
-                                chunkFiles.get(pattern));
+                        status.addChunked(true, pattern, new LinkedList<Path>(
+                                chunkFiles.get(pattern)));
+                        LOGGER.debug("Finished pattern '{}'.", pattern);
                         continue;
                     }
 
@@ -117,7 +117,7 @@ import de.glmtk.utils.StringUtils;
                         counter = new Counter();
                         chunk.size +=
                                 sequence.getBytes().length
-                                + TAB_COUNTER_NL_BYTES;
+                                        + TAB_COUNTER_NL_BYTES;
                         chunk.sequenceCounts.put(sequence, counter);
                     }
                     counter.add(item.count);
@@ -129,17 +129,10 @@ import de.glmtk.utils.StringUtils;
                         chunk.counter = chunkCounter;
                         chunks.put(pattern, chunk);
                     }
-                    LOGGER.debug("Added count for '{}' from '{}'.", pattern,
-                            item.pattern);
                 }
             }
 
-            for (Map.Entry<Pattern, Chunk> entry : chunks.entrySet()) {
-                LOGGER.debug("{}, {}", entry.getKey(), entry.getValue());
-                //writeChunkToFile(entry.getKey(), entry.getValue());
-            }
-
-            LOGGER.debug("{} finished",
+            LOGGER.debug("{} finished.",
                     ContinuationChunkerAggregatingThread.class.getSimpleName());
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
@@ -165,6 +158,7 @@ import de.glmtk.utils.StringUtils;
             }
         }
         chunkFiles.get(pattern).add(file.getFileName());
+        LOGGER.debug("Wrote chunk for pattern '{}': '{}'.", pattern, file);
     }
 
 }

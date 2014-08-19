@@ -114,7 +114,10 @@ import de.glmtk.utils.StatisticalNumberHelper;
             }
 
             for (Map.Entry<Pattern, Chunk> entry : chunks.entrySet()) {
-                writeChunkToFile(entry.getKey(), entry.getValue());
+                Pattern pattern = entry.getKey();
+                Chunk chunk = entry.getValue();
+                writeChunkToFile(pattern, chunk);
+                LOGGER.debug("Finished pattern '{}'.", pattern);
             }
 
             status.addChunked(false, chunkFiles);
@@ -145,6 +148,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
             }
         }
         chunkFiles.get(pattern).add(file.getFileName());
+        LOGGER.debug("Wrote chunk for pattern '{}': '{}'.", pattern, file);
     }
 
 }

@@ -50,6 +50,8 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     private Status status;
 
+    private boolean continuation;
+
     public MergerThread(
             Merger merger,
             BlockingQueue<Pattern> patternQueue,
@@ -59,7 +61,8 @@ import de.glmtk.utils.StatisticalNumberHelper;
             long writerMemory,
             int updateInterval,
             int numParallelReaders,
-            Status status) {
+            Status status,
+            boolean continuation) {
         this.merger = merger;
         this.patternQueue = patternQueue;
         this.inputDir = inputDir;
@@ -69,6 +72,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
         this.updateInterval = updateInterval;
         this.numParallelReaders = numParallelReaders;
         this.status = status;
+        this.continuation = continuation;
     }
 
     @Override
@@ -88,7 +92,8 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
                 int mergeCounter = 0;
                 List<Path> chunks, curChunks = null;
-                while ((chunks = status.getChunks(false, pattern)).size() != 1) {
+                while ((chunks = status.getChunks(continuation, pattern))
+                        .size() != 1) {
                     curChunks =
                             new LinkedList<Path>(
                                     chunks.subList(
@@ -100,8 +105,8 @@ import de.glmtk.utils.StatisticalNumberHelper;
                     LOGGER.debug("Merging pattern {}: {} -> {}.", pattern,
                             curChunks, mergeFile);
                     mergeChunksToFile(patternDir, curChunks, mergeFile);
-                    status.performChunkedMerge(false, pattern, curChunks,
-                            mergeFile);
+                    status.performChunkedMerge(continuation, pattern,
+                            curChunks, mergeFile);
 
                     for (Path chunk : curChunks) {
                         Files.delete(patternDir.resolve(chunk));
@@ -112,12 +117,12 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
                 Path src = patternDir.resolve(chunks.get(0));
                 Path dest = outputDir.resolve(pattern.toString());
-                LOGGER.debug("Finishing pattern {}: {} -> {}.", pattern, src,
+                LOGGER.debug("Finishing pattern {}:\t{}\t-> {}.", pattern, src,
                         dest);
                 Files.deleteIfExists(dest);
                 Files.move(src, dest);
 
-                status.finishChunkedMerge(false, pattern);
+                status.finishChunkedMerge(continuation, pattern);
 
                 if (NioUtils.isDirEmpty(patternDir)) {
                     Files.delete(patternDir);
@@ -162,7 +167,12 @@ import de.glmtk.utils.StatisticalNumberHelper;
                     if (sequence != null) {
                         writer.write(sequence);
                         writer.write('\t');
-                        writer.write(Long.toString(counter.getOnePlusCount()));
+                        if (continuation) {
+                            writer.write(counter.toString());
+                        } else {
+                            writer.write(Long.toString(counter
+                                    .getOnePlusCount()));
+                        }
                         writer.write('\n');
                     }
                     sequence = s;

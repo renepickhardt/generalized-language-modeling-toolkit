@@ -51,6 +51,8 @@ public class ContinuationCounter {
                 continuationCountedDir, continuationChunkedDir, status);
 
         LOGGER.info("2/2 Merging:");
+        merger.merge(countingPatterns, continuationChunkedDir,
+                continuationCountedDir, status);
 
         LOGGER.info("Continuation couting done.");
     }

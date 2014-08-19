@@ -259,39 +259,64 @@ public class Status {
 
                 matcher = getPattern("absoluteChunked").matcher(line);
                 if (matcher.matches()) {
-                    absoluteChunked = new HashMap<Pattern, List<Path>>();
-                    for (String patternAndChunks : StringUtils.splitAtChar(
-                            matcher.group(1), ',')) {
-                        List<String> split =
-                                StringUtils.splitAtChar(patternAndChunks, ':');
-                        if (split.size() != 2) {
-                            LOGGER.error(
-                                    "Illegal format for 'absoluteChunked': {}",
-                                    patternAndChunks);
-                            throw new Termination();
-                        }
-
-                        Pattern pattern = new Pattern(split.get(0));
-                        List<Path> chunks = new LinkedList<Path>();
-                        for (String chunk : StringUtils.splitAtChar(
-                                split.get(1), ';')) {
-                            chunks.add(Paths.get(chunk));
-                        }
-                        absoluteChunked.put(pattern, chunks);
-                    }
+                    readChunked(false, matcher);
                     continue;
                 }
 
                 matcher = getPattern("absoluteCounted").matcher(line);
                 if (matcher.matches()) {
-                    absoluteCounted = new HashSet<Pattern>();
-                    for (String pattern : StringUtils.splitAtChar(
-                            matcher.group(1), ',')) {
-                        absoluteCounted.add(new Pattern(pattern));
-                    }
+                    readCounted(false, matcher);
+                    continue;
+                }
+
+                matcher = getPattern("continuationChunked").matcher(line);
+                if (matcher.matches()) {
+                    readChunked(true, matcher);
+                    continue;
+                }
+
+                matcher = getPattern("continuationCounted").matcher(line);
+                if (matcher.matches()) {
+                    readCounted(true, matcher);
                     continue;
                 }
             }
+        }
+    }
+
+    private void readChunked(boolean continuation, Matcher matcher) {
+        if (continuation) {
+            continuationChunked = new HashMap<Pattern, List<Path>>();
+        } else {
+            absoluteChunked = new HashMap<Pattern, List<Path>>();
+        }
+        for (String patternAndChunks : StringUtils.splitAtChar(
+                matcher.group(1), ',')) {
+            List<String> split = StringUtils.splitAtChar(patternAndChunks, ':');
+            if (split.size() != 2) {
+                LOGGER.error("Illegal format for '{}': {}", continuation
+                        ? "continuationChunked"
+                                : "absoluteChunked", patternAndChunks);
+                throw new Termination();
+            }
+
+            Pattern pattern = new Pattern(split.get(0));
+            List<Path> chunks = new LinkedList<Path>();
+            for (String chunk : StringUtils.splitAtChar(split.get(1), ';')) {
+                chunks.add(Paths.get(chunk));
+            }
+            chunked(continuation).put(pattern, chunks);
+        }
+    }
+
+    private void readCounted(boolean continuation, Matcher matcher) {
+        if (continuation) {
+            continuationCounted = new HashSet<Pattern>();
+        } else {
+            absoluteCounted = new HashSet<Pattern>();
+        }
+        for (String pattern : StringUtils.splitAtChar(matcher.group(1), ',')) {
+            counted(continuation).add(new Pattern(pattern));
         }
     }
 

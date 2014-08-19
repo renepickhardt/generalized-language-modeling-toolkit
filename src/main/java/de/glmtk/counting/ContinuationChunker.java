@@ -1,5 +1,6 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Constants.B;
 import static de.glmtk.Constants.KB;
 import static de.glmtk.Constants.MB;
 
@@ -34,7 +35,9 @@ import de.glmtk.pattern.PatternElem;
 
     private static final long CHUNK_MAX_SIZE = Constants.CHUNK_MAX_SIZE;
 
-    private static final int AVAILABLE_MEMORY_PERCENT = 50;
+    private static final long AVERAGE_QUEUE_ITEM_SIZE = 580 * B;
+
+    private static final int AVAILABLE_MEMORY_PERCENT = 80;
 
     private static final int CHUNK_SIZE_MEMORY_PERCENT = 70;
 
@@ -44,13 +47,13 @@ import de.glmtk.pattern.PatternElem;
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-                @Override
-                public int compare(Pattern a, Pattern b) {
-                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
-                    .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-                }
+        @Override
+        public int compare(Pattern a, Pattern b) {
+            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+                            .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
+        }
 
-            };
+    };
 
     /* package */static class QueueItem {
 
@@ -75,7 +78,7 @@ import de.glmtk.pattern.PatternElem;
 
     private int updateInterval;
 
-    private boolean sequencingDone;
+    private int sequencingDone;
 
     public ContinuationChunker(
             int numberOfCores,
@@ -102,7 +105,7 @@ import de.glmtk.pattern.PatternElem;
                     .toString()));
         }
 
-        int numSequencingThreads = 2;
+        int numSequencingThreads = 1;
         int numAggregatingThreads =
                 Math.max(1, numberOfCores - numSequencingThreads);
         LOGGER.debug("numSequencingThreads  = {}", numSequencingThreads);
@@ -154,9 +157,10 @@ import de.glmtk.pattern.PatternElem;
                 new ArrayList<Map<Pattern, List<Pattern>>>(
                         numAggregatingThreads);
         for (int i = 0; i != numAggregatingThreads; ++i) {
-            aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(200));
+            aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
+                    (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
             aggregatingSourceToPattern
-                    .add(new HashMap<Pattern, List<Pattern>>());
+            .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueues =
@@ -186,15 +190,15 @@ import de.glmtk.pattern.PatternElem;
                 new LinkedList<ContinuationChunkerAggregatingThread>();
         for (int i = 0; i != numAggregatingThreads; ++i) {
             aggregatingThreads
-                    .add(new ContinuationChunkerAggregatingThread(this,
-                            aggregatingQueues.get(i),
-                            aggregatingSourceToPattern.get(i),
-                            continuationChunkedDir, chunkSize, status));
+            .add(new ContinuationChunkerAggregatingThread(this,
+                    aggregatingQueues.get(i),
+                    aggregatingSourceToPattern.get(i),
+                    continuationChunkedDir, chunkSize, status));
         }
 
         // Launch Threads //////////////////////////////////////////////////////
         LOGGER.debug("Launching Threads...");
-        sequencingDone = false;
+        sequencingDone = numSequencingThreads;
         try {
             ExecutorService executorService =
                     Executors.newFixedThreadPool(numberOfCores);
@@ -260,11 +264,11 @@ import de.glmtk.pattern.PatternElem;
     }
 
     public boolean isSequencingDone() {
-        return sequencingDone;
+        return sequencingDone == 0;
     }
 
-    public void sequencingIsDone() {
-        sequencingDone = true;
+    public void sequencingThreadDone() {
+        --sequencingDone;
     }
 
 }

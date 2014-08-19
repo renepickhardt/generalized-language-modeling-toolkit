@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -13,9 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import com.javamex.classmexer.MemoryUtil;
-import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Status;
 import de.glmtk.counting.ContinuationChunker.QueueItem;
@@ -112,18 +110,19 @@ import de.glmtk.utils.StringUtils;
                 input = input.resolve(pattern.toString());
 
                 if (!chunked) {
-                    sequence(pattern, input);
+                    sequence(pattern, input, true);
                 } else {
                     try (DirectoryStream<Path> inputDirStream =
                             Files.newDirectoryStream(input)) {
-                        for (Path inputFile : inputDirStream) {
-                            sequence(pattern, inputFile);
+                        Iterator<Path> i = inputDirStream.iterator();
+                        while (i.hasNext()) {
+                            sequence(pattern, i.next(), !i.hasNext());
                         }
                     }
                 }
             }
 
-            continuationChunker.sequencingIsDone();
+            continuationChunker.sequencingThreadDone();
             LOGGER.debug("{} finished.",
                     ContinuationChunkerSequencingThread.class.getSimpleName());
         } catch (InterruptedException | IOException e) {
@@ -131,8 +130,8 @@ import de.glmtk.utils.StringUtils;
         }
     }
 
-    private void sequence(Pattern pattern, Path inputFile) throws IOException,
-    InterruptedException {
+    private void sequence(Pattern pattern, Path inputFile, boolean lastFile)
+            throws IOException, InterruptedException {
         LOGGER.debug("Sequencing '{}' from '{}'.", pattern, inputFile);
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
@@ -140,11 +139,17 @@ import de.glmtk.utils.StringUtils;
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.splitAtChar(line, '\t');
+                if (split.size() < 2) {
+                    LOGGER.error(
+                            "Unable to derminine sequence and counts of line '{}'.",
+                            line);
+                    continue;
+                }
                 QueueItem item =
                         new QueueItem(pattern, split.get(0), Long.valueOf(split
                                 .get(1)));
                 while (!aggregatingQueues.get(pattern).offer(item,
-                        QUEUE_WAIT_TIME, TimeUnit.SECONDS)) {
+                        QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS)) {
                     LOGGER.trace("{} idle, because aggregating queue full.",
                             ContinuationChunkerSequencingThread.class
                             .getSimpleName());
@@ -158,19 +163,21 @@ import de.glmtk.utils.StringUtils;
                 // - add import
                 // - uncomment classmexer.jar in pom
                 // - add javaagent in run.sh to MAVEN_OPTS.
-                StatisticalNumberHelper.average("QueueItem", MemoryUtil
-                        .deepMemoryUsageOf(item, VisibilityFilter.ALL));
+                //StatisticalNumberHelper.average("QueueItem", MemoryUtil
+                //        .deepMemoryUsageOf(item, VisibilityFilter.ALL));
             }
-            QueueItem item = new QueueItem(pattern, null, 0);
-            while (!aggregatingQueues.get(pattern).offer(item, QUEUE_WAIT_TIME,
-                    TimeUnit.SECONDS)) {
-                LOGGER.trace("{} idle, because aggregating queue full.",
-                        ContinuationChunkerSequencingThread.class
-                        .getSimpleName());
-                StatisticalNumberHelper.count("Idle "
-                        + ContinuationChunkerSequencingThread.class
-                        .getSimpleName()
-                        + " because aggregatingQueue full");
+            if (lastFile) {
+                QueueItem item = new QueueItem(pattern, null, 0);
+                while (!aggregatingQueues.get(pattern).offer(item,
+                        QUEUE_WAIT_TIME, TimeUnit.MILLISECONDS)) {
+                    LOGGER.trace("{} idle, because aggregating queue full.",
+                            ContinuationChunkerSequencingThread.class
+                            .getSimpleName());
+                    StatisticalNumberHelper.count("Idle "
+                            + ContinuationChunkerSequencingThread.class
+                            .getSimpleName()
+                            + " because aggregatingQueue full");
+                }
             }
         }
     }

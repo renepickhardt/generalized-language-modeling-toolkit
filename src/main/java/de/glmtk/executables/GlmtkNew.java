@@ -130,12 +130,10 @@ public class GlmtkNew extends Executable {
                 Pattern.getCombinations(5, Arrays.asList(PatternElem.CNT,
                         PatternElem.SKP, PatternElem.POS));
         // Continuation Patterns we need
-        System.out.println(neededAbsolutePatterns.size());
         Set<Pattern> neededContinuationPatterns =
                 Pattern.replaceTargetWithElems(neededAbsolutePatterns,
                         PatternElem.SKP,
                         Arrays.asList(PatternElem.WSKP, PatternElem.PSKP));
-        System.out.println(neededContinuationPatterns.size());
 
         // Add patterns to absolute that are needed to generate continuation.
         for (Pattern pattern : neededContinuationPatterns) {
@@ -182,7 +180,7 @@ public class GlmtkNew extends Executable {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-                .count(trainingFile, absoluteDir, absoluteTmpDir, status);
+        .count(trainingFile, absoluteDir, absoluteTmpDir, status);
 
         // Continuation ////////////////////////////////////////////////////////
 

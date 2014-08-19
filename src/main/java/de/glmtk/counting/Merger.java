@@ -84,7 +84,7 @@ import de.glmtk.utils.NioUtils;
         for (int i = 0; i != numberOfCores; ++i) {
             mergerThreads.add(new MergerThread(this, patternQueue, inputDir,
                     outputDir, readerMemory, writerMemory, updateInterval,
-                    NUM_PARALLEL_READERS, status));
+                    NUM_PARALLEL_READERS, status, continuation));
         }
 
         // Launch Threads //////////////////////////////////////////////////////
