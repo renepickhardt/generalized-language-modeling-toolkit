@@ -32,11 +32,11 @@ public class ContinuationCounter {
     }
 
     public void count(
+            Status status,
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
             Path continuationCountedDir,
-            Path continuationChunkedDir,
-            Status status) throws IOException {
+            Path continuationChunkedDir) throws IOException {
         LOGGER.info("Continuation counting '{}' -> '{}'.", absoluteCountedDir,
                 continuationCountedDir);
 
@@ -47,14 +47,14 @@ public class ContinuationCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.info("1/2 Chunking:");
-        chunker.chunk(chunkingPatterns, absoluteCountedDir, absoluteChunkedDir,
-                continuationCountedDir, continuationChunkedDir, status);
+        chunker.chunk(status, chunkingPatterns, absoluteCountedDir,
+                absoluteChunkedDir, continuationCountedDir, continuationChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        merger.merge(countingPatterns, continuationChunkedDir,
-                continuationCountedDir, status);
+        merger.merge(status, countingPatterns,
+                continuationChunkedDir, continuationCountedDir);
 
-        LOGGER.info("Continuation couting done.");
+        LOGGER.info("Continuation counting done.");
     }
 
 }

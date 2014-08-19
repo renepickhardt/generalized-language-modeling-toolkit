@@ -49,16 +49,16 @@ import de.glmtk.utils.NioUtils;
     }
 
     public void merge(
+            Status status,
             Set<Pattern> patterns,
-            Path inputDir,
-            Path outputDir,
-            Status status) throws IOException {
+            Path chunkedDir,
+            Path countedDir) throws IOException {
         if (patterns.isEmpty()) {
             LOGGER.debug("No chunks to merge, returning.");
             return;
         }
         LOGGER.debug("patterns = {}", patterns);
-        Files.createDirectories(outputDir);
+        Files.createDirectories(countedDir);
 
         // Calculate Memory ////////////////////////////////////////////////////
         LOGGER.debug("Calculating Memory...");
@@ -78,13 +78,13 @@ import de.glmtk.utils.NioUtils;
 
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Preparing Threads...");
-        BlockingQueue<Pattern> patternQueue =
+        BlockingQueue<Pattern> queue =
                 new LinkedBlockingDeque<Pattern>(patterns);
         List<MergerThread> mergerThreads = new LinkedList<MergerThread>();
         for (int i = 0; i != numberOfCores; ++i) {
-            mergerThreads.add(new MergerThread(this, patternQueue, inputDir,
-                    outputDir, readerMemory, writerMemory, updateInterval,
-                    NUM_PARALLEL_READERS, status, continuation));
+            mergerThreads.add(new MergerThread(this, status, queue,
+                    chunkedDir, countedDir, readerMemory, writerMemory,
+                    updateInterval, NUM_PARALLEL_READERS, continuation));
         }
 
         // Launch Threads //////////////////////////////////////////////////////
@@ -103,8 +103,8 @@ import de.glmtk.utils.NioUtils;
             throw new IllegalStateException(e);
         }
 
-        if (NioUtils.isDirEmpty(inputDir)) {
-            Files.deleteIfExists(inputDir);
+        if (NioUtils.isDirEmpty(chunkedDir)) {
+            Files.deleteIfExists(chunkedDir);
         }
     }
 }

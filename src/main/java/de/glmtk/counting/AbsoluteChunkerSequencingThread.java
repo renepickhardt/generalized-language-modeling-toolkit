@@ -15,6 +15,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.javamex.classmexer.MemoryUtil;
+import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
+
+import de.glmtk.Constants;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
@@ -22,39 +26,40 @@ import de.glmtk.utils.StringUtils;
 
 /* package */class AbsoluteChunkerSequencingThread implements Runnable {
 
-    private static final long QUEUE_WAIT_TIME = 10;
+    private static final long QUEUE_IDLE_TIME = Constants.QUEUE_IDLE_TIME;
 
-    private static final String UNKOWN_POS = "UNKP";
+    private static final String CLASS_NAME =
+            AbsoluteChunkerSequencingThread.class.getSimpleName();
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(AbsoluteChunkerSequencingThread.class);
 
     private AbsoluteChunker absoluteChunker;
 
-    private Map<Pattern, BlockingQueue<QueueItem>> queues;
+    private Map<Integer, Set<Pattern>> patternsByLength;
 
-    private Path inputFile;
+    private Map<Pattern, BlockingQueue<QueueItem>> aggregatingQueues;
 
-    private boolean inputFileHasPos;
+    private Path trainingFile;
+
+    private boolean trainingFileHasPos;
 
     private long readerMemory;
 
     private int updateInterval;
 
-    private Map<Integer, Set<Pattern>> patternsByLength;
-
     public AbsoluteChunkerSequencingThread(
             AbsoluteChunker absoluteChunker,
-            Map<Pattern, BlockingQueue<QueueItem>> queues,
             Set<Pattern> patterns,
-            Path inputFile,
-            boolean inputFileHasPos,
+            Map<Pattern, BlockingQueue<QueueItem>> aggregatingQueues,
+            Path trainingFile,
+            boolean trainingFileHasPos,
             long readerMemory,
             int updateInterval) {
         this.absoluteChunker = absoluteChunker;
-        this.queues = queues;
-        this.inputFile = inputFile;
-        this.inputFileHasPos = inputFileHasPos;
+        this.aggregatingQueues = aggregatingQueues;
+        this.trainingFile = trainingFile;
+        this.trainingFileHasPos = trainingFileHasPos;
         this.readerMemory = readerMemory;
         this.updateInterval = updateInterval;
 
@@ -74,9 +79,9 @@ import de.glmtk.utils.StringUtils;
     public void run() {
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
-                        Files.newInputStream(inputFile)), (int) readerMemory)) {
+                        Files.newInputStream(trainingFile)), (int) readerMemory)) {
             long readSize = 0;
-            long totalSize = Files.size(inputFile);
+            long totalSize = Files.size(trainingFile);
             long time = System.currentTimeMillis();
 
             String line;
@@ -100,8 +105,7 @@ import de.glmtk.utils.StringUtils;
             }
 
             absoluteChunker.sequencingIsDone();
-            LOGGER.debug("{} finished.",
-                    AbsoluteChunkerSequencingThread.class.getSimpleName());
+            LOGGER.debug("Done.");
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);
         }
@@ -113,18 +117,18 @@ import de.glmtk.utils.StringUtils;
             String[] poses) {
         for (int i = 0; i != split.length; ++i) {
             String word = split[i];
-            if (inputFileHasPos) {
+            if (trainingFileHasPos) {
                 int lastSlash = word.lastIndexOf('/');
                 if (lastSlash == -1) {
                     words[i] = word;
-                    poses[i] = UNKOWN_POS;
+                    poses[i] = Constants.UNKOWN_POS;
                 } else {
                     words[i] = word.substring(0, lastSlash);
                     poses[i] = word.substring(lastSlash + 1);
                 }
             } else {
                 words[i] = word;
-                poses[i] = UNKOWN_POS;
+                poses[i] = Constants.UNKOWN_POS;
             }
         }
     }
@@ -139,19 +143,19 @@ import de.glmtk.utils.StringUtils;
                 for (Pattern pattern : patterns) {
                     String sequence = pattern.apply(words, poses, p);
                     QueueItem item = new QueueItem(pattern, sequence);
-                    while (!queues.get(pattern).offer(item, QUEUE_WAIT_TIME,
-                            TimeUnit.MILLISECONDS)) {
-                        LOGGER.trace("ChunkerReadingThread idle, because queue full.");
-                        StatisticalNumberHelper
-                                .count("Idle ChunkerReadingThread because queue full");
+                    while (!aggregatingQueues.get(pattern).offer(item,
+                            QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
+                        LOGGER.trace("Idle, because queue full.");
+                        StatisticalNumberHelper.count(CLASS_NAME
+                                + " idle (queue full)");
                     }
 
-                    // To get memory average of ReadQueueItem. Don't forget to:
-                    // - add import
-                    // - uncomment classmexer.jar in pom
-                    // - add javaagent in run.sh to MAVEN_OPTS.
-                    //StatisticalNumberHelper.average("ReadQueueItem", MemoryUtil
-                    //        .deepMemoryUsageOf(witem, VisibilityFilter.ALL));
+                    if (Constants.DEBUG_AVERAGE_MEMORY) {
+                        StatisticalNumberHelper.average(
+                                "AbsoluteChunker.QueueItem Memory", MemoryUtil
+                                .deepMemoryUsageOf(item,
+                                        VisibilityFilter.ALL));
+                    }
                 }
             }
         }

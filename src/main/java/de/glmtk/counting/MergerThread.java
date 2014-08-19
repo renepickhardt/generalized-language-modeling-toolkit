@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Constants;
 import de.glmtk.Counter;
 import de.glmtk.Status;
 import de.glmtk.pattern.Pattern;
@@ -25,7 +26,9 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
 /* package */class MergerThread implements Runnable {
 
-    private static final long QUEUE_WAIT_TIME = 10;
+    private static final long QUEUE_IDLE_TIME = Constants.QUEUE_IDLE_TIME;
+
+    private static final String CLASS_NAME = MergerThread.class.getSimpleName();
 
     private static final Logger LOGGER = LogManager
             .getLogger(MergerThread.class);
@@ -33,11 +36,13 @@ import de.glmtk.utils.StatisticalNumberHelper;
     @SuppressWarnings("unused")
     private Merger merger;
 
-    private BlockingQueue<Pattern> patternQueue;
+    private Status status;
 
-    private Path inputDir;
+    private BlockingQueue<Pattern> queue;
 
-    private Path outputDir;
+    private Path chunkedDir;
+
+    private Path countedDir;
 
     private long readerMemory;
 
@@ -48,47 +53,44 @@ import de.glmtk.utils.StatisticalNumberHelper;
 
     private int numParallelReaders;
 
-    private Status status;
-
     private boolean continuation;
 
     public MergerThread(
             Merger merger,
-            BlockingQueue<Pattern> patternQueue,
-            Path inputDir,
-            Path outputDir,
+            Status status,
+            BlockingQueue<Pattern> queue,
+            Path chunkedDir,
+            Path countedDir,
             long readerMemory,
             long writerMemory,
             int updateInterval,
             int numParallelReaders,
-            Status status,
             boolean continuation) {
         this.merger = merger;
-        this.patternQueue = patternQueue;
-        this.inputDir = inputDir;
-        this.outputDir = outputDir;
+        this.status = status;
+        this.queue = queue;
+        this.chunkedDir = chunkedDir;
+        this.countedDir = countedDir;
         this.readerMemory = readerMemory;
         this.writerMemory = writerMemory;
         this.updateInterval = updateInterval;
         this.numParallelReaders = numParallelReaders;
-        this.status = status;
         this.continuation = continuation;
     }
 
     @Override
     public void run() {
         try {
-            while (!patternQueue.isEmpty()) {
+            while (!queue.isEmpty()) {
                 Pattern pattern =
-                        patternQueue.poll(QUEUE_WAIT_TIME,
-                                TimeUnit.MILLISECONDS);
+                        queue.poll(QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS);
                 if (pattern == null) {
-                    LOGGER.debug("MergerThread idle.");
-                    StatisticalNumberHelper.count("MergerThread idle");
+                    LOGGER.debug("Idle.");
+                    StatisticalNumberHelper.count(CLASS_NAME + " idle");
                     continue;
                 }
 
-                Path patternDir = inputDir.resolve(pattern.toString());
+                Path patternDir = chunkedDir.resolve(pattern.toString());
 
                 int mergeCounter = 0;
                 List<Path> chunks, curChunks = null;
@@ -102,7 +104,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                                                     chunks.size())));
 
                     Path mergeFile = Paths.get("merge" + mergeCounter);
-                    LOGGER.debug("Merging pattern {}: {} -> {}.", pattern,
+                    LOGGER.debug("Merging pattern {}:\t{} -> {}.", pattern,
                             curChunks, mergeFile);
                     mergeChunksToFile(patternDir, curChunks, mergeFile);
                     status.performChunkedMerge(continuation, pattern,
@@ -116,7 +118,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 }
 
                 Path src = patternDir.resolve(chunks.get(0));
-                Path dest = outputDir.resolve(pattern.toString());
+                Path dest = countedDir.resolve(pattern.toString());
                 LOGGER.debug("Finishing pattern {}:\t{}\t-> {}.", pattern, src,
                         dest);
                 Files.deleteIfExists(dest);
@@ -132,7 +134,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
             throw new IllegalStateException(e);
         }
 
-        LOGGER.debug("{} finished.", Merger.class.getSimpleName());
+        LOGGER.debug("Done");
     }
 
     private void mergeChunksToFile(
@@ -145,10 +147,10 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 new BufferedWriter(new OutputStreamWriter(
                         Files.newOutputStream(patternDir.resolve(mergeFile))),
                         (int) writerMemory)) {
-            PriorityQueue<SequencerCountReader> readerQueue =
-                    new PriorityQueue<SequencerCountReader>(numParallelReaders);
+            PriorityQueue<SequenceCountReader> readerQueue =
+                    new PriorityQueue<SequenceCountReader>(numParallelReaders);
             for (Path chunk : curChunks) {
-                readerQueue.add(new SequencerCountReader(new BufferedReader(
+                readerQueue.add(new SequenceCountReader(new BufferedReader(
                         new InputStreamReader(Files.newInputStream(patternDir
                                 .resolve(chunk))), (int) readerMemory
                                 / numParallelReaders)));
@@ -157,7 +159,12 @@ import de.glmtk.utils.StatisticalNumberHelper;
             String sequence = null;
             Counter counter = null;
             while (!readerQueue.isEmpty()) {
-                SequencerCountReader reader = readerQueue.poll();
+                SequenceCountReader reader = readerQueue.poll();
+                if (reader.isEmpty()) {
+                    reader.close();
+                    continue;
+                }
+
                 String s = reader.getSequence();
                 Counter c = reader.getCounter();
 
@@ -179,12 +186,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                     counter = c;
                 }
                 reader.nextLine();
-
-                if (reader.isEmpty()) {
-                    reader.close();
-                } else {
-                    readerQueue.add(reader);
-                }
+                readerQueue.add(reader);
             }
         }
     }

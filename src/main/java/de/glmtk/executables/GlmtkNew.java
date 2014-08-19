@@ -180,15 +180,15 @@ public class GlmtkNew extends Executable {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-        .count(trainingFile, absoluteDir, absoluteTmpDir, status);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(neededContinuationPatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
-        continuationCounter.count(absoluteDir, absoluteTmpDir, continuationDir,
-                continuationTmpDir, status);
+        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
+                continuationDir, continuationTmpDir);
 
         // Used for debugging. Will only print output if averages are added
         // somewhere else in the code.

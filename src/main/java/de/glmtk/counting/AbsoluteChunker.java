@@ -1,5 +1,9 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Constants.B;
+import static de.glmtk.Constants.KB;
+import static de.glmtk.Constants.MB;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,7 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -18,19 +21,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.pattern.Pattern;
 
 /* package */class AbsoluteChunker {
 
-    private static final long B = 1L;
-
-    private static final long KB = 1024 * B;
-
-    private static final long MB = 1024 * KB;
-
-    private static final long CHUNK_MAX_SIZE = 500 * KB;
+    private static final long CHUNK_MAX_SIZE = Constants.CHUNK_MAX_SIZE;
 
     private static final long AVERAGE_QUEUE_ITEM_SIZE = 550 * B;
 
@@ -74,19 +72,26 @@ import de.glmtk.pattern.Pattern;
     }
 
     public void chunk(
+            Status status,
             Set<Pattern> patterns,
-            Path inputFile,
-            Path chunkDir,
-            Status status) throws IOException {
+            Path trainingFile,
+            Path absoluteChunkedDir) throws IOException {
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
             return;
         }
         LOGGER.debug("patterns = {}", patterns);
-        Files.createDirectories(chunkDir);
+        Files.createDirectories(absoluteChunkedDir);
         for (Pattern pattern : patterns) {
-            Files.createDirectories(chunkDir.resolve(pattern.toString()));
+            Files.createDirectories(absoluteChunkedDir.resolve(pattern
+                    .toString()));
         }
+
+        int numSequencingThreads = 1;
+        int numAggregatingThreads =
+                Math.max(1, numberOfCores - numSequencingThreads);
+        LOGGER.debug("numSequencingThreads  = {}", numSequencingThreads);
+        LOGGER.debug("numAggregatingThreads = {}", numAggregatingThreads);
 
         // Calculate Memory ////////////////////////////////////////////////////
         LOGGER.debug("Calculating Memory...");
@@ -114,35 +119,38 @@ import de.glmtk.pattern.Pattern;
 
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Praparing Threads...");
-        Map<Pattern, BlockingQueue<QueueItem>> queues =
+        List<Pattern> reamainingPatterns = new LinkedList<Pattern>(patterns);
+        Map<Pattern, BlockingQueue<QueueItem>> patternToAggregatingQueue =
                 new HashMap<Pattern, BlockingQueue<QueueItem>>();
 
         AbsoluteChunkerSequencingThread sequencingThread =
-                new AbsoluteChunkerSequencingThread(this, queues, patterns,
-                        inputFile,
+                new AbsoluteChunkerSequencingThread(this,
+                        patterns, patternToAggregatingQueue, trainingFile,
                         status.getTraining() == TrainingStatus.DONE_WITH_POS,
                         readerMemory, updateInterval);
 
-        Queue<Pattern> patternsQueue = new LinkedList<Pattern>(patterns);
-        int numQueues = Math.max(1, numberOfCores - 1);
         List<AbsoluteChunkerAggregatingThread> aggregatingThreads =
                 new LinkedList<AbsoluteChunkerAggregatingThread>();
-        for (int i = 0; i != numQueues; ++i) {
-            BlockingQueue<QueueItem> queue =
+        for (int i = 0; i != numAggregatingThreads; ++i) {
+            BlockingQueue<QueueItem> aggregatingQueue =
                     new ArrayBlockingQueue<QueueItem>(
                             (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE));
-            aggregatingThreads.add(new AbsoluteChunkerAggregatingThread(this,
-                    queue, chunkDir, chunkSize, status));
-
-            if (i != numQueues - 1) {
-                for (int j = 0; j != patterns.size() / numQueues; ++j) {
-                    queues.put(patternsQueue.poll(), queue);
+            if (i != numAggregatingThreads - 1) {
+                // If not last thread: have thread receive
+                // (patterns.size() / numAggregatings Threads) pattern.
+                for (int j = 0; j != patterns.size() / numAggregatingThreads; ++j) {
+                    patternToAggregatingQueue.put(reamainingPatterns.remove(0),
+                            aggregatingQueue);
                 }
             } else {
-                for (Pattern pattern : patternsQueue) {
-                    queues.put(pattern, queue);
+                // If last thread: have thread receive all remaining patterns.
+                for (Pattern pattern : reamainingPatterns) {
+                    patternToAggregatingQueue.put(pattern, aggregatingQueue);
                 }
             }
+
+            aggregatingThreads.add(new AbsoluteChunkerAggregatingThread(this,
+                    status, aggregatingQueue, absoluteChunkedDir, chunkSize));
         }
 
         // Launch Threads /////////////////////////////////////////////////////

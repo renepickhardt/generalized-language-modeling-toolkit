@@ -78,7 +78,7 @@ import de.glmtk.pattern.PatternElem;
 
     private int updateInterval;
 
-    private int sequencingDone;
+    private int numActiveSequencingThreads;
 
     public ContinuationChunker(
             int numberOfCores,
@@ -88,12 +88,12 @@ import de.glmtk.pattern.PatternElem;
     }
 
     public void chunk(
+            Status status,
             Set<Pattern> patterns,
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
             Path continuationCountedDir,
-            Path continuationChunkedDir,
-            Status status) throws IOException {
+            Path continuationChunkedDir) throws IOException {
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
             return;
@@ -124,6 +124,7 @@ import de.glmtk.pattern.PatternElem;
                 Math.min((CHUNK_SIZE_MEMORY_PERCENT * availableMemory) / 100,
                         CHUNK_MAX_SIZE * patterns.size());
         long chunkSize = chunkMemory / patterns.size();
+
         long readerMemory = chunkSize;
         long queueMemory =
                 (availableMemory - chunkMemory - readerMemory
@@ -146,44 +147,30 @@ import de.glmtk.pattern.PatternElem;
         Map<Pattern, List<Pattern>> sourceToPattern =
                 computeSourceToPattern(patternToSource, status);
 
-        PriorityBlockingQueue<Pattern> sourcePatternsQueue =
-                new PriorityBlockingQueue<Pattern>(sourceToPattern.size(),
-                        SOURCE_PATTERN_COMPARATOR);
-        sourcePatternsQueue.addAll(sourceToPattern.keySet());
-
         List<BlockingQueue<QueueItem>> aggregatingQueues =
                 new ArrayList<BlockingQueue<QueueItem>>(numAggregatingThreads);
         List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern =
                 new ArrayList<Map<Pattern, List<Pattern>>>(
                         numAggregatingThreads);
-        for (int i = 0; i != numAggregatingThreads; ++i) {
-            aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
-                    (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
-            aggregatingSourceToPattern
-            .add(new HashMap<Pattern, List<Pattern>>());
-        }
-
-        Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueues =
+        Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueue =
                 new HashMap<Pattern, BlockingQueue<QueueItem>>();
-        int threadIter = 0;
-        for (Map.Entry<Pattern, List<Pattern>> entry : sourceToPattern
-                .entrySet()) {
-            Pattern source = entry.getKey();
-            aggregatingSourceToPattern.get(threadIter).put(source,
-                    entry.getValue());
-            sourceToAggregatingQueues.put(source,
-                    aggregatingQueues.get(threadIter));
-            threadIter = (threadIter + 1) % numAggregatingThreads;
-        }
+        setupThreadParameters(numAggregatingThreads, queueMemory,
+                sourceToPattern, aggregatingQueues, aggregatingSourceToPattern,
+                sourceToAggregatingQueue);
+
+        PriorityBlockingQueue<Pattern> sourcePatternsQueue =
+                new PriorityBlockingQueue<Pattern>(sourceToPattern.size(),
+                        SOURCE_PATTERN_COMPARATOR);
+        sourcePatternsQueue.addAll(sourceToPattern.keySet());
 
         List<ContinuationChunkerSequencingThread> sequencingThreads =
                 new LinkedList<ContinuationChunkerSequencingThread>();
         for (int i = 0; i != numSequencingThreads; ++i) {
             sequencingThreads.add(new ContinuationChunkerSequencingThread(this,
-                    sourcePatternsQueue, sourceToAggregatingQueues,
-                    absoluteCountedDir, absoluteChunkedDir,
-                    continuationCountedDir, continuationChunkedDir,
-                    readerMemory, updateInterval, status));
+                    status, sourcePatternsQueue,
+                    sourceToAggregatingQueue, absoluteCountedDir,
+                    absoluteChunkedDir, continuationCountedDir,
+                    continuationChunkedDir, readerMemory, updateInterval));
         }
 
         List<ContinuationChunkerAggregatingThread> aggregatingThreads =
@@ -191,14 +178,14 @@ import de.glmtk.pattern.PatternElem;
         for (int i = 0; i != numAggregatingThreads; ++i) {
             aggregatingThreads
             .add(new ContinuationChunkerAggregatingThread(this,
+                    status,
                     aggregatingQueues.get(i),
-                    aggregatingSourceToPattern.get(i),
-                    continuationChunkedDir, chunkSize, status));
+                    aggregatingSourceToPattern.get(i), continuationChunkedDir, chunkSize));
         }
 
         // Launch Threads //////////////////////////////////////////////////////
         LOGGER.debug("Launching Threads...");
-        sequencingDone = numSequencingThreads;
+        numActiveSequencingThreads = numSequencingThreads;
         try {
             ExecutorService executorService =
                     Executors.newFixedThreadPool(numberOfCores);
@@ -263,12 +250,38 @@ import de.glmtk.pattern.PatternElem;
         return result;
     }
 
+    private void setupThreadParameters(
+            int numAggregatingThreads,
+            long queueMemory,
+            Map<Pattern, List<Pattern>> sourceToPattern,
+            List<BlockingQueue<QueueItem>> aggregatingQueues,
+            List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
+            Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueues) {
+        for (int i = 0; i != numAggregatingThreads; ++i) {
+            aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
+                    (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
+            aggregatingSourceToPattern
+            .add(new HashMap<Pattern, List<Pattern>>());
+        }
+
+        int threadIter = 0;
+        for (Map.Entry<Pattern, List<Pattern>> entry : sourceToPattern
+                .entrySet()) {
+            Pattern source = entry.getKey();
+            aggregatingSourceToPattern.get(threadIter).put(source,
+                    entry.getValue());
+            sourceToAggregatingQueues.put(source,
+                    aggregatingQueues.get(threadIter));
+            threadIter = (threadIter + 1) % numAggregatingThreads;
+        }
+    }
+
     public boolean isSequencingDone() {
-        return sequencingDone == 0;
+        return numActiveSequencingThreads == 0;
     }
 
     public void sequencingThreadDone() {
-        --sequencingDone;
+        --numActiveSequencingThreads;
     }
 
 }

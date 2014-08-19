@@ -5,20 +5,8 @@ import java.io.IOException;
 
 import de.glmtk.Counter;
 
-/* package */class SequencerCountReader implements AutoCloseable,
-Comparable<SequencerCountReader> {
-
-    //    public static final Comparator<SequencerCountReader> COMPARATOR =
-    //            new Comparator<SequencerCountReader>() {
-    //
-    //        @Override
-    //                public int compare(
-    //                SequencerCountReader a,
-    //                SequencerCountReader b) {
-    //            return a.compareTo(b);
-    //        }
-    //
-    //    };
+/* package */class SequenceCountReader implements AutoCloseable,
+Comparable<SequenceCountReader> {
 
     private BufferedReader reader;
 
@@ -26,7 +14,7 @@ Comparable<SequencerCountReader> {
 
     private Counter counter;
 
-    public SequencerCountReader(
+    public SequenceCountReader(
             BufferedReader reader) throws IOException {
         this.reader = reader;
         nextLine();
@@ -52,7 +40,7 @@ Comparable<SequencerCountReader> {
     }
 
     public boolean isEmpty() {
-        return getSequence() == null;
+        return sequence == null;
     }
 
     @Override
@@ -61,8 +49,24 @@ Comparable<SequencerCountReader> {
     }
 
     @Override
-    public int compareTo(SequencerCountReader other) {
-        return getSequence().compareTo(other.getSequence());
+    public int compareTo(SequenceCountReader other) {
+        if (this == other) {
+            return 0;
+        } else if (other == null) {
+            return -1;
+        }
+
+        if (sequence == null) {
+            if (other.sequence == null) {
+                return 0;
+            } else {
+                return 1;
+            }
+        } else if (other.sequence == null) {
+            return -1;
+        }
+
+        return sequence.compareTo(other.sequence);
     }
 
 }
