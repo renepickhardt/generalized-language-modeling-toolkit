@@ -32,8 +32,6 @@ public class Status {
 
     private Path file;
 
-    private Path tmpFile;
-
     private Path corpus;
 
     public static enum TrainingStatus {
@@ -66,10 +64,8 @@ public class Status {
 
     public Status(
             Path file,
-            Path tmpFile,
             Path corpus) throws IOException {
         this.file = file;
-        this.tmpFile = tmpFile;
         this.corpus = corpus;
 
         hash = generateFileHash(this.corpus);
@@ -94,8 +90,10 @@ public class Status {
         return training;
     }
 
-    public void setTraining(TrainingStatus training) throws IOException {
+    public void setTraining(TrainingStatus training, Path trainingFile)
+            throws IOException {
         synchronized (this) {
+            hash = generateFileHash(trainingFile);
             this.training = training;
             setDefaultSettings(false);
             writeStatusToFile();
@@ -174,6 +172,8 @@ public class Status {
     }
 
     private void writeStatusToFile() throws IOException {
+        Path tmpFile = Paths.get(file + ".tmp");
+
         Files.deleteIfExists(tmpFile);
         try (OutputStreamWriter writer =
                 new OutputStreamWriter(Files.newOutputStream(tmpFile))) {
@@ -195,6 +195,7 @@ public class Status {
             // Continuation Counted
             writeCounted(writer, "continuationCounted", continuationCounted);
         }
+
         Files.deleteIfExists(file);
         Files.move(tmpFile, file);
     }

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,6 +45,15 @@ public class Tagger {
 
     public void tag(Path inputFile, Path outputFile) throws IOException {
         LOGGER.info("Tagging '%s' -> '%s'.", inputFile, outputFile);
+
+        System.out.println(inputFile);
+        if (inputFile.equals(outputFile)) {
+            Path tmpFile = Paths.get(inputFile + ".tmp");
+            System.out.println(tmpFile);
+            Files.deleteIfExists(tmpFile);
+            Files.move(inputFile, tmpFile);
+            inputFile = tmpFile;
+        }
 
         Runtime r = Runtime.getRuntime();
         r.gc();

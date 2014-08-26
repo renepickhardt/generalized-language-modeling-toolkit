@@ -75,29 +75,41 @@ public class GlmtkNew extends Executable {
         }
 
         corpus = Paths.get(line.getArgs()[0]);
-        if (!Files.exists(corpus)) {
-            System.err.println("Corpus '" + corpus + "' does not exist.");
-            throw new Termination();
-        }
-        if (!Files.isReadable(corpus)) {
-            System.err.println("Corpus '" + corpus + "' is not readable.");
+        if (!(Files.exists(corpus) && Files.isReadable(corpus))) {
+            System.err.println("Corpus '" + corpus
+                    + "' does not exist or is not readable.");
             throw new Termination();
         }
         if (Files.isDirectory(corpus)) {
-            // TODO: Allow corpus to be directory.
-            System.err.println("Specifying a corpus "
-                    + "as a directory is not supported yet.");
-            throw new Termination();
-        }
-
-        if (line.hasOption(OPTION_OUTPUT)) {
-            output = Paths.get(line.getOptionValue(OPTION_OUTPUT));
+            Path statusFile = corpus.resolve("status");
+            Path trainingFile = corpus.resolve("training");
+            if (!(Files.exists(statusFile) && Files.isReadable(statusFile))) {
+                System.err.println("Corpus status file '" + statusFile
+                        + "' does not exist or is not readable.");
+                throw new Termination();
+            }
+            if (!(Files.exists(trainingFile) && Files.isReadable(trainingFile))) {
+                System.err.println("Corpus training file '" + trainingFile
+                        + "' does not exist or is not readable.");
+                throw new Termination();
+            }
+            if (line.hasOption(OPTION_OUTPUT)) {
+                System.err
+                .println("Can't specify output directory if using existing corpus as input.");
+                throw new Termination();
+            }
+            output = corpus;
+            corpus = trainingFile;
         } else {
-            output = Paths.get(corpus + ".out");
-        }
-        if (Files.exists(output) && !Files.isDirectory(output)) {
-            System.err.println("Output file '" + output
-                    + "' already exists but is not a directory.");
+            if (line.hasOption(OPTION_OUTPUT)) {
+                output = Paths.get(line.getOptionValue(OPTION_OUTPUT));
+            } else {
+                output = Paths.get(corpus + ".out");
+            }
+            if (Files.exists(output) && !Files.isDirectory(output)) {
+                System.err.println("Output file '" + output
+                        + "' already exists but is not a directory.");
+            }
         }
     }
 
@@ -107,15 +119,14 @@ public class GlmtkNew extends Executable {
             Files.createDirectories(output);
         }
 
+        Path statusFile = output.resolve("status");
         Path trainingFile = output.resolve("training");
         Path absoluteDir = output.resolve("absolute");
         Path absoluteTmpDir = output.resolve("absolute.tmp");
         Path continuationDir = output.resolve("continuation");
         Path continuationTmpDir = output.resolve("continuation.tmp");
 
-        Status status =
-                new Status(output.resolve("status"),
-                        output.resolve("status.tmp"), corpus);
+        Status status = new Status(statusFile, corpus);
         status.logStatus();
 
         // TODO: check file system if status is accurate.
@@ -153,6 +164,8 @@ public class GlmtkNew extends Executable {
 
         // TODO: doesn't detect the setting that user changed from untagged
         // training file, to tagged file with same corpus.
+        // TODO: doesn't detect when switching from untagged training to
+        // continuing with now tagged corpus.
         if (needToTagTraining) {
             if (status.getTraining() == TrainingStatus.DONE_WITH_POS) {
                 LOGGER.info("Detected tagged training already present, skipping tagging.");
@@ -162,7 +175,7 @@ public class GlmtkNew extends Executable {
                         new Tagger(config.getUpdateInterval(),
                                 config.getModel());
                 tagger.tag(corpus, trainingFile);
-                status.setTraining(TrainingStatus.DONE_WITH_POS);
+                status.setTraining(TrainingStatus.DONE_WITH_POS, trainingFile);
             }
         } else {
             if (status.getTraining() != TrainingStatus.NONE) {
@@ -170,7 +183,7 @@ public class GlmtkNew extends Executable {
             } else {
                 Files.deleteIfExists(trainingFile);
                 Files.copy(corpus, trainingFile);
-                status.setTraining(TrainingStatus.DONE);
+                status.setTraining(TrainingStatus.DONE, trainingFile);
             }
         }
 
