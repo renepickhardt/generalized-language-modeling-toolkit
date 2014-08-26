@@ -3,7 +3,7 @@ package de.glmtk.smoothing.legacy2;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.PatternElem;
 
 public class SkipCalculator extends PropabilityCalculator {
 

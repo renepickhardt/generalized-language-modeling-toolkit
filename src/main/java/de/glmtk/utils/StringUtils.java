@@ -1,6 +1,7 @@
 package de.glmtk.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class StringUtils {
@@ -8,16 +9,16 @@ public class StringUtils {
     /**
      * Takes a string and returns a list containing all substrings which are
      * separated by space.
-     * 
+     *
      * This method should be used instead of string.split(' ') since it is much
      * more performant.
      */
-    public static List<String> splitAtSpace(String s) {
+    public static List<String> splitAtChar(String s, char c) {
         List<String> result = new ArrayList<String>();
 
         int sp1 = 0, sp2;
         while (true) {
-            sp2 = s.indexOf(' ', sp1);
+            sp2 = s.indexOf(c, sp1);
 
             if (sp2 == -1) {
                 String substr = s.substring(sp1);
@@ -38,37 +39,39 @@ public class StringUtils {
     }
 
     /**
-     * Takes a list of strings and concatenates them to one, putting
+     * Takes a collection of objects and concatenates their string
+     * representation ({@code Object#toString()}) to one, putting
      * {@code conjunction} in between.
      */
-    public static String join(List<String> strings, String conjunction) {
+    public static String join(Collection<?> objects, String conjunction) {
         StringBuilder result = new StringBuilder();
         boolean first = true;
-        for (String string : strings) {
+        for (Object object : objects) {
             if (first) {
                 first = false;
             } else {
                 result.append(conjunction);
             }
-            result.append(string);
+            result.append(object.toString());
         }
         return result.toString();
     }
 
     /**
-     * Takes an array of strings and concatenates them to one, putting
-     * {@code conjunction} in between.
+     * Takes an array of objects and concatenates their string representation
+     * ({@code Object#toString()}) to one, putting {@code conjunction} in
+     * between.
      */
-    public static String join(String[] strings, String conjunction) {
+    public static <T >String join(T[] objects, String conjunction) {
         StringBuilder result = new StringBuilder();
         boolean first = true;
-        for (String string : strings) {
+        for (T object : objects) {
             if (first) {
                 first = false;
             } else {
                 result.append(conjunction);
             }
-            result.append(string);
+            result.append(object.toString());
         }
         return result.toString();
     }
@@ -104,7 +107,10 @@ public class StringUtils {
         return lineBuilder.toString();
     }
 
+    // Legacy //////////////////////////////////////////////////////////////////
+
     // TODO: revert to receive String[] split.
+    @Deprecated
     public static void generateWordsAndPos(
             Object[] split,
             String[] words,

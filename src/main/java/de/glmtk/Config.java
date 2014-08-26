@@ -1,4 +1,4 @@
-package de.glmtk.utils;
+package de.glmtk;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -59,6 +59,7 @@ public class Config {
         // general
         read(ini, "general", "mainMemory", Integer.class);
         read(ini, "general", "numberOfCores", Integer.class);
+        read(ini, "general", "updateInterval", Integer.class);
 
         // glmtk-count
         read(ini, "glmtk-count", "model", Path.class);
@@ -156,10 +157,15 @@ public class Config {
         return (int) sections.get("general").get("numberOfCores");
     }
 
+    public int getUpdateInterval() {
+        return 1000 * ((int) sections.get("general").get("updateInterval"));
+    }
+
     // GLMTK-COUNT /////////////////////////////////////////////////////////////
 
     public Path getModel() {
-        return (Path) sections.get("glmtk-count").get("model");
+        return glmtkDir
+                .resolve((Path) sections.get("glmtk-count").get("model"));
     }
 
     // GLMTK ///////////////////////////////////////////////////////////////////

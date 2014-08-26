@@ -14,10 +14,10 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Counter;
 import de.glmtk.utils.StringUtils;
-import de.glmtk.counting.Counter;
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
 
 public abstract class Smoother {
 
@@ -40,7 +40,7 @@ public abstract class Smoother {
 
     public double propability(String sequence) {
         logger.debug("---probability(" + sequence + ")");
-        List<String> words = StringUtils.splitAtSpace(sequence);
+        List<String> words = StringUtils.splitAtChar(sequence, ' ');
 
         double result = 1;
         List<String> reqSequence, condSequence = new ArrayList<String>(words);

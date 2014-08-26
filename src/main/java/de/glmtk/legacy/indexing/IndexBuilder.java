@@ -1,4 +1,4 @@
-package de.glmtk.indexing;
+package de.glmtk.legacy.indexing;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -45,7 +45,7 @@ public class IndexBuilder {
      * is a String and {@code <File>} is an Integer specifying to which
      * <em>indexed file</em> all words lying between this line's {@code <Word>}
      * and next line's belong.
-     * 
+     *
      * @param input
      *            {@link InputStream} to be read.
      * @param output
@@ -54,6 +54,7 @@ public class IndexBuilder {
      *            The number of <em>indexed files</em> the index should be split
      *            across.
      */
+    @SuppressWarnings("deprecation")
     public void buildIndex(
             InputStream input,
             OutputStream output,
@@ -77,7 +78,7 @@ public class IndexBuilder {
                                     line);
                 }
 
-                Object[] split = StringUtils.splitAtSpace(line).toArray();
+                Object[] split = StringUtils.splitAtChar(line, ' ').toArray();
 
                 String[] words = new String[split.length];
                 String[] poses = new String[split.length];

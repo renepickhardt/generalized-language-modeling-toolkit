@@ -3,8 +3,7 @@ package de.glmtk.smoothing;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.PatternElem;
 
 public class NGram {
 
@@ -136,7 +135,7 @@ public class NGram {
     public boolean equals(Object other) {
         if (other == this) {
             return true;
-        } else if (other == null || other.getClass() != Pattern.class) {
+        } else if (other == null || !other.getClass().equals(NGram.class)) {
             return false;
         }
 

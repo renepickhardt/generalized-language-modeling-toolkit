@@ -1,108 +1,59 @@
 package de.glmtk.counting;
 
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Counts absolute counts of sequences for a number of patterns.
- */
+import de.glmtk.Status;
+import de.glmtk.pattern.Pattern;
+
 public class AbsoluteCounter {
 
-    public static float MEMORY_FACTOR = 0.2f;
+    private static final Logger LOGGER = LogManager
+            .getLogger(AbsoluteCounter.class);
 
-    private static Logger logger = LogManager.getLogger(AbsoluteCounter.class);
+    private Set<Pattern> neededPatterns;
 
-    private Path inputDir;
+    private AbsoluteChunker chunker;
 
-    private Path outputDir;
-
-    private String delimiter;
-
-    private int numberOfCores;
-
-    private boolean deleteTempFiles;
-
-    private boolean sortCounts;
+    private Merger merger;
 
     public AbsoluteCounter(
-            Path inputDir,
-            Path outputDir,
-            String delimiter,
+            Set<Pattern> neededPatterns,
             int numberOfCores,
-            boolean deleteTempFiles,
-            boolean sortCounts) throws IOException {
-        this.inputDir = inputDir;
-        this.outputDir = outputDir;
-        this.delimiter = delimiter;
-        this.numberOfCores = numberOfCores;
-        this.deleteTempFiles = deleteTempFiles;
-        this.sortCounts = sortCounts;
+            int updateInterval) {
+        this.neededPatterns = neededPatterns;
+        chunker = new AbsoluteChunker(numberOfCores, updateInterval);
+        merger = new Merger(numberOfCores, updateInterval, false);
     }
 
-    public void count() throws IOException, InterruptedException {
-        logger.info("Counting absolute counts of sequences.");
+    public void count(
+            Status status,
+            Path trainingFile,
+            Path absoluteCountedDir,
+            Path absoluteChunkedDir) throws IOException {
+        LOGGER.info("Absolute counting '{}' -> '{}'.", trainingFile,
+                absoluteCountedDir);
 
-        Files.createDirectory(outputDir);
+        Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
+        countingPatterns.removeAll(status.getCounted(false));
 
-        int bufferSize =
-                (int) (MEMORY_FACTOR * (Runtime.getRuntime().maxMemory() / numberOfCores));
+        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
+        chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
-        // generate tasks
-        List<AbsoluteCounterTask> tasks = new LinkedList<AbsoluteCounterTask>();
-        try (DirectoryStream<Path> patternDirs =
-                Files.newDirectoryStream(inputDir)) {
-            for (Path patternDir : patternDirs) {
-                Path patternOutputDir =
-                        outputDir.resolve(patternDir.getFileName());
-                Files.createDirectory(patternOutputDir);
+        LOGGER.info("1/2 Chunking:");
+        chunker.chunk(status, chunkingPatterns, trainingFile,
+                absoluteChunkedDir);
 
-                try (DirectoryStream<Path> patternFiles =
-                        Files.newDirectoryStream(patternDir)) {
-                    for (Path patternFile : patternFiles) {
-                        Path patternOutputFile =
-                                patternOutputDir.resolve(patternFile
-                                        .getFileName());
-                        tasks.add(new AbsoluteCounterTask(patternFile,
-                                patternOutputFile, delimiter, bufferSize,
-                                deleteTempFiles, sortCounts));
-                    }
-                }
-            }
-        }
+        LOGGER.info("2/2 Merging:");
+        merger.merge(status, countingPatterns, absoluteChunkedDir,
+                absoluteCountedDir);
 
-        AbsoluteCounterTask.setNumTasks(tasks.size());
-
-        ExecutorService executorService =
-                Executors.newFixedThreadPool(numberOfCores);
-
-        // execute tasks
-        for (Runnable task : tasks) {
-            executorService.execute(task);
-        }
-
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-
-        // deletes the folders where the sequence counts were stored
-        if (deleteTempFiles) {
-            try (DirectoryStream<Path> patternDirs =
-                    Files.newDirectoryStream(inputDir)) {
-                for (Path patternDir : patternDirs) {
-                    Files.delete(patternDir);
-                }
-            }
-            Files.delete(inputDir);
-        }
+        LOGGER.info("Absolute counting done.");
     }
 
 }

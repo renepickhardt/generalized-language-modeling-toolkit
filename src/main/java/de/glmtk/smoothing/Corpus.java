@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import de.glmtk.counting.Counter;
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.Counter;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 public class Corpus {

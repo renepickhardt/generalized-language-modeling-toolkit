@@ -1,6 +1,6 @@
 package de.glmtk.smoothing.legacy3.estimating;
 
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.NGram;
 
 public class ContinuationUnigramEstimator extends Estimator {

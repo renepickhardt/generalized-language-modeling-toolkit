@@ -1,4 +1,4 @@
-package de.glmtk.indexing;
+package de.glmtk.legacy.indexing;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -8,8 +8,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
 
 public class IndexWriter implements AutoCloseable {
 

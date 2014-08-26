@@ -2,7 +2,7 @@ package de.glmtk.smoothing.helper;
 
 import org.junit.BeforeClass;
 
-import de.glmtk.Logging;
+import de.glmtk.utils.Logging;
 
 public class LoggingTest {
 

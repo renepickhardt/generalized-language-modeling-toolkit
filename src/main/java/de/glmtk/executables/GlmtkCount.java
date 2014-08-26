@@ -11,15 +11,15 @@ import java.util.List;
 
 import org.apache.commons.cli.Option;
 
-import de.glmtk.Logging;
-import de.glmtk.counting.AbsoluteCounter;
-import de.glmtk.counting.ContinuationCounter;
-import de.glmtk.indexing.Index;
-import de.glmtk.indexing.IndexBuilder;
-import de.glmtk.patterns.Pattern;
-import de.glmtk.patterns.PatternElem;
-import de.glmtk.sequencing.Sequencer;
-import de.glmtk.tagging.PosTagger;
+import de.glmtk.counting.Tagger;
+import de.glmtk.legacy.counting.AbsoluteCounter;
+import de.glmtk.legacy.counting.ContinuationCounter;
+import de.glmtk.legacy.indexing.Index;
+import de.glmtk.legacy.indexing.IndexBuilder;
+import de.glmtk.legacy.sequencing.Sequencer;
+import de.glmtk.pattern.Pattern;
+import de.glmtk.pattern.PatternElem;
+import de.glmtk.utils.Logging;
 
 public class GlmtkCount extends Executable {
 
@@ -45,13 +45,13 @@ public class GlmtkCount extends Executable {
         Option help         = new Option("h",  OPTION_HELP,          false, "Print this message.");
         Option version      = new Option("v",  OPTION_VERSION,       false, "Print the version information and exit.");
         Option output       = new Option("o",  OPTION_OUTPUT,        true,  "Use given directory for output.");
-               output.setArgName("OUTPUTDIR");
+        output.setArgName("OUTPUTDIR");
         Option modelLength  = new Option("n",  OPTION_MODEL_LENGTH,  true,  "Compute n-grams up to model length N.");
-               modelLength.setArgName("N");
+        modelLength.setArgName("N");
         Option countPos     = new Option("t",  OPTION_COUNT_POS,     false, "If set, will include counts of part of speeches.");
         Option tagPos       = new Option("T",  OPTION_TAG_POS,       false, "If set, corpus will be part of speech tagged before counting (automatically also counts parts of speeches).");
         Option patterns     = new Option("p",  OPTION_PATTERNS,      true,  "noskp, cmbskp.");
-               patterns.setArgName("PATTERNS");
+        patterns.setArgName("PATTERNS");
         Option noAbsCounts  = new Option("a",  OPTION_NO_ABSCOUNTS,  false, "If set, will not aggregate absolute counts (forces no continuation counts).");
         Option noContCounts = new Option("c",  OPTION_NO_CONTCOUNTS, false, "If set, will not aggregate continuation counts.");
         Option keepTemp     = new Option(null, OPTION_KEEP_TEMP,     false, "If set, will not delete temp files.");
@@ -177,9 +177,9 @@ public class GlmtkCount extends Executable {
 
         // Tagging
         if (countPos && tagPos) {
-            PosTagger tagger =
-                    new PosTagger(corpus, trainingFile, config.getModel());
-            tagger.tag();
+            Tagger tagger =
+                    new Tagger(config.getUpdateInterval(), config.getModel());
+            tagger.tag(corpus, trainingFile);
         } else {
             Files.copy(corpus, trainingFile);
         }
@@ -201,15 +201,13 @@ public class GlmtkCount extends Executable {
                 new Sequencer(trainingFile, sequencesDir, index, 1, countPos,
                         false);
         if (countPos) {
-            sequencer.sequence(Pattern.getCombinations(modelLength,
-                    new PatternElem[] {
-                        PatternElem.CNT, PatternElem.SKP, PatternElem.POS
-                    }));
+            sequencer
+            .sequence(Pattern.getCombinations(modelLength, Arrays
+                    .asList(PatternElem.CNT, PatternElem.SKP,
+                            PatternElem.POS)));
         } else {
             sequencer.sequence(Pattern.getCombinations(modelLength,
-                    new PatternElem[] {
-                        PatternElem.CNT, PatternElem.SKP
-                    }));
+                    Arrays.asList(PatternElem.CNT, PatternElem.SKP)));
         }
 
         // Absolute

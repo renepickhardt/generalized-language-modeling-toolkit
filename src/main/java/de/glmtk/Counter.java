@@ -1,4 +1,8 @@
-package de.glmtk.counting;
+package de.glmtk;
+
+import java.util.List;
+
+import de.glmtk.utils.StringUtils;
 
 public class Counter {
 
@@ -41,6 +45,27 @@ public class Counter {
         }
     }
 
+    public void add(Counter counter) {
+        onePlusCount += counter.onePlusCount;
+        oneCount += counter.oneCount;
+        twoCount += counter.twoCount;
+        threePlusCount += counter.threePlusCount;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        result.append(Long.toString(onePlusCount));
+        result.append('\t');
+        result.append(Long.toString(oneCount));
+        result.append('\t');
+        result.append(Long.toString(twoCount));
+        result.append('\t');
+        result.append(Long.toString(threePlusCount));
+        return result.toString();
+    }
+
+    @Deprecated
     public String toString(String delimiter) {
         return onePlusCount + delimiter + oneCount + delimiter + twoCount
                 + delimiter + threePlusCount;
@@ -76,6 +101,28 @@ public class Counter {
 
     public void setThreePlusCount(long threePlusCount) {
         this.threePlusCount = threePlusCount;
+    }
+
+    public static String getSequenceAndCounter(String line, Counter counter) {
+        List<String> split = StringUtils.splitAtChar(line, '\t');
+        if (split.size() == 2) {
+            // absolute
+            counter.setOnePlusCount(Long.valueOf(split.get(1)));
+            counter.setOneCount(0L);
+            counter.setTwoCount(0L);
+            counter.setThreePlusCount(0L);
+        } else if (split.size() == 5) {
+            // continuation
+            counter.setOnePlusCount(Long.valueOf(split.get(1)));
+            counter.setOneCount(Long.valueOf(split.get(2)));
+            counter.setTwoCount(Long.valueOf(split.get(3)));
+            counter.setThreePlusCount(Long.valueOf(split.get(4)));
+        } else {
+            throw new IllegalArgumentException(
+                    "Couldn't not get Sequence and Counter of line '" + line
+                            + "'.");
+        }
+        return split.get(0);
     }
 
 }

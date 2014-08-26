@@ -1,60 +1,69 @@
-package de.glmtk.tagging;
+package de.glmtk.counting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.sequencing.Sequencer;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public class PosTagger {
+public class Tagger {
 
-    public static long UPDATE_INTERVAL = 5 * 1000; // 5s
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(Tagger.class);
 
-    private static Logger logger = LogManager
-            .getFormatterLogger(Sequencer.class);
+    /**
+     * How much percent of total free memory to be allocated.
+     *
+     * Careful: Java allocates memory for other tasks, so we can't just set this
+     * to 100%. I manually tested estimated this number experimentally.
+     */
+    private static final int MEMORY_PERCENT = 30;
 
-    private Path inputFile;
-
-    private Path outputFile;
+    private int updateInterval;
 
     private MaxentTagger tagger;
 
-    public PosTagger(
-            Path inputFile,
-            Path outputFile,
+    public Tagger(
+            int updateInterval,
             Path modelFile) {
-        this.inputFile = inputFile;
-        this.outputFile = outputFile;
-
+        this.updateInterval = updateInterval;
         tagger = new MaxentTagger(modelFile.toString());
     }
 
-    public void tag() throws IOException {
-        logger.info("Tagging training data.");
+    public void tag(Path inputFile, Path outputFile) throws IOException {
+        LOGGER.info("Tagging '%s' -> '%s'.", inputFile, outputFile);
+
+        Runtime r = Runtime.getRuntime();
+        r.gc();
+        long totalFreeMemory = r.maxMemory() - r.totalMemory() + r.freeMemory();
+        long memory = (MEMORY_PERCENT * totalFreeMemory) / 100;
+
+        long readerMemory = memory * 50 / 100;
+        long writerMemory = memory * 50 / 100;
 
         long readSize = 0;
         long totalSize = Files.size(inputFile);
         long time = System.currentTimeMillis();
 
         try (BufferedReader reader =
-                Files.newBufferedReader(inputFile, Charset.defaultCharset());
+                new BufferedReader(new InputStreamReader(
+                        Files.newInputStream(inputFile)), (int) readerMemory);
                 BufferedWriter writer =
-                        Files.newBufferedWriter(outputFile,
-                                Charset.defaultCharset(),
-                                StandardOpenOption.CREATE)) {
+                        new BufferedWriter(new OutputStreamWriter(
+                                Files.newOutputStream(outputFile)),
+                                (int) writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
@@ -78,12 +87,17 @@ public class PosTagger {
                 }
                 writer.write("\n");
 
-                if (System.currentTimeMillis() - time >= UPDATE_INTERVAL) {
-                    time = System.currentTimeMillis();
-                    logger.info("%6.2f%%", 100.f * readSize / totalSize);
+                if (updateInterval != 0) {
+                    long curTime = System.currentTimeMillis();
+                    if (curTime - time >= updateInterval) {
+                        time = curTime;
+                        LOGGER.info("%6.2f%%", 100.f * readSize / totalSize);
+                    }
                 }
             }
         }
+
+        LOGGER.info("Tagging done.");
     }
 
     private static List<HasWord> arrayToListHasWords(String[] array) {
@@ -93,4 +107,5 @@ public class PosTagger {
         }
         return result;
     }
+
 }

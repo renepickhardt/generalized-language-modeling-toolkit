@@ -1,4 +1,4 @@
-package de.glmtk.indexing;
+package de.glmtk.legacy.indexing;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.patterns.Pattern;
+import de.glmtk.pattern.Pattern;
 
 /**
  * Class used to interface with the output of {@link IndexBuilder}.

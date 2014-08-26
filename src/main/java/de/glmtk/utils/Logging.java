@@ -1,10 +1,11 @@
-package de.glmtk;
+package de.glmtk.utils;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Layout;
@@ -15,7 +16,7 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
-import de.glmtk.utils.Config;
+import de.glmtk.Config;
 
 public class Logging {
 
@@ -49,6 +50,10 @@ public class Logging {
      */
     private static LoggerConfig loggerConfig = configuration
             .getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+
+    public static Level getLogLevel() {
+        return loggerConfig.getLevel();
+    }
 
     public static void configureExecLogging() {
         Layout<String> layout =
@@ -112,7 +117,7 @@ public class Logging {
                         Charset.defaultCharset(), true, true, null, null);
 
         Appender fileLocalAppender =
-                FileAppender.createAppender(localLogFile.toString(), "false",
+                FileAppender.createAppender(localLogFile.toString(), "true",
                         "false", "FileLocal", "false", "false", "true", "8192",
                         layout, null, "false", "false", configuration);
         fileLocalAppender.start();
