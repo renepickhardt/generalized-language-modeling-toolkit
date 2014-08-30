@@ -3,6 +3,7 @@ package de.glmtk.smoothing.estimator;
 import de.glmtk.smoothing.estimator.backoff.BackoffEstimator;
 import de.glmtk.smoothing.estimator.combination.CombinationEstimator;
 import de.glmtk.smoothing.estimator.discount.AbsoluteDiscountEstimator;
+import de.glmtk.smoothing.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.smoothing.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.smoothing.estimator.fraction.FalseMaximumLikelihoodEstimator;
 import de.glmtk.smoothing.estimator.fraction.MaximumLikelihoodEstimator;
@@ -59,5 +60,15 @@ public class Estimators {
 
     public static final CombinationEstimator COMB_MLE_CMLE =
             new CombinationEstimator(MLE, CMLE, 0.75);
+
+    // Combined Estimators
+
+    public static final InterpolationEstimator MODIFIED_KNESER_NEY_ESIMATOR =
+            new InterpolationEstimator(
+                    new ModifiedKneserNeyDiscountEstimator(
+                            new MaximumLikelihoodEstimator()),
+                    new InterpolationEstimator(
+                            new ModifiedKneserNeyDiscountEstimator(
+                                    new ContinuationMaximumLikelihoodEstimator())));
 
 }

@@ -28,8 +28,6 @@ public class Corpus {
 
     private Map<Pattern, Map<String, Counter>> continuationCounts;
 
-    private String delimiter;
-
     public static final List<String> SKIPPED_LIST;
     static {
         SKIPPED_LIST = new ArrayList<>(1);
@@ -41,9 +39,7 @@ public class Corpus {
 
     public Corpus(
             Path absoluteDir,
-            Path continuationDir,
-            String delimiter) throws IOException {
-        this.delimiter = delimiter;
+            Path continuationDir) throws IOException {
         absoluteCounts = readAbsoluteCounts(absoluteDir);
         continuationCounts = readContinuationCounts(continuationDir);
     }
@@ -63,7 +59,7 @@ public class Corpus {
 
     /**
      * Get the number of words in the corpus.
-     * 
+     *
      * Aka absolute count of skip.
      */
     public int getNumWords() {
@@ -72,7 +68,7 @@ public class Corpus {
 
     /**
      * Get the vocabulary size (number of different words) of the corpus.
-     * 
+     *
      * Aka continuation count of skip.
      */
     public long getVocabSize() {
@@ -156,20 +152,17 @@ public class Corpus {
                 Map<String, Integer> counts = new HashMap<String, Integer>();
                 absoluteCounts.put(pattern, counts);
 
-                try (DirectoryStream<Path> files =
-                        Files.newDirectoryStream(absolutePattern)) {
-                    for (Path file : files) {
-                        try (BufferedReader reader =
-                                Files.newBufferedReader(file,
-                                        Charset.defaultCharset())) {
-                            String line;
-                            while ((line = reader.readLine()) != null) {
-                                String[] split = line.split(delimiter);
-                                String sequence = split[0];
-                                int count = Integer.parseInt(split[1]);
-                                counts.put(sequence, count);
-                            }
-                        }
+                try (BufferedReader reader =
+                        Files.newBufferedReader(absolutePattern,
+                                Charset.defaultCharset())) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] split =
+                                StringUtils.splitAtChar(line, '\t').toArray(
+                                        new String[0]);
+                        String sequence = split[0];
+                        int count = Integer.parseInt(split[1]);
+                        counts.put(sequence, count);
                     }
                 }
             }
@@ -192,26 +185,23 @@ public class Corpus {
                 Map<String, Counter> counts = new HashMap<String, Counter>();
                 continuationCounts.put(pattern, counts);
 
-                try (DirectoryStream<Path> files =
-                        Files.newDirectoryStream(continuationPattern)) {
-                    for (Path file : files) {
-                        try (BufferedReader reader =
-                                Files.newBufferedReader(file,
-                                        Charset.defaultCharset())) {
-                            String line;
-                            while ((line = reader.readLine()) != null) {
-                                String[] split = line.split(delimiter);
-                                String sequence = split[0];
-                                long onePlusCount = Long.parseLong(split[1]);
-                                long oneCount = Long.parseLong(split[2]);
-                                long twoCount = Long.parseLong(split[3]);
-                                long threePlusCount = Long.parseLong(split[4]);
-                                Counter counter =
-                                        new Counter(onePlusCount, oneCount,
-                                                twoCount, threePlusCount);
-                                counts.put(sequence, counter);
-                            }
-                        }
+                try (BufferedReader reader =
+                        Files.newBufferedReader(continuationPattern,
+                                Charset.defaultCharset())) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] split =
+                                StringUtils.splitAtChar(line, '\t').toArray(
+                                        new String[0]);
+                        String sequence = split[0];
+                        long onePlusCount = Long.parseLong(split[1]);
+                        long oneCount = Long.parseLong(split[2]);
+                        long twoCount = Long.parseLong(split[3]);
+                        long threePlusCount = Long.parseLong(split[4]);
+                        Counter counter =
+                                new Counter(onePlusCount, oneCount, twoCount,
+                                        threePlusCount);
+                        counts.put(sequence, counter);
                     }
                 }
             }
@@ -219,5 +209,4 @@ public class Corpus {
 
         return continuationCounts;
     }
-
 }

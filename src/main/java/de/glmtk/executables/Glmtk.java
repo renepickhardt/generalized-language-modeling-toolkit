@@ -49,11 +49,11 @@ public class Glmtk extends Executable {
         Option help         = new Option("h", OPTION_HELP,         false, "Print this message.");
         Option version      = new Option("v", OPTION_VERSION,      false, "Print the version information and exit.");
         Option smoother     = new Option("s", OPTION_SMOOTHER,     true,  StringUtils.join(SMOOTHERS, ", ") + ".");
-               smoother.setArgName("SMOOTHER");
+        smoother.setArgName("SMOOTHER");
         Option testing      = new Option("t", OPTION_TESTING,      true,  "Testing sequences files. (exclusive with -c).");
-               testing.setArgName("TESTING");
+        testing.setArgName("TESTING");
         Option crossproduct = new Option("c", OPTION_CROSSPRODUCT, true,  "Use cross product of words up to N. (exclusive with -t).");
-               crossproduct.setArgName("N");
+        crossproduct.setArgName("N");
         //@formatter:on
         options = Arrays.asList(help, version, smoother, testing, crossproduct);
     }
@@ -139,7 +139,7 @@ public class Glmtk extends Executable {
                     Integer.parseInt(line.getOptionValue(OPTION_CROSSPRODUCT));
         } else {
             System.err
-                    .println("No test sequences specified. Use either \"-t\" or \"-c\".");
+            .println("No test sequences specified. Use either \"-t\" or \"-c\".");
             throw new Termination();
         }
     }
@@ -149,7 +149,7 @@ public class Glmtk extends Executable {
         Path absoluteDir = corpusDir.resolve("absolute");
         Path continuationDir = corpusDir.resolve("continuation");
 
-        corpus = new Corpus(absoluteDir, continuationDir, "\t");
+        corpus = new Corpus(absoluteDir, continuationDir);
 
         Estimator estimator = null;
         MaximumLikelihoodEstimator mle = null;

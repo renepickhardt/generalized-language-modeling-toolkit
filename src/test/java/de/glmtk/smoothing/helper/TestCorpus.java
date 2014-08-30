@@ -138,7 +138,7 @@ public abstract class TestCorpus {
     }
 
     public Corpus getCorpus() throws IOException {
-        return new Corpus(getAbsoluteDir(), getContinuationDir(), "\t");
+        return new Corpus(getAbsoluteDir(), getContinuationDir());
     }
 
     public Path getSequencesTestingSample(int length) throws IOException {

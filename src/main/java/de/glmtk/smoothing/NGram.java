@@ -1,8 +1,10 @@
 package de.glmtk.smoothing;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
+import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
 
 public class NGram {
@@ -114,6 +116,19 @@ public class NGram {
 
     public NGram get(int index) {
         return new NGram(ngram.get(index));
+    }
+
+    @Deprecated
+    public Pattern toPattern() {
+        List<PatternElem> pattern = new LinkedList<PatternElem>();
+        for (String word : ngram) {
+            if (word.equals(PatternElem.SKIPPED_WORD)) {
+                pattern.add(PatternElem.SKP);
+            } else {
+                pattern.add(PatternElem.CNT);
+            }
+        }
+        return new Pattern(pattern);
     }
 
     @Override
