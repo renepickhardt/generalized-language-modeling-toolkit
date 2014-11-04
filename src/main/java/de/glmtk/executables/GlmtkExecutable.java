@@ -75,13 +75,13 @@ public class GlmtkExecutable extends Executable {
             throw new Termination();
         }
 
-        Path corpus = null, workingDir = null;
+        Path workingDir = null, corpus = null;
         if (Files.isDirectory(inputArg)) {
             if (line.hasOption(OPTION_WORKINGDIR)) {
                 System.err
-                .println("Can't use --"
-                                + OPTION_WORKINGDIR
-                                + " (-w) argument if using existing working directory as input.");
+                        .println("Can't use --"
+                        + OPTION_WORKINGDIR
+                        + " (-w) argument if using existing working directory as input.");
                 throw new Termination();
             }
 
@@ -98,6 +98,8 @@ public class GlmtkExecutable extends Executable {
                 System.err.println("Working directory '" + workingDir
                         + "' already exists but is not a directory.");
             }
+
+            corpus = inputArg;
         }
         glmtk.setCorpus(corpus);
         glmtk.setWorkingDir(workingDir);

@@ -296,7 +296,7 @@ public class Status {
             if (split.size() != 2) {
                 LOGGER.error("Illegal format for '{}': {}", continuation
                         ? "continuationChunked"
-                                : "absoluteChunked", patternAndChunks);
+                        : "absoluteChunked", patternAndChunks);
                 throw new Termination();
             }
 
@@ -352,7 +352,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                                .substring(1);
+                        .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {
