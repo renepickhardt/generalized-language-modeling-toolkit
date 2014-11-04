@@ -26,23 +26,22 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
         for (ProbMode probMode : probModes) {
             LOGGER.info("=== {}", probMode);
             estimator.setProbMode(probMode);
-            testEstimatorCorpus(estimator, probMode, abcCorpus, abcTestCorpus,
+            testEstimatorCorpus(estimator, probMode, TestCorpus.ABC, maxOrder,
+                    continuationEstimator);
+            testEstimatorCorpus(estimator, probMode, TestCorpus.MOBY_DICK,
                     maxOrder, continuationEstimator);
-            testEstimatorCorpus(estimator, probMode, mobyDickCorpus,
-                    mobyDickTestCorpus, maxOrder, continuationEstimator);
         }
     }
 
     private void testEstimatorCorpus(
             Estimator estimator,
             ProbMode probMode,
-            Corpus corpus,
             TestCorpus testCorpus,
             int maxOrder,
             boolean conntinuationEstimator) {
-        LOGGER.info("# {} corpus", testCorpus.getWorkingDir().getFileName());
+        LOGGER.info("# {} corpus", testCorpus.getName());
 
-        estimator.setCorpus(corpus);
+        estimator.setCorpus(testCorpus.getCorpus());
 
         for (int order = 1; order != maxOrder + 1; ++order) {
             LOGGER.info("n={}", order);
@@ -63,13 +62,13 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                 switch (probMode) {
                     case COND:
                         NGram checkHistory =
-                                history.concat(NGram.SKIPPED_WORD_NGRAM);
+                        history.concat(NGram.SKIPPED_WORD_NGRAM);
                         if (conntinuationEstimator) {
                             checkHistory =
                                     NGram.SKIPPED_WORD_NGRAM
-                                            .concat(checkHistory);
+                                    .concat(checkHistory);
                         }
-                        if (checkHistory.seen(corpus)) {
+                        if (checkHistory.seen(testCorpus.getCorpus())) {
                             if (Math.abs(0.0 - sum) <= 0.01) {
                                 System.out.println(sum);
                                 System.out.println(history);

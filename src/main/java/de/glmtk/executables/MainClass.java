@@ -12,12 +12,6 @@ public class MainClass {
         String mainClass = args[0];
         args = Arrays.copyOfRange(args, 1, args.length);
         switch (mainClass) {
-            case "glmtk-count":
-                GlmtkCount.main(args);
-                break;
-            case "glmtk":
-                Glmtk.main(args);
-                break;
             case "glmtk-new":
                 GlmtkNew.main(args);
                 break;

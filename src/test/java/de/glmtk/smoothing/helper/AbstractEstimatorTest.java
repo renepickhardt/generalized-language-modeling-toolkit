@@ -1,11 +1,7 @@
 package de.glmtk.smoothing.helper;
 
-import java.io.IOException;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.glmtk.smoothing.Corpus;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.smoothing.estimator.Estimators;
@@ -16,8 +12,8 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
 
     protected static final ProbMode[] probModeAll = {
         ProbMode.COND, ProbMode.MARG
-        //ProbMode.MARG, ProbMode.COND
-    };
+    //ProbMode.MARG, ProbMode.COND
+            };
 
     protected static final ProbMode[] probModeOnlyCond = {
         ProbMode.COND
@@ -28,22 +24,6 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     };
 
     protected static final ProbMode[] probModeNone = {};
-
-    protected static TestCorpus abcTestCorpus;
-
-    protected static Corpus abcCorpus;
-
-    protected static TestCorpus mobyDickTestCorpus;
-
-    protected static Corpus mobyDickCorpus;
-
-    @BeforeClass
-    public static void setUpCorpora() throws IOException, InterruptedException {
-        abcTestCorpus = new AbcTestCorpus();
-        abcCorpus = abcTestCorpus.getCorpus();
-        mobyDickTestCorpus = new MobyDickTestCorpus();
-        mobyDickCorpus = mobyDickTestCorpus.getCorpus();
-    }
 
     // Substitute Estimators
 

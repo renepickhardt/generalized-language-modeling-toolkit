@@ -29,22 +29,21 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
         for (ProbMode probMode : probModes) {
             LOGGER.info("=== {}", probMode);
             calculator.setProbMode(probMode);
-            testEstimatorCalculatorCorpus(estimator, calculator, abcCorpus,
-                    abcTestCorpus, maxOrder);
             testEstimatorCalculatorCorpus(estimator, calculator,
-                    mobyDickCorpus, mobyDickTestCorpus, maxOrder);
+                    TestCorpus.ABC, maxOrder);
+            testEstimatorCalculatorCorpus(estimator, calculator,
+                    TestCorpus.MOBY_DICK, maxOrder);
         }
     }
 
     private void testEstimatorCalculatorCorpus(
             Estimator estimator,
             NGramProbabilityCalculator calculator,
-            Corpus corpus,
             TestCorpus testCorpus,
             int maxOrder) {
-        LOGGER.info("# {} corpus", testCorpus.getWorkingDir().getFileName());
+        LOGGER.info("# {} corpus", testCorpus.getName());
 
-        estimator.setCorpus(corpus);
+        estimator.setCorpus(testCorpus.getCorpus());
 
         for (int order = 1; order != maxOrder + 1; ++order) {
             double sum = 0;

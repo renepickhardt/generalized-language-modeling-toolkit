@@ -1,5 +1,8 @@
 package de.glmtk;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Constants {
 
     public static final long B = 1L;
@@ -17,5 +20,8 @@ public class Constants {
     public static final int LOG_BASE = 10;
 
     public static final boolean DEBUG_AVERAGE_MEMORY = false;
+
+    public static final Path TEST_RESSOURCES_DIR = Paths
+            .get("src/test/resources");
 
 }

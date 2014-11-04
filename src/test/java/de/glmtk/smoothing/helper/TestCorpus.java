@@ -2,94 +2,122 @@ package de.glmtk.smoothing.helper;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
-import de.glmtk.legacy.counting.AbsoluteCounter;
-import de.glmtk.legacy.counting.ContinuationCounter;
-import de.glmtk.legacy.indexing.Index;
-import de.glmtk.legacy.indexing.IndexBuilder;
-import de.glmtk.legacy.sequencing.Sequencer;
-import de.glmtk.pattern.Pattern;
-import de.glmtk.pattern.PatternElem;
+import de.glmtk.Constants;
+import de.glmtk.Glmtk;
 import de.glmtk.smoothing.Corpus;
 import de.glmtk.utils.StringUtils;
 
-public abstract class TestCorpus {
+public class TestCorpus {
 
-    // TODO: incorporate Corpus#getWords()
+    public static final TestCorpus ABC;
 
-    protected static Path resourcesDir = Paths.get("src/test/resources");
+    public static final TestCorpus MOBY_DICK;
 
-    protected Path workingDir;
-
-    protected Index index;
-
-    protected Path absoluteDir;
-
-    protected Path continuationDir;
-
-    public TestCorpus(
-            Path trainingFile,
-            Path workingDir) throws IOException, InterruptedException {
-        this.workingDir = workingDir;
-
-        if (!Files.exists(workingDir)) {
-            Files.createDirectory(workingDir);
-        }
-
-        Path indexFile = workingDir.resolve("index.txt");
-        Path sequencesDir = workingDir.resolve("sequences");
-        absoluteDir = workingDir.resolve("absolute");
-        continuationDir = workingDir.resolve("continuation");
-
-        // index
-        if (!Files.exists(indexFile)) {
-            try (InputStream input = Files.newInputStream(trainingFile);
-                    OutputStream output = Files.newOutputStream(indexFile)) {
-                IndexBuilder indexBuilder = new IndexBuilder(false, false, 5);
-                indexBuilder.buildIndex(input, output, 1, 1);
-            }
-        }
-        try (InputStream input = Files.newInputStream(indexFile)) {
-            index = new Index(input);
-        }
-
-        // sequences
-        if (!Files.exists(sequencesDir)) {
-            Sequencer sequencer =
-                    new Sequencer(trainingFile, sequencesDir, index, 1, false,
-                            false);
-            sequencer.sequence(Pattern.getCombinations(5,
-                    Arrays.asList(PatternElem.CNT, PatternElem.SKP)));
-        }
-
-        // absolute
-        if (!Files.exists(absoluteDir)) {
-            AbsoluteCounter absoluteCounter =
-                    new AbsoluteCounter(sequencesDir, absoluteDir, "\t", 1,
-                            false, true);
-            absoluteCounter.count();
-        }
-
-        // continuation
-        if (!Files.exists(continuationDir)) {
-            ContinuationCounter continuationCounter =
-                    new ContinuationCounter(absoluteDir, continuationDir,
-                            index, "\t", 1, false, true);
-            continuationCounter.count();
+    static {
+        try {
+            ABC = new TestCorpus("ABC");
+            MOBY_DICK = new TestCorpus("MobyDick");
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException("Static class initalization failed", e);
         }
     }
 
-    public abstract String[] getWords();
+    private String name = null;
+
+    private Path outputDir = null;
+
+    private Corpus corpus = null;
+
+    private TestCorpus(
+            String name) throws IOException, InterruptedException {
+        this(name, Constants.TEST_RESSOURCES_DIR.resolve(name.toLowerCase()
+                + ".txt"), Constants.TEST_RESSOURCES_DIR.resolve(name
+                .toLowerCase()));
+    }
+
+    private TestCorpus(
+            String name,
+            Path corpus,
+            Path outputDir) throws IOException, InterruptedException {
+        this.name = name;
+        this.outputDir = outputDir;
+
+        Glmtk glmtk = new Glmtk();
+        glmtk.setCorpus(corpus);
+        glmtk.setOutputDir(outputDir);
+        glmtk.count();
+
+        this.corpus = new Corpus(outputDir);
+
+        //        workingDir = output;
+        //
+        //        if (!Files.exists(output)) {
+        //            Files.createDirectory(output);
+        //        }
+
+        //        Path indexFile = workingDir.resolve("index.txt");
+        //        Path sequencesDir = workingDir.resolve("sequences");
+        //        absoluteDir = workingDir.resolve("absolute");
+        //        continuationDir = workingDir.resolve("continuation");
+        //
+        //        // index
+        //        if (!Files.exists(indexFile)) {
+        //            try (InputStream input = Files.newInputStream(trainingFile);
+        //                    OutputStream output = Files.newOutputStream(indexFile)) {
+        //                IndexBuilder indexBuilder = new IndexBuilder(false, false, 5);
+        //                indexBuilder.buildIndex(input, output, 1, 1);
+        //            }
+        //        }
+        //        try (InputStream input = Files.newInputStream(indexFile)) {
+        //            index = new Index(input);
+        //        }
+        //
+        //        // sequences
+        //        if (!Files.exists(sequencesDir)) {
+        //            Sequencer sequencer =
+        //                    new Sequencer(trainingFile, sequencesDir, index, 1, false,
+        //                            false);
+        //            sequencer.sequence(Pattern.getCombinations(5,
+        //                    Arrays.asList(PatternElem.CNT, PatternElem.SKP)));
+        //        }
+        //
+        //        // absolute
+        //        if (!Files.exists(absoluteDir)) {
+        //            AbsoluteCounter absoluteCounter =
+        //                    new AbsoluteCounter(sequencesDir, absoluteDir, "\t", 1,
+        //                            false, true);
+        //            absoluteCounter.count();
+        //        }
+        //
+        //        // continuation
+        //        if (!Files.exists(continuationDir)) {
+        //            ContinuationCounter continuationCounter =
+        //                    new ContinuationCounter(absoluteDir, continuationDir,
+        //                            index, "\t", 1, false, true);
+        //            continuationCounter.count();
+        //        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Corpus getCorpus() {
+        return corpus;
+    }
+
+    public String[] getWords() {
+        Set<String> words = corpus.getWords();
+        return words.toArray(new String[words.size()]);
+    }
 
     public List<String> getSequenceList(int n, int length) {
         List<String> result = new LinkedList<String>();
@@ -105,45 +133,9 @@ public abstract class TestCorpus {
         return StringUtils.join(getSequenceList(n, length), " ");
     }
 
-    public Path getWorkingDir() {
-        return workingDir;
-    }
-
-    public void setWorkingDir(Path workingDir) {
-        this.workingDir = workingDir;
-    }
-
-    public Index getIndex() {
-        return index;
-    }
-
-    public void setIndex(Index index) {
-        this.index = index;
-    }
-
-    public Path getAbsoluteDir() {
-        return absoluteDir;
-    }
-
-    public void setAbsoluteDir(Path absoluteDir) {
-        this.absoluteDir = absoluteDir;
-    }
-
-    public Path getContinuationDir() {
-        return continuationDir;
-    }
-
-    public void setContinuationDir(Path continuationDir) {
-        this.continuationDir = continuationDir;
-    }
-
-    public Corpus getCorpus() throws IOException {
-        return new Corpus(getAbsoluteDir(), getContinuationDir());
-    }
-
     public Path getSequencesTestingSample(int length) throws IOException {
         Path sequencesTestSample =
-                workingDir.resolve("sequences-testing-samples-" + length);
+                outputDir.resolve("sequences-testing-samples-" + length);
         if (!Files.exists(sequencesTestSample)) {
             try (BufferedWriter writer =
                     Files.newBufferedWriter(sequencesTestSample,
@@ -156,5 +148,33 @@ public abstract class TestCorpus {
         }
         return sequencesTestSample;
     }
+
+    //    public Path getWorkingDir() {
+    //        return workingDir;
+    //    }
+    //
+    //    public void setWorkingDir(Path workingDir) {
+    //        this.workingDir = workingDir;
+    //    }
+    //
+    //    public Path getAbsoluteDir() {
+    //        return absoluteDir;
+    //    }
+    //
+    //    public void setAbsoluteDir(Path absoluteDir) {
+    //        this.absoluteDir = absoluteDir;
+    //    }
+    //
+    //    public Path getContinuationDir() {
+    //        return continuationDir;
+    //    }
+    //
+    //    public void setContinuationDir(Path continuationDir) {
+    //        this.continuationDir = continuationDir;
+    //    }
+    //
+    //    public Corpus getCorpus() throws IOException {
+    //        return new Corpus(getAbsoluteDir(), getContinuationDir());
+    //    }
 
 }

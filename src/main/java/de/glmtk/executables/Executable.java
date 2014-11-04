@@ -30,9 +30,9 @@ import de.glmtk.utils.StringUtils;
 
     private static Logger LOGGER = LogManager.getLogger(Executable.class);
 
-    protected Config config;
+    protected Config config = null;
 
-    protected CommandLine line;
+    protected CommandLine line = null;;
 
     protected abstract List<Option> getOptions();
 

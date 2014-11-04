@@ -38,8 +38,9 @@ public class Corpus {
             Arrays.asList(PatternElem.CNT));
 
     public Corpus(
-            Path absoluteDir,
-            Path continuationDir) throws IOException {
+            Path outputDir) throws IOException {
+        Path absoluteDir = outputDir.resolve("absolute");
+        Path continuationDir = outputDir.resolve("continuation");
         absoluteCounts = readAbsoluteCounts(absoluteDir);
         continuationCounts = readContinuationCounts(continuationDir);
     }
