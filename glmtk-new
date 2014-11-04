@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
-$GLMTK_DIR/run.sh glmtk-new $@

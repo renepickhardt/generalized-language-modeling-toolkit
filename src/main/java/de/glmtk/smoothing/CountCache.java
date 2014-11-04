@@ -19,7 +19,7 @@ import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
 import de.glmtk.utils.StringUtils;
 
-public class Corpus {
+public class CountCache {
 
     private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =
             new HashMap<Pattern, Map<Integer, Integer>>();
@@ -30,14 +30,14 @@ public class Corpus {
 
     public static final List<String> SKIPPED_LIST;
     static {
-        SKIPPED_LIST = new ArrayList<>(1);
+        SKIPPED_LIST = new ArrayList<String>(1);
         SKIPPED_LIST.add(PatternElem.SKIPPED_WORD);
     }
 
     public static final Pattern CNT_PATTERN = new Pattern(
             Arrays.asList(PatternElem.CNT));
 
-    public Corpus(
+    public CountCache(
             Path outputDir) throws IOException {
         Path absoluteDir = outputDir.resolve("absolute");
         Path continuationDir = outputDir.resolve("continuation");
@@ -45,21 +45,8 @@ public class Corpus {
         continuationCounts = readContinuationCounts(continuationDir);
     }
 
-    public Pattern getPattern(List<String> sequence) {
-        List<PatternElem> patternElems =
-                new ArrayList<PatternElem>(sequence.size());
-        for (String word : sequence) {
-            if (word.equals(PatternElem.SKIPPED_WORD)) {
-                patternElems.add(PatternElem.SKP);
-            } else {
-                patternElems.add(PatternElem.CNT);
-            }
-        }
-        return new Pattern(patternElems);
-    }
-
     /**
-     * Get the number of words in the corpus.
+     * Get the number of words in the countCache.
      *
      * Aka absolute count of skip.
      */
@@ -68,7 +55,7 @@ public class Corpus {
     }
 
     /**
-     * Get the vocabulary size (number of different words) of the corpus.
+     * Get the vocabulary size (number of different words) of the countCache.
      *
      * Aka continuation count of skip.
      */
@@ -133,11 +120,24 @@ public class Corpus {
         Map<String, Counter> patternCounters = continuationCounts.get(pattern);
         if (patternCounters == null) {
             throw new NullPointerException(
-                    "No continuation counts in corpus for pattern: " + pattern
-                            + ".");
+                    "No continuation counts in countCache for pattern: " + pattern
+                    + ".");
         }
         Counter counter = patternCounters.get(string);
         return counter == null ? new Counter() : counter;
+    }
+
+    private Pattern getPattern(List<String> sequence) {
+        List<PatternElem> patternElems =
+                new ArrayList<PatternElem>(sequence.size());
+        for (String word : sequence) {
+            if (word.equals(PatternElem.SKIPPED_WORD)) {
+                patternElems.add(PatternElem.SKP);
+            } else {
+                patternElems.add(PatternElem.CNT);
+            }
+        }
+        return new Pattern(patternElems);
     }
 
     private Map<Pattern, Map<String, Integer>> readAbsoluteCounts(

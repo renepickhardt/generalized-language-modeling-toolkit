@@ -12,8 +12,8 @@ public class MainClass {
         String mainClass = args[0];
         args = Arrays.copyOfRange(args, 1, args.length);
         switch (mainClass) {
-            case "glmtk-new":
-                GlmtkNew.main(args);
+            case "glmtk":
+                GlmtkExecutable.main(args);
                 break;
 
             default:

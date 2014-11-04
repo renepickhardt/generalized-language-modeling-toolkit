@@ -6,7 +6,7 @@ import java.util.Map;
 
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
-import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.estimator.fraction.FractionEstimator;
 
@@ -24,8 +24,8 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
     }
 
     @Override
-    public void setCorpus(Corpus corpus) {
-        super.setCorpus(corpus);
+    public void setCorpus(CountCache countCache) {
+        super.setCorpus(countCache);
 
         // TODO calc discount
         discount1 = new HashMap<Pattern, Double>();
@@ -33,10 +33,10 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
         discount3p = new HashMap<Pattern, Double>();
         for (Pattern pattern : Pattern.getCombinations(5,
                 Arrays.asList(PatternElem.CNT, PatternElem.SKP))) {
-            double n1 = corpus.getNGramTimesCount(pattern, 1);
-            double n2 = corpus.getNGramTimesCount(pattern, 2);
-            double n3 = corpus.getNGramTimesCount(pattern, 3);
-            double n4 = corpus.getNGramTimesCount(pattern, 4);
+            double n1 = countCache.getNGramTimesCount(pattern, 1);
+            double n2 = countCache.getNGramTimesCount(pattern, 2);
+            double n3 = countCache.getNGramTimesCount(pattern, 3);
+            double n4 = countCache.getNGramTimesCount(pattern, 4);
             double y = n1 / (n1 + n2);
             discount1.put(pattern, 1 - 2 * y * n2 / n1);
             discount2.put(pattern, 2 - 3 * y * n3 / n2);
@@ -46,7 +46,7 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
 
     @Override
     protected double calcDiscount(NGram sequence, NGram history, int recDepth) {
-        switch (corpus.getAbsolute(history)) {
+        switch (countCache.getAbsolute(history)) {
             case 0:
                 return 0;
             case 1:

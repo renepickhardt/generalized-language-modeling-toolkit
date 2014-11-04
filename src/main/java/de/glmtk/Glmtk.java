@@ -15,7 +15,6 @@ import de.glmtk.Status.TrainingStatus;
 import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.Tagger;
-import de.glmtk.executables.Model;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
 import de.glmtk.utils.StringUtils;
@@ -31,7 +30,7 @@ public class Glmtk {
 
     private Path corpus = null;
 
-    private Path outputDir = null;
+    private Path workingDir = null;
 
     private List<Path> testingFiles = new LinkedList<Path>();
 
@@ -43,8 +42,8 @@ public class Glmtk {
         this.corpus = corpus;
     }
 
-    public void setOutputDir(Path outputDir) {
-        this.outputDir = outputDir;
+    public void setWorkingDir(Path workingDir) {
+        this.workingDir = workingDir;
     }
 
     public void addTestingFile(Path testingFile) {
@@ -52,16 +51,16 @@ public class Glmtk {
     }
 
     public void count() throws IOException {
-        if (!Files.exists(outputDir)) {
-            Files.createDirectories(outputDir);
+        if (!Files.exists(workingDir)) {
+            Files.createDirectories(workingDir);
         }
 
-        Path statusFile = outputDir.resolve("status");
-        Path trainingFile = outputDir.resolve("training");
-        Path absoluteDir = outputDir.resolve("absolute");
-        Path absoluteTmpDir = outputDir.resolve("absolute.tmp");
-        Path continuationDir = outputDir.resolve("continuation");
-        Path continuationTmpDir = outputDir.resolve("continuation.tmp");
+        Path statusFile = workingDir.resolve("status");
+        Path trainingFile = workingDir.resolve("training");
+        Path absoluteDir = workingDir.resolve("absolute");
+        Path absoluteTmpDir = workingDir.resolve("absolute.tmp");
+        Path continuationDir = workingDir.resolve("continuation");
+        Path continuationTmpDir = workingDir.resolve("continuation.tmp");
 
         Status status = new Status(statusFile, corpus);
         status.logStatus();
@@ -84,8 +83,8 @@ public class Glmtk {
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
                 neededAbsolutePatterns =
-                Pattern.getCombinations(5,
-                        Arrays.asList(PatternElem.CNT, PatternElem.SKP));
+                        Pattern.getCombinations(5,
+                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
                 neededContinuationPatterns =
                         Pattern.replaceTargetWithElems(neededAbsolutePatterns,
                                 PatternElem.SKP,
@@ -120,13 +119,14 @@ public class Glmtk {
         // Training / Tagging //////////////////////////////////////////////////
 
         // TODO: doesn't detect the setting that user changed from untagged
-        // training file, to tagged file with same corpus.
+        // training file, to tagged file with same countCache.
         // TODO: doesn't detect when switching from untagged training to
-        // continuing with now tagged corpus.
+        // continuing with now tagged countCache.
         if (needToTagTraining) {
             if (status.getTraining() == TrainingStatus.DONE_WITH_POS) {
                 LOGGER.info("Detected tagged training already present, skipping tagging.");
             } else {
+                // TODO: check if this breaks if corpus = trainingFile
                 Files.deleteIfExists(trainingFile);
                 Tagger tagger =
                         new Tagger(config.getUpdateInterval(),
@@ -138,6 +138,7 @@ public class Glmtk {
             if (status.getTraining() != TrainingStatus.NONE) {
                 LOGGER.info("Detected training already present, skipping copying training.");
             } else {
+                // TODO: check if this breaks if corpus = trainingFile
                 Files.deleteIfExists(trainingFile);
                 Files.copy(corpus, trainingFile);
                 status.setTraining(TrainingStatus.DONE, trainingFile);
@@ -150,7 +151,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 

@@ -1,6 +1,6 @@
 package de.glmtk.smoothing.estimator.combination;
 
-import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
@@ -23,10 +23,10 @@ public class CombinationEstimator extends Estimator {
     }
 
     @Override
-    public void setCorpus(Corpus corpus) {
-        super.setCorpus(corpus);
-        alpha.setCorpus(corpus);
-        beta.setCorpus(corpus);
+    public void setCorpus(CountCache countCache) {
+        super.setCorpus(countCache);
+        alpha.setCorpus(countCache);
+        beta.setCorpus(countCache);
     }
 
     @Override

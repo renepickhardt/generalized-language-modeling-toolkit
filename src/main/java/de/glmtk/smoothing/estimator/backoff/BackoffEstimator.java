@@ -3,7 +3,7 @@ package de.glmtk.smoothing.estimator.backoff;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
@@ -30,11 +30,11 @@ public class BackoffEstimator extends Estimator {
     }
 
     @Override
-    public void setCorpus(Corpus corpus) {
-        super.setCorpus(corpus);
-        alpha.setCorpus(corpus);
+    public void setCorpus(CountCache countCache) {
+        super.setCorpus(countCache);
+        alpha.setCorpus(countCache);
         if (beta != this) {
-            beta.setCorpus(corpus);
+            beta.setCorpus(countCache);
         }
 
         gammaCache = new HashMap<NGram, Double>();
@@ -64,7 +64,7 @@ public class BackoffEstimator extends Estimator {
                 default:
                     throw new IllegalStateException();
             }
-        } else if (corpus.getAbsolute(getFullSequence(sequence, history)) == 0) {
+        } else if (countCache.getAbsolute(getFullSequence(sequence, history)) == 0) {
             NGram backoffHistory = history.backoff(probMode);
 
             double betaVal =
@@ -106,9 +106,9 @@ public class BackoffEstimator extends Estimator {
 
         NGram backoffHistory = history.backoff(probMode);
 
-        for (String word : corpus.getWords()) {
+        for (String word : countCache.getWords()) {
             NGram s = history.concat(word);
-            if (corpus.getAbsolute(s) == 0) {
+            if (countCache.getAbsolute(s) == 0) {
                 sumBeta +=
                         beta.probability(new NGram(word), backoffHistory,
                                 recDepth);

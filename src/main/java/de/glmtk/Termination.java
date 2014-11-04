@@ -1,4 +1,4 @@
-package de.glmtk.executables;
+package de.glmtk;
 
 public class Termination extends RuntimeException {
 

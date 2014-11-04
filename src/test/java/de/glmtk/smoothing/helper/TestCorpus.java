@@ -12,14 +12,12 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.CountCache;
 import de.glmtk.utils.StringUtils;
 
 public class TestCorpus {
 
-    public static final TestCorpus ABC;
-
-    public static final TestCorpus MOBY_DICK;
+    public static final TestCorpus ABC, MOBY_DICK;
 
     static {
         try {
@@ -30,32 +28,32 @@ public class TestCorpus {
         }
     }
 
-    private String name = null;
+    private String corpusName = null;
 
-    private Path outputDir = null;
+    private Path workingDir = null;
 
-    private Corpus corpus = null;
+    private CountCache countCache = null;
 
     private TestCorpus(
             String name) throws IOException, InterruptedException {
         this(name, Constants.TEST_RESSOURCES_DIR.resolve(name.toLowerCase()
                 + ".txt"), Constants.TEST_RESSOURCES_DIR.resolve(name
-                .toLowerCase()));
+                        .toLowerCase()));
     }
 
     private TestCorpus(
             String name,
             Path corpus,
-            Path outputDir) throws IOException, InterruptedException {
-        this.name = name;
-        this.outputDir = outputDir;
+            Path workingDir) throws IOException, InterruptedException {
+        corpusName = name;
+        this.workingDir = workingDir;
 
         Glmtk glmtk = new Glmtk();
         glmtk.setCorpus(corpus);
-        glmtk.setOutputDir(outputDir);
+        glmtk.setWorkingDir(workingDir);
         glmtk.count();
 
-        this.corpus = new Corpus(outputDir);
+        countCache = new CountCache(workingDir);
 
         //        workingDir = output;
         //
@@ -106,16 +104,16 @@ public class TestCorpus {
         //        }
     }
 
-    public String getName() {
-        return name;
+    public String getCorpusName() {
+        return corpusName;
     }
 
-    public Corpus getCorpus() {
-        return corpus;
+    public CountCache getCountCache() {
+        return countCache;
     }
 
     public String[] getWords() {
-        Set<String> words = corpus.getWords();
+        Set<String> words = countCache.getWords();
         return words.toArray(new String[words.size()]);
     }
 
@@ -129,19 +127,18 @@ public class TestCorpus {
         return result;
     }
 
-    public String getSequenceString(int n, int length) {
-        return StringUtils.join(getSequenceList(n, length), " ");
-    }
-
+    // TODO: what is this?
+    @Deprecated
     public Path getSequencesTestingSample(int length) throws IOException {
         Path sequencesTestSample =
-                outputDir.resolve("sequences-testing-samples-" + length);
+                workingDir.resolve("sequences-testing-samples-" + length);
         if (!Files.exists(sequencesTestSample)) {
             try (BufferedWriter writer =
                     Files.newBufferedWriter(sequencesTestSample,
                             Charset.defaultCharset())) {
                 for (int i = 0; i != ((int) Math.pow(getWords().length, length)); ++i) {
-                    writer.write(getSequenceString(i, length));
+                    writer.write(StringUtils.join(getSequenceList(i, length),
+                            " "));
                     writer.write("\n");
                 }
             }
@@ -173,8 +170,8 @@ public class TestCorpus {
     //        this.continuationDir = continuationDir;
     //    }
     //
-    //    public Corpus getCorpus() throws IOException {
-    //        return new Corpus(getAbsoluteDir(), getContinuationDir());
+    //    public CountCache getCorpus() throws IOException {
+    //        return new CountCache(getAbsoluteDir(), getContinuationDir());
     //    }
 
 }

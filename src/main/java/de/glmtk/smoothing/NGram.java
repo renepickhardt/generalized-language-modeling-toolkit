@@ -52,8 +52,8 @@ public class NGram {
     /**
      * Returns {@code true} if either empty or has count greater zero.
      */
-    public boolean seen(Corpus corpus) {
-        return isEmpty() || corpus.getAbsolute(this) != 0;
+    public boolean seen(CountCache countCache) {
+        return isEmpty() || countCache.getAbsolute(this) != 0;
     }
 
     /**
@@ -61,9 +61,9 @@ public class NGram {
      * it is greater zero. If not possible returns zero. Returned sequence may
      * be empty.
      */
-    public NGram backoffUntilSeen(ProbMode probMode, Corpus corpus) {
+    public NGram backoffUntilSeen(ProbMode probMode, CountCache countCache) {
         NGram result = backoff(probMode);
-        while (!result.seen(corpus)) {
+        while (!result.seen(countCache)) {
             result = result.backoff(probMode);
         }
         return result;

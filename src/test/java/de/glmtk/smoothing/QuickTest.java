@@ -14,11 +14,11 @@ public class QuickTest extends LoggingTest {
     @Test
     public void test() {
         Estimator e = Estimators.CMLE;
-        e.setCorpus(TestCorpus.ABC.getCorpus());
+        e.setCorpus(TestCorpus.ABC.getCountCache());
         e.setProbMode(ProbMode.COND);
         NGram history = new NGram(Arrays.asList("b", "a", "a"));
         NGram sequence = new NGram("b");
-        System.out.println(history.seen(TestCorpus.ABC.getCorpus()));
+        System.out.println(history.seen(TestCorpus.ABC.getCountCache()));
         System.out.println(e.probability(sequence, history));
     }
 

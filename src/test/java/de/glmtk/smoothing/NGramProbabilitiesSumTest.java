@@ -41,9 +41,9 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
             NGramProbabilityCalculator calculator,
             TestCorpus testCorpus,
             int maxOrder) {
-        LOGGER.info("# {} corpus", testCorpus.getName());
+        LOGGER.info("# {} countCache", testCorpus.getCorpusName());
 
-        estimator.setCorpus(testCorpus.getCorpus());
+        estimator.setCorpus(testCorpus.getCountCache());
 
         for (int order = 1; order != maxOrder + 1; ++order) {
             double sum = 0;

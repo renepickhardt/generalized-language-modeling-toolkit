@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Config;
+import de.glmtk.Termination;
 import de.glmtk.utils.Logging;
 import de.glmtk.utils.StringUtils;
 

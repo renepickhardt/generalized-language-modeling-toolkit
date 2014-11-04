@@ -10,12 +10,14 @@ import java.util.List;
 import org.apache.commons.cli.Option;
 
 import de.glmtk.Glmtk;
+import de.glmtk.Model;
+import de.glmtk.Termination;
 import de.glmtk.utils.Logging;
 import de.glmtk.utils.StatisticalNumberHelper;
 
-public class GlmtkNew extends Executable {
+public class GlmtkExecutable extends Executable {
 
-    private static final String OPTION_OUTPUTDIR = "output";
+    private static final String OPTION_WORKINGDIR = "workingdir";
 
     private static final String OPTION_MODEL = "model";
 
@@ -24,26 +26,26 @@ public class GlmtkNew extends Executable {
     private static List<Option> options;
     static {
         //@formatter:off
-        Option help      = new Option("h", OPTION_HELP,      false, "Print this message.");
-        Option version   = new Option("v", OPTION_VERSION,   false, "Print the version information and exit.");
-        Option outputDir = new Option("o", OPTION_OUTPUTDIR, true,  "Use given directory for output.");
-        outputDir.setArgName("OUTPUTDIR");
-        Option model      = new Option("m", OPTION_MODEL,    true,  "KN  - Kneser Ney\n" +
+        Option help       = new Option("h", OPTION_HELP,       false, "Print this message.");
+        Option version    = new Option("v", OPTION_VERSION,    false, "Print the version information and exit.");
+        Option workingDir = new Option("w", OPTION_WORKINGDIR, true,  "Working directory.");
+        workingDir.setArgName("WORKINGDIR");
+        Option model      = new Option("m", OPTION_MODEL,      true,  "KN  - Kneser Ney\n" +
                 "MKN - Modified Kneser Ney\n" +
                 "GLM - Generalized Language Model");
         model.setArgName("MODEL");
-        Option testing    = new Option("t", OPTION_TESTING,  true,  "File to take testing sequences for probability and entropy from (can be specified multiple times).");
+        Option testing    = new Option("t", OPTION_TESTING,    true,  "File to take testing sequences for probability and entropy from (can be specified multiple times).");
         testing.setArgName("TESTING");
         //@formatter:on
-        options = Arrays.asList(help, version, outputDir, model, testing);
+        options = Arrays.asList(help, version, workingDir, model, testing);
     }
 
     private Glmtk glmtk = new Glmtk();
 
-    private Path outputDir = null;
+    private Path workingDir = null;
 
     public static void main(String[] args) {
-        new GlmtkNew().run(args);
+        new GlmtkExecutable().run(args);
     }
 
     @Override
@@ -53,7 +55,7 @@ public class GlmtkNew extends Executable {
 
     @Override
     protected String getUsage() {
-        return "glmtk-new [OPTION]... <CORPUS>";
+        return "glmtk [OPTION]... <INPUT>";
     }
 
     @Override
@@ -61,40 +63,45 @@ public class GlmtkNew extends Executable {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println("Missing corpus.\n"
+            System.err.println("Missing countCache.\n"
                     + "Try 'glmtk-new --help' for more information.");
             throw new Termination();
         }
 
-        Path corpus = Paths.get(line.getArgs()[0]);
-        if (!(Files.exists(corpus) && Files.isReadable(corpus))) {
-            System.err.println("Corpus '" + corpus
+        Path inputArg = Paths.get(line.getArgs()[0]);
+        if (!(Files.exists(inputArg) && Files.isReadable(inputArg))) {
+            System.err.println("Input file/dir '" + inputArg
                     + "' does not exist or is not readable.");
             throw new Termination();
         }
-        if (Files.isDirectory(corpus)) {
-            getAndCheckCorpusFile(corpus, "status");
-            Path trainingFile = getAndCheckCorpusFile(corpus, "training");
-            if (line.hasOption(OPTION_OUTPUTDIR)) {
+
+        Path corpus = null, workingDir = null;
+        if (Files.isDirectory(inputArg)) {
+            if (line.hasOption(OPTION_WORKINGDIR)) {
                 System.err
-                .println("Can't specify output directory if using existing corpus as input.");
+                .println("Can't use --"
+                                + OPTION_WORKINGDIR
+                                + " (-w) argument if using existing working directory as input.");
                 throw new Termination();
             }
-            outputDir = corpus;
-            corpus = trainingFile;
+
+            workingDir = inputArg;
+            getAndCheckCorpusFile(workingDir, "status");
+            corpus = getAndCheckCorpusFile(workingDir, "training");
         } else {
-            if (line.hasOption(OPTION_OUTPUTDIR)) {
-                outputDir = Paths.get(line.getOptionValue(OPTION_OUTPUTDIR));
+            if (line.hasOption(OPTION_WORKINGDIR)) {
+                workingDir = Paths.get(line.getOptionValue(OPTION_WORKINGDIR));
             } else {
-                outputDir = Paths.get(corpus + ".out");
+                workingDir = Paths.get(inputArg + ".out");
             }
-            if (Files.exists(outputDir) && !Files.isDirectory(outputDir)) {
-                System.err.println("Output directory '" + outputDir
+            if (Files.exists(workingDir) && !Files.isDirectory(workingDir)) {
+                System.err.println("Working directory '" + workingDir
                         + "' already exists but is not a directory.");
             }
         }
         glmtk.setCorpus(corpus);
-        glmtk.setOutputDir(outputDir);
+        glmtk.setWorkingDir(workingDir);
+        this.workingDir = workingDir;
 
         if (line.hasOption(OPTION_MODEL)) {
             switch (line.getOptionValue(OPTION_MODEL).toUpperCase()) {
@@ -122,10 +129,10 @@ public class GlmtkNew extends Executable {
         }
     }
 
-    private Path getAndCheckCorpusFile(Path corpus, String filename) {
-        Path file = corpus.resolve(filename);
+    private Path getAndCheckCorpusFile(Path workingDir, String filename) {
+        Path file = workingDir.resolve(filename);
         if (!(Files.exists(file) && Files.isReadable(file))) {
-            System.err.println("Corpus " + filename + " file '" + file
+            System.err.println("CountCache " + filename + " file '" + file
                     + "' does not exist or is not readable.");
             throw new Termination();
         }
@@ -135,7 +142,7 @@ public class GlmtkNew extends Executable {
     @Override
     protected void configureLogging() {
         super.configureLogging();
-        Logging.addLocalFileAppender(outputDir.resolve("log"));
+        Logging.addLocalFileAppender(workingDir.resolve("log"));
     }
 
     @Override
@@ -159,7 +166,7 @@ public class GlmtkNew extends Executable {
     //        Files.createDirectories(testingDir);
     //
     //        LOGGER.info("Loading counts into memory...");
-    //        Corpus corpus = new Corpus(absoluteDir, continuationDir);
+    //        CountCache countCache = new CountCache(absoluteDir, continuationDir);
     //
     //        Estimator estimator = null;
     //        switch (model) {
@@ -170,7 +177,7 @@ public class GlmtkNew extends Executable {
     //            default:
     //                throw new UnsupportedOperationException();
     //        }
-    //        estimator.setCorpus(corpus);
+    //        estimator.setCorpus(countCache);
     //
     //        NGramProbabilityCalculator calculator =
     //                new NGramProbabilityCalculator();

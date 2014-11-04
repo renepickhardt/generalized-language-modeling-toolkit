@@ -2,7 +2,7 @@ package de.glmtk.smoothing.estimator.interpolation;
 
 import de.glmtk.Counter;
 import de.glmtk.pattern.Pattern;
-import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
@@ -29,11 +29,11 @@ public class InterpolationEstimator extends Estimator {
     }
 
     @Override
-    public void setCorpus(Corpus corpus) {
-        super.setCorpus(corpus);
-        alpha.setCorpus(corpus);
+    public void setCorpus(CountCache countCache) {
+        super.setCorpus(countCache);
+        alpha.setCorpus(countCache);
         if (beta != this) {
-            beta.setCorpus(corpus);
+            beta.setCorpus(countCache);
         }
     }
 
@@ -55,7 +55,7 @@ public class InterpolationEstimator extends Estimator {
             return alpha.getFractionEstimator().probability(sequence, history,
                     recDepth);
         } else {
-            NGram backoffHistory = history.backoffUntilSeen(probMode, corpus);
+            NGram backoffHistory = history.backoffUntilSeen(probMode, countCache);
             double alphaVal = alpha.probability(sequence, history, recDepth);
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);
@@ -90,7 +90,7 @@ public class InterpolationEstimator extends Estimator {
                 double d2 = a.getDiscount2(pattern);
                 double d3p = a.getDiscount3p(pattern);
 
-                Counter continuation = corpus.getContinuation(historyWithSkip);
+                Counter continuation = countCache.getContinuation(historyWithSkip);
                 double n1 = continuation.getOneCount();
                 double n2 = continuation.getTwoCount();
                 double n3p = continuation.getThreePlusCount();
@@ -107,7 +107,7 @@ public class InterpolationEstimator extends Estimator {
             } else {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
-                        corpus.getContinuation(historyWithSkip)
+                        countCache.getContinuation(historyWithSkip)
                                 .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);

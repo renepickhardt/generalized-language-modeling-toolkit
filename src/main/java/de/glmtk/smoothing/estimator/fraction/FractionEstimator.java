@@ -8,7 +8,7 @@ public abstract class FractionEstimator extends Estimator {
     @Override
     protected double
         calcProbability(NGram sequence, NGram history, int recDepth) {
-        if (history.seen(corpus)) {
+        if (history.seen(countCache)) {
             double numeratorVal = numerator(sequence, history, recDepth);
             double denominatorVal = denominator(sequence, history, recDepth);
             if (denominatorVal != 0) {

@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.pattern.PatternElem;
-import de.glmtk.smoothing.Corpus;
+import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.substitute.SubstituteEstimator;
@@ -20,15 +20,15 @@ public abstract class Estimator {
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR =
             Estimators.ABS_UNIGRAM;
 
-    protected Corpus corpus = null;
+    protected CountCache countCache = null;
 
     protected ProbMode probMode = null;
 
-    public void setCorpus(Corpus corpus) {
-        this.corpus = corpus;
+    public void setCorpus(CountCache countCache) {
+        this.countCache = countCache;
 
         if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
-            SUBSTITUTE_ESTIMATOR.setCorpus(corpus);
+            SUBSTITUTE_ESTIMATOR.setCorpus(countCache);
         }
     }
 
@@ -45,9 +45,9 @@ public abstract class Estimator {
      * parameter, and to perform error checking.
      */
     public final double probability(NGram sequence, NGram history) {
-        if (corpus == null) {
+        if (countCache == null) {
             throw new NullPointerException(
-                    "You have to set a corpus that is not null before using this method");
+                    "You have to set a countCache that is not null before using this method");
         }
         if (probMode == null) {
             throw new NullPointerException(

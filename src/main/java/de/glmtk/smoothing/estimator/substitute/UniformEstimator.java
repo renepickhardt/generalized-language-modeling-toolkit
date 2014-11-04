@@ -7,7 +7,7 @@ public class UniformEstimator extends SubstituteEstimator {
     @Override
     protected double
         calcProbability(NGram sequence, NGram history, int recDepth) {
-        return 1.0 / corpus.getVocabSize();
+        return 1.0 / countCache.getVocabSize();
     }
 
 }

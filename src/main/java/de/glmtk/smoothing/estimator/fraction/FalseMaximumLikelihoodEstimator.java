@@ -9,7 +9,7 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
-        int fullSequenceCount = corpus.getAbsolute(fullSequence);
+        int fullSequenceCount = countCache.getAbsolute(fullSequence);
         logDebug(recDepth, "fullSequence = {} ({})", fullSequence,
                 fullSequenceCount);
         return fullSequenceCount;
@@ -20,9 +20,9 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
         calcDenominator(NGram sequence, NGram history, int recDepth) {
         int historyCount;
         if (history.isEmpty()) {
-            historyCount = corpus.getNumWords();
+            historyCount = countCache.getNumWords();
         } else {
-            historyCount = corpus.getAbsolute(history);
+            historyCount = countCache.getAbsolute(history);
         }
         logDebug(recDepth, "fullHistory = {} ({})", history, historyCount);
         return historyCount;
