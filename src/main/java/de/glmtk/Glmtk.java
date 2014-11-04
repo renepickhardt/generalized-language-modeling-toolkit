@@ -83,8 +83,8 @@ public class Glmtk {
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
                 neededAbsolutePatterns =
-                        Pattern.getCombinations(5,
-                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
+                Pattern.getCombinations(5,
+                        Arrays.asList(PatternElem.CNT, PatternElem.SKP));
                 neededContinuationPatterns =
                         Pattern.replaceTargetWithElems(neededAbsolutePatterns,
                                 PatternElem.SKP,
@@ -119,9 +119,9 @@ public class Glmtk {
         // Training / Tagging //////////////////////////////////////////////////
 
         // TODO: doesn't detect the setting that user changed from untagged
-        // training file, to tagged file with same countCache.
+        // training file, to tagged file with same corpus.
         // TODO: doesn't detect when switching from untagged training to
-        // continuing with now tagged countCache.
+        // continuing with now tagged corpus.
         if (needToTagTraining) {
             if (status.getTraining() == TrainingStatus.DONE_WITH_POS) {
                 LOGGER.info("Detected tagged training already present, skipping tagging.");
@@ -151,7 +151,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 

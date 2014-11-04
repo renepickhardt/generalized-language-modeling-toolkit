@@ -63,8 +63,8 @@ public class GlmtkExecutable extends Executable {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println("Missing countCache.\n"
-                    + "Try 'glmtk-new --help' for more information.");
+            System.err.println("Missing input.\n"
+                    + "Try 'glmtk --help' for more information.");
             throw new Termination();
         }
 
@@ -132,7 +132,7 @@ public class GlmtkExecutable extends Executable {
     private Path getAndCheckCorpusFile(Path workingDir, String filename) {
         Path file = workingDir.resolve(filename);
         if (!(Files.exists(file) && Files.isReadable(file))) {
-            System.err.println("CountCache " + filename + " file '" + file
+            System.err.println(filename + " file '" + file
                     + "' does not exist or is not readable.");
             throw new Termination();
         }

@@ -46,7 +46,7 @@ public class CountCache {
     }
 
     /**
-     * Get the number of words in the countCache.
+     * Get the number of words in the corpus.
      *
      * Aka absolute count of skip.
      */
@@ -55,7 +55,7 @@ public class CountCache {
     }
 
     /**
-     * Get the vocabulary size (number of different words) of the countCache.
+     * Get the vocabulary size (number of different words) of the corpus.
      *
      * Aka continuation count of skip.
      */
@@ -120,8 +120,8 @@ public class CountCache {
         Map<String, Counter> patternCounters = continuationCounts.get(pattern);
         if (patternCounters == null) {
             throw new NullPointerException(
-                    "No continuation counts in countCache for pattern: " + pattern
-                    + ".");
+                    "No continuation counts in corpus for pattern: " + pattern
+                            + ".");
         }
         Counter counter = patternCounters.get(string);
         return counter == null ? new Counter() : counter;

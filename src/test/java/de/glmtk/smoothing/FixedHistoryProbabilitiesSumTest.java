@@ -39,7 +39,7 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
             TestCorpus testCorpus,
             int maxOrder,
             boolean conntinuationEstimator) {
-        LOGGER.info("# {} countCache", testCorpus.getCorpusName());
+        LOGGER.info("# {} corpus", testCorpus.getCorpusName());
 
         estimator.setCorpus(testCorpus.getCountCache());
 
@@ -62,11 +62,11 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                 switch (probMode) {
                     case COND:
                         NGram checkHistory =
-                        history.concat(NGram.SKIPPED_WORD_NGRAM);
+                                history.concat(NGram.SKIPPED_WORD_NGRAM);
                         if (conntinuationEstimator) {
                             checkHistory =
                                     NGram.SKIPPED_WORD_NGRAM
-                                    .concat(checkHistory);
+                                            .concat(checkHistory);
                         }
                         if (checkHistory.seen(testCorpus.getCountCache())) {
                             if (Math.abs(0.0 - sum) <= 0.01) {
