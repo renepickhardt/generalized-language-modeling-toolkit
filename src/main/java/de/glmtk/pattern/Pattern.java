@@ -3,10 +3,7 @@ package de.glmtk.pattern;
 import static de.glmtk.pattern.PatternElem.CNT;
 import static de.glmtk.pattern.PatternElem.DEL;
 import static de.glmtk.pattern.PatternElem.POS;
-import static de.glmtk.pattern.PatternElem.PSKP;
 import static de.glmtk.pattern.PatternElem.SKP;
-import static de.glmtk.pattern.PatternElem.WPOS;
-import static de.glmtk.pattern.PatternElem.WSKP;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -122,15 +119,15 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
 
     public boolean containsOnly(Collection<PatternElem> elems) {
         outerLoop:
-            for (PatternElem e : pattern) {
-            for (PatternElem e2 : elems) {
-                if (e.equals(e2)) {
-                    continue outerLoop;
+        for (PatternElem e : pattern) {
+                for (PatternElem e2 : elems) {
+                    if (e.equals(e2)) {
+                        continue outerLoop;
+                    }
                 }
+                return false;
             }
-            return false;
-        }
-    return true;
+        return true;
     }
 
     public boolean isAbsolute() {
@@ -140,14 +137,14 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
     public int numElems(Collection<PatternElem> elems) {
         int result = 0;
         outerLoop:
-        for (PatternElem e : pattern) {
-            for (PatternElem e2 : elems) {
-                if (e.equals(e2)) {
-                    ++result;
-                    continue outerLoop;
+            for (PatternElem e : pattern) {
+                for (PatternElem e2 : elems) {
+                    if (e.equals(e2)) {
+                        ++result;
+                        continue outerLoop;
+                    }
                 }
             }
-        }
         return result;
     }
 
@@ -285,61 +282,6 @@ public class Pattern implements Iterable<PatternElem>, Cloneable {
         }
 
         return patterns;
-    }
-
-    // Legacy //////////////////////////////////////////////////////////////////
-
-    @Deprecated
-    public String apply(Object[] words) {
-        StringBuilder result = new StringBuilder();
-
-        boolean first = true;
-        int i = 0;
-        for (PatternElem elem : pattern) {
-            if (elem != PatternElem.DEL) {
-                if (!first) {
-                    result.append(' ');
-                }
-                first = false;
-            }
-
-            result.append(elem.apply((String) words[i]));
-
-            ++i;
-        }
-
-        return result.toString();
-    }
-
-    @Deprecated
-    public boolean containsPos() {
-        for (PatternElem elem : pattern) {
-            if (elem.equals(PatternElem.POS)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Deprecated
-    public boolean containsSkp() {
-        return contains(Arrays.asList(SKP, WSKP, PSKP, WPOS));
-    }
-
-    @Deprecated
-    public static Pattern getContinuationSourcePattern(Pattern pattern) {
-        Pattern sourcePattern = pattern.clone();
-        for (int i = sourcePattern.length() - 1; i != -1; --i) {
-            PatternElem elem = sourcePattern.get(i);
-            if (elem.equals(PatternElem.WSKP)) {
-                sourcePattern.set(i, PatternElem.CNT);
-                break;
-            } else if (elem.equals(PatternElem.PSKP)) {
-                sourcePattern.set(i, PatternElem.POS);
-                break;
-            }
-        }
-        return sourcePattern;
     }
 
 }

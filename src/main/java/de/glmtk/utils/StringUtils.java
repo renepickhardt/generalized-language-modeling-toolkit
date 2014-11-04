@@ -107,30 +107,4 @@ public class StringUtils {
         return lineBuilder.toString();
     }
 
-    // Legacy //////////////////////////////////////////////////////////////////
-
-    // TODO: revert to receive String[] split.
-    @Deprecated
-    public static void generateWordsAndPos(
-            Object[] split,
-            String[] words,
-            String[] poses,
-            boolean withPos) {
-        for (int i = 0; i != split.length; ++i) {
-            String currentWord = (String) split[i];
-            if (withPos) {
-                int lastSlash = currentWord.lastIndexOf('/');
-                if (lastSlash == -1) {
-                    words[i] = currentWord;
-                    poses[i] = "UNKP"; // unkown POS, not part of any pos-tagset
-                } else {
-                    words[i] = currentWord.substring(0, lastSlash);
-                    poses[i] = currentWord.substring(lastSlash + 1);
-                }
-            } else {
-                words[i] = currentWord;
-            }
-        }
-    }
-
 }

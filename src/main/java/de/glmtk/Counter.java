@@ -65,12 +65,6 @@ public class Counter {
         return result.toString();
     }
 
-    @Deprecated
-    public String toString(String delimiter) {
-        return onePlusCount + delimiter + oneCount + delimiter + twoCount
-                + delimiter + threePlusCount;
-    }
-
     public long getOnePlusCount() {
         return onePlusCount;
     }
@@ -120,7 +114,7 @@ public class Counter {
         } else {
             throw new IllegalArgumentException(
                     "Couldn't not get Sequence and Counter of line '" + line
-                            + "'.");
+                    + "'.");
         }
         return split.get(0);
     }

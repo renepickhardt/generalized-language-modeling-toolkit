@@ -61,7 +61,7 @@ public class GlmtkNew extends Executable {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println("Missing corpus\n"
+            System.err.println("Missing corpus.\n"
                     + "Try 'glmtk-new --help' for more information.");
             throw new Termination();
         }
@@ -77,7 +77,7 @@ public class GlmtkNew extends Executable {
             Path trainingFile = getAndCheckCorpusFile(corpus, "training");
             if (line.hasOption(OPTION_OUTPUTDIR)) {
                 System.err
-                        .println("Can't specify output directory if using existing corpus as input.");
+                .println("Can't specify output directory if using existing corpus as input.");
                 throw new Termination();
             }
             outputDir = corpus;
