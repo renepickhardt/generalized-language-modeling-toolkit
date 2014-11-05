@@ -1,9 +1,14 @@
 package de.glmtk;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -17,6 +22,11 @@ import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.Tagger;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
+import de.glmtk.smoothing.CountCache;
+import de.glmtk.smoothing.NGramProbabilityCalculator;
+import de.glmtk.smoothing.ProbMode;
+import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.smoothing.estimator.Estimators;
 import de.glmtk.utils.StringUtils;
 
 public class Glmtk {
@@ -32,6 +42,20 @@ public class Glmtk {
 
     private Path workingDir = null;
 
+    private Path statusFile = null;
+
+    private Path trainingFile = null;
+
+    private Path absoluteDir = null;
+
+    private Path absoluteTmpDir = null;
+
+    private Path continuationDir = null;
+
+    private Path continuationTmpDir = null;
+
+    private Path testingDir = null;
+
     private List<Path> testingFiles = new LinkedList<Path>();
 
     public void setModel(Model model) {
@@ -44,6 +68,13 @@ public class Glmtk {
 
     public void setWorkingDir(Path workingDir) {
         this.workingDir = workingDir;
+        statusFile = workingDir.resolve("status");
+        trainingFile = workingDir.resolve("training");
+        absoluteDir = workingDir.resolve("absolute");
+        absoluteTmpDir = workingDir.resolve("absolute.tmp");
+        continuationDir = workingDir.resolve("continuation");
+        continuationTmpDir = workingDir.resolve("continuation.tmp");
+        testingDir = workingDir.resolve("testing");
     }
 
     public void addTestingFile(Path testingFile) {
@@ -54,13 +85,6 @@ public class Glmtk {
         if (!Files.exists(workingDir)) {
             Files.createDirectories(workingDir);
         }
-
-        Path statusFile = workingDir.resolve("status");
-        Path trainingFile = workingDir.resolve("training");
-        Path absoluteDir = workingDir.resolve("absolute");
-        Path absoluteTmpDir = workingDir.resolve("absolute.tmp");
-        Path continuationDir = workingDir.resolve("continuation");
-        Path continuationTmpDir = workingDir.resolve("continuation.tmp");
 
         Status status = new Status(statusFile, corpus);
         status.logStatus();
@@ -83,8 +107,8 @@ public class Glmtk {
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
                 neededAbsolutePatterns =
-                Pattern.getCombinations(5,
-                        Arrays.asList(PatternElem.CNT, PatternElem.SKP));
+                        Pattern.getCombinations(5,
+                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
                 neededContinuationPatterns =
                         Pattern.replaceTargetWithElems(neededAbsolutePatterns,
                                 PatternElem.SKP,
@@ -151,7 +175,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -160,6 +184,55 @@ public class Glmtk {
                         config.getNumberOfCores(), config.getUpdateInterval());
         continuationCounter.count(status, absoluteDir, absoluteTmpDir,
                 continuationDir, continuationTmpDir);
+    }
+
+    public void test() throws IOException {
+        if (testingFiles.isEmpty()) {
+            return;
+        }
+
+        Files.createDirectories(testingDir);
+
+        LOGGER.info("Loading counts into memory...");
+        CountCache countCache = new CountCache(workingDir);
+
+        Estimator estimator = getEstimatorFromModel(model);
+        estimator.setCountCache(countCache);
+
+        NGramProbabilityCalculator calculator =
+                new NGramProbabilityCalculator();
+        calculator.setProbMode(ProbMode.MARG);
+        calculator.setEstimator(estimator);
+
+        for (Path testingFile : testingFiles) {
+            test(testingFile);
+        }
+    }
+
+    private static Estimator getEstimatorFromModel(Model model) {
+        switch (model) {
+            case MODIFIED_KNESER_NEY:
+                return Estimators.MODIFIED_KNESER_NEY_ESIMATOR;
+
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
+    private void test(Path testingFile) throws IOException {
+        SimpleDateFormat dateFormat =
+                new SimpleDateFormat(" yyyy-MM-dd HH:mm:ss");
+        Path outputFile =
+                testingDir.resolve(testingFile.getFileName()
+                        + dateFormat.format(new Date()));
+        Files.deleteIfExists(outputFile);
+
+        try (BufferedReader reader =
+                Files.newBufferedReader(testingFile, Charset.defaultCharset());
+                BufferedWriter writer =
+                        Files.newBufferedWriter(outputFile,
+                                Charset.defaultCharset())) {
+        }
     }
 
 }

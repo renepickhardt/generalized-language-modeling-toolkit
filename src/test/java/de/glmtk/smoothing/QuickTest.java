@@ -14,7 +14,7 @@ public class QuickTest extends LoggingTest {
     @Test
     public void test() {
         Estimator e = Estimators.CMLE;
-        e.setCorpus(TestCorpus.ABC.getCountCache());
+        e.setCountCache(TestCorpus.ABC.getCountCache());
         e.setProbMode(ProbMode.COND);
         NGram history = new NGram(Arrays.asList("b", "a", "a"));
         NGram sequence = new NGram("b");

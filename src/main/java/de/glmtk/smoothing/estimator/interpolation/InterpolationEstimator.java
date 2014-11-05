@@ -29,11 +29,11 @@ public class InterpolationEstimator extends Estimator {
     }
 
     @Override
-    public void setCorpus(CountCache countCache) {
-        super.setCorpus(countCache);
-        alpha.setCorpus(countCache);
+    public void setCountCache(CountCache countCache) {
+        super.setCountCache(countCache);
+        alpha.setCountCache(countCache);
         if (beta != this) {
-            beta.setCorpus(countCache);
+            beta.setCountCache(countCache);
         }
     }
 
@@ -48,14 +48,15 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-    calcProbability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             logDebug(recDepth,
                     "history empty, returning fraction estimator probability");
             return alpha.getFractionEstimator().probability(sequence, history,
                     recDepth);
         } else {
-            NGram backoffHistory = history.backoffUntilSeen(probMode, countCache);
+            NGram backoffHistory =
+                    history.backoffUntilSeen(probMode, countCache);
             double alphaVal = alpha.probability(sequence, history, recDepth);
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);
@@ -90,7 +91,8 @@ public class InterpolationEstimator extends Estimator {
                 double d2 = a.getDiscount2(pattern);
                 double d3p = a.getDiscount3p(pattern);
 
-                Counter continuation = countCache.getContinuation(historyWithSkip);
+                Counter continuation =
+                        countCache.getContinuation(historyWithSkip);
                 double n1 = continuation.getOneCount();
                 double n2 = continuation.getTwoCount();
                 double n3p = continuation.getThreePlusCount();
@@ -103,12 +105,12 @@ public class InterpolationEstimator extends Estimator {
                 logDebug(recDepth, "n2      = {}", n2);
                 logDebug(recDepth, "n3p     = {}", n3p);
 
-                return (d1 * n1 + d2 * n2 * d3p * n3p) / denominator;
+                return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
             } else {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
                         countCache.getContinuation(historyWithSkip)
-                                .getOnePlusCount();
+                        .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);
                 logDebug(recDepth, "discount = {}", discout);

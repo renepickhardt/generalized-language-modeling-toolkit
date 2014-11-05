@@ -43,7 +43,7 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
             int maxOrder) {
         LOGGER.info("# {} corpus", testCorpus.getCorpusName());
 
-        estimator.setCorpus(testCorpus.getCountCache());
+        estimator.setCountCache(testCorpus.getCountCache());
 
         for (int order = 1; order != maxOrder + 1; ++order) {
             double sum = 0;

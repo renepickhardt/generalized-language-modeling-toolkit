@@ -30,11 +30,11 @@ public class BackoffEstimator extends Estimator {
     }
 
     @Override
-    public void setCorpus(CountCache countCache) {
-        super.setCorpus(countCache);
-        alpha.setCorpus(countCache);
+    public void setCountCache(CountCache countCache) {
+        super.setCountCache(countCache);
+        alpha.setCountCache(countCache);
         if (beta != this) {
-            beta.setCorpus(countCache);
+            beta.setCountCache(countCache);
         }
 
         gammaCache = new HashMap<NGram, Double>();

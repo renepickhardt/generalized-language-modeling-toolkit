@@ -38,9 +38,9 @@ public class CountCache {
             Arrays.asList(PatternElem.CNT));
 
     public CountCache(
-            Path outputDir) throws IOException {
-        Path absoluteDir = outputDir.resolve("absolute");
-        Path continuationDir = outputDir.resolve("continuation");
+            Path workingDir) throws IOException {
+        Path absoluteDir = workingDir.resolve("absolute");
+        Path continuationDir = workingDir.resolve("continuation");
         absoluteCounts = readAbsoluteCounts(absoluteDir);
         continuationCounts = readContinuationCounts(continuationDir);
     }

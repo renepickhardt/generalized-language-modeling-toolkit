@@ -11,8 +11,9 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     protected static final int HIGHEST_TEST_ORDER = 5;
 
     protected static final ProbMode[] probModeAll = {
-        ProbMode.COND, ProbMode.MARG
-    //ProbMode.MARG, ProbMode.COND
+        //ProbMode.COND, ProbMode.MARG
+        ProbMode.MARG
+    //, ProbMode.COND
             };
 
     protected static final ProbMode[] probModeOnlyCond = {

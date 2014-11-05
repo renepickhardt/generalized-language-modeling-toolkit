@@ -23,10 +23,10 @@ public class CombinationEstimator extends Estimator {
     }
 
     @Override
-    public void setCorpus(CountCache countCache) {
-        super.setCorpus(countCache);
-        alpha.setCorpus(countCache);
-        beta.setCorpus(countCache);
+    public void setCountCache(CountCache countCache) {
+        super.setCountCache(countCache);
+        alpha.setCountCache(countCache);
+        beta.setCountCache(countCache);
     }
 
     @Override

@@ -20,9 +20,9 @@ public abstract class DiscountEstimator extends FractionEstimator {
     }
 
     @Override
-    public void setCorpus(CountCache countCache) {
-        super.setCorpus(countCache);
-        fractionEstimator.setCorpus(countCache);
+    public void setCountCache(CountCache countCache) {
+        super.setCountCache(countCache);
+        fractionEstimator.setCountCache(countCache);
     }
 
     @Override

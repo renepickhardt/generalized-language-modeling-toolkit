@@ -167,20 +167,19 @@ import de.glmtk.pattern.PatternElem;
                 new LinkedList<ContinuationChunkerSequencingThread>();
         for (int i = 0; i != numSequencingThreads; ++i) {
             sequencingThreads.add(new ContinuationChunkerSequencingThread(this,
-                    status, sourcePatternsQueue,
-                    sourceToAggregatingQueue, absoluteCountedDir,
-                    absoluteChunkedDir, continuationCountedDir,
-                    continuationChunkedDir, readerMemory, updateInterval));
+                    status, sourcePatternsQueue, sourceToAggregatingQueue,
+                    absoluteCountedDir, absoluteChunkedDir,
+                    continuationCountedDir, continuationChunkedDir,
+                    readerMemory, updateInterval));
         }
 
         List<ContinuationChunkerAggregatingThread> aggregatingThreads =
                 new LinkedList<ContinuationChunkerAggregatingThread>();
         for (int i = 0; i != numAggregatingThreads; ++i) {
-            aggregatingThreads
-            .add(new ContinuationChunkerAggregatingThread(this,
-                    status,
-                    aggregatingQueues.get(i),
-                    aggregatingSourceToPattern.get(i), continuationChunkedDir, chunkSize));
+            aggregatingThreads.add(new ContinuationChunkerAggregatingThread(
+                    this, status, aggregatingQueues.get(i),
+                    aggregatingSourceToPattern.get(i), continuationChunkedDir,
+                    chunkSize));
         }
 
         // Launch Threads //////////////////////////////////////////////////////

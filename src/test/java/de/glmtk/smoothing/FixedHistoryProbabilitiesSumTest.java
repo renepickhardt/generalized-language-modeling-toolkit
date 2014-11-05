@@ -41,7 +41,7 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
             boolean conntinuationEstimator) {
         LOGGER.info("# {} corpus", testCorpus.getCorpusName());
 
-        estimator.setCorpus(testCorpus.getCountCache());
+        estimator.setCountCache(testCorpus.getCountCache());
 
         for (int order = 1; order != maxOrder + 1; ++order) {
             LOGGER.info("n={}", order);

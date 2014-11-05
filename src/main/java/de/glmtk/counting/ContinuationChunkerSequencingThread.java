@@ -91,14 +91,17 @@ import de.glmtk.utils.StringUtils;
                 }
 
                 boolean chunked = false;
+                boolean fromAbsolute = false;
                 Path input;
                 boolean isAbsolute = pattern.isAbsolute();
                 if (isAbsolute && status.getCounted(false).contains(pattern)) {
                     input = absoluteCountedDir;
+                    fromAbsolute = true;
                 } else if (isAbsolute
                         && status.getChunkedPatterns(false).contains(pattern)) {
                     input = absoluteChunkedDir;
                     chunked = true;
+                    fromAbsolute = true;
                 } else if (!isAbsolute
                         && status.getCounted(true).contains(pattern)) {
                     input = continuationCountedDir;
@@ -117,13 +120,14 @@ import de.glmtk.utils.StringUtils;
                 input = input.resolve(pattern.toString());
 
                 if (!chunked) {
-                    sequence(pattern, input, true);
+                    sequence(pattern, input, true, fromAbsolute);
                 } else {
                     try (DirectoryStream<Path> inputDirStream =
                             Files.newDirectoryStream(input)) {
                         Iterator<Path> i = inputDirStream.iterator();
                         while (i.hasNext()) {
-                            sequence(pattern, i.next(), !i.hasNext());
+                            sequence(pattern, i.next(), !i.hasNext(),
+                                    fromAbsolute);
                         }
                     }
                 }
@@ -136,8 +140,11 @@ import de.glmtk.utils.StringUtils;
         }
     }
 
-    private void sequence(Pattern pattern, Path inputFile, boolean lastFile)
-            throws IOException, InterruptedException {
+    private void sequence(
+            Pattern pattern,
+            Path inputFile,
+            boolean lastFile,
+            boolean fromAbsolute) throws IOException, InterruptedException {
         LOGGER.debug("Sequencing '{}' from '{}'.", pattern, inputFile);
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
@@ -151,9 +158,11 @@ import de.glmtk.utils.StringUtils;
                             line);
                     continue;
                 }
-                QueueItem item =
-                        new QueueItem(pattern, split.get(0), Long.valueOf(split
-                                .get(1)));
+
+                String sequence = split.get(0);
+                long count = fromAbsolute ? 1 : Long.valueOf(split.get(1));
+                QueueItem item = new QueueItem(pattern, sequence, count);
+
                 while (!aggregatingQueues.get(pattern).offer(item,
                         QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
                     LOGGER.trace("Idle, because queue full.");

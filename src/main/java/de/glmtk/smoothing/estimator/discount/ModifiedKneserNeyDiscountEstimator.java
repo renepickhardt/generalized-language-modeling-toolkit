@@ -24,8 +24,8 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
     }
 
     @Override
-    public void setCorpus(CountCache countCache) {
-        super.setCorpus(countCache);
+    public void setCountCache(CountCache countCache) {
+        super.setCountCache(countCache);
 
         // TODO calc discount
         discount1 = new HashMap<Pattern, Double>();

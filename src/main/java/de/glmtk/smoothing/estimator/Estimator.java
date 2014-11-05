@@ -24,11 +24,11 @@ public abstract class Estimator {
 
     protected ProbMode probMode = null;
 
-    public void setCorpus(CountCache countCache) {
+    public void setCountCache(CountCache countCache) {
         this.countCache = countCache;
 
         if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
-            SUBSTITUTE_ESTIMATOR.setCorpus(countCache);
+            SUBSTITUTE_ESTIMATOR.setCountCache(countCache);
         }
     }
 
