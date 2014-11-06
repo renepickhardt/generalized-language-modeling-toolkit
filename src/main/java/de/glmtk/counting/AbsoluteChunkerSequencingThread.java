@@ -142,6 +142,16 @@ import de.glmtk.utils.StringUtils;
             for (int p = 0; p <= words.length - patternLength; ++p) {
                 for (Pattern pattern : patterns) {
                     String sequence = pattern.apply(words, poses, p);
+
+                    if (sequence.equals("_ , i . _")) {
+                        StringBuilder context = new StringBuilder();
+                        for (int i = 0; i != patternLength; ++i) {
+                            context.append(words[p + i]);
+                            context.append(' ');
+                        }
+                        LOGGER.warn(context.toString());
+                    }
+
                     QueueItem item = new QueueItem(pattern, sequence);
                     while (!aggregatingQueues.get(pattern).offer(item,
                             QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {

@@ -8,7 +8,7 @@ import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.smoothing.estimator.Estimators;
 
-public abstract class AbstractEstimatorTest extends LoggingTest {
+public abstract class AbstractEstimatorTest extends TestCorporaTest {
 
     protected static final int HIGHEST_TEST_ORDER = 5;
 

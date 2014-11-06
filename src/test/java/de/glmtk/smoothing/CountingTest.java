@@ -13,21 +13,38 @@ import java.util.regex.Matcher;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.glmtk.Config;
 import de.glmtk.Counter;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.pattern.PatternElem;
-import de.glmtk.smoothing.helper.LoggingTest;
+import de.glmtk.smoothing.helper.TestCorporaTest;
 import de.glmtk.smoothing.helper.TestCorpus;
 import de.glmtk.utils.StringUtils;
 
-public class CountingTest extends LoggingTest {
+/**
+ * Checks whether counts present in count files are correct, but not if there
+ * are sequences missing.
+ */
+public class CountingTest extends TestCorporaTest {
 
     // TODO: extend for POS
 
     private static final Logger LOGGER = LogManager
-            .getLogger(CountingTest.class);
+            .getFormatterLogger(CountingTest.class);
+
+    private static Config config = null;
+
+    @BeforeClass
+    public static void loadConfig() {
+        LOGGER.info("Loading config...");
+        config = Config.get();
+    }
+
+    public static void loadTestCorpora() {
+    }
 
     @Test
     public void testAbc() throws IOException {
@@ -45,9 +62,10 @@ public class CountingTest extends LoggingTest {
     }
 
     private void testCounting(TestCorpus testCorpus) throws IOException {
-        LOGGER.info("===== {} corpus =====", testCorpus.getCorpusName());
+        LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
-        // Load corpus into memory
+        LOGGER.info("Loading corpus...");
+        long corpusSize = Files.size(testCorpus.getCorpus());
         List<String> corpusContents = new LinkedList<String>();
         try (BufferedReader reader =
                 Files.newBufferedReader(testCorpus.getCorpus(),
@@ -58,22 +76,33 @@ public class CountingTest extends LoggingTest {
             }
         }
 
+        LOGGER.info("Loading counts...");
         CountCache countCache = testCorpus.getCountCache();
-        testAbsoluteCounts(corpusContents, countCache.getAbsolute());
-        testContinuationCounts(corpusContents, countCache.getContinuation());
+
+        testAbsoluteCounts(corpusContents, corpusSize,
+                countCache.getAbsolute(), config.getUpdateInterval());
+        testContinuationCounts(corpusContents, corpusSize,
+                countCache.getContinuation(), config.getUpdateInterval());
     }
 
     private void testAbsoluteCounts(
             List<String> corpusContents,
-            Map<Pattern, Map<String, Long>> absoluteCounts) {
+            long corpusSize,
+            Map<Pattern, Map<String, Long>> absoluteCounts,
+            int updateInterval) {
         LOGGER.info("=== Absolute");
 
         for (Map.Entry<Pattern, Map<String, Long>> patternCounts : absoluteCounts
                 .entrySet()) {
             Pattern pattern = patternCounts.getKey();
-            LOGGER.info("# {}", pattern);
-
             Map<String, Long> counts = patternCounts.getValue();
+
+            LOGGER.info("# %s", pattern);
+
+            long readSize = 0;
+            long totalSize = corpusSize * counts.size();
+            long time = System.currentTimeMillis();
+
             for (Map.Entry<String, Long> sequenceCount : counts.entrySet()) {
                 String sequence = sequenceCount.getKey();
                 long count = sequenceCount.getValue();
@@ -81,9 +110,19 @@ public class CountingTest extends LoggingTest {
                 String regexString = sequenceToRegex(sequence);
                 java.util.regex.Pattern regex =
                         java.util.regex.Pattern.compile(regexString);
-                LOGGER.trace("  {} (regex='{}')", sequence, regexString);
+                LOGGER.trace("  %s (regex='%s')", sequence, regexString);
                 int numMatches = 0;
                 for (String line : corpusContents) {
+                    readSize += line.getBytes().length;
+                    if (updateInterval != 0) {
+                        long curTime = System.currentTimeMillis();
+                        if (curTime - time >= updateInterval) {
+                            time = curTime;
+                            LOGGER.info("%6.2f%%", 100.0f * readSize
+                                    / totalSize);
+                        }
+                    }
+
                     Matcher matcher = regex.matcher(line);
 
                     int numLineMatches = 0;
@@ -96,13 +135,13 @@ public class CountingTest extends LoggingTest {
 
                     numMatches += numLineMatches;
 
-                    LOGGER.trace("    {} ({})", line, numLineMatches);
+                    LOGGER.trace("    %s (%s)", line, numLineMatches);
                 }
 
                 if (count != numMatches) {
-                    LOGGER.debug("{} (count={}, matches={})", sequence, count,
+                    LOGGER.debug("{} (count=%s, matches=%s)", sequence, count,
                             numMatches);
-                    assertEquals(count, numMatches);
+                    assertEquals(numMatches, count);
                 }
             }
         }
@@ -110,7 +149,9 @@ public class CountingTest extends LoggingTest {
 
     private void testContinuationCounts(
             List<String> corpusContents,
-            Map<Pattern, Map<String, Counter>> continuationCounts) {
+            long corpusSize,
+            Map<Pattern, Map<String, Counter>> continuationCounts,
+            int updateInterval) {
         LOGGER.info("=== Continuation");
     }
 
@@ -125,7 +166,7 @@ public class CountingTest extends LoggingTest {
             }
 
             if (!word.equals(PatternElem.SKIPPED_WORD)) {
-                regex.append(word);
+                regex.append(word.replaceAll("[^\\w ]", "\\\\$0"));
             } else {
                 regex.append("\\S+");
             }

@@ -111,7 +111,7 @@ import de.glmtk.utils.StatisticalNumberHelper;
                             curChunks, mergeFile);
 
                     for (Path chunk : curChunks) {
-                        Files.delete(patternDir.resolve(chunk));
+                        //Files.delete(patternDir.resolve(chunk));
                     }
 
                     ++mergeCounter;
@@ -169,7 +169,10 @@ import de.glmtk.utils.StatisticalNumberHelper;
                 Counter c = reader.getCounter();
 
                 if (s.equals(sequence)) {
-                    counter.add(counter);
+                    if (sequence.equals("_ , i . _")) {
+                        LOGGER.error("counter is {}", counter);
+                    }
+                    counter.add(c);
                 } else {
                     if (sequence != null) {
                         writer.write(sequence);

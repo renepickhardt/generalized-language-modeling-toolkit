@@ -21,6 +21,10 @@ public class QuickTest extends LoggingTest {
         NGram sequence = new NGram("b");
         System.out.println(history.seen(TestCorpus.ABC.getCountCache()));
         System.out.println(e.probability(sequence, history));
+
+        String a = "bbad asoim an *! . \\, adv. $*";
+        System.out.println(a);
+        System.out.println(a.replaceAll("[^\\w ]", "\\\\$0"));
     }
 
 }
