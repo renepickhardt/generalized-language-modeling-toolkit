@@ -1,5 +1,7 @@
 package de.glmtk.smoothing.helper;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import de.glmtk.smoothing.ProbMode;
@@ -29,19 +31,19 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     // Substitute Estimators
 
     @Test
-    public void testUniform() {
+    public void testUniform() throws IOException {
         testEstimator("Uniform", Estimators.UNIFORM, probModeOnlyMarg,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testAbsUnigram() {
+    public void testAbsUnigram() throws IOException {
         testEstimator("AbsUnigram", Estimators.ABS_UNIGRAM, probModeOnlyMarg,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testContUnigram() {
+    public void testContUnigram() throws IOException {
         testEstimator("ContUnigram", Estimators.CONT_UNIGRAM, probModeOnlyMarg,
                 HIGHEST_TEST_ORDER - 1, false);
     }
@@ -49,19 +51,19 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     // Fractions Estimators
 
     @Test
-    public void testMLE() {
+    public void testMLE() throws IOException {
         testEstimator("MLE", Estimators.MLE, probModeAll, HIGHEST_TEST_ORDER,
                 false);
     }
 
     @Test
-    public void testFMLE() {
+    public void testFMLE() throws IOException {
         testEstimator("FMLE", Estimators.FMLE, probModeOnlyMarg,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testCMLE() {
+    public void testCMLE() throws IOException {
         testEstimator("CMLE", Estimators.CMLE, probModeAll,
                 HIGHEST_TEST_ORDER - 1, true);
     }
@@ -69,13 +71,13 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     // Backoff Estimators
 
     @Test
-    public void testBackoffCmle() {
+    public void testBackoffCmle() throws IOException {
         testEstimator("BackoffCmle", Estimators.BACKOFF_CMLE, probModeAll,
                 HIGHEST_TEST_ORDER - 1, true);
     }
 
     @Test
-    public void testBackoffCmleRec() {
+    public void testBackoffCmleRec() throws IOException {
         testEstimator("BackoffCmleRec", Estimators.BACKOFF_CMLE_REC,
                 probModeAll, HIGHEST_TEST_ORDER - 1, true);
     }
@@ -83,14 +85,14 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     // Interpolation Estimators
 
     @Test
-    public void testInterpolAbsDiscountMle() {
+    public void testInterpolAbsDiscountMle() throws IOException {
         testEstimator("InterpolAbsDiscountMle",
                 Estimators.INTERPOL_ABS_DISCOUNT_MLE, probModeAll,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testInterpolAbsDiscountMleRec() {
+    public void testInterpolAbsDiscountMleRec() throws IOException {
         testEstimator("InterpolAbsDiscountMleRec",
                 Estimators.INTERPOL_ABS_DISCOUNT_MLE_REC, probModeAll,
                 HIGHEST_TEST_ORDER, false);
@@ -99,7 +101,7 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
     // Combination Estimators
 
     @Test
-    public void testCombMleCmle() {
+    public void testCombMleCmle() throws IOException {
         testEstimator("CombMleCmle", Estimators.COMB_MLE_CMLE,
                 probModeOnlyMarg, HIGHEST_TEST_ORDER - 1, true);
     }
@@ -109,6 +111,6 @@ public abstract class AbstractEstimatorTest extends LoggingTest {
             Estimator estimator,
             ProbMode[] probModes,
             int maxOrder,
-            boolean continuationEstimator);
+            boolean continuationEstimator) throws IOException;
 
 }

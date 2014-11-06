@@ -1,5 +1,6 @@
 package de.glmtk.smoothing;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +22,7 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
             Estimator estimator,
             ProbMode[] probModes,
             int maxOrder,
-            boolean continuationEstimator) {
+            boolean continuationEstimator) throws IOException {
         LOGGER.info("===== {} =====", estimatorName);
         for (ProbMode probMode : probModes) {
             LOGGER.info("=== {}", probMode);
@@ -38,7 +39,7 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
             ProbMode probMode,
             TestCorpus testCorpus,
             int maxOrder,
-            boolean conntinuationEstimator) {
+            boolean conntinuationEstimator) throws IOException {
         LOGGER.info("# {} corpus", testCorpus.getCorpusName());
 
         estimator.setCountCache(testCorpus.getCountCache());

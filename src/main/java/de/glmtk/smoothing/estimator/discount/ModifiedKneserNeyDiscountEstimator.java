@@ -46,7 +46,7 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
 
     @Override
     protected double calcDiscount(NGram sequence, NGram history, int recDepth) {
-        switch (countCache.getAbsolute(history)) {
+        switch ((int) countCache.getAbsolute(history)) {
             case 0:
                 return 0;
             case 1:

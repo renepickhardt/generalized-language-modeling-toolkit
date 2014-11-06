@@ -1,5 +1,6 @@
 package de.glmtk.smoothing;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +22,7 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
             Estimator estimator,
             ProbMode[] probModes,
             int maxOrder,
-            boolean continuationEstimator) {
+            boolean continuationEstimator) throws IOException {
         LOGGER.info("===== {} =====", estimatorName);
         NGramProbabilityCalculator calculator =
                 new NGramProbabilityCalculator();
@@ -40,7 +41,7 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
             Estimator estimator,
             NGramProbabilityCalculator calculator,
             TestCorpus testCorpus,
-            int maxOrder) {
+            int maxOrder) throws IOException {
         LOGGER.info("# {} corpus", testCorpus.getCorpusName());
 
         estimator.setCountCache(testCorpus.getCountCache());

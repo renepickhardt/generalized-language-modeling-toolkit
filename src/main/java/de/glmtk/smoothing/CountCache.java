@@ -21,10 +21,10 @@ import de.glmtk.utils.StringUtils;
 
 public class CountCache {
 
-    private Map<Pattern, Map<Integer, Integer>> nGramTimesCountCache =
-            new HashMap<Pattern, Map<Integer, Integer>>();
+    private Map<Pattern, Map<Integer, Long>> nGramTimesCountCache =
+            new HashMap<Pattern, Map<Integer, Long>>();
 
-    private Map<Pattern, Map<String, Integer>> absoluteCounts;
+    private Map<Pattern, Map<String, Long>> absoluteCounts;
 
     private Map<Pattern, Map<String, Counter>> continuationCounts;
 
@@ -50,7 +50,7 @@ public class CountCache {
      *
      * Aka absolute count of skip.
      */
-    public int getNumWords() {
+    public long getNumWords() {
         return getAbsolute(SKIPPED_LIST);
     }
 
@@ -71,18 +71,18 @@ public class CountCache {
      * @return The total number of n-grams with {@code pattern} which appear
      *         exactly {@code times} often in the training data.
      */
-    public int getNGramTimesCount(Pattern pattern, int times) {
+    public long getNGramTimesCount(Pattern pattern, int times) {
         // TODO: check if is getOneCount from ContinuationCounts.
-        Map<Integer, Integer> patternCache = nGramTimesCountCache.get(pattern);
+        Map<Integer, Long> patternCache = nGramTimesCountCache.get(pattern);
         if (patternCache == null) {
-            patternCache = new HashMap<Integer, Integer>();
+            patternCache = new HashMap<Integer, Long>();
             nGramTimesCountCache.put(pattern, patternCache);
         }
 
-        Integer count = patternCache.get(times);
+        Long count = patternCache.get(times);
         if (count == null) {
-            count = 0;
-            for (int absoluteCount : absoluteCounts.get(pattern).values()) {
+            count = 0L;
+            for (long absoluteCount : absoluteCounts.get(pattern).values()) {
                 if (absoluteCount == times) {
                     ++count;
                 }
@@ -93,16 +93,20 @@ public class CountCache {
         return count;
     }
 
-    public int getAbsolute(NGram sequence) {
+    public long getAbsolute(NGram sequence) {
         return getAbsolute(sequence.toList());
     }
 
-    public int getAbsolute(List<String> sequence) {
+    public long getAbsolute(List<String> sequence) {
         Pattern pattern = getPattern(sequence);
         String string = StringUtils.join(sequence, " ");
-        Map<String, Integer> patternCounts = absoluteCounts.get(pattern);
-        Integer count = patternCounts.get(string);
+        Map<String, Long> patternCounts = absoluteCounts.get(pattern);
+        Long count = patternCounts.get(string);
         return count == null ? 0 : count;
+    }
+
+    public Map<Pattern, Map<String, Long>> getAbsolute() {
+        return absoluteCounts;
     }
 
     public Counter getContinuation(NGram sequence) {
@@ -121,13 +125,17 @@ public class CountCache {
         if (patternCounters == null) {
             throw new NullPointerException(
                     "No continuation counts in corpus for pattern: " + pattern
-                            + ".");
+                    + ".");
         }
         Counter counter = patternCounters.get(string);
         return counter == null ? new Counter() : counter;
     }
 
-    private Pattern getPattern(List<String> sequence) {
+    public Map<Pattern, Map<String, Counter>> getContinuation() {
+        return continuationCounts;
+    }
+
+    private static Pattern getPattern(List<String> sequence) {
         List<PatternElem> patternElems =
                 new ArrayList<PatternElem>(sequence.size());
         for (String word : sequence) {
@@ -140,17 +148,17 @@ public class CountCache {
         return new Pattern(patternElems);
     }
 
-    private Map<Pattern, Map<String, Integer>> readAbsoluteCounts(
+    private static Map<Pattern, Map<String, Long>> readAbsoluteCounts(
             Path absoluteDir) throws IOException {
-        Map<Pattern, Map<String, Integer>> absoluteCounts =
-                new HashMap<Pattern, Map<String, Integer>>();
+        Map<Pattern, Map<String, Long>> absoluteCounts =
+                new HashMap<Pattern, Map<String, Long>>();
 
         try (DirectoryStream<Path> absolutePatterns =
                 Files.newDirectoryStream(absoluteDir)) {
             for (Path absolutePattern : absolutePatterns) {
                 Pattern pattern =
                         new Pattern(absolutePattern.getFileName().toString());
-                Map<String, Integer> counts = new HashMap<String, Integer>();
+                Map<String, Long> counts = new HashMap<String, Long>();
                 absoluteCounts.put(pattern, counts);
 
                 try (BufferedReader reader =
@@ -162,7 +170,7 @@ public class CountCache {
                                 StringUtils.splitAtChar(line, '\t').toArray(
                                         new String[0]);
                         String sequence = split[0];
-                        int count = Integer.parseInt(split[1]);
+                        long count = Long.parseLong(split[1]);
                         counts.put(sequence, count);
                     }
                 }
@@ -172,7 +180,7 @@ public class CountCache {
         return absoluteCounts;
     }
 
-    private Map<Pattern, Map<String, Counter>> readContinuationCounts(
+    private static Map<Pattern, Map<String, Counter>> readContinuationCounts(
             Path continuationDir) throws IOException {
         Map<Pattern, Map<String, Counter>> continuationCounts =
                 new HashMap<Pattern, Map<String, Counter>>();

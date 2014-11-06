@@ -17,12 +17,13 @@ import de.glmtk.utils.StringUtils;
 
 public class TestCorpus {
 
-    public static final TestCorpus ABC, MOBY_DICK;
+    public static final TestCorpus ABC, MOBY_DICK, EN0008T;
 
     static {
         try {
             ABC = new TestCorpus("ABC");
             MOBY_DICK = new TestCorpus("MobyDick");
+            EN0008T = new TestCorpus("en0008t");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Static class initalization failed", e);
         }
@@ -30,30 +31,31 @@ public class TestCorpus {
 
     private String corpusName = null;
 
+    private Path corpus = null;
+
     private Path workingDir = null;
 
     private CountCache countCache = null;
 
     private TestCorpus(
-            String name) throws IOException, InterruptedException {
-        this(name, Constants.TEST_RESSOURCES_DIR.resolve(name.toLowerCase()
-                + ".txt"), Constants.TEST_RESSOURCES_DIR.resolve(name
-                        .toLowerCase()));
+            String corpusName) throws IOException, InterruptedException {
+        this(corpusName, Constants.TEST_RESSOURCES_DIR.resolve(corpusName
+                .toLowerCase()), Constants.TEST_RESSOURCES_DIR
+                .resolve(corpusName.toLowerCase() + ".out"));
     }
 
     private TestCorpus(
-            String name,
+            String corpusName,
             Path corpus,
             Path workingDir) throws IOException, InterruptedException {
-        corpusName = name;
+        this.corpusName = corpusName;
+        this.corpus = corpus;
         this.workingDir = workingDir;
 
         Glmtk glmtk = new Glmtk();
         glmtk.setCorpus(corpus);
         glmtk.setWorkingDir(workingDir);
         glmtk.count();
-
-        countCache = new CountCache(workingDir);
 
         //        workingDir = output;
         //
@@ -108,7 +110,23 @@ public class TestCorpus {
         return corpusName;
     }
 
-    public CountCache getCountCache() {
+    public Path getCorpus() {
+        return corpus;
+    }
+
+    public Path getWorkingDir() {
+        return workingDir;
+    }
+
+    /**
+     * Lazily loaded.
+     * 
+     * @throws IOException
+     */
+    public CountCache getCountCache() throws IOException {
+        if (countCache == null) {
+            countCache = new CountCache(workingDir);
+        }
         return countCache;
     }
 

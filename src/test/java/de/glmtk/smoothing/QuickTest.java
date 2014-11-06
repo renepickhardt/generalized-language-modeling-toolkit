@@ -1,5 +1,6 @@
 package de.glmtk.smoothing;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
@@ -12,7 +13,7 @@ import de.glmtk.smoothing.helper.TestCorpus;
 public class QuickTest extends LoggingTest {
 
     @Test
-    public void test() {
+    public void test() throws IOException {
         Estimator e = Estimators.CMLE;
         e.setCountCache(TestCorpus.ABC.getCountCache());
         e.setProbMode(ProbMode.COND);
