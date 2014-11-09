@@ -53,6 +53,7 @@ import de.glmtk.utils.StringUtils;
             exec();
             printLogFooter();
         } catch (Termination e) {
+            System.err.println(e.getMessage());
             // Terminate
         } catch (Exception e) {
             try (StringWriter stackTrace = new StringWriter();
@@ -78,8 +79,7 @@ import de.glmtk.utils.StringUtils;
             CommandLineParser parser = new PosixParser();
             line = parser.parse(options, args);
         } catch (ParseException e) {
-            System.err.println(e.getMessage());
-            throw new Termination();
+            throw new Termination(e.getMessage());
         }
 
         if (line.hasOption(OPTION_VERSION)) {

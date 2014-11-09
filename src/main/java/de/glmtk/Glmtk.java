@@ -26,10 +26,14 @@ import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGramProbabilityCalculator;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
-import de.glmtk.smoothing.estimator.Estimators;
 import de.glmtk.utils.StringUtils;
 
 public class Glmtk {
+
+    // TODO: Output should be empty if a phase is skipped
+    // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning
+    // up in en0008t corpus absolute 11111 counts.
+    // TODO: Detect ngram model length from testing.
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Glmtk.class);
@@ -103,6 +107,7 @@ public class Glmtk {
 
         // TODO: optimize to only count needed patterns for KN and MKN.
         switch (model) {
+            case MAXIMUM_LIKELIHOOD:
             case KNESER_NEY:
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
@@ -196,7 +201,8 @@ public class Glmtk {
         LOGGER.info("Loading counts into memory...");
         CountCache countCache = new CountCache(workingDir);
 
-        Estimator estimator = getEstimatorFromModel(model);
+        LOGGER.info("Loading model '%s'...", model.getName());
+        Estimator estimator = model.getEstimator();
         estimator.setCountCache(countCache);
 
         NGramProbabilityCalculator calculator =
@@ -205,33 +211,60 @@ public class Glmtk {
         calculator.setEstimator(estimator);
 
         for (Path testingFile : testingFiles) {
-            test(testingFile);
+            test(calculator, testingFile);
         }
     }
 
-    private static Estimator getEstimatorFromModel(Model model) {
-        switch (model) {
-            case MODIFIED_KNESER_NEY:
-                return Estimators.MODIFIED_KNESER_NEY_ESIMATOR;
-
-            default:
-                throw new UnsupportedOperationException();
-        }
-    }
-
-    private void test(Path testingFile) throws IOException {
+    private void test(NGramProbabilityCalculator calculator, Path testingFile)
+            throws IOException {
         SimpleDateFormat dateFormat =
                 new SimpleDateFormat(" yyyy-MM-dd HH:mm:ss");
         Path outputFile =
-                testingDir.resolve(testingFile.getFileName()
+                testingDir.resolve(testingFile.getFileName() + " "
+                        + model.getAbbreviation()
                         + dateFormat.format(new Date()));
         Files.deleteIfExists(outputFile);
+
+        LOGGER.info("Testing '%s' -> '%s'.", testingFile, outputFile);
 
         try (BufferedReader reader =
                 Files.newBufferedReader(testingFile, Charset.defaultCharset());
                 BufferedWriter writer =
                         Files.newBufferedWriter(outputFile,
                                 Charset.defaultCharset())) {
+            int cntZero = 0;
+            int cntNonZero = 0;
+            double sumProbabilities = 0;
+            double entropy = 0;
+            double logBase = Math.log(Constants.LOG_BASE);
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                double probability =
+                        calculator.probability(StringUtils.splitAtChar(line,
+                                ' '));
+
+                if (probability == 0) {
+                    ++cntZero;
+                } else {
+                    ++cntNonZero;
+                    sumProbabilities += probability;
+                    entropy -= Math.log(probability) / logBase;
+                }
+
+                writer.append(line);
+                writer.append('\t');
+                writer.append(Double.toString(probability));
+                writer.append('\n');
+            }
+
+            LOGGER.info("Count Zero-Propablity Sequences = %s (%6.2f%%)",
+                    cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
+            LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
+                    cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
+                    * 100);
+            LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
+            LOGGER.info("Entropy = %s", entropy);
         }
     }
 

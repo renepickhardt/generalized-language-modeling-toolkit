@@ -1,7 +1,12 @@
 package de.glmtk.executables;
 
+import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
+import static de.glmtk.utils.NioUtils.CheckFile.IS_DIRECTORY;
+import static de.glmtk.utils.NioUtils.CheckFile.IS_NO_DIRECTORY;
+import static de.glmtk.utils.NioUtils.CheckFile.IS_READABLE;
+import static de.glmtk.utils.NioUtils.CheckFile.IS_REGULAR_FILE;
+
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -13,7 +18,9 @@ import de.glmtk.Glmtk;
 import de.glmtk.Model;
 import de.glmtk.Termination;
 import de.glmtk.utils.Logging;
+import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.StatisticalNumberHelper;
+import de.glmtk.utils.StringUtils;
 
 public class GlmtkExecutable extends Executable {
 
@@ -30,9 +37,16 @@ public class GlmtkExecutable extends Executable {
         Option version    = new Option("v", OPTION_VERSION,    false, "Print the version information and exit.");
         Option workingDir = new Option("w", OPTION_WORKINGDIR, true,  "Working directory.");
         workingDir.setArgName("WORKINGDIR");
-        Option model      = new Option("m", OPTION_MODEL,      true,  "KN  - Kneser Ney\n" +
-                "MKN - Modified Kneser Ney\n" +
-                "GLM - Generalized Language Model");
+        StringBuilder modelOptDesc = new StringBuilder();
+        for (Model model : Model.values()) {
+            String abbreviation = model.getAbbreviation();
+            modelOptDesc.append(abbreviation);
+            modelOptDesc.append(StringUtils.repeat(" ", 4 - abbreviation.length()));
+            modelOptDesc.append("- ");
+            modelOptDesc.append(model.getName());
+            modelOptDesc.append(".\n");
+        }
+        Option model      = new Option("m", OPTION_MODEL,      true,  modelOptDesc.toString());
         model.setArgName("MODEL");
         Option testing    = new Option("t", OPTION_TESTING,    true,  "File to take testing sequences for probability and entropy from (can be specified multiple times).");
         testing.setArgName("TESTING");
@@ -63,26 +77,23 @@ public class GlmtkExecutable extends Executable {
         super.parseArguments(args);
 
         if (line.getArgs() == null || line.getArgs().length == 0) {
-            System.err.println("Missing input.\n"
+            throw new Termination("Missing input.\n"
                     + "Try 'glmtk --help' for more information.");
-            throw new Termination();
         }
 
         Path inputArg = Paths.get(line.getArgs()[0]);
-        if (!(Files.exists(inputArg) && Files.isReadable(inputArg))) {
-            System.err.println("Input file/dir '" + inputArg
+        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE)) {
+            throw new Termination("Input file/dir '" + inputArg
                     + "' does not exist or is not readable.");
-            throw new Termination();
         }
 
         Path workingDir = null, corpus = null;
-        if (Files.isDirectory(inputArg)) {
+        if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
             if (line.hasOption(OPTION_WORKINGDIR)) {
-                System.err
-                        .println("Can't use --"
-                        + OPTION_WORKINGDIR
-                        + " (-w) argument if using existing working directory as input.");
-                throw new Termination();
+                throw new Termination(
+                        "Can't use --"
+                                + OPTION_WORKINGDIR
+                                + " (-w) argument if using existing working directory as input.");
             }
 
             workingDir = inputArg;
@@ -94,7 +105,7 @@ public class GlmtkExecutable extends Executable {
             } else {
                 workingDir = Paths.get(inputArg + ".out");
             }
-            if (Files.exists(workingDir) && !Files.isDirectory(workingDir)) {
+            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
                 System.err.println("Working directory '" + workingDir
                         + "' already exists but is not a directory.");
             }
@@ -106,37 +117,34 @@ public class GlmtkExecutable extends Executable {
         this.workingDir = workingDir;
 
         if (line.hasOption(OPTION_MODEL)) {
-            switch (line.getOptionValue(OPTION_MODEL).toUpperCase()) {
-                case "KN":
-                    glmtk.setModel(Model.KNESER_NEY);
-                    break;
-                case "MKN":
-                    glmtk.setModel(Model.MODIFIED_KNESER_NEY);
-                    break;
-                case "GLM":
-                    glmtk.setModel(Model.GENERALIZED_LANGUAGE_MODEL);
-                    break;
-
-                default:
-                    System.err.println("Unkown model option '"
-                            + line.getOptionValue(OPTION_MODEL) + "'.");
-                    throw new Termination();
+            Model model =
+                    Model.fromAbbreviation(line.getOptionValue(OPTION_MODEL)
+                            .toUpperCase());
+            if (model == null) {
+                throw new Termination("Unkown model option '"
+                        + line.getOptionValue(OPTION_MODEL) + "'.");
             }
+            glmtk.setModel(model);
         }
 
         if (line.hasOption(OPTION_TESTING)) {
             for (String testingFile : line.getOptionValues(OPTION_TESTING)) {
-                glmtk.addTestingFile(Paths.get(testingFile.trim()));
+                Path path = Paths.get(testingFile.trim());
+                if (!NioUtils.checkFile(path, EXISTS, IS_READABLE,
+                        IS_REGULAR_FILE)) {
+                    throw new Termination("Testing file '" + path
+                            + "' does not exist or is not readable.");
+                }
+                glmtk.addTestingFile(path);
             }
         }
     }
 
     private Path getAndCheckCorpusFile(Path workingDir, String filename) {
         Path file = workingDir.resolve(filename);
-        if (!(Files.exists(file) && Files.isReadable(file))) {
-            System.err.println(filename + " file '" + file
+        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE)) {
+            throw new Termination(filename + " file '" + file
                     + "' does not exist or is not readable.");
-            throw new Termination();
         }
         return file;
     }
@@ -150,95 +158,9 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void exec() throws IOException {
         glmtk.count();
+        glmtk.test();
 
-        // Testing /////////////////////////////////////////////////////////////
-
-        //        if (!testing.isEmpty()) {
-        //            testing(absoluteDir, continuationDir, testingDir);
-        //        }
-
-        // Used for debugging. Will only print output if averages are added
-        // somewhere else in the code.
         StatisticalNumberHelper.print();
     }
 
-    //    private void
-    //    testing(Path absoluteDir, Path continuationDir, Path testingDir)
-    //            throws IOException {
-    //        Files.createDirectories(testingDir);
-    //
-    //        LOGGER.info("Loading counts into memory...");
-    //        CountCache countCache = new CountCache(absoluteDir, continuationDir);
-    //
-    //        Estimator estimator = null;
-    //        switch (model) {
-    //            case MODIFIED_KNESER_NEY:
-    //                estimator = Estimators.INTERPOL_ABS_DISCOUNT_MLE_REC;
-    //                //estimator = Estimators.MODIFIED_KNESER_NEY_ESIMATOR;
-    //                break;
-    //            default:
-    //                throw new UnsupportedOperationException();
-    //        }
-    //        estimator.setCorpus(countCache);
-    //
-    //        NGramProbabilityCalculator calculator =
-    //                new NGramProbabilityCalculator();
-    //        calculator.setProbMode(ProbMode.MARG);
-    //        calculator.setEstimator(estimator);
-    //
-    //        for (Path testingFile : testing) {
-    //            SimpleDateFormat format =
-    //                    new SimpleDateFormat(" yyyy-MM-dd HH:mm:ss");
-    //            Path outputFile =
-    //                    testingDir.resolve(testingFile.getFileName()
-    //                            + format.format(new Date()));
-    //            Files.deleteIfExists(outputFile);
-    //
-    //            LOGGER.info("Testing File: '%s' -> '%s'.", testingFile, outputFile);
-    //
-    //            try (BufferedReader reader =
-    //                    Files.newBufferedReader(testingFile,
-    //                            Charset.defaultCharset());
-    //                    BufferedWriter writer =
-    //                            Files.newBufferedWriter(outputFile,
-    //                                    Charset.defaultCharset())) {
-    //                int cntZero = 0;
-    //                int cntNonZero = 0;
-    //                double sumProbabilities = 0;
-    //                double entropy = 0;
-    //                double logBase = Math.log(Constants.LOG_BASE);
-    //
-    //                String line;
-    //                while ((line = reader.readLine()) != null) {
-    //                    double probability =
-    //                            calculator.probability(StringUtils.splitAtChar(
-    //                                    line, ' '));
-    //
-    //                    if (probability == 0) {
-    //                        ++cntZero;
-    //                    } else {
-    //                        ++cntNonZero;
-    //                        sumProbabilities += probability;
-    //                        entropy -= Math.log(probability) / logBase;
-    //                    }
-    //
-    //                    writer.append(line);
-    //                    writer.append('\t');
-    //                    writer.append(((Double) probability).toString());
-    //                    writer.append('\n');
-    //                }
-    //
-    //                LOGGER.info("Count Zero-Propablity Sequences = %s (%6.2f%%)",
-    //                        cntZero, (double) cntZero / (cntZero + cntNonZero)
-    //                                * 100);
-    //                LOGGER.info(
-    //                        "Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
-    //                        cntNonZero, (double) cntNonZero
-    //                                / (cntZero + cntNonZero) * 100);
-    //                LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
-    //                LOGGER.info("Entropy = %s", entropy);
-    //
-    //            }
-    //        }
-    //    }
 }
