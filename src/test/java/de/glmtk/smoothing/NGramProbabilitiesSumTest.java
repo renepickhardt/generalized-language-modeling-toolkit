@@ -20,21 +20,18 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
     protected void testEstimator(
             String estimatorName,
             Estimator estimator,
-            ProbMode[] probModes,
+            ProbMode probMode,
             int maxOrder,
             boolean continuationEstimator) throws IOException {
-        LOGGER.info("===== {} =====", estimatorName);
+        LOGGER.info("===== {} ({}) =====", estimatorName, probMode);
         NGramProbabilityCalculator calculator =
                 new NGramProbabilityCalculator();
         calculator.setEstimator(estimator);
-        for (ProbMode probMode : probModes) {
-            LOGGER.info("=== {}", probMode);
-            calculator.setProbMode(probMode);
-            testEstimatorCalculatorCorpus(estimator, calculator,
-                    TestCorpus.ABC, maxOrder);
-            testEstimatorCalculatorCorpus(estimator, calculator,
-                    TestCorpus.MOBY_DICK, maxOrder);
-        }
+        calculator.setProbMode(probMode);
+        testEstimatorCalculatorCorpus(estimator, calculator, TestCorpus.ABC,
+                maxOrder);
+        testEstimatorCalculatorCorpus(estimator, calculator,
+                TestCorpus.MOBY_DICK, maxOrder);
     }
 
     private void testEstimatorCalculatorCorpus(
@@ -42,7 +39,7 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
             NGramProbabilityCalculator calculator,
             TestCorpus testCorpus,
             int maxOrder) throws IOException {
-        LOGGER.info("# {} corpus", testCorpus.getCorpusName());
+        LOGGER.info("=== {} corpus", testCorpus.getCorpusName());
 
         estimator.setCountCache(testCorpus.getCountCache());
 

@@ -20,18 +20,15 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
     protected void testEstimator(
             String estimatorName,
             Estimator estimator,
-            ProbMode[] probModes,
+            ProbMode probMode,
             int maxOrder,
             boolean continuationEstimator) throws IOException {
-        LOGGER.info("===== {} =====", estimatorName);
-        for (ProbMode probMode : probModes) {
-            LOGGER.info("=== {}", probMode);
-            estimator.setProbMode(probMode);
-            testEstimatorCorpus(estimator, probMode, TestCorpus.ABC, maxOrder,
-                    continuationEstimator);
-            testEstimatorCorpus(estimator, probMode, TestCorpus.MOBY_DICK,
-                    maxOrder, continuationEstimator);
-        }
+        LOGGER.info("===== {} ({}) =====", estimatorName, probMode);
+        estimator.setProbMode(probMode);
+        testEstimatorCorpus(estimator, probMode, TestCorpus.ABC, maxOrder,
+                continuationEstimator);
+        testEstimatorCorpus(estimator, probMode, TestCorpus.MOBY_DICK,
+                maxOrder, continuationEstimator);
     }
 
     private void testEstimatorCorpus(
@@ -40,7 +37,7 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
             TestCorpus testCorpus,
             int maxOrder,
             boolean conntinuationEstimator) throws IOException {
-        LOGGER.info("# {} corpus", testCorpus.getCorpusName());
+        LOGGER.info("=== {} corpus", testCorpus.getCorpusName());
 
         estimator.setCountCache(testCorpus.getCountCache());
 
@@ -63,11 +60,11 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                 switch (probMode) {
                     case COND:
                         NGram checkHistory =
-                                history.concat(NGram.SKIPPED_WORD_NGRAM);
+                        history.concat(NGram.SKIPPED_WORD_NGRAM);
                         if (conntinuationEstimator) {
                             checkHistory =
                                     NGram.SKIPPED_WORD_NGRAM
-                                            .concat(checkHistory);
+                                    .concat(checkHistory);
                         }
                         if (checkHistory.seen(testCorpus.getCountCache())) {
                             if (Math.abs(0.0 - sum) <= 0.01) {

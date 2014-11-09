@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.glmtk.Config;
@@ -56,6 +57,7 @@ public class CountingTest extends TestCorporaTest {
         testCounting(TestCorpus.MOBY_DICK);
     }
 
+    @Ignore
     @Test
     public void testEn0008t() throws IOException {
         testCounting(TestCorpus.EN0008T);
