@@ -86,6 +86,7 @@ public class NGram {
             throw new IllegalStateException("Can't backoff empty ngram.");
         }
 
+        // TODO: Rene, is this really correct?
         switch (probMode) {
             case COND:
                 List<String> result = new ArrayList<String>(ngram.size());
@@ -108,6 +109,20 @@ public class NGram {
             default:
                 throw new IllegalStateException();
         }
+    }
+
+    public NGram derive(int index, ProbMode probMode) {
+        if (index < 0 || index >= ngram.size()) {
+            throw new IllegalStateException("Illegal derive index.");
+        }
+
+        //        if (index == 0) {
+        //            return backoff(probMode);
+        //        }
+
+        List<String> result = new LinkedList<String>(ngram);
+        result.set(index, PatternElem.SKIPPED_WORD);
+        return new NGram(result);
     }
 
     public List<String> toList() {

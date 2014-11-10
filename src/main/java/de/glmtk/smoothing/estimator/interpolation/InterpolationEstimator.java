@@ -11,9 +11,9 @@ import de.glmtk.smoothing.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 
 public class InterpolationEstimator extends Estimator {
 
-    private DiscountEstimator alpha;
+    protected DiscountEstimator alpha;
 
-    private Estimator beta;
+    protected Estimator beta;
 
     public InterpolationEstimator(
             DiscountEstimator alpha,
@@ -48,8 +48,9 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
+            //if (history.isEmpty()) {
             logDebug(recDepth,
                     "history empty, returning fraction estimator probability");
             return alpha.getFractionEstimator().probability(sequence, history,
@@ -110,7 +111,7 @@ public class InterpolationEstimator extends Estimator {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
                         countCache.getContinuation(historyWithSkip)
-                        .getOnePlusCount();
+                                .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);
                 logDebug(recDepth, "discount = {}", discout);

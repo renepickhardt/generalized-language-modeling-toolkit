@@ -99,7 +99,7 @@ public class Glmtk {
         // Request /////////////////////////////////////////////////////////////
 
         // Whether the corpus should be tagged with POS.
-        boolean needToTagTraining = false;
+        boolean needToTagTraining = true;
         // Absolute Patterns we need
         Set<Pattern> neededAbsolutePatterns = null;
         // Continuation Patterns we need
@@ -111,21 +111,21 @@ public class Glmtk {
             case KNESER_NEY:
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
-                neededAbsolutePatterns =
-                        Pattern.getCombinations(5,
-                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
-                neededContinuationPatterns =
-                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
-                                PatternElem.SKP,
-                                Arrays.asList(PatternElem.WSKP));
                 //                neededAbsolutePatterns =
-                //                        Pattern.getCombinations(5, Arrays.asList(
-                //                                PatternElem.CNT, PatternElem.SKP,
-                //                                PatternElem.POS));
+                //                        Pattern.getCombinations(5,
+                //                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
                 //                neededContinuationPatterns =
                 //                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
-                //                                PatternElem.SKP, Arrays.asList(
-                //                                        PatternElem.WSKP, PatternElem.PSKP));
+                //                                PatternElem.SKP,
+                //                                Arrays.asList(PatternElem.WSKP));
+                neededAbsolutePatterns =
+                Pattern.getCombinations(5, Arrays.asList(
+                        PatternElem.CNT, PatternElem.SKP,
+                        PatternElem.POS));
+                neededContinuationPatterns =
+                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
+                                PatternElem.SKP, Arrays.asList(
+                                        PatternElem.WSKP, PatternElem.PSKP));
                 break;
             default:
                 throw new IllegalStateException();
