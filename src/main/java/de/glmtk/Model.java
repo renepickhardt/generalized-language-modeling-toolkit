@@ -6,6 +6,13 @@ import java.util.Map;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.smoothing.estimator.Estimators;
 
+/**
+ * is being used for parmater -m by calling the programm
+ * So it can be used for help and log messages but also
+ * to controll which model / smoothing method should be
+ * applied for the calculation
+ * 
+ */
 public enum Model {
 
     MAXIMUM_LIKELIHOOD("MLE", "Maximum Likelihood", Estimators.MLE),

@@ -47,7 +47,7 @@ public class CountCache {
 
     /**
      * Get the number of words in the corpus.
-     *
+     * 
      * Aka absolute count of skip.
      */
     public long getNumWords() {
@@ -56,7 +56,7 @@ public class CountCache {
 
     /**
      * Get the vocabulary size (number of different words) of the corpus.
-     *
+     * 
      * Aka continuation count of skip.
      */
     public long getVocabSize() {
@@ -125,7 +125,7 @@ public class CountCache {
         if (patternCounters == null) {
             throw new NullPointerException(
                     "No continuation counts in corpus for pattern: " + pattern
-                    + ".");
+                            + ".");
         }
         Counter counter = patternCounters.get(string);
         return counter == null ? new Counter() : counter;

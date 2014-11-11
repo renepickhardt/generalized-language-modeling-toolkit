@@ -4,6 +4,12 @@ import java.util.List;
 
 import de.glmtk.utils.StringUtils;
 
+/**
+ * This class is used for counting continuation counts
+ * It is also a wrapper class to handle the continuation counts during
+ * Kneser Ney Smoothing. It is thus called during training and also
+ * during testing.
+ */
 public class Counter {
 
     private long onePlusCount;
@@ -114,7 +120,7 @@ public class Counter {
         } else {
             throw new IllegalArgumentException(
                     "Couldn't not get Sequence and Counter of line '" + line
-                    + "'.");
+                            + "'.");
         }
         return split.get(0);
     }

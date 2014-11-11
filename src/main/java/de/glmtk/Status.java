@@ -25,6 +25,15 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.StringUtils;
 
+/**
+ * This class is a wrapper for status.txt which controlls unwanted interruptions
+ * of the program. So if the program crashes during training one does not have
+ * to repeat the entire training phase.
+ * 
+ * This file should be save to multithreading and save against outside
+ * manipulations of status.txt
+ */
+
 public class Status {
 
     private static final Logger LOGGER = LogManager.getLogger(Status.class);
@@ -352,7 +361,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                        .substring(1);
+                                .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {

@@ -28,6 +28,15 @@ import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.utils.StringUtils;
 
+/**
+ * Here happens counting (during training phase) and also querying (during
+ * application phase) This class is been called either by one of the Executable
+ * classes and filled from config or console input or it is called from
+ * UnitTests
+ * Expects parameters to be set via setters before calling any other method
+ * TODO: what about default parameters
+ * 
+ */
 public class Glmtk {
 
     // TODO: Output should be empty if a phase is skipped
@@ -111,21 +120,25 @@ public class Glmtk {
             case KNESER_NEY:
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
-                neededAbsolutePatterns =
-                        Pattern.getCombinations(5,
-                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
-                neededContinuationPatterns =
-                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
-                                PatternElem.SKP,
-                                Arrays.asList(PatternElem.WSKP));
-                //                neededAbsolutePatterns =
-                //                Pattern.getCombinations(5, Arrays.asList(
-                //                        PatternElem.CNT, PatternElem.SKP,
-                //                        PatternElem.POS));
-                //                neededContinuationPatterns =
-                //                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
-                //                                PatternElem.SKP, Arrays.asList(
-                //                                        PatternElem.WSKP, PatternElem.PSKP));
+                if (!needToTagTraining) {
+                    neededAbsolutePatterns =
+                            Pattern.getCombinations(5, Arrays.asList(
+                                    PatternElem.CNT, PatternElem.SKP));
+                    neededContinuationPatterns =
+                            Pattern.replaceTargetWithElems(
+                                    neededAbsolutePatterns, PatternElem.SKP,
+                                    Arrays.asList(PatternElem.WSKP));
+                } else {
+                    neededAbsolutePatterns =
+                            Pattern.getCombinations(5, Arrays.asList(
+                                    PatternElem.CNT, PatternElem.SKP,
+                                    PatternElem.POS));
+                    neededContinuationPatterns =
+                            Pattern.replaceTargetWithElems(
+                                    neededAbsolutePatterns, PatternElem.SKP,
+                                    Arrays.asList(PatternElem.WSKP,
+                                            PatternElem.PSKP));
+                }
                 break;
             default:
                 throw new IllegalStateException();
@@ -180,7 +193,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -199,6 +212,7 @@ public class Glmtk {
         Files.createDirectories(testingDir);
 
         LOGGER.info("Loading counts into memory...");
+        //TODO: make a persistent version of what is needed for testing. also calculate hashvalues of it...
         CountCache countCache = new CountCache(workingDir);
 
         LOGGER.info("Loading model '%s'...", model.getName());
@@ -235,6 +249,7 @@ public class Glmtk {
             int cntZero = 0;
             int cntNonZero = 0;
             double sumProbabilities = 0;
+            double crossEntropy = 0;
             double entropy = 0;
             double logBase = Math.log(Constants.LOG_BASE);
 
@@ -249,7 +264,8 @@ public class Glmtk {
                 } else {
                     ++cntNonZero;
                     sumProbabilities += probability;
-                    entropy -= Math.log(probability) / logBase;
+                    crossEntropy -= Math.log(probability);
+                    entropy -= Math.log(probability) * probability;
                 }
 
                 writer.append(line);
@@ -258,14 +274,19 @@ public class Glmtk {
                 writer.append('\n');
             }
 
+            if (cntNonZero != 0) {
+                crossEntropy /= (cntNonZero * logBase);
+                entropy /= logBase;
+            }
+
             LOGGER.info("Count Zero-Propablity Sequences = %s (%6.2f%%)",
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
                             * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
+            LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);
         }
     }
-
 }
