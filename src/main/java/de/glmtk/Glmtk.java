@@ -99,7 +99,7 @@ public class Glmtk {
         // Request /////////////////////////////////////////////////////////////
 
         // Whether the corpus should be tagged with POS.
-        boolean needToTagTraining = true;
+        boolean needToTagTraining = false;
         // Absolute Patterns we need
         Set<Pattern> neededAbsolutePatterns = null;
         // Continuation Patterns we need
@@ -111,21 +111,21 @@ public class Glmtk {
             case KNESER_NEY:
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
-                //                neededAbsolutePatterns =
-                //                        Pattern.getCombinations(5,
-                //                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
-                //                neededContinuationPatterns =
-                //                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
-                //                                PatternElem.SKP,
-                //                                Arrays.asList(PatternElem.WSKP));
                 neededAbsolutePatterns =
-                Pattern.getCombinations(5, Arrays.asList(
-                        PatternElem.CNT, PatternElem.SKP,
-                        PatternElem.POS));
+                        Pattern.getCombinations(5,
+                                Arrays.asList(PatternElem.CNT, PatternElem.SKP));
                 neededContinuationPatterns =
                         Pattern.replaceTargetWithElems(neededAbsolutePatterns,
-                                PatternElem.SKP, Arrays.asList(
-                                        PatternElem.WSKP, PatternElem.PSKP));
+                                PatternElem.SKP,
+                                Arrays.asList(PatternElem.WSKP));
+                //                neededAbsolutePatterns =
+                //                Pattern.getCombinations(5, Arrays.asList(
+                //                        PatternElem.CNT, PatternElem.SKP,
+                //                        PatternElem.POS));
+                //                neededContinuationPatterns =
+                //                        Pattern.replaceTargetWithElems(neededAbsolutePatterns,
+                //                                PatternElem.SKP, Arrays.asList(
+                //                                        PatternElem.WSKP, PatternElem.PSKP));
                 break;
             default:
                 throw new IllegalStateException();
@@ -180,7 +180,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -262,7 +262,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                    * 100);
+                            * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Entropy = %s", entropy);
         }
