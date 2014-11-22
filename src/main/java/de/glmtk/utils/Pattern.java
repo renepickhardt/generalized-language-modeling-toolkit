@@ -182,6 +182,26 @@ public class Pattern implements Iterable<PatternElem> {
         return new Pattern(resultElems, asString + other.asString);
     }
 
+    public Pattern range(int from, int to) {
+        if (from < 0 || from >= size()) {
+            throw new IllegalArgumentException("Illegal from index: " + from);
+        } else if (to < 1 || to > size()) {
+            throw new IllegalArgumentException("Illegal to index: " + to);
+        } else if (from >= to) {
+            throw new IllegalArgumentException(
+                    "From index larger or equal than to index: " + from
+                            + " >= " + to);
+        }
+
+        List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
+
+        for (int i = from; i != to; ++i) {
+            resultElems.add(elems.get(i));
+        }
+
+        return new Pattern(resultElems);
+    }
+
     public Pattern replace(PatternElem target, PatternElem replacement) {
         List<PatternElem> resultElems = new ArrayList<PatternElem>(size());
         StringBuilder resultAsString = new StringBuilder();
@@ -233,9 +253,8 @@ public class Pattern implements Iterable<PatternElem> {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
-        Iterator<PatternElem> it = elems.iterator();
         for (int i = 0; i != size(); ++i) {
-            PatternElem elem = it.next();
+            PatternElem elem = elems.get(i);
 
             if (elem != DEL) {
                 if (!first) {
@@ -254,9 +273,8 @@ public class Pattern implements Iterable<PatternElem> {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
-        Iterator<PatternElem> it = elems.iterator();
         for (int i = 0; i != size(); ++i) {
-            PatternElem elem = it.next();
+            PatternElem elem = elems.get(i);
 
             if (elem != DEL) {
                 if (!first) {

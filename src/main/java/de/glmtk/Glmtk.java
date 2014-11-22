@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.counting.AbsoluteCounter;
+import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.Tagger;
 import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGramProbabilityCalculator;
@@ -140,8 +142,11 @@ public class Glmtk {
                     //                                            PatternElem.PSKP));
                 }
 
+                neededContinuationPatterns = new HashSet<Pattern>();
                 for (Pattern pattern : neededAbsolutePatterns) {
                     if (pattern.size() != Constants.MODEL_SIZE) {
+                        neededContinuationPatterns.add(pattern
+                                .concat(PatternElem.WSKP));
                     }
                 }
                 break;
@@ -149,13 +154,19 @@ public class Glmtk {
                 throw new IllegalStateException();
         }
 
-        //        // Add patterns to absolute that are needed to generate continuation.
-        //        for (Pattern pattern : neededContinuationPatterns) {
-        //            Pattern sourcePattern = pattern.getContinuationSource();
-        //            if (sourcePattern.isAbsolute()) {
-        //                neededAbsolutePatterns.add(sourcePattern);
-        //            }
-        //        }
+        // Add patterns to absolute that are needed to generate continuation.
+        for (Pattern pattern : neededContinuationPatterns) {
+            Pattern sourcePattern =
+                    pattern.range(0, pattern.size() - 1)
+                            .concat(PatternElem.CNT);
+            neededAbsolutePatterns.add(sourcePattern);
+            //            Pattern sourcePattern = pattern.getContinuationSource();
+            //            if (sourcePattern.isAbsolute()) {
+            //                neededAbsolutePatterns.add(sourcePattern);
+            //            } else {
+            //                neededContinuationPatterns.add(sourcePattern);
+            //            }
+        }
 
         LOGGER.debug("Request %s", StringUtils.repeat("-", 80 - 8));
         LOGGER.debug("needToTagTraning           = %s", needToTagTraining);
@@ -198,15 +209,15 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
-        //        ContinuationCounter continuationCounter =
-        //                new ContinuationCounter(neededContinuationPatterns,
-        //                        config.getNumberOfCores(), config.getUpdateInterval());
-        //        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
-        //                continuationDir, continuationTmpDir);
+        ContinuationCounter continuationCounter =
+                new ContinuationCounter(neededContinuationPatterns,
+                        config.getNumberOfCores(), config.getUpdateInterval());
+        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
+                continuationDir, continuationTmpDir);
     }
 
     public void test() throws IOException {
@@ -288,7 +299,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                            * 100);
+                    * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);

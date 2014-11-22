@@ -41,13 +41,15 @@ public enum PatternElem {
     public String apply(String word) {
         switch (this) {
             case CNT:
+                // fallthrough
             case POS:
                 return word;
             case SKP:
+                return SKIPPED_WORD;
             case WSKP:
+                return WSKIPPED_WORD;
             case PSKP:
             case WPOS:
-                return SKIPPED_WORD;
 
             default:
                 throw new IllegalStateException("Unimplemented case in switch.");
@@ -61,10 +63,11 @@ public enum PatternElem {
             case POS:
                 return pos;
             case SKP:
+                return SKIPPED_WORD;
             case WSKP:
+                return WSKIPPED_WORD;
             case PSKP:
             case WPOS:
-                return SKIPPED_WORD;
 
             default:
                 throw new IllegalStateException("Unimplemented case in switch.");
@@ -73,6 +76,8 @@ public enum PatternElem {
     }
 
     public static final String SKIPPED_WORD = "_";
+
+    public static final String WSKIPPED_WORD = "%";
 
     public static final Set<PatternElem> CSKIP_ELEMS =
             new HashSet<PatternElem>(Arrays.asList(WSKP, PSKP, WPOS));

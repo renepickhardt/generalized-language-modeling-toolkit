@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.glmtk.Constants;
 import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.estimator.fraction.FractionEstimator;
 import de.glmtk.utils.NGram;
@@ -31,7 +32,7 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
         discount1 = new HashMap<Pattern, Double>();
         discount2 = new HashMap<Pattern, Double>();
         discount3p = new HashMap<Pattern, Double>();
-        for (Pattern pattern : Pattern.getCombinations(5,
+        for (Pattern pattern : Pattern.getCombinations(Constants.MODEL_SIZE,
                 Arrays.asList(PatternElem.CNT, PatternElem.SKP))) {
             double n1 = countCache.getNGramTimesCount(pattern, 1);
             double n2 = countCache.getNGramTimesCount(pattern, 2);

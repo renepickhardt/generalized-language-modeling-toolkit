@@ -55,6 +55,14 @@ public class NGram {
 
     private NGram(
             List<String> words,
+            Pattern pattern) {
+        this.words = words;
+        asString = StringUtils.join(words, " ");
+        this.pattern = pattern;
+    }
+
+    private NGram(
+            List<String> words,
             String asString,
             Pattern pattern) {
         this.words = words;
@@ -140,6 +148,28 @@ public class NGram {
         List<String> resultWords = new ArrayList<String>(words);
         resultWords.addAll(other.words);
         return new NGram(resultWords);
+    }
+
+    public NGram range(int from, int to) {
+        if (from < 0 || from >= size()) {
+            throw new IllegalArgumentException("Illegal from index: " + from);
+        } else if (to < 0 || to >= size()) {
+            throw new IllegalArgumentException("Illegal to index: " + to);
+        } else if (from > to) {
+            throw new IllegalArgumentException(
+                    "From index larger than to index: " + from + " > " + to);
+        }
+
+        List<String> resultWords = new ArrayList<String>(to - from);
+        List<PatternElem> resultPatternElems =
+                new ArrayList<PatternElem>(to - from);
+
+        for (int i = from; i != to; ++i) {
+            resultWords.add(words.get(i));
+            resultPatternElems.add(pattern.get(i));
+        }
+
+        return new NGram(resultWords, new Pattern(resultPatternElems));
     }
 
     public NGram backoff(ProbMode probMode) {
