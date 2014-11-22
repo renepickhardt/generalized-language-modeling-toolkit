@@ -19,10 +19,10 @@ import org.junit.Test;
 
 import de.glmtk.Config;
 import de.glmtk.Counter;
-import de.glmtk.pattern.Pattern;
-import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.helper.TestCorporaTest;
 import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 /**

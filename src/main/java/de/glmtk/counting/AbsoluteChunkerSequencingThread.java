@@ -20,7 +20,7 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
-import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
@@ -66,10 +66,10 @@ import de.glmtk.utils.StringUtils;
         patternsByLength = new HashMap<Integer, Set<Pattern>>();
         for (Pattern pattern : patterns) {
             Set<Pattern> patternsWithLength =
-                    patternsByLength.get(pattern.length());
+                    patternsByLength.get(pattern.size());
             if (patternsWithLength == null) {
                 patternsWithLength = new HashSet<Pattern>();
-                patternsByLength.put(pattern.length(), patternsWithLength);
+                patternsByLength.put(pattern.size(), patternsWithLength);
             }
             patternsWithLength.add(pattern);
         }

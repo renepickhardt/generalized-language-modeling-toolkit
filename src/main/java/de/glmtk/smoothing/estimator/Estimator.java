@@ -6,11 +6,11 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.CountCache;
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.substitute.SubstituteEstimator;
+import de.glmtk.utils.NGram;
+import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 public abstract class Estimator {

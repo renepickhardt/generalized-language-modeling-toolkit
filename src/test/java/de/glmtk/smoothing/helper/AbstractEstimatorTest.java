@@ -6,8 +6,8 @@ import static de.glmtk.smoothing.estimator.Estimators.BACKOFF_CMLE_REC;
 import static de.glmtk.smoothing.estimator.Estimators.CMLE;
 import static de.glmtk.smoothing.estimator.Estimators.COMB_MLE_CMLE;
 import static de.glmtk.smoothing.estimator.Estimators.CONT_UNIGRAM;
-import static de.glmtk.smoothing.estimator.Estimators.DERIVE_INTERPOL_ABS_DISCOUNT_MLE;
-import static de.glmtk.smoothing.estimator.Estimators.DERIVE_INTERPOL_ABS_DISCOUNT_MLE_REC;
+import static de.glmtk.smoothing.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE;
+import static de.glmtk.smoothing.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC;
 import static de.glmtk.smoothing.estimator.Estimators.FMLE;
 import static de.glmtk.smoothing.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE;
 import static de.glmtk.smoothing.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_REC;
@@ -129,28 +129,28 @@ public abstract class AbstractEstimatorTest extends TestCorporaTest {
     @Test
     public void testDeriveInterpolAbsDiscountMleCond() throws IOException {
         testEstimator("DeriveInterpolAbsDiscountMle",
-                DERIVE_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.COND,
+                DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDeriveInterpolAbsDiscountMleMarg() throws IOException {
         testEstimator("DeriveInterpolAbsDiscountMle",
-                DERIVE_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.MARG,
+                DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDeriveInterpolAbsDiscountMleRecCond() throws IOException {
         testEstimator("DeriveInterpolAbsDiscountMle",
-                DERIVE_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
+                DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDeriveInterpolAbsDiscountMleRecMarg() throws IOException {
         testEstimator("DeriveInterpolAbsDiscountMle",
-                DERIVE_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
+                DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
 

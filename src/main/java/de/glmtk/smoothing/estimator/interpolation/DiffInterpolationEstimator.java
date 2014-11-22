@@ -1,18 +1,18 @@
 package de.glmtk.smoothing.estimator.interpolation;
 
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.smoothing.estimator.discount.DiscountEstimator;
+import de.glmtk.utils.NGram;
 
-public class DeriveInterpolationEstimator extends InterpolationEstimator {
+public class DiffInterpolationEstimator extends InterpolationEstimator {
 
-    public DeriveInterpolationEstimator(
+    public DiffInterpolationEstimator(
             DiscountEstimator alpha,
             Estimator beta) {
         super(alpha, beta);
     }
 
-    public DeriveInterpolationEstimator(
+    public DiffInterpolationEstimator(
             DiscountEstimator alpha) {
         super(alpha);
     }
@@ -29,7 +29,7 @@ public class DeriveInterpolationEstimator extends InterpolationEstimator {
             int cnt = 0;
             //            System.out.println(StringUtils.repeat("  ", recDepth) + history);
             for (int i = 0; i != history.size(); ++i) {
-                NGram deriveHistory = history.derive(i, probMode);
+                NGram deriveHistory = history.differentiate(i, probMode);
                 //                System.out.print(StringUtils.repeat("  ", recDepth) + "i=" + i
                 //                        + " " + deriveHistory);
                 if (history.equals(deriveHistory)) {

@@ -7,7 +7,7 @@ import de.glmtk.smoothing.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.smoothing.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.smoothing.estimator.fraction.FalseMaximumLikelihoodEstimator;
 import de.glmtk.smoothing.estimator.fraction.MaximumLikelihoodEstimator;
-import de.glmtk.smoothing.estimator.interpolation.DeriveInterpolationEstimator;
+import de.glmtk.smoothing.estimator.interpolation.DiffInterpolationEstimator;
 import de.glmtk.smoothing.estimator.interpolation.InterpolationEstimator;
 import de.glmtk.smoothing.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.smoothing.estimator.substitute.ContinuationUnigramEstimator;
@@ -57,11 +57,11 @@ public class Estimators {
     public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_REC =
             new InterpolationEstimator(ABS_DISCOUNT_MLE);
 
-    public static final DeriveInterpolationEstimator DERIVE_INTERPOL_ABS_DISCOUNT_MLE =
-            new DeriveInterpolationEstimator(ABS_DISCOUNT_MLE, MLE);
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, MLE);
 
-    public static final DeriveInterpolationEstimator DERIVE_INTERPOL_ABS_DISCOUNT_MLE_REC =
-            new DeriveInterpolationEstimator(ABS_DISCOUNT_MLE);
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE);
 
     // Combination Estimators
 

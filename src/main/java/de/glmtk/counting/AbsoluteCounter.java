@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.Pattern;
 
 public class AbsoluteCounter {
 

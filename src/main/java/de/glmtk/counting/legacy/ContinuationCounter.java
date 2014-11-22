@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.counting.legacy;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,8 +9,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.pattern.Pattern;
+import de.glmtk.counting.Merger;
+import de.glmtk.utils.Pattern;
 
+@Deprecated
 public class ContinuationCounter {
 
     private static final Logger LOGGER = LogManager
@@ -48,11 +50,12 @@ public class ContinuationCounter {
 
         LOGGER.info("1/2 Chunking:");
         chunker.chunk(status, chunkingPatterns, absoluteCountedDir,
-                absoluteChunkedDir, continuationCountedDir, continuationChunkedDir);
+                absoluteChunkedDir, continuationCountedDir,
+                continuationChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        merger.merge(status, countingPatterns,
-                continuationChunkedDir, continuationCountedDir);
+        merger.merge(status, countingPatterns, continuationChunkedDir,
+                continuationCountedDir);
 
         LOGGER.info("Continuation counting done.");
     }

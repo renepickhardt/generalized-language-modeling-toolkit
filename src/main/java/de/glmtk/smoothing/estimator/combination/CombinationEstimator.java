@@ -1,9 +1,9 @@
 package de.glmtk.smoothing.estimator.combination;
 
 import de.glmtk.smoothing.CountCache;
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.utils.NGram;
 
 public class CombinationEstimator extends Estimator {
 

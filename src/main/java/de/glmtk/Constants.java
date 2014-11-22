@@ -9,6 +9,8 @@ public class Constants {
 
     public static final long CHUNK_MAX_SIZE = 500 * KB;
 
+    public static final int MODEL_SIZE = 5;
+
     public static final long QUEUE_IDLE_TIME = 10;
 
     public static final String UNKOWN_POS = "UNKP";

@@ -1,7 +1,7 @@
 package de.glmtk.smoothing.estimator.fraction;
 
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.utils.NGram;
 
 public abstract class FractionEstimator extends Estimator {
 

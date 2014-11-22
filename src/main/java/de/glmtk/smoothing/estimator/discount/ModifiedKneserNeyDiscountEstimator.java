@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.pattern.Pattern;
-import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.CountCache;
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.estimator.fraction.FractionEstimator;
+import de.glmtk.utils.NGram;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
 
 public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
 

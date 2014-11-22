@@ -1,6 +1,6 @@
 package de.glmtk.smoothing.estimator.substitute;
 
-import de.glmtk.smoothing.NGram;
+import de.glmtk.utils.NGram;
 
 public class AbsoluteUnigramEstimator extends SubstituteEstimator {
 

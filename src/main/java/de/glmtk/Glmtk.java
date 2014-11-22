@@ -18,14 +18,13 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.counting.AbsoluteCounter;
-import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.Tagger;
-import de.glmtk.pattern.Pattern;
-import de.glmtk.pattern.PatternElem;
 import de.glmtk.smoothing.CountCache;
 import de.glmtk.smoothing.NGramProbabilityCalculator;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 /**
@@ -35,7 +34,7 @@ import de.glmtk.utils.StringUtils;
  * UnitTests
  * Expects parameters to be set via setters before calling any other method
  * TODO: what about default parameters
- * 
+ *
  */
 public class Glmtk {
 
@@ -122,35 +121,41 @@ public class Glmtk {
             case GENERALIZED_LANGUAGE_MODEL:
                 if (!needToTagTraining) {
                     neededAbsolutePatterns =
-                            Pattern.getCombinations(5, Arrays.asList(
-                                    PatternElem.CNT, PatternElem.SKP));
-                    neededContinuationPatterns =
-                            Pattern.replaceTargetWithElems(
-                                    neededAbsolutePatterns, PatternElem.SKP,
-                                    Arrays.asList(PatternElem.WSKP));
+                            Pattern.getCombinations(Constants.MODEL_SIZE,
+                                    Arrays.asList(PatternElem.CNT,
+                                            PatternElem.SKP));
+                    //                    neededContinuationPatterns =
+                    //                            Pattern.replaceTargetWithElems(
+                    //                                    neededAbsolutePatterns, PatternElem.SKP,
+                    //                                    Arrays.asList(PatternElem.WSKP));
                 } else {
                     neededAbsolutePatterns =
-                            Pattern.getCombinations(5, Arrays.asList(
-                                    PatternElem.CNT, PatternElem.SKP,
-                                    PatternElem.POS));
-                    neededContinuationPatterns =
-                            Pattern.replaceTargetWithElems(
-                                    neededAbsolutePatterns, PatternElem.SKP,
-                                    Arrays.asList(PatternElem.WSKP,
-                                            PatternElem.PSKP));
+                            Pattern.getCombinations(Constants.MODEL_SIZE,
+                                    Arrays.asList(PatternElem.CNT,
+                                            PatternElem.SKP, PatternElem.POS));
+                    //                    neededContinuationPatterns =
+                    //                            Pattern.replaceTargetWithElems(
+                    //                                    neededAbsolutePatterns, PatternElem.SKP,
+                    //                                    Arrays.asList(PatternElem.WSKP,
+                    //                                            PatternElem.PSKP));
+                }
+
+                for (Pattern pattern : neededAbsolutePatterns) {
+                    if (pattern.size() != Constants.MODEL_SIZE) {
+                    }
                 }
                 break;
             default:
                 throw new IllegalStateException();
         }
 
-        // Add patterns to absolute that are needed to generate continuation.
-        for (Pattern pattern : neededContinuationPatterns) {
-            Pattern sourcePattern = pattern.getContinuationSource();
-            if (sourcePattern.isAbsolute()) {
-                neededAbsolutePatterns.add(sourcePattern);
-            }
-        }
+        //        // Add patterns to absolute that are needed to generate continuation.
+        //        for (Pattern pattern : neededContinuationPatterns) {
+        //            Pattern sourcePattern = pattern.getContinuationSource();
+        //            if (sourcePattern.isAbsolute()) {
+        //                neededAbsolutePatterns.add(sourcePattern);
+        //            }
+        //        }
 
         LOGGER.debug("Request %s", StringUtils.repeat("-", 80 - 8));
         LOGGER.debug("needToTagTraning           = %s", needToTagTraining);
@@ -197,11 +202,11 @@ public class Glmtk {
 
         // Continuation ////////////////////////////////////////////////////////
 
-        ContinuationCounter continuationCounter =
-                new ContinuationCounter(neededContinuationPatterns,
-                        config.getNumberOfCores(), config.getUpdateInterval());
-        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
-                continuationDir, continuationTmpDir);
+        //        ContinuationCounter continuationCounter =
+        //                new ContinuationCounter(neededContinuationPatterns,
+        //                        config.getNumberOfCores(), config.getUpdateInterval());
+        //        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
+        //                continuationDir, continuationTmpDir);
     }
 
     public void test() throws IOException {

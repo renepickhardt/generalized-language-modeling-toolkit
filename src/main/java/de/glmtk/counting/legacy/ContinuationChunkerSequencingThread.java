@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.counting.legacy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,11 +20,12 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
-import de.glmtk.counting.ContinuationChunker.QueueItem;
-import de.glmtk.pattern.Pattern;
+import de.glmtk.counting.legacy.ContinuationChunker.QueueItem;
+import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
+@Deprecated
 /* package */class ContinuationChunkerSequencingThread implements Runnable {
 
     private static final long QUEUE_IDLE_TIME = Constants.QUEUE_IDLE_TIME;
@@ -173,8 +174,8 @@ import de.glmtk.utils.StringUtils;
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average(
                             "ContinuationChunker.QueueItem Memory", MemoryUtil
-                            .deepMemoryUsageOf(item,
-                                    VisibilityFilter.ALL));
+                                    .deepMemoryUsageOf(item,
+                                            VisibilityFilter.ALL));
                 }
             }
             if (lastFile) {

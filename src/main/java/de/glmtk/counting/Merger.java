@@ -16,10 +16,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.pattern.Pattern;
 import de.glmtk.utils.NioUtils;
+import de.glmtk.utils.Pattern;
 
-/* package */class Merger {
+public class Merger {
 
     private static final long B = 1L;
 
@@ -82,9 +82,9 @@ import de.glmtk.utils.NioUtils;
                 new LinkedBlockingDeque<Pattern>(patterns);
         List<MergerThread> mergerThreads = new LinkedList<MergerThread>();
         for (int i = 0; i != numberOfCores; ++i) {
-            mergerThreads.add(new MergerThread(this, status, queue,
-                    chunkedDir, countedDir, readerMemory, writerMemory,
-                    updateInterval, NUM_PARALLEL_READERS, continuation));
+            mergerThreads.add(new MergerThread(this, status, queue, chunkedDir,
+                    countedDir, readerMemory, writerMemory, updateInterval,
+                    NUM_PARALLEL_READERS, continuation));
         }
 
         // Launch Threads //////////////////////////////////////////////////////

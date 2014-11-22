@@ -1,7 +1,7 @@
 package de.glmtk.smoothing.estimator.discount;
 
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.estimator.fraction.FractionEstimator;
+import de.glmtk.utils.NGram;
 
 public class AbsoluteDiscountEstimator extends DiscountEstimator {
 

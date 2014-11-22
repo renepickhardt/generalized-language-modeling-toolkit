@@ -11,7 +11,7 @@ import de.glmtk.smoothing.estimator.Estimators;
  * So it can be used for help and log messages but also
  * to controll which model / smoothing method should be
  * applied for the calculation
- * 
+ *
  */
 public enum Model {
 
@@ -22,7 +22,7 @@ public enum Model {
     MODIFIED_KNESER_NEY("MKN", "Modified Kneser Ney",
             Estimators.MODIFIED_KNESER_NEY_ESIMATOR),
 
-    GENERALIZED_LANGUAGE_MODEL("GLM", "Generalized Language Model", null);
+            GENERALIZED_LANGUAGE_MODEL("GLM", "Generalized Language Model", null);
 
     private String abbreviation;
 
@@ -54,19 +54,19 @@ public enum Model {
         return estimator;
     }
 
-    private static final Map<String, Model> abbreviationToModel;
+    private static final Map<String, Model> ABBREVIATION_TO_MODEL;
     static {
         Map<String, Model> m = new HashMap<String, Model>();
         for (Model model : Model.values()) {
             m.put(model.abbreviation, model);
         }
-        abbreviationToModel = m;
+        ABBREVIATION_TO_MODEL = m;
     }
 
     /**
-     * Returns null on fail.
+     * Returns {@code null} on fail.
      */
     public static Model fromAbbreviation(String abbreviation) {
-        return abbreviationToModel.get(abbreviation);
+        return ABBREVIATION_TO_MODEL.get(abbreviation);
     }
 }

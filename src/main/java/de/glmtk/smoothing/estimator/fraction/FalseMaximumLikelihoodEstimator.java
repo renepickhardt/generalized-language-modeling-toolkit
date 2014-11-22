@@ -1,6 +1,6 @@
 package de.glmtk.smoothing.estimator.fraction;
 
-import de.glmtk.smoothing.NGram;
+import de.glmtk.utils.NGram;
 
 // TODO: Rene: You told me this estimator should work for Marginal
 // Probabilities. It doesn't, why?

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.smoothing.helper.AbstractEstimatorTest;
 import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.utils.NGram;
 
 public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
 
@@ -60,10 +61,10 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                 switch (probMode) {
                     case COND:
                         NGram checkHistory =
-                        history.concat(NGram.SKIPPED_WORD_NGRAM);
+                        history.concat(NGram.SKIPPED_NGRAM);
                         if (conntinuationEstimator) {
                             checkHistory =
-                                    NGram.SKIPPED_WORD_NGRAM
+                                    NGram.SKIPPED_NGRAM
                                     .concat(checkHistory);
                         }
                         if (checkHistory.seen(testCorpus.getCountCache())) {

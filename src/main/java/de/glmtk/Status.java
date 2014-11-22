@@ -22,7 +22,7 @@ import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StringUtils;
 
 /**

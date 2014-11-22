@@ -15,8 +15,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import de.glmtk.Counter;
-import de.glmtk.pattern.Pattern;
-import de.glmtk.pattern.PatternElem;
+import de.glmtk.utils.NGram;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 public class CountCache {
@@ -94,7 +95,7 @@ public class CountCache {
     }
 
     public long getAbsolute(NGram sequence) {
-        return getAbsolute(sequence.toList());
+        return getAbsolute(sequence.toWordList());
     }
 
     public long getAbsolute(List<String> sequence) {
@@ -110,7 +111,7 @@ public class CountCache {
     }
 
     public Counter getContinuation(NGram sequence) {
-        return getContinuation(sequence.toList());
+        return getContinuation(sequence.toWordList());
     }
 
     public Counter getContinuation(List<String> sequence) {

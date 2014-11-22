@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
-import de.glmtk.pattern.Pattern;
+import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 
 // TODO: find better estimate for map size, to make chunks more memory

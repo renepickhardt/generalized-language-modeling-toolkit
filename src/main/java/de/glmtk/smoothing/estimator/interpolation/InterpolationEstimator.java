@@ -1,13 +1,13 @@
 package de.glmtk.smoothing.estimator.interpolation;
 
 import de.glmtk.Counter;
-import de.glmtk.pattern.Pattern;
 import de.glmtk.smoothing.CountCache;
-import de.glmtk.smoothing.NGram;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.smoothing.estimator.discount.DiscountEstimator;
 import de.glmtk.smoothing.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.utils.NGram;
+import de.glmtk.utils.Pattern;
 
 public class InterpolationEstimator extends Estimator {
 
@@ -83,7 +83,7 @@ public class InterpolationEstimator extends Estimator {
             logDebug(recDepth, "denominator = 0, setting gamma = 0:");
             return 0;
         } else {
-            NGram historyWithSkip = history.concat(NGram.SKIPPED_WORD_NGRAM);
+            NGram historyWithSkip = history.concat(NGram.SKIPPED_NGRAM);
             if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
                 ModifiedKneserNeyDiscountEstimator a =
                         (ModifiedKneserNeyDiscountEstimator) alpha;

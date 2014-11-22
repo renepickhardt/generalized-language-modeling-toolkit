@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.counting.legacy;
 
 import static de.glmtk.Constants.B;
 import static de.glmtk.Constants.KB;
@@ -28,9 +28,10 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
-import de.glmtk.pattern.Pattern;
-import de.glmtk.pattern.PatternElem;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
 
+@Deprecated
 /* package */class ContinuationChunker {
 
     private static final long CHUNK_MAX_SIZE = Constants.CHUNK_MAX_SIZE;
@@ -47,13 +48,13 @@ import de.glmtk.pattern.PatternElem;
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-        @Override
-        public int compare(Pattern a, Pattern b) {
-            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
-                            .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-        }
+                @Override
+                public int compare(Pattern a, Pattern b) {
+                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+                    .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
+                }
 
-    };
+            };
 
     /* package */static class QueueItem {
 
@@ -260,7 +261,7 @@ import de.glmtk.pattern.PatternElem;
             aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
                     (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
             aggregatingSourceToPattern
-            .add(new HashMap<Pattern, List<Pattern>>());
+                    .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         int threadIter = 0;
