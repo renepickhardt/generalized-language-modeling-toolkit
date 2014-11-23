@@ -55,7 +55,7 @@ public class NGramProbabilityCalculator {
             s.add(h.get(h.size() - 1));
             if (probMode == ProbMode.COND) {
                 for (int j = 0; j != i; ++j) {
-                    s.add(PatternElem.SKIPPED_WORD);
+                    s.add(PatternElem.SKP_WORD);
                 }
             }
 

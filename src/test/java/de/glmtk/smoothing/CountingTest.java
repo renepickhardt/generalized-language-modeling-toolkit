@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.LinkedList;
@@ -49,22 +50,27 @@ public class CountingTest extends TestCorporaTest {
     }
 
     @Test
-    public void testAbc() throws IOException {
+    public void testAbc() throws IOException, NoSuchFieldException,
+    SecurityException, IllegalArgumentException, IllegalAccessException {
         testCounting(TestCorpus.ABC);
     }
 
     @Test
-    public void testMobyDick() throws IOException {
+    public void testMobyDick() throws IOException, NoSuchFieldException,
+    SecurityException, IllegalArgumentException, IllegalAccessException {
         testCounting(TestCorpus.MOBY_DICK);
     }
 
     @Ignore
     @Test
-    public void testEn0008t() throws IOException {
+    public void testEn0008t() throws IOException, NoSuchFieldException,
+            SecurityException, IllegalArgumentException, IllegalAccessException {
         testCounting(TestCorpus.EN0008T);
     }
 
-    private void testCounting(TestCorpus testCorpus) throws IOException {
+    private void testCounting(TestCorpus testCorpus) throws IOException,
+    NoSuchFieldException, SecurityException, IllegalArgumentException,
+    IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
@@ -82,10 +88,23 @@ public class CountingTest extends TestCorporaTest {
         LOGGER.info("Loading counts...");
         CountCache countCache = testCorpus.getCountCache();
 
-        testAbsoluteCounts(corpusContents, corpusSize,
-                countCache.getAbsolute(), config.getUpdateInterval());
-        testContinuationCounts(corpusContents, corpusSize,
-                countCache.getContinuation(), config.getUpdateInterval());
+        Field absoluteField = CountCache.class.getDeclaredField("absolute");
+        absoluteField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<Pattern, Map<String, Long>> absolute =
+        (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+        testAbsoluteCounts(corpusContents, corpusSize, absolute,
+                config.getUpdateInterval());
+
+        Field continuationField =
+                CountCache.class.getDeclaredField("continuation");
+        continuationField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<Pattern, Map<String, Counter>> continuation =
+        (Map<Pattern, Map<String, Counter>>) continuationField
+        .get(countCache);
+        testContinuationCounts(corpusContents, corpusSize, continuation,
+                config.getUpdateInterval());
     }
 
     private void testAbsoluteCounts(
@@ -168,7 +187,7 @@ public class CountingTest extends TestCorporaTest {
                 regex.append(' ');
             }
 
-            if (!word.equals(PatternElem.SKIPPED_WORD)) {
+            if (!word.equals(PatternElem.SKP_WORD)) {
                 regex.append(word.replaceAll("[^\\w ]", "\\\\$0"));
             } else {
                 regex.append("\\S+");

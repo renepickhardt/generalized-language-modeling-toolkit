@@ -18,7 +18,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import de.glmtk.Config;
 
-public class Logging {
+public class LogUtils {
 
     private static final String loggingPattern =
             "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
@@ -55,7 +55,7 @@ public class Logging {
         return loggerConfig.getLevel();
     }
 
-    public static void configureExecLogging() {
+    public static void setUpExecLogging() {
         Layout<String> layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,
                         Charset.defaultCharset(), true, true, null, null);
@@ -96,7 +96,7 @@ public class Logging {
         loggerContext.updateLoggers();
     }
 
-    public static void configureTestLogging() {
+    public static void setUpTestLogging() {
         Layout<String> layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,
                         Charset.defaultCharset(), true, true, null, null);

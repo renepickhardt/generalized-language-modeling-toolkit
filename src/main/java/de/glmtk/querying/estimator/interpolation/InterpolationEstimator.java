@@ -8,6 +8,7 @@ import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
 
 public class InterpolationEstimator extends Estimator {
 
@@ -48,7 +49,7 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-    calcProbability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
             logDebug(recDepth,
@@ -83,11 +84,11 @@ public class InterpolationEstimator extends Estimator {
             logDebug(recDepth, "denominator = 0, setting gamma = 0:");
             return 0;
         } else {
-            NGram historyWithSkip = history.concat(NGram.SKIPPED_NGRAM);
+            NGram historyWithSkip = history.concat(PatternElem.WSKP_WORD);
             if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
                 ModifiedKneserNeyDiscountEstimator a =
                         (ModifiedKneserNeyDiscountEstimator) alpha;
-                Pattern pattern = history.toPattern();
+                Pattern pattern = history.getPattern();
                 double d1 = a.getDiscount1(pattern);
                 double d2 = a.getDiscount2(pattern);
                 double d3p = a.getDiscount3p(pattern);
@@ -111,7 +112,7 @@ public class InterpolationEstimator extends Estimator {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
                         countCache.getContinuation(historyWithSkip)
-                                .getOnePlusCount();
+                        .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);
                 logDebug(recDepth, "discount = {}", discout);

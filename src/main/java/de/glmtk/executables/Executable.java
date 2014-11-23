@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Config;
 import de.glmtk.Termination;
-import de.glmtk.utils.Logging;
+import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.StringUtils;
 
 /* package */abstract class Executable {
@@ -66,7 +66,7 @@ import de.glmtk.utils.StringUtils;
     }
 
     protected void configureLogging() {
-        Logging.configureExecLogging();
+        LogUtils.setUpExecLogging();
     }
 
     protected void parseArguments(String[] args) {

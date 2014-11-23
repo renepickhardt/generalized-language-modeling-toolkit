@@ -1,8 +1,7 @@
 package de.glmtk.utils;
 
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.SKIPPED_WORD;
-import static de.glmtk.utils.PatternElem.SKP;
+import static de.glmtk.utils.PatternElem.SKP_WORD;
+import static de.glmtk.utils.PatternElem.WSKP_WORD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +17,11 @@ import de.glmtk.querying.ProbMode;
 public class NGram {
 
     // TODO: Test this class;
+    // TODO: Replace 'word' with 'token'.
 
-    public static NGram SKIPPED_NGRAM = new NGram(SKIPPED_WORD);
+    public static final NGram SKP_NGRAM = new NGram(SKP_WORD);
+
+    public static final NGram WSKP_NGRAM = new NGram(WSKP_WORD);
 
     private final List<String> words;
 
@@ -37,7 +39,7 @@ public class NGram {
             String word) {
         words = Arrays.asList(word);
         asString = word;
-        pattern = new Pattern(wordToPatternElem(word));
+        pattern = new Pattern(PatternElem.fromWord(word));
     }
 
     public NGram(
@@ -48,7 +50,7 @@ public class NGram {
         List<PatternElem> patternElems =
                 new ArrayList<PatternElem>(words.size());
         for (String word : words) {
-            patternElems.add(wordToPatternElem(word));
+            patternElems.add(PatternElem.fromWord(word));
         }
         pattern = new Pattern(patternElems);
     }
@@ -68,10 +70,6 @@ public class NGram {
         this.words = words;
         this.asString = asString;
         this.pattern = pattern;
-    }
-
-    private PatternElem wordToPatternElem(String word) {
-        return word.equals(SKIPPED_WORD) ? SKP : CNT;
     }
 
     @Override
@@ -101,7 +99,7 @@ public class NGram {
         return asString;
     }
 
-    public Pattern toPattern() {
+    public Pattern getPattern() {
         return pattern;
     }
 
@@ -122,7 +120,7 @@ public class NGram {
             return true;
         }
         for (String word : words) {
-            if (!word.equals(SKIPPED_WORD)) {
+            if (!word.equals(SKP_WORD)) {
                 return false;
             }
         }
@@ -141,7 +139,7 @@ public class NGram {
         List<String> resultWords = new ArrayList<String>(words);
         resultWords.add(word);
         return new NGram(resultWords, asString + " " + word,
-                pattern.concat(wordToPatternElem(word)));
+                pattern.concat(PatternElem.fromWord(word)));
     }
 
     public NGram concat(NGram other) {
@@ -184,8 +182,8 @@ public class NGram {
 
                 boolean replaced = false;
                 for (String word : words) {
-                    if (!replaced && !word.equals(SKIPPED_WORD)) {
-                        resultWords.add(SKIPPED_WORD);
+                    if (!replaced && !word.equals(SKP_WORD)) {
+                        resultWords.add(SKP_WORD);
                         replaced = true;
                     } else {
                         resultWords.add(word);
@@ -228,7 +226,7 @@ public class NGram {
         //        }
 
         List<String> resultWords = new LinkedList<String>(words);
-        resultWords.set(index, SKIPPED_WORD);
+        resultWords.set(index, SKP_WORD);
         return new NGram(resultWords);
     }
 

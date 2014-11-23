@@ -17,7 +17,7 @@ import org.apache.commons.cli.Option;
 import de.glmtk.Glmtk;
 import de.glmtk.Model;
 import de.glmtk.Termination;
-import de.glmtk.utils.Logging;
+import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
@@ -152,7 +152,7 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void configureLogging() {
         super.configureLogging();
-        Logging.addLocalFileAppender(workingDir.resolve("log"));
+        LogUtils.addLocalFileAppender(workingDir.resolve("log"));
     }
 
     @Override

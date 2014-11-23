@@ -62,10 +62,10 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                 switch (probMode) {
                     case COND:
                         NGram checkHistory =
-                        history.concat(NGram.SKIPPED_NGRAM);
+                        history.concat(NGram.SKP_NGRAM);
                         if (conntinuationEstimator) {
                             checkHistory =
-                                    NGram.SKIPPED_NGRAM
+                                    NGram.SKP_NGRAM
                                     .concat(checkHistory);
                         }
                         if (checkHistory.seen(testCorpus.getCountCache())) {

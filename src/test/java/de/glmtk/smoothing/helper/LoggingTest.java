@@ -2,13 +2,13 @@ package de.glmtk.smoothing.helper;
 
 import org.junit.BeforeClass;
 
-import de.glmtk.utils.Logging;
+import de.glmtk.utils.LogUtils;
 
 public class LoggingTest {
 
     @BeforeClass
     public static void setUpLogging() {
-        Logging.configureTestLogging();
+        LogUtils.setUpTestLogging();
     }
 
 }

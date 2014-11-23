@@ -88,7 +88,7 @@ public abstract class Estimator {
     protected static final NGram getFullHistory(NGram sequence, NGram history) {
         List<String> skippedSequence = new ArrayList<String>(sequence.size());
         for (int i = 0; i != sequence.size(); ++i) {
-            skippedSequence.add(PatternElem.SKIPPED_WORD);
+            skippedSequence.add(PatternElem.SKP_WORD);
         }
         return history.concat(new NGram(skippedSequence));
     }

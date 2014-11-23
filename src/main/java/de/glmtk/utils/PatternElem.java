@@ -45,9 +45,9 @@ public enum PatternElem {
             case POS:
                 return word;
             case SKP:
-                return SKIPPED_WORD;
+                return SKP_WORD;
             case WSKP:
-                return WSKIPPED_WORD;
+                return WSKP_WORD;
             case PSKP:
             case WPOS:
 
@@ -63,9 +63,9 @@ public enum PatternElem {
             case POS:
                 return pos;
             case SKP:
-                return SKIPPED_WORD;
+                return SKP_WORD;
             case WSKP:
-                return WSKIPPED_WORD;
+                return WSKP_WORD;
             case PSKP:
             case WPOS:
 
@@ -75,9 +75,9 @@ public enum PatternElem {
         }
     }
 
-    public static final String SKIPPED_WORD = "_";
+    public static final String SKP_WORD = "_";
 
-    public static final String WSKIPPED_WORD = "%";
+    public static final String WSKP_WORD = "%";
 
     public static final Set<PatternElem> CSKIP_ELEMS =
             new HashSet<PatternElem>(Arrays.asList(WSKP, PSKP, WPOS));
@@ -95,6 +95,16 @@ public enum PatternElem {
      */
     public static PatternElem fromChar(char elem) {
         return CHAR_TO_ELEM.get(elem);
+    }
+
+    public static PatternElem fromWord(String word) {
+        if (word.equals(SKP_WORD)) {
+            return SKP;
+        } else if (word.equals(WSKP_WORD)) {
+            return WSKP;
+        } else {
+            return CNT;
+        }
     }
 
 }

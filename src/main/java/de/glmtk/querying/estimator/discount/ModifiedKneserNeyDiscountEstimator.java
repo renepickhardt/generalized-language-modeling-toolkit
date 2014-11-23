@@ -34,14 +34,11 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
         discount3p = new HashMap<Pattern, Double>();
         for (Pattern pattern : Pattern.getCombinations(Constants.MODEL_SIZE,
                 Arrays.asList(PatternElem.CNT, PatternElem.SKP))) {
-            double n1 = countCache.getNGramTimesCount(pattern, 1);
-            double n2 = countCache.getNGramTimesCount(pattern, 2);
-            double n3 = countCache.getNGramTimesCount(pattern, 3);
-            double n4 = countCache.getNGramTimesCount(pattern, 4);
-            double y = n1 / (n1 + n2);
-            discount1.put(pattern, 1 - 2 * y * n2 / n1);
-            discount2.put(pattern, 2 - 3 * y * n3 / n2);
-            discount3p.put(pattern, 3 - 4 * y * n4 / n3);
+            long[] n = countCache.getNGramTimes(pattern);
+            double y = (double) n[0] / (n[0] + n[1]);
+            discount1.put(pattern, 1.f - 2.f * y * n[1] / n[0]);
+            discount2.put(pattern, 2.f - 3.f * y * n[2] / n[1]);
+            discount3p.put(pattern, 3.f - 4.f * y * n[3] / n[2]);
         }
     }
 
@@ -51,11 +48,11 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
             case 0:
                 return 0;
             case 1:
-                return discount1.get(history.toPattern());
+                return discount1.get(history.getPattern());
             case 2:
-                return discount2.get(history.toPattern());
+                return discount2.get(history.getPattern());
             default:
-                return discount3p.get(history.toPattern());
+                return discount3p.get(history.getPattern());
         }
     }
 
