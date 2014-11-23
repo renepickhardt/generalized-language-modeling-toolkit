@@ -52,11 +52,14 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
                 List<String> sequence = testCorpus.getSequenceList(i, order);
                 sum += calculator.probability(sequence);
             }
+            try {
+                Assert.assertEquals(1.0, sum, 0.01);
+            } catch (AssertionError e) {
+                LOGGER.error("n={}: sum = {} fail", order, sum);
+                throw e;
+            }
             LOGGER.info("n={}: sum = {}", order, sum);
-            Assert.assertEquals(1.0, sum, 0.01);
         }
-
-        LOGGER.info("passed");
     }
 
 }

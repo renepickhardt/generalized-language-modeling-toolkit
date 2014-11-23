@@ -1,5 +1,7 @@
 package de.glmtk.querying.estimator;
 
+import static de.glmtk.utils.PatternElem.SKP_WORD;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,6 @@ import de.glmtk.querying.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
 import de.glmtk.utils.NGram;
-import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 public abstract class Estimator {
@@ -65,7 +66,7 @@ public abstract class Estimator {
      * logging.
      */
     public final double
-    probability(NGram sequence, NGram history, int recDepth) {
+        probability(NGram sequence, NGram history, int recDepth) {
         logDebug(recDepth, "{}#probability({},{})", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
@@ -88,7 +89,7 @@ public abstract class Estimator {
     protected static final NGram getFullHistory(NGram sequence, NGram history) {
         List<String> skippedSequence = new ArrayList<String>(sequence.size());
         for (int i = 0; i != sequence.size(); ++i) {
-            skippedSequence.add(PatternElem.SKP_WORD);
+            skippedSequence.add(SKP_WORD);
         }
         return history.concat(new NGram(skippedSequence));
     }

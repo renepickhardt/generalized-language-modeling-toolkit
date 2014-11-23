@@ -1,5 +1,7 @@
 package de.glmtk.smoothing;
 
+import static de.glmtk.utils.NGram.SKP_NGRAM;
+
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -57,36 +59,31 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
                     sum += estimator.probability(sequence, history);
                 }
 
-                LOGGER.debug("history = {}, sum = {}", history, sum);
-
-                switch (probMode) {
-                    case COND:
-                        NGram checkHistory =
-                        history.concat(NGram.SKP_NGRAM);
-                        if (conntinuationEstimator) {
-                            checkHistory =
-                                    NGram.SKP_NGRAM
-                                    .concat(checkHistory);
-                        }
-                        if (checkHistory.seen(testCorpus.getCountCache())) {
-                            if (Math.abs(0.0 - sum) <= 0.01) {
-                                System.out.println(sum);
-                                System.out.println(history);
+                try {
+                    switch (probMode) {
+                        case COND:
+                            NGram checkHistory = history.concat(SKP_NGRAM);
+                            if (conntinuationEstimator) {
+                                checkHistory = SKP_NGRAM.concat(checkHistory);
                             }
+                            if (checkHistory.seen(testCorpus.getCountCache())) {
+                                Assert.assertEquals(1.0, sum, 0.01);
+                            } else {
+                                Assert.assertEquals(0.0, sum, 0.01);
+                            }
+                            break;
+                        case MARG:
                             Assert.assertEquals(1.0, sum, 0.01);
-                        } else {
-                            Assert.assertEquals(0.0, sum, 0.01);
-                        }
-                        break;
-                    case MARG:
-                        Assert.assertEquals(1.0, sum, 0.01);
-                        break;
-                    default:
-                        throw new IllegalStateException();
+                            break;
+                        default:
+                            throw new IllegalStateException();
+                    }
+                } catch (AssertionError e) {
+                    LOGGER.error("history = {}, sum = {} fail", history, sum);
+                    throw e;
                 }
+                LOGGER.debug("history = {}, sum = {}", history, sum);
             }
         }
-
-        LOGGER.info("passed");
     }
 }

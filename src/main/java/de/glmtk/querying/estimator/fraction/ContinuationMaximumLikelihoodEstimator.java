@@ -1,5 +1,6 @@
 package de.glmtk.querying.estimator.fraction;
 
+import static de.glmtk.utils.NGram.WSKP_NGRAM;
 import de.glmtk.utils.NGram;
 
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
@@ -7,8 +8,8 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram contFullSequence =
-                NGram.SKP_NGRAM.concat(getFullSequence(sequence,
-                        history));
+                WSKP_NGRAM.concat(getFullSequence(sequence, history)
+                        .convertSkpToWskp());
         long contFullSequenceCount =
                 countCache.getContinuation(contFullSequence).getOnePlusCount();
         logDebug(recDepth, "contFullSequence = {} ({})", contFullSequence,
@@ -20,8 +21,8 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
     protected double
         calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram contFullHistory =
-                NGram.SKP_NGRAM.concat(getFullHistory(sequence,
-                        history));
+                WSKP_NGRAM.concat(getFullHistory(sequence, history)
+                        .convertSkpToWskp());
         long contFullHistoryCount =
                 countCache.getContinuation(contFullHistory).getOnePlusCount();
         logDebug(recDepth, "contFullHistory = {} ({})", contFullHistory,

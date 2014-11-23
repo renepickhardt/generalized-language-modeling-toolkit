@@ -170,6 +170,24 @@ public class NGram {
         return new NGram(resultWords, Pattern.get(resultPatternElems));
     }
 
+    public NGram replace(String target, String replacement) {
+        List<String> resultWords = new ArrayList<String>(size());
+
+        for (String word : words) {
+            if (word.equals(target)) {
+                resultWords.add(replacement);
+            } else {
+                resultWords.add(word);
+            }
+        }
+
+        return new NGram(resultWords);
+    }
+
+    public NGram convertSkpToWskp() {
+        return replace(SKP_WORD, WSKP_WORD);
+    }
+
     public NGram backoff(ProbMode probMode) {
         if (isEmpty()) {
             throw new IllegalStateException("Can't backoff empty ngrams.");

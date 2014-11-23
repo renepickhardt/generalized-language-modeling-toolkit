@@ -1,5 +1,6 @@
 package de.glmtk.querying.estimator.interpolation;
 
+import static de.glmtk.utils.PatternElem.WSKP_WORD;
 import de.glmtk.Counter;
 import de.glmtk.querying.CountCache;
 import de.glmtk.querying.ProbMode;
@@ -8,7 +9,6 @@ import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternElem;
 
 public class InterpolationEstimator extends Estimator {
 
@@ -49,7 +49,7 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
             logDebug(recDepth,
@@ -84,7 +84,7 @@ public class InterpolationEstimator extends Estimator {
             logDebug(recDepth, "denominator = 0, setting gamma = 0:");
             return 0;
         } else {
-            NGram historyWithSkip = history.concat(PatternElem.WSKP_WORD);
+            NGram historyPlusWskp = history.concat(WSKP_WORD);
             if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
                 ModifiedKneserNeyDiscountEstimator a =
                         (ModifiedKneserNeyDiscountEstimator) alpha;
@@ -94,7 +94,7 @@ public class InterpolationEstimator extends Estimator {
                 double d3p = a.getDiscount3p(pattern);
 
                 Counter continuation =
-                        countCache.getContinuation(historyWithSkip);
+                        countCache.getContinuation(historyPlusWskp);
                 double n1 = continuation.getOneCount();
                 double n2 = continuation.getTwoCount();
                 double n3p = continuation.getThreePlusCount();
@@ -111,8 +111,8 @@ public class InterpolationEstimator extends Estimator {
             } else {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
-                        countCache.getContinuation(historyWithSkip)
-                        .getOnePlusCount();
+                        countCache.getContinuation(historyPlusWskp)
+                                .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);
                 logDebug(recDepth, "discount = {}", discout);

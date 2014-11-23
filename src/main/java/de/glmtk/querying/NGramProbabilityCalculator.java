@@ -1,5 +1,7 @@
 package de.glmtk.querying;
 
+import static de.glmtk.utils.PatternElem.SKP_WORD;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.utils.NGram;
-import de.glmtk.utils.PatternElem;
 
 public class NGramProbabilityCalculator {
 
@@ -36,7 +37,7 @@ public class NGramProbabilityCalculator {
     /**
      * If {@link #probMode} = {@link ProbMode#COND}:<br>
      * {@code P(a b c) = P(c | a b) * P(b _ | a) * P (a _ _ | )}
-     * 
+     *
      * <p>
      * If {@link #probMode} = {@link ProbMode#MARG}:<br>
      * {@code P(a b c) = P(c | a b) * P(b | a) * P(a |)}
@@ -55,7 +56,7 @@ public class NGramProbabilityCalculator {
             s.add(h.get(h.size() - 1));
             if (probMode == ProbMode.COND) {
                 for (int j = 0; j != i; ++j) {
-                    s.add(PatternElem.SKP_WORD);
+                    s.add(SKP_WORD);
                 }
             }
 
