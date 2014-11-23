@@ -39,7 +39,7 @@ public class Merger {
 
     private boolean continuation;
 
-    public Merger(
+    /* package */Merger(
             int numberOfCores,
             int updateInterval,
             boolean continuation) {
