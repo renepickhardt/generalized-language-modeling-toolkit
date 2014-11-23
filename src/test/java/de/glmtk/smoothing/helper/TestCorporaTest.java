@@ -13,9 +13,11 @@ public class TestCorporaTest extends LoggingTest {
     @BeforeClass
     public static void loadTestCorpora() throws IOException {
         LOGGER.info("Loading corpora...");
-        TestCorpus.ABC.getCountCache();
-        TestCorpus.MOBY_DICK.getCountCache();
-        TestCorpus.EN0008T.getCountCache();
+        // Those calls trigger the static variables to be initialized
+        // so their logging output appears before any test output.
+        TestCorpus.ABC.getCorpusName();
+        TestCorpus.MOBY_DICK.getCorpusName();
+        TestCorpus.EN0008T.getCorpusName();
     }
 
 }
