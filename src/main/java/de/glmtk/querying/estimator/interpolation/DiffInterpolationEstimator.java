@@ -19,7 +19,7 @@ public class DiffInterpolationEstimator extends InterpolationEstimator {
 
     @Override
     protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
             return super.calcProbability(sequence, history, recDepth);
@@ -29,19 +29,19 @@ public class DiffInterpolationEstimator extends InterpolationEstimator {
             int cnt = 0;
             //            System.out.println(StringUtils.repeat("  ", recDepth) + history);
             for (int i = 0; i != history.size(); ++i) {
-                NGram deriveHistory = history.differentiate(i, probMode);
+                NGram diffHistory = history.differentiate(i, probMode);
                 //                System.out.print(StringUtils.repeat("  ", recDepth) + "i=" + i
-                //                        + " " + deriveHistory);
-                if (history.equals(deriveHistory)) {
+                //                        + " " + diffHistory);
+                if (history.equals(diffHistory)) {
                     //                    System.out.println(" (x)");
                     continue;
                 }
-                if (deriveHistory.isEmptyOrOnlySkips()) {
+                if (diffHistory.isEmptyOrOnlySkips()) {
                     //                    System.out.print(" (y)");
                 }
                 //System.out.println();
                 ++cnt;
-                betaVal += beta.probability(sequence, deriveHistory, recDepth);
+                betaVal += beta.probability(sequence, diffHistory, recDepth);
             }
             betaVal /= cnt;
             //            if (cnt < history.size() - 1) {

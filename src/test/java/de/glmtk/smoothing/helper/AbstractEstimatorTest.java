@@ -127,29 +127,29 @@ public abstract class AbstractEstimatorTest extends TestCorporaTest {
     }
 
     @Test
-    public void testDeriveInterpolAbsDiscountMleCond() throws IOException {
-        testEstimator("DeriveInterpolAbsDiscountMle",
+    public void testDiffInterpolAbsDiscountMleCond() throws IOException {
+        testEstimator("DiffInterpolAbsDiscountMle",
                 DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testDeriveInterpolAbsDiscountMleMarg() throws IOException {
-        testEstimator("DeriveInterpolAbsDiscountMle",
+    public void testDiffInterpolAbsDiscountMleMarg() throws IOException {
+        testEstimator("DiffInterpolAbsDiscountMle",
                 DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testDeriveInterpolAbsDiscountMleRecCond() throws IOException {
-        testEstimator("DeriveInterpolAbsDiscountMle",
+    public void testDiffInterpolAbsDiscountMleRecCond() throws IOException {
+        testEstimator("DiffInterpolAbsDiscountMle",
                 DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
-    public void testDeriveInterpolAbsDiscountMleRecMarg() throws IOException {
-        testEstimator("DeriveInterpolAbsDiscountMle",
+    public void testDiffInterpolAbsDiscountMleRecMarg() throws IOException {
+        testEstimator("DiffInterpolAbsDiscountMle",
                 DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
