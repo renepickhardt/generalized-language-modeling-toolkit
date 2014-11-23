@@ -3,8 +3,8 @@ package de.glmtk;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.smoothing.estimator.Estimator;
-import de.glmtk.smoothing.estimator.Estimators;
+import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 
 /**
  * is being used for parmater -m by calling the programm

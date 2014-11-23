@@ -7,7 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.querying.ProbMode;
+import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.smoothing.helper.AbstractEstimatorTest;
 import de.glmtk.smoothing.helper.TestCorpus;
 import de.glmtk.utils.NGram;

@@ -12,7 +12,7 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.smoothing.CountCache;
+import de.glmtk.querying.CountCache;
 import de.glmtk.utils.StringUtils;
 
 public class TestCorpus {

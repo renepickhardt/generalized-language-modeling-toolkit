@@ -9,8 +9,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import de.glmtk.smoothing.CountCache;
-import de.glmtk.smoothing.ProbMode;
+import de.glmtk.querying.CountCache;
+import de.glmtk.querying.ProbMode;
 
 /**
  * Immutable.

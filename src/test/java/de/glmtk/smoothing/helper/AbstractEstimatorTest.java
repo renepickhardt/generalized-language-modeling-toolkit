@@ -1,25 +1,25 @@
 package de.glmtk.smoothing.helper;
 
-import static de.glmtk.smoothing.estimator.Estimators.ABS_UNIGRAM;
-import static de.glmtk.smoothing.estimator.Estimators.BACKOFF_CMLE;
-import static de.glmtk.smoothing.estimator.Estimators.BACKOFF_CMLE_REC;
-import static de.glmtk.smoothing.estimator.Estimators.CMLE;
-import static de.glmtk.smoothing.estimator.Estimators.COMB_MLE_CMLE;
-import static de.glmtk.smoothing.estimator.Estimators.CONT_UNIGRAM;
-import static de.glmtk.smoothing.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE;
-import static de.glmtk.smoothing.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC;
-import static de.glmtk.smoothing.estimator.Estimators.FMLE;
-import static de.glmtk.smoothing.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE;
-import static de.glmtk.smoothing.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_REC;
-import static de.glmtk.smoothing.estimator.Estimators.MLE;
-import static de.glmtk.smoothing.estimator.Estimators.UNIFORM;
+import static de.glmtk.querying.estimator.Estimators.ABS_UNIGRAM;
+import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE;
+import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE_REC;
+import static de.glmtk.querying.estimator.Estimators.CMLE;
+import static de.glmtk.querying.estimator.Estimators.COMB_MLE_CMLE;
+import static de.glmtk.querying.estimator.Estimators.CONT_UNIGRAM;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC;
+import static de.glmtk.querying.estimator.Estimators.FMLE;
+import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE;
+import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_REC;
+import static de.glmtk.querying.estimator.Estimators.MLE;
+import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 
 import java.io.IOException;
 
 import org.junit.Test;
 
-import de.glmtk.smoothing.ProbMode;
-import de.glmtk.smoothing.estimator.Estimator;
+import de.glmtk.querying.ProbMode;
+import de.glmtk.querying.estimator.Estimator;
 
 public abstract class AbstractEstimatorTest extends TestCorporaTest {
 

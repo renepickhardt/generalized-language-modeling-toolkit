@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import de.glmtk.Config;
 import de.glmtk.Counter;
+import de.glmtk.querying.CountCache;
 import de.glmtk.smoothing.helper.TestCorporaTest;
 import de.glmtk.smoothing.helper.TestCorpus;
 import de.glmtk.utils.Pattern;
