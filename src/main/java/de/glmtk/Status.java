@@ -309,7 +309,7 @@ public class Status {
                 throw new Termination();
             }
 
-            Pattern pattern = new Pattern(split.get(0));
+            Pattern pattern = Pattern.get(split.get(0));
             List<Path> chunks = new LinkedList<Path>();
             for (String chunk : StringUtils.splitAtChar(split.get(1), ';')) {
                 chunks.add(Paths.get(chunk));
@@ -325,7 +325,7 @@ public class Status {
             absoluteCounted = new HashSet<Pattern>();
         }
         for (String pattern : StringUtils.splitAtChar(matcher.group(1), ',')) {
-            counted(continuation).add(new Pattern(pattern));
+            counted(continuation).add(Pattern.get(pattern));
         }
     }
 

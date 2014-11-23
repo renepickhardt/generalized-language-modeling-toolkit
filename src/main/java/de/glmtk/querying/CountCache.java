@@ -49,7 +49,7 @@ public class CountCache {
         try (DirectoryStream<Path> files =
                 Files.newDirectoryStream(workingDir.resolve("absolute"))) {
             for (Path file : files) {
-                Pattern pattern = new Pattern(file.getFileName().toString());
+                Pattern pattern = Pattern.get(file.getFileName().toString());
                 Map<String, Long> counts = new HashMap<String, Long>();
                 absolute.put(pattern, counts);
 
@@ -71,7 +71,7 @@ public class CountCache {
         try (DirectoryStream<Path> files =
                 Files.newDirectoryStream(workingDir.resolve("continuation"))) {
             for (Path file : files) {
-                Pattern pattern = new Pattern(file.getFileName().toString());
+                Pattern pattern = Pattern.get(file.getFileName().toString());
                 Map<String, Counter> counts = new HashMap<String, Counter>();
                 continuation.put(pattern, counts);
 
@@ -147,7 +147,7 @@ public class CountCache {
     }
 
     public SortedSet<String> getWords() {
-        return new TreeSet<String>(absolute.get(new Pattern(CNT)).keySet());
+        return new TreeSet<String>(absolute.get(Pattern.get(CNT)).keySet());
     }
 
 }
