@@ -173,8 +173,8 @@ import de.glmtk.utils.StringUtils;
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average(
                             "ContinuationChunker.QueueItem Memory", MemoryUtil
-                            .deepMemoryUsageOf(item,
-                                    VisibilityFilter.ALL));
+                                    .deepMemoryUsageOf(item,
+                                            VisibilityFilter.ALL));
                 }
             }
             if (lastFile) {

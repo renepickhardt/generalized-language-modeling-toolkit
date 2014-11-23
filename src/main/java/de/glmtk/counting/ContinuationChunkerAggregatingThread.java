@@ -53,7 +53,7 @@ import de.glmtk.utils.StringUtils;
 
     private BlockingQueue<QueueItem> queue;
 
-    private Map<Pattern, Pattern> sourceToPattern;
+    private Map<Pattern, List<Pattern>> sourceToPattern;
 
     private Path continuationChunkedDir;
 
@@ -67,7 +67,7 @@ import de.glmtk.utils.StringUtils;
             ContinuationChunker continuationChunker,
             Status status,
             BlockingQueue<QueueItem> queue,
-            Map<Pattern, Pattern> sourceToPattern,
+            Map<Pattern, List<Pattern>> sourceToPattern,
             Path continuationChunkedDir,
             long chunkSize) {
         this.continuationChunker = continuationChunker;
@@ -94,8 +94,9 @@ import de.glmtk.utils.StringUtils;
                     continue;
                 }
 
-                addToChunk(sourceToPattern.get(item.pattern), item.sequence,
-                        item.count);
+                for (Pattern pattern : sourceToPattern.get(item.pattern)) {
+                    addToChunk(pattern, item.sequence, item.count);
+                }
             }
 
             LOGGER.debug("Done.");

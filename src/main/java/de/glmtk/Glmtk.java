@@ -1,5 +1,11 @@
 package de.glmtk;
 
+import static de.glmtk.utils.PatternElem.CNT;
+import static de.glmtk.utils.PatternElem.POS;
+import static de.glmtk.utils.PatternElem.PSKP;
+import static de.glmtk.utils.PatternElem.SKP;
+import static de.glmtk.utils.PatternElem.WSKP;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,7 +32,6 @@ import de.glmtk.smoothing.NGramProbabilityCalculator;
 import de.glmtk.smoothing.ProbMode;
 import de.glmtk.smoothing.estimator.Estimator;
 import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;
 
 /**
@@ -108,6 +113,8 @@ public class Glmtk {
 
         // Request /////////////////////////////////////////////////////////////
 
+        boolean needPos = false;
+
         // Whether the corpus should be tagged with POS.
         boolean needToTagTraining = false;
         // Absolute Patterns we need
@@ -121,32 +128,25 @@ public class Glmtk {
             case KNESER_NEY:
             case MODIFIED_KNESER_NEY:
             case GENERALIZED_LANGUAGE_MODEL:
-                if (!needToTagTraining) {
-                    neededAbsolutePatterns =
-                            Pattern.getCombinations(Constants.MODEL_SIZE,
-                                    Arrays.asList(PatternElem.CNT,
-                                            PatternElem.SKP));
-                    //                    neededContinuationPatterns =
-                    //                            Pattern.replaceTargetWithElems(
-                    //                                    neededAbsolutePatterns, PatternElem.SKP,
-                    //                                    Arrays.asList(PatternElem.WSKP));
-                } else {
-                    neededAbsolutePatterns =
-                            Pattern.getCombinations(Constants.MODEL_SIZE,
-                                    Arrays.asList(PatternElem.CNT,
-                                            PatternElem.SKP, PatternElem.POS));
-                    //                    neededContinuationPatterns =
-                    //                            Pattern.replaceTargetWithElems(
-                    //                                    neededAbsolutePatterns, PatternElem.SKP,
-                    //                                    Arrays.asList(PatternElem.WSKP,
-                    //                                            PatternElem.PSKP));
-                }
-
+                neededAbsolutePatterns =
+                Pattern.getCombinations(Constants.MODEL_SIZE, needPos
+                        ? Arrays.asList(CNT, SKP, POS)
+                                : Arrays.asList(CNT, SKP));
                 neededContinuationPatterns = new HashSet<Pattern>();
                 for (Pattern pattern : neededAbsolutePatterns) {
+                    if (pattern.contains(SKP)) {
+                        neededContinuationPatterns.add(pattern.replace(SKP,
+                                WSKP));
+                        if (needPos) {
+                            neededContinuationPatterns.add(pattern.replace(SKP,
+                                    PSKP));
+                        }
+                    }
+                }
+
+                for (Pattern pattern : neededAbsolutePatterns) {
                     if (pattern.size() != Constants.MODEL_SIZE) {
-                        neededContinuationPatterns.add(pattern
-                                .concat(PatternElem.WSKP));
+                        neededContinuationPatterns.add(pattern.concat(WSKP));
                     }
                 }
                 break;
@@ -156,16 +156,15 @@ public class Glmtk {
 
         // Add patterns to absolute that are needed to generate continuation.
         for (Pattern pattern : neededContinuationPatterns) {
-            Pattern sourcePattern =
-                    pattern.range(0, pattern.size() - 1)
-                            .concat(PatternElem.CNT);
-            neededAbsolutePatterns.add(sourcePattern);
-            //            Pattern sourcePattern = pattern.getContinuationSource();
-            //            if (sourcePattern.isAbsolute()) {
-            //                neededAbsolutePatterns.add(sourcePattern);
-            //            } else {
-            //                neededContinuationPatterns.add(sourcePattern);
-            //            }
+            //            Pattern sourcePattern =
+            //                    pattern.range(0, pattern.size() - 1).concat(CNT);
+            //            neededAbsolutePatterns.add(sourcePattern);
+            Pattern sourcePattern = pattern.getContinuationSource();
+            if (sourcePattern.isAbsolute()) {
+                neededAbsolutePatterns.add(sourcePattern);
+            } else {
+                neededContinuationPatterns.add(sourcePattern);
+            }
         }
 
         LOGGER.debug("Request %s", StringUtils.repeat("-", 80 - 8));
@@ -209,7 +208,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolutePatterns,
                         config.getNumberOfCores(), config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -299,7 +298,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                    * 100);
+                            * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);

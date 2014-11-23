@@ -47,13 +47,13 @@ import de.glmtk.utils.PatternElem;
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-                @Override
-                public int compare(Pattern a, Pattern b) {
-                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
-                    .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-                }
+        @Override
+        public int compare(Pattern a, Pattern b) {
+            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+                            .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
+        }
 
-            };
+    };
 
     /* package */static class QueueItem {
 
@@ -140,23 +140,18 @@ import de.glmtk.utils.PatternElem;
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Preparing Threads...");
 
-        //        Map<Pattern, Pattern> patternToSource = new HashMap<Pattern, Pattern>();
-        //        for (Pattern pattern : patterns) {
-        //            patternToSource.put(pattern, pattern.getContinuationSource());
-        //        }
-        //        Map<Pattern, List<Pattern>> sourceToPattern =
-        //                computeSourceToPattern(patternToSource, status);
-        Map<Pattern, Pattern> sourceToPattern = new HashMap<Pattern, Pattern>();
+        Map<Pattern, Pattern> patternToSource = new HashMap<Pattern, Pattern>();
         for (Pattern pattern : patterns) {
-            sourceToPattern.put(
-                    pattern.range(0, pattern.size() - 1)
-                            .concat(PatternElem.CNT), pattern);
+            patternToSource.put(pattern, pattern.getContinuationSource());
         }
+        Map<Pattern, List<Pattern>> sourceToPattern =
+                computeSourceToPattern(patternToSource, status);
 
         List<BlockingQueue<QueueItem>> aggregatingQueues =
                 new ArrayList<BlockingQueue<QueueItem>>(numAggregatingThreads);
-        List<Map<Pattern, Pattern>> aggregatingSourceToPattern =
-                new ArrayList<Map<Pattern, Pattern>>(numAggregatingThreads);
+        List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern =
+                new ArrayList<Map<Pattern, List<Pattern>>>(
+                        numAggregatingThreads);
         Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueue =
                 new HashMap<Pattern, BlockingQueue<QueueItem>>();
         setupThreadParameters(numAggregatingThreads, queueMemory,
@@ -257,18 +252,20 @@ import de.glmtk.utils.PatternElem;
     private void setupThreadParameters(
             int numAggregatingThreads,
             long queueMemory,
-            Map<Pattern, Pattern> sourceToPattern,
+            Map<Pattern, List<Pattern>> sourceToPattern,
             List<BlockingQueue<QueueItem>> aggregatingQueues,
-            List<Map<Pattern, Pattern>> aggregatingSourceToPattern,
+            List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
             Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueues) {
         for (int i = 0; i != numAggregatingThreads; ++i) {
             aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
                     (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
-            aggregatingSourceToPattern.add(new HashMap<Pattern, Pattern>());
+            aggregatingSourceToPattern
+            .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         int threadIter = 0;
-        for (Map.Entry<Pattern, Pattern> entry : sourceToPattern.entrySet()) {
+        for (Map.Entry<Pattern, List<Pattern>> entry : sourceToPattern
+                .entrySet()) {
             Pattern source = entry.getKey();
             aggregatingSourceToPattern.get(threadIter).put(source,
                     entry.getValue());

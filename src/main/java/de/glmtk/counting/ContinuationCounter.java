@@ -13,6 +13,8 @@ import de.glmtk.utils.Pattern;
 
 public class ContinuationCounter {
 
+    // TODO: Check why so many cont couts end with 0\t0.
+
     private static final Logger LOGGER = LogManager
             .getLogger(ContinuationCounter.class);
 

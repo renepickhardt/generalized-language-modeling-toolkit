@@ -141,15 +141,15 @@ public class Pattern implements Iterable<PatternElem> {
 
     public boolean containsOnly(Collection<PatternElem> elems) {
         outerLoop:
-            for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
-                    continue outerLoop;
+        for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems) {
+                    if (elem.equals(e)) {
+                        continue outerLoop;
+                    }
                 }
+                return false;
             }
-            return false;
-        }
-    return true;
+        return true;
     }
 
     public boolean isAbsolute() {
@@ -159,14 +159,14 @@ public class Pattern implements Iterable<PatternElem> {
     public int numElems(Collection<PatternElem> elems) {
         int result = 0;
         outerLoop:
-        for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
-                    ++result;
-                    continue outerLoop;
+            for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems) {
+                    if (elem.equals(e)) {
+                        ++result;
+                        continue outerLoop;
+                    }
                 }
             }
-        }
         return result;
     }
 
@@ -190,7 +190,7 @@ public class Pattern implements Iterable<PatternElem> {
         } else if (from >= to) {
             throw new IllegalArgumentException(
                     "From index larger or equal than to index: " + from
-                            + " >= " + to);
+                    + " >= " + to);
         }
 
         List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
@@ -232,7 +232,7 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public Pattern getContinuationSource() {
-        List<PatternElem> resultElems = new ArrayList<PatternElem>(size());
+        List<PatternElem> resultElems = new ArrayList<PatternElem>(elems);
 
         for (int i = size() - 1; i != -1; --i) {
             PatternElem elem = get(i);
