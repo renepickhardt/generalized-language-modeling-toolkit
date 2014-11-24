@@ -37,8 +37,8 @@ public class Pattern implements Iterable<PatternElem> {
 
     /**
      * Because all Patterns are cached, and can only be accessed through
-     * {@link Pattern#get()}, there can never be two instances of a Pattern
-     * considered equal, thus it suffices to check for object identity.
+     * {@link Pattern#get()}, there can never be two instances of equal
+     * Patterns, thus it suffices to check for object identity.
      *
      * We could just omit this definition since it's default, but it's left
      * for clarification.
@@ -115,14 +115,14 @@ public class Pattern implements Iterable<PatternElem> {
             throw new IllegalArgumentException("Argument was empty collection.");
         }
         outerLoop:
-        for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems) {
-                    if (elem.equals(e)) {
-                        continue outerLoop;
-                    }
+            for (PatternElem elem : this.elems) {
+            for (PatternElem e : elems) {
+                if (elem.equals(e)) {
+                    continue outerLoop;
                 }
-                return false;
             }
+            return false;
+        }
         return true;
     }
 
@@ -136,14 +136,14 @@ public class Pattern implements Iterable<PatternElem> {
         }
         int result = 0;
         outerLoop:
-            for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems) {
-                    if (elem.equals(e)) {
-                        ++result;
-                        continue outerLoop;
-                    }
+        for (PatternElem elem : this.elems) {
+            for (PatternElem e : elems) {
+                if (elem.equals(e)) {
+                    ++result;
+                    continue outerLoop;
                 }
             }
+        }
         return result;
     }
 
@@ -163,7 +163,7 @@ public class Pattern implements Iterable<PatternElem> {
         } else if (from > to) {
             throw new IllegalArgumentException(
                     "From index larger or equal than to index: " + from
-                    + " >= " + to);
+                            + " >= " + to);
         }
 
         List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);

@@ -4,30 +4,33 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Util class containing various static helper methods related to strings.
+ */
 public class StringUtils {
 
     /**
-     * Takes a string and returns a list containing all substrings which are
-     * separated by space.
+     * Takes a {@code string} and returns a list containing all substrings which
+     * are separated by character {@code split}.
      *
-     * This method should be used instead of string.split(' ') since it is much
-     * more performant.
+     * This method should be used for space splitting instead of
+     * {@code string.split(' ')} since it is much faster.
      */
-    public static List<String> splitAtChar(String s, char c) {
+    public static List<String> splitAtChar(String string, char split) {
         List<String> result = new ArrayList<String>();
 
         int sp1 = 0, sp2;
         while (true) {
-            sp2 = s.indexOf(c, sp1);
+            sp2 = string.indexOf(split, sp1);
 
             if (sp2 == -1) {
-                String substr = s.substring(sp1);
+                String substr = string.substring(sp1);
                 if (!substr.isEmpty()) {
                     result.add(substr);
                 }
                 break;
             } else {
-                String substr = s.substring(sp1, sp2);
+                String substr = string.substring(sp1, sp2);
                 if (!substr.isEmpty()) {
                     result.add(substr);
                 }
@@ -39,7 +42,7 @@ public class StringUtils {
     }
 
     /**
-     * Takes a collection of objects and concatenates their string
+     * Takes a collection of {@code objects} and concatenates their string
      * representation ({@code Object#toString()}) to one, putting
      * {@code conjunction} in between.
      */
@@ -58,9 +61,9 @@ public class StringUtils {
     }
 
     /**
-     * Takes an array of objects and concatenates their string representation
-     * ({@code Object#toString()}) to one, putting {@code conjunction} in
-     * between.
+     * Takes an array of {@code objects} and concatenates their string
+     * representation ({@code Object#toString()}) to one, putting
+     * {@code conjunction} in between.
      */
     public static <T >String join(T[] objects, String conjunction) {
         StringBuilder result = new StringBuilder();
@@ -77,7 +80,8 @@ public class StringUtils {
     }
 
     /**
-     * Takes a string a returns the same string repeated for given times.
+     * Takes a {@code string} and concatenates that string repeatedly for given
+     * {@code times}.
      */
     public static String repeat(String string, int times) {
         StringBuilder result = new StringBuilder();
@@ -91,6 +95,7 @@ public class StringUtils {
      * Puts {@code <s1/>}, {@code <s2/>}, ... up to {@code maxPatternLength}
      * tokens around {@code line}.
      */
+    @Deprecated
     public static String surroundWithTokens(int maxPatternLength, String line) {
         StringBuilder lineBuilder = new StringBuilder();
         for (int i = 1; i != maxPatternLength; ++i) {
