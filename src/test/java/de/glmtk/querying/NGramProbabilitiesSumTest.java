@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.querying;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,8 +10,8 @@ import org.junit.Assert;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.smoothing.helper.AbstractEstimatorTest;
-import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.querying.helper.AbstractEstimatorTest;
+import de.glmtk.querying.helper.TestCorpus;
 
 public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
 

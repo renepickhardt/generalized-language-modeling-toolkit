@@ -1,4 +1,4 @@
-package de.glmtk.querying;
+package de.glmtk.utils;
 
 import static de.glmtk.utils.NGram.SKP_NGRAM;
 import static de.glmtk.utils.NGram.WSKP_NGRAM;
@@ -18,10 +18,9 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Counter;
-import de.glmtk.utils.NGram;
-import de.glmtk.utils.Pattern;
-
+/**
+ * Tests for this class can be found in {@link CountingTest}.
+ */
 public class CountCache {
 
     private static final Logger LOGGER = LogManager.getLogger(CountCache.class);
@@ -92,7 +91,7 @@ public class CountCache {
     private void loadNGramTimes() {
         for (Pattern pattern : absolute.keySet()) {
             long[] counts = {
-                    0L, 0L, 0L, 0L
+                0L, 0L, 0L, 0L
             };
 
             for (long count : absolute.get(pattern).values()) {
@@ -133,7 +132,7 @@ public class CountCache {
         if (counts == null) {
             throw new IllegalStateException(
                     "No nGramTimes counts learned for pattern'" + pattern
-                            + "'.");
+                    + "'.");
         }
         return counts;
     }

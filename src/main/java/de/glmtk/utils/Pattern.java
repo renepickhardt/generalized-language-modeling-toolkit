@@ -19,10 +19,10 @@ import java.util.Set;
 
 /**
  * Immutable.
+ *
+ * Tests for this class can be found in {@link PatternTest}.
  */
 public class Pattern implements Iterable<PatternElem> {
-
-    // TODO: Test this class.
 
     private List<PatternElem> elems;
 
@@ -35,16 +35,17 @@ public class Pattern implements Iterable<PatternElem> {
         this.asString = asString;
     }
 
+    /**
+     * Because all Patterns are cached, and can only be accessed through
+     * {@link Pattern#get()}, there can never be two instances of a Pattern
+     * considered equal, thus it suffices to check for object identity.
+     *
+     * We could just omit this definition since it's default, but it's left
+     * for clarification.
+     */
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        } else if (other == null || !other.getClass().equals(Pattern.class)) {
-            return false;
-        }
-
-        Pattern o = (Pattern) other;
-        return asString.equals(o.asString);
+        return this == other;
     }
 
     @Override
@@ -71,6 +72,10 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public PatternElem get(int index) {
+        if (index < 0 || index > size()) {
+            throw new IllegalArgumentException("Illegal index: " + index
+                    + ". Size: " + size() + ".");
+        }
         return elems.get(index);
     }
 
@@ -88,6 +93,9 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public boolean contains(Collection<PatternElem> elems) {
+        if (elems.isEmpty()) {
+            throw new IllegalArgumentException("Argument was empty collection.");
+        }
         for (PatternElem elem : this.elems) {
             for (PatternElem e : elems) {
                 if (elem.equals(e)) {
@@ -103,6 +111,9 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public boolean containsOnly(Collection<PatternElem> elems) {
+        if (elems.isEmpty()) {
+            throw new IllegalArgumentException("Argument was empty collection.");
+        }
         outerLoop:
         for (PatternElem elem : this.elems) {
                 for (PatternElem e : elems) {
@@ -120,6 +131,9 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public int numElems(Collection<PatternElem> elems) {
+        if (elems.isEmpty()) {
+            throw new IllegalArgumentException("Argument was empty collection.");
+        }
         int result = 0;
         outerLoop:
             for (PatternElem elem : this.elems) {
@@ -142,11 +156,11 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public Pattern range(int from, int to) {
-        if (from < 0 || from >= size()) {
+        if (from < 0 || from > size()) {
             throw new IllegalArgumentException("Illegal from index: " + from);
-        } else if (to < 1 || to > size()) {
+        } else if (to < 0 || to > size()) {
             throw new IllegalArgumentException("Illegal to index: " + to);
-        } else if (from >= to) {
+        } else if (from > to) {
             throw new IllegalArgumentException(
                     "From index larger or equal than to index: " + from
                     + " >= " + to);
@@ -181,6 +195,7 @@ public class Pattern implements Iterable<PatternElem> {
         for (int i = size() - 1; i != -1; --i) {
             if (elems.get(i).equals(target)) {
                 resultElems.set(i, replacement);
+                break;
             }
         }
 
@@ -205,6 +220,7 @@ public class Pattern implements Iterable<PatternElem> {
                 + "' is not a continuation pattern.");
     }
 
+    // TODO: untested
     public String apply(String[] words) {
         StringBuilder result = new StringBuilder();
 
@@ -225,6 +241,7 @@ public class Pattern implements Iterable<PatternElem> {
         return result.toString();
     }
 
+    // TODO: untested
     public String apply(String[] words, String[] pos, int p) {
         StringBuilder result = new StringBuilder();
 
@@ -243,34 +260,6 @@ public class Pattern implements Iterable<PatternElem> {
         }
 
         return result.toString();
-    }
-
-    public static Set<Pattern> getCombinations(
-            int modelSize,
-            List<PatternElem> elems) {
-        Set<Pattern> patterns = new HashSet<Pattern>();
-
-        for (int i = 1; i != modelSize + 1; ++i) {
-            for (int j = 0; j != pow(elems.size(), i); ++j) {
-                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
-                int n = j;
-                for (int k = 0; k != i; ++k) {
-                    pattern.add(elems.get(n % elems.size()));
-                    n /= elems.size();
-                }
-                patterns.add(Pattern.get(pattern));
-            }
-        }
-
-        return patterns;
-    }
-
-    private static int pow(int base, int power) {
-        int result = 1;
-        for (int i = 0; i != power; ++i) {
-            result *= base;
-        }
-        return result;
     }
 
     private static final Map<String, Pattern> AS_STRING_TO_PATTERN =
@@ -331,6 +320,35 @@ public class Pattern implements Iterable<PatternElem> {
 
     private static void cachePattern(Pattern pattern) {
         AS_STRING_TO_PATTERN.put(pattern.asString, pattern);
+    }
+
+    // TODO: untested
+    public static Set<Pattern> getCombinations(
+            int modelSize,
+            List<PatternElem> elems) {
+        Set<Pattern> patterns = new HashSet<Pattern>();
+
+        for (int i = 1; i != modelSize + 1; ++i) {
+            for (int j = 0; j != pow(elems.size(), i); ++j) {
+                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
+                int n = j;
+                for (int k = 0; k != i; ++k) {
+                    pattern.add(elems.get(n % elems.size()));
+                    n /= elems.size();
+                }
+                patterns.add(Pattern.get(pattern));
+            }
+        }
+
+        return patterns;
+    }
+
+    private static int pow(int base, int power) {
+        int result = 1;
+        for (int i = 0; i != power; ++i) {
+            result *= base;
+        }
+        return result;
     }
 
 }

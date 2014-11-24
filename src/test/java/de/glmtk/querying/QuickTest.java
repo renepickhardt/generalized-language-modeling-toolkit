@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.querying;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import de.glmtk.querying.CountCache;
-import de.glmtk.smoothing.helper.TestCorporaTest;
-import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.querying.helper.TestCorporaTest;
+import de.glmtk.querying.helper.TestCorpus;
+import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
 

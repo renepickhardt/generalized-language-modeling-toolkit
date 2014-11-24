@@ -1,4 +1,4 @@
-package de.glmtk.smoothing.helper;
+package de.glmtk.querying.helper;
 
 import static de.glmtk.querying.estimator.Estimators.ABS_UNIGRAM;
 import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE;

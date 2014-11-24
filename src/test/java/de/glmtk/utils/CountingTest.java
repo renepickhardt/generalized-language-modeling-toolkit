@@ -1,4 +1,4 @@
-package de.glmtk.smoothing;
+package de.glmtk.utils;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,10 +19,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.glmtk.Config;
-import de.glmtk.Counter;
-import de.glmtk.querying.CountCache;
-import de.glmtk.smoothing.helper.TestCorporaTest;
-import de.glmtk.smoothing.helper.TestCorpus;
+import de.glmtk.querying.helper.TestCorporaTest;
+import de.glmtk.querying.helper.TestCorpus;
+import de.glmtk.utils.CountCache;
+import de.glmtk.utils.Counter;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.PatternElem;
 import de.glmtk.utils.StringUtils;

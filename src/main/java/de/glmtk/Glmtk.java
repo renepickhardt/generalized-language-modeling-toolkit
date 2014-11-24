@@ -27,10 +27,10 @@ import de.glmtk.Status.TrainingStatus;
 import de.glmtk.learning.AbsoluteCounter;
 import de.glmtk.learning.ContinuationCounter;
 import de.glmtk.learning.Tagger;
-import de.glmtk.querying.CountCache;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.utils.CountCache;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StringUtils;
 

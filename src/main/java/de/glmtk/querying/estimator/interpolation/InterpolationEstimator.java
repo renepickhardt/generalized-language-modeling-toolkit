@@ -1,12 +1,12 @@
 package de.glmtk.querying.estimator.interpolation;
 
 import static de.glmtk.utils.PatternElem.WSKP_WORD;
-import de.glmtk.Counter;
-import de.glmtk.querying.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.utils.CountCache;
+import de.glmtk.utils.Counter;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
 

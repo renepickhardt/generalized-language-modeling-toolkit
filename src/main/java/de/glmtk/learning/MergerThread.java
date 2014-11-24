@@ -18,8 +18,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.Counter;
 import de.glmtk.Status;
+import de.glmtk.utils.Counter;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;

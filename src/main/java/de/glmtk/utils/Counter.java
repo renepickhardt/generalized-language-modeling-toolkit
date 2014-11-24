@@ -1,8 +1,6 @@
-package de.glmtk;
+package de.glmtk.utils;
 
 import java.util.List;
-
-import de.glmtk.utils.StringUtils;
 
 /**
  * This class is used for counting continuation counts

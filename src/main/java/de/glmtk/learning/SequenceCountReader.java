@@ -3,7 +3,7 @@ package de.glmtk.learning;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import de.glmtk.Counter;
+import de.glmtk.utils.Counter;
 
 /* package */class SequenceCountReader implements AutoCloseable,
 Comparable<SequenceCountReader> {

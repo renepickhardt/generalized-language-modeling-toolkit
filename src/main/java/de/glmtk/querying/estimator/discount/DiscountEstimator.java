@@ -1,8 +1,8 @@
 package de.glmtk.querying.estimator.discount;
 
-import de.glmtk.querying.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
+import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 
 public abstract class DiscountEstimator extends FractionEstimator {

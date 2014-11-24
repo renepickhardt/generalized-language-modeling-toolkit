@@ -1,4 +1,4 @@
-package de.glmtk.smoothing.helper;
+package de.glmtk.querying.helper;
 
 import java.io.IOException;
 

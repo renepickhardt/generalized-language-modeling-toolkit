@@ -1,4 +1,6 @@
-package de.glmtk.smoothing.helper;
+package de.glmtk.querying.helper;
+
+import static de.glmtk.Constants.TEST_RESSOURCES_DIR;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -7,9 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.querying.CountCache;
+import de.glmtk.utils.CountCache;
 
 public class TestCorpus {
 
@@ -35,9 +36,8 @@ public class TestCorpus {
 
     private TestCorpus(
             String corpusName) throws IOException, InterruptedException {
-        this(corpusName, Constants.TEST_RESSOURCES_DIR.resolve(corpusName
-                .toLowerCase()), Constants.TEST_RESSOURCES_DIR
-                .resolve(corpusName.toLowerCase() + ".out"));
+        this(corpusName, TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()),
+                TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase() + ".out"));
     }
 
     private TestCorpus(

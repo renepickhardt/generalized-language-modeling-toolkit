@@ -8,9 +8,9 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.querying.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
+import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.StringUtils;
 
