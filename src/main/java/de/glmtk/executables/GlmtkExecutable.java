@@ -5,20 +5,32 @@ import static de.glmtk.utils.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_READABLE;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_REGULAR_FILE;
+import static de.glmtk.utils.PatternElem.CNT;
+import static de.glmtk.utils.PatternElem.POS;
+import static de.glmtk.utils.PatternElem.PSKP;
+import static de.glmtk.utils.PatternElem.SKP;
+import static de.glmtk.utils.PatternElem.WSKP;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.cli.Option;
 
+import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.Model;
 import de.glmtk.Termination;
+import de.glmtk.querying.ProbMode;
+import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NioUtils;
+import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
@@ -41,7 +53,7 @@ public class GlmtkExecutable extends Executable {
         for (Model model : Model.values()) {
             String abbreviation = model.getAbbreviation();
             modelOptDesc.append(abbreviation);
-            modelOptDesc.append(StringUtils.repeat(" ", 4 - abbreviation.length()));
+            modelOptDesc.append(StringUtils.repeat(" ", 5 - abbreviation.length()));
             modelOptDesc.append("- ");
             modelOptDesc.append(model.getName());
             modelOptDesc.append(".\n");
@@ -54,9 +66,13 @@ public class GlmtkExecutable extends Executable {
         options = Arrays.asList(help, version, workingDir, model, testing);
     }
 
-    private Glmtk glmtk = new Glmtk();
+    private Path corpus = null;
 
     private Path workingDir = null;
+
+    private List<Path> testingFiles = new LinkedList<Path>();
+
+    private Model model = Model.MODIFIED_KNESER_NEY;
 
     public static void main(String[] args) {
         new GlmtkExecutable().run(args);
@@ -87,7 +103,6 @@ public class GlmtkExecutable extends Executable {
                     + "' does not exist or is not readable.");
         }
 
-        Path workingDir = null, corpus = null;
         if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
             if (line.hasOption(OPTION_WORKINGDIR)) {
                 throw new Termination(
@@ -100,11 +115,10 @@ public class GlmtkExecutable extends Executable {
             getAndCheckCorpusFile(workingDir, "status");
             corpus = getAndCheckCorpusFile(workingDir, "training");
         } else {
-            if (line.hasOption(OPTION_WORKINGDIR)) {
-                workingDir = Paths.get(line.getOptionValue(OPTION_WORKINGDIR));
-            } else {
-                workingDir = Paths.get(inputArg + ".out");
-            }
+            workingDir =
+                    line.hasOption(OPTION_WORKINGDIR) ? Paths.get(line
+                            .getOptionValue(OPTION_WORKINGDIR)) : Paths
+                            .get(inputArg + ".out");
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
                 System.err.println("Working directory '" + workingDir
                         + "' already exists but is not a directory.");
@@ -112,19 +126,15 @@ public class GlmtkExecutable extends Executable {
 
             corpus = inputArg;
         }
-        glmtk.setCorpus(corpus);
-        glmtk.setWorkingDir(workingDir);
-        this.workingDir = workingDir;
 
         if (line.hasOption(OPTION_MODEL)) {
-            Model model =
+            model =
                     Model.fromAbbreviation(line.getOptionValue(OPTION_MODEL)
                             .toUpperCase());
             if (model == null) {
                 throw new Termination("Unkown model option '"
                         + line.getOptionValue(OPTION_MODEL) + "'.");
             }
-            glmtk.setModel(model);
         }
 
         if (line.hasOption(OPTION_TESTING)) {
@@ -135,7 +145,7 @@ public class GlmtkExecutable extends Executable {
                     throw new Termination("Testing file '" + path
                             + "' does not exist or is not readable.");
                 }
-                glmtk.addTestingFile(path);
+                testingFiles.add(path);
             }
         }
     }
@@ -157,8 +167,50 @@ public class GlmtkExecutable extends Executable {
 
     @Override
     protected void exec() throws IOException {
-        glmtk.count();
-        glmtk.test();
+        Glmtk glmtk = new Glmtk(corpus, workingDir);
+
+        boolean needPos = false;
+        Set<Pattern> neededAbsolute = new HashSet<Pattern>();
+        Set<Pattern> neededContinuation = new HashSet<Pattern>();
+
+        // TODO: optimize to only count needed patterns for KN and MKN.
+        switch (model) {
+            case MAXIMUM_LIKELIHOOD:
+            case KNESER_NEY:
+            case MODIFIED_KNESER_NEY:
+            case MODIFIED_KNESERY_NEY_ABS:
+            case GENERALIZED_LANGUAGE_MODEL:
+            case GENERALIZED_LANGUAGE_MODEL_ABS:
+                neededAbsolute =
+                        Pattern.getCombinations(Constants.MODEL_SIZE, needPos
+                                ? Arrays.asList(CNT, SKP, POS)
+                                : Arrays.asList(CNT, SKP));
+                neededContinuation = new HashSet<Pattern>();
+                for (Pattern pattern : neededAbsolute) {
+                    if (pattern.size() != Constants.MODEL_SIZE) {
+                        neededContinuation.add(pattern.concat(WSKP));
+                    }
+
+                    if (pattern.contains(SKP)) {
+                        neededContinuation.add(pattern.replace(SKP, WSKP));
+                        if (needPos) {
+                            neededContinuation.add(pattern.replace(SKP, PSKP));
+                        }
+                    }
+                }
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+
+        glmtk.count(needPos, neededAbsolute, neededContinuation);
+
+        if (!testingFiles.isEmpty()) {
+            Estimator estimator = model.getEstimator();
+            for (Path testingFile : testingFiles) {
+                glmtk.test(estimator, ProbMode.MARG, testingFile);
+            }
+        }
 
         StatisticalNumberHelper.print();
     }

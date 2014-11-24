@@ -21,9 +21,9 @@ public abstract class Estimator {
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR =
             Estimators.ABS_UNIGRAM;
 
-    protected CountCache countCache = null;
+    protected CountCache countCache;
 
-    protected ProbMode probMode = null;
+    protected ProbMode probMode;
 
     public void setCountCache(CountCache countCache) {
         this.countCache = countCache;

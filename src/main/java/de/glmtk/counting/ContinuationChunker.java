@@ -1,4 +1,4 @@
-package de.glmtk.learning;
+package de.glmtk.counting;
 
 import static de.glmtk.Constants.B;
 import static de.glmtk.Constants.KB;

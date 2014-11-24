@@ -1,4 +1,4 @@
-package de.glmtk.learning;
+package de.glmtk.counting;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -29,128 +29,118 @@ public abstract class AbstractEstimatorTest extends TestCorporaTest {
 
     @Test
     public void testUniformMarg() throws IOException {
-        testEstimator("Uniform", UNIFORM, ProbMode.MARG, HIGHEST_TEST_ORDER,
-                false);
+        testEstimator(UNIFORM, ProbMode.MARG, HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testAbsUnigramMarg() throws IOException {
-        testEstimator("AbsUnigram", ABS_UNIGRAM, ProbMode.MARG,
-                HIGHEST_TEST_ORDER, false);
+        testEstimator(ABS_UNIGRAM, ProbMode.MARG, HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testContUnigramMarg() throws IOException {
-        testEstimator("ContUnigram", CONT_UNIGRAM, ProbMode.MARG,
-                HIGHEST_TEST_ORDER - 1, false);
+        testEstimator(CONT_UNIGRAM, ProbMode.MARG, HIGHEST_TEST_ORDER - 1,
+                false);
     }
 
     // Fractions Estimators
 
     @Test
     public void testMleCond() throws IOException {
-        testEstimator("MLE", MLE, ProbMode.COND, HIGHEST_TEST_ORDER, false);
+        testEstimator(MLE, ProbMode.COND, HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testMleMarg() throws IOException {
-        testEstimator("MLE", MLE, ProbMode.MARG, HIGHEST_TEST_ORDER, false);
+        testEstimator(MLE, ProbMode.MARG, HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testFmleCondMarg() throws IOException {
-        testEstimator("FMLE", FMLE, ProbMode.MARG, HIGHEST_TEST_ORDER, false);
+        testEstimator(FMLE, ProbMode.MARG, HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testCmleCond() throws IOException {
-        testEstimator("CMLE", CMLE, ProbMode.COND, HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(CMLE, ProbMode.COND, HIGHEST_TEST_ORDER - 1, true);
     }
 
     @Test
     public void testCmleMarg() throws IOException {
-        testEstimator("CMLE", CMLE, ProbMode.MARG, HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(CMLE, ProbMode.MARG, HIGHEST_TEST_ORDER - 1, true);
     }
 
     // Backoff Estimators
 
     @Test
     public void testBackoffCmleCond() throws IOException {
-        testEstimator("BackoffCmle", BACKOFF_CMLE, ProbMode.COND,
-                HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(BACKOFF_CMLE, ProbMode.COND, HIGHEST_TEST_ORDER - 1, true);
     }
 
     @Test
     public void testBackoffCmleMarg() throws IOException {
-        testEstimator("BackoffCmle", BACKOFF_CMLE, ProbMode.MARG,
-                HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(BACKOFF_CMLE, ProbMode.MARG, HIGHEST_TEST_ORDER - 1, true);
     }
 
     @Test
     public void testBackoffCmleRecCond() throws IOException {
-        testEstimator("BackoffCmleRec", BACKOFF_CMLE_REC, ProbMode.COND,
-                HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(BACKOFF_CMLE_REC, ProbMode.COND, HIGHEST_TEST_ORDER - 1,
+                true);
     }
 
     @Test
     public void testBackoffCmleRecMarg() throws IOException {
-        testEstimator("BackoffCmleRec", BACKOFF_CMLE_REC, ProbMode.MARG,
-                HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(BACKOFF_CMLE_REC, ProbMode.MARG, HIGHEST_TEST_ORDER - 1,
+                true);
     }
 
     // Interpolation Estimators
 
     @Test
     public void testInterpolAbsDiscountMleCond() throws IOException {
-        testEstimator("InterpolAbsDiscountMle", INTERPOL_ABS_DISCOUNT_MLE,
-                ProbMode.COND, HIGHEST_TEST_ORDER, false);
+        testEstimator(INTERPOL_ABS_DISCOUNT_MLE, ProbMode.COND,
+                HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testInterpolAbsDiscountMleMarg() throws IOException {
-        testEstimator("InterpolAbsDiscountMle", INTERPOL_ABS_DISCOUNT_MLE,
-                ProbMode.MARG, HIGHEST_TEST_ORDER, false);
+        testEstimator(INTERPOL_ABS_DISCOUNT_MLE, ProbMode.MARG,
+                HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testInterpolAbsDiscountMleRecCond() throws IOException {
-        testEstimator("InterpolAbsDiscountMleRec",
-                INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
+        testEstimator(INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testInterpolAbsDiscountMleRecMarg() throws IOException {
-        testEstimator("InterpolAbsDiscountMleRec",
-                INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
+        testEstimator(INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDiffInterpolAbsDiscountMleCond() throws IOException {
-        testEstimator("DiffInterpolAbsDiscountMle",
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.COND,
+        testEstimator(DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDiffInterpolAbsDiscountMleMarg() throws IOException {
-        testEstimator("DiffInterpolAbsDiscountMle",
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.MARG,
+        testEstimator(DIFF_INTERPOL_ABS_DISCOUNT_MLE, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDiffInterpolAbsDiscountMleRecCond() throws IOException {
-        testEstimator("DiffInterpolAbsDiscountMle",
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
+        testEstimator(DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.COND,
                 HIGHEST_TEST_ORDER, false);
     }
 
     @Test
     public void testDiffInterpolAbsDiscountMleRecMarg() throws IOException {
-        testEstimator("DiffInterpolAbsDiscountMle",
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
+        testEstimator(DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC, ProbMode.MARG,
                 HIGHEST_TEST_ORDER, false);
     }
 
@@ -158,12 +148,11 @@ public abstract class AbstractEstimatorTest extends TestCorporaTest {
 
     @Test
     public void testCombMleCmleMarg() throws IOException {
-        testEstimator("CombMleCmle", COMB_MLE_CMLE, ProbMode.MARG,
-                HIGHEST_TEST_ORDER - 1, true);
+        testEstimator(COMB_MLE_CMLE, ProbMode.MARG, HIGHEST_TEST_ORDER - 1,
+                true);
     }
 
     protected abstract void testEstimator(
-            String estimatorName,
             Estimator estimator,
             ProbMode probMode,
             int maxOrder,

@@ -1,4 +1,4 @@
-package de.glmtk.learning;
+package de.glmtk.counting;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
-import de.glmtk.learning.AbsoluteChunker.QueueItem;
+import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 

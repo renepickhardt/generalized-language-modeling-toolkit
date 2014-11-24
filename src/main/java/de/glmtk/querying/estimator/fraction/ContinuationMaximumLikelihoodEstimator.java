@@ -5,6 +5,8 @@ import de.glmtk.utils.NGram;
 
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
 
+    // TODO: bugs with GLM.
+
     @Override
     protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram contFullSequence =
@@ -19,7 +21,7 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
 
     @Override
     protected double
-        calcDenominator(NGram sequence, NGram history, int recDepth) {
+    calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram contFullHistory =
                 WSKP_NGRAM.concat(getFullHistory(sequence, history)
                         .convertSkpToWskp());

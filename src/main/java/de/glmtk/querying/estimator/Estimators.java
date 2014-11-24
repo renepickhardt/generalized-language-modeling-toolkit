@@ -1,5 +1,7 @@
 package de.glmtk.querying.estimator;
 
+import java.lang.reflect.Field;
+
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
 import de.glmtk.querying.estimator.combination.CombinationEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteDiscountEstimator;
@@ -70,12 +72,41 @@ public class Estimators {
 
     // Combined Estimators
 
-    public static final InterpolationEstimator MODIFIED_KNESER_NEY_ESIMATOR =
+    public static final InterpolationEstimator MOD_KNESER_NEY =
             new InterpolationEstimator(
                     new ModifiedKneserNeyDiscountEstimator(
                             new MaximumLikelihoodEstimator()),
-                            new InterpolationEstimator(
-                                    new ModifiedKneserNeyDiscountEstimator(
-                                            new ContinuationMaximumLikelihoodEstimator())));
+                    new InterpolationEstimator(
+                            new ModifiedKneserNeyDiscountEstimator(
+                                    new ContinuationMaximumLikelihoodEstimator())));
+
+    public static final InterpolationEstimator MOD_KNESER_NEY_ABS =
+            new InterpolationEstimator(new ModifiedKneserNeyDiscountEstimator(
+                    new MaximumLikelihoodEstimator()));
+
+    public static final DiffInterpolationEstimator GLM =
+            new DiffInterpolationEstimator(
+                    new ModifiedKneserNeyDiscountEstimator(
+                            new MaximumLikelihoodEstimator()),
+                    new DiffInterpolationEstimator(
+                            new ModifiedKneserNeyDiscountEstimator(
+                                    new ContinuationMaximumLikelihoodEstimator())));
+
+    public static final DiffInterpolationEstimator GLM_ABS =
+            new DiffInterpolationEstimator(
+                    new ModifiedKneserNeyDiscountEstimator(
+                            new MaximumLikelihoodEstimator()));
+
+    public static String getName(Estimator estimator) {
+        try {
+            for (Field field : Estimators.class.getDeclaredFields()) {
+                if (estimator.equals(field.get(null))) {
+                    return field.getName();
+                }
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+        }
+        return "";
+    }
 
 }

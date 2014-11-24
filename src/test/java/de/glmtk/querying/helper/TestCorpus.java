@@ -1,16 +1,23 @@
 package de.glmtk.querying.helper;
 
 import static de.glmtk.Constants.TEST_RESSOURCES_DIR;
+import static de.glmtk.utils.PatternElem.CNT;
+import static de.glmtk.utils.PatternElem.SKP;
+import static de.glmtk.utils.PatternElem.WSKP;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.utils.CountCache;
+import de.glmtk.utils.Pattern;
 
 public class TestCorpus {
 
@@ -48,10 +55,23 @@ public class TestCorpus {
         this.corpus = corpus;
         this.workingDir = workingDir;
 
-        Glmtk glmtk = new Glmtk();
-        glmtk.setCorpus(corpus);
-        glmtk.setWorkingDir(workingDir);
-        glmtk.count();
+        Glmtk glmtk = new Glmtk(corpus, workingDir);
+
+        Set<Pattern> neededAbsolute =
+                Pattern.getCombinations(Constants.MODEL_SIZE,
+                        Arrays.asList(CNT, SKP));
+        Set<Pattern> neededContinuation = new HashSet<Pattern>();
+        for (Pattern pattern : neededAbsolute) {
+            if (pattern.size() != Constants.MODEL_SIZE) {
+                neededContinuation.add(pattern.concat(WSKP));
+            }
+
+            if (pattern.contains(SKP)) {
+                neededContinuation.add(pattern.replace(SKP, WSKP));
+            }
+        }
+
+        glmtk.count(false, neededAbsolute, neededContinuation);
     }
 
     public String getCorpusName() {

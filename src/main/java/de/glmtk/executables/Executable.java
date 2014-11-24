@@ -53,7 +53,9 @@ import de.glmtk.utils.StringUtils;
             exec();
             printLogFooter();
         } catch (Termination e) {
-            System.err.println(e.getMessage());
+            if (e.getMessage() != null) {
+                System.err.println(e.getMessage());
+            }
             // Terminate
         } catch (Exception e) {
             try (StringWriter stackTrace = new StringWriter();

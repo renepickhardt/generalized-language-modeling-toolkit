@@ -1,4 +1,4 @@
-package de.glmtk.learning;
+package de.glmtk.counting;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

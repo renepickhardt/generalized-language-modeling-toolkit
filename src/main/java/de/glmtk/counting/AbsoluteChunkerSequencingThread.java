@@ -1,4 +1,4 @@
-package de.glmtk.learning;
+package de.glmtk.counting;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
-import de.glmtk.learning.AbsoluteChunker.QueueItem;
+import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;

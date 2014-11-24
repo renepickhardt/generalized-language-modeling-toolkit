@@ -7,9 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.querying.NGramProbabilityCalculator;
-import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.helper.AbstractEstimatorTest;
 import de.glmtk.querying.helper.TestCorpus;
 
@@ -20,12 +19,12 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
 
     @Override
     protected void testEstimator(
-            String estimatorName,
             Estimator estimator,
             ProbMode probMode,
             int maxOrder,
             boolean continuationEstimator) throws IOException {
-        LOGGER.info("===== {} ({}) =====", estimatorName, probMode);
+        LOGGER.info("===== {} ({}) =====", Estimators.getName(estimator),
+                probMode);
         NGramProbabilityCalculator calculator =
                 new NGramProbabilityCalculator();
         calculator.setEstimator(estimator);

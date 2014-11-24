@@ -1,11 +1,5 @@
 package de.glmtk;
 
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.POS;
-import static de.glmtk.utils.PatternElem.PSKP;
-import static de.glmtk.utils.PatternElem.SKP;
-import static de.glmtk.utils.PatternElem.WSKP;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,23 +7,20 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status.TrainingStatus;
-import de.glmtk.learning.AbsoluteCounter;
-import de.glmtk.learning.ContinuationCounter;
-import de.glmtk.learning.Tagger;
+import de.glmtk.counting.AbsoluteCounter;
+import de.glmtk.counting.ContinuationCounter;
+import de.glmtk.counting.Tagger;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StringUtils;
@@ -46,46 +37,40 @@ import de.glmtk.utils.StringUtils;
 public class Glmtk {
 
     // TODO: Output should be empty if a phase is skipped
-    // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning
-    // up in en0008t corpus absolute 11111 counts.
+    // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning up in en0008t corpus absolute 11111 counts.
     // TODO: Detect ngram model length from testing.
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Glmtk.class);
 
-    private Model model = Model.MODIFIED_KNESER_NEY;
-
     private Config config = Config.get();
 
-    private Path corpus = null;
+    private Path corpus;
 
-    private Path workingDir = null;
+    private Path workingDir;
 
-    private Path statusFile = null;
+    private Path statusFile;
 
-    private Path trainingFile = null;
+    private Path trainingFile;
 
-    private Path absoluteDir = null;
+    private Path absoluteDir;
 
-    private Path absoluteTmpDir = null;
+    private Path absoluteTmpDir;
 
-    private Path continuationDir = null;
+    private Path continuationDir;
 
-    private Path continuationTmpDir = null;
+    private Path continuationTmpDir;
 
-    private Path testingDir = null;
+    private Path testingDir;
 
-    private List<Path> testingFiles = new LinkedList<Path>();
+    private Status status;
 
-    public void setModel(Model model) {
-        this.model = model;
-    }
+    private CountCache countCache;
 
-    public void setCorpus(Path corpus) {
+    public Glmtk(
+            Path corpus,
+            Path workingDir) throws IOException {
         this.corpus = corpus;
-    }
-
-    public void setWorkingDir(Path workingDir) {
         this.workingDir = workingDir;
         statusFile = workingDir.resolve("status");
         trainingFile = workingDir.resolve("training");
@@ -94,100 +79,58 @@ public class Glmtk {
         continuationDir = workingDir.resolve("continuation");
         continuationTmpDir = workingDir.resolve("continuation.tmp");
         testingDir = workingDir.resolve("testing");
-    }
 
-    public void addTestingFile(Path testingFile) {
-        testingFiles.add(testingFile);
-    }
-
-    public void count() throws IOException {
         if (!Files.exists(workingDir)) {
             Files.createDirectories(workingDir);
         }
 
-        Status status = new Status(statusFile, corpus);
+        status = new Status(statusFile, corpus);
         status.logStatus();
-
         // TODO: check file system if status is accurate.
+
+        countCache = null;
+    }
+
+    public void count(
+            boolean needPos,
+            Set<Pattern> neededAbsolute,
+            Set<Pattern> neededContinuation) throws IOException {
         // TODO: update status with smaller increments (each completed pattern).
 
-        // Request /////////////////////////////////////////////////////////////
-
-        boolean needPos = false;
-
-        // Whether the corpus should be tagged with POS.
-        boolean needToTagTraining = false;
-        // Absolute Patterns we need
-        Set<Pattern> neededAbsolutePatterns = null;
-        // Continuation Patterns we need
-        Set<Pattern> neededContinuationPatterns = null;
-
-        // TODO: optimize to only count needed patterns for KN and MKN.
-        switch (model) {
-            case MAXIMUM_LIKELIHOOD:
-            case KNESER_NEY:
-            case MODIFIED_KNESER_NEY:
-            case GENERALIZED_LANGUAGE_MODEL:
-                neededAbsolutePatterns =
-                Pattern.getCombinations(Constants.MODEL_SIZE, needPos
-                        ? Arrays.asList(CNT, SKP, POS)
-                                : Arrays.asList(CNT, SKP));
-                neededContinuationPatterns = new HashSet<Pattern>();
-                for (Pattern pattern : neededAbsolutePatterns) {
-                    if (pattern.contains(SKP)) {
-                        neededContinuationPatterns.add(pattern.replace(SKP,
-                                WSKP));
-                        if (needPos) {
-                            neededContinuationPatterns.add(pattern.replace(SKP,
-                                    PSKP));
-                        }
-                    }
-                }
-
-                for (Pattern pattern : neededAbsolutePatterns) {
-                    if (pattern.size() != Constants.MODEL_SIZE) {
-                        neededContinuationPatterns.add(pattern.concat(WSKP));
-                    }
-                }
-                break;
-            default:
-                throw new IllegalStateException();
-        }
-
-        // Add patterns to absolute that are needed to generate continuation.
-        for (Pattern pattern : neededContinuationPatterns) {
-            //            Pattern sourcePattern =
-            //                    pattern.range(0, pattern.size() - 1).concat(CNT);
-            //            neededAbsolutePatterns.add(sourcePattern);
+        // Add patterns that are needed to generate continuation.
+        for (Pattern pattern : neededContinuation) {
             Pattern sourcePattern = pattern.getContinuationSource();
             if (sourcePattern.isAbsolute()) {
-                neededAbsolutePatterns.add(sourcePattern);
+                neededAbsolute.add(sourcePattern);
             } else {
-                neededContinuationPatterns.add(sourcePattern);
+                neededContinuation.add(sourcePattern);
             }
         }
 
-        LOGGER.debug("Request %s", StringUtils.repeat("-", 80 - 8));
-        LOGGER.debug("needToTagTraning           = %s", needToTagTraining);
-        LOGGER.debug("neededAbsolutePatterns     = %s", neededAbsolutePatterns);
-        LOGGER.debug("neededContinuationPatterns = %s",
-                neededContinuationPatterns);
+        LOGGER.debug("Counting %s", StringUtils.repeat("-", 80 - 9));
+        LOGGER.debug("needPos            = %s", needPos);
+        LOGGER.debug("neededAbsolute     = %s", neededAbsolute);
+        LOGGER.debug("neededContinuation = %s", neededContinuation);
 
         // Training / Tagging //////////////////////////////////////////////////
 
-        // TODO: doesn't detect the setting that user changed from untagged
-        // training file, to tagged file with same corpus.
-        // TODO: doesn't detect when switching from untagged training to
-        // continuing with now tagged corpus.
-        if (needToTagTraining) {
+        // TODO: Need to check if training is already tagged and act accordingly.
+        // TODO: doesn't detect the setting that user changed from untagged training file, to tagged file with same corpus.
+        // TODO: doesn't detect when switching from untagged training to continuing with now tagged corpus.
+        if (needPos) {
             if (status.getTraining() == TrainingStatus.DONE_WITH_POS) {
                 LOGGER.info("Detected tagged training already present, skipping tagging.");
             } else {
-                // TODO: check if this breaks if corpus = trainingFile
-                Files.deleteIfExists(trainingFile);
+                if (corpus.equals(trainingFile)) {
+                    Path tmpCorpus = Files.createTempFile("", "");
+                    Files.copy(corpus, tmpCorpus);
+                    corpus = tmpCorpus;
+                }
+
                 Tagger tagger =
                         new Tagger(config.getUpdateInterval(),
                                 config.getModel());
+                Files.deleteIfExists(trainingFile);
                 tagger.tag(corpus, trainingFile);
                 status.setTraining(TrainingStatus.DONE_WITH_POS, trainingFile);
             }
@@ -195,9 +138,10 @@ public class Glmtk {
             if (status.getTraining() != TrainingStatus.NONE) {
                 LOGGER.info("Detected training already present, skipping copying training.");
             } else {
-                // TODO: check if this breaks if corpus = trainingFile
-                Files.deleteIfExists(trainingFile);
-                Files.copy(corpus, trainingFile);
+                if (!corpus.equals(trainingFile)) {
+                    Files.deleteIfExists(trainingFile);
+                    Files.copy(corpus, trainingFile);
+                }
                 status.setTraining(TrainingStatus.DONE, trainingFile);
             }
         }
@@ -205,52 +149,41 @@ public class Glmtk {
         // Absolute ////////////////////////////////////////////////////////////
 
         AbsoluteCounter absoluteCounter =
-                new AbsoluteCounter(neededAbsolutePatterns,
-                        config.getNumberOfCores(), config.getUpdateInterval());
+                new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
+                        config.getUpdateInterval());
         absoluteCounter
                 .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
         ContinuationCounter continuationCounter =
-                new ContinuationCounter(neededContinuationPatterns,
+                new ContinuationCounter(neededContinuation,
                         config.getNumberOfCores(), config.getUpdateInterval());
         continuationCounter.count(status, absoluteDir, absoluteTmpDir,
                 continuationDir, continuationTmpDir);
     }
 
-    public void test() throws IOException {
-        if (testingFiles.isEmpty()) {
-            return;
-        }
-
+    public void test(Estimator estimator, ProbMode probMode, Path testingFile)
+            throws IOException {
         Files.createDirectories(testingDir);
 
-        LOGGER.info("Loading counts into memory...");
-        //TODO: make a persistent version of what is needed for testing. also calculate hashvalues of it...
-        CountCache countCache = new CountCache(workingDir);
+        if (countCache == null) {
+            LOGGER.info("Loading counts into memory...");
+            countCache = new CountCache(workingDir);
+        }
 
-        LOGGER.info("Loading model '%s'...", model.getName());
-        Estimator estimator = model.getEstimator();
         estimator.setCountCache(countCache);
 
         NGramProbabilityCalculator calculator =
                 new NGramProbabilityCalculator();
-        calculator.setProbMode(ProbMode.MARG);
+        calculator.setProbMode(probMode);
         calculator.setEstimator(estimator);
 
-        for (Path testingFile : testingFiles) {
-            test(calculator, testingFile);
-        }
-    }
-
-    private void test(NGramProbabilityCalculator calculator, Path testingFile)
-            throws IOException {
         SimpleDateFormat dateFormat =
                 new SimpleDateFormat(" yyyy-MM-dd HH:mm:ss");
         Path outputFile =
                 testingDir.resolve(testingFile.getFileName() + " "
-                        + model.getAbbreviation()
+                        + Estimators.getName(estimator)
                         + dateFormat.format(new Date()));
         Files.deleteIfExists(outputFile);
 
@@ -304,4 +237,5 @@ public class Glmtk {
             LOGGER.info("Entropy = %s", entropy);
         }
     }
+
 }

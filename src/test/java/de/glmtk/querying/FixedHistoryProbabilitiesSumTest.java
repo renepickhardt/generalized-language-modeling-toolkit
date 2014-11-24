@@ -9,8 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
-import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.helper.AbstractEstimatorTest;
 import de.glmtk.querying.helper.TestCorpus;
 import de.glmtk.utils.NGram;
@@ -22,12 +22,12 @@ public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
 
     @Override
     protected void testEstimator(
-            String estimatorName,
             Estimator estimator,
             ProbMode probMode,
             int maxOrder,
             boolean continuationEstimator) throws IOException {
-        LOGGER.info("===== {} ({}) =====", estimatorName, probMode);
+        LOGGER.info("===== {} ({}) =====", Estimators.getName(estimator),
+                probMode);
         estimator.setProbMode(probMode);
         testEstimatorCorpus(estimator, probMode, TestCorpus.ABC, maxOrder,
                 continuationEstimator);

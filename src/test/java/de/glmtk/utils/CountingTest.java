@@ -21,11 +21,6 @@ import org.junit.Test;
 import de.glmtk.Config;
 import de.glmtk.querying.helper.TestCorporaTest;
 import de.glmtk.querying.helper.TestCorpus;
-import de.glmtk.utils.CountCache;
-import de.glmtk.utils.Counter;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternElem;
-import de.glmtk.utils.StringUtils;
 
 /**
  * Checks whether counts present in count files are correct, but not if there
@@ -33,6 +28,7 @@ import de.glmtk.utils.StringUtils;
  */
 public class CountingTest extends TestCorporaTest {
 
+    // TODO: implement test for continuation counts
     // TODO: extend for POS
 
     private static final Logger LOGGER = LogManager
@@ -51,26 +47,26 @@ public class CountingTest extends TestCorporaTest {
 
     @Test
     public void testAbc() throws IOException, NoSuchFieldException,
-    SecurityException, IllegalArgumentException, IllegalAccessException {
+            SecurityException, IllegalArgumentException, IllegalAccessException {
         testCounting(TestCorpus.ABC);
     }
 
     @Test
     public void testMobyDick() throws IOException, NoSuchFieldException,
-    SecurityException, IllegalArgumentException, IllegalAccessException {
+            SecurityException, IllegalArgumentException, IllegalAccessException {
         testCounting(TestCorpus.MOBY_DICK);
     }
 
     @Ignore
     @Test
     public void testEn0008t() throws IOException, NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    SecurityException, IllegalArgumentException, IllegalAccessException {
         testCounting(TestCorpus.EN0008T);
     }
 
     private void testCounting(TestCorpus testCorpus) throws IOException,
-    NoSuchFieldException, SecurityException, IllegalArgumentException,
-    IllegalAccessException {
+            NoSuchFieldException, SecurityException, IllegalArgumentException,
+            IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
@@ -92,7 +88,7 @@ public class CountingTest extends TestCorporaTest {
         absoluteField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Long>> absolute =
-        (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+                (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
                 config.getUpdateInterval());
 
@@ -101,8 +97,8 @@ public class CountingTest extends TestCorporaTest {
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Counter>> continuation =
-        (Map<Pattern, Map<String, Counter>>) continuationField
-        .get(countCache);
+                (Map<Pattern, Map<String, Counter>>) continuationField
+                        .get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
                 config.getUpdateInterval());
     }
