@@ -35,6 +35,12 @@ public class CountCache {
 
     public CountCache(
             Path workingDir) throws IOException {
+        // Allowing workingDir == null to make
+        // PatternCalculator#PatternTrackingCountCache work.
+        if (workingDir == null) {
+            return;
+        }
+
         LOGGER.info("Loading counts...");
         LOGGER.debug("Loading absolute counts...");
         loadAbsolute(workingDir);
