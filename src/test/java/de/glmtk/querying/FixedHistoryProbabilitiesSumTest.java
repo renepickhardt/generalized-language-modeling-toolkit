@@ -17,6 +17,8 @@ import de.glmtk.utils.NGram;
 
 public class FixedHistoryProbabilitiesSumTest extends AbstractEstimatorTest {
 
+    // TODO: also check for history with skips
+
     private static final Logger LOGGER = LogManager
             .getLogger(FixedHistoryProbabilitiesSumTest.class);
 

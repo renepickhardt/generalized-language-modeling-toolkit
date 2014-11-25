@@ -2,14 +2,11 @@ package de.glmtk;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +19,7 @@ import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.utils.HashUtils;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StringUtils;
@@ -77,7 +75,7 @@ public class Status {
         this.file = file;
         this.corpus = corpus;
 
-        hash = generateFileHash(this.corpus);
+        hash = HashUtils.generateMd5Hash(this.corpus);
 
         setDefaultSettings(true);
         if (Files.exists(file)) {
@@ -102,7 +100,7 @@ public class Status {
     public void setTraining(TrainingStatus training, Path trainingFile)
             throws IOException {
         synchronized (this) {
-            hash = generateFileHash(trainingFile);
+            hash = HashUtils.generateMd5Hash(trainingFile);
             this.training = training;
             setDefaultSettings(false);
             writeStatusToFile();
@@ -333,41 +331,6 @@ public class Status {
     private static java.util.regex.Pattern getPattern(String option) {
         return java.util.regex.Pattern.compile("^" + option
                 + "\\s*=\\s*(\\S+)\\s*$");
-    }
-
-    /**
-     * @see <a href=
-     *      "http://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java"
-     *      >Stackoverflow: Getting a File's MD5 Checksum in Java</a>.
-     */
-    private static String generateFileHash(Path file) throws IOException {
-        try {
-            InputStream input = Files.newInputStream(file);
-
-            byte[] buffer = new byte[1024];
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-
-            int numRead;
-            do {
-                numRead = input.read(buffer);
-                if (numRead > 0) {
-                    digest.update(buffer, 0, numRead);
-                }
-            } while (numRead != -1);
-
-            input.close();
-
-            byte[] resultByte = digest.digest();
-            String result = "";
-            for (int i = 0; i != resultByte.length; ++i) {
-                result +=
-                        Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                        .substring(1);
-            }
-            return result;
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
 }

@@ -180,8 +180,10 @@ public class GlmtkExecutable extends Executable {
         glmtk.count(needPos, neededPatterns);
 
         if (!testingFiles.isEmpty()) {
-            CountCache countCache = glmtk.getOrCreateCountCache();
             for (Path testingFile : testingFiles) {
+                CountCache countCache =
+                        glmtk.getOrCreateTestCountCache(testingFile,
+                                neededPatterns);
                 glmtk.test(testingFile, estimator, probMode, countCache);
             }
         }

@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -29,6 +28,7 @@ import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.utils.CountCache;
+import de.glmtk.utils.HashUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.Patterns;
@@ -172,7 +172,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -196,30 +196,40 @@ public class Glmtk {
                         Paths.get("/home/lukas/langmodels/data/en0008t.out/"));
 
         Set<Pattern> neededPatterns =
-                Patterns.getUsedPatterns(Estimators.MOD_KNESER_NEY,
+                Patterns.getUsedPatterns(Estimators.MOD_KNESER_NEY_ABS,
                         ProbMode.MARG);
-
+        long t = System.currentTimeMillis();
         glmtk.getOrCreateTestCountCache(
-                Paths.get("/home/lukas/langmodels/data/en0008t-t/5s"),
+                Paths.get("/home/lukas/langmodels/data/en0008t-t/5"),
                 neededPatterns);
+        System.out.println(System.currentTimeMillis() - t);
+
+        neededPatterns =
+                Patterns.getUsedPatterns(Estimators.GLM_ABS, ProbMode.MARG);
+        t = System.currentTimeMillis();
+        glmtk.getOrCreateTestCountCache(
+                Paths.get("/home/lukas/langmodels/data/en0008t-t/5"),
+                neededPatterns);
+        System.out.println(System.currentTimeMillis() - t);
     }
 
-    // TODO: make it clever (only do new stuff if needed).
     public CountCache getOrCreateTestCountCache(
             Path testingFile,
             Set<Pattern> neededPatterns) throws IOException {
-        LOGGER.info("Generating TestCountCache for '{}'.", testingFile);
-        LOGGER.debug("Needed Patterns: {}", neededPatterns);
-
-        boolean hasPos = false;
         // TODO: detect if test file has pos
+        boolean hasPos = false;
 
-        Path testCountDir =
-                testCountsDir.resolve(Long.toString(new Random().nextLong()));
+        String hash = HashUtils.generateMd5Hash(testingFile);
+
+        Path testCountDir = testCountsDir.resolve(hash);
         Path testAbsoluteDir =
                 testCountDir.resolve(Constants.ABSOLUTE_DIR_NAME);
         Path testContinuationDir =
                 testCountDir.resolve(Constants.CONTINUATION_DIR_NAME);
+
+        LOGGER.info("TestCountCache '%s' -> '%s'.", testingFile, testCountDir);
+        LOGGER.debug("Needed Patterns: %s", neededPatterns);
+
         Files.createDirectories(testAbsoluteDir);
         Files.createDirectories(testContinuationDir);
 
@@ -232,10 +242,12 @@ public class Glmtk {
                 countFile = continuationDir.resolve(pattern.toString());
                 testCountFile = testContinuationDir.resolve(pattern.toString());
             }
-            if (!NioUtils.checkFile(countFile, EXISTS)) {
+            if (NioUtils.checkFile(testCountFile, EXISTS)) {
+                continue;
+            } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                                + "', needed for TestCounts.");
+                        + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -373,7 +385,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                            * 100);
+                    * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);
