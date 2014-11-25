@@ -21,14 +21,14 @@ public enum Model {
 
     MODIFIED_KNESER_NEY("MKN", "Modified Kneser Ney", Estimators.MOD_KNESER_NEY),
 
-    MODIFIED_KNESERY_NEY_ABS("MKNA", "Modified Kneser Ney Abs",
+    MODIFIED_KNESERY_NEY_ABS("MKNA", "Modified Kneser Ney (Abs Lower Order)",
             Estimators.MOD_KNESER_NEY_ABS),
 
     GENERALIZED_LANGUAGE_MODEL("GLM", "Generalized Language Model",
             Estimators.GLM),
 
-    GENERALIZED_LANGUAGE_MODEL_ABS("GLMA", "Generalized Language Model Abs",
-            Estimators.GLM_ABS);
+    GENERALIZED_LANGUAGE_MODEL_ABS("GLMA",
+                            "Generalized Language Model (Abs Lower Order)", Estimators.GLM_ABS);
 
     private String abbreviation;
 
