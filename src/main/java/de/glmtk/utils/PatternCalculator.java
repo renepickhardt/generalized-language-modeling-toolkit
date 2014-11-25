@@ -86,9 +86,9 @@ public class PatternCalculator {
     public static void addPosPatterns(Set<Pattern> patterns) {
         Set<Pattern> newPatterns = new HashSet<Pattern>();
         for (Pattern pattern : patterns) {
-            Pattern curPattern, lastPattern = null;
+            Pattern curPattern = pattern, lastPattern = null;
             do {
-                curPattern = pattern.replaceLast(CNT, POS);
+                curPattern = curPattern.replaceLast(CNT, POS);
                 newPatterns.add(curPattern);
                 newPatterns.add(curPattern.replace(WSKP, PSKP));
                 lastPattern = curPattern;
