@@ -31,14 +31,14 @@ public class NGram {
     public NGram() {
         words = new ArrayList<String>();
         asString = "";
-        pattern = Pattern.get();
+        pattern = Patterns.get();
     }
 
     public NGram(
             String word) {
         words = Arrays.asList(word);
         asString = word;
-        pattern = Pattern.get(PatternElem.fromWord(word));
+        pattern = Patterns.get(PatternElem.fromWord(word));
     }
 
     public NGram(
@@ -51,7 +51,7 @@ public class NGram {
         for (String word : words) {
             patternElems.add(PatternElem.fromWord(word));
         }
-        pattern = Pattern.get(patternElems);
+        pattern = Patterns.get(patternElems);
     }
 
     private NGram(
@@ -166,7 +166,7 @@ public class NGram {
             resultPatternElems.add(pattern.get(i));
         }
 
-        return new NGram(resultWords, Pattern.get(resultPatternElems));
+        return new NGram(resultWords, Patterns.get(resultPatternElems));
     }
 
     public NGram replace(String target, String replacement) {

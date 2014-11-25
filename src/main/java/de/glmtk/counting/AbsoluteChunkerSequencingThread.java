@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -21,6 +19,7 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 import de.glmtk.Constants;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
@@ -36,7 +35,7 @@ import de.glmtk.utils.StringUtils;
 
     private AbsoluteChunker absoluteChunker;
 
-    private Map<Integer, Set<Pattern>> patternsByLength;
+    private Map<Integer, Set<Pattern>> patternsBySize;
 
     private Map<Pattern, BlockingQueue<QueueItem>> aggregatingQueues;
 
@@ -62,17 +61,7 @@ import de.glmtk.utils.StringUtils;
         this.trainingFileHasPos = trainingFileHasPos;
         this.readerMemory = readerMemory;
         this.updateInterval = updateInterval;
-
-        patternsByLength = new HashMap<Integer, Set<Pattern>>();
-        for (Pattern pattern : patterns) {
-            Set<Pattern> patternsWithLength =
-                    patternsByLength.get(pattern.size());
-            if (patternsWithLength == null) {
-                patternsWithLength = new HashSet<Pattern>();
-                patternsByLength.put(pattern.size(), patternsWithLength);
-            }
-            patternsWithLength.add(pattern);
-        }
+        patternsBySize = Patterns.groupPatternsBySize(patterns);
     }
 
     @Override
@@ -95,13 +84,7 @@ import de.glmtk.utils.StringUtils;
                     }
                 }
 
-                String[] split =
-                        StringUtils.splitAtChar(line, ' ').toArray(
-                                new String[0]);
-                String[] words = new String[split.length];
-                String[] poses = new String[split.length];
-                extractWordsAndPoses(split, words, poses);
-                generateAndQueueSequences(words, poses);
+                generateAndQueueSequences(line);
             }
 
             absoluteChunker.sequencingIsDone();
@@ -111,35 +94,19 @@ import de.glmtk.utils.StringUtils;
         }
     }
 
-    private void extractWordsAndPoses(
-            String[] split,
-            String[] words,
-            String[] poses) {
-        for (int i = 0; i != split.length; ++i) {
-            String word = split[i];
-            if (trainingFileHasPos) {
-                int lastSlash = word.lastIndexOf('/');
-                if (lastSlash == -1) {
-                    words[i] = word;
-                    poses[i] = Constants.UNKOWN_POS;
-                } else {
-                    words[i] = word.substring(0, lastSlash);
-                    poses[i] = word.substring(lastSlash + 1);
-                }
-            } else {
-                words[i] = word;
-                poses[i] = Constants.UNKOWN_POS;
-            }
-        }
-    }
-
-    private void generateAndQueueSequences(String[] words, String[] poses)
+    private void generateAndQueueSequences(String line)
             throws InterruptedException {
-        for (Map.Entry<Integer, Set<Pattern>> entry : patternsByLength
-                .entrySet()) {
-            int patternLength = entry.getKey();
+        String[] split =
+                StringUtils.splitAtChar(line, ' ').toArray(new String[0]);
+        String[] words = new String[split.length];
+        String[] poses = new String[split.length];
+        StringUtils.extractWordsAndPoses(split, trainingFileHasPos, words,
+                poses);
+
+        for (Map.Entry<Integer, Set<Pattern>> entry : patternsBySize.entrySet()) {
+            int patternSize = entry.getKey();
             Set<Pattern> patterns = entry.getValue();
-            for (int p = 0; p <= words.length - patternLength; ++p) {
+            for (int p = 0; p <= split.length - patternSize; ++p) {
                 for (Pattern pattern : patterns) {
                     String sequence = pattern.apply(words, poses, p);
 
@@ -154,8 +121,8 @@ import de.glmtk.utils.StringUtils;
                     if (Constants.DEBUG_AVERAGE_MEMORY) {
                         StatisticalNumberHelper.average(
                                 "AbsoluteChunker.QueueItem Memory", MemoryUtil
-                                        .deepMemoryUsageOf(item,
-                                                VisibilityFilter.ALL));
+                                .deepMemoryUsageOf(item,
+                                        VisibilityFilter.ALL));
                     }
                 }
             }

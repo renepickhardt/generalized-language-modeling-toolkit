@@ -47,13 +47,13 @@ import de.glmtk.utils.PatternElem;
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-        @Override
-        public int compare(Pattern a, Pattern b) {
-            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
-                            .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-        }
+                @Override
+                public int compare(Pattern a, Pattern b) {
+                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+                    .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
+                }
 
-    };
+            };
 
     /* package */static class QueueItem {
 
@@ -260,7 +260,7 @@ import de.glmtk.utils.PatternElem;
             aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
                     (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
             aggregatingSourceToPattern
-            .add(new HashMap<Pattern, List<Pattern>>());
+                    .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         int threadIter = 0;

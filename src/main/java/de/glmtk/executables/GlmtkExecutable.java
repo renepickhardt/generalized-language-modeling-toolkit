@@ -21,6 +21,7 @@ import de.glmtk.Model;
 import de.glmtk.Termination;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.utils.CountCache;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
@@ -173,14 +174,15 @@ public class GlmtkExecutable extends Executable {
         Set<Pattern> neededPatterns =
                 Patterns.getUsedPatterns(estimator, probMode);
         if (needPos) {
-            Patterns.addPosPatterns(neededPatterns);
+            neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
         }
 
         glmtk.count(needPos, neededPatterns);
 
         if (!testingFiles.isEmpty()) {
+            CountCache countCache = glmtk.getOrCreateCountCache();
             for (Path testingFile : testingFiles) {
-                glmtk.test(estimator, probMode, testingFile);
+                glmtk.test(testingFile, estimator, probMode, countCache);
             }
         }
 

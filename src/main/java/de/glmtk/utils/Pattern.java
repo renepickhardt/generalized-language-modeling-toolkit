@@ -10,10 +10,8 @@ import static de.glmtk.utils.PatternElem.WSKP;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Immutable.
@@ -26,7 +24,7 @@ public class Pattern implements Iterable<PatternElem> {
 
     private String asString;
 
-    private Pattern(
+    /* package */Pattern(
             List<PatternElem> elems,
             String asString) {
         this.elems = elems;
@@ -113,14 +111,14 @@ public class Pattern implements Iterable<PatternElem> {
             throw new IllegalArgumentException("Argument was empty collection.");
         }
         outerLoop:
-        for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems) {
-                    if (elem.equals(e)) {
-                        continue outerLoop;
-                    }
+            for (PatternElem elem : this.elems) {
+            for (PatternElem e : elems) {
+                if (elem.equals(e)) {
+                    continue outerLoop;
                 }
-                return false;
             }
+            return false;
+        }
         return true;
     }
 
@@ -134,23 +132,23 @@ public class Pattern implements Iterable<PatternElem> {
         }
         int result = 0;
         outerLoop:
-            for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems) {
-                    if (elem.equals(e)) {
-                        ++result;
-                        continue outerLoop;
-                    }
+        for (PatternElem elem : this.elems) {
+            for (PatternElem e : elems) {
+                if (elem.equals(e)) {
+                    ++result;
+                    continue outerLoop;
                 }
             }
+        }
         return result;
     }
 
     public Pattern concat(PatternElem elem) {
-        return Pattern.get(asString + elem.toChar());
+        return Patterns.get(asString + elem.toChar());
     }
 
     public Pattern concat(Pattern other) {
-        return Pattern.get(asString + other.asString);
+        return Patterns.get(asString + other.asString);
     }
 
     public Pattern range(int from, int to) {
@@ -161,7 +159,7 @@ public class Pattern implements Iterable<PatternElem> {
         } else if (from > to) {
             throw new IllegalArgumentException(
                     "From index larger or equal than to index: " + from
-                    + " >= " + to);
+                            + " >= " + to);
         }
 
         List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
@@ -170,7 +168,7 @@ public class Pattern implements Iterable<PatternElem> {
             resultElems.add(elems.get(i));
         }
 
-        return Pattern.get(resultElems);
+        return Patterns.get(resultElems);
     }
 
     public Pattern replace(PatternElem target, PatternElem replacement) {
@@ -184,7 +182,7 @@ public class Pattern implements Iterable<PatternElem> {
             }
         }
 
-        return Pattern.get(resultAsString.toString());
+        return Patterns.get(resultAsString.toString());
     }
 
     public Pattern replaceLast(PatternElem target, PatternElem replacement) {
@@ -197,7 +195,7 @@ public class Pattern implements Iterable<PatternElem> {
             }
         }
 
-        return Pattern.get(resultElems);
+        return Patterns.get(resultElems);
     }
 
     public Pattern getContinuationSource() {
@@ -207,10 +205,10 @@ public class Pattern implements Iterable<PatternElem> {
             PatternElem elem = get(i);
             if (elem.equals(WSKP)) {
                 resultElems.set(i, CNT);
-                return Pattern.get(resultElems);
+                return Patterns.get(resultElems);
             } else if (elem.equals(PSKP)) {
                 resultElems.set(i, POS);
-                return Pattern.get(resultElems);
+                return Patterns.get(resultElems);
             }
         }
 
@@ -258,66 +256,6 @@ public class Pattern implements Iterable<PatternElem> {
         }
 
         return result.toString();
-    }
-
-    private static final Map<String, Pattern> AS_STRING_TO_PATTERN =
-            new HashMap<String, Pattern>();
-
-    public static Pattern get() {
-        Pattern pattern = AS_STRING_TO_PATTERN.get("");
-        if (pattern == null) {
-            pattern = new Pattern(new ArrayList<PatternElem>(), "");
-            cachePattern(pattern);
-        }
-        return pattern;
-    }
-
-    public static Pattern get(PatternElem elem) {
-        Pattern pattern = AS_STRING_TO_PATTERN.get(elem.toString());
-        if (pattern == null) {
-            pattern = new Pattern(Arrays.asList(elem), elem.toString());
-            cachePattern(pattern);
-        }
-        return pattern;
-    }
-
-    public static Pattern get(List<PatternElem> elems) {
-        StringBuilder asStringBuilder = new StringBuilder();
-        for (PatternElem elem : elems) {
-            asStringBuilder.append(elem.toString());
-        }
-        String asString = asStringBuilder.toString();
-
-        Pattern pattern = AS_STRING_TO_PATTERN.get(asString);
-        if (pattern == null) {
-            pattern = new Pattern(elems, asString);
-            cachePattern(pattern);
-        }
-        return pattern;
-    }
-
-    public static Pattern get(String asString) {
-        Pattern pattern = AS_STRING_TO_PATTERN.get(asString);
-        if (pattern == null) {
-            List<PatternElem> elems =
-                    new ArrayList<PatternElem>(asString.length());
-            for (char elemAsChar : asString.toCharArray()) {
-                PatternElem elem = PatternElem.fromChar(elemAsChar);
-                if (elem == null) {
-                    throw new IllegalStateException("Unkown PatternElem: '"
-                            + elemAsChar + "'.");
-                }
-                elems.add(elem);
-            }
-
-            pattern = new Pattern(elems, asString);
-            cachePattern(pattern);
-        }
-        return pattern;
-    }
-
-    private static void cachePattern(Pattern pattern) {
-        AS_STRING_TO_PATTERN.put(pattern.asString, pattern);
     }
 
 }

@@ -23,37 +23,37 @@ public class PatternTest {
 
     @Test
     public void testEqual() {
-        Pattern a = Pattern.get("101x");
-        Pattern b = Pattern.get(Arrays.asList(CNT, SKP, CNT, WSKP));
+        Pattern a = Patterns.get("101x");
+        Pattern b = Patterns.get(Arrays.asList(CNT, SKP, CNT, WSKP));
         assertEquals(a, b);
 
-        Pattern c = Pattern.get("1011");
+        Pattern c = Patterns.get("1011");
         assertNotEquals(a, c);
         assertNotEquals(b, c);
     }
 
     @Test
     public void testCache() {
-        Pattern a = Pattern.get("101x");
-        Pattern b = Pattern.get(Arrays.asList(CNT, SKP, CNT, WSKP));
+        Pattern a = Patterns.get("101x");
+        Pattern b = Patterns.get(Arrays.asList(CNT, SKP, CNT, WSKP));
         assertTrue(a == b);
 
-        Pattern c = Pattern.get("1011");
+        Pattern c = Patterns.get("1011");
         assertFalse(a == c);
         assertFalse(b == c);
     }
 
     @Test
     public void testToString() {
-        Pattern a = Pattern.get("101x");
-        Pattern b = Pattern.get(Arrays.asList(CNT, SKP, CNT, WSKP));
+        Pattern a = Patterns.get("101x");
+        Pattern b = Patterns.get(Arrays.asList(CNT, SKP, CNT, WSKP));
         assertEquals(a.toString(), b.toString());
         assertEquals("101x", b.toString());
     }
 
     @Test
     public void testIterator() {
-        Pattern a = Pattern.get("101x");
+        Pattern a = Patterns.get("101x");
         int i = -1;
         for (PatternElem elem : a) {
             assertEquals(elem, a.get(++i));
@@ -62,20 +62,20 @@ public class PatternTest {
 
     @Test
     public void testSize() {
-        assertEquals(0, Pattern.get().size());
-        assertEquals(1, Pattern.get("1").size());
-        assertEquals(4, Pattern.get("101x").size());
+        assertEquals(0, Patterns.get().size());
+        assertEquals(1, Patterns.get("1").size());
+        assertEquals(4, Patterns.get("101x").size());
     }
 
     @Test
     public void testIsEmpty() {
-        assertTrue(Pattern.get().isEmpty());
-        assertFalse(Pattern.get(CNT).isEmpty());
+        assertTrue(Patterns.get().isEmpty());
+        assertFalse(Patterns.get(CNT).isEmpty());
     }
 
     @Test
     public void testGet() {
-        Pattern a = Pattern.get("101x");
+        Pattern a = Patterns.get("101x");
         assertEquals(CNT, a.get(0));
         assertEquals(WSKP, a.get(3));
 
@@ -94,7 +94,7 @@ public class PatternTest {
 
     @Test
     public void testContains() {
-        Pattern a = Pattern.get("101x");
+        Pattern a = Patterns.get("101x");
         assertTrue(a.contains(CNT));
         assertFalse(a.contains(POS));
         assertTrue(a.contains(Arrays.asList(CNT, SKP)));
@@ -109,7 +109,7 @@ public class PatternTest {
 
     @Test
     public void testContainsOnly() {
-        Pattern a = Pattern.get("11111");
+        Pattern a = Patterns.get("11111");
         assertTrue(a.containsOnly(CNT));
         assertFalse(a.containsOnly(SKP));
         assertTrue(a.containsOnly(Arrays.asList(CNT, SKP)));
@@ -121,13 +121,13 @@ public class PatternTest {
         } catch (IllegalArgumentException e) {
         }
 
-        Pattern b = Pattern.get("101x");
+        Pattern b = Patterns.get("101x");
         assertFalse(b.containsOnly(CNT));
         assertFalse(b.containsOnly(SKP));
         assertFalse(b.containsOnly(Arrays.asList(CNT, SKP)));
         assertTrue(b.containsOnly(Arrays.asList(CNT, SKP, WSKP)));
 
-        Pattern c = Pattern.get();
+        Pattern c = Patterns.get();
         assertFalse(c.contains(CNT));
         assertTrue(c.containsOnly(CNT));
         assertFalse(c.contains(Arrays.asList(CNT, SKP)));
@@ -136,16 +136,16 @@ public class PatternTest {
 
     @Test
     public void testIsAbsolute() {
-        assertTrue(Pattern.get("1").isAbsolute());
-        assertTrue(Pattern.get("0").isAbsolute());
-        assertTrue(Pattern.get("10110").isAbsolute());
-        assertFalse(Pattern.get("x").isAbsolute());
-        assertFalse(Pattern.get("1011x").isAbsolute());
+        assertTrue(Patterns.get("1").isAbsolute());
+        assertTrue(Patterns.get("0").isAbsolute());
+        assertTrue(Patterns.get("10110").isAbsolute());
+        assertFalse(Patterns.get("x").isAbsolute());
+        assertFalse(Patterns.get("1011x").isAbsolute());
     }
 
     @Test
     public void testNumElems() {
-        Pattern a = Pattern.get("101x");
+        Pattern a = Patterns.get("101x");
         assertEquals(2, a.numElems(Arrays.asList(CNT)));
         assertEquals(1, a.numElems(Arrays.asList(SKP)));
         assertEquals(3, a.numElems(Arrays.asList(CNT, SKP)));
@@ -160,10 +160,10 @@ public class PatternTest {
 
     @Test
     public void testConcat() {
-        Pattern a = Pattern.get("01");
-        Pattern b = Pattern.get("011");
-        Pattern c = Pattern.get("01011");
-        Pattern d = Pattern.get("01101");
+        Pattern a = Patterns.get("01");
+        Pattern b = Patterns.get("011");
+        Pattern c = Patterns.get("01011");
+        Pattern d = Patterns.get("01101");
 
         assertEquals(a.concat(CNT), b);
         assertEquals(b.concat(SKP).concat(CNT), d);
@@ -173,12 +173,12 @@ public class PatternTest {
 
     @Test
     public void testRange() {
-        Pattern a = Pattern.get("101x");
-        Pattern b = Pattern.get();
+        Pattern a = Patterns.get("101x");
+        Pattern b = Patterns.get();
 
         assertEquals(a, a.range(0, a.size()));
-        assertEquals(Pattern.get("101"), a.range(0, 3));
-        assertEquals(Pattern.get("1"), a.range(0, 1));
+        assertEquals(Patterns.get("101"), a.range(0, 3));
+        assertEquals(Patterns.get("1"), a.range(0, 1));
         assertEquals(b, a.range(0, 0));
         assertEquals(b, a.range(4, 4));
         assertEquals(b, b.range(0, b.size()));
@@ -198,46 +198,46 @@ public class PatternTest {
 
     @Test
     public void testReplace() {
-        Pattern a = Pattern.get("101x");
-        Pattern b = Pattern.get();
+        Pattern a = Patterns.get("101x");
+        Pattern b = Patterns.get();
 
-        assertEquals(Pattern.get("111x"), a.replace(SKP, CNT));
-        assertEquals(Pattern.get("000x"), a.replace(CNT, SKP));
+        assertEquals(Patterns.get("111x"), a.replace(SKP, CNT));
+        assertEquals(Patterns.get("000x"), a.replace(CNT, SKP));
         assertEquals(a, a.replace(CNT, CNT));
         assertEquals(b, b.replace(CNT, SKP));
     }
 
     @Test
     public void testReplaceLast() {
-        Pattern a = Pattern.get("101x");
-        Pattern b = Pattern.get();
+        Pattern a = Patterns.get("101x");
+        Pattern b = Patterns.get();
 
-        assertEquals(Pattern.get("1011"), a.replaceLast(WSKP, CNT));
-        assertEquals(Pattern.get("100x"), a.replaceLast(CNT, SKP));
-        assertEquals(Pattern.get("111x"), a.replaceLast(SKP, CNT));
+        assertEquals(Patterns.get("1011"), a.replaceLast(WSKP, CNT));
+        assertEquals(Patterns.get("100x"), a.replaceLast(CNT, SKP));
+        assertEquals(Patterns.get("111x"), a.replaceLast(SKP, CNT));
         assertEquals(a, a.replaceLast(CNT, CNT));
         assertEquals(b, b.replaceLast(CNT, SKP));
     }
 
     @Test
     public void testGetContinuationSource() {
-        assertEquals(Pattern.get("1011"), Pattern.get("101x")
+        assertEquals(Patterns.get("1011"), Patterns.get("101x")
                 .getContinuationSource());
-        assertEquals(Pattern.get("1110"), Pattern.get("1x10")
+        assertEquals(Patterns.get("1110"), Patterns.get("1x10")
                 .getContinuationSource());
-        assertEquals(Pattern.get("1x01"), Pattern.get("1x0x")
+        assertEquals(Patterns.get("1x01"), Patterns.get("1x0x")
                 .getContinuationSource());
-        assertEquals(Pattern.get("1xy02"), Pattern.get("1xy0y")
+        assertEquals(Patterns.get("1xy02"), Patterns.get("1xy0y")
                 .getContinuationSource());
 
         try {
-            Pattern.get("1011").getContinuationSource();
+            Patterns.get("1011").getContinuationSource();
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
         }
 
         try {
-            Pattern.get().getContinuationSource();
+            Patterns.get().getContinuationSource();
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
         }

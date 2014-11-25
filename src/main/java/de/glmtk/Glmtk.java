@@ -1,15 +1,21 @@
 package de.glmtk;
 
+import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +29,9 @@ import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.utils.CountCache;
+import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StringUtils;
 
 /**
@@ -37,6 +45,7 @@ import de.glmtk.utils.StringUtils;
  */
 public class Glmtk {
 
+    // TODO: fix needPos (reduntant parameter)
     // TODO: Output should be empty if a phase is skipped
     // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning up in en0008t corpus absolute 11111 counts.
     // TODO: Detect ngram model length from testing.
@@ -62,11 +71,13 @@ public class Glmtk {
 
     private Path continuationTmpDir;
 
+    private Path testCountsDir;
+
     private Path testingDir;
 
     private Status status;
 
-    private CountCache countCache;
+    private CountCache countCache = null;
 
     public Glmtk(
             Path corpus,
@@ -75,10 +86,13 @@ public class Glmtk {
         this.workingDir = workingDir;
         statusFile = workingDir.resolve("status");
         trainingFile = workingDir.resolve("training");
-        absoluteDir = workingDir.resolve("absolute");
-        absoluteTmpDir = workingDir.resolve("absolute.tmp");
-        continuationDir = workingDir.resolve("continuation");
-        continuationTmpDir = workingDir.resolve("continuation.tmp");
+        absoluteDir = workingDir.resolve(Constants.ABSOLUTE_DIR_NAME);
+        absoluteTmpDir =
+                workingDir.resolve(Constants.ABSOLUTE_DIR_NAME + ".tmp");
+        continuationDir = workingDir.resolve(Constants.CONTINUATION_DIR_NAME);
+        continuationTmpDir =
+                workingDir.resolve(Constants.CONTINUATION_DIR_NAME + ".tmp");
+        testCountsDir = workingDir.resolve("testcounts");
         testingDir = workingDir.resolve("testing");
 
         if (!Files.exists(workingDir)) {
@@ -88,8 +102,6 @@ public class Glmtk {
         status = new Status(statusFile, corpus);
         status.logStatus();
         // TODO: check file system if status is accurate.
-
-        countCache = null;
     }
 
     public void count(boolean needPos, Set<Pattern> neededPatterns)
@@ -160,7 +172,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -171,16 +183,138 @@ public class Glmtk {
                 continuationDir, continuationTmpDir);
     }
 
-    public void test(Estimator estimator, ProbMode probMode, Path testingFile)
-            throws IOException {
-        Files.createDirectories(testingDir);
-
+    public CountCache getOrCreateCountCache() throws IOException {
         if (countCache == null) {
-            LOGGER.info("Loading counts into memory...");
             countCache = new CountCache(workingDir);
         }
+        return countCache;
+    }
 
-        estimator.setCountCache(countCache);
+    public static void main(String[] args) throws IOException {
+        Glmtk glmtk =
+                new Glmtk(Paths.get("/home/lukas/langmodels/data/en0008t"),
+                        Paths.get("/home/lukas/langmodels/data/en0008t.out/"));
+
+        Set<Pattern> neededPatterns =
+                Patterns.getUsedPatterns(Estimators.MOD_KNESER_NEY,
+                        ProbMode.MARG);
+
+        glmtk.getOrCreateTestCountCache(
+                Paths.get("/home/lukas/langmodels/data/en0008t-t/5s"),
+                neededPatterns);
+    }
+
+    // TODO: make it clever (only do new stuff if needed).
+    public CountCache getOrCreateTestCountCache(
+            Path testingFile,
+            Set<Pattern> neededPatterns) throws IOException {
+        LOGGER.info("Generating TestCountCache for '{}'.", testingFile);
+        LOGGER.debug("Needed Patterns: {}", neededPatterns);
+
+        boolean hasPos = false;
+        // TODO: detect if test file has pos
+
+        Path testCountDir =
+                testCountsDir.resolve(Long.toString(new Random().nextLong()));
+        Path testAbsoluteDir =
+                testCountDir.resolve(Constants.ABSOLUTE_DIR_NAME);
+        Path testContinuationDir =
+                testCountDir.resolve(Constants.CONTINUATION_DIR_NAME);
+        Files.createDirectories(testAbsoluteDir);
+        Files.createDirectories(testContinuationDir);
+
+        for (Pattern pattern : neededPatterns) {
+            Path countFile, testCountFile;
+            if (pattern.isAbsolute()) {
+                countFile = absoluteDir.resolve(pattern.toString());
+                testCountFile = testAbsoluteDir.resolve(pattern.toString());
+            } else {
+                countFile = continuationDir.resolve(pattern.toString());
+                testCountFile = testContinuationDir.resolve(pattern.toString());
+            }
+            if (!NioUtils.checkFile(countFile, EXISTS)) {
+                throw new IllegalStateException(
+                        "Don't have corpus counts pattern '" + pattern
+                                + "', needed for TestCounts.");
+            }
+
+            SortedSet<String> neededSequences =
+                    new TreeSet<String>(extractSequencesForPattern(testingFile,
+                            hasPos, pattern));
+            filterAndWriteTestCounts(countFile, testCountFile, neededSequences);
+        }
+
+        return new CountCache(testCountDir);
+    }
+
+    private Set<String> extractSequencesForPattern(
+            Path testingFile,
+            boolean hasPos,
+            Pattern pattern) throws IOException {
+        Set<String> result = new HashSet<String>();
+
+        int patternSize = pattern.size();
+        try (BufferedReader reader =
+                Files.newBufferedReader(testingFile, Charset.defaultCharset())) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] split =
+                        StringUtils.splitAtChar(line, ' ').toArray(
+                                new String[0]);
+                String[] words = new String[split.length];
+                String[] poses = new String[split.length];
+                StringUtils.extractWordsAndPoses(split, hasPos, words, poses);
+
+                for (int p = 0; p <= split.length - patternSize; ++p) {
+                    result.add(pattern.apply(words, poses, p));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private void filterAndWriteTestCounts(
+            Path countFile,
+            Path testCountFile,
+            SortedSet<String> neededSequences) throws IOException {
+        try (BufferedReader reader =
+                Files.newBufferedReader(countFile, Charset.defaultCharset());
+                BufferedWriter writer =
+                        Files.newBufferedWriter(testCountFile,
+                                Charset.defaultCharset())) {
+            String nextSequence = neededSequences.first();
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                int p = line.indexOf('\t');
+                String sequence = p == -1 ? line : line.substring(0, p);
+
+                int compare;
+                while ((compare = sequence.compareTo(nextSequence)) >= 0) {
+                    if (compare == 0) {
+                        writer.write(line);
+                        writer.write('\n');
+                    }
+
+                    neededSequences.remove(nextSequence);
+                    if (neededSequences.isEmpty()) {
+                        break;
+                    }
+                    nextSequence = neededSequences.first();
+                }
+            }
+        }
+    }
+
+    public void test(
+            Path testingFile,
+            Estimator estimator,
+            ProbMode probMode,
+            CountCache testCountCache) throws IOException {
+        Files.createDirectories(testingDir);
+
+        estimator.setCountCache(testCountCache);
 
         NGramProbabilityCalculator calculator =
                 new NGramProbabilityCalculator();
@@ -239,7 +373,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                    * 100);
+                            * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);

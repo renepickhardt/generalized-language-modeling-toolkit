@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.glmtk.Constants;
+
 /**
  * Util class containing various static helper methods related to strings.
  */
@@ -110,6 +112,45 @@ public class StringUtils {
             lineBuilder.append(">/<EOS>");
         }
         return lineBuilder.toString();
+    }
+
+    /**
+     * Extracts words and part-of-speeches from a given sequence of words.
+     *
+     * @param split
+     *            An array of either words or word/part-of-speech combinations.
+     * @param hasPos
+     *            Whether {@code split} contains part-of-speeches
+     * @param words
+     *            Expects to be given an array of same size as {@code split},
+     *            will put add words found into this.
+     * @param poses
+     *            Expects to be given an array of same size as {@code split},
+     *            will put add part-of-speeches found into this. If a
+     *            part-of-speech is missing, it will contain
+     *            {@link Constants#UNKOWN_POS} instead.
+     */
+    public static void extractWordsAndPoses(
+            String[] split,
+            boolean hasPos,
+            String[] words,
+            String[] poses) {
+        for (int i = 0; i != split.length; ++i) {
+            String word = split[i];
+            if (hasPos) {
+                int lastSlash = word.lastIndexOf('/');
+                if (lastSlash == -1) {
+                    words[i] = word;
+                    poses[i] = Constants.UNKOWN_POS;
+                } else {
+                    words[i] = word.substring(0, lastSlash);
+                    poses[i] = word.substring(lastSlash + 1);
+                }
+            } else {
+                words[i] = word;
+                poses[i] = Constants.UNKOWN_POS;
+            }
+        }
     }
 
 }

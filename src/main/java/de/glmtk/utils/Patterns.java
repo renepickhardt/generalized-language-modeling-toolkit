@@ -8,8 +8,10 @@ import static de.glmtk.utils.PatternElem.WSKP;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -18,6 +20,66 @@ import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 
 public class Patterns {
+
+    private static final Map<String, Pattern> AS_STRING_TO_PATTERN =
+            new HashMap<String, Pattern>();
+
+    public static Pattern get() {
+        Pattern pattern = AS_STRING_TO_PATTERN.get("");
+        if (pattern == null) {
+            pattern = new Pattern(new ArrayList<PatternElem>(), "");
+            cachePattern(pattern);
+        }
+        return pattern;
+    }
+
+    public static Pattern get(PatternElem elem) {
+        Pattern pattern = AS_STRING_TO_PATTERN.get(elem.toString());
+        if (pattern == null) {
+            pattern = new Pattern(Arrays.asList(elem), elem.toString());
+            cachePattern(pattern);
+        }
+        return pattern;
+    }
+
+    public static Pattern get(List<PatternElem> elems) {
+        StringBuilder asStringBuilder = new StringBuilder();
+        for (PatternElem elem : elems) {
+            asStringBuilder.append(elem.toString());
+        }
+        String asString = asStringBuilder.toString();
+
+        Pattern pattern = AS_STRING_TO_PATTERN.get(asString);
+        if (pattern == null) {
+            pattern = new Pattern(elems, asString);
+            cachePattern(pattern);
+        }
+        return pattern;
+    }
+
+    public static Pattern get(String asString) {
+        Pattern pattern = AS_STRING_TO_PATTERN.get(asString);
+        if (pattern == null) {
+            List<PatternElem> elems =
+                    new ArrayList<PatternElem>(asString.length());
+            for (char elemAsChar : asString.toCharArray()) {
+                PatternElem elem = PatternElem.fromChar(elemAsChar);
+                if (elem == null) {
+                    throw new IllegalStateException("Unkown PatternElem: '"
+                            + elemAsChar + "'.");
+                }
+                elems.add(elem);
+            }
+
+            pattern = new Pattern(elems, asString);
+            cachePattern(pattern);
+        }
+        return pattern;
+    }
+
+    private static void cachePattern(Pattern pattern) {
+        AS_STRING_TO_PATTERN.put(pattern.toString(), pattern);
+    }
 
     private static class PatternTrackingCountCache extends CountCache {
 
@@ -83,24 +145,24 @@ public class Patterns {
         return tracker.getUsedPatterns();
     }
 
-    public static void addPosPatterns(Set<Pattern> patterns) {
-        Set<Pattern> newPatterns = new HashSet<Pattern>();
+    public static Set<Pattern> getPosPatterns(Set<Pattern> patterns) {
+        Set<Pattern> result = new HashSet<Pattern>();
         for (Pattern pattern : patterns) {
             Pattern curPattern = pattern, lastPattern = null;
             do {
                 curPattern = curPattern.replaceLast(CNT, POS);
-                newPatterns.add(curPattern);
-                newPatterns.add(curPattern.replace(WSKP, PSKP));
+                result.add(curPattern);
+                result.add(curPattern.replace(WSKP, PSKP));
                 lastPattern = curPattern;
             } while (curPattern != lastPattern);
         }
-        patterns.addAll(newPatterns);
+        return result;
     }
 
     public static Set<Pattern> getCombinations(
             int modelSize,
             List<PatternElem> elems) {
-        Set<Pattern> patterns = new HashSet<Pattern>();
+        Set<Pattern> result = new HashSet<Pattern>();
 
         for (int i = 1; i != modelSize + 1; ++i) {
             for (int j = 0; j != pow(elems.size(), i); ++j) {
@@ -110,11 +172,11 @@ public class Patterns {
                     pattern.add(elems.get(n % elems.size()));
                     n /= elems.size();
                 }
-                patterns.add(Pattern.get(pattern));
+                result.add(Patterns.get(pattern));
             }
         }
 
-        return patterns;
+        return result;
     }
 
     /**
@@ -125,6 +187,21 @@ public class Patterns {
         int result = 1;
         for (int i = 0; i != power; ++i) {
             result *= base;
+        }
+        return result;
+    }
+
+    public static Map<Integer, Set<Pattern>> groupPatternsBySize(
+            Set<Pattern> patterns) {
+        Map<Integer, Set<Pattern>> result =
+                new HashMap<Integer, Set<Pattern>>();
+        for (Pattern pattern : patterns) {
+            Set<Pattern> patternsWithSize = result.get(pattern.size());
+            if (patternsWithSize == null) {
+                patternsWithSize = new HashSet<Pattern>();
+                result.put(pattern.size(), patternsWithSize);
+            }
+            patternsWithSize.add(pattern);
         }
         return result;
     }

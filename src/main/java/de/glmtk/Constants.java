@@ -5,11 +5,15 @@ import java.nio.file.Paths;
 
 public class Constants {
 
+    public static final String ABSOLUTE_DIR_NAME = "absolute";
+
+    public static final String CONTINUATION_DIR_NAME = "continuation";
+
+    public static final int MODEL_SIZE = 5;
+
     public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB;
 
     public static final long CHUNK_MAX_SIZE = 500 * KB;
-
-    public static final int MODEL_SIZE = 5;
 
     public static final long QUEUE_IDLE_TIME = 10;
 

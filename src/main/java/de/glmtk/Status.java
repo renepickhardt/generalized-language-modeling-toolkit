@@ -23,13 +23,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StringUtils;
 
 /**
  * This class is a wrapper for status.txt which controlls unwanted interruptions
  * of the program. So if the program crashes during training one does not have
  * to repeat the entire training phase.
- * 
+ *
  * This file should be save to multithreading and save against outside
  * manipulations of status.txt
  */
@@ -305,11 +306,11 @@ public class Status {
             if (split.size() != 2) {
                 LOGGER.error("Illegal format for '{}': {}", continuation
                         ? "continuationChunked"
-                        : "absoluteChunked", patternAndChunks);
+                                : "absoluteChunked", patternAndChunks);
                 throw new Termination();
             }
 
-            Pattern pattern = Pattern.get(split.get(0));
+            Pattern pattern = Patterns.get(split.get(0));
             List<Path> chunks = new LinkedList<Path>();
             for (String chunk : StringUtils.splitAtChar(split.get(1), ';')) {
                 chunks.add(Paths.get(chunk));
@@ -325,7 +326,7 @@ public class Status {
             absoluteCounted = new HashSet<Pattern>();
         }
         for (String pattern : StringUtils.splitAtChar(matcher.group(1), ',')) {
-            counted(continuation).add(Pattern.get(pattern));
+            counted(continuation).add(Patterns.get(pattern));
         }
     }
 
@@ -361,7 +362,7 @@ public class Status {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                                .substring(1);
+                        .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {
