@@ -24,7 +24,7 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternCalculator;
+import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
@@ -171,9 +171,9 @@ public class GlmtkExecutable extends Executable {
         ProbMode probMode = ProbMode.MARG;
 
         Set<Pattern> neededPatterns =
-                PatternCalculator.getUsedPatterns(estimator, probMode);
+                Patterns.getUsedPatterns(estimator, probMode);
         if (needPos) {
-            PatternCalculator.addPosPatterns(neededPatterns);
+            Patterns.addPosPatterns(neededPatterns);
         }
 
         glmtk.count(needPos, neededPatterns);

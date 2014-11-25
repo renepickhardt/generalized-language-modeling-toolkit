@@ -17,7 +17,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternCalculator;
+import de.glmtk.utils.Patterns;
 
 public class TestCorpus {
 
@@ -58,7 +58,7 @@ public class TestCorpus {
         Glmtk glmtk = new Glmtk(corpus, workingDir);
 
         Set<Pattern> neededPatterns =
-                PatternCalculator.getCombinations(Constants.MODEL_SIZE,
+                Patterns.getCombinations(Constants.MODEL_SIZE,
                         Arrays.asList(CNT, SKP));
         for (Pattern pattern : neededPatterns) {
             if (pattern.size() != Constants.MODEL_SIZE) {

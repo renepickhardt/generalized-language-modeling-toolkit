@@ -36,7 +36,7 @@ public class CountCache {
     public CountCache(
             Path workingDir) throws IOException {
         // Allowing workingDir == null to make
-        // PatternCalculator#PatternTrackingCountCache work.
+        // {@link Patterns#getUsedPatterns(Estimator, ProbMode)} work.
         if (workingDir == null) {
             return;
         }

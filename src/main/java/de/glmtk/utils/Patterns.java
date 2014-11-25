@@ -17,7 +17,7 @@ import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 
-public class PatternCalculator {
+public class Patterns {
 
     private static class PatternTrackingCountCache extends CountCache {
 
@@ -50,8 +50,8 @@ public class PatternCalculator {
         public long[] getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
             return new long[] {
-                    random.nextInt(10) + 1, random.nextInt(10) + 1,
-                    random.nextInt(10) + 1, random.nextInt(10) + 1
+                random.nextInt(10) + 1, random.nextInt(10) + 1,
+                random.nextInt(10) + 1, random.nextInt(10) + 1
             };
         }
 
@@ -97,7 +97,6 @@ public class PatternCalculator {
         patterns.addAll(newPatterns);
     }
 
-    // TODO: untested
     public static Set<Pattern> getCombinations(
             int modelSize,
             List<PatternElem> elems) {
