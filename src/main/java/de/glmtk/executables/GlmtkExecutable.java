@@ -5,24 +5,17 @@ import static de.glmtk.utils.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_READABLE;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_REGULAR_FILE;
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.POS;
-import static de.glmtk.utils.PatternElem.PSKP;
-import static de.glmtk.utils.PatternElem.SKP;
-import static de.glmtk.utils.PatternElem.WSKP;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.cli.Option;
 
-import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.Model;
 import de.glmtk.Termination;
@@ -31,10 +24,13 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternCalculator;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;
 
 public class GlmtkExecutable extends Executable {
+
+    // TODO: API to count all patterns.
 
     private static final String OPTION_WORKINGDIR = "workingdir";
 
@@ -170,49 +166,24 @@ public class GlmtkExecutable extends Executable {
         Glmtk glmtk = new Glmtk(corpus, workingDir);
 
         boolean needPos = false;
-        Set<Pattern> neededAbsolute = new HashSet<Pattern>();
-        Set<Pattern> neededContinuation = new HashSet<Pattern>();
 
-        // TODO: optimize to only count needed patterns for KN and MKN.
-        switch (model) {
-            case MAXIMUM_LIKELIHOOD:
-            case KNESER_NEY:
-            case MODIFIED_KNESER_NEY:
-            case MODIFIED_KNESERY_NEY_ABS:
-            case GENERALIZED_LANGUAGE_MODEL:
-            case GENERALIZED_LANGUAGE_MODEL_ABS:
-                neededAbsolute =
-                        Pattern.getCombinations(Constants.MODEL_SIZE, needPos
-                                ? Arrays.asList(CNT, SKP, POS)
-                                : Arrays.asList(CNT, SKP));
-                neededContinuation = new HashSet<Pattern>();
-                for (Pattern pattern : neededAbsolute) {
-                    if (pattern.size() != Constants.MODEL_SIZE) {
-                        neededContinuation.add(pattern.concat(WSKP));
-                    }
+        Estimator estimator = model.getEstimator();
+        ProbMode probMode = ProbMode.MARG;
 
-                    if (pattern.contains(SKP)) {
-                        neededContinuation.add(pattern.replace(SKP, WSKP));
-                        if (needPos) {
-                            neededContinuation.add(pattern.replace(SKP, PSKP));
-                        }
-                    }
-                }
-                break;
-            default:
-                throw new IllegalStateException();
+        Set<Pattern> neededPatterns =
+                PatternCalculator.getUsedPatterns(estimator, probMode);
+        if (needPos) {
+            PatternCalculator.addPosPatterns(neededPatterns);
         }
 
-        glmtk.count(needPos, neededAbsolute, neededContinuation);
+        glmtk.count(needPos, neededPatterns);
 
         if (!testingFiles.isEmpty()) {
-            Estimator estimator = model.getEstimator();
             for (Path testingFile : testingFiles) {
-                glmtk.test(estimator, ProbMode.MARG, testingFile);
+                glmtk.test(estimator, probMode, testingFile);
             }
         }
 
         StatisticalNumberHelper.print();
     }
-
 }

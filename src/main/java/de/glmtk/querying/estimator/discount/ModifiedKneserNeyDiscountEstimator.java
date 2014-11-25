@@ -9,6 +9,7 @@ import de.glmtk.querying.estimator.fraction.FractionEstimator;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternCalculator;
 import de.glmtk.utils.PatternElem;
 
 public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
@@ -32,7 +33,7 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
         discount1 = new HashMap<Pattern, Double>();
         discount2 = new HashMap<Pattern, Double>();
         discount3p = new HashMap<Pattern, Double>();
-        for (Pattern pattern : Pattern.getCombinations(Constants.MODEL_SIZE,
+        for (Pattern pattern : PatternCalculator.getCombinations(Constants.MODEL_SIZE,
                 Arrays.asList(PatternElem.CNT, PatternElem.SKP))) {
             long[] n = countCache.getNGramTimes(pattern);
             double y = (double) n[0] / (n[0] + n[1]);

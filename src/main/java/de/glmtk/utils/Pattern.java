@@ -11,11 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Immutable.
@@ -115,14 +113,14 @@ public class Pattern implements Iterable<PatternElem> {
             throw new IllegalArgumentException("Argument was empty collection.");
         }
         outerLoop:
-            for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
-                    continue outerLoop;
+        for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems) {
+                    if (elem.equals(e)) {
+                        continue outerLoop;
+                    }
                 }
+                return false;
             }
-            return false;
-        }
         return true;
     }
 
@@ -136,14 +134,14 @@ public class Pattern implements Iterable<PatternElem> {
         }
         int result = 0;
         outerLoop:
-        for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
-                    ++result;
-                    continue outerLoop;
+            for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems) {
+                    if (elem.equals(e)) {
+                        ++result;
+                        continue outerLoop;
+                    }
                 }
             }
-        }
         return result;
     }
 
@@ -163,7 +161,7 @@ public class Pattern implements Iterable<PatternElem> {
         } else if (from > to) {
             throw new IllegalArgumentException(
                     "From index larger or equal than to index: " + from
-                            + " >= " + to);
+                    + " >= " + to);
         }
 
         List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
@@ -320,35 +318,6 @@ public class Pattern implements Iterable<PatternElem> {
 
     private static void cachePattern(Pattern pattern) {
         AS_STRING_TO_PATTERN.put(pattern.asString, pattern);
-    }
-
-    // TODO: untested
-    public static Set<Pattern> getCombinations(
-            int modelSize,
-            List<PatternElem> elems) {
-        Set<Pattern> patterns = new HashSet<Pattern>();
-
-        for (int i = 1; i != modelSize + 1; ++i) {
-            for (int j = 0; j != pow(elems.size(), i); ++j) {
-                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
-                int n = j;
-                for (int k = 0; k != i; ++k) {
-                    pattern.add(elems.get(n % elems.size()));
-                    n /= elems.size();
-                }
-                patterns.add(Pattern.get(pattern));
-            }
-        }
-
-        return patterns;
-    }
-
-    private static int pow(int base, int power) {
-        int result = 1;
-        for (int i = 0; i != power; ++i) {
-            result *= base;
-        }
-        return result;
     }
 
 }

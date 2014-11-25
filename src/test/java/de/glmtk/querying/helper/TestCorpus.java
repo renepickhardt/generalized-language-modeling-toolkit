@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +17,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternCalculator;
 
 public class TestCorpus {
 
@@ -57,21 +57,20 @@ public class TestCorpus {
 
         Glmtk glmtk = new Glmtk(corpus, workingDir);
 
-        Set<Pattern> neededAbsolute =
-                Pattern.getCombinations(Constants.MODEL_SIZE,
+        Set<Pattern> neededPatterns =
+                PatternCalculator.getCombinations(Constants.MODEL_SIZE,
                         Arrays.asList(CNT, SKP));
-        Set<Pattern> neededContinuation = new HashSet<Pattern>();
-        for (Pattern pattern : neededAbsolute) {
+        for (Pattern pattern : neededPatterns) {
             if (pattern.size() != Constants.MODEL_SIZE) {
-                neededContinuation.add(pattern.concat(WSKP));
+                neededPatterns.add(pattern.concat(WSKP));
             }
 
             if (pattern.contains(SKP)) {
-                neededContinuation.add(pattern.replace(SKP, WSKP));
+                neededPatterns.add(pattern.replace(SKP, WSKP));
             }
         }
 
-        glmtk.count(false, neededAbsolute, neededContinuation);
+        glmtk.count(false, neededPatterns);
     }
 
     public String getCorpusName() {

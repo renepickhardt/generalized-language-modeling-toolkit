@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -91,19 +92,26 @@ public class Glmtk {
         countCache = null;
     }
 
-    public void count(
-            boolean needPos,
-            Set<Pattern> neededAbsolute,
-            Set<Pattern> neededContinuation) throws IOException {
+    public void count(boolean needPos, Set<Pattern> neededPatterns)
+            throws IOException {
         // TODO: update status with smaller increments (each completed pattern).
 
-        // Add patterns that are needed to generate continuation.
-        for (Pattern pattern : neededContinuation) {
-            Pattern sourcePattern = pattern.getContinuationSource();
-            if (sourcePattern.isAbsolute()) {
-                neededAbsolute.add(sourcePattern);
+        Set<Pattern> neededAbsolute = new HashSet<Pattern>();
+        Set<Pattern> neededContinuation = new HashSet<Pattern>();
+
+        // Split patterns into absolute and continuation and add patterns that
+        // are needed to generate continuation.
+        for (Pattern pattern : neededPatterns) {
+            if (pattern.isAbsolute()) {
+                neededAbsolute.add(pattern);
             } else {
-                neededContinuation.add(sourcePattern);
+                neededContinuation.add(pattern);
+                Pattern source = pattern.getContinuationSource();
+                if (source.isAbsolute()) {
+                    neededAbsolute.add(source);
+                } else {
+                    neededContinuation.add(source);
+                }
             }
         }
 
@@ -152,7 +160,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -231,7 +239,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                            * 100);
+                    * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);

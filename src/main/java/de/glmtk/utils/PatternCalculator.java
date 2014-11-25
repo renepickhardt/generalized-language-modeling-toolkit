@@ -1,6 +1,12 @@
 package de.glmtk.utils;
 
+import static de.glmtk.utils.PatternElem.CNT;
+import static de.glmtk.utils.PatternElem.POS;
+import static de.glmtk.utils.PatternElem.PSKP;
+import static de.glmtk.utils.PatternElem.WSKP;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +81,53 @@ public class PatternCalculator {
         }
 
         return tracker.getUsedPatterns();
+    }
+
+    public static void addPosPatterns(Set<Pattern> patterns) {
+        Set<Pattern> newPatterns = new HashSet<Pattern>();
+        for (Pattern pattern : patterns) {
+            Pattern curPattern, lastPattern = null;
+            do {
+                curPattern = pattern.replaceLast(CNT, POS);
+                newPatterns.add(curPattern);
+                newPatterns.add(curPattern.replace(WSKP, PSKP));
+                lastPattern = curPattern;
+            } while (curPattern != lastPattern);
+        }
+        patterns.addAll(newPatterns);
+    }
+
+    // TODO: untested
+    public static Set<Pattern> getCombinations(
+            int modelSize,
+            List<PatternElem> elems) {
+        Set<Pattern> patterns = new HashSet<Pattern>();
+
+        for (int i = 1; i != modelSize + 1; ++i) {
+            for (int j = 0; j != pow(elems.size(), i); ++j) {
+                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
+                int n = j;
+                for (int k = 0; k != i; ++k) {
+                    pattern.add(elems.get(n % elems.size()));
+                    n /= elems.size();
+                }
+                patterns.add(Pattern.get(pattern));
+            }
+        }
+
+        return patterns;
+    }
+
+    /**
+     * Faster than {@link Math#pow(double, double)} because this is only for
+     * ints.
+     */
+    private static int pow(int base, int power) {
+        int result = 1;
+        for (int i = 0; i != power; ++i) {
+            result *= base;
+        }
+        return result;
     }
 
 }
