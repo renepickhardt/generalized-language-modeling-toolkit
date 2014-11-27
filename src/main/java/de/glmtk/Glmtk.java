@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -172,7 +173,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -247,7 +248,7 @@ public class Glmtk {
             } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                        + "', needed for TestCounts.");
+                                + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -310,12 +311,12 @@ public class Glmtk {
                     }
 
                     neededSequences.remove(nextSequence);
-                    if (neededSequences.isEmpty()) {
-                        break;
-                    }
                     nextSequence = neededSequences.first();
                 }
             }
+        } catch (NoSuchElementException e) {
+            // neededSequences.first() fails, because neededSequences is empty,
+            // so we are done.
         }
     }
 
@@ -385,7 +386,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                    * 100);
+                            * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);
