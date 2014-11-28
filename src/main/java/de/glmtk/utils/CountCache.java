@@ -11,12 +11,15 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import de.glmtk.Constants;
 
 /**
  * Tests for this class can be found in {@link CountingTest}.
@@ -34,25 +37,26 @@ public class CountCache {
     private Map<Pattern, long[]> nGramTimes = new HashMap<Pattern, long[]>();
 
     public CountCache(
-            Path workingDir) throws IOException {
+            Path countsDir) throws IOException {
         // Allowing workingDir == null to make
         // {@link Patterns#getUsedPatterns(Estimator, ProbMode)} work.
-        if (workingDir == null) {
+        if (countsDir == null) {
             return;
         }
 
         LOGGER.info("Loading counts...");
         LOGGER.debug("Loading absolute counts...");
-        loadAbsolute(workingDir);
+        loadAbsolute(countsDir);
         LOGGER.debug("Loading continuation counts...");
-        loadContinuation(workingDir);
+        loadContinuation(countsDir);
         LOGGER.debug("Loading nGramTimes counts...");
-        loadNGramTimes();
+        loadNGramTimes(countsDir);
     }
 
-    private void loadAbsolute(Path workingDir) throws IOException {
+    private void loadAbsolute(Path countsDir) throws IOException {
         try (DirectoryStream<Path> files =
-                Files.newDirectoryStream(workingDir.resolve("absolute"))) {
+                Files.newDirectoryStream(countsDir
+                        .resolve(Constants.ABSOLUTE_DIR_NAME))) {
             for (Path file : files) {
                 Pattern pattern = Patterns.get(file.getFileName().toString());
                 Map<String, Long> counts = new HashMap<String, Long>();
@@ -72,9 +76,10 @@ public class CountCache {
         }
     }
 
-    private void loadContinuation(Path workingDir) throws IOException {
+    private void loadContinuation(Path countsDir) throws IOException {
         try (DirectoryStream<Path> files =
-                Files.newDirectoryStream(workingDir.resolve("continuation"))) {
+                Files.newDirectoryStream(countsDir
+                        .resolve(Constants.CONTINUATION_DIR_NAME))) {
             for (Path file : files) {
                 Pattern pattern = Patterns.get(file.getFileName().toString());
                 Map<String, Counter> counts = new HashMap<String, Counter>();
@@ -94,20 +99,26 @@ public class CountCache {
         }
     }
 
-    private void loadNGramTimes() {
-        for (Pattern pattern : absolute.keySet()) {
-            long[] counts = {
-                0L, 0L, 0L, 0L
-            };
-
-            for (long count : absolute.get(pattern).values()) {
-                if (count == 0 || count > 4) {
-                    continue;
+    private void loadNGramTimes(Path countsDir) throws IOException {
+        Path nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
+        try (BufferedReader reader =
+                Files.newBufferedReader(nGramTimesFile,
+                        Charset.defaultCharset())) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                List<String> split = StringUtils.splitAtChar(line, '\t');
+                if (split.size() != 5) {
+                    throw new IllegalStateException("Illegal nGramTimes file: "
+                            + nGramTimesFile);
                 }
-                ++counts[(int) count - 1];
-            }
 
-            nGramTimes.put(pattern, counts);
+                Pattern pattern = Patterns.get(split.get(0));
+                long[] counts = new long[4];
+                for (int i = 0; i != 4; ++i) {
+                    counts[i] = Long.valueOf(split.get(i + 1));
+                }
+                nGramTimes.put(pattern, counts);
+            }
         }
     }
 

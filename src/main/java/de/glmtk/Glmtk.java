@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +30,7 @@ import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.utils.CountCache;
+import de.glmtk.utils.Counter;
 import de.glmtk.utils.HashUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
@@ -50,6 +52,9 @@ public class Glmtk {
     // TODO: Output should be empty if a phase is skipped
     // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning up in en0008t corpus absolute 11111 counts.
     // TODO: Detect ngram model length from testing.
+    // TODO: only count nGramTimes if needed
+    // TODO: enable comment syntax in input files
+    // TODO: how is testing file input treated? (empty lines?)
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Glmtk.class);
@@ -72,6 +77,8 @@ public class Glmtk {
 
     private Path continuationTmpDir;
 
+    private Path nGramTimesFile;
+
     private Path testCountsDir;
 
     private Path testingDir;
@@ -93,6 +100,7 @@ public class Glmtk {
         continuationDir = workingDir.resolve(Constants.CONTINUATION_DIR_NAME);
         continuationTmpDir =
                 workingDir.resolve(Constants.CONTINUATION_DIR_NAME + ".tmp");
+        nGramTimesFile = workingDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         testCountsDir = workingDir.resolve("testcounts");
         testingDir = workingDir.resolve("testing");
 
@@ -173,7 +181,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -182,6 +190,50 @@ public class Glmtk {
                         config.getNumberOfCores(), config.getUpdateInterval());
         continuationCounter.count(status, absoluteDir, absoluteTmpDir,
                 continuationDir, continuationTmpDir);
+
+        // N-Gram Times Counts /////////////////////////////////////////////////
+
+        LOGGER.info("nGramTimes counting -> '%s'.", nGramTimesFile);
+        try (BufferedWriter writer =
+                Files.newBufferedWriter(nGramTimesFile,
+                        Charset.defaultCharset());
+                DirectoryStream<Path> absoluteFiles =
+                        Files.newDirectoryStream(absoluteDir)) {
+            for (Path absoluteFile : absoluteFiles) {
+                long[] nGramTimes = {
+                    0L, 0L, 0L, 0L
+                };
+
+                try (BufferedReader reader =
+                        Files.newBufferedReader(absoluteFile,
+                                Charset.defaultCharset())) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        Counter counter = new Counter();
+                        Counter.getSequenceAndCounter(line, counter);
+
+                        // downcast is ok here
+                        int count = (int) counter.getOnePlusCount();
+
+                        if (count == 0 || count > 4) {
+                            continue;
+                        }
+                        ++nGramTimes[count - 1];
+                    }
+                }
+
+                writer.write(absoluteFile.getFileName().toString());
+                writer.write('\t');
+                writer.write(Long.toString(nGramTimes[0]));
+                writer.write('\t');
+                writer.write(Long.toString(nGramTimes[1]));
+                writer.write('\t');
+                writer.write(Long.toString(nGramTimes[2]));
+                writer.write('\t');
+                writer.write(Long.toString(nGramTimes[3]));
+                writer.write('\n');
+            }
+        }
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -227,12 +279,18 @@ public class Glmtk {
                 testCountDir.resolve(Constants.ABSOLUTE_DIR_NAME);
         Path testContinuationDir =
                 testCountDir.resolve(Constants.CONTINUATION_DIR_NAME);
+        Path testNGramCountsFile =
+                testCountDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
 
         LOGGER.info("TestCountCache '%s' -> '%s'.", testingFile, testCountDir);
         LOGGER.debug("Needed Patterns: %s", neededPatterns);
 
         Files.createDirectories(testAbsoluteDir);
         Files.createDirectories(testContinuationDir);
+
+        if (!NioUtils.checkFile(testNGramCountsFile, EXISTS)) {
+            Files.copy(nGramTimesFile, testNGramCountsFile);
+        }
 
         for (Pattern pattern : neededPatterns) {
             Path countFile, testCountFile;
