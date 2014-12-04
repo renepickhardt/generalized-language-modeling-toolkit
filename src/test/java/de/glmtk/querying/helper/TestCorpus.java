@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class TestCorpus {
         Set<Pattern> neededPatterns =
                 Patterns.getCombinations(Constants.MODEL_SIZE,
                         Arrays.asList(CNT, SKP));
-        for (Pattern pattern : neededPatterns) {
+        for (Pattern pattern : new HashSet<Pattern>(neededPatterns)) {
             if (pattern.size() != Constants.MODEL_SIZE) {
                 neededPatterns.add(pattern.concat(WSKP));
             }

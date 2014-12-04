@@ -49,7 +49,7 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-    calcProbability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
             logDebug(recDepth,
@@ -73,7 +73,7 @@ public class InterpolationEstimator extends Estimator {
         ++recDepth;
 
         double result = calcGamma(sequence, history, recDepth);
-        logDebug(recDepth, "  result = {}", result);
+        logDebug(recDepth, "result = {}", result);
         return result;
     }
 
@@ -112,7 +112,7 @@ public class InterpolationEstimator extends Estimator {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
                         countCache.getContinuation(historyPlusWskp)
-                                .getOnePlusCount();
+                        .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);
                 logDebug(recDepth, "discount = {}", discout);

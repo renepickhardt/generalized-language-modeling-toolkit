@@ -17,7 +17,7 @@ MakeIndex=
 QuickBuild=PDFLaTeX+ForwardPDF
 
 [document-settings,item:notes.tex]
-Bookmarks=137
+Bookmarks=137,31
 Encoding=UTF-8
 Highlighting=LaTeX
 Indentation Mode=normal
@@ -35,19 +35,19 @@ order=-1
 
 [item:notes.tex]
 archive=true
-column=57
+column=20
 encoding=UTF-8
 highlight=LaTeX
-line=30
+line=3
 mode=LaTeX
 open=true
 order=0
 
 [view-settings,view=0,item:notes.tex]
-CursorColumn=57
-CursorLine=30
+CursorColumn=20
+CursorLine=3
 JumpList=118,2
-ViMarks=.,33,0,<,34,72,>,35,0,[,33,0,],33,0,^,31,51,a,137,0
-ViRegisterContents=Much ,Most\s
-ViRegisterFlags=0,0
-ViRegisterNames=-,^
+ViMarks=.,33,0,<,34,72,>,35,0,[,33,0,],33,0,^,31,51,a,137,0,b,31,0
+ViRegisterContents=\s ,  \\\\section{Timeline?}\n\n,  \\\\maketitle\n\n  \\\\section{Abstract}\n\n  \\\\section{Research Goals}\n
+ViRegisterFlags=0,1,0
+ViRegisterNames=-,0,^
