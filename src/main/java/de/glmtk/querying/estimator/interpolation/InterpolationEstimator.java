@@ -49,7 +49,7 @@ public class InterpolationEstimator extends Estimator {
 
     @Override
     protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
             logDebug(recDepth,
@@ -89,9 +89,10 @@ public class InterpolationEstimator extends Estimator {
                 ModifiedKneserNeyDiscountEstimator a =
                         (ModifiedKneserNeyDiscountEstimator) alpha;
                 Pattern pattern = history.getPattern();
-                double d1 = a.getDiscount1(pattern);
-                double d2 = a.getDiscount2(pattern);
-                double d3p = a.getDiscount3p(pattern);
+                double[] d = a.getDiscounts(pattern);
+                double d1 = d[0];
+                double d2 = d[1];
+                double d3p = d[2];
 
                 Counter continuation =
                         countCache.getContinuation(historyPlusWskp);
@@ -112,7 +113,7 @@ public class InterpolationEstimator extends Estimator {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p =
                         countCache.getContinuation(historyPlusWskp)
-                        .getOnePlusCount();
+                                .getOnePlusCount();
 
                 logDebug(recDepth, "denominator = {}", denominator);
                 logDebug(recDepth, "discount = {}", discout);

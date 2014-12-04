@@ -15,6 +15,8 @@ import de.glmtk.querying.helper.TestCorporaTest;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NGram;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StringUtils;
 
 public class QuickTest extends TestCorporaTest {
@@ -64,6 +66,10 @@ public class QuickTest extends TestCorporaTest {
         //        String p = "the level of local insolation";
         //        double prob = n.probability(StringUtils.splitAtChar(p, ' '));
         //        System.out.println(p + "\t" + prob);
+
+        Pattern a = Patterns.get("xxxx1x");
+        System.out.println(a);
+        System.out.println(a.getContinuationSource());
 
         CountCache cc =
                 new CountCache(

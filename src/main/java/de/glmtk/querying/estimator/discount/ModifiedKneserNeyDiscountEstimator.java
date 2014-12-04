@@ -1,24 +1,16 @@
 package de.glmtk.querying.estimator.discount;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.Constants;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
-import de.glmtk.utils.PatternElem;
 
 public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
 
-    private Map<Pattern, Double> discount1 = null;
-
-    private Map<Pattern, Double> discount2 = null;
-
-    private Map<Pattern, Double> discount3p = null;
+    private Map<Pattern, double[]> discounts = null;
 
     public ModifiedKneserNeyDiscountEstimator(
             FractionEstimator fractionEstimator) {
@@ -29,44 +21,40 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
     public void setCountCache(CountCache countCache) {
         super.setCountCache(countCache);
 
-        // TODO calc discount
-        discount1 = new HashMap<Pattern, Double>();
-        discount2 = new HashMap<Pattern, Double>();
-        discount3p = new HashMap<Pattern, Double>();
-        for (Pattern pattern : Patterns.getCombinations(Constants.MODEL_SIZE,
-                Arrays.asList(PatternElem.CNT, PatternElem.SKP))) {
-            long[] n = countCache.getNGramTimes(pattern);
-            double y = (double) n[0] / (n[0] + n[1]);
-            discount1.put(pattern, 1.f - 2.f * y * n[1] / n[0]);
-            discount2.put(pattern, 2.f - 3.f * y * n[2] / n[1]);
-            discount3p.put(pattern, 3.f - 4.f * y * n[3] / n[2]);
-        }
+        discounts = new HashMap<Pattern, double[]>();
     }
 
     @Override
     protected double calcDiscount(NGram sequence, NGram history, int recDepth) {
+        double[] discounts = getDiscounts(history.getPattern());
         switch ((int) countCache.getAbsolute(history)) {
             case 0:
                 return 0;
             case 1:
-                return discount1.get(history.getPattern());
+                return discounts[0];
             case 2:
-                return discount2.get(history.getPattern());
+                return discounts[1];
             default:
-                return discount3p.get(history.getPattern());
+                return discounts[2];
         }
     }
 
-    public double getDiscount1(Pattern pattern) {
-        return discount1.get(pattern);
-    }
+    public double[] getDiscounts(Pattern pattern) {
+        double[] result = discounts.get(pattern);
+        if (result != null) {
+            return result;
+        }
 
-    public double getDiscount2(Pattern pattern) {
-        return discount2.get(pattern);
-    }
-
-    public double getDiscount3p(Pattern pattern) {
-        return discount3p.get(pattern);
+        long[] n = countCache.getNGramTimes(pattern);
+        double y = (double) n[0] / (n[0] + n[1]);
+        result =
+                new double[] {
+                    1.0f - 2.0f * y * n[1] / n[0],
+                    2.0f - 3.0f * y * n[2] / n[1],
+                    3.0f - 4.0f * y * n[3] / n[2]
+                };
+        discounts.put(pattern, result);
+        return result;
     }
 
 }

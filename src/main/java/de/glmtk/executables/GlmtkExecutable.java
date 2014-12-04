@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +35,9 @@ public class GlmtkExecutable extends Executable {
 
     private static final String OPTION_WORKINGDIR = "workingdir";
 
-    private static final String OPTION_MODEL = "model";
+    private static final String OPTION_MODELSIZE = "modelsize";
+
+    private static final String OPTION_MODEL = "models";
 
     private static final String OPTION_TESTING = "testing";
 
@@ -55,21 +57,27 @@ public class GlmtkExecutable extends Executable {
             modelOptDesc.append(model.getName());
             modelOptDesc.append(".\n");
         }
-        Option model      = new Option("m", OPTION_MODEL,      true,  modelOptDesc.toString());
+        Option modelSize  = new Option("n", OPTION_MODELSIZE,  true,  "MODELSIZE");
+        modelSize.setArgName("MODELSIZE");
+        Option model      = new Option("m", OPTION_MODEL,      true,  "Can be specified multiple times.\n" + modelOptDesc.toString());
         model.setArgName("MODEL");
         Option testing    = new Option("t", OPTION_TESTING,    true,  "File to take testing sequences for probability and entropy from (can be specified multiple times).");
         testing.setArgName("TESTING");
         //@formatter:on
-        options = Arrays.asList(help, version, workingDir, model, testing);
+        options =
+                Arrays.asList(help, version, workingDir, modelSize, model,
+                        testing);
     }
 
     private Path corpus = null;
 
     private Path workingDir = null;
 
-    private List<Path> testingFiles = new LinkedList<Path>();
+    private int modelSize = 5;
 
-    private Model model = Model.MODIFIED_KNESER_NEY;
+    private Set<Model> models = new HashSet<Model>();
+
+    private Set<Path> testingFiles = new HashSet<Path>();
 
     public static void main(String[] args) {
         new GlmtkExecutable().run(args);
@@ -116,27 +124,43 @@ public class GlmtkExecutable extends Executable {
                     line.hasOption(OPTION_WORKINGDIR) ? Paths.get(line
                             .getOptionValue(OPTION_WORKINGDIR)) : Paths
                             .get(inputArg + ".out");
-            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
-                System.err.println("Working directory '" + workingDir
-                        + "' already exists but is not a directory.");
-            }
+                    if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
+                        System.err.println("Working directory '" + workingDir
+                                + "' already exists but is not a directory.");
+                    }
 
-            corpus = inputArg;
+                    corpus = inputArg;
+        }
+
+        if (line.hasOption(OPTION_MODELSIZE)) {
+            boolean exception = false;
+            try {
+                modelSize =
+                        Integer.valueOf(line.getOptionValue(OPTION_MODELSIZE));
+            } catch (NumberFormatException e) {
+                exception = true;
+            }
+            if (exception || modelSize <= 0) {
+                throw new Termination("Unkown model size '"
+                        + line.getOptionValue(OPTION_MODELSIZE)
+                        + "'. Need to be a positive integer.");
+            }
         }
 
         if (line.hasOption(OPTION_MODEL)) {
-            model =
-                    Model.fromAbbreviation(line.getOptionValue(OPTION_MODEL)
-                            .toUpperCase());
-            if (model == null) {
-                throw new Termination("Unkown model option '"
-                        + line.getOptionValue(OPTION_MODEL) + "'.");
+            for (String modelOpt : line.getOptionValues(OPTION_MODEL)) {
+                Model model = Model.fromAbbreviation(modelOpt.toUpperCase());
+                if (model == null) {
+                    throw new Termination("Unkown models option '"
+                            + line.getOptionValue(OPTION_MODEL) + "'.");
+                }
+                models.add(model);
             }
         }
 
         if (line.hasOption(OPTION_TESTING)) {
-            for (String testingFile : line.getOptionValues(OPTION_TESTING)) {
-                Path path = Paths.get(testingFile.trim());
+            for (String testingOpt : line.getOptionValues(OPTION_TESTING)) {
+                Path path = Paths.get(testingOpt.trim());
                 if (!NioUtils.checkFile(path, EXISTS, IS_READABLE,
                         IS_REGULAR_FILE)) {
                     throw new Termination("Testing file '" + path
@@ -168,23 +192,35 @@ public class GlmtkExecutable extends Executable {
 
         boolean needPos = false;
 
-        Estimator estimator = model.getEstimator();
         ProbMode probMode = ProbMode.MARG;
 
-        Set<Pattern> neededPatterns =
-                Patterns.getUsedPatterns(estimator, probMode);
-        if (needPos) {
-            neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
+        if (models.isEmpty()) {
+            models.add(Model.MODIFIED_KNESER_NEY);
+        }
+
+        Set<Pattern> neededPatterns = new HashSet<Pattern>();
+        for (Model model : models) {
+            Estimator estimator = model.getEstimator();
+
+            neededPatterns.addAll(Patterns.getUsedPatterns(modelSize,
+                    estimator, probMode));
+            if (needPos) {
+                neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
+            }
         }
 
         glmtk.count(needPos, neededPatterns);
 
         if (!testingFiles.isEmpty()) {
             for (Path testingFile : testingFiles) {
-                CountCache countCache =
-                        glmtk.getOrCreateTestCountCache(testingFile,
-                                neededPatterns);
-                glmtk.test(testingFile, estimator, probMode, countCache);
+                for (Model model : models) {
+                    Estimator estimator = model.getEstimator();
+
+                    CountCache countCache =
+                            glmtk.getOrCreateTestCountCache(testingFile,
+                                    neededPatterns);
+                    glmtk.test(testingFile, estimator, probMode, countCache);
+                }
             }
         }
 

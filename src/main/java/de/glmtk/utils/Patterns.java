@@ -112,14 +112,15 @@ public class Patterns {
         public long[] getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
             return new long[] {
-                random.nextInt(10) + 1, random.nextInt(10) + 1,
-                random.nextInt(10) + 1, random.nextInt(10) + 1
+                    random.nextInt(10) + 1, random.nextInt(10) + 1,
+                    random.nextInt(10) + 1, random.nextInt(10) + 1
             };
         }
 
     }
 
     public static Set<Pattern> getUsedPatterns(
+            int modelSize,
             Estimator estimator,
             ProbMode probMode) {
         PatternTrackingCountCache tracker;
@@ -137,9 +138,14 @@ public class Patterns {
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
 
-        List<String> sequence = Arrays.asList("a", "a", "a", "a", "a");
-        for (int i = 0; i != 10; ++i) {
-            calculator.probability(sequence);
+        for (int n = 0; n != modelSize; ++n) {
+            List<String> sequence = new ArrayList<String>(n);
+            for (int i = 0; i != n + 1; ++i) {
+                sequence.add("a");
+            }
+            for (int i = 0; i != 10; ++i) {
+                calculator.probability(sequence);
+            }
         }
 
         return tracker.getUsedPatterns();

@@ -9,11 +9,12 @@ import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -34,7 +35,6 @@ import de.glmtk.utils.Counter;
 import de.glmtk.utils.HashUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StringUtils;
 
 /**
@@ -120,18 +120,23 @@ public class Glmtk {
         Set<Pattern> neededAbsolute = new HashSet<Pattern>();
         Set<Pattern> neededContinuation = new HashSet<Pattern>();
 
-        // Split patterns into absolute and continuation and add patterns that
-        // are needed to generate continuation.
-        for (Pattern pattern : neededPatterns) {
+        Queue<Pattern> neededPatternsQueue =
+                new LinkedList<Pattern>(neededPatterns);
+        while (!neededPatternsQueue.isEmpty()) {
+            Pattern pattern = neededPatternsQueue.poll();
             if (pattern.isAbsolute()) {
                 neededAbsolute.add(pattern);
             } else {
                 neededContinuation.add(pattern);
                 Pattern source = pattern.getContinuationSource();
+                boolean isNew;
                 if (source.isAbsolute()) {
-                    neededAbsolute.add(source);
+                    isNew = neededAbsolute.add(source);
                 } else {
-                    neededContinuation.add(source);
+                    isNew = neededContinuation.add(source);
+                }
+                if (isNew) {
+                    neededPatternsQueue.add(source);
                 }
             }
         }
@@ -181,7 +186,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -241,29 +246,6 @@ public class Glmtk {
             countCache = new CountCache(workingDir);
         }
         return countCache;
-    }
-
-    public static void main(String[] args) throws IOException {
-        Glmtk glmtk =
-                new Glmtk(Paths.get("/home/lukas/langmodels/data/en0008t"),
-                        Paths.get("/home/lukas/langmodels/data/en0008t.out/"));
-
-        Set<Pattern> neededPatterns =
-                Patterns.getUsedPatterns(Estimators.MOD_KNESER_NEY_ABS,
-                        ProbMode.MARG);
-        long t = System.currentTimeMillis();
-        glmtk.getOrCreateTestCountCache(
-                Paths.get("/home/lukas/langmodels/data/en0008t-t/5"),
-                neededPatterns);
-        System.out.println(System.currentTimeMillis() - t);
-
-        neededPatterns =
-                Patterns.getUsedPatterns(Estimators.GLM_ABS, ProbMode.MARG);
-        t = System.currentTimeMillis();
-        glmtk.getOrCreateTestCountCache(
-                Paths.get("/home/lukas/langmodels/data/en0008t-t/5"),
-                neededPatterns);
-        System.out.println(System.currentTimeMillis() - t);
     }
 
     public CountCache getOrCreateTestCountCache(
