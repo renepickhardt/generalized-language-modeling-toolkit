@@ -18,6 +18,7 @@ import java.util.Set;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 
 public class Patterns {
 
@@ -98,25 +99,45 @@ public class Patterns {
         @Override
         public long getAbsolute(NGram sequence) {
             usedPatterns.add(sequence.getPattern());
-            return random.nextInt(11);
+
+            // is it possible that sequence is unseen?
+            if (sequence.isEmptyOrOnlySkips()) {
+                return random.nextInt(10) + 1;
+            } else {
+                return random.nextInt(11);
+            }
         }
 
         @Override
         public Counter getContinuation(NGram sequence) {
             usedPatterns.add(sequence.getPattern());
-            return new Counter(random.nextInt(11), random.nextInt(11),
-                    random.nextInt(11), random.nextInt(11));
+
+            // is it possible that sequence is unseen?
+            if (sequence.isEmptyOrOnlySkips()) {
+                return new Counter(random.nextInt(10) + 1,
+                        random.nextInt(10) + 1, random.nextInt(10) + 1,
+                        random.nextInt(10) + 1);
+            } else {
+                return new Counter(random.nextInt(11), random.nextInt(11),
+                        random.nextInt(11), random.nextInt(11));
+            }
         }
 
         @Override
         public long[] getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
             return new long[] {
-                    random.nextInt(10) + 1, random.nextInt(10) + 1,
-                    random.nextInt(10) + 1, random.nextInt(10) + 1
+                random.nextInt(10) + 1, random.nextInt(10) + 1,
+                random.nextInt(10) + 1, random.nextInt(10) + 1
             };
         }
 
+    }
+
+    public static void main(String[] args) {
+        Set<Pattern> ps =
+                getUsedPatterns(5, Estimators.MOD_KNESER_NEY_SKP, ProbMode.MARG);
+        System.out.println(ps);
     }
 
     public static Set<Pattern> getUsedPatterns(

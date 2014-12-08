@@ -5,6 +5,7 @@ import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.utils.BackoffMode;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.Counter;
 import de.glmtk.utils.NGram;
@@ -16,17 +17,34 @@ public class InterpolationEstimator extends Estimator {
 
     protected Estimator beta;
 
+    protected BackoffMode backoffMode;
+
     public InterpolationEstimator(
             DiscountEstimator alpha,
             Estimator beta) {
-        this.alpha = alpha;
-        this.beta = beta;
+        this(alpha, beta, BackoffMode.DEL);
     }
 
     public InterpolationEstimator(
             DiscountEstimator alpha) {
+        this(alpha, BackoffMode.DEL);
+    }
+
+    public InterpolationEstimator(
+            DiscountEstimator alpha,
+            BackoffMode backoffMode) {
         this.alpha = alpha;
         beta = this;
+        setBackoffMode(backoffMode);
+    }
+
+    public InterpolationEstimator(
+            DiscountEstimator alpha,
+            Estimator beta,
+            BackoffMode backoffMode) {
+        this.alpha = alpha;
+        this.beta = beta;
+        setBackoffMode(backoffMode);
     }
 
     @Override
@@ -47,9 +65,18 @@ public class InterpolationEstimator extends Estimator {
         }
     }
 
+    public void setBackoffMode(BackoffMode backoffMode) {
+        if (backoffMode == BackoffMode.DEL_FRONT
+                || backoffMode == BackoffMode.SKP_AND_DEL) {
+            throw new IllegalArgumentException(
+                    "Illegal BackoffMode for this class.");
+        }
+        this.backoffMode = backoffMode;
+    }
+
     @Override
     protected double
-    calcProbability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
             logDebug(recDepth,
@@ -58,7 +85,7 @@ public class InterpolationEstimator extends Estimator {
                     recDepth);
         } else {
             NGram backoffHistory =
-                    history.backoffUntilSeen(probMode, countCache);
+                    history.backoffUntilSeen(backoffMode, countCache);
             double alphaVal = alpha.probability(sequence, history, recDepth);
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);

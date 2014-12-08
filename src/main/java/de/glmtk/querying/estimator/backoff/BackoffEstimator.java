@@ -5,6 +5,7 @@ import java.util.Map;
 
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.utils.BackoffMode;
 import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 
@@ -65,7 +66,7 @@ public class BackoffEstimator extends Estimator {
                     throw new IllegalStateException();
             }
         } else if (countCache.getAbsolute(getFullSequence(sequence, history)) == 0) {
-            NGram backoffHistory = history.backoff(probMode);
+            NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
 
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);
@@ -104,7 +105,7 @@ public class BackoffEstimator extends Estimator {
         double sumAlpha = 0;
         double sumBeta = 0;
 
-        NGram backoffHistory = history.backoff(probMode);
+        NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
 
         for (String word : countCache.getWords()) {
             NGram s = history.concat(word);

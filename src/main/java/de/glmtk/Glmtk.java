@@ -129,13 +129,8 @@ public class Glmtk {
             } else {
                 neededContinuation.add(pattern);
                 Pattern source = pattern.getContinuationSource();
-                boolean isNew;
-                if (source.isAbsolute()) {
-                    isNew = neededAbsolute.add(source);
-                } else {
-                    isNew = neededContinuation.add(source);
-                }
-                if (isNew) {
+                if ((source.isAbsolute() ? neededAbsolute : neededContinuation)
+                        .add(source)) {
                     neededPatternsQueue.add(source);
                 }
             }
@@ -186,7 +181,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -206,7 +201,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -288,7 +283,7 @@ public class Glmtk {
             } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                                + "', needed for TestCounts.");
+                        + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -426,7 +421,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                            * 100);
+                    * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);

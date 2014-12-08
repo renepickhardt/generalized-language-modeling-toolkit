@@ -14,6 +14,7 @@ import de.glmtk.querying.estimator.interpolation.InterpolationEstimator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
+import de.glmtk.utils.BackoffMode;
 
 public class Estimators {
 
@@ -72,30 +73,52 @@ public class Estimators {
 
     // Combined Estimators
 
+    private static InterpolationEstimator makeMkn(BackoffMode backoffMode) {
+        return new InterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
+                        new InterpolationEstimator(
+                                new ModifiedKneserNeyDiscountEstimator(
+                                        new ContinuationMaximumLikelihoodEstimator()),
+                                        backoffMode), backoffMode);
+    }
+
     public static final InterpolationEstimator MOD_KNESER_NEY =
-            new InterpolationEstimator(
-                    new ModifiedKneserNeyDiscountEstimator(
-                            new MaximumLikelihoodEstimator()),
-                    new InterpolationEstimator(
-                            new ModifiedKneserNeyDiscountEstimator(
-                                    new ContinuationMaximumLikelihoodEstimator())));
+            makeMkn(BackoffMode.DEL);
+
+    public static final InterpolationEstimator MOD_KNESER_NEY_SKP =
+            makeMkn(BackoffMode.SKP);
 
     public static final InterpolationEstimator MOD_KNESER_NEY_ABS =
             new InterpolationEstimator(new ModifiedKneserNeyDiscountEstimator(
-                    new MaximumLikelihoodEstimator()));
+                    new MaximumLikelihoodEstimator()), BackoffMode.DEL);
+
+    private static DiffInterpolationEstimator makeGlm(BackoffMode backoffMode) {
+        return new DiffInterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
+                        new DiffInterpolationEstimator(
+                                new ModifiedKneserNeyDiscountEstimator(
+                                        new ContinuationMaximumLikelihoodEstimator()),
+                                        backoffMode), backoffMode);
+    }
 
     public static final DiffInterpolationEstimator GLM =
-            new DiffInterpolationEstimator(
-                    new ModifiedKneserNeyDiscountEstimator(
-                            new MaximumLikelihoodEstimator()),
-                    new DiffInterpolationEstimator(
-                            new ModifiedKneserNeyDiscountEstimator(
-                                    new ContinuationMaximumLikelihoodEstimator())));
+            makeGlm(BackoffMode.SKP);
+
+    public static final DiffInterpolationEstimator GLM_DEL =
+            makeGlm(BackoffMode.DEL);
+
+    public static final DiffInterpolationEstimator GLM_DEL_FRONT =
+            makeGlm(BackoffMode.DEL_FRONT);
+
+    public static final DiffInterpolationEstimator GLM_SKP_AND_DEL =
+            makeGlm(BackoffMode.SKP_AND_DEL);
 
     public static final DiffInterpolationEstimator GLM_ABS =
             new DiffInterpolationEstimator(
                     new ModifiedKneserNeyDiscountEstimator(
-                            new MaximumLikelihoodEstimator()));
+                            new MaximumLikelihoodEstimator()), BackoffMode.SKP);
 
     public static String getName(Estimator estimator) {
         try {

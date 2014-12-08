@@ -1,12 +1,18 @@
 package de.glmtk.utils;
 
+import static de.glmtk.utils.BackoffMode.DEL;
+import static de.glmtk.utils.BackoffMode.DEL_FRONT;
+import static de.glmtk.utils.BackoffMode.SKP;
+import static de.glmtk.utils.BackoffMode.SKP_AND_DEL;
 import static de.glmtk.utils.PatternElem.SKP_WORD;
 import static de.glmtk.utils.PatternElem.WSKP_WORD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import de.glmtk.querying.ProbMode;
 
@@ -187,14 +193,14 @@ public class NGram {
         return replace(SKP_WORD, WSKP_WORD);
     }
 
-    public NGram backoff(ProbMode probMode) {
+    public NGram backoff(BackoffMode backoffMode) {
         if (isEmpty()) {
             throw new IllegalStateException("Can't backoff empty ngrams.");
         }
 
         // TODO: Rene, is this really correct?
-        switch (probMode) {
-            case COND:
+        switch (backoffMode) {
+            case SKP:
                 List<String> resultWords = new ArrayList<String>(words.size());
 
                 boolean replaced = false;
@@ -212,7 +218,7 @@ public class NGram {
                 }
                 return new NGram(resultWords);
 
-            case MARG:
+            case DEL:
                 return new NGram(words.subList(1, words.size()));
 
             default:
@@ -225,10 +231,30 @@ public class NGram {
      * it is greater zero. If not possible returns zero. Returned sequence may
      * be empty.
      */
-    public NGram backoffUntilSeen(ProbMode probMode, CountCache countCache) {
-        NGram result = backoff(probMode);
+    public NGram
+        backoffUntilSeen(BackoffMode backoffMode, CountCache countCache) {
+        NGram result = backoff(backoffMode);
         while (!result.seen(countCache)) {
-            result = result.backoff(probMode);
+            result = result.backoff(backoffMode);
+        }
+        return result;
+    }
+
+    public Set<NGram> getDifferentiatedNGrams(BackoffMode backoffMode) {
+        Set<NGram> result = new LinkedHashSet<NGram>();
+        for (int i = 0; i != size(); ++i) {
+            if (backoffMode == SKP_AND_DEL || backoffMode == DEL
+                    || (backoffMode == DEL_FRONT && i == 0)) {
+                List<String> newWords = new LinkedList<String>(words);
+                newWords.remove(i);
+                result.add(new NGram(newWords));
+            }
+            if ((backoffMode == SKP || backoffMode == SKP_AND_DEL || (backoffMode == DEL_FRONT && i != 0))
+                    && !words.get(i).equals(SKP_WORD)) {
+                List<String> newWords = new LinkedList<String>(words);
+                newWords.set(i, SKP_WORD);
+                result.add(new NGram(newWords));
+            }
         }
         return result;
     }

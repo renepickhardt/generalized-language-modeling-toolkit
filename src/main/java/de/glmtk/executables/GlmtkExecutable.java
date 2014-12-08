@@ -124,12 +124,12 @@ public class GlmtkExecutable extends Executable {
                     line.hasOption(OPTION_WORKINGDIR) ? Paths.get(line
                             .getOptionValue(OPTION_WORKINGDIR)) : Paths
                             .get(inputArg + ".out");
-                    if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
-                        System.err.println("Working directory '" + workingDir
-                                + "' already exists but is not a directory.");
-                    }
+            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
+                System.err.println("Working directory '" + workingDir
+                        + "' already exists but is not a directory.");
+            }
 
-                    corpus = inputArg;
+            corpus = inputArg;
         }
 
         if (line.hasOption(OPTION_MODELSIZE)) {
@@ -151,8 +151,8 @@ public class GlmtkExecutable extends Executable {
             for (String modelOpt : line.getOptionValues(OPTION_MODEL)) {
                 Model model = Model.fromAbbreviation(modelOpt.toUpperCase());
                 if (model == null) {
-                    throw new Termination("Unkown models option '"
-                            + line.getOptionValue(OPTION_MODEL) + "'.");
+                    throw new Termination("Unkown models option '" + modelOpt
+                            + "'.");
                 }
                 models.add(model);
             }
