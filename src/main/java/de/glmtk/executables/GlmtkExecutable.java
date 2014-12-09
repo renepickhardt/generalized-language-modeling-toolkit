@@ -33,21 +33,25 @@ public class GlmtkExecutable extends Executable {
 
     // TODO: API to count all patterns.
 
-    private static final String OPTION_WORKINGDIR = "workingdir";
+    private static final Option OPTION_HELP;
 
-    private static final String OPTION_MODELSIZE = "modelsize";
+    private static final Option OPTION_VERSION;
 
-    private static final String OPTION_MODEL = "models";
+    private static final Option OPTION_WORKINGDIR;
 
-    private static final String OPTION_TESTING = "testing";
+    private static final Option OPTION_MODELSIZE;
+
+    private static final Option OPTION_MODEL;
+
+    private static final Option OPTION_TESTING;
 
     private static List<Option> options;
     static {
         //@formatter:off
-        Option help       = new Option("h", OPTION_HELP,       false, "Print this message.");
-        Option version    = new Option("v", OPTION_VERSION,    false, "Print the version information and exit.");
-        Option workingDir = new Option("w", OPTION_WORKINGDIR, true,  "Working directory.");
-        workingDir.setArgName("WORKINGDIR");
+        OPTION_HELP       = new Option(OPTION_HELP_SHORT,    OPTION_HELP_LONG,    false, "Print this message.");
+        OPTION_VERSION    = new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG, false, "Print the version information and exit.");
+        OPTION_WORKINGDIR = new Option("w", "workingdir", true, "Working directory.");
+        OPTION_WORKINGDIR.setArgName("WORKINGDIR");
         StringBuilder modelOptDesc = new StringBuilder();
         for (Model model : Model.values()) {
             String abbreviation = model.getAbbreviation();
@@ -57,16 +61,18 @@ public class GlmtkExecutable extends Executable {
             modelOptDesc.append(model.getName());
             modelOptDesc.append(".\n");
         }
-        Option modelSize  = new Option("n", OPTION_MODELSIZE,  true,  "MODELSIZE");
-        modelSize.setArgName("MODELSIZE");
-        Option model      = new Option("m", OPTION_MODEL,      true,  "Can be specified multiple times.\n" + modelOptDesc.toString());
-        model.setArgName("MODEL");
-        Option testing    = new Option("t", OPTION_TESTING,    true,  "File to take testing sequences for probability and entropy from (can be specified multiple times).");
-        testing.setArgName("TESTING");
+        OPTION_MODELSIZE  = new Option("n", "modelsize",  true, "MODELSIZE");
+        OPTION_MODELSIZE.setArgName("MODELSIZE");
+        OPTION_MODEL      = new Option("m", "model",      true, "Can be specified multiple times.\n" + modelOptDesc.toString());
+        OPTION_MODEL.setArgName("MODEL");
+        OPTION_MODEL.setArgs(Option.UNLIMITED_VALUES);
+        OPTION_TESTING    = new Option("t", "testing",    true, "File to take testing sequences for probability and entropy from (can be specified multiple times).");
+        OPTION_TESTING.setArgName("TESTING...");
+        OPTION_TESTING.setArgs(Option.UNLIMITED_VALUES);
         //@formatter:on
         options =
-                Arrays.asList(help, version, workingDir, modelSize, model,
-                        testing);
+                Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
+                        OPTION_MODELSIZE, OPTION_MODEL, OPTION_TESTING);
     }
 
     private Path corpus = null;
@@ -90,7 +96,7 @@ public class GlmtkExecutable extends Executable {
 
     @Override
     protected String getUsage() {
-        return "glmtk [OPTION]... <INPUT>";
+        return "glmtk <INPUT> [OPTION]...";
     }
 
     @Override
@@ -109,7 +115,7 @@ public class GlmtkExecutable extends Executable {
         }
 
         if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
-            if (line.hasOption(OPTION_WORKINGDIR)) {
+            if (line.hasOption(OPTION_WORKINGDIR.getLongOpt())) {
                 throw new Termination(
                         "Can't use --"
                                 + OPTION_WORKINGDIR
@@ -121,34 +127,37 @@ public class GlmtkExecutable extends Executable {
             corpus = getAndCheckCorpusFile(workingDir, "training");
         } else {
             workingDir =
-                    line.hasOption(OPTION_WORKINGDIR) ? Paths.get(line
-                            .getOptionValue(OPTION_WORKINGDIR)) : Paths
-                            .get(inputArg + ".out");
-            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
-                System.err.println("Working directory '" + workingDir
-                        + "' already exists but is not a directory.");
-            }
+                    line.hasOption(OPTION_WORKINGDIR.getLongOpt()) ? Paths
+                            .get(line.getOptionValue(OPTION_WORKINGDIR
+                                    .getLongOpt())) : Paths.get(inputArg
+                                            + ".out");
+                            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
+                                System.err.println("Working directory '" + workingDir
+                                        + "' already exists but is not a directory.");
+                            }
 
-            corpus = inputArg;
+                            corpus = inputArg;
         }
 
-        if (line.hasOption(OPTION_MODELSIZE)) {
+        if (line.hasOption(OPTION_MODELSIZE.getLongOpt())) {
             boolean exception = false;
             try {
                 modelSize =
-                        Integer.valueOf(line.getOptionValue(OPTION_MODELSIZE));
+                        Integer.valueOf(line.getOptionValue(OPTION_MODELSIZE
+                                .getLongOpt()));
             } catch (NumberFormatException e) {
                 exception = true;
             }
             if (exception || modelSize <= 0) {
                 throw new Termination("Unkown model size '"
-                        + line.getOptionValue(OPTION_MODELSIZE)
+                        + line.getOptionValue(OPTION_MODELSIZE.getLongOpt())
                         + "'. Need to be a positive integer.");
             }
         }
 
-        if (line.hasOption(OPTION_MODEL)) {
-            for (String modelOpt : line.getOptionValues(OPTION_MODEL)) {
+        if (line.hasOption(OPTION_MODEL.getLongOpt())) {
+            for (String modelOpt : line.getOptionValues(OPTION_MODEL
+                    .getLongOpt())) {
                 Model model = Model.fromAbbreviation(modelOpt.toUpperCase());
                 if (model == null) {
                     throw new Termination("Unkown models option '" + modelOpt
@@ -158,8 +167,9 @@ public class GlmtkExecutable extends Executable {
             }
         }
 
-        if (line.hasOption(OPTION_TESTING)) {
-            for (String testingOpt : line.getOptionValues(OPTION_TESTING)) {
+        if (line.hasOption(OPTION_TESTING.getLongOpt())) {
+            for (String testingOpt : line.getOptionValues(OPTION_TESTING
+                    .getLongOpt())) {
                 Path path = Paths.get(testingOpt.trim());
                 if (!NioUtils.checkFile(path, EXISTS, IS_READABLE,
                         IS_REGULAR_FILE)) {

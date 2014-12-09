@@ -25,11 +25,15 @@ import de.glmtk.utils.StringUtils;
 
 /* package */abstract class Executable {
 
-    protected static final String OPTION_HELP = "help";
-
-    protected static final String OPTION_VERSION = "version";
-
     private static Logger LOGGER = LogManager.getLogger(Executable.class);
+
+    protected static final String OPTION_HELP_SHORT = "h";
+
+    protected static final String OPTION_HELP_LONG = "help";
+
+    protected static final String OPTION_VERSION_SHORT = "v";
+
+    protected static final String OPTION_VERSION_LONG = "version";
 
     protected Config config = null;
 
@@ -84,13 +88,13 @@ import de.glmtk.utils.StringUtils;
             throw new Termination(e.getMessage());
         }
 
-        if (line.hasOption(OPTION_VERSION)) {
+        if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out
-                    .println("GLMTK (generalized language modeling toolkit) version 0.1.");
+            .println("GLMTK (generalized language modeling toolkit) version 0.1.");
             throw new Termination();
         }
 
-        if (line.hasOption(OPTION_HELP)) {
+        if (line.hasOption(OPTION_HELP_LONG)) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.setSyntaxPrefix("Usage: ");
             formatter.setWidth(80);
@@ -108,7 +112,7 @@ import de.glmtk.utils.StringUtils;
     }
 
     private void printLogHeader(String[] args) throws IOException,
-            InterruptedException {
+    InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -116,7 +120,7 @@ import de.glmtk.utils.StringUtils;
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-            "git", "log", "-1", "--format=%H: %s"
+                "git", "log", "-1", "--format=%H: %s"
         }, null, config.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =
