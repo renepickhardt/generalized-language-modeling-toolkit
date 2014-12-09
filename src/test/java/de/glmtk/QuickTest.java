@@ -3,6 +3,7 @@ package de.glmtk;
 import java.nio.file.Paths;
 import java.util.List;
 
+import de.glmtk.counting.CountCache;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
@@ -13,7 +14,6 @@ import de.glmtk.querying.estimator.interpolation.DiffInterpolationEstimator;
 import de.glmtk.querying.estimator.interpolation.InterpolationEstimator;
 import de.glmtk.querying.helper.TestCorporaTest;
 import de.glmtk.utils.BackoffMode;
-import de.glmtk.utils.CountCache;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.StringUtils;

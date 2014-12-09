@@ -25,13 +25,14 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.ContinuationCounter;
+import de.glmtk.counting.CountCache;
+import de.glmtk.counting.Counter;
+import de.glmtk.counting.LengthDistribution;
 import de.glmtk.counting.Tagger;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.utils.CountCache;
-import de.glmtk.utils.Counter;
 import de.glmtk.utils.HashUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
@@ -79,6 +80,8 @@ public class Glmtk {
 
     private Path nGramTimesFile;
 
+    private Path lengthDistributionFile;
+
     private Path testCountsDir;
 
     private Path testingDir;
@@ -101,6 +104,8 @@ public class Glmtk {
         continuationTmpDir =
                 workingDir.resolve(Constants.CONTINUATION_DIR_NAME + ".tmp");
         nGramTimesFile = workingDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
+        lengthDistributionFile =
+                workingDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
         testCountsDir = workingDir.resolve("testcounts");
         testingDir = workingDir.resolve("testing");
 
@@ -181,7 +186,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -201,7 +206,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                        0L, 0L, 0L, 0L
+                    0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -234,6 +239,14 @@ public class Glmtk {
                 writer.write('\n');
             }
         }
+
+        // Sentence Length Distribution ////////////////////////////////////////
+
+        if (!NioUtils.checkFile(lengthDistributionFile, EXISTS)) {
+            LengthDistribution lengthDistribution =
+                    new LengthDistribution(trainingFile, true);
+            lengthDistribution.writeToStore(lengthDistributionFile);
+        }
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -258,6 +271,8 @@ public class Glmtk {
                 testCountDir.resolve(Constants.CONTINUATION_DIR_NAME);
         Path testNGramCountsFile =
                 testCountDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
+        Path testLengthDistributionFile =
+                testCountDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
 
         LOGGER.info("TestCountCache '%s' -> '%s'.", testingFile, testCountDir);
         LOGGER.debug("Needed Patterns: %s", neededPatterns);
@@ -267,6 +282,10 @@ public class Glmtk {
 
         if (!NioUtils.checkFile(testNGramCountsFile, EXISTS)) {
             Files.copy(nGramTimesFile, testNGramCountsFile);
+        }
+
+        if (!NioUtils.checkFile(testLengthDistributionFile, EXISTS)) {
+            Files.copy(lengthDistributionFile, testLengthDistributionFile);
         }
 
         for (Pattern pattern : neededPatterns) {
@@ -283,7 +302,7 @@ public class Glmtk {
             } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                        + "', needed for TestCounts.");
+                                + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -421,7 +440,7 @@ public class Glmtk {
                     cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
             LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
                     cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                    * 100);
+                            * 100);
             LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
             LOGGER.info("Cross Entropy = %s", crossEntropy);
             LOGGER.info("Entropy = %s", entropy);

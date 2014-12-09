@@ -3,8 +3,8 @@ package de.glmtk.querying.estimator.discount;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.glmtk.counting.CountCache;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
-import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.Pattern;
 

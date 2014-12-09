@@ -11,6 +11,9 @@ public class Constants {
 
     public static final String NGRAMTIMES_FILE_NAME = "ngramtimes";
 
+    public static final String LENGTHDISTRIBUTION_FILE_NAME =
+            "lengthdistribution";
+
     public static final int MODEL_SIZE = 5;
 
     public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB;

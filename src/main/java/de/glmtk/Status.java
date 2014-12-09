@@ -25,7 +25,7 @@ import de.glmtk.utils.Patterns;
 import de.glmtk.utils.StringUtils;
 
 /**
- * This class is a wrapper for status.txt which controlls unwanted interruptions
+ * This class is a wrapper for status.txt which controls unwanted interruptions
  * of the program. So if the program crashes during training one does not have
  * to repeat the entire training phase.
  *

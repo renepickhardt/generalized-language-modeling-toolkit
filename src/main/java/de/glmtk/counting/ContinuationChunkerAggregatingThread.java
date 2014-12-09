@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.counting.ContinuationChunker.QueueItem;
-import de.glmtk.utils.Counter;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.StatisticalNumberHelper;
 import de.glmtk.utils.StringUtils;

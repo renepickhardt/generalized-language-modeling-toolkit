@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import de.glmtk.counting.CountCache;
 import de.glmtk.querying.ProbMode;
 
 /**

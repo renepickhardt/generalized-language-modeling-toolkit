@@ -1,4 +1,4 @@
-package de.glmtk.utils;
+package de.glmtk.counting;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,8 +19,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.glmtk.Config;
+import de.glmtk.counting.CountCache;
+import de.glmtk.counting.Counter;
 import de.glmtk.querying.helper.TestCorporaTest;
 import de.glmtk.querying.helper.TestCorpus;
+import de.glmtk.utils.Pattern;
+import de.glmtk.utils.PatternElem;
+import de.glmtk.utils.StringUtils;
 
 /**
  * Checks whether counts present in count files are correct, but not if there

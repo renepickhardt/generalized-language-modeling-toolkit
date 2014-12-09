@@ -1,8 +1,8 @@
 package de.glmtk.querying.estimator.combination;
 
+import de.glmtk.counting.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 
 public class CombinationEstimator extends Estimator {

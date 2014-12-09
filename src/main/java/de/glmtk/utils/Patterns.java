@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import de.glmtk.counting.CountCache;
+import de.glmtk.counting.Counter;
 import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;

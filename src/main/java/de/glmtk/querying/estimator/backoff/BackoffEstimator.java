@@ -3,10 +3,10 @@ package de.glmtk.querying.estimator.backoff;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.glmtk.counting.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.utils.BackoffMode;
-import de.glmtk.utils.CountCache;
 import de.glmtk.utils.NGram;
 
 public class BackoffEstimator extends Estimator {
