@@ -4,8 +4,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import de.glmtk.counting.CountCache;
-import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
+import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
@@ -58,7 +58,7 @@ public class QuickTest extends TestCorporaTest {
         //        System.out.println(e.probability(new NGram("insolation"), new NGram(
         //                "_ _ _ local")));
 
-        //        NGramProbabilityCalculator n = new NGramProbabilityCalculator();
+        //        SentenceCalculator n = new SentenceCalculator();
         //        n.setEstimator(e);
         //        n.setProbMode(ProbMode.MARG);
         //
@@ -197,7 +197,7 @@ public class QuickTest extends TestCorporaTest {
             e.setCountCache(cc);
             e.setProbMode(ProbMode.MARG);
 
-            NGramProbabilityCalculator c = new NGramProbabilityCalculator();
+            SentenceCalculator c = new SentenceCalculator();
             c.setEstimator(e);
             c.setProbMode(ProbMode.MARG);
 

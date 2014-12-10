@@ -4,18 +4,23 @@ import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_READABLE;
-import static de.glmtk.utils.NioUtils.CheckFile.IS_REGULAR_FILE;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.cli.Option;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.Model;
 import de.glmtk.Termination;
@@ -31,6 +36,8 @@ import de.glmtk.utils.StringUtils;
 
 public class GlmtkExecutable extends Executable {
 
+    private static Logger LOGGER = LogManager.getLogger(Executable.class);
+
     // TODO: API to count all patterns.
 
     private static final Option OPTION_HELP;
@@ -39,55 +46,92 @@ public class GlmtkExecutable extends Executable {
 
     private static final Option OPTION_WORKINGDIR;
 
-    private static final Option OPTION_MODELSIZE;
+    private static final Option OPTION_TRAINING_ORDER;
 
     private static final Option OPTION_MODEL;
 
-    private static final Option OPTION_TESTING;
+    private static final Option OPTION_TEST_SENTENCE;
+
+    private static final Option OPTION_TEST_MARKOV;
+
+    private static final Option OPTION_TEST_COND;
 
     private static List<Option> options;
     static {
-        //@formatter:off
-        OPTION_HELP       = new Option(OPTION_HELP_SHORT,    OPTION_HELP_LONG,    false, "Print this message.");
-        OPTION_VERSION    = new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG, false, "Print the version information and exit.");
-        OPTION_WORKINGDIR = new Option("w", "workingdir", true, "Working directory.");
+        OPTION_HELP =
+                new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
+                        "Print this message.");
+
+        OPTION_VERSION =
+                new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG, false,
+                        "Print the version information and exit.");
+
+        OPTION_WORKINGDIR =
+                new Option("w", "workingdir", true, "Working directory.");
         OPTION_WORKINGDIR.setArgName("WORKINGDIR");
+
         StringBuilder modelOptDesc = new StringBuilder();
         for (Model model : Model.values()) {
             String abbreviation = model.getAbbreviation();
             modelOptDesc.append(abbreviation);
-            modelOptDesc.append(StringUtils.repeat(" ", 5 - abbreviation.length()));
+            modelOptDesc.append(StringUtils.repeat(" ",
+                    5 - abbreviation.length()));
             modelOptDesc.append("- ");
             modelOptDesc.append(model.getName());
             modelOptDesc.append(".\n");
         }
-        OPTION_MODELSIZE  = new Option("n", "modelsize",  true, "MODELSIZE");
-        OPTION_MODELSIZE.setArgName("MODELSIZE");
-        OPTION_MODEL      = new Option("m", "model",      true, "Can be specified multiple times.\n" + modelOptDesc.toString());
-        OPTION_MODEL.setArgName("MODEL");
+        OPTION_TRAINING_ORDER =
+                new Option("n", "training-order", true,
+                        "Order to learn for training.");
+        OPTION_TRAINING_ORDER.setArgName("ORDER");
+
+        OPTION_MODEL =
+                new Option("m", "model", true,
+                        "Can be specified multiple times.\n"
+                                + modelOptDesc.toString());
+        OPTION_MODEL.setArgName("MODEL...");
         OPTION_MODEL.setArgs(Option.UNLIMITED_VALUES);
-        OPTION_TESTING    = new Option("t", "testing",    true, "File to take testing sequences for probability and entropy from (can be specified multiple times).");
-        OPTION_TESTING.setArgName("TESTING...");
-        OPTION_TESTING.setArgs(Option.UNLIMITED_VALUES);
-        //@formatter:on
+
+        OPTION_TEST_SENTENCE =
+                new Option("ts", "test-sentence", true,
+                        "Files to take testing sentences from.");
+        OPTION_TEST_SENTENCE.setArgName("FILE...");
+        OPTION_TEST_SENTENCE.setArgs(Option.UNLIMITED_VALUES);
+
+        OPTION_TEST_MARKOV =
+                new Option("tm", "test-markov", true,
+                        "Files to take testing markov sentences from.");
+        OPTION_TEST_MARKOV.setArgName("MARKOV> <FILE...");
+        OPTION_TEST_MARKOV.setArgs(Option.UNLIMITED_VALUES);
+
+        OPTION_TEST_COND =
+                new Option("tc", "test-cond", true,
+                        "Files to take testing conditional seuqences from.");
+        OPTION_TEST_COND.setArgName("ORDER> <FILE...");
+        OPTION_TEST_COND.setArgs(Option.UNLIMITED_VALUES);
+
         options =
                 Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
-                        OPTION_MODELSIZE, OPTION_MODEL, OPTION_TESTING);
+                        OPTION_TRAINING_ORDER, OPTION_MODEL,
+                        OPTION_TEST_SENTENCE, OPTION_TEST_MARKOV,
+                        OPTION_TEST_COND);
     }
 
     private Path corpus = null;
 
     private Path workingDir = null;
 
-    private int modelSize = 5;
+    private Integer trainingOrder = null;
 
-    private Set<Model> models = new HashSet<Model>();
+    private Set<Model> models = new LinkedHashSet<Model>();
 
-    private Set<Path> testingFiles = new HashSet<Path>();
+    private Set<Path> testSentenceFiles = new LinkedHashSet<Path>();
 
-    public static void main(String[] args) {
-        new GlmtkExecutable().run(args);
-    }
+    private Map<Integer, Set<Path>> testMarkovFiles =
+            new HashMap<Integer, Set<Path>>();
+
+    private Map<Integer, Set<Path>> testCondFiles =
+            new HashMap<Integer, Set<Path>>();
 
     @Override
     protected List<Option> getOptions() {
@@ -114,74 +158,113 @@ public class GlmtkExecutable extends Executable {
                     + "' does not exist or is not readable.");
         }
 
+        for (Option option : line.getOptions()) {
+            if (option.equals(OPTION_WORKINGDIR)) {
+                checkOptionMultipleTimes(workingDir, option);
+                workingDir = Paths.get(option.getValue());
+
+            } else if (option.equals(OPTION_TRAINING_ORDER)) {
+                checkOptionMultipleTimes(trainingOrder, option);
+                trainingOrder =
+                        convertToPositiveInteger(option.getValue(),
+                                "Illegal --" + option.getLongOpt()
+                                + " argument");
+
+            } else if (option.equals(OPTION_MODEL)) {
+                for (String opt : option.getValues()) {
+                    Model model = Model.fromAbbreviation(opt.toUpperCase());
+                    if (model == null) {
+                        throw new Termination("Unkown models option '" + opt
+                                + "'.");
+                    }
+                    models.add(model);
+                }
+
+            } else if (option.equals(OPTION_TEST_SENTENCE)) {
+                for (String opt : option.getValues()) {
+                    testSentenceFiles.add(Paths.get(opt.trim()));
+                }
+
+            } else if (option.equals(OPTION_TEST_MARKOV)) {
+                extractOrderAndFiles(option, testMarkovFiles);
+
+            } else if (option.equals(OPTION_TEST_COND)) {
+                extractOrderAndFiles(option, testCondFiles);
+
+            } else {
+                throw new IllegalStateException("Unexpected option: " + option
+                        + ".");
+            }
+        }
+
         if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
-            if (line.hasOption(OPTION_WORKINGDIR.getLongOpt())) {
+            if (workingDir != null) {
                 throw new Termination(
                         "Can't use --"
-                                + OPTION_WORKINGDIR
+                                + OPTION_WORKINGDIR.getLongOpt()
                                 + " (-w) argument if using existing working directory as input.");
             }
 
             workingDir = inputArg;
-            getAndCheckCorpusFile(workingDir, "status");
-            corpus = getAndCheckCorpusFile(workingDir, "training");
+            corpus = getAndCheckFile(Constants.TRAINING_FILE_NAME);
+            getAndCheckFile(Constants.STATUS_FILE_NAME);
         } else {
-            workingDir =
-                    line.hasOption(OPTION_WORKINGDIR.getLongOpt()) ? Paths
-                            .get(line.getOptionValue(OPTION_WORKINGDIR
-                                    .getLongOpt())) : Paths.get(inputArg
-                                            + ".out");
-                            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
-                                System.err.println("Working directory '" + workingDir
-                                        + "' already exists but is not a directory.");
-                            }
+            if (workingDir == null) {
+                workingDir = Paths.get(inputArg + ".out");
+            }
+            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
+                throw new Termination("Working directory '" + workingDir
+                        + "' already exists but is not a directory.");
+            }
 
-                            corpus = inputArg;
+            corpus = inputArg;
         }
 
-        if (line.hasOption(OPTION_MODELSIZE.getLongOpt())) {
-            boolean exception = false;
-            try {
-                modelSize =
-                        Integer.valueOf(line.getOptionValue(OPTION_MODELSIZE
-                                .getLongOpt()));
-            } catch (NumberFormatException e) {
-                exception = true;
-            }
-            if (exception || modelSize <= 0) {
-                throw new Termination("Unkown model size '"
-                        + line.getOptionValue(OPTION_MODELSIZE.getLongOpt())
-                        + "'. Need to be a positive integer.");
-            }
+        if (trainingOrder == null) {
+            trainingOrder = 5;
         }
 
-        if (line.hasOption(OPTION_MODEL.getLongOpt())) {
-            for (String modelOpt : line.getOptionValues(OPTION_MODEL
-                    .getLongOpt())) {
-                Model model = Model.fromAbbreviation(modelOpt.toUpperCase());
-                if (model == null) {
-                    throw new Termination("Unkown models option '" + modelOpt
-                            + "'.");
-                }
-                models.add(model);
-            }
-        }
+        System.out.println("YOLO: workingdir=" + workingDir);
+    }
 
-        if (line.hasOption(OPTION_TESTING.getLongOpt())) {
-            for (String testingOpt : line.getOptionValues(OPTION_TESTING
-                    .getLongOpt())) {
-                Path path = Paths.get(testingOpt.trim());
-                if (!NioUtils.checkFile(path, EXISTS, IS_READABLE,
-                        IS_REGULAR_FILE)) {
-                    throw new Termination("Testing file '" + path
-                            + "' does not exist or is not readable.");
-                }
-                testingFiles.add(path);
-            }
+    private void checkOptionMultipleTimes(Object value, Option option) {
+        if (value != null) {
+            throw new Termination("Option --" + option.getLongOpt()
+                    + " can only be specified once.");
         }
     }
 
-    private Path getAndCheckCorpusFile(Path workingDir, String filename) {
+    private int convertToPositiveInteger(String val, String msg) {
+        Integer v = null;
+        try {
+            v = Integer.valueOf(val);
+        } catch (NumberFormatException e) {
+        }
+        if (v == null || v <= 0) {
+            throw new Termination(msg + " '" + val
+                    + "'. Needs to be a positive integer.");
+        }
+        return v;
+    }
+
+    private void extractOrderAndFiles(
+            Option option,
+            Map<Integer, Set<Path>> orderToFiles) {
+        String[] opts = option.getValues();
+        int order =
+                convertToPositiveInteger(opts[0],
+                        "Illegal first argument for --" + option.getLongOpt());
+        Set<Path> files = orderToFiles.get(order);
+        if (files == null) {
+            files = new LinkedHashSet<Path>();
+            orderToFiles.put(order, files);
+        }
+        for (int i = 1; i != opts.length; ++i) {
+            files.add(Paths.get(opts[i].trim()));
+        }
+    }
+
+    private Path getAndCheckFile(String filename) {
         Path file = workingDir.resolve(filename);
         if (!NioUtils.checkFile(file, EXISTS, IS_READABLE)) {
             throw new Termination(filename + " file '" + file
@@ -198,6 +281,8 @@ public class GlmtkExecutable extends Executable {
 
     @Override
     protected void exec() throws IOException {
+        logOptions();
+
         Glmtk glmtk = new Glmtk(corpus, workingDir);
 
         boolean needPos = false;
@@ -212,7 +297,7 @@ public class GlmtkExecutable extends Executable {
         for (Model model : models) {
             Estimator estimator = model.getEstimator();
 
-            neededPatterns.addAll(Patterns.getUsedPatterns(modelSize,
+            neededPatterns.addAll(Patterns.getUsedPatterns(trainingOrder,
                     estimator, probMode));
             if (needPos) {
                 neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
@@ -221,19 +306,65 @@ public class GlmtkExecutable extends Executable {
 
         glmtk.count(needPos, neededPatterns);
 
-        if (!testingFiles.isEmpty()) {
-            for (Path testingFile : testingFiles) {
+        for (Path testFile : testSentenceFiles) {
+            CountCache countCache =
+                    glmtk.getOrCreateTestCountCache(testFile, neededPatterns);
+
+            for (Model model : models) {
+                Estimator estimator = model.getEstimator();
+                glmtk.testSentenceFile(testFile, estimator, probMode,
+                        countCache);
+            }
+        }
+
+        for (Map.Entry<Integer, Set<Path>> entry : testMarkovFiles.entrySet()) {
+            int order = entry.getKey();
+            Set<Path> testFiles = entry.getValue();
+
+            for (Path testFile : testFiles) {
+                CountCache countCache =
+                        glmtk.getOrCreateTestCountCache(testFile,
+                                neededPatterns);
+
                 for (Model model : models) {
                     Estimator estimator = model.getEstimator();
+                    glmtk.testMarkovFile(testFile, estimator, probMode,
+                            countCache, order);
+                }
+            }
+        }
 
-                    CountCache countCache =
-                            glmtk.getOrCreateTestCountCache(testingFile,
-                                    neededPatterns);
-                    glmtk.test(testingFile, estimator, probMode, countCache);
+        for (Map.Entry<Integer, Set<Path>> entry : testCondFiles.entrySet()) {
+            int order = entry.getKey();
+            Set<Path> testFiles = entry.getValue();
+
+            for (Path testFile : testFiles) {
+                CountCache countCache =
+                        glmtk.getOrCreateTestCountCache(testFile,
+                                neededPatterns);
+
+                for (Model model : models) {
+                    Estimator estimator = model.getEstimator();
+                    glmtk.testCondFile(testFile, estimator, probMode,
+                            countCache, order);
                 }
             }
         }
 
         StatisticalNumberHelper.print();
     }
+
+    private void logOptions() {
+        LOGGER.debug("Corpus:            {}", corpus);
+        LOGGER.debug("WorkingDir:        {}", workingDir);
+        LOGGER.debug("TrainingOrder:     {}", trainingOrder);
+        LOGGER.debug("TestSentenceFiles: {}", testSentenceFiles);
+        LOGGER.debug("TestMarkovFiles:   {}", testMarkovFiles);
+        LOGGER.debug("TestCondFiles:     {}", testCondFiles);
+    }
+
+    public static void main(String[] args) throws Exception {
+        new GlmtkExecutable().run(args);
+    }
+
 }

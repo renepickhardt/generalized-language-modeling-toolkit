@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 
+import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.helper.AbstractEstimatorTest;
@@ -25,8 +26,8 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
             boolean continuationEstimator) throws IOException {
         LOGGER.info("===== {} ({}) =====", Estimators.getName(estimator),
                 probMode);
-        NGramProbabilityCalculator calculator =
-                new NGramProbabilityCalculator();
+        SentenceCalculator calculator =
+                new SentenceCalculator();
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
         testEstimatorCalculatorCorpus(estimator, calculator, TestCorpus.ABC,
@@ -37,7 +38,7 @@ public class NGramProbabilitiesSumTest extends AbstractEstimatorTest {
 
     private void testEstimatorCalculatorCorpus(
             Estimator estimator,
-            NGramProbabilityCalculator calculator,
+            SentenceCalculator calculator,
             TestCorpus testCorpus,
             int maxOrder) throws IOException {
         LOGGER.info("=== {} corpus", testCorpus.getCorpusName());

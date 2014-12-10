@@ -9,10 +9,12 @@ import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
@@ -29,8 +31,11 @@ import de.glmtk.counting.CountCache;
 import de.glmtk.counting.Counter;
 import de.glmtk.counting.LengthDistribution;
 import de.glmtk.counting.Tagger;
-import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
+import de.glmtk.querying.calculator.Calculator;
+import de.glmtk.querying.calculator.CondCalculator;
+import de.glmtk.querying.calculator.MarkovCalculator;
+import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.utils.HashUtils;
@@ -49,6 +54,7 @@ import de.glmtk.utils.StringUtils;
  */
 public class Glmtk {
 
+    // TODO: API bugs with spaces in filenames
     // TODO: fix needPos (reduntant parameter)
     // TODO: Output should be empty if a phase is skipped
     // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning up in en0008t corpus absolute 11111 counts.
@@ -59,6 +65,9 @@ public class Glmtk {
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Glmtk.class);
+
+    private static final DateFormat TEST_FILE_DATE_FORMAT =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private Config config = Config.get();
 
@@ -84,7 +93,7 @@ public class Glmtk {
 
     private Path testCountsDir;
 
-    private Path testingDir;
+    private Path testDir;
 
     private Status status;
 
@@ -95,8 +104,8 @@ public class Glmtk {
             Path workingDir) throws IOException {
         this.corpus = corpus;
         this.workingDir = workingDir;
-        statusFile = workingDir.resolve("status");
-        trainingFile = workingDir.resolve("training");
+        statusFile = workingDir.resolve(Constants.STATUS_FILE_NAME);
+        trainingFile = workingDir.resolve(Constants.TRAINING_FILE_NAME);
         absoluteDir = workingDir.resolve(Constants.ABSOLUTE_DIR_NAME);
         absoluteTmpDir =
                 workingDir.resolve(Constants.ABSOLUTE_DIR_NAME + ".tmp");
@@ -107,7 +116,7 @@ public class Glmtk {
         lengthDistributionFile =
                 workingDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
         testCountsDir = workingDir.resolve("testcounts");
-        testingDir = workingDir.resolve("testing");
+        testDir = workingDir.resolve("testing");
 
         if (!Files.exists(workingDir)) {
             Files.createDirectories(workingDir);
@@ -374,56 +383,96 @@ public class Glmtk {
         }
     }
 
-    public void test(
-            Path testingFile,
+    public void testSentenceFile(
+            Path testFile,
             Estimator estimator,
             ProbMode probMode,
-            CountCache testCountCache) throws IOException {
-        Files.createDirectories(testingDir);
+            CountCache countCache) throws IOException {
+        SentenceCalculator calculator = new SentenceCalculator();
+        testFile(testFile, "Sentence", calculator, estimator, probMode,
+                countCache, 0, true);
+    }
 
-        estimator.setCountCache(testCountCache);
+    public void testMarkovFile(
+            Path testFile,
+            Estimator estimator,
+            ProbMode probMode,
+            CountCache countCache,
+            int order) throws IOException {
+        MarkovCalculator calculator = new MarkovCalculator();
+        calculator.setOrder(order);
+        testFile(testFile, "Markov-" + order, calculator, estimator, probMode,
+                countCache, 0, true);
+    }
 
-        NGramProbabilityCalculator calculator =
-                new NGramProbabilityCalculator();
+    public void testCondFile(
+            Path testFile,
+            Estimator estimator,
+            ProbMode probMode,
+            CountCache countCache,
+            int order) throws IOException {
+        CondCalculator calculator = new CondCalculator();
+        testFile(testFile, "Cond-" + order, calculator, estimator, probMode,
+                countCache, order, false);
+    }
+
+    private void testFile(
+            Path testFile,
+            String testType,
+            Calculator calculator,
+            Estimator estimator,
+            ProbMode probMode,
+            CountCache countCache,
+            int checkOrder,
+            boolean multWithLengthFreq) throws IOException {
+        String estimatorName = Estimators.getName(estimator);
+        Path outputFile =
+                testDir.resolve(TEST_FILE_DATE_FORMAT.format(new Date()) + " "
+                        + testType + " " + testFile.getFileName()
+                        + (estimatorName == null ? "" : (" " + estimatorName)));
+        Files.createDirectories(testDir);
+        Files.deleteIfExists(outputFile);
+
+        LOGGER.info("Testing %s File '%s' -> '%s'.", testType, testFile,
+                outputFile);
+
+        estimator.setCountCache(countCache);
         calculator.setProbMode(probMode);
         calculator.setEstimator(estimator);
 
-        SimpleDateFormat dateFormat =
-                new SimpleDateFormat(" yyyy-MM-dd HH:mm:ss");
-        Path outputFile =
-                testingDir.resolve(testingFile.getFileName() + " "
-                        + Estimators.getName(estimator)
-                        + dateFormat.format(new Date()));
-        Files.deleteIfExists(outputFile);
-
-        LOGGER.info("Testing '%s' -> '%s'.", testingFile, outputFile);
-
         try (BufferedReader reader =
-                Files.newBufferedReader(testingFile, Charset.defaultCharset());
+                Files.newBufferedReader(testFile, Charset.defaultCharset());
                 BufferedWriter writer =
                         Files.newBufferedWriter(outputFile,
                                 Charset.defaultCharset())) {
-            int cntZero = 0;
-            int cntNonZero = 0;
-            double sumProbabilities = 0;
-            double crossEntropy = 0;
-            double entropy = 0;
-            double logBase = Math.log(Constants.LOG_BASE);
+            TestStats testStats = new TestStats();
 
             String line;
+            int lineNo = 0;
             while ((line = reader.readLine()) != null) {
-                double probability =
-                        calculator.probability(StringUtils.splitAtChar(line,
-                                ' '));
-
-                if (probability == 0) {
-                    ++cntZero;
-                } else {
-                    ++cntNonZero;
-                    sumProbabilities += probability;
-                    crossEntropy -= Math.log(probability);
-                    entropy -= Math.log(probability) * probability;
+                ++lineNo;
+                line = line.trim();
+                if (line.charAt(0) == '#') {
+                    writer.append(line);
+                    writer.append('\n');
+                    continue;
                 }
+
+                List<String> sequence = StringUtils.splitAtChar(line, ' ');
+                int sequenceSize = sequence.size();
+                if (checkOrder != 0 && sequenceSize != checkOrder) {
+                    LOGGER.error(
+                            "Expected file '%s' to only contains lines of length %s. But line %s has length %s: '%s'.",
+                            testFile, checkOrder, lineNo, sequenceSize, line);
+                    throw new Termination();
+                }
+                double probability = calculator.probability(sequence);
+                if (multWithLengthFreq && probability != 0) {
+                    probability *=
+                            countCache.getLengthDistribution()
+                                    .getLengthFrequency(sequenceSize);
+                }
+                testStats.addProbability(probability);
 
                 writer.append(line);
                 writer.append('\t');
@@ -431,19 +480,14 @@ public class Glmtk {
                 writer.append('\n');
             }
 
-            if (cntNonZero != 0) {
-                crossEntropy /= (cntNonZero * logBase);
-                entropy /= logBase;
+            List<String> testStatsOutput =
+                    StringUtils.splitAtChar(testStats.toString(), '\n');
+            for (String testStatsOutputLine : testStatsOutput) {
+                writer.append("# ");
+                writer.append(testStatsOutputLine);
+                writer.append('\n');
+                LOGGER.info(testStatsOutputLine);
             }
-
-            LOGGER.info("Count Zero-Propablity Sequences = %s (%6.2f%%)",
-                    cntZero, (double) cntZero / (cntZero + cntNonZero) * 100);
-            LOGGER.info("Count Non-Zero-Propability Sequences = %s (%6.2f%%)",
-                    cntNonZero, (double) cntNonZero / (cntZero + cntNonZero)
-                            * 100);
-            LOGGER.info("Sum of Propabilities = %s", sumProbabilities);
-            LOGGER.info("Cross Entropy = %s", crossEntropy);
-            LOGGER.info("Entropy = %s", entropy);
         }
     }
 

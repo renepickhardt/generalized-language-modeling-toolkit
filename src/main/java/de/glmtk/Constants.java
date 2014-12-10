@@ -5,6 +5,10 @@ import java.nio.file.Paths;
 
 public class Constants {
 
+    public static final String TRAINING_FILE_NAME = "training";
+
+    public static final String STATUS_FILE_NAME = "status";
+
     public static final String ABSOLUTE_DIR_NAME = "absolute";
 
     public static final String CONTINUATION_DIR_NAME = "continuation";

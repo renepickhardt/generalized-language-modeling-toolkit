@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 import de.glmtk.counting.CountCache;
-import de.glmtk.querying.ProbMode;
 
 /**
  * Immutable.
@@ -155,9 +154,9 @@ public class NGram {
     }
 
     public NGram range(int from, int to) {
-        if (from < 0 || from >= size()) {
+        if (from < 0 || from > size()) {
             throw new IllegalArgumentException("Illegal from index: " + from);
-        } else if (to < 0 || to >= size()) {
+        } else if (to < 0 || to > size()) {
             throw new IllegalArgumentException("Illegal to index: " + to);
         } else if (from > to) {
             throw new IllegalArgumentException(
@@ -258,20 +257,6 @@ public class NGram {
             }
         }
         return result;
-    }
-
-    public NGram differentiate(int index, ProbMode probMode) {
-        if (index < 0 || index >= words.size()) {
-            throw new IllegalStateException("Illegal differentiate index.");
-        }
-
-        //        if (index == 0) {
-        //            return backoff(probMode);
-        //        }
-
-        List<String> resultWords = new LinkedList<String>(words);
-        resultWords.set(index, SKP_WORD);
-        return new NGram(resultWords);
     }
 
 }

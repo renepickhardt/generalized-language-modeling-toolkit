@@ -17,8 +17,8 @@ import java.util.Set;
 
 import de.glmtk.counting.CountCache;
 import de.glmtk.counting.Counter;
-import de.glmtk.querying.NGramProbabilityCalculator;
 import de.glmtk.querying.ProbMode;
+import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 
@@ -156,8 +156,8 @@ public class Patterns {
 
         estimator.setCountCache(tracker);
 
-        NGramProbabilityCalculator calculator =
-                new NGramProbabilityCalculator();
+        SentenceCalculator calculator =
+                new SentenceCalculator();
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
 
