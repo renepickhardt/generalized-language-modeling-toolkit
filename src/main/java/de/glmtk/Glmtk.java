@@ -195,7 +195,7 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -215,7 +215,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -311,7 +311,7 @@ public class Glmtk {
             } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                                + "', needed for TestCounts.");
+                        + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -470,7 +470,7 @@ public class Glmtk {
                 if (multWithLengthFreq && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                                    .getLengthFrequency(sequenceSize);
+                            .getLengthFrequency(sequenceSize);
                 }
                 testStats.addProbability(probability);
 

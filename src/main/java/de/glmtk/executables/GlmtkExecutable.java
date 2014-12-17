@@ -147,8 +147,17 @@ public class GlmtkExecutable extends Executable {
     protected void parseArguments(String[] args) {
         super.parseArguments(args);
 
-        if (line.getArgs() == null || line.getArgs().length == 0) {
-            throw new Termination("Missing input.\n"
+        if (line.getArgList() == null || line.getArgList().size() != 1) {
+            String error;
+            if (line.getArgList().size() == 0) {
+                error = "Missing input.\n";
+            } else {
+                error =
+                        "Incorrect input: "
+                                + StringUtils.join(line.getArgList(), " ")
+                                + "\n";
+            }
+            throw new Termination(error
                     + "Try 'glmtk --help' for more information.");
         }
 
