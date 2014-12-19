@@ -12,7 +12,7 @@ import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimat
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.interpolation.DiffInterpolationEstimator;
 import de.glmtk.querying.estimator.interpolation.InterpolationEstimator;
-import de.glmtk.querying.helper.TestCorporaTest;
+import de.glmtk.testutils.TestCorporaTest;
 import de.glmtk.utils.BackoffMode;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NGram;

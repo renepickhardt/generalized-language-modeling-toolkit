@@ -80,8 +80,8 @@ public class LengthDistribution {
                 } catch (Exception e) {
                     throw new IllegalStateException(
                             "Length distribution file '" + storeFile
-                            + "' has illegal format in line " + lineNo
-                            + ": '" + line + "'.");
+                                    + "' has illegal format in line " + lineNo
+                                    + ": '" + line + "'.");
                 }
             }
         }
@@ -102,6 +102,10 @@ public class LengthDistribution {
     }
 
     public double getLengthFrequency(int length) {
+        if (length < 1) {
+            throw new IllegalArgumentException("Illegal sentences length: '"
+                    + length + "'. Must be positive integer.");
+        }
         return lengthDistribution.get(length);
     }
 

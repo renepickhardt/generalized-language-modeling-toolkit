@@ -59,7 +59,7 @@ public abstract class Calculator {
 
         List<SequenceAndHistory> queries = computeQueries(words);
 
-        double result = 1;
+        double result = 1.0;
         for (SequenceAndHistory query : queries) {
             result *= estimator.probability(query.sequence, query.history);
         }

@@ -1,4 +1,4 @@
-package de.glmtk.querying.helper;
+package de.glmtk.testutils;
 
 import org.junit.BeforeClass;
 

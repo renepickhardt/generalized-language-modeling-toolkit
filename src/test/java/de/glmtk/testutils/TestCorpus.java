@@ -1,4 +1,4 @@
-package de.glmtk.querying.helper;
+package de.glmtk.testutils;
 
 import static de.glmtk.Constants.TEST_RESSOURCES_DIR;
 import static de.glmtk.utils.PatternElem.CNT;

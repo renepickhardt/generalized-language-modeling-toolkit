@@ -54,17 +54,47 @@ public class Estimators {
 
     // Interpolation Estimators
 
-    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE =
-            new InterpolationEstimator(ABS_DISCOUNT_MLE, MLE);
+    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP =
+            new InterpolationEstimator(ABS_DISCOUNT_MLE, MLE, BackoffMode.SKP);
 
-    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_REC =
-            new InterpolationEstimator(ABS_DISCOUNT_MLE);
+    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_DEL =
+            new InterpolationEstimator(ABS_DISCOUNT_MLE, MLE, BackoffMode.DEL);
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE =
-            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, MLE);
+    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP_REC =
+            new InterpolationEstimator(ABS_DISCOUNT_MLE, BackoffMode.SKP);
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_REC =
-            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE);
+    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_DEL_REC =
+            new InterpolationEstimator(ABS_DISCOUNT_MLE, BackoffMode.DEL);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, MLE,
+                    BackoffMode.SKP);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, MLE,
+                    BackoffMode.DEL);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, MLE,
+                    BackoffMode.DEL_FRONT);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, MLE,
+                    BackoffMode.SKP_AND_DEL);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_REC =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, BackoffMode.SKP);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_REC =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE, BackoffMode.DEL);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_REC =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE,
+                    BackoffMode.DEL_FRONT);
+
+    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_REC =
+            new DiffInterpolationEstimator(ABS_DISCOUNT_MLE,
+                    BackoffMode.SKP_AND_DEL);
 
     // Combination Estimators
 

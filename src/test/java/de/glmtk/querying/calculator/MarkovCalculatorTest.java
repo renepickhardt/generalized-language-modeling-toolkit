@@ -1,4 +1,4 @@
-package de.glmtk.querying;
+package de.glmtk.querying.calculator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -7,25 +7,26 @@ import java.util.List;
 
 import org.junit.Test;
 
+import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.calculator.MarkovCalculator;
 
 public class MarkovCalculatorTest {
 
     @Test
-    public void testComputeNGrams() throws NoSuchMethodException,
+    public void testComputeQueries() throws NoSuchMethodException,
             SecurityException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
         MarkovCalculator calculator = new MarkovCalculator();
-        calculator.setProbMode(ProbMode.COND);
+        calculator.setProbMode(ProbMode.MARG);
         calculator.setOrder(4);
 
-        Method computeNGrams =
-                MarkovCalculator.class.getDeclaredMethod(
-                        "computeSequencesAndHistories", List.class);
-        computeNGrams.setAccessible(true);
+        Method computeQueries =
+                MarkovCalculator.class.getDeclaredMethod("computeQueries",
+                        List.class);
+        computeQueries.setAccessible(true);
 
         // TODO: Write actual test.
-        System.out.println(computeNGrams.invoke(calculator,
+        System.out.println(computeQueries.invoke(calculator,
                 Arrays.asList("a", "b", "c", "d", "e", "f", "g")));
     }
 }
