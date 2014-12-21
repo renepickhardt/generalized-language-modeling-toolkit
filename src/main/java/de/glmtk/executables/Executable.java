@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -101,14 +100,16 @@ import de.glmtk.utils.StringUtils;
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out
-                    .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+            .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
         if (line.hasOption(OPTION_HELP_LONG)) {
-            HelpFormatter formatter = new HelpFormatter();
+            GlmtkHelpFormatter formatter = new GlmtkHelpFormatter();
             formatter.setSyntaxPrefix("Usage: ");
             formatter.setWidth(80);
+            formatter.setLeftPadding(4);
+            formatter.setDescPadding(4);
             formatter.setLongOptPrefix(" --");
             formatter.setOptionComparator(new Comparator<Option>() {
 
@@ -118,13 +119,17 @@ import de.glmtk.utils.StringUtils;
                 }
 
             });
-            formatter.printHelp(getUsage(), options);
+
+            String header = null;
+            String footer = null;
+
+            formatter.printHelp(getUsage(), header, options, footer);
             throw new Termination();
         }
     }
 
     private void printLogHeader(String[] args) throws IOException,
-            InterruptedException {
+    InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -132,7 +137,7 @@ import de.glmtk.utils.StringUtils;
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-            "git", "log", "-1", "--format=%H: %s"
+                "git", "log", "-1", "--format=%H: %s"
         }, null, config.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =
