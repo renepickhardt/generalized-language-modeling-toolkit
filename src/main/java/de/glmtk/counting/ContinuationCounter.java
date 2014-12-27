@@ -8,6 +8,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.ConsoleOutputter;
+import de.glmtk.ConsoleOutputter.Phase;
 import de.glmtk.Status;
 import de.glmtk.utils.Pattern;
 
@@ -27,13 +29,19 @@ public class ContinuationCounter {
     public ContinuationCounter(
             Set<Pattern> neededPatterns,
             int numberOfCores,
-            int updateInterval) {
+            int consoleUpdateInterval,
+            int logUpdateInterval) {
         this.neededPatterns = neededPatterns;
-        chunker = new ContinuationChunker(numberOfCores, updateInterval);
-        merger = new Merger(numberOfCores, updateInterval, true);
+        chunker =
+                new ContinuationChunker(numberOfCores, consoleUpdateInterval,
+                        logUpdateInterval);
+        merger =
+                new Merger(numberOfCores, consoleUpdateInterval,
+                        logUpdateInterval, true);
     }
 
     public void count(
+            ConsoleOutputter consolueOutputter,
             Status status,
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
@@ -49,13 +57,15 @@ public class ContinuationCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.info("1/2 Chunking:");
-        chunker.chunk(status, chunkingPatterns, absoluteCountedDir,
-                absoluteChunkedDir, continuationCountedDir,
+        consolueOutputter.setPhase(Phase.CONTINUATION_CHUNKING, -1.0);
+        chunker.chunk(consolueOutputter, status, chunkingPatterns,
+                absoluteCountedDir, absoluteChunkedDir, continuationCountedDir,
                 continuationChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        merger.merge(status, countingPatterns, continuationChunkedDir,
-                continuationCountedDir);
+        consolueOutputter.setPhase(Phase.CONTINUATION_MERGING, -1.0);
+        merger.merge(consolueOutputter, status, countingPatterns,
+                continuationChunkedDir, continuationCountedDir);
 
         LOGGER.info("Continuation counting done.");
     }

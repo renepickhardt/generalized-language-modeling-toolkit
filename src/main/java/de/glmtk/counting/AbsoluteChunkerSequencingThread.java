@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
+import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.utils.Pattern;
@@ -45,7 +46,11 @@ import de.glmtk.utils.StringUtils;
 
     private long readerMemory;
 
-    private int updateInterval;
+    private ConsoleOutputter consoleOutputter;
+
+    private int consoleUpdateInterval;
+
+    private int logUpdateInterval;
 
     public AbsoluteChunkerSequencingThread(
             AbsoluteChunker absoluteChunker,
@@ -54,13 +59,17 @@ import de.glmtk.utils.StringUtils;
             Path trainingFile,
             boolean trainingFileHasPos,
             long readerMemory,
-            int updateInterval) {
+            ConsoleOutputter consoleOutputter,
+            int consoleUpdateInterval,
+            int logUpdateInterval) {
         this.absoluteChunker = absoluteChunker;
         this.aggregatingQueues = aggregatingQueues;
         this.trainingFile = trainingFile;
         this.trainingFileHasPos = trainingFileHasPos;
         this.readerMemory = readerMemory;
-        this.updateInterval = updateInterval;
+        this.consoleOutputter = consoleOutputter;
+        this.consoleUpdateInterval = consoleUpdateInterval;
+        this.logUpdateInterval = logUpdateInterval;
         patternsBySize = Patterns.groupPatternsBySize(patterns);
     }
 
@@ -71,17 +80,22 @@ import de.glmtk.utils.StringUtils;
                         Files.newInputStream(trainingFile)), (int) readerMemory)) {
             long readSize = 0;
             long totalSize = Files.size(trainingFile);
-            long time = System.currentTimeMillis();
+            long consoleTime = System.currentTimeMillis();
+            long logTime = System.currentTimeMillis();
 
             String line;
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
-                if (updateInterval != 0) {
-                    long curTime = System.currentTimeMillis();
-                    if (curTime - time >= updateInterval) {
-                        time = curTime;
-                        LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
-                    }
+                long curTime = System.currentTimeMillis();
+                if (consoleUpdateInterval != 0
+                        && curTime - consoleTime >= consoleUpdateInterval) {
+                    consoleTime = curTime;
+                    consoleOutputter.setPercent((double) readSize / totalSize);
+                }
+                if (logUpdateInterval != 0
+                        && curTime - logTime >= logUpdateInterval) {
+                    logTime = curTime;
+                    LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
                 }
 
                 generateAndQueueSequences(line);

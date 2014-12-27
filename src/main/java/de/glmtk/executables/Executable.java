@@ -16,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.fusesource.jansi.AnsiConsole;
 
 import de.glmtk.Config;
 import de.glmtk.Termination;
@@ -48,6 +49,8 @@ import de.glmtk.utils.StringUtils;
 
     public void run(String[] args) throws Exception {
         try {
+            AnsiConsole.systemInstall();
+
             config = Config.get();
 
             parseArguments(args);

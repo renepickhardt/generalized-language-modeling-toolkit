@@ -23,11 +23,6 @@ public class LogUtils {
     private static final String loggingPattern =
             "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
 
-    private static final String loggingHighlightPattern =
-            "%highlight{"
-                    + loggingPattern
-                    + "}{FATAL=red, ERROR=red, WARN=yellow, INFO=normal, DEBUG=green, TRACE=blue}";
-
     /**
      * GLMTK own configuration.
      */
@@ -55,19 +50,15 @@ public class LogUtils {
         return loggerConfig.getLevel();
     }
 
+    /**
+     * Does not log to Console.
+     * Appends log to "LogDir/all.log".
+     * Overwrites log to "LogDir/<timestamp>.log".
+     */
     public static void setUpExecLogging() {
         Layout<String> layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,
                         Charset.defaultCharset(), true, true, null, null);
-        Layout<String> layoutHighlight =
-                PatternLayout.createLayout(loggingHighlightPattern,
-                        configuration, null, Charset.defaultCharset(), true,
-                        true, null, null);
-
-        Appender consoleApender =
-                ConsoleAppender.createAppender(layoutHighlight, null,
-                        "SYSTEM_OUT", "Console", "true", "false");
-        consoleApender.start();
 
         Appender fileAllAppender =
                 FileAppender.createAppender(
@@ -79,23 +70,24 @@ public class LogUtils {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = format.format(Calendar.getInstance().getTime());
         Appender fileOwnAppender =
-                FileAppender.createAppender(config.getLogDir().resolve(time)
-                        .toString(), "false", "false", "FileOwn", "false",
-                        "false", "true", "8192", layout, null, "false",
-                        "false", configuration);
+                FileAppender.createAppender(
+                        config.getLogDir().resolve(time + ".log").toString(),
+                        "false", "false", "FileOwn", "false", "false", "true",
+                        "8192", layout, null, "false", "false", configuration);
         fileOwnAppender.start();
 
-        configuration.addAppender(consoleApender);
         configuration.addAppender(fileAllAppender);
         configuration.addAppender(fileOwnAppender);
 
-        loggerConfig.addAppender(consoleApender, null, null);
         loggerConfig.addAppender(fileAllAppender, null, null);
         loggerConfig.addAppender(fileOwnAppender, null, null);
 
         loggerContext.updateLoggers();
     }
 
+    /**
+     * Does only log to Console.
+     */
     public static void setUpTestLogging() {
         Layout<String> layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,
@@ -111,6 +103,9 @@ public class LogUtils {
         loggerContext.updateLoggers();
     }
 
+    /**
+     * Adds logging to given {@code localLogFile}.
+     */
     public static void addLocalFileAppender(Path localLogFile) {
         Layout<String> layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,

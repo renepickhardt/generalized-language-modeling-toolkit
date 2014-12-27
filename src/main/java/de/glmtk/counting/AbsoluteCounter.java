@@ -8,6 +8,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.ConsoleOutputter;
+import de.glmtk.ConsoleOutputter.Phase;
 import de.glmtk.Status;
 import de.glmtk.utils.Pattern;
 
@@ -25,13 +27,19 @@ public class AbsoluteCounter {
     public AbsoluteCounter(
             Set<Pattern> neededPatterns,
             int numberOfCores,
-            int updateInterval) {
+            int consoleUpdateInterval,
+            int logUpdateInterval) {
         this.neededPatterns = neededPatterns;
-        chunker = new AbsoluteChunker(numberOfCores, updateInterval);
-        merger = new Merger(numberOfCores, updateInterval, false);
+        chunker =
+                new AbsoluteChunker(numberOfCores, consoleUpdateInterval,
+                        logUpdateInterval);
+        merger =
+                new Merger(numberOfCores, consoleUpdateInterval,
+                        logUpdateInterval, false);
     }
 
     public void count(
+            ConsoleOutputter consoleOutputter,
             Status status,
             Path trainingFile,
             Path absoluteCountedDir,
@@ -46,12 +54,14 @@ public class AbsoluteCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.info("1/2 Chunking:");
-        chunker.chunk(status, chunkingPatterns, trainingFile,
+        consoleOutputter.setPhase(Phase.ABSOLUTE_CHUNKING, 0.0);
+        chunker.chunk(consoleOutputter, status, chunkingPatterns, trainingFile,
                 absoluteChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        merger.merge(status, countingPatterns, absoluteChunkedDir,
-                absoluteCountedDir);
+        consoleOutputter.setPhase(Phase.ABSOLUTE_MERGING, -1.0);
+        merger.merge(consoleOutputter, status, countingPatterns,
+                absoluteChunkedDir, absoluteCountedDir);
 
         LOGGER.info("Absolute counting done.");
     }

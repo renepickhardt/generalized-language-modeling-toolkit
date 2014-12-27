@@ -177,7 +177,7 @@ public class GlmtkExecutable extends Executable {
                 trainingOrder =
                         convertToPositiveInteger(option.getValue(),
                                 "Illegal --" + option.getLongOpt()
-                                + " argument");
+                                        + " argument");
 
             } else if (option.equals(OPTION_MODEL)) {
                 for (String opt : option.getValues()) {
@@ -232,8 +232,6 @@ public class GlmtkExecutable extends Executable {
         if (trainingOrder == null) {
             trainingOrder = 5;
         }
-
-        System.out.println("YOLO: workingdir=" + workingDir);
     }
 
     private void checkOptionMultipleTimes(Object value, Option option) {

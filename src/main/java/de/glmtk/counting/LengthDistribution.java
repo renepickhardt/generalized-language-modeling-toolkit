@@ -80,8 +80,8 @@ public class LengthDistribution {
                 } catch (Exception e) {
                     throw new IllegalStateException(
                             "Length distribution file '" + storeFile
-                                    + "' has illegal format in line " + lineNo
-                                    + ": '" + line + "'.");
+                            + "' has illegal format in line " + lineNo
+                            + ": '" + line + "'.");
                 }
             }
         }

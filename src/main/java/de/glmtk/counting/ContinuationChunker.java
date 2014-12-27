@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.utils.Pattern;
@@ -76,18 +77,23 @@ import de.glmtk.utils.PatternElem;
 
     private int numberOfCores;
 
-    private int updateInterval;
+    private int consoleUpdateInterval;
+
+    private int logUpdateInterval;
 
     private int numActiveSequencingThreads;
 
     public ContinuationChunker(
             int numberOfCores,
-            int updateInterval) {
+            int consoleUpdateInterval,
+            int logUpdateInterval) {
         this.numberOfCores = numberOfCores;
-        this.updateInterval = updateInterval;
+        this.consoleUpdateInterval = consoleUpdateInterval;
+        this.logUpdateInterval = logUpdateInterval;
     }
 
     public void chunk(
+            ConsoleOutputter consoleOutputter,
             Status status,
             Set<Pattern> patterns,
             Path absoluteCountedDir,
@@ -170,7 +176,8 @@ import de.glmtk.utils.PatternElem;
                     status, sourcePatternsQueue, sourceToAggregatingQueue,
                     absoluteCountedDir, absoluteChunkedDir,
                     continuationCountedDir, continuationChunkedDir,
-                    readerMemory, updateInterval));
+                    readerMemory, consoleOutputter, consoleUpdateInterval,
+                    logUpdateInterval));
         }
 
         List<ContinuationChunkerAggregatingThread> aggregatingThreads =

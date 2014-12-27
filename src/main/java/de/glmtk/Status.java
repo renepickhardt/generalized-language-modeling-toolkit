@@ -302,10 +302,10 @@ public class Status {
                 matcher.group(1), ',')) {
             List<String> split = StringUtils.splitAtChar(patternAndChunks, ':');
             if (split.size() != 2) {
-                LOGGER.error("Illegal format for '{}': {}", continuation
-                        ? "continuationChunked"
-                                : "absoluteChunked", patternAndChunks);
-                throw new Termination();
+                throw new RuntimeException("Illegal format for '"
+                        + (continuation
+                                ? "continuationChunked"
+                                : "absoluteChunged") + "': " + patternAndChunks);
             }
 
             Pattern pattern = Patterns.get(split.get(0));

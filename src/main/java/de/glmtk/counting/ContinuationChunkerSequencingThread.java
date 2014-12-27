@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
+import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.counting.ContinuationChunker.QueueItem;
@@ -56,7 +57,13 @@ import de.glmtk.utils.StringUtils;
     private long readerMemory;
 
     @SuppressWarnings("unused")
-    private int updateInterval;
+    private ConsoleOutputter consoleOutputter;
+
+    @SuppressWarnings("unused")
+    private int consoleUpdateInterval;
+
+    @SuppressWarnings("unused")
+    private int logUpdateInterval;
 
     public ContinuationChunkerSequencingThread(
             ContinuationChunker continuationChunker,
@@ -68,7 +75,9 @@ import de.glmtk.utils.StringUtils;
             Path continuationCountedDir,
             Path continuationChunkedDir,
             long readerMemory,
-            int updateInterval) {
+            ConsoleOutputter consoluteOutputter,
+            int consoleUpdateInterval,
+            int logUpdateInterval) {
         this.continuationChunker = continuationChunker;
         this.status = status;
         this.patternsQueue = patternsQueue;
@@ -78,7 +87,9 @@ import de.glmtk.utils.StringUtils;
         this.continuationCountedDir = continuationCountedDir;
         this.continuationChunkedDir = continuationChunkedDir;
         this.readerMemory = readerMemory;
-        this.updateInterval = updateInterval;
+        consoleOutputter = consoluteOutputter;
+        this.consoleUpdateInterval = consoleUpdateInterval;
+        this.logUpdateInterval = logUpdateInterval;
     }
 
     @Override

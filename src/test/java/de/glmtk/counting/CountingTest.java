@@ -95,7 +95,7 @@ public class CountingTest extends TestCorporaTest {
         Map<Pattern, Map<String, Long>> absolute =
                 (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
-                config.getUpdateInterval());
+                config.getLogUpdateInterval());
 
         Field continuationField =
                 CountCache.class.getDeclaredField("continuation");
@@ -105,7 +105,7 @@ public class CountingTest extends TestCorporaTest {
                 (Map<Pattern, Map<String, Counter>>) continuationField
                         .get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
-                config.getUpdateInterval());
+                config.getLogUpdateInterval());
     }
 
     private void testAbsoluteCounts(

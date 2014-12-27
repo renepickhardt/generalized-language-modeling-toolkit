@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.ConsoleOutputter;
 import de.glmtk.Status;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
@@ -35,20 +36,25 @@ public class Merger {
 
     private int numberOfCores;
 
-    private int updateInterval;
+    private int consoleUpdateInterval;
+
+    private int logUpdateInterval;
 
     private boolean continuation;
 
     /* package */Merger(
             int numberOfCores,
-            int updateInterval,
+            int consoleUpdateInterval,
+            int logUpdateInterval,
             boolean continuation) {
         this.numberOfCores = numberOfCores;
-        this.updateInterval = updateInterval;
+        this.consoleUpdateInterval = consoleUpdateInterval;
+        this.logUpdateInterval = logUpdateInterval;
         this.continuation = continuation;
     }
 
     public void merge(
+            ConsoleOutputter consoleOutputter,
             Status status,
             Set<Pattern> patterns,
             Path chunkedDir,
@@ -83,7 +89,8 @@ public class Merger {
         List<MergerThread> mergerThreads = new LinkedList<MergerThread>();
         for (int i = 0; i != numberOfCores; ++i) {
             mergerThreads.add(new MergerThread(this, status, queue, chunkedDir,
-                    countedDir, readerMemory, writerMemory, updateInterval,
+                    countedDir, readerMemory, writerMemory, consoleOutputter,
+                    consoleUpdateInterval, logUpdateInterval,
                     NUM_PARALLEL_READERS, continuation));
         }
 

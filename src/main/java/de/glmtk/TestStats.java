@@ -71,11 +71,11 @@ public class TestStats {
 
         result.append("Entropy..................: ");
         result.append(entropy);
-        result.append("\n");
+        result.append(" Hart\n");
 
         result.append("Cross-Entropy............: ");
         result.append(crossEntropy);
-        result.append("\n");
+        result.append(" Hart\n");
 
         return result.toString();
     }

@@ -20,7 +20,6 @@ import de.glmtk.counting.Counter;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.querying.estimator.Estimators;
 
 public class Patterns {
 
@@ -129,17 +128,11 @@ public class Patterns {
         public long[] getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
             return new long[] {
-                random.nextInt(10) + 1, random.nextInt(10) + 1,
-                random.nextInt(10) + 1, random.nextInt(10) + 1
+                    random.nextInt(10) + 1, random.nextInt(10) + 1,
+                    random.nextInt(10) + 1, random.nextInt(10) + 1
             };
         }
 
-    }
-
-    public static void main(String[] args) {
-        Set<Pattern> ps =
-                getUsedPatterns(5, Estimators.MOD_KNESER_NEY_SKP, ProbMode.MARG);
-        System.out.println(ps);
     }
 
     public static Set<Pattern> getUsedPatterns(
@@ -156,8 +149,7 @@ public class Patterns {
 
         estimator.setCountCache(tracker);
 
-        SentenceCalculator calculator =
-                new SentenceCalculator();
+        SentenceCalculator calculator = new SentenceCalculator();
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
 
