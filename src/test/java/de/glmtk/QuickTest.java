@@ -24,7 +24,7 @@ public class QuickTest extends TestCorporaTest {
     //    public void test() throws Exception {
     public static void main(String args[]) throws Exception {
         LogUtils.setUpTestLogging();
-        //        Estimator e = Estimators.CMLE;
+        //        ParamEstimator e = ParamEstimators.CMLE;
         //        e.setCountCache(TestCorpus.ABC.getCountCache());
         //        e.setProbMode(ProbMode.COND);
         //        NGram history = new NGram(Arrays.asList("b", "a", "a"));
@@ -51,7 +51,7 @@ public class QuickTest extends TestCorporaTest {
 
         //        TestCorpus c = TestCorpus.EN0008T;
         //
-        //        Estimator e = Estimators.GLM;
+        //        ParamEstimator e = ParamEstimators.GLM;
         //        e.setCountCache(c.getCountCache());
         //        e.setProbMode(ProbMode.MARG);
 
@@ -74,7 +74,7 @@ public class QuickTest extends TestCorporaTest {
         //                new CountCache(
         //                        Paths.get("/home/lukas/langmodels/data/en0008t.out/testcounts/354440f49cc27ea0dd1a61fd719ef855"));
         //
-        //        Estimator mkn = Estimators.GLM_ABS;
+        //        ParamEstimator mkn = ParamEstimators.GLM_ABS;
         //        mkn.setCountCache(cc);
         //        mkn.setProbMode(ProbMode.MARG);
         //

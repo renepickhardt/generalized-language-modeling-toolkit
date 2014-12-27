@@ -18,7 +18,7 @@ import de.glmtk.utils.BackoffMode;
 
 public class Estimators {
 
-    // Substitute Estimators
+    // Substitute ParamEstimators
 
     public static final UniformEstimator UNIFORM = new UniformEstimator();
 
@@ -28,7 +28,7 @@ public class Estimators {
     public static final ContinuationUnigramEstimator CONT_UNIGRAM =
             new ContinuationUnigramEstimator();
 
-    // Fraction Estimators
+    // Fraction ParamEstimators
 
     public static final MaximumLikelihoodEstimator MLE =
             new MaximumLikelihoodEstimator();
@@ -39,12 +39,12 @@ public class Estimators {
     public static final ContinuationMaximumLikelihoodEstimator CMLE =
             new ContinuationMaximumLikelihoodEstimator();
 
-    // Discount Estimators
+    // Discount ParamEstimators
 
     public static final AbsoluteDiscountEstimator ABS_DISCOUNT_MLE =
             new AbsoluteDiscountEstimator(MLE, 0.75);
 
-    // Backoff Estimators
+    // Backoff ParamEstimators
 
     public static final BackoffEstimator BACKOFF_CMLE = new BackoffEstimator(
             CMLE, CMLE);
@@ -52,7 +52,7 @@ public class Estimators {
     public static final BackoffEstimator BACKOFF_CMLE_REC =
             new BackoffEstimator(CMLE);
 
-    // Interpolation Estimators
+    // Interpolation ParamEstimators
 
     public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP =
             new InterpolationEstimator(ABS_DISCOUNT_MLE, MLE, BackoffMode.SKP);
@@ -96,12 +96,12 @@ public class Estimators {
             new DiffInterpolationEstimator(ABS_DISCOUNT_MLE,
                     BackoffMode.SKP_AND_DEL);
 
-    // Combination Estimators
+    // Combination ParamEstimators
 
     public static final CombinationEstimator COMB_MLE_CMLE =
             new CombinationEstimator(MLE, CMLE, 0.75);
 
-    // Combined Estimators
+    // Combined ParamEstimators
 
     private static InterpolationEstimator makeMkn(BackoffMode backoffMode) {
         return new InterpolationEstimator(

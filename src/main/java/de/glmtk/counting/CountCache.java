@@ -45,7 +45,7 @@ public class CountCache {
     public CountCache(
             Path countsDir) throws IOException {
         // Allowing workingDir == null to make
-        // {@link Patterns#getUsedPatterns(Estimator, ProbMode)} work.
+        // {@link Patterns#getUsedPatterns(ParamEstimator, ProbMode)} work.
         if (countsDir == null) {
             return;
         }
