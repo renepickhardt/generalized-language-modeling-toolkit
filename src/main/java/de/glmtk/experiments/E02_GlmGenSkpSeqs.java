@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import de.glmtk.utils.ArrayUtils;
 import de.glmtk.utils.StringUtils;
 
 /**
@@ -13,32 +14,20 @@ import de.glmtk.utils.StringUtils;
  *
  * <p>
  * Result: Generating all unique skipped sequences is the same as generating
- * permutations of token and skp, where token is dependent on position but
- * counts as a duplicate concerning permutation. An efficient implenetation is
- * <a href="http://marknelson.us/2002/03/01/next-permutation/">
+ * permutations of cnt and skp, where cnt is dependent on position but counts as
+ * a duplicate concerning permutation. An efficient implementation is <a
+ * href="http://marknelson.us/2002/03/01/next-permutation/">
  * std::next_permutation()</a>
  */
 public class E02_GlmGenSkpSeqs {
 
-    private static void swap(boolean[] array, int i, int j) {
-        boolean tmp = array[i];
-        array[i] = array[j];
-        array[j] = tmp;
-    }
-
-    private static void reverse(boolean[] array, int from, int to) {
-        for (int i = from; i != from + (to - from) / 2; ++i) {
-            swap(array, i, to + from - i - 1);
-        }
-    }
-
     private static List<String> getSkippedSequence(
             List<String> sequence,
-            boolean[] tokens) {
+            boolean[] pattern) {
         List<String> result = new ArrayList<String>(sequence);
         int i = 0;
-        for (boolean t : tokens) {
-            if (t) {
+        for (boolean p : pattern) {
+            if (p) {
                 result.set(i, "*");
             }
             ++i;
@@ -48,7 +37,7 @@ public class E02_GlmGenSkpSeqs {
 
     private static boolean nextGenerateSkippedSequences(
             List<String> sequence,
-            boolean[] tokens,
+            boolean[] pattern,
             int first,
             int last) {
         if (first == last) {
@@ -61,18 +50,18 @@ public class E02_GlmGenSkpSeqs {
 
         while (true) {
             int ii = i--;
-            if (tokens[i] && !tokens[ii]) { // tokens[i] > tokens[ii]
+            if (pattern[i] && !pattern[ii]) { // pattern[i] > pattern[ii]
                 int j = last - 1;
-                while (!tokens[i] || tokens[j]) { // tokens[i] <= tokens[ii]
+                while (!pattern[i] || pattern[j]) { // pattern[i] <= pattern[ii]
                     --j;
                 }
-                swap(tokens, i, j);
-                reverse(tokens, ii, last);
+                ArrayUtils.swap(pattern, i, j);
+                ArrayUtils.reverse(pattern, ii, last);
                 return true;
 
             }
             if (i == first) {
-                reverse(tokens, first, last);
+                ArrayUtils.reverse(pattern, first, last);
                 return false;
             }
         }
@@ -80,10 +69,10 @@ public class E02_GlmGenSkpSeqs {
 
     private static void generateSkippedSequences(
             List<String> sequence,
-            boolean[] tokens) {
+            boolean[] pattern) {
         do {
-            System.out.println(getSkippedSequence(sequence, tokens));
-        } while (nextGenerateSkippedSequences(sequence, tokens, 0,
+            System.out.println(getSkippedSequence(sequence, pattern));
+        } while (nextGenerateSkippedSequences(sequence, pattern, 0,
                 sequence.size()));
     }
 
@@ -91,14 +80,14 @@ public class E02_GlmGenSkpSeqs {
         for (int order = 0; order != sequence.size() + 1; ++order) {
             System.out.println("-----------");
             System.out.println("--- order=" + order);
-            boolean[] tokens = new boolean[sequence.size()];
+            boolean[] pattern = new boolean[sequence.size()];
             for (int i = 0; i != order; ++i) {
-                tokens[i] = true;
+                pattern[i] = true;
             }
             for (int i = order; i != sequence.size(); ++i) {
-                tokens[i] = false;
+                pattern[i] = false;
             }
-            generateSkippedSequences(sequence, tokens);
+            generateSkippedSequences(sequence, pattern);
         }
         System.out.println("-----------");
     }
@@ -106,24 +95,24 @@ public class E02_GlmGenSkpSeqs {
     @SuppressWarnings("unused")
     private static void generateSkippedSequencesRec(
             List<String> sequence,
-            boolean[] tokens,
+            boolean[] pattern,
             int index) {
-        if (index == tokens.length - 1) {
+        if (index == pattern.length - 1) {
             System.out.println(StringUtils.join(
-                    getSkippedSequence(sequence, tokens), " "));
+                    getSkippedSequence(sequence, pattern), " "));
             return;
         }
 
-        generateSkippedSequencesRec(sequence, tokens, index + 1);
+        generateSkippedSequencesRec(sequence, pattern, index + 1);
         for (int i = index + 1; i != sequence.size(); ++i) {
-            if (tokens[index] == tokens[i]) {
+            if (pattern[index] == pattern[i]) {
                 continue;
             }
-            swap(tokens, index, i);
-            generateSkippedSequencesRec(sequence, tokens, index + 1);
+            ArrayUtils.swap(pattern, index, i);
+            generateSkippedSequencesRec(sequence, pattern, index + 1);
         }
         for (int i = sequence.size() - 1; i != index; --i) {
-            swap(tokens, index, i);
+            ArrayUtils.swap(pattern, index, i);
         }
     }
 
