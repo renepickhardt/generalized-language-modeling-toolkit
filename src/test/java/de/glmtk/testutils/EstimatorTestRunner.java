@@ -1,6 +1,10 @@
 package de.glmtk.testutils;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -11,7 +15,6 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -31,7 +34,12 @@ import de.glmtk.querying.estimator.Estimators;
  */
 public class EstimatorTestRunner extends Suite {
 
-    public static class EstimatorTestParameters {
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public static @interface EstimatorTestParameters {
+    }
+
+    public static class EstimatorTestParams {
 
         public Estimator estimator;
 
@@ -41,7 +49,7 @@ public class EstimatorTestRunner extends Suite {
 
         public int margOrder;
 
-        public EstimatorTestParameters(
+        public EstimatorTestParams(
                 Estimator estimator,
                 boolean continuationEstimator,
                 int condOrder,
@@ -73,8 +81,8 @@ public class EstimatorTestRunner extends Suite {
 
             @Override
             public Object createTest() throws InstantiationException,
-            IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+                    IllegalAccessException, IllegalArgumentException,
+                    InvocationTargetException {
                 return getTestClass().getOnlyConstructor().newInstance(
                         estimatorName, estimator, continuationEstimator,
                         probMode, highestOrder);
@@ -94,8 +102,9 @@ public class EstimatorTestRunner extends Suite {
 
             @Override
             protected String testName(FrameworkMethod method) {
-                return TestRunnerForEstimator.this.getName() + " (" + getName()
-                        + "): " + method.getName();
+                return method.getName() + ": "
+                        + TestRunnerForEstimator.this.getName() + " ("
+                        + getName() + ")";
             }
 
             @Override
@@ -136,15 +145,15 @@ public class EstimatorTestRunner extends Suite {
 
         public TestRunnerForEstimator(
                 Class<?> type,
-                EstimatorTestParameters parameters) throws InitializationError {
+                EstimatorTestParams params) throws InitializationError {
             super(type, Collections.<Runner> emptyList());
 
-            estimator = parameters.estimator;
-            continuationEstimator = parameters.continuationEstimator;
+            estimator = params.estimator;
+            continuationEstimator = params.continuationEstimator;
             estimatorName = Estimators.getName(estimator);
 
             runners = new ArrayList<TestRunnerForProbMode>();
-            createRunners(parameters);
+            createRunners(params);
         }
 
         @Override
@@ -160,15 +169,15 @@ public class EstimatorTestRunner extends Suite {
             return (List) runners;
         }
 
-        private void createRunners(EstimatorTestParameters parameters)
+        private void createRunners(EstimatorTestParams params)
                 throws InitializationError {
-            if (parameters.condOrder != 0) {
+            if (params.condOrder != 0) {
                 runners.add(new TestRunnerForProbMode(getTestClass()
-                        .getJavaClass(), ProbMode.COND, parameters.condOrder));
+                        .getJavaClass(), ProbMode.COND, params.condOrder));
             }
-            if (parameters.margOrder != 0) {
+            if (params.margOrder != 0) {
                 runners.add(new TestRunnerForProbMode(getTestClass()
-                        .getJavaClass(), ProbMode.MARG, parameters.margOrder));
+                        .getJavaClass(), ProbMode.MARG, params.margOrder));
             }
         }
 
@@ -192,10 +201,10 @@ public class EstimatorTestRunner extends Suite {
     }
 
     @SuppressWarnings("unchecked")
-    private Iterable<EstimatorTestParameters> allParameters() throws Throwable {
+    private Iterable<EstimatorTestParams> allParameters() throws Throwable {
         Object parameters = getParametersMethod().invokeExplosively(null);
         if (parameters instanceof Iterable<?>) {
-            return (Iterable<EstimatorTestParameters>) parameters;
+            return (Iterable<EstimatorTestParams>) parameters;
         }
 
         throw parametersMethodReturnedWrongType();
@@ -203,7 +212,8 @@ public class EstimatorTestRunner extends Suite {
 
     private FrameworkMethod getParametersMethod() throws Exception {
         List<FrameworkMethod> methods =
-                getTestClass().getAnnotatedMethods(Parameters.class);
+                getTestClass().getAnnotatedMethods(
+                        EstimatorTestParameters.class);
         for (FrameworkMethod method : methods) {
             if (method.isStatic() && method.isPublic()) {
                 return method;
@@ -215,9 +225,9 @@ public class EstimatorTestRunner extends Suite {
     }
 
     private void createRunnersForParameters(
-            Iterable<EstimatorTestParameters> allParameters)
-                    throws InitializationError {
-        for (EstimatorTestParameters parameters : allParameters) {
+            Iterable<EstimatorTestParams> allParameters)
+            throws InitializationError {
+        for (EstimatorTestParams parameters : allParameters) {
             runners.add(new TestRunnerForEstimator(getTestClass()
                     .getJavaClass(), parameters));
         }
@@ -227,7 +237,7 @@ public class EstimatorTestRunner extends Suite {
         return new Exception(getTestClass().getName() + "."
                 + getParametersMethod().getName()
                 + "() must return an Iterable of "
-                + EstimatorTestParameters.class.getSimpleName() + ".");
+                + EstimatorTestParams.class.getSimpleName() + ".");
     }
 
 }

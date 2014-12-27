@@ -25,7 +25,6 @@ import static de.glmtk.utils.NGram.SKP_NGRAM;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,101 +32,68 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.testutils.EstimatorTestRunner;
+import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParameters;
+import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParams;
 import de.glmtk.testutils.TestCorporaTest;
 import de.glmtk.testutils.TestCorpus;
-import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParameters;
 import de.glmtk.utils.NGram;
 
 @RunWith(EstimatorTestRunner.class)
 public class EstimatorTest extends TestCorporaTest {
 
-    private static final Logger LOGGER = LogManager.getLogger(EstimatorTest.class);
+    private static final Logger LOGGER = LogManager
+            .getLogger(EstimatorTest.class);
 
     private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
             TestCorpus.ABC, TestCorpus.MOBY_DICK);
 
     private static final int HIGHEST_ORDER = 5;
 
-    private static final List<EstimatorTestParameters> testData;
-    static {
-        testData = new LinkedList<EstimatorTestParameters>();
+    @EstimatorTestParameters
+    public static Iterable<EstimatorTestParams> data() {
+        return Arrays.asList(
+                //@formatter:off
+                new EstimatorTestParams(UNIFORM, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(ABS_UNIGRAM, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(CONT_UNIGRAM, false, 0, HIGHEST_ORDER - 1),
 
-        // Substitute Estimators
-        testData.add(new EstimatorTestParameters(UNIFORM, false, 0,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(ABS_UNIGRAM, false, 0,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(CONT_UNIGRAM, false, 0,
-                HIGHEST_ORDER - 1));
+                // Fractions Estimators
+                new EstimatorTestParams(MLE, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(FMLE, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
-        // Fractions Estimators
-        testData.add(new EstimatorTestParameters(MLE, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(FMLE, false, 0, HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(CMLE, true, HIGHEST_ORDER - 1,
-                HIGHEST_ORDER - 1));
+                // Backoff Estimators
+                new EstimatorTestParams(BACKOFF_CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+                new EstimatorTestParams(BACKOFF_CMLE_REC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
-        // Backoff Estimators
-        testData.add(new EstimatorTestParameters(BACKOFF_CMLE, true,
-                HIGHEST_ORDER - 1, HIGHEST_ORDER - 1));
-        testData.add(new EstimatorTestParameters(BACKOFF_CMLE_REC, true,
-                HIGHEST_ORDER - 1, HIGHEST_ORDER - 1));
+                // Interpolation Estimators
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
 
-        // Interpolation Estimators
-        testData.add(new EstimatorTestParameters(INTERPOL_ABS_DISCOUNT_MLE_SKP,
-                false, HIGHEST_ORDER, HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(INTERPOL_ABS_DISCOUNT_MLE_DEL,
-                false, HIGHEST_ORDER, HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                INTERPOL_ABS_DISCOUNT_MLE_SKP_REC, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
+                // DiffInterpolation Estimators
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
 
-        // DiffInterpolation Estimators
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false,
-                HIGHEST_ORDER, HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_REC, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER,
-                HIGHEST_ORDER));
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_REC, false,
-                HIGHEST_ORDER, HIGHEST_ORDER));
+                // HIGHEST_ORDER should actually also work,
+                // but takes far to long to calculate.
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_REC, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
-        // HIGHEST_ORDER should actually also work,
-        // but takes far to long to calculate.
-        testData.add(new EstimatorTestParameters(
-                DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_REC, false,
-                HIGHEST_ORDER - 1, HIGHEST_ORDER - 1));
-
-        // Combination Estimators
-        testData.add(new EstimatorTestParameters(COMB_MLE_CMLE, true, 0,
-                HIGHEST_ORDER - 1));
-    }
-
-    @Parameters
-    public static Iterable<EstimatorTestParameters> data() {
-        return testData;
+                // Combination Estimators
+                new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
+                //@formatter:on
+                );
     }
 
     private Estimator estimator;
