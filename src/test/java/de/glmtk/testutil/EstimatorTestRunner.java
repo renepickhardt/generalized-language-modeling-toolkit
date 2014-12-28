@@ -9,7 +9,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
@@ -33,6 +35,14 @@ import de.glmtk.querying.estimator.Estimators;
  * behaves similarly.
  */
 public class EstimatorTestRunner extends Suite {
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public static @interface IgnoreProbMode {
+
+        ProbMode[] value();
+
+    }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
@@ -171,11 +181,13 @@ public class EstimatorTestRunner extends Suite {
 
         private void createRunners(EstimatorTestParams params)
                 throws InitializationError {
-            if (params.condOrder != 0) {
+            if (!ignoredProbModes.contains(ProbMode.COND)
+                    && params.condOrder != 0) {
                 runners.add(new TestRunnerForProbMode(getTestClass()
                         .getJavaClass(), ProbMode.COND, params.condOrder));
             }
-            if (params.margOrder != 0) {
+            if (!ignoredProbModes.contains(ProbMode.MARG)
+                    && params.margOrder != 0) {
                 runners.add(new TestRunnerForProbMode(getTestClass()
                         .getJavaClass(), ProbMode.MARG, params.margOrder));
             }
@@ -183,12 +195,14 @@ public class EstimatorTestRunner extends Suite {
 
     }
 
+    private Set<ProbMode> ignoredProbModes;
+
     private List<TestRunnerForEstimator> runners;
 
     public EstimatorTestRunner(
             Class<?> type) throws Throwable {
         super(type, Collections.<Runner> emptyList());
-        runners = new ArrayList<TestRunnerForEstimator>();
+        loadIgnoredProbModes();
         createRunnersForParameters(allParameters());
     }
 
@@ -198,6 +212,18 @@ public class EstimatorTestRunner extends Suite {
     @Override
     protected List<Runner> getChildren() {
         return (List) runners;
+    }
+
+    private void loadIgnoredProbModes() {
+        ignoredProbModes = new HashSet<ProbMode>();
+        for (Annotation annotation : getTestClass().getAnnotations()) {
+            if (annotation instanceof IgnoreProbMode) {
+                IgnoreProbMode a = (IgnoreProbMode) annotation;
+                for (ProbMode probMode : a.value()) {
+                    ignoredProbModes.add(probMode);
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -227,6 +253,7 @@ public class EstimatorTestRunner extends Suite {
     private void createRunnersForParameters(
             Iterable<EstimatorTestParams> allParameters)
             throws InitializationError {
+        runners = new ArrayList<TestRunnerForEstimator>();
         for (EstimatorTestParams parameters : allParameters) {
             runners.add(new TestRunnerForEstimator(getTestClass()
                     .getJavaClass(), parameters));
