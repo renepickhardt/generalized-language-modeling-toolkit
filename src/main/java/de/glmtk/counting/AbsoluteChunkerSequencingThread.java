@@ -1,6 +1,6 @@
 package de.glmtk.counting;
 
-import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
+import static de.glmtk.common.Console.CONSOLE;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,11 +19,11 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.Patterns;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
-import de.glmtk.utils.StatisticalNumberHelper;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StatisticalNumberHelper;
+import de.glmtk.util.StringUtils;
 
 /* package */class AbsoluteChunkerSequencingThread implements Runnable {
 
@@ -87,7 +87,7 @@ import de.glmtk.utils.StringUtils;
                 if (consoleUpdateInterval != 0
                         && curTime - consoleTime >= consoleUpdateInterval) {
                     consoleTime = curTime;
-                    CONSOLE_OUTPUTTER.setPercent((double) readSize / totalSize);
+                    CONSOLE.setPercent((double) readSize / totalSize);
                 }
                 if (logUpdateInterval != 0
                         && curTime - logTime >= logUpdateInterval) {
@@ -99,7 +99,7 @@ import de.glmtk.utils.StringUtils;
             }
 
             absoluteChunker.sequencingIsDone();
-            CONSOLE_OUTPUTTER.setPercent(1.0);
+            CONSOLE.setPercent(1.0);
             LOGGER.debug("Done.");
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);

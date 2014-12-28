@@ -19,9 +19,10 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
-import de.glmtk.utils.NioUtils;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.StatisticalNumberHelper;
+import de.glmtk.common.Counter;
+import de.glmtk.common.Pattern;
+import de.glmtk.util.NioUtils;
+import de.glmtk.util.StatisticalNumberHelper;
 
 /* package */class MergerThread implements Runnable {
 

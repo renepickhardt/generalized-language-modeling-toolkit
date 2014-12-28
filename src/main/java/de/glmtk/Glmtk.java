@@ -1,8 +1,8 @@
 package de.glmtk;
 
 import static de.glmtk.Config.CONFIG;
-import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
-import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
+import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -27,25 +27,25 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.ConsoleOutputter.Phase;
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.Counter;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.ProbMode;
+import de.glmtk.common.Console.Phase;
 import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.ContinuationCounter;
-import de.glmtk.counting.CountCache;
-import de.glmtk.counting.Counter;
 import de.glmtk.counting.LengthDistribution;
 import de.glmtk.counting.Tagger;
-import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.calculator.CondCalculator;
 import de.glmtk.querying.calculator.MarkovCalculator;
 import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.utils.HashUtils;
-import de.glmtk.utils.NioUtils;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.HashUtils;
+import de.glmtk.util.NioUtils;
+import de.glmtk.util.StringUtils;
 
 /**
  * Here happens counting (during training phase) and also querying (during
@@ -191,7 +191,7 @@ public class Glmtk {
             }
         }
 
-        CONSOLE_OUTPUTTER.printCorpusAnalyzationInProcess();
+        CONSOLE.printCorpusAnalyzationInProcess();
 
         // Absolute ////////////////////////////////////////////////////////////
 
@@ -214,7 +214,7 @@ public class Glmtk {
 
         // Evaluating //////////////////////////////////////////////////////////
 
-        CONSOLE_OUTPUTTER.setPhase(Phase.EVALUATING, 0.0);
+        CONSOLE.setPhase(Phase.EVALUATING, 0.0);
 
         // N-Gram Times Counts
         LOGGER.info("nGramTimes counting -> '%s'.", nGramTimesFile);
@@ -258,7 +258,7 @@ public class Glmtk {
                 writer.write('\n');
             }
         }
-        CONSOLE_OUTPUTTER.setPercent(0.5);
+        CONSOLE.setPercent(0.5);
 
         // Sentence Length Distribution
         if (!NioUtils.checkFile(lengthDistributionFile, EXISTS)) {
@@ -266,9 +266,9 @@ public class Glmtk {
                     new LengthDistribution(trainingFile, true);
             lengthDistribution.writeToStore(lengthDistributionFile);
         }
-        CONSOLE_OUTPUTTER.setPercent(1.0);
+        CONSOLE.setPercent(1.0);
 
-        CONSOLE_OUTPUTTER.printCorpusAnalyzationDone(NioUtils
+        CONSOLE.printCorpusAnalyzationDone(NioUtils
                 .calcFileSize(Arrays.asList(absoluteDir, continuationDir,
                         nGramTimesFile, lengthDistributionFile)));
     }
@@ -453,12 +453,12 @@ public class Glmtk {
 
         String msg =
                 "Testing " + testType + " File '"
-                        + CONSOLE_OUTPUTTER.bold(testFile.toString()) + "'";
+                        + CONSOLE.bold(testFile.toString()) + "'";
         if (estimatorName != null) {
-            msg += " with " + CONSOLE_OUTPUTTER.bold(estimatorName);
+            msg += " with " + CONSOLE.bold(estimatorName);
         }
         msg += "...";
-        CONSOLE_OUTPUTTER.printMessage(msg);
+        CONSOLE.printMessage(msg);
 
         estimator.setCountCache(countCache);
         calculator.setProbMode(probMode);
@@ -511,7 +511,7 @@ public class Glmtk {
                 writer.append(testStatsOutputLine);
                 writer.append('\n');
                 LOGGER.info(testStatsOutputLine);
-                CONSOLE_OUTPUTTER.printMessage("    " + testStatsOutputLine);
+                CONSOLE.printMessage("    " + testStatsOutputLine);
             }
         }
     }

@@ -2,7 +2,7 @@ package de.glmtk.querying.calculator;
 
 import java.util.List;
 
-import de.glmtk.utils.NGram;
+import de.glmtk.common.NGram;
 
 public class MarkovCalculator extends SentenceCalculator {
 

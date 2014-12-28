@@ -1,11 +1,11 @@
 package de.glmtk.executables;
 
-import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
-import static de.glmtk.utils.LogUtils.LOG_UTILS;
-import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
-import static de.glmtk.utils.NioUtils.CheckFile.IS_DIRECTORY;
-import static de.glmtk.utils.NioUtils.CheckFile.IS_NO_DIRECTORY;
-import static de.glmtk.utils.NioUtils.CheckFile.IS_READABLE;
+import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
+import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
+import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
+import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
+import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,16 +25,15 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.Model;
 import de.glmtk.Termination;
-import de.glmtk.counting.CountCache;
-import de.glmtk.querying.ProbMode;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.Patterns;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.utils.NioUtils;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
-import de.glmtk.utils.StatisticalNumberHelper;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.NioUtils;
+import de.glmtk.util.StatisticalNumberHelper;
+import de.glmtk.util.StringUtils;
 
 public class GlmtkExecutable extends Executable {
 
@@ -299,13 +298,13 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void configureLogging() {
         super.configureLogging();
-        LOG_UTILS.addFileAppender(
+        LOGGING_HELPER.addFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
         if (logToConsole) {
-            LOG_UTILS.addConsoleAppender(Target.SYSTEM_ERR);
+            LOGGING_HELPER.addConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
-            CONSOLE_OUTPUTTER.disableAnsi();
+            CONSOLE.disableAnsi();
         }
     }
 

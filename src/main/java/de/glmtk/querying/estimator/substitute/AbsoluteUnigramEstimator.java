@@ -1,6 +1,6 @@
 package de.glmtk.querying.estimator.substitute;
 
-import de.glmtk.utils.NGram;
+import de.glmtk.common.NGram;
 
 public class AbsoluteUnigramEstimator extends SubstituteEstimator {
 

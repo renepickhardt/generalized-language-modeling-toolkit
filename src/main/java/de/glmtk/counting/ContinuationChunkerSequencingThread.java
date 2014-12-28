@@ -20,10 +20,10 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
+import de.glmtk.common.Pattern;
 import de.glmtk.counting.ContinuationChunker.QueueItem;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.StatisticalNumberHelper;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StatisticalNumberHelper;
+import de.glmtk.util.StringUtils;
 
 /* package */class ContinuationChunkerSequencingThread implements Runnable {
 

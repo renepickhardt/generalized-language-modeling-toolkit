@@ -2,10 +2,10 @@ package de.glmtk.querying.estimator.interpolation;
 
 import java.util.Set;
 
+import de.glmtk.common.BackoffMode;
+import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
-import de.glmtk.utils.BackoffMode;
-import de.glmtk.utils.NGram;
 
 public class DiffInterpolationEstimator extends InterpolationEstimator {
 

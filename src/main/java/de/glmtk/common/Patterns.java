@@ -1,9 +1,9 @@
-package de.glmtk.utils;
+package de.glmtk.common;
 
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.POS;
-import static de.glmtk.utils.PatternElem.PSKP;
-import static de.glmtk.utils.PatternElem.WSKP;
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.POS;
+import static de.glmtk.common.PatternElem.PSKP;
+import static de.glmtk.common.PatternElem.WSKP;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,9 +15,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import de.glmtk.counting.CountCache;
-import de.glmtk.counting.Counter;
-import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 

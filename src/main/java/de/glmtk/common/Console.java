@@ -1,15 +1,15 @@
-package de.glmtk;
+package de.glmtk.common;
 
 import java.text.NumberFormat;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StringUtils;
 
-public enum ConsoleOutputter {
+public enum Console {
 
-    CONSOLE_OUTPUTTER;
+    CONSOLE;
 
     // TODO: Check if this works on windows.
 
@@ -81,11 +81,11 @@ public enum ConsoleOutputter {
     private boolean ansiEnabled = false;
 
     /**
-     * Was the last print a call to {@link ConsoleOutputter#printStatus()}?
+     * Was the last print a call to {@link Console#printStatus()}?
      */
     private boolean lastPrintStatus = false;
 
-    private ConsoleOutputter() {
+    private Console() {
         AnsiConsole.systemInstall();
     }
 

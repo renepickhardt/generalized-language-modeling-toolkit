@@ -21,11 +21,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.glmtk.testutils.LoggingTest;
-import de.glmtk.testutils.TestCorpus;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternElem;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.Counter;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
+import de.glmtk.testutil.LoggingTest;
+import de.glmtk.testutil.TestCorpus;
+import de.glmtk.util.StringUtils;
 
 /**
  * Checks whether counts present in count files are correct, but not if there

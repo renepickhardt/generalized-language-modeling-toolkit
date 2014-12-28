@@ -1,8 +1,8 @@
-package de.glmtk.testutils;
+package de.glmtk.testutil;
 
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.SKP;
-import static de.glmtk.utils.PatternElem.WSKP;
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.SKP;
+import static de.glmtk.common.PatternElem.WSKP;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -15,9 +15,9 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.counting.CountCache;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.Patterns;
 
 public enum TestCorpus {
 

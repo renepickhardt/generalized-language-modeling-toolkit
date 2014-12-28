@@ -1,15 +1,15 @@
 package de.glmtk.querying.estimator.interpolation;
 
-import static de.glmtk.utils.PatternElem.WSKP_WORD;
-import de.glmtk.counting.CountCache;
-import de.glmtk.counting.Counter;
-import de.glmtk.querying.ProbMode;
+import static de.glmtk.common.PatternElem.WSKP_WORD;
+import de.glmtk.common.BackoffMode;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.Counter;
+import de.glmtk.common.NGram;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
-import de.glmtk.utils.BackoffMode;
-import de.glmtk.utils.NGram;
-import de.glmtk.utils.Pattern;
 
 public class InterpolationEstimator extends Estimator {
 

@@ -1,9 +1,9 @@
 package de.glmtk.querying.estimator.combination;
 
-import de.glmtk.counting.CountCache;
-import de.glmtk.querying.ProbMode;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.NGram;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.utils.NGram;
 
 public class CombinationEstimator extends Estimator {
 

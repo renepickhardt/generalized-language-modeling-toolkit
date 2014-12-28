@@ -5,9 +5,9 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.querying.ProbMode;
+import de.glmtk.common.NGram;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.utils.NGram;
 
 public abstract class Calculator {
 

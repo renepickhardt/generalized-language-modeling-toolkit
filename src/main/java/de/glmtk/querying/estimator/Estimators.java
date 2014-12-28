@@ -2,6 +2,7 @@ package de.glmtk.querying.estimator;
 
 import java.lang.reflect.Field;
 
+import de.glmtk.common.BackoffMode;
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
 import de.glmtk.querying.estimator.combination.CombinationEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteDiscountEstimator;
@@ -14,7 +15,6 @@ import de.glmtk.querying.estimator.interpolation.InterpolationEstimator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
-import de.glmtk.utils.BackoffMode;
 
 public class Estimators {
 

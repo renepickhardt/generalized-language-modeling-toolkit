@@ -8,8 +8,8 @@ import java.nio.file.Path;
 
 import org.junit.Test;
 
-import de.glmtk.testutils.LoggingTest;
-import de.glmtk.testutils.TestCorpus;
+import de.glmtk.testutil.LoggingTest;
+import de.glmtk.testutil.TestCorpus;
 
 // TODO: Make a not rudimentary test.
 

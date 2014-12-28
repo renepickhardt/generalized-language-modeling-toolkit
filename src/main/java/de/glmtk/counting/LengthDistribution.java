@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StringUtils;
 
 public class LengthDistribution {
 

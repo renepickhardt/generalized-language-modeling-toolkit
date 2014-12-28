@@ -1,10 +1,10 @@
-package de.glmtk.utils;
+package de.glmtk.common;
 
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.POS;
-import static de.glmtk.utils.PatternElem.PSKP;
-import static de.glmtk.utils.PatternElem.SKP;
-import static de.glmtk.utils.PatternElem.WSKP;
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.POS;
+import static de.glmtk.common.PatternElem.PSKP;
+import static de.glmtk.common.PatternElem.SKP;
+import static de.glmtk.common.PatternElem.WSKP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -16,8 +16,9 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternElem;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
+import de.glmtk.common.Patterns;
 
 public class PatternTest {
 

@@ -1,6 +1,6 @@
 package de.glmtk.executables;
 
-import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
+import static de.glmtk.common.Console.CONSOLE;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,14 +52,14 @@ public class GlmtkHelpFormatter extends HelpFormatter {
 
             if (option.getOpt() == null) {
                 optBuf.append(lpad).append("   ").append(defaultLongOptPrefix)
-                        .append(CONSOLE_OUTPUTTER.bold(option.getLongOpt()));
+                        .append(CONSOLE.bold(option.getLongOpt()));
             } else {
                 optBuf.append(lpad).append(defaultOptPrefix)
-                .append(CONSOLE_OUTPUTTER.bold(option.getOpt()));
+                .append(CONSOLE.bold(option.getOpt()));
                 if (option.hasLongOpt()) {
                     optBuf.append(',')
                             .append(defaultLongOptPrefix)
-                    .append(CONSOLE_OUTPUTTER.bold(option.getLongOpt()));
+                    .append(CONSOLE.bold(option.getLongOpt()));
                 }
             }
 

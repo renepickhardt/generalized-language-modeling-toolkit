@@ -1,4 +1,4 @@
-package de.glmtk.utils;
+package de.glmtk.common;
 
 public enum BackoffMode {
 

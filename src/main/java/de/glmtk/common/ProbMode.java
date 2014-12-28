@@ -1,4 +1,4 @@
-package de.glmtk.querying;
+package de.glmtk.common;
 
 /**
  * ProbabilityMode

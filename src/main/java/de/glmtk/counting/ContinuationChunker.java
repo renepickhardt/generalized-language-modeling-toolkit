@@ -28,8 +28,8 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.PatternElem;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 
 /* package */class ContinuationChunker {
 

@@ -1,6 +1,6 @@
 package de.glmtk.querying.estimator.fraction;
 
-import de.glmtk.utils.NGram;
+import de.glmtk.common.NGram;
 
 // TODO: Rene: You told me this estimator should work for Marginal
 // Probabilities. It doesn't, why?

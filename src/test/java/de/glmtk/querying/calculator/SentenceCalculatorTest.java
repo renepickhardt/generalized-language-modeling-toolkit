@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import de.glmtk.querying.ProbMode;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.calculator.SentenceCalculator;
 
 public class SentenceCalculatorTest {

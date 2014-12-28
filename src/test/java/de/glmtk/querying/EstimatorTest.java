@@ -1,5 +1,6 @@
 package de.glmtk.querying;
 
+import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.querying.estimator.Estimators.ABS_UNIGRAM;
 import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE;
 import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE_REC;
@@ -21,7 +22,6 @@ import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_S
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP_REC;
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
-import static de.glmtk.utils.NGram.SKP_NGRAM;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,15 +33,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import de.glmtk.common.NGram;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.calculator.SentenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.testutils.EstimatorTestRunner;
-import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParameters;
-import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParams;
-import de.glmtk.testutils.LoggingTest;
-import de.glmtk.testutils.TestCorpus;
-import de.glmtk.utils.NGram;
+import de.glmtk.testutil.EstimatorTestRunner;
+import de.glmtk.testutil.LoggingTest;
+import de.glmtk.testutil.TestCorpus;
+import de.glmtk.testutil.EstimatorTestRunner.EstimatorTestParameters;
+import de.glmtk.testutil.EstimatorTestRunner.EstimatorTestParams;
 
 @RunWith(EstimatorTestRunner.class)
 public class EstimatorTest extends LoggingTest {

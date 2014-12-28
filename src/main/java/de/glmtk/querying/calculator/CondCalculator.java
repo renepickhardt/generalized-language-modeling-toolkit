@@ -3,7 +3,7 @@ package de.glmtk.querying.calculator;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.utils.NGram;
+import de.glmtk.common.NGram;
 
 public class CondCalculator extends Calculator {
 

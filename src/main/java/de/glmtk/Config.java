@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StringUtils;
 
 public enum Config {
 

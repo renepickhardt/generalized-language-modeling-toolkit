@@ -1,4 +1,4 @@
-package de.glmtk.utils;
+package de.glmtk.util;
 
 import java.io.IOException;
 import java.io.InputStream;

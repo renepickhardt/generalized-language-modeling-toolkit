@@ -1,11 +1,7 @@
-package de.glmtk.utils;
-
-import static de.glmtk.Config.CONFIG;
+package de.glmtk.util;
 
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -19,11 +15,9 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
-import de.glmtk.Constants;
+public enum LoggingHelper {
 
-public enum LogUtils {
-
-    LOG_UTILS;
+    LOGGING_HELPER;
 
     private static final String loggingPattern =
             "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
@@ -46,7 +40,7 @@ public enum LogUtils {
 
     private Layout<String> layout;
 
-    private LogUtils() {
+    private LoggingHelper() {
         loggerContext = (LoggerContext) LogManager.getContext(false);
         configuration = loggerContext.getConfiguration();
         loggerConfig =
@@ -58,21 +52,6 @@ public enum LogUtils {
 
     public Level getLogLevel() {
         return loggerConfig.getLevel();
-    }
-
-    public void setUpExecLogging() {
-        addFileAppender(
-                CONFIG.getLogDir().resolve(Constants.ALL_LOG_FILE_NAME),
-                "FileAll", true);
-
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String time = format.format(Calendar.getInstance().getTime());
-        addFileAppender(CONFIG.getLogDir().resolve(time + ".log"),
-                "FileTimestamp", false);
-    }
-
-    public void setUpTestLogging() {
-        addConsoleAppender(Target.SYSTEM_OUT);
     }
 
     public void addConsoleAppender(Target target) {

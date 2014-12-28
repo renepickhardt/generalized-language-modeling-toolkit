@@ -3,10 +3,10 @@ package de.glmtk.querying.estimator.discount;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.counting.CountCache;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.NGram;
+import de.glmtk.common.Pattern;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
-import de.glmtk.utils.NGram;
-import de.glmtk.utils.Pattern;
 
 public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
 

@@ -1,12 +1,12 @@
 package de.glmtk.querying.calculator;
 
-import static de.glmtk.utils.PatternElem.SKP_WORD;
+import static de.glmtk.common.PatternElem.SKP_WORD;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import de.glmtk.querying.ProbMode;
-import de.glmtk.utils.NGram;
+import de.glmtk.common.NGram;
+import de.glmtk.common.ProbMode;
 
 public class SentenceCalculator extends Calculator {
 

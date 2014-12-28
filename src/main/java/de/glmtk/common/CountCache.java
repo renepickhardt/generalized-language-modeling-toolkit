@@ -1,8 +1,8 @@
-package de.glmtk.counting;
+package de.glmtk.common;
 
-import static de.glmtk.utils.NGram.SKP_NGRAM;
-import static de.glmtk.utils.NGram.WSKP_NGRAM;
-import static de.glmtk.utils.PatternElem.CNT;
+import static de.glmtk.common.NGram.SKP_NGRAM;
+import static de.glmtk.common.NGram.WSKP_NGRAM;
+import static de.glmtk.common.PatternElem.CNT;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,10 +20,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.utils.NGram;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.counting.CountingTest;
+import de.glmtk.counting.LengthDistribution;
+import de.glmtk.util.StringUtils;
 
 /**
  * Tests for this class can be found in {@link CountingTest}.

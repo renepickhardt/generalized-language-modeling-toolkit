@@ -19,10 +19,10 @@ import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.utils.HashUtils;
-import de.glmtk.utils.Pattern;
-import de.glmtk.utils.Patterns;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.Patterns;
+import de.glmtk.util.HashUtils;
+import de.glmtk.util.StringUtils;
 
 /**
  * This class is a wrapper for status.txt which controls unwanted interruptions

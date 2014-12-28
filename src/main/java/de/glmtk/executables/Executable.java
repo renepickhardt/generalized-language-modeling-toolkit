@@ -1,14 +1,16 @@
 package de.glmtk.executables;
 
 import static de.glmtk.Config.CONFIG;
-import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
-import static de.glmtk.utils.LogUtils.LOG_UTILS;
+import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,8 +24,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.AnsiConsole;
 
+import de.glmtk.Constants;
 import de.glmtk.Termination;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StringUtils;
 
 /* package */abstract class Executable {
 
@@ -49,7 +52,7 @@ import de.glmtk.utils.StringUtils;
 
     public void run(String[] args) throws Exception {
         try {
-            CONSOLE_OUTPUTTER.enableAnsi();
+            CONSOLE.enableAnsi();
 
             parseArguments(args);
 
@@ -82,7 +85,15 @@ import de.glmtk.utils.StringUtils;
     }
 
     protected void configureLogging() {
-        LOG_UTILS.setUpExecLogging();
+        LOGGING_HELPER.addFileAppender(
+                CONFIG.getLogDir().resolve(Constants.ALL_LOG_FILE_NAME),
+                "FileAll", true);
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time = format.format(Calendar.getInstance().getTime());
+        LOGGING_HELPER.addFileAppender(CONFIG.getLogDir()
+                .resolve(time + ".log"), "FileTimestamp", false);
+
         loggingConfigured = true;
     }
 

@@ -1,11 +1,11 @@
-package de.glmtk.utils;
+package de.glmtk.common;
 
-import static de.glmtk.utils.BackoffMode.DEL;
-import static de.glmtk.utils.BackoffMode.DEL_FRONT;
-import static de.glmtk.utils.BackoffMode.SKP;
-import static de.glmtk.utils.BackoffMode.SKP_AND_DEL;
-import static de.glmtk.utils.PatternElem.SKP_WORD;
-import static de.glmtk.utils.PatternElem.WSKP_WORD;
+import static de.glmtk.common.BackoffMode.DEL;
+import static de.glmtk.common.BackoffMode.DEL_FRONT;
+import static de.glmtk.common.BackoffMode.SKP;
+import static de.glmtk.common.BackoffMode.SKP_AND_DEL;
+import static de.glmtk.common.PatternElem.SKP_WORD;
+import static de.glmtk.common.PatternElem.WSKP_WORD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import de.glmtk.counting.CountCache;
+import de.glmtk.util.StringUtils;
 
 /**
  * Immutable.

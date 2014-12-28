@@ -1,7 +1,7 @@
 package de.glmtk.querying.estimator.discount;
 
+import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
-import de.glmtk.utils.NGram;
 
 public class AbsoluteDiscountEstimator extends DiscountEstimator {
 

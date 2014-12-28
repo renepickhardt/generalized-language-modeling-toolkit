@@ -1,6 +1,6 @@
 package de.glmtk.querying.estimator;
 
-import static de.glmtk.utils.PatternElem.SKP_WORD;
+import static de.glmtk.common.PatternElem.SKP_WORD;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +8,11 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.counting.CountCache;
-import de.glmtk.querying.ProbMode;
+import de.glmtk.common.CountCache;
+import de.glmtk.common.NGram;
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
-import de.glmtk.utils.NGram;
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StringUtils;
 
 public abstract class Estimator {
 

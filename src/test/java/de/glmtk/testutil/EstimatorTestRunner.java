@@ -1,4 +1,4 @@
-package de.glmtk.testutils;
+package de.glmtk.testutil;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -20,8 +20,8 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
+import de.glmtk.common.ProbMode;
 import de.glmtk.querying.EstimatorTest;
-import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 

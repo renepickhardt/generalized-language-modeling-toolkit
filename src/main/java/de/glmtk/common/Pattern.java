@@ -1,11 +1,11 @@
-package de.glmtk.utils;
+package de.glmtk.common;
 
-import static de.glmtk.utils.PatternElem.CNT;
-import static de.glmtk.utils.PatternElem.DEL;
-import static de.glmtk.utils.PatternElem.POS;
-import static de.glmtk.utils.PatternElem.PSKP;
-import static de.glmtk.utils.PatternElem.SKP;
-import static de.glmtk.utils.PatternElem.WSKP;
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.DEL;
+import static de.glmtk.common.PatternElem.POS;
+import static de.glmtk.common.PatternElem.PSKP;
+import static de.glmtk.common.PatternElem.SKP;
+import static de.glmtk.common.PatternElem.WSKP;
 
 import java.util.ArrayList;
 import java.util.Arrays;

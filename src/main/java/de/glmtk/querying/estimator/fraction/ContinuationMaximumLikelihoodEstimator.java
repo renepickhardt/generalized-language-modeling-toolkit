@@ -1,7 +1,7 @@
 package de.glmtk.querying.estimator.fraction;
 
-import static de.glmtk.utils.NGram.WSKP_NGRAM;
-import de.glmtk.utils.NGram;
+import static de.glmtk.common.NGram.WSKP_NGRAM;
+import de.glmtk.common.NGram;
 
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
 

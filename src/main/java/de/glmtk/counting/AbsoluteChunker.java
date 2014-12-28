@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
-import de.glmtk.utils.Pattern;
+import de.glmtk.common.Pattern;
 
 /* package */class AbsoluteChunker {
 
