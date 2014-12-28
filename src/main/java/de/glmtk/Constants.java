@@ -38,7 +38,7 @@ public class Constants {
 
     public static final String UNKOWN_POS = "UNKP";
 
-    public static final int LOG_BASE = 10;
+    public static final double LOG_BASE = 10.0;
 
     public static final boolean DEBUG_AVERAGE_MEMORY = false;
 

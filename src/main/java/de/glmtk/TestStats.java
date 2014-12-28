@@ -71,13 +71,27 @@ public class TestStats {
 
         result.append("Entropy..................: ");
         result.append(entropy);
-        result.append(" Hart\n");
+        result.append(' ');
+        result.append(getEntropyUnit(Constants.LOG_BASE));
+        result.append('\n');
 
         result.append("Cross-Entropy............: ");
         result.append(crossEntropy);
         result.append(" Hart\n");
 
         return result.toString();
+    }
+
+    public static String getEntropyUnit(double logBase) {
+        if (logBase == 2.0) {
+            return "Sh";
+        } else if (logBase == 10.0) {
+            return "Hart";
+        } else if (logBase == Math.exp(1.0)) {
+            return "nat";
+        } else {
+            return "";
+        }
     }
 
 }
