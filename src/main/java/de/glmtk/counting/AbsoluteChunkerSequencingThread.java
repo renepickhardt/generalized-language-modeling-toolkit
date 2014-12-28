@@ -1,5 +1,6 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Console.CONSOLE;
 
 import java.io.BufferedReader;
@@ -47,26 +48,18 @@ import de.glmtk.util.StringUtils;
 
     private long readerMemory;
 
-    private int consoleUpdateInterval;
-
-    private int logUpdateInterval;
-
     public AbsoluteChunkerSequencingThread(
             AbsoluteChunker absoluteChunker,
             Set<Pattern> patterns,
             Map<Pattern, BlockingQueue<QueueItem>> aggregatingQueues,
             Path trainingFile,
             boolean trainingFileHasPos,
-            long readerMemory,
-            int consoleUpdateInterval,
-            int logUpdateInterval) {
+            long readerMemory) {
         this.absoluteChunker = absoluteChunker;
         this.aggregatingQueues = aggregatingQueues;
         this.trainingFile = trainingFile;
         this.trainingFileHasPos = trainingFileHasPos;
         this.readerMemory = readerMemory;
-        this.consoleUpdateInterval = consoleUpdateInterval;
-        this.logUpdateInterval = logUpdateInterval;
         patternsBySize = Patterns.groupPatternsBySize(patterns);
     }
 
@@ -84,13 +77,14 @@ import de.glmtk.util.StringUtils;
             while ((line = reader.readLine()) != null) {
                 readSize += line.getBytes().length;
                 long curTime = System.currentTimeMillis();
-                if (consoleUpdateInterval != 0
-                        && curTime - consoleTime >= consoleUpdateInterval) {
+                if (CONFIG.getConsoleUpdateInterval() != 0
+                        && curTime - consoleTime >= CONFIG
+                                .getConsoleUpdateInterval()) {
                     consoleTime = curTime;
                     CONSOLE.setPercent((double) readSize / totalSize);
                 }
-                if (logUpdateInterval != 0
-                        && curTime - logTime >= logUpdateInterval) {
+                if (CONFIG.getLogUpdateInterval() != 0
+                        && curTime - logTime >= CONFIG.getLogUpdateInterval()) {
                     logTime = curTime;
                     LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
                 }

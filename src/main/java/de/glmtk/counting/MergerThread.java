@@ -48,12 +48,6 @@ import de.glmtk.util.StatisticalNumberHelper;
 
     private long writerMemory;
 
-    @SuppressWarnings("unused")
-    private int consoleUpdateInterval;
-
-    @SuppressWarnings("unused")
-    private int logUpdateInterval;
-
     private int numParallelReaders;
 
     private boolean continuation;
@@ -66,8 +60,6 @@ import de.glmtk.util.StatisticalNumberHelper;
             Path countedDir,
             long readerMemory,
             long writerMemory,
-            int consoleUpdateInterval,
-            int logUpdateInterval,
             int numParallelReaders,
             boolean continuation) {
         this.merger = merger;
@@ -77,8 +69,6 @@ import de.glmtk.util.StatisticalNumberHelper;
         this.countedDir = countedDir;
         this.readerMemory = readerMemory;
         this.writerMemory = writerMemory;
-        this.consoleUpdateInterval = consoleUpdateInterval;
-        this.logUpdateInterval = logUpdateInterval;
         this.numParallelReaders = numParallelReaders;
         this.continuation = continuation;
     }

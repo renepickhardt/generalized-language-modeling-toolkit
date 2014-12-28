@@ -1,5 +1,7 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Config.CONFIG;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,22 +35,10 @@ public class Merger {
 
     private static final Logger LOGGER = LogManager.getLogger(Merger.class);
 
-    private int numberOfCores;
-
-    private int consoleUpdateInterval;
-
-    private int logUpdateInterval;
-
     private boolean continuation;
 
     /* package */Merger(
-            int numberOfCores,
-            int consoleUpdateInterval,
-            int logUpdateInterval,
             boolean continuation) {
-        this.numberOfCores = numberOfCores;
-        this.consoleUpdateInterval = consoleUpdateInterval;
-        this.logUpdateInterval = logUpdateInterval;
         this.continuation = continuation;
     }
 
@@ -72,8 +62,8 @@ public class Merger {
         long totalFreeMemory = r.maxMemory() - r.totalMemory() + r.freeMemory();
         long availableMemory =
                 (AVAILABLE_MEMORY_PERCENT * totalFreeMemory) / 100;
-        long readerMemory = availableMemory / numberOfCores / 2;
-        long writerMemory = availableMemory / numberOfCores / 2;
+        long readerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
+        long writerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
 
         LOGGER.debug("totalFreeMemory = {}MB", totalFreeMemory / MB);
         LOGGER.debug("availableMemory = {}MB", availableMemory / MB);
@@ -85,18 +75,17 @@ public class Merger {
         BlockingQueue<Pattern> queue =
                 new LinkedBlockingDeque<Pattern>(patterns);
         List<MergerThread> mergerThreads = new LinkedList<MergerThread>();
-        for (int i = 0; i != numberOfCores; ++i) {
+        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
             mergerThreads.add(new MergerThread(this, status, queue, chunkedDir,
-                    countedDir, readerMemory, writerMemory, consoleUpdateInterval,
-                    logUpdateInterval, NUM_PARALLEL_READERS,
-                    continuation));
+                    countedDir, readerMemory, writerMemory,
+                    NUM_PARALLEL_READERS, continuation));
         }
 
         // Launch Threads //////////////////////////////////////////////////////
         LOGGER.debug("Launching Threads...");
         try {
             ExecutorService executorService =
-                    Executors.newFixedThreadPool(numberOfCores);
+                    Executors.newFixedThreadPool(CONFIG.getNumberOfCores());
 
             for (MergerThread mergerThread : mergerThreads) {
                 executorService.execute(mergerThread);

@@ -1,5 +1,6 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Config.CONFIG;
 import static de.glmtk.Constants.B;
 import static de.glmtk.Constants.KB;
 import static de.glmtk.Constants.MB;
@@ -74,22 +75,7 @@ import de.glmtk.common.PatternElem;
 
     }
 
-    private int numberOfCores;
-
-    private int consoleUpdateInterval;
-
-    private int logUpdateInterval;
-
     private int numActiveSequencingThreads;
-
-    public ContinuationChunker(
-            int numberOfCores,
-            int consoleUpdateInterval,
-            int logUpdateInterval) {
-        this.numberOfCores = numberOfCores;
-        this.consoleUpdateInterval = consoleUpdateInterval;
-        this.logUpdateInterval = logUpdateInterval;
-    }
 
     public void chunk(
             Status status,
@@ -111,7 +97,7 @@ import de.glmtk.common.PatternElem;
 
         int numSequencingThreads = 1;
         int numAggregatingThreads =
-                Math.max(1, numberOfCores - numSequencingThreads);
+                Math.max(1, CONFIG.getNumberOfCores() - numSequencingThreads);
         LOGGER.debug("numSequencingThreads  = {}", numSequencingThreads);
         LOGGER.debug("numAggregatingThreads = {}", numAggregatingThreads);
 
@@ -174,7 +160,7 @@ import de.glmtk.common.PatternElem;
                     status, sourcePatternsQueue, sourceToAggregatingQueue,
                     absoluteCountedDir, absoluteChunkedDir,
                     continuationCountedDir, continuationChunkedDir,
-                    readerMemory, consoleUpdateInterval, logUpdateInterval));
+                    readerMemory));
         }
 
         List<ContinuationChunkerAggregatingThread> aggregatingThreads =
@@ -191,7 +177,7 @@ import de.glmtk.common.PatternElem;
         numActiveSequencingThreads = numSequencingThreads;
         try {
             ExecutorService executorService =
-                    Executors.newFixedThreadPool(numberOfCores);
+                    Executors.newFixedThreadPool(CONFIG.getNumberOfCores());
 
             for (ContinuationChunkerSequencingThread sequencingThread : sequencingThreads) {
                 executorService.execute(sequencingThread);

@@ -1,5 +1,6 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Config.CONFIG;
 import static de.glmtk.Constants.B;
 import static de.glmtk.Constants.KB;
 import static de.glmtk.Constants.MB;
@@ -58,22 +59,7 @@ import de.glmtk.common.Pattern;
 
     }
 
-    private int numberOfCores;
-
-    private int consoleUpdateInterval;
-
-    private int logUpdateInterval;
-
     private boolean sequencingDone;
-
-    public AbsoluteChunker(
-            int numberOfCores,
-            int consoleUpdateInterval,
-            int logUpdateInterval) {
-        this.numberOfCores = numberOfCores;
-        this.consoleUpdateInterval = consoleUpdateInterval;
-        this.logUpdateInterval = logUpdateInterval;
-    }
 
     public void chunk(
             Status status,
@@ -93,7 +79,7 @@ import de.glmtk.common.Pattern;
 
         int numSequencingThreads = 1;
         int numAggregatingThreads =
-                Math.max(1, numberOfCores - numSequencingThreads);
+                Math.max(1, CONFIG.getNumberOfCores() - numSequencingThreads);
         LOGGER.debug("numSequencingThreads  = {}", numSequencingThreads);
         LOGGER.debug("numAggregatingThreads = {}", numAggregatingThreads);
 
@@ -131,7 +117,7 @@ import de.glmtk.common.Pattern;
                 new AbsoluteChunkerSequencingThread(this, patterns,
                         patternToAggregatingQueue, trainingFile,
                         status.getTraining() == TrainingStatus.DONE_WITH_POS,
-                        readerMemory, consoleUpdateInterval, logUpdateInterval);
+                        readerMemory);
 
         List<AbsoluteChunkerAggregatingThread> aggregatingThreads =
                 new LinkedList<AbsoluteChunkerAggregatingThread>();
@@ -162,7 +148,7 @@ import de.glmtk.common.Pattern;
         sequencingDone = false;
         try {
             ExecutorService executorService =
-                    Executors.newFixedThreadPool(numberOfCores);
+                    Executors.newFixedThreadPool(CONFIG.getNumberOfCores());
 
             executorService.execute(sequencingThread);
             for (AbsoluteChunkerAggregatingThread aggregatingThread : aggregatingThreads) {

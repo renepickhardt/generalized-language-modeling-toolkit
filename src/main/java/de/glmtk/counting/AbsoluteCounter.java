@@ -11,8 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.common.Pattern;
 import de.glmtk.common.Console.Phase;
+import de.glmtk.common.Pattern;
 
 public class AbsoluteCounter {
 
@@ -31,12 +31,8 @@ public class AbsoluteCounter {
             int consoleUpdateInterval,
             int logUpdateInterval) {
         this.neededPatterns = neededPatterns;
-        chunker =
-                new AbsoluteChunker(numberOfCores, consoleUpdateInterval,
-                        logUpdateInterval);
-        merger =
-                new Merger(numberOfCores, consoleUpdateInterval,
-                        logUpdateInterval, false);
+        chunker = new AbsoluteChunker();
+        merger = new Merger(false);
     }
 
     public void count(

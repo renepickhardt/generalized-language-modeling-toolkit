@@ -11,8 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.common.Pattern;
 import de.glmtk.common.Console.Phase;
+import de.glmtk.common.Pattern;
 
 public class ContinuationCounter {
 
@@ -33,12 +33,8 @@ public class ContinuationCounter {
             int consoleUpdateInterval,
             int logUpdateInterval) {
         this.neededPatterns = neededPatterns;
-        chunker =
-                new ContinuationChunker(numberOfCores, consoleUpdateInterval,
-                        logUpdateInterval);
-        merger =
-                new Merger(numberOfCores, consoleUpdateInterval,
-                        logUpdateInterval, true);
+        chunker = new ContinuationChunker();
+        merger = new Merger(true);
     }
 
     public void count(

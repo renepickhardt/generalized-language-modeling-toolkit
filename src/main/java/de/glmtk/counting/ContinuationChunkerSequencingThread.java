@@ -55,12 +55,6 @@ import de.glmtk.util.StringUtils;
 
     private long readerMemory;
 
-    @SuppressWarnings("unused")
-    private int consoleUpdateInterval;
-
-    @SuppressWarnings("unused")
-    private int logUpdateInterval;
-
     public ContinuationChunkerSequencingThread(
             ContinuationChunker continuationChunker,
             Status status,
@@ -70,9 +64,7 @@ import de.glmtk.util.StringUtils;
             Path absoluteChunkedDir,
             Path continuationCountedDir,
             Path continuationChunkedDir,
-            long readerMemory,
-            int consoleUpdateInterval,
-            int logUpdateInterval) {
+            long readerMemory) {
         this.continuationChunker = continuationChunker;
         this.status = status;
         this.patternsQueue = patternsQueue;
@@ -82,8 +74,6 @@ import de.glmtk.util.StringUtils;
         this.continuationCountedDir = continuationCountedDir;
         this.continuationChunkedDir = continuationChunkedDir;
         this.readerMemory = readerMemory;
-        this.consoleUpdateInterval = consoleUpdateInterval;
-        this.logUpdateInterval = logUpdateInterval;
     }
 
     @Override
@@ -178,8 +168,8 @@ import de.glmtk.util.StringUtils;
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average(
                             "ContinuationChunker.QueueItem Memory", MemoryUtil
-                            .deepMemoryUsageOf(item,
-                                    VisibilityFilter.ALL));
+                                    .deepMemoryUsageOf(item,
+                                            VisibilityFilter.ALL));
                 }
             }
             if (lastFile) {
