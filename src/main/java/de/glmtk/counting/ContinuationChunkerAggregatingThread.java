@@ -1,7 +1,7 @@
 package de.glmtk.counting;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import de.glmtk.util.StringUtils;
     private static final long QUEUE_IDLE_TIME = Constants.QUEUE_IDLE_TIME;
 
     private static final int TAB_COUNTER_NL_BYTES = "\t10\t10\t10\t10\n"
-            .getBytes().length;
+            .getBytes(Constants.CHARSET).length;
 
     private static final String CLASS_NAME =
             ContinuationChunkerAggregatingThread.class.getSimpleName();
@@ -128,7 +128,9 @@ import de.glmtk.util.StringUtils;
         Counter counter = chunk.sequenceCounts.get(seq);
         if (counter == null) {
             counter = new Counter();
-            chunk.size += seq.getBytes().length + TAB_COUNTER_NL_BYTES;
+            chunk.size +=
+                    seq.getBytes(Constants.CHARSET).length
+                            + TAB_COUNTER_NL_BYTES;
             chunk.sequenceCounts.put(seq, counter);
         }
         counter.add(count);
@@ -148,8 +150,8 @@ import de.glmtk.util.StringUtils;
                 continuationChunkedDir.resolve(pattern.toString()).resolve(
                         "chunk" + chunk.counter);
         Files.deleteIfExists(file);
-        try (OutputStreamWriter writer =
-                new OutputStreamWriter(Files.newOutputStream(file))) {
+        try (BufferedWriter writer =
+                Files.newBufferedWriter(file, Constants.CHARSET)) {
             Map<String, Counter> sortedSequenceCounts =
                     new TreeMap<String, Counter>(chunk.sequenceCounts);
             for (Map.Entry<String, Counter> entry : sortedSequenceCounts

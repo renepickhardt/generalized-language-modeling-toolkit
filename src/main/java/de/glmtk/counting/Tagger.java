@@ -14,6 +14,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Constants;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
@@ -67,14 +68,15 @@ public class Tagger {
 
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
-                        Files.newInputStream(inputFile)), (int) readerMemory);
+                        Files.newInputStream(inputFile), Constants.CHARSET),
+                        (int) readerMemory);
                 BufferedWriter writer =
                         new BufferedWriter(new OutputStreamWriter(
-                                Files.newOutputStream(outputFile)),
-                                (int) writerMemory)) {
+                                Files.newOutputStream(outputFile),
+                                Constants.CHARSET), (int) writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                readSize += line.getBytes().length;
+                readSize += line.getBytes(Constants.CHARSET).length;
 
                 // Tag
                 String[] sentence = line.split("\\s");

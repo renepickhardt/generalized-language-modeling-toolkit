@@ -21,6 +21,7 @@ import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Pattern;
+import de.glmtk.counting.SequenceCountReader.SequencerCountReaderComparator;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 
@@ -140,15 +141,16 @@ import de.glmtk.util.StatisticalNumberHelper;
 
         try (BufferedWriter writer =
                 new BufferedWriter(new OutputStreamWriter(
-                        Files.newOutputStream(patternDir.resolve(mergeFile))),
-                        (int) writerMemory)) {
+                        Files.newOutputStream(patternDir.resolve(mergeFile)),
+                        Constants.CHARSET), (int) writerMemory)) {
             PriorityQueue<SequenceCountReader> readerQueue =
-                    new PriorityQueue<SequenceCountReader>(numParallelReaders);
+                    new PriorityQueue<SequenceCountReader>(numParallelReaders,
+                            new SequencerCountReaderComparator());
             for (Path chunk : curChunks) {
                 readerQueue.add(new SequenceCountReader(new BufferedReader(
                         new InputStreamReader(Files.newInputStream(patternDir
-                                .resolve(chunk))), (int) readerMemory
-                                / numParallelReaders)));
+                                .resolve(chunk)), Constants.CHARSET),
+                        (int) readerMemory / numParallelReaders)));
             }
 
             String sequence = null;

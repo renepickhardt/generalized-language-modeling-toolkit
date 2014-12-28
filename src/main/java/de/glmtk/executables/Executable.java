@@ -7,6 +7,7 @@ import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
@@ -112,7 +113,7 @@ import de.glmtk.util.StringUtils;
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out
-                    .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+            .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -132,7 +133,9 @@ import de.glmtk.util.StringUtils;
             String header = null;
             String footer = null;
 
-            try (PrintWriter pw = new PrintWriter(AnsiConsole.out)) {
+            try (PrintWriter pw =
+                    new PrintWriter(new OutputStreamWriter(AnsiConsole.out,
+                            Constants.CHARSET))) {
                 formatter.printHelp(pw, 80, getUsage(), header, options, 2, 4,
                         footer);
             }
@@ -141,7 +144,7 @@ import de.glmtk.util.StringUtils;
     }
 
     private void printLogHeader(String[] args) throws IOException,
-            InterruptedException {
+    InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -149,12 +152,12 @@ import de.glmtk.util.StringUtils;
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-            "git", "log", "-1", "--format=%H: %s"
+                "git", "log", "-1", "--format=%H: %s"
         }, null, CONFIG.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =
                 new BufferedReader(new InputStreamReader(
-                        gitLogProc.getInputStream()))) {
+                        gitLogProc.getInputStream(), Constants.CHARSET))) {
             String gitCommit = gitLogReader.readLine();
             LOGGER.info("Git Commit: {}", gitCommit);
         }

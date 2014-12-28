@@ -81,7 +81,7 @@ public class NGram {
     public boolean equals(Object other) {
         if (other == this) {
             return true;
-        } else if (other == null || !other.getClass().equals(NGram.class)) {
+        } else if (other == null || getClass() != other.getClass()) {
             return false;
         }
 
@@ -232,7 +232,7 @@ public class NGram {
      * be empty.
      */
     public NGram
-        backoffUntilSeen(BackoffMode backoffMode, CountCache countCache) {
+    backoffUntilSeen(BackoffMode backoffMode, CountCache countCache) {
         NGram result = backoff(backoffMode);
         while (!result.seen(countCache)) {
             result = result.backoff(backoffMode);

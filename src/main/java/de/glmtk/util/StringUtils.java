@@ -11,6 +11,34 @@ import de.glmtk.Constants;
  */
 public class StringUtils {
 
+    public static boolean equals(String lhs, String rhs) {
+        if (lhs == null) {
+            if (rhs == null) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (rhs == null) {
+            return false;
+        } else {
+            return lhs.equals(rhs);
+        }
+    }
+
+    public static int compare(String lhs, String rhs) {
+        if (lhs == null) {
+            if (rhs == null) {
+                return 0;
+            } else {
+                return 1;
+            }
+        } else if (rhs == null) {
+            return -1;
+        } else {
+            return lhs.compareTo(rhs);
+        }
+    }
+
     /**
      * Takes a {@code string} and returns a list containing all substrings which
      * are separated by character {@code split}.

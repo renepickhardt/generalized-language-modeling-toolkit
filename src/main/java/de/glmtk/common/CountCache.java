@@ -20,12 +20,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.counting.CountingTest;
 import de.glmtk.counting.LengthDistribution;
 import de.glmtk.util.StringUtils;
 
 /**
- * Tests for this class can be found in {@link CountingTest}.
+ * Tests for this class can be found in {@link de.glmtk.counting.CountingTest}.
  */
 public class CountCache {
 
@@ -126,7 +125,7 @@ public class CountCache {
                 Pattern pattern = Patterns.get(split.get(0));
                 long[] counts = new long[4];
                 for (int i = 0; i != 4; ++i) {
-                    counts[i] = Long.valueOf(split.get(i + 1));
+                    counts[i] = Long.parseLong(split.get(i + 1));
                 }
                 nGramTimes.put(pattern, counts);
             }

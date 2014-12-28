@@ -1,8 +1,8 @@
 package de.glmtk;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -182,8 +182,8 @@ public class Status {
         Path tmpFile = Paths.get(file + ".tmp");
 
         Files.deleteIfExists(tmpFile);
-        try (OutputStreamWriter writer =
-                new OutputStreamWriter(Files.newOutputStream(tmpFile))) {
+        try (BufferedWriter writer =
+                Files.newBufferedWriter(tmpFile, Constants.CHARSET)) {
             // Hash
             writer.append("hash = " + hash + "\n");
 
@@ -208,7 +208,7 @@ public class Status {
     }
 
     private void writeChunked(
-            OutputStreamWriter writer,
+            BufferedWriter writer,
             String name,
             Map<Pattern, List<Path>> chunked) throws IOException {
         writer.append(name);
@@ -228,7 +228,7 @@ public class Status {
     }
 
     private void writeCounted(
-            OutputStreamWriter writer,
+            BufferedWriter writer,
             String name,
             Set<Pattern> counted) throws IOException {
         writer.append(name);

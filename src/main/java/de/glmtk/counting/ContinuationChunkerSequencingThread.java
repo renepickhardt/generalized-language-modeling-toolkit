@@ -109,7 +109,7 @@ import de.glmtk.util.StringUtils;
                     StatisticalNumberHelper.count("Pattern not available");
                     // wait for aggregators to finish pattern
                     Thread.sleep(SLEEP_TIME);
-                    patternsQueue.offer(pattern);
+                    patternsQueue.put(pattern);
                     continue;
                 }
                 input = input.resolve(pattern.toString());
@@ -143,7 +143,8 @@ import de.glmtk.util.StringUtils;
         LOGGER.debug("Sequencing '{}' from '{}'.", pattern, inputFile);
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
-                        Files.newInputStream(inputFile)), (int) readerMemory)) {
+                        Files.newInputStream(inputFile), Constants.CHARSET),
+                        (int) readerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.splitAtChar(line, '\t');
@@ -155,7 +156,7 @@ import de.glmtk.util.StringUtils;
                 }
 
                 String sequence = split.get(0);
-                long count = fromAbsolute ? 1 : Long.valueOf(split.get(1));
+                long count = fromAbsolute ? 1 : Long.parseLong(split.get(1));
                 QueueItem item = new QueueItem(pattern, sequence, count);
 
                 while (!aggregatingQueues.get(pattern).offer(item,
@@ -168,8 +169,8 @@ import de.glmtk.util.StringUtils;
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average(
                             "ContinuationChunker.QueueItem Memory", MemoryUtil
-                                    .deepMemoryUsageOf(item,
-                                            VisibilityFilter.ALL));
+                            .deepMemoryUsageOf(item,
+                                    VisibilityFilter.ALL));
                 }
             }
             if (lastFile) {

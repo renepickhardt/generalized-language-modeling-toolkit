@@ -1,7 +1,7 @@
 package de.glmtk.counting;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -27,7 +27,8 @@ import de.glmtk.util.StatisticalNumberHelper;
 
     private static final long QUEUE_IDLE_TIME = Constants.QUEUE_IDLE_TIME;
 
-    private static final int TAB_COUNT_NL_BYTES = "\t10\n".getBytes().length;
+    private static final int TAB_COUNT_NL_BYTES = "\t10\n"
+            .getBytes(Constants.CHARSET).length;
 
     @SuppressWarnings("unused")
     private static final long AVERAGE_SEQUENCE_SIZE = 15;
@@ -120,7 +121,9 @@ import de.glmtk.util.StatisticalNumberHelper;
 
         Long count = chunk.sequenceCounts.get(sequence);
         if (count == null) {
-            chunk.size += sequence.getBytes().length + TAB_COUNT_NL_BYTES;
+            chunk.size +=
+                    sequence.getBytes(Constants.CHARSET).length
+                    + TAB_COUNT_NL_BYTES;
             chunk.sequenceCounts.put(sequence, 1L);
         } else {
             chunk.sequenceCounts.put(sequence, count + 1L);
@@ -141,8 +144,8 @@ import de.glmtk.util.StatisticalNumberHelper;
                 absoluteChunkedDir.resolve(pattern.toString()).resolve(
                         "chunk" + chunk.counter);
         Files.deleteIfExists(file);
-        try (OutputStreamWriter writer =
-                new OutputStreamWriter(Files.newOutputStream((file)))) {
+        try (BufferedWriter writer =
+                Files.newBufferedWriter(file, Constants.CHARSET)) {
             Map<String, Long> sortedSequenceCounts =
                     new TreeMap<String, Long>(chunk.sequenceCounts);
             for (Map.Entry<String, Long> entry : sortedSequenceCounts

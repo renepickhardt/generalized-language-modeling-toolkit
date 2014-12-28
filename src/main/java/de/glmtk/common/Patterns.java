@@ -125,8 +125,8 @@ public class Patterns {
         public long[] getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
             return new long[] {
-                    random.nextInt(10) + 1, random.nextInt(10) + 1,
-                    random.nextInt(10) + 1, random.nextInt(10) + 1
+                random.nextInt(10) + 1, random.nextInt(10) + 1,
+                random.nextInt(10) + 1, random.nextInt(10) + 1
             };
         }
 
@@ -163,6 +163,7 @@ public class Patterns {
         return tracker.getUsedPatterns();
     }
 
+    // TODO: while loop is almost certainly wrong
     public static Set<Pattern> getPosPatterns(Set<Pattern> patterns) {
         Set<Pattern> result = new HashSet<Pattern>();
         for (Pattern pattern : patterns) {

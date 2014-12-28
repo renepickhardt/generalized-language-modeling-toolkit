@@ -107,20 +107,20 @@ public class Counter {
         List<String> split = StringUtils.splitAtChar(line, '\t');
         if (split.size() == 2) {
             // absolute
-            counter.setOnePlusCount(Long.valueOf(split.get(1)));
+            counter.setOnePlusCount(Long.parseLong(split.get(1)));
             counter.setOneCount(0L);
             counter.setTwoCount(0L);
             counter.setThreePlusCount(0L);
         } else if (split.size() == 5) {
             // continuation
-            counter.setOnePlusCount(Long.valueOf(split.get(1)));
-            counter.setOneCount(Long.valueOf(split.get(2)));
-            counter.setTwoCount(Long.valueOf(split.get(3)));
-            counter.setThreePlusCount(Long.valueOf(split.get(4)));
+            counter.setOnePlusCount(Long.parseLong(split.get(1)));
+            counter.setOneCount(Long.parseLong(split.get(2)));
+            counter.setTwoCount(Long.parseLong(split.get(3)));
+            counter.setThreePlusCount(Long.parseLong(split.get(4)));
         } else {
             throw new IllegalArgumentException(
                     "Couldn't not get Sequence and Counter of line '" + line
-                            + "'.");
+                    + "'.");
         }
         return split.get(0);
     }

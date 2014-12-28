@@ -32,13 +32,12 @@ public class HashUtils {
             input.close();
 
             byte[] resultByte = digest.digest();
-            String result = "";
+            StringBuilder result = new StringBuilder();
             for (int i = 0; i != resultByte.length; ++i) {
-                result +=
-                        Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                        .substring(1);
+                result.append(Integer.toString((resultByte[i] & 0xff) + 0x100,
+                        16).substring(1));
             }
-            return result;
+            return result.toString();
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }

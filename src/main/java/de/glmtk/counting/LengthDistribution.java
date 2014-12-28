@@ -65,24 +65,20 @@ public class LengthDistribution {
                 ++lineNo;
                 List<String> split = StringUtils.splitAtChar(line, '\t');
 
-                try {
-                    if (split.size() != 2) {
-                        throw new IllegalStateException();
-                    }
-
-                    int length = Integer.valueOf(split.get(0));
-                    double frequency = Double.valueOf(split.get(1));
-
-                    for (int i = lengthDistribution.size(); i != length + 1; ++i) {
-                        lengthDistribution.add(0.0);
-                    }
-                    lengthDistribution.set(length, frequency);
-                } catch (Exception e) {
+                if (split.size() != 2) {
                     throw new IllegalStateException(
                             "Length distribution file '" + storeFile
-                            + "' has illegal format in line " + lineNo
-                            + ": '" + line + "'.");
+                                    + "' has illegal format in line " + lineNo
+                                    + ": '" + line + "'.");
                 }
+
+                int length = Integer.parseInt(split.get(0));
+                double frequency = Double.parseDouble(split.get(1));
+
+                for (int i = lengthDistribution.size(); i != length + 1; ++i) {
+                    lengthDistribution.add(0.0);
+                }
+                lengthDistribution.set(length, frequency);
             }
         }
     }

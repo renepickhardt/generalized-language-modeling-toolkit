@@ -1,5 +1,7 @@
 package de.glmtk;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -27,6 +29,8 @@ public class Constants {
     public static final String LOCAL_LOG_FILE_NAME = "log";
 
     public static final String CONFIG_LOCATION = "glmtk.conf";
+
+    public static final Charset CHARSET = StandardCharsets.UTF_8;
 
     public static final int MODEL_SIZE = 5;
 

@@ -2,11 +2,37 @@ package de.glmtk.counting;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Comparator;
 
 import de.glmtk.common.Counter;
+import de.glmtk.util.StringUtils;
 
-/* package */class SequenceCountReader implements AutoCloseable,
-Comparable<SequenceCountReader> {
+/* package */class SequenceCountReader implements AutoCloseable {
+
+    /**
+     * Compares {@link SequenceCountReader}s based on the {@link #sequence} they
+     * have stored.
+     */
+    public static class SequencerCountReaderComparator implements
+            Comparator<SequenceCountReader>, Serializable {
+
+        private static final long serialVersionUID = 3923169929604198131L;
+
+        @Override
+        public int compare(SequenceCountReader lhs, SequenceCountReader rhs) {
+            if (lhs == rhs) {
+                return 0;
+            } else if (lhs == null) {
+                return 1;
+            } else if (rhs == null) {
+                return -1;
+            } else {
+                return StringUtils.compare(lhs.sequence, rhs.sequence);
+            }
+        }
+
+    }
 
     private BufferedReader reader;
 
@@ -46,27 +72,6 @@ Comparable<SequenceCountReader> {
     @Override
     public void close() throws IOException {
         reader.close();
-    }
-
-    @Override
-    public int compareTo(SequenceCountReader other) {
-        if (this == other) {
-            return 0;
-        } else if (other == null) {
-            return -1;
-        }
-
-        if (sequence == null) {
-            if (other.sequence == null) {
-                return 0;
-            } else {
-                return 1;
-            }
-        } else if (other.sequence == null) {
-            return -1;
-        }
-
-        return sequence.compareTo(other.sequence);
     }
 
 }

@@ -28,11 +28,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.common.Console.Phase;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
-import de.glmtk.common.Console.Phase;
 import de.glmtk.counting.AbsoluteCounter;
 import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.LengthDistribution;
@@ -69,9 +69,6 @@ public class Glmtk {
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Glmtk.class);
-
-    private static final DateFormat TEST_FILE_DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private Path corpus;
 
@@ -268,9 +265,9 @@ public class Glmtk {
         }
         CONSOLE.setPercent(1.0);
 
-        CONSOLE.printCorpusAnalyzationDone(NioUtils
-                .calcFileSize(Arrays.asList(absoluteDir, continuationDir,
-                        nGramTimesFile, lengthDistributionFile)));
+        CONSOLE.printCorpusAnalyzationDone(NioUtils.calcFileSize(Arrays.asList(
+                absoluteDir, continuationDir, nGramTimesFile,
+                lengthDistributionFile)));
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -441,9 +438,10 @@ public class Glmtk {
             int checkOrder,
             boolean multWithLengthFreq) throws IOException {
         String estimatorName = Estimators.getName(estimator);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Path outputFile =
-                testDir.resolve(TEST_FILE_DATE_FORMAT.format(new Date()) + " "
-                        + testType + " " + testFile.getFileName()
+                testDir.resolve(dateFormat.format(new Date()) + " " + testType
+                        + " " + testFile.getFileName()
                         + (estimatorName == null ? "" : (" " + estimatorName)));
         Files.createDirectories(testDir);
         Files.deleteIfExists(outputFile);

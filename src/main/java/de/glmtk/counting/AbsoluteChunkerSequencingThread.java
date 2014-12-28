@@ -67,7 +67,8 @@ import de.glmtk.util.StringUtils;
     public void run() {
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
-                        Files.newInputStream(trainingFile)), (int) readerMemory)) {
+                        Files.newInputStream(trainingFile), Constants.CHARSET),
+                        (int) readerMemory)) {
             long readSize = 0;
             long totalSize = Files.size(trainingFile);
             long consoleTime = System.currentTimeMillis();
@@ -75,7 +76,7 @@ import de.glmtk.util.StringUtils;
 
             String line;
             while ((line = reader.readLine()) != null) {
-                readSize += line.getBytes().length;
+                readSize += line.getBytes(Constants.CHARSET).length;
                 long curTime = System.currentTimeMillis();
                 if (CONFIG.getConsoleUpdateInterval() != 0
                         && curTime - consoleTime >= CONFIG
