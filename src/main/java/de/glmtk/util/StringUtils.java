@@ -11,20 +11,10 @@ import de.glmtk.Constants;
  */
 public class StringUtils {
 
-    public static boolean equals(String lhs, String rhs) {
-        if (lhs == null) {
-            if (rhs == null) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if (rhs == null) {
-            return false;
-        } else {
-            return lhs.equals(rhs);
-        }
-    }
-
+    /**
+     * Same as {@link String#compareTo(String)} but allowing {@code null} for
+     * both parameters.
+     */
     public static int compare(String lhs, String rhs) {
         if (lhs == null) {
             if (rhs == null) {
