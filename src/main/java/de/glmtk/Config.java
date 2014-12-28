@@ -3,6 +3,7 @@ package de.glmtk;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import de.glmtk.utils.StringUtils;
 
@@ -20,18 +22,18 @@ public enum Config {
     /**
      * The directory the user started the program from.
      */
-    private Path userDir;
+    private final Path userDir;
 
     /**
      * The directory where the GLMTK bundle resides (e.g. directory where config
      * file is).
      */
-    private Path glmtkDir;
+    private final Path glmtkDir;
 
     /**
      * The directory where log files are saved.
      */
-    private Path logDir;
+    private final Path logDir;
 
     private int mainMemory;
 
@@ -76,7 +78,10 @@ public enum Config {
     }
 
     private Config() {
-        loadPaths();
+        userDir = Paths.get(System.getProperty("user.dir"));
+        glmtkDir =
+                Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
+        logDir = glmtkDir.resolve(Constants.LOG_DIR_NAME);
 
         Path file = glmtkDir.resolve(Constants.CONFIG_LOCATION);
 
@@ -89,19 +94,10 @@ public enum Config {
         }
     }
 
-    private void loadPaths() {
-        userDir = Paths.get(System.getProperty("user.dir"));
-        glmtkDir =
-                Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
-        logDir = glmtkDir.resolve(Constants.LOG_DIR_NAME);
-    }
-
     private void loadConfig(Path file) throws IOException, Exception {
         Map<String, Field> fields = new HashMap<String, Field>();
         for (Field field : Config.class.getDeclaredFields()) {
-            if (field.getName().equals("userDir")
-                    || field.getName().equals("glmtkDir")
-                    || field.getName().equals("logDir")) {
+            if (isNotConfigurableField(field)) {
                 continue;
             }
             fields.put(field.getName(), field);
@@ -162,12 +158,53 @@ public enum Config {
                 fields.put(key, null);
             }
         }
+
+        for (Entry<String, Field> entry : fields.entrySet()) {
+            if (entry.getValue() != null) {
+                throw error(file, "Missing key '" + entry.getKey() + "'.");
+            }
+        }
+    }
+
+    private boolean isNotConfigurableField(Field field) {
+        int mod = field.getModifiers();
+        return Modifier.isStatic(mod) || Modifier.isFinal(mod)
+                || field.isEnumConstant();
     }
 
     private Exception error(Path file, String line, int lineNo, String msg)
             throws Exception {
-        throw new Exception("Invalid config file '" + file
+        return new Exception("Invalid config file '" + file
                 + "' entry at line '" + lineNo + "'. " + msg + " Line was: '"
                 + line + "'.");
     }
+
+    private Exception error(Path file, String msg) {
+        return new Exception("Invalid config file '" + file + "'. " + msg);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for (Field field : Config.class.getDeclaredFields()) {
+            if (isNotConfigurableField(field)) {
+                continue;
+            }
+
+            Object value = null;
+            try {
+                value = field.get(this);
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                // Shouldn't be possible
+                throw new IllegalStateException(e);
+            }
+
+            result.append(field.getName());
+            result.append('=');
+            result.append(value);
+            result.append("; ");
+        }
+        return result.toString();
+    }
+
 }
