@@ -39,12 +39,12 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.testutils.EstimatorTestRunner;
 import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParameters;
 import de.glmtk.testutils.EstimatorTestRunner.EstimatorTestParams;
-import de.glmtk.testutils.TestCorporaTest;
+import de.glmtk.testutils.LoggingTest;
 import de.glmtk.testutils.TestCorpus;
 import de.glmtk.utils.NGram;
 
 @RunWith(EstimatorTestRunner.class)
-public class EstimatorTest extends TestCorporaTest {
+public class EstimatorTest extends LoggingTest {
 
     private static final Logger LOGGER = LogManager
             .getLogger(EstimatorTest.class);
@@ -86,8 +86,7 @@ public class EstimatorTest extends TestCorporaTest {
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
 
-                // HIGHEST_ORDER should actually also work,
-                // but takes far to long to calculate.
+                // HIGHEST_ORDER should actually also work, but takes far to long to calculate.
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_REC, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                 // Combination Estimators

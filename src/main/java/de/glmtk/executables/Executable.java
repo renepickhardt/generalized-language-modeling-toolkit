@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.AnsiConsole;
 
 import de.glmtk.Config;
+import de.glmtk.ConsoleOutputter;
 import de.glmtk.Termination;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.StringUtils;
@@ -49,8 +50,7 @@ import de.glmtk.utils.StringUtils;
 
     public void run(String[] args) throws Exception {
         try {
-            AnsiConsole.systemInstall();
-
+            ConsoleOutputter.getInstance().enableAnsi();
             config = Config.get();
 
             parseArguments(args);
@@ -84,7 +84,7 @@ import de.glmtk.utils.StringUtils;
     }
 
     protected void configureLogging() {
-        LogUtils.setUpExecLogging();
+        LogUtils.getInstance().setUpExecLogging();
         loggingConfigured = true;
     }
 
@@ -110,9 +110,6 @@ import de.glmtk.utils.StringUtils;
         if (line.hasOption(OPTION_HELP_LONG)) {
             GlmtkHelpFormatter formatter = new GlmtkHelpFormatter();
             formatter.setSyntaxPrefix("Usage: ");
-            formatter.setWidth(80);
-            formatter.setLeftPadding(4);
-            formatter.setDescPadding(4);
             formatter.setLongOptPrefix(" --");
             formatter.setOptionComparator(new Comparator<Option>() {
 
@@ -126,7 +123,10 @@ import de.glmtk.utils.StringUtils;
             String header = null;
             String footer = null;
 
-            formatter.printHelp(getUsage(), header, options, footer);
+            try (PrintWriter pw = new PrintWriter(AnsiConsole.out)) {
+                formatter.printHelp(pw, 80, getUsage(), header, options, 2, 4,
+                        footer);
+            }
             throw new Termination();
         }
     }

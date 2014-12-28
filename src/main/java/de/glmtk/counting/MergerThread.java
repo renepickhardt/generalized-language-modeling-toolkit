@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.utils.NioUtils;
@@ -49,9 +48,6 @@ import de.glmtk.utils.StatisticalNumberHelper;
     private long writerMemory;
 
     @SuppressWarnings("unused")
-    private ConsoleOutputter consoleOutputter;
-
-    @SuppressWarnings("unused")
     private int consoleUpdateInterval;
 
     @SuppressWarnings("unused")
@@ -69,7 +65,6 @@ import de.glmtk.utils.StatisticalNumberHelper;
             Path countedDir,
             long readerMemory,
             long writerMemory,
-            ConsoleOutputter consoleOutputter,
             int consoleUpdateInterval,
             int logUpdateInterval,
             int numParallelReaders,
@@ -81,7 +76,6 @@ import de.glmtk.utils.StatisticalNumberHelper;
         this.countedDir = countedDir;
         this.readerMemory = readerMemory;
         this.writerMemory = writerMemory;
-        this.consoleOutputter = consoleOutputter;
         this.consoleUpdateInterval = consoleUpdateInterval;
         this.logUpdateInterval = logUpdateInterval;
         this.numParallelReaders = numParallelReaders;

@@ -6,7 +6,7 @@ public class MainClass {
 
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
-            throw new IllegalStateException("No main class specified.");
+            throw new IllegalArgumentException("No main class specified.");
         }
 
         String mainClass = args[0];

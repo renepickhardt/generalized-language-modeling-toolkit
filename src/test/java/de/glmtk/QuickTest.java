@@ -12,18 +12,18 @@ import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimat
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.interpolation.DiffInterpolationEstimator;
 import de.glmtk.querying.estimator.interpolation.InterpolationEstimator;
-import de.glmtk.testutils.TestCorporaTest;
+import de.glmtk.testutils.LoggingTest;
 import de.glmtk.utils.BackoffMode;
 import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NGram;
 import de.glmtk.utils.StringUtils;
 
-public class QuickTest extends TestCorporaTest {
+public class QuickTest extends LoggingTest {
 
     //    @Test
     //    public void test() throws Exception {
     public static void main(String args[]) throws Exception {
-        LogUtils.setUpTestLogging();
+        LogUtils.getInstance().setUpTestLogging();
         //        ParamEstimator e = ParamEstimators.CMLE;
         //        e.setCountCache(TestCorpus.ABC.getCountCache());
         //        e.setProbMode(ProbMode.COND);

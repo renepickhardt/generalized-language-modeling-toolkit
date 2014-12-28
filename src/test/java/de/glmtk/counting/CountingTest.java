@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,13 +16,13 @@ import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Config;
-import de.glmtk.counting.CountCache;
-import de.glmtk.counting.Counter;
-import de.glmtk.testutils.TestCorporaTest;
+import de.glmtk.testutils.LoggingTest;
 import de.glmtk.testutils.TestCorpus;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.PatternElem;
@@ -31,7 +32,8 @@ import de.glmtk.utils.StringUtils;
  * Checks whether counts present in count files are correct, but not if there
  * are sequences missing.
  */
-public class CountingTest extends TestCorporaTest {
+@RunWith(Parameterized.class)
+public class CountingTest extends LoggingTest {
 
     // TODO: implement test for continuation counts
     // TODO: extend for POS
@@ -41,37 +43,33 @@ public class CountingTest extends TestCorporaTest {
 
     private static Config config = null;
 
+    @Parameters
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+            {
+                TestCorpus.ABC
+            }, {
+                TestCorpus.MOBY_DICK
+            }
+        });
+    }
+
     @BeforeClass
     public static void loadConfig() {
         LOGGER.info("Loading config...");
         config = Config.get();
     }
 
-    public static void loadTestCorpora() {
+    private TestCorpus testCorpus;
+
+    public CountingTest(
+            TestCorpus testCorpus) {
+        this.testCorpus = testCorpus;
     }
 
     @Test
-    public void testAbc() throws IOException, NoSuchFieldException,
+    public void testCounting() throws IOException, NoSuchFieldException,
             SecurityException, IllegalArgumentException, IllegalAccessException {
-        testCounting(TestCorpus.ABC);
-    }
-
-    @Test
-    public void testMobyDick() throws IOException, NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
-        testCounting(TestCorpus.MOBY_DICK);
-    }
-
-    @Ignore
-    @Test
-    public void testEn0008t() throws IOException, NoSuchFieldException,
-    SecurityException, IllegalArgumentException, IllegalAccessException {
-        testCounting(TestCorpus.EN0008T);
-    }
-
-    private void testCounting(TestCorpus testCorpus) throws IOException,
-            NoSuchFieldException, SecurityException, IllegalArgumentException,
-            IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");

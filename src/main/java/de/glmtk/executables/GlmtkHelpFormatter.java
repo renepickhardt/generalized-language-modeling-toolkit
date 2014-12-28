@@ -9,6 +9,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import de.glmtk.ConsoleOutputter;
+
 public class GlmtkHelpFormatter extends HelpFormatter {
 
     @SuppressWarnings({
@@ -21,8 +23,6 @@ public class GlmtkHelpFormatter extends HelpFormatter {
             Options options,
             int leftPad,
             int descPad) {
-        sb.append(defaultNewLine).append("Arguments:").append(defaultNewLine);
-
         final String lpad = createPadding(leftPad);
         final String dpad = createPadding(descPad);
 
@@ -45,20 +45,22 @@ public class GlmtkHelpFormatter extends HelpFormatter {
             if (first) {
                 first = false;
             } else {
-                sb.append(defaultNewLine).append(defaultNewLine);
+                sb.append(defaultNewLine);
             }
+
+            ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
 
             StringBuffer optBuf = new StringBuffer(8);
 
             if (option.getOpt() == null) {
                 optBuf.append(lpad).append("   ").append(defaultLongOptPrefix)
-                .append(option.getLongOpt());
+                .append(consoleOutputter.bold(option.getLongOpt()));
             } else {
                 optBuf.append(lpad).append(defaultOptPrefix)
-                        .append(option.getOpt());
+                        .append(consoleOutputter.bold(option.getOpt()));
                 if (option.hasLongOpt()) {
                     optBuf.append(',').append(defaultLongOptPrefix)
-                            .append(option.getLongOpt());
+                            .append(consoleOutputter.bold(option.getLongOpt()));
                 }
             }
 

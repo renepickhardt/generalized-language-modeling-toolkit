@@ -8,7 +8,7 @@ public class LoggingTest {
 
     @BeforeClass
     public static void setUpLogging() {
-        LogUtils.setUpTestLogging();
+        LogUtils.getInstance().setUpTestLogging();
     }
 
 }

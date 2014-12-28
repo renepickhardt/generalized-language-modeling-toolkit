@@ -18,6 +18,10 @@ public class Constants {
     public static final String LENGTHDISTRIBUTION_FILE_NAME =
             "lengthdistribution";
 
+    public static final String ALL_LOG_FILE_NAME = "all.log";
+
+    public static final String LOCAL_LOG_FILE_NAME = "log";
+
     public static final int MODEL_SIZE = 5;
 
     public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB;

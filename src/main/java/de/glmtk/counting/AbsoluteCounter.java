@@ -39,7 +39,6 @@ public class AbsoluteCounter {
     }
 
     public void count(
-            ConsoleOutputter consoleOutputter,
             Status status,
             Path trainingFile,
             Path absoluteCountedDir,
@@ -54,14 +53,14 @@ public class AbsoluteCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.info("1/2 Chunking:");
-        consoleOutputter.setPhase(Phase.ABSOLUTE_CHUNKING, 0.0);
-        chunker.chunk(consoleOutputter, status, chunkingPatterns, trainingFile,
+        ConsoleOutputter.getInstance().setPhase(Phase.ABSOLUTE_CHUNKING, 0.0);
+        chunker.chunk(status, chunkingPatterns, trainingFile,
                 absoluteChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        consoleOutputter.setPhase(Phase.ABSOLUTE_MERGING, -1.0);
-        merger.merge(consoleOutputter, status, countingPatterns,
-                absoluteChunkedDir, absoluteCountedDir);
+        ConsoleOutputter.getInstance().setPhase(Phase.ABSOLUTE_MERGING);
+        merger.merge(status, countingPatterns, absoluteChunkedDir,
+                absoluteCountedDir);
 
         LOGGER.info("Absolute counting done.");
     }

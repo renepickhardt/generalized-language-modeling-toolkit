@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -23,7 +24,6 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.fusesource.jansi.Ansi;
 
 import de.glmtk.ConsoleOutputter.Phase;
 import de.glmtk.Status.TrainingStatus;
@@ -71,8 +71,6 @@ public class Glmtk {
     private static final DateFormat TEST_FILE_DATE_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private ConsoleOutputter consoleOutputter;
-
     private Config config = Config.get();
 
     private Path corpus;
@@ -106,8 +104,6 @@ public class Glmtk {
     public Glmtk(
             Path corpus,
             Path workingDir) throws IOException {
-        consoleOutputter = new ConsoleOutputter();
-
         this.corpus = corpus;
         this.workingDir = workingDir;
         statusFile = workingDir.resolve(Constants.STATUS_FILE_NAME);
@@ -135,6 +131,8 @@ public class Glmtk {
 
     public void count(boolean needPos, Set<Pattern> neededPatterns)
             throws IOException {
+        ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
+
         // TODO: update status with smaller increments (each completed pattern).
 
         Set<Pattern> neededAbsolute = new HashSet<Pattern>();
@@ -203,8 +201,8 @@ public class Glmtk {
                 new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
                         config.getConsoleUpdateInterval(),
                         config.getLogUpdateInterval());
-        absoluteCounter.count(consoleOutputter, status, trainingFile,
-                absoluteDir, absoluteTmpDir);
+        absoluteCounter
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -213,8 +211,8 @@ public class Glmtk {
                         config.getNumberOfCores(),
                         config.getConsoleUpdateInterval(),
                         config.getLogUpdateInterval());
-        continuationCounter.count(consoleOutputter, status, absoluteDir,
-                absoluteTmpDir, continuationDir, continuationTmpDir);
+        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
+                continuationDir, continuationTmpDir);
 
         // Evaluating //////////////////////////////////////////////////////////
 
@@ -272,9 +270,9 @@ public class Glmtk {
         }
         consoleOutputter.setPercent(1.0);
 
-        //        consoleOutputter.deleteStatus();
-        //        consoleOutputter.printMessage("Corpus analyzation done.");
-        consoleOutputter.printCorpusAnalyzationDone();
+        consoleOutputter.printCorpusAnalyzationDone(NioUtils
+                .calcFileSize(Arrays.asList(absoluteDir, continuationDir,
+                        nGramTimesFile, lengthDistributionFile)));
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -444,6 +442,8 @@ public class Glmtk {
             CountCache countCache,
             int checkOrder,
             boolean multWithLengthFreq) throws IOException {
+        ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
+
         String estimatorName = Estimators.getName(estimator);
         Path outputFile =
                 testDir.resolve(TEST_FILE_DATE_FORMAT.format(new Date()) + " "
@@ -455,12 +455,11 @@ public class Glmtk {
         LOGGER.info("Testing %s File '%s' -> '%s'.", testType, testFile,
                 outputFile);
 
-        Ansi ansi = Ansi.ansi();
         String msg =
-                "Testing " + testType + " File '" + ansi.bold() + testFile
-                + ansi.boldOff() + "'";
+                "Testing " + testType + " File '"
+                        + consoleOutputter.bold(testFile.toString()) + "'";
         if (estimatorName != null) {
-            msg += " with " + ansi.bold() + estimatorName + ansi.boldOff();
+            msg += " with " + consoleOutputter.bold(estimatorName);
         }
         msg += "...";
         consoleOutputter.printMessage(msg);

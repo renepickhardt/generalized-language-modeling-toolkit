@@ -8,12 +8,12 @@ import java.nio.file.Path;
 
 import org.junit.Test;
 
-import de.glmtk.testutils.TestCorporaTest;
+import de.glmtk.testutils.LoggingTest;
 import de.glmtk.testutils.TestCorpus;
 
 // TODO: Make a not rudimentary test.
 
-public class LengthDistributionTest extends TestCorporaTest {
+public class LengthDistributionTest extends LoggingTest {
 
     @Test
     public void testPersistency() throws IOException {

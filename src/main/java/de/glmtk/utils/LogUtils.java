@@ -11,90 +11,85 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import de.glmtk.Config;
+import de.glmtk.Constants;
 
 public class LogUtils {
 
     private static final String loggingPattern =
             "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
 
+    private static LogUtils instance = null;
+
+    public static LogUtils getInstance() {
+        if (instance == null) {
+            instance = new LogUtils();
+        }
+        return instance;
+    }
+
     /**
      * GLMTK own configuration.
      */
-    private static Config config = Config.get();
+    private Config config;
 
     /**
      * Log4j LoggerContext.
      */
-    private static LoggerContext loggerContext = (LoggerContext) LogManager
-            .getContext(false);
+    private LoggerContext loggerContext;
 
     /**
      * Log4j Configuration.
      */
-    private static Configuration configuration = loggerContext
-            .getConfiguration();
+    private Configuration configuration;
 
     /**
+     * Serializable
      * Log4j Root Logger Configuration.
      */
-    private static LoggerConfig loggerConfig = configuration
-            .getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    private LoggerConfig loggerConfig;
 
-    public static Level getLogLevel() {
+    private Layout<String> layout;
+
+    private LogUtils() {
+        config = Config.get();
+        loggerContext = (LoggerContext) LogManager.getContext(false);
+        configuration = loggerContext.getConfiguration();
+        loggerConfig =
+                configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        layout =
+                PatternLayout.createLayout(loggingPattern, configuration, null,
+                        Charset.defaultCharset(), true, true, null, null);
+    }
+
+    public Level getLogLevel() {
         return loggerConfig.getLevel();
     }
 
-    /**
-     * Does not log to Console.
-     * Appends log to "LogDir/all.log".
-     * Overwrites log to "LogDir/<timestamp>.log".
-     */
-    public static void setUpExecLogging() {
-        Layout<String> layout =
-                PatternLayout.createLayout(loggingPattern, configuration, null,
-                        Charset.defaultCharset(), true, true, null, null);
-
-        Appender fileAllAppender =
-                FileAppender.createAppender(
-                        config.getLogDir().resolve("all.log").toString(),
-                        "true", "false", "FileAll", "false", "false", "true",
-                        "8192", layout, null, "false", "false", configuration);
-        fileAllAppender.start();
+    public void setUpExecLogging() {
+        addFileAppender(
+                config.getLogDir().resolve(Constants.ALL_LOG_FILE_NAME),
+                "FileAll", true);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = format.format(Calendar.getInstance().getTime());
-        Appender fileOwnAppender =
-                FileAppender.createAppender(
-                        config.getLogDir().resolve(time + ".log").toString(),
-                        "false", "false", "FileOwn", "false", "false", "true",
-                        "8192", layout, null, "false", "false", configuration);
-        fileOwnAppender.start();
-
-        configuration.addAppender(fileAllAppender);
-        configuration.addAppender(fileOwnAppender);
-
-        loggerConfig.addAppender(fileAllAppender, null, null);
-        loggerConfig.addAppender(fileOwnAppender, null, null);
-
-        loggerContext.updateLoggers();
+        addFileAppender(config.getLogDir().resolve(time + ".log"),
+                "FileTimestamp", false);
     }
 
-    /**
-     * Does only log to Console.
-     */
-    public static void setUpTestLogging() {
-        Layout<String> layout =
-                PatternLayout.createLayout(loggingPattern, configuration, null,
-                        Charset.defaultCharset(), true, true, null, null);
+    public void setUpTestLogging() {
+        addConsoleAppender(Target.SYSTEM_OUT);
+    }
 
+    public void addConsoleAppender(Target target) {
         Appender consoleApender =
-                ConsoleAppender.createAppender(layout, null, "SYSTEM_OUT",
+                ConsoleAppender.createAppender(layout, null, target.toString(),
                         "Console", "true", "false");
         consoleApender.start();
         configuration.addAppender(consoleApender);
@@ -104,17 +99,22 @@ public class LogUtils {
     }
 
     /**
-     * Adds logging to given {@code localLogFile}.
+     * Adds logging to given {@code logFile}.
+     *
+     * @param logFile
+     *            The file to log to.
+     * @param name
+     *            Log4j Internal Appender Name.
+     * @param append
+     *            If {@code true} log messages are appended to the file.
+     *            If {@code false} log message replace file contents.
      */
-    public static void addLocalFileAppender(Path localLogFile) {
-        Layout<String> layout =
-                PatternLayout.createLayout(loggingPattern, configuration, null,
-                        Charset.defaultCharset(), true, true, null, null);
-
+    public void addFileAppender(Path logFile, String name, boolean append) {
         Appender fileLocalAppender =
-                FileAppender.createAppender(localLogFile.toString(), "true",
-                        "false", "FileLocal", "false", "false", "true", "8192",
-                        layout, null, "false", "false", configuration);
+                FileAppender.createAppender(logFile.toString(),
+                        Boolean.toString(append), "false", name, "false",
+                        "false", "true", "8192", layout, null, "false",
+                        "false", configuration);
         fileLocalAppender.start();
         configuration.addAppender(fileLocalAppender);
         loggerConfig.addAppender(fileLocalAppender, null, null);

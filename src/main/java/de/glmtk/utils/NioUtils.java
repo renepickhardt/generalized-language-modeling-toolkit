@@ -2,8 +2,13 @@ package de.glmtk.utils;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Util class containing various static helper methods related to nio (Java 7 io
@@ -94,6 +99,30 @@ public class NioUtils {
         try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir)) {
             return !dirStream.iterator().hasNext();
         }
+    }
+
+    public static long calcFileSize(Path path) throws IOException {
+        final AtomicLong size = new AtomicLong(0);
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult visitFile(
+                    Path file,
+                    BasicFileAttributes attrs) throws IOException {
+                size.addAndGet(attrs.size());
+                return FileVisitResult.CONTINUE;
+            }
+
+        });
+        return size.get();
+    }
+
+    public static long calcFileSize(List<Path> paths) throws IOException {
+        long sum = 0;
+        for (Path path : paths) {
+            sum += calcFileSize(path);
+        }
+        return sum;
     }
 
 }

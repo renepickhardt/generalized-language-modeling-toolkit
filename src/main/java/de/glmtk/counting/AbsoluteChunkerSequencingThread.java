@@ -46,8 +46,6 @@ import de.glmtk.utils.StringUtils;
 
     private long readerMemory;
 
-    private ConsoleOutputter consoleOutputter;
-
     private int consoleUpdateInterval;
 
     private int logUpdateInterval;
@@ -59,7 +57,6 @@ import de.glmtk.utils.StringUtils;
             Path trainingFile,
             boolean trainingFileHasPos,
             long readerMemory,
-            ConsoleOutputter consoleOutputter,
             int consoleUpdateInterval,
             int logUpdateInterval) {
         this.absoluteChunker = absoluteChunker;
@@ -67,7 +64,6 @@ import de.glmtk.utils.StringUtils;
         this.trainingFile = trainingFile;
         this.trainingFileHasPos = trainingFileHasPos;
         this.readerMemory = readerMemory;
-        this.consoleOutputter = consoleOutputter;
         this.consoleUpdateInterval = consoleUpdateInterval;
         this.logUpdateInterval = logUpdateInterval;
         patternsBySize = Patterns.groupPatternsBySize(patterns);
@@ -75,6 +71,7 @@ import de.glmtk.utils.StringUtils;
 
     @Override
     public void run() {
+        ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                         Files.newInputStream(trainingFile)), (int) readerMemory)) {
@@ -102,6 +99,7 @@ import de.glmtk.utils.StringUtils;
             }
 
             absoluteChunker.sequencingIsDone();
+            consoleOutputter.setPercent(1.0);
             LOGGER.debug("Done.");
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);

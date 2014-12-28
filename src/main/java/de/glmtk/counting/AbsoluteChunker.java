@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
@@ -77,7 +76,6 @@ import de.glmtk.utils.Pattern;
     }
 
     public void chunk(
-            ConsoleOutputter consoleOutputter,
             Status status,
             Set<Pattern> patterns,
             Path trainingFile,
@@ -133,8 +131,7 @@ import de.glmtk.utils.Pattern;
                 new AbsoluteChunkerSequencingThread(this, patterns,
                         patternToAggregatingQueue, trainingFile,
                         status.getTraining() == TrainingStatus.DONE_WITH_POS,
-                        readerMemory, consoleOutputter, consoleUpdateInterval,
-                        logUpdateInterval);
+                        readerMemory, consoleUpdateInterval, logUpdateInterval);
 
         List<AbsoluteChunkerAggregatingThread> aggregatingThreads =
                 new LinkedList<AbsoluteChunkerAggregatingThread>();
@@ -177,8 +174,6 @@ import de.glmtk.utils.Pattern;
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);
         }
-
-        consoleOutputter.setPercent(1.0);
     }
 
     public boolean isSequencingDone() {

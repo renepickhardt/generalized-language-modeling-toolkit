@@ -41,13 +41,13 @@ public class EstimatorTestRunner extends Suite {
 
     public static class EstimatorTestParams {
 
-        public Estimator estimator;
+        private Estimator estimator;
 
-        public boolean continuationEstimator;
+        private boolean continuationEstimator;
 
-        public int condOrder;
+        private int condOrder;
 
-        public int margOrder;
+        private int margOrder;
 
         public EstimatorTestParams(
                 Estimator estimator,
@@ -102,9 +102,8 @@ public class EstimatorTestRunner extends Suite {
 
             @Override
             protected String testName(FrameworkMethod method) {
-                return method.getName() + ": "
-                        + TestRunnerForEstimator.this.getName() + " ("
-                        + getName() + ")";
+                return TestRunnerForEstimator.this.getName() + " (" + getName()
+                        + "): " + method.getName();
             }
 
             @Override

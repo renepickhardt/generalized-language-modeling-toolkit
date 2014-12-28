@@ -19,7 +19,9 @@ import java.util.Set;
 import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
+import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.Model;
@@ -56,7 +58,10 @@ public class GlmtkExecutable extends Executable {
 
     private static final Option OPTION_TEST_COND;
 
-    private static List<Option> options;
+    private static final Option OPTION_LOG;
+
+    private static final List<Option> OPTIONS;
+
     static {
         OPTION_HELP =
                 new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
@@ -110,11 +115,15 @@ public class GlmtkExecutable extends Executable {
         OPTION_TEST_COND.setArgName("ORDER> <FILE...");
         OPTION_TEST_COND.setArgs(Option.UNLIMITED_VALUES);
 
-        options =
+        OPTION_LOG =
+                new Option(null, "log", false,
+                        "If set will also log to console");
+
+        OPTIONS =
                 Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
                         OPTION_TRAINING_ORDER, OPTION_MODEL,
                         OPTION_TEST_SENTENCE, OPTION_TEST_MARKOV,
-                        OPTION_TEST_COND);
+                        OPTION_TEST_COND, OPTION_LOG);
     }
 
     private Path corpus = null;
@@ -133,9 +142,11 @@ public class GlmtkExecutable extends Executable {
     private Map<Integer, Set<Path>> testCondFiles =
             new HashMap<Integer, Set<Path>>();
 
+    private boolean logToConsole = false;
+
     @Override
     protected List<Option> getOptions() {
-        return options;
+        return OPTIONS;
     }
 
     @Override
@@ -199,6 +210,9 @@ public class GlmtkExecutable extends Executable {
 
             } else if (option.equals(OPTION_TEST_COND)) {
                 extractOrderAndFiles(option, testCondFiles);
+
+            } else if (option.equals(OPTION_LOG)) {
+                logToConsole = true;
 
             } else {
                 throw new IllegalStateException("Unexpected option: " + option
@@ -283,7 +297,14 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void configureLogging() {
         super.configureLogging();
-        LogUtils.addLocalFileAppender(workingDir.resolve("log"));
+        LogUtils.getInstance().addFileAppender(
+                workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
+                true);
+        if (logToConsole) {
+            LogUtils.getInstance().addConsoleAppender(Target.SYSTEM_ERR);
+            // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
+            ConsoleOutputter.getInstance().disableAnsi();
+        }
     }
 
     @Override

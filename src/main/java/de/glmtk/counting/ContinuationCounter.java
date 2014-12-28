@@ -41,7 +41,6 @@ public class ContinuationCounter {
     }
 
     public void count(
-            ConsoleOutputter consolueOutputter,
             Status status,
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
@@ -57,15 +56,15 @@ public class ContinuationCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.info("1/2 Chunking:");
-        consolueOutputter.setPhase(Phase.CONTINUATION_CHUNKING, -1.0);
-        chunker.chunk(consolueOutputter, status, chunkingPatterns,
-                absoluteCountedDir, absoluteChunkedDir, continuationCountedDir,
+        ConsoleOutputter.getInstance().setPhase(Phase.CONTINUATION_CHUNKING);
+        chunker.chunk(status, chunkingPatterns, absoluteCountedDir,
+                absoluteChunkedDir, continuationCountedDir,
                 continuationChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        consolueOutputter.setPhase(Phase.CONTINUATION_MERGING, -1.0);
-        merger.merge(consolueOutputter, status, countingPatterns,
-                continuationChunkedDir, continuationCountedDir);
+        ConsoleOutputter.getInstance().setPhase(Phase.CONTINUATION_MERGING);
+        merger.merge(status, countingPatterns, continuationChunkedDir,
+                continuationCountedDir);
 
         LOGGER.info("Continuation counting done.");
     }

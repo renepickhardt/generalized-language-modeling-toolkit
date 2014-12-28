@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
-import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.counting.ContinuationChunker.QueueItem;
@@ -57,9 +56,6 @@ import de.glmtk.utils.StringUtils;
     private long readerMemory;
 
     @SuppressWarnings("unused")
-    private ConsoleOutputter consoleOutputter;
-
-    @SuppressWarnings("unused")
     private int consoleUpdateInterval;
 
     @SuppressWarnings("unused")
@@ -75,7 +71,6 @@ import de.glmtk.utils.StringUtils;
             Path continuationCountedDir,
             Path continuationChunkedDir,
             long readerMemory,
-            ConsoleOutputter consoluteOutputter,
             int consoleUpdateInterval,
             int logUpdateInterval) {
         this.continuationChunker = continuationChunker;
@@ -87,7 +82,6 @@ import de.glmtk.utils.StringUtils;
         this.continuationCountedDir = continuationCountedDir;
         this.continuationChunkedDir = continuationChunkedDir;
         this.readerMemory = readerMemory;
-        consoleOutputter = consoluteOutputter;
         this.consoleUpdateInterval = consoleUpdateInterval;
         this.logUpdateInterval = logUpdateInterval;
     }
@@ -184,8 +178,8 @@ import de.glmtk.utils.StringUtils;
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average(
                             "ContinuationChunker.QueueItem Memory", MemoryUtil
-                                    .deepMemoryUsageOf(item,
-                                            VisibilityFilter.ALL));
+                            .deepMemoryUsageOf(item,
+                                    VisibilityFilter.ALL));
                 }
             }
             if (lastFile) {
