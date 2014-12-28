@@ -83,8 +83,8 @@ public enum Config {
         try {
             loadConfig(file);
         } catch (Exception e) {
-            // Config is singleton, it is thus necessary to not throw any
-            // checked exceptions.
+            // Because of enum nature it is necessary to not throw any checked
+            // exceptions during construction.
             throw new RuntimeException(e);
         }
     }

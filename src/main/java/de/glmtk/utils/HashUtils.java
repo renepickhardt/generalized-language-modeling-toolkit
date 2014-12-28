@@ -12,7 +12,7 @@ public class HashUtils {
     /**
      * @see <a href=
      *      "http://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java"
-     *      >Stackoverflow: Getting a File's MD5 Checksum in Java</a>.
+     *      >Stack Overflow: Getting a File's MD5 Checksum in Java</a>.
      */
     public static String generateMd5Hash(Path file) throws IOException {
         try {
@@ -36,7 +36,7 @@ public class HashUtils {
             for (int i = 0; i != resultByte.length; ++i) {
                 result +=
                         Integer.toString((resultByte[i] & 0xff) + 0x100, 16)
-                                .substring(1);
+                        .substring(1);
             }
             return result;
         } catch (NoSuchAlgorithmException e) {

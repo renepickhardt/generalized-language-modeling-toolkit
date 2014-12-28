@@ -188,7 +188,7 @@ public class GlmtkExecutable extends Executable {
                 trainingOrder =
                         convertToPositiveInteger(option.getValue(),
                                 "Illegal --" + option.getLongOpt()
-                                        + " argument");
+                                + " argument");
 
             } else if (option.equals(OPTION_MODEL)) {
                 for (String opt : option.getValues()) {
@@ -233,7 +233,9 @@ public class GlmtkExecutable extends Executable {
             getAndCheckFile(Constants.STATUS_FILE_NAME);
         } else {
             if (workingDir == null) {
-                workingDir = Paths.get(inputArg + ".out");
+                workingDir =
+                        Paths.get(inputArg
+                                + Constants.STANDARD_WORKING_DIR_SUFFIX);
             }
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
                 throw new Termination("Working directory '" + workingDir

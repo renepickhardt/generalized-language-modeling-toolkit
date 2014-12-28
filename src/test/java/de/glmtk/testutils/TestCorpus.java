@@ -1,6 +1,5 @@
 package de.glmtk.testutils;
 
-import static de.glmtk.Constants.TEST_RESSOURCES_DIR;
 import static de.glmtk.utils.PatternElem.CNT;
 import static de.glmtk.utils.PatternElem.SKP;
 import static de.glmtk.utils.PatternElem.WSKP;
@@ -20,19 +19,13 @@ import de.glmtk.counting.CountCache;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.Patterns;
 
-public class TestCorpus {
+public enum TestCorpus {
 
-    public static final TestCorpus ABC, MOBY_DICK, EN0008T;
+    ABC,
 
-    static {
-        try {
-            ABC = new TestCorpus("ABC");
-            MOBY_DICK = new TestCorpus("MobyDick");
-            EN0008T = new TestCorpus("en0008t");
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Static class initalization failed", e);
-        }
-    }
+    MOBYDICK,
+
+    EN0008T;
 
     private String corpusName;
 
@@ -42,36 +35,38 @@ public class TestCorpus {
 
     private CountCache countCache;
 
-    private TestCorpus(
-            String corpusName) throws IOException, InterruptedException {
-        this(corpusName, TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()),
-                TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase() + ".out"));
-    }
+    private TestCorpus() {
+        try {
+            corpusName = toString();
+            corpus =
+                    Constants.TEST_RESSOURCES_DIR.resolve(corpusName
+                            .toLowerCase());
+            workingDir =
+                    Constants.TEST_RESSOURCES_DIR.resolve(corpusName
+                            .toLowerCase()
+                            + Constants.STANDARD_WORKING_DIR_SUFFIX);
 
-    private TestCorpus(
-            String corpusName,
-            Path corpus,
-            Path workingDir) throws IOException, InterruptedException {
-        this.corpusName = corpusName;
-        this.corpus = corpus;
-        this.workingDir = workingDir;
+            Glmtk glmtk = new Glmtk(corpus, workingDir);
 
-        Glmtk glmtk = new Glmtk(corpus, workingDir);
+            Set<Pattern> neededPatterns =
+                    Patterns.getCombinations(Constants.MODEL_SIZE,
+                            Arrays.asList(CNT, SKP));
+            for (Pattern pattern : new HashSet<Pattern>(neededPatterns)) {
+                if (pattern.size() != Constants.MODEL_SIZE) {
+                    neededPatterns.add(pattern.concat(WSKP));
+                }
 
-        Set<Pattern> neededPatterns =
-                Patterns.getCombinations(Constants.MODEL_SIZE,
-                        Arrays.asList(CNT, SKP));
-        for (Pattern pattern : new HashSet<Pattern>(neededPatterns)) {
-            if (pattern.size() != Constants.MODEL_SIZE) {
-                neededPatterns.add(pattern.concat(WSKP));
+                if (pattern.contains(SKP)) {
+                    neededPatterns.add(pattern.replace(SKP, WSKP));
+                }
             }
 
-            if (pattern.contains(SKP)) {
-                neededPatterns.add(pattern.replace(SKP, WSKP));
-            }
+            glmtk.count(false, neededPatterns);
+        } catch (Exception e) {
+            // Because of enum nature it is necessary to not throw any checked
+            // exceptions during construction.
+            throw new IllegalStateException(e);
         }
-
-        glmtk.count(false, neededPatterns);
     }
 
     public String getCorpusName() {

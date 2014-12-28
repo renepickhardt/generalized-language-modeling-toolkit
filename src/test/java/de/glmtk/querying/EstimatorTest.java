@@ -50,7 +50,7 @@ public class EstimatorTest extends LoggingTest {
             .getLogger(EstimatorTest.class);
 
     private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
-            TestCorpus.ABC, TestCorpus.MOBY_DICK);
+            TestCorpus.ABC, TestCorpus.MOBYDICK);
 
     private static final int HIGHEST_ORDER = 5;
 

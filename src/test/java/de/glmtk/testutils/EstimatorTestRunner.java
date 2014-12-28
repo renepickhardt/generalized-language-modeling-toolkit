@@ -102,8 +102,9 @@ public class EstimatorTestRunner extends Suite {
 
             @Override
             protected String testName(FrameworkMethod method) {
-                return TestRunnerForEstimator.this.getName() + " (" + getName()
-                        + "): " + method.getName();
+                return method.getName() + " - "
+                        + TestRunnerForEstimator.this.getName() + " ("
+                        + getName() + ")";
             }
 
             @Override

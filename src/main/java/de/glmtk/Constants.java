@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 
 public class Constants {
 
+    public static final String STANDARD_WORKING_DIR_SUFFIX = ".out";
+
     public static final String TRAINING_FILE_NAME = "training";
 
     public static final String STATUS_FILE_NAME = "status";

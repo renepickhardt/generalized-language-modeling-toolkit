@@ -40,13 +40,14 @@ public class CountingTest extends LoggingTest {
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(CountingTest.class);
 
-    @Parameters
+    @Parameters(
+            name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
                 {
                     TestCorpus.ABC
                 }, {
-                    TestCorpus.MOBY_DICK
+                    TestCorpus.MOBYDICK
                 }
         });
     }
