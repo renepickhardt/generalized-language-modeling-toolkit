@@ -1,14 +1,14 @@
 package de.glmtk.testutils;
 
-import org.junit.BeforeClass;
+import static de.glmtk.utils.LogUtils.LOG_UTILS;
 
-import de.glmtk.utils.LogUtils;
+import org.junit.BeforeClass;
 
 public class LoggingTest {
 
     @BeforeClass
     public static void setUpLogging() {
-        LogUtils.getInstance().setUpTestLogging();
+        LOG_UTILS.setUpTestLogging();
     }
 
 }

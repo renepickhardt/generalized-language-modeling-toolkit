@@ -1,5 +1,9 @@
 package de.glmtk.executables;
 
+import static de.glmtk.Config.CONFIG;
+import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
+import static de.glmtk.utils.LogUtils.LOG_UTILS;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,10 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.AnsiConsole;
 
-import de.glmtk.Config;
-import de.glmtk.ConsoleOutputter;
 import de.glmtk.Termination;
-import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.StringUtils;
 
 /* package */abstract class Executable {
@@ -36,8 +37,6 @@ import de.glmtk.utils.StringUtils;
 
     protected static final String OPTION_VERSION_LONG = "version";
 
-    protected Config config = null;
-
     protected CommandLine line = null;
 
     protected boolean loggingConfigured = false;
@@ -50,8 +49,7 @@ import de.glmtk.utils.StringUtils;
 
     public void run(String[] args) throws Exception {
         try {
-            ConsoleOutputter.getInstance().enableAnsi();
-            config = Config.getInstance();
+            CONSOLE_OUTPUTTER.enableAnsi();
 
             parseArguments(args);
 
@@ -84,7 +82,7 @@ import de.glmtk.utils.StringUtils;
     }
 
     protected void configureLogging() {
-        LogUtils.getInstance().setUpExecLogging();
+        LOG_UTILS.setUpExecLogging();
         loggingConfigured = true;
     }
 
@@ -141,7 +139,7 @@ import de.glmtk.utils.StringUtils;
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
             "git", "log", "-1", "--format=%H: %s"
-        }, null, config.getGlmtkDir().toFile());
+        }, null, CONFIG.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =
                 new BufferedReader(new InputStreamReader(
@@ -151,16 +149,16 @@ import de.glmtk.utils.StringUtils;
         }
 
         // log user dir
-        LOGGER.info("User Dir: {}", config.getUserDir());
+        LOGGER.info("User Dir: {}", CONFIG.getUserDir());
 
         // log glmtk dir
-        LOGGER.info("Glmtk Dir: {}", config.getGlmtkDir());
+        LOGGER.info("Glmtk Dir: {}", CONFIG.getGlmtkDir());
 
         // log arguments
         LOGGER.info("Arguments: {}", StringUtils.join(args, " "));
 
         // log config
-        LOGGER.info("Config: {}", config);
+        LOGGER.info("Config: {}", CONFIG);
 
         LOGGER.info(StringUtils.repeat("-", 80));
     }

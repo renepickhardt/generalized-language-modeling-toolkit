@@ -1,5 +1,7 @@
 package de.glmtk;
 
+import static de.glmtk.Config.CONFIG;
+import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
 import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
 
 import java.io.BufferedReader;
@@ -71,8 +73,6 @@ public class Glmtk {
     private static final DateFormat TEST_FILE_DATE_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private final Config config;
-
     private Path corpus;
 
     private Path workingDir;
@@ -104,12 +104,6 @@ public class Glmtk {
     public Glmtk(
             Path corpus,
             Path workingDir) throws IOException {
-        try {
-            config = Config.getInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         this.corpus = corpus;
         this.workingDir = workingDir;
         statusFile = workingDir.resolve(Constants.STATUS_FILE_NAME);
@@ -137,8 +131,6 @@ public class Glmtk {
 
     public void count(boolean needPos, Set<Pattern> neededPatterns)
             throws IOException {
-        ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
-
         // TODO: update status with smaller increments (each completed pattern).
 
         Set<Pattern> neededAbsolute = new HashSet<Pattern>();
@@ -181,8 +173,8 @@ public class Glmtk {
                 }
 
                 Tagger tagger =
-                        new Tagger(config.getLogUpdateInterval(),
-                                config.getModel());
+                        new Tagger(CONFIG.getLogUpdateInterval(),
+                                CONFIG.getModel());
                 Files.deleteIfExists(trainingFile);
                 tagger.tag(corpus, trainingFile);
                 status.setTraining(TrainingStatus.DONE_WITH_POS, trainingFile);
@@ -199,30 +191,30 @@ public class Glmtk {
             }
         }
 
-        consoleOutputter.printCorpusAnalyzationInProcess();
+        CONSOLE_OUTPUTTER.printCorpusAnalyzationInProcess();
 
         // Absolute ////////////////////////////////////////////////////////////
 
         AbsoluteCounter absoluteCounter =
-                new AbsoluteCounter(neededAbsolute, config.getNumberOfCores(),
-                        config.getConsoleUpdateInterval(),
-                        config.getLogUpdateInterval());
+                new AbsoluteCounter(neededAbsolute, CONFIG.getNumberOfCores(),
+                        CONFIG.getConsoleUpdateInterval(),
+                        CONFIG.getLogUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
         ContinuationCounter continuationCounter =
                 new ContinuationCounter(neededContinuation,
-                        config.getNumberOfCores(),
-                        config.getConsoleUpdateInterval(),
-                        config.getLogUpdateInterval());
+                        CONFIG.getNumberOfCores(),
+                        CONFIG.getConsoleUpdateInterval(),
+                        CONFIG.getLogUpdateInterval());
         continuationCounter.count(status, absoluteDir, absoluteTmpDir,
                 continuationDir, continuationTmpDir);
 
         // Evaluating //////////////////////////////////////////////////////////
 
-        consoleOutputter.setPhase(Phase.EVALUATING, 0.0);
+        CONSOLE_OUTPUTTER.setPhase(Phase.EVALUATING, 0.0);
 
         // N-Gram Times Counts
         LOGGER.info("nGramTimes counting -> '%s'.", nGramTimesFile);
@@ -233,7 +225,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -266,7 +258,7 @@ public class Glmtk {
                 writer.write('\n');
             }
         }
-        consoleOutputter.setPercent(0.5);
+        CONSOLE_OUTPUTTER.setPercent(0.5);
 
         // Sentence Length Distribution
         if (!NioUtils.checkFile(lengthDistributionFile, EXISTS)) {
@@ -274,9 +266,9 @@ public class Glmtk {
                     new LengthDistribution(trainingFile, true);
             lengthDistribution.writeToStore(lengthDistributionFile);
         }
-        consoleOutputter.setPercent(1.0);
+        CONSOLE_OUTPUTTER.setPercent(1.0);
 
-        consoleOutputter.printCorpusAnalyzationDone(NioUtils
+        CONSOLE_OUTPUTTER.printCorpusAnalyzationDone(NioUtils
                 .calcFileSize(Arrays.asList(absoluteDir, continuationDir,
                         nGramTimesFile, lengthDistributionFile)));
     }
@@ -334,7 +326,7 @@ public class Glmtk {
             } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                                + "', needed for TestCounts.");
+                        + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -448,8 +440,6 @@ public class Glmtk {
             CountCache countCache,
             int checkOrder,
             boolean multWithLengthFreq) throws IOException {
-        ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
-
         String estimatorName = Estimators.getName(estimator);
         Path outputFile =
                 testDir.resolve(TEST_FILE_DATE_FORMAT.format(new Date()) + " "
@@ -463,12 +453,12 @@ public class Glmtk {
 
         String msg =
                 "Testing " + testType + " File '"
-                        + consoleOutputter.bold(testFile.toString()) + "'";
+                        + CONSOLE_OUTPUTTER.bold(testFile.toString()) + "'";
         if (estimatorName != null) {
-            msg += " with " + consoleOutputter.bold(estimatorName);
+            msg += " with " + CONSOLE_OUTPUTTER.bold(estimatorName);
         }
         msg += "...";
-        consoleOutputter.printMessage(msg);
+        CONSOLE_OUTPUTTER.printMessage(msg);
 
         estimator.setCountCache(countCache);
         calculator.setProbMode(probMode);
@@ -504,7 +494,7 @@ public class Glmtk {
                 if (multWithLengthFreq && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                                    .getLengthFrequency(sequenceSize);
+                            .getLengthFrequency(sequenceSize);
                 }
                 testStats.addProbability(probability);
 
@@ -521,7 +511,7 @@ public class Glmtk {
                 writer.append(testStatsOutputLine);
                 writer.append('\n');
                 LOGGER.info(testStatsOutputLine);
-                consoleOutputter.printMessage("    " + testStatsOutputLine);
+                CONSOLE_OUTPUTTER.printMessage("    " + testStatsOutputLine);
             }
         }
     }

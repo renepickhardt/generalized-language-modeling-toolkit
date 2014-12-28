@@ -1,6 +1,7 @@
 package de.glmtk;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -12,16 +13,9 @@ import java.util.Map;
 
 import de.glmtk.utils.StringUtils;
 
-public class Config {
+public enum Config {
 
-    private static Config instance = null;
-
-    public static Config getInstance() throws Exception {
-        if (instance == null) {
-            instance = new Config(Paths.get(Constants.CONFIG_LOCATION));
-        }
-        return instance;
-    }
+    CONFIG;
 
     /**
      * The directory the user started the program from.
@@ -81,15 +75,28 @@ public class Config {
         return model;
     }
 
-    private Config(
-            Path file) throws Exception {
+    private Config() {
+        loadPaths();
+
+        Path file = glmtkDir.resolve(Constants.CONFIG_LOCATION);
+
+        try {
+            loadConfig(file);
+        } catch (Exception e) {
+            // Config is singleton, it is thus necessary to not throw any
+            // checked exceptions.
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void loadPaths() {
         userDir = Paths.get(System.getProperty("user.dir"));
         glmtkDir =
                 Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
         logDir = glmtkDir.resolve(Constants.LOG_DIR_NAME);
+    }
 
-        file = glmtkDir.resolve(file);
-
+    private void loadConfig(Path file) throws IOException, Exception {
         Map<String, Field> fields = new HashMap<String, Field>();
         for (Field field : Config.class.getDeclaredFields()) {
             if (field.getName().equals("userDir")

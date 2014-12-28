@@ -1,5 +1,7 @@
 package de.glmtk.counting;
 
+import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
-import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
 import de.glmtk.utils.Pattern;
@@ -71,7 +72,6 @@ import de.glmtk.utils.StringUtils;
 
     @Override
     public void run() {
-        ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                         Files.newInputStream(trainingFile)), (int) readerMemory)) {
@@ -87,7 +87,7 @@ import de.glmtk.utils.StringUtils;
                 if (consoleUpdateInterval != 0
                         && curTime - consoleTime >= consoleUpdateInterval) {
                     consoleTime = curTime;
-                    consoleOutputter.setPercent((double) readSize / totalSize);
+                    CONSOLE_OUTPUTTER.setPercent((double) readSize / totalSize);
                 }
                 if (logUpdateInterval != 0
                         && curTime - logTime >= logUpdateInterval) {
@@ -99,7 +99,7 @@ import de.glmtk.utils.StringUtils;
             }
 
             absoluteChunker.sequencingIsDone();
-            consoleOutputter.setPercent(1.0);
+            CONSOLE_OUTPUTTER.setPercent(1.0);
             LOGGER.debug("Done.");
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);

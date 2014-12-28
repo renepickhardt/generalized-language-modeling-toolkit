@@ -7,7 +7,9 @@ import org.fusesource.jansi.AnsiConsole;
 
 import de.glmtk.utils.StringUtils;
 
-public class ConsoleOutputter {
+public enum ConsoleOutputter {
+
+    CONSOLE_OUTPUTTER;
 
     // TODO: Check if this works on windows.
 
@@ -69,15 +71,6 @@ public class ConsoleOutputter {
     public static final double DISABLE_PERCENT = -1.0;
 
     private static final int NUM_PERCENTEGEBAR_BLOCKS = 30;
-
-    private static ConsoleOutputter instance = null;
-
-    public static ConsoleOutputter getInstance() {
-        if (instance == null) {
-            instance = new ConsoleOutputter();
-        }
-        return instance;
-    }
 
     private Phase phase = Phase.BEFORE;
 

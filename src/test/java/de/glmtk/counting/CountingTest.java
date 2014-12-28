@@ -1,5 +1,6 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Config.CONFIG;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
@@ -15,13 +16,11 @@ import java.util.regex.Matcher;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.glmtk.Config;
 import de.glmtk.testutils.LoggingTest;
 import de.glmtk.testutils.TestCorpus;
 import de.glmtk.utils.Pattern;
@@ -41,23 +40,15 @@ public class CountingTest extends LoggingTest {
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(CountingTest.class);
 
-    private static Config config = null;
-
     @Parameters
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            {
-                TestCorpus.ABC
-            }, {
-                TestCorpus.MOBY_DICK
-            }
+                {
+                    TestCorpus.ABC
+                }, {
+                    TestCorpus.MOBY_DICK
+                }
         });
-    }
-
-    @BeforeClass
-    public static void loadConfig() throws Exception {
-        LOGGER.info("Loading config...");
-        config = Config.getInstance();
     }
 
     private TestCorpus testCorpus;
@@ -69,7 +60,7 @@ public class CountingTest extends LoggingTest {
 
     @Test
     public void testCounting() throws IOException, NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    SecurityException, IllegalArgumentException, IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
@@ -91,19 +82,19 @@ public class CountingTest extends LoggingTest {
         absoluteField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Long>> absolute =
-                (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+        (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
-                config.getLogUpdateInterval());
+                CONFIG.getLogUpdateInterval());
 
         Field continuationField =
                 CountCache.class.getDeclaredField("continuation");
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Counter>> continuation =
-                (Map<Pattern, Map<String, Counter>>) continuationField
-                        .get(countCache);
+        (Map<Pattern, Map<String, Counter>>) continuationField
+        .get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
-                config.getLogUpdateInterval());
+                CONFIG.getLogUpdateInterval());
     }
 
     private void testAbsoluteCounts(

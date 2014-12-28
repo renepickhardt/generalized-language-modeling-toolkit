@@ -1,5 +1,7 @@
 package de.glmtk.executables;
 
+import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -8,8 +10,6 @@ import java.util.List;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
-import de.glmtk.ConsoleOutputter;
 
 public class GlmtkHelpFormatter extends HelpFormatter {
 
@@ -48,19 +48,18 @@ public class GlmtkHelpFormatter extends HelpFormatter {
                 sb.append(defaultNewLine);
             }
 
-            ConsoleOutputter consoleOutputter = ConsoleOutputter.getInstance();
-
             StringBuffer optBuf = new StringBuffer(8);
 
             if (option.getOpt() == null) {
                 optBuf.append(lpad).append("   ").append(defaultLongOptPrefix)
-                .append(consoleOutputter.bold(option.getLongOpt()));
+                        .append(CONSOLE_OUTPUTTER.bold(option.getLongOpt()));
             } else {
                 optBuf.append(lpad).append(defaultOptPrefix)
-                        .append(consoleOutputter.bold(option.getOpt()));
+                .append(CONSOLE_OUTPUTTER.bold(option.getOpt()));
                 if (option.hasLongOpt()) {
-                    optBuf.append(',').append(defaultLongOptPrefix)
-                            .append(consoleOutputter.bold(option.getLongOpt()));
+                    optBuf.append(',')
+                            .append(defaultLongOptPrefix)
+                    .append(CONSOLE_OUTPUTTER.bold(option.getLongOpt()));
                 }
             }
 
@@ -77,7 +76,7 @@ public class GlmtkHelpFormatter extends HelpFormatter {
                 sb.append(defaultNewLine);
                 StringBuffer descBuf = new StringBuffer();
                 descBuf.append(lpad).append(dpad)
-                .append(option.getDescription());
+                        .append(option.getDescription());
                 renderWrappedText(sb, width, leftPad + descPad,
                         descBuf.toString());
             }

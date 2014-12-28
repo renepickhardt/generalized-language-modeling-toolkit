@@ -1,5 +1,7 @@
 package de.glmtk.executables;
 
+import static de.glmtk.ConsoleOutputter.CONSOLE_OUTPUTTER;
+import static de.glmtk.utils.LogUtils.LOG_UTILS;
 import static de.glmtk.utils.NioUtils.CheckFile.EXISTS;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.utils.NioUtils.CheckFile.IS_NO_DIRECTORY;
@@ -21,7 +23,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
-import de.glmtk.ConsoleOutputter;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.Model;
@@ -29,7 +30,6 @@ import de.glmtk.Termination;
 import de.glmtk.counting.CountCache;
 import de.glmtk.querying.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.utils.LogUtils;
 import de.glmtk.utils.NioUtils;
 import de.glmtk.utils.Pattern;
 import de.glmtk.utils.Patterns;
@@ -297,13 +297,13 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void configureLogging() {
         super.configureLogging();
-        LogUtils.getInstance().addFileAppender(
+        LOG_UTILS.addFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
         if (logToConsole) {
-            LogUtils.getInstance().addConsoleAppender(Target.SYSTEM_ERR);
+            LOG_UTILS.addConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
-            ConsoleOutputter.getInstance().disableAnsi();
+            CONSOLE_OUTPUTTER.disableAnsi();
         }
     }
 
