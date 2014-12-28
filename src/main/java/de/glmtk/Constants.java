@@ -18,9 +18,13 @@ public class Constants {
     public static final String LENGTHDISTRIBUTION_FILE_NAME =
             "lengthdistribution";
 
+    public static final String LOG_DIR_NAME = "logs";
+
     public static final String ALL_LOG_FILE_NAME = "all.log";
 
     public static final String LOCAL_LOG_FILE_NAME = "log";
+
+    public static final String CONFIG_LOCATION = "glmtk.conf";
 
     public static final int MODEL_SIZE = 5;
 

@@ -1,20 +1,27 @@
 package de.glmtk;
 
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.ini4j.Ini;
+import de.glmtk.utils.StringUtils;
 
 public class Config {
 
-    private static final String CONFIG_LOCATION = "config.ini";
-
     private static Config instance = null;
+
+    public static Config getInstance() throws Exception {
+        if (instance == null) {
+            instance = new Config(Paths.get(Constants.CONFIG_LOCATION));
+        }
+        return instance;
+    }
 
     /**
      * The directory the user started the program from.
@@ -32,109 +39,15 @@ public class Config {
      */
     private Path logDir;
 
-    private Map<String, Map<String, Object>> sections =
-            new LinkedHashMap<String, Map<String, Object>>();
+    private int mainMemory;
 
-    public static Config get() {
-        try {
-            if (instance == null) {
-                instance = new Config();
-            }
-            return instance;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private int numberOfCores;
 
-    private Config() throws IOException {
-        userDir = Paths.get(System.getProperty("user.dir"));
-        glmtkDir =
-                Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
-        logDir = glmtkDir.resolve("logs");
+    private int consoleUpdateInterval;
 
-        Ini ini = new Ini();
-        ini.load(Files.newBufferedReader(glmtkDir.resolve(CONFIG_LOCATION),
-                Charset.defaultCharset()));
+    private int logUpdateInterval;
 
-        // general
-        read(ini, "general", "mainMemory", Integer.class);
-        read(ini, "general", "numberOfCores", Integer.class);
-        read(ini, "general", "consoleUpdateInterval", Integer.class);
-        read(ini, "general", "logUpdateInterval", Integer.class);
-
-        // glmtk-count
-        read(ini, "glmtk-count", "model", Path.class);
-
-        // glmtk
-    }
-
-    private void read(
-            Ini ini,
-            String sectionName,
-            String optionName,
-            Class<?> optionClazz) {
-        Map<String, Object> section = sections.get(sectionName);
-        if (section == null) {
-            section = new LinkedHashMap<String, Object>();
-            sections.put(sectionName, section);
-        }
-
-        String optionValue = ini.get(sectionName, optionName);
-        if (optionValue == null || optionValue == "") {
-            throw new IllegalArgumentException("Option \"" + optionName
-                    + "\" has missing or empty value.");
-        }
-
-        Object value = null;
-        if (optionClazz.equals(Integer.class)) {
-            value = Integer.parseInt(optionValue);
-        } else if (optionClazz.equals(Path.class)) {
-            value = Paths.get(optionValue);
-        } else {
-            throw new IllegalStateException(
-                    "Unimplemented read option class + " + optionClazz + ".");
-        }
-
-        section.put(optionName, value);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder result = new StringBuilder();
-        for (Map.Entry<String, Map<String, Object>> section : sections
-                .entrySet()) {
-            String sectionName = section.getKey();
-            Map<String, Object> sectionOptions = section.getValue();
-
-            result.append(sectionName);
-            result.append("{ ");
-            for (Map.Entry<String, Object> option : sectionOptions.entrySet()) {
-                String optionName = option.getKey();
-                Object optionValue = option.getValue();
-
-                result.append(optionName);
-                result.append("=");
-
-                if (optionValue instanceof Integer) {
-                    Integer value = (Integer) optionValue;
-                    result.append(value);
-                } else if (optionValue instanceof Path) {
-                    Path value = (Path) optionValue;
-                    result.append("\"");
-                    result.append(value);
-                    result.append("\"");
-                } else {
-                    throw new IllegalStateException(
-                            "Unimplemented toString option class: "
-                                    + optionValue.getClass() + ".");
-                }
-
-                result.append("; ");
-            }
-            result.append("}; ");
-        }
-        return result.toString();
-    }
+    private Path model;
 
     public Path getUserDir() {
         return userDir;
@@ -148,31 +61,106 @@ public class Config {
         return logDir;
     }
 
-    // GENERAL /////////////////////////////////////////////////////////////////
-
     public int getMainMemory() {
-        return (int) sections.get("general").get("mainMemory");
+        return mainMemory;
     }
 
     public int getNumberOfCores() {
-        return (int) sections.get("general").get("numberOfCores");
+        return numberOfCores;
     }
 
     public int getConsoleUpdateInterval() {
-        return ((int) sections.get("general").get("consoleUpdateInterval"));
+        return consoleUpdateInterval;
     }
 
     public int getLogUpdateInterval() {
-        return ((int) sections.get("general").get("logUpdateInterval"));
+        return logUpdateInterval;
     }
-
-    // GLMTK-COUNT /////////////////////////////////////////////////////////////
 
     public Path getModel() {
-        return glmtkDir
-                .resolve((Path) sections.get("glmtk-count").get("model"));
+        return model;
     }
 
-    // GLMTK ///////////////////////////////////////////////////////////////////
+    private Config(
+            Path file) throws Exception {
+        userDir = Paths.get(System.getProperty("user.dir"));
+        glmtkDir =
+                Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
+        logDir = glmtkDir.resolve(Constants.LOG_DIR_NAME);
 
+        file = glmtkDir.resolve(file);
+
+        Map<String, Field> fields = new HashMap<String, Field>();
+        for (Field field : Config.class.getDeclaredFields()) {
+            if (field.getName().equals("userDir")
+                    || field.getName().equals("glmtkDir")
+                    || field.getName().equals("logDir")) {
+                continue;
+            }
+            fields.put(field.getName(), field);
+        }
+
+        try (BufferedReader reader =
+                Files.newBufferedReader(file, Charset.defaultCharset())) {
+            String line;
+            int lineNo = 0;
+            while ((line = reader.readLine()) != null) {
+                ++lineNo;
+                line = line.trim();
+                if (line.isEmpty() || line.charAt(0) == '#') {
+                    continue;
+                }
+
+                List<String> keyValue = StringUtils.splitAtChar(line, '=');
+                if (keyValue.size() != 2) {
+                    throw error(file, line, lineNo,
+                            "Entrys have to be in the form of '<key> = <value>'.");
+                }
+
+                String key = keyValue.get(0).trim();
+                String value = keyValue.get(1).trim();
+
+                if (!fields.containsKey(key)) {
+                    throw error(file, line, lineNo, "Unknown key '" + key
+                            + "'.");
+                }
+                Field field = fields.get(key);
+                if (field == null) {
+                    throw error(file, line, lineNo, "Duplicated key '" + key
+                            + "'.");
+                }
+
+                try {
+                    if (field.getType().equals(int.class)
+                            || field.getType().equals(Integer.class)) {
+                        try {
+                            field.set(this, Integer.valueOf(value));
+                        } catch (NumberFormatException e) {
+                            throw error(file, line, lineNo,
+                                    "Expected number, found '" + value + "'.");
+                        }
+                    } else if (field.getType().equals(Path.class)) {
+                        Path path = Paths.get(value);
+                        if (path == null) {
+                            throw error(file, line, lineNo,
+                                    "Expected path, found '" + value + "'.");
+                        }
+                        field.set(this, path);
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Shouldn't be possible
+                    throw new IllegalStateException(e);
+                }
+
+                fields.put(key, null);
+            }
+        }
+    }
+
+    private Exception error(Path file, String line, int lineNo, String msg)
+            throws Exception {
+        throw new Exception("Invalid config file '" + file
+                + "' entry at line '" + lineNo + "'. " + msg + " Line was: '"
+                + line + "'.");
+    }
 }

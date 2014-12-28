@@ -71,7 +71,7 @@ public class Glmtk {
     private static final DateFormat TEST_FILE_DATE_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private Config config = Config.get();
+    private final Config config;
 
     private Path corpus;
 
@@ -104,6 +104,12 @@ public class Glmtk {
     public Glmtk(
             Path corpus,
             Path workingDir) throws IOException {
+        try {
+            config = Config.getInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         this.corpus = corpus;
         this.workingDir = workingDir;
         statusFile = workingDir.resolve(Constants.STATUS_FILE_NAME);
@@ -202,7 +208,7 @@ public class Glmtk {
                         config.getConsoleUpdateInterval(),
                         config.getLogUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -498,7 +504,7 @@ public class Glmtk {
                 if (multWithLengthFreq && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                            .getLengthFrequency(sequenceSize);
+                                    .getLengthFrequency(sequenceSize);
                 }
                 testStats.addProbability(probability);
 

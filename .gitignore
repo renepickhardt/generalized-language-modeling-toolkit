@@ -13,3 +13,4 @@
 /doc/*.out
 /doc/*.toc
 /doc/*.tex.backup
+glmtk.conf

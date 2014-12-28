@@ -1,15 +1,13 @@
-[general]
-# Main memory (RAM) to be assigned to GLMTK.
+# Main memory (RAM) to be assigned to GLMTK in MB.
 mainMemory = 4096
+
 # Number of parallel threads used.
 numberOfCores = 4
+
 # Delay in milliseconds before next percentage update is displayed.
 # 0 disables percentage updates.
 consoleUpdateInterval = 50
 logUpdateInterval = 5000
 
-[glmtk-count]
 # .tagger file used for tagging.
 model = stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger
-
-[glmtk]

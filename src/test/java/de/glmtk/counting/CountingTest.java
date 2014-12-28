@@ -55,9 +55,9 @@ public class CountingTest extends LoggingTest {
     }
 
     @BeforeClass
-    public static void loadConfig() {
+    public static void loadConfig() throws Exception {
         LOGGER.info("Loading config...");
-        config = Config.get();
+        config = Config.getInstance();
     }
 
     private TestCorpus testCorpus;

@@ -58,7 +58,11 @@ public class LogUtils {
     private Layout<String> layout;
 
     private LogUtils() {
-        config = Config.get();
+        try {
+            config = Config.getInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         loggerContext = (LoggerContext) LogManager.getContext(false);
         configuration = loggerContext.getConfiguration();
         loggerConfig =
