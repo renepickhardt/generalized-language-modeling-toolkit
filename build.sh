@@ -1,2 +1,8 @@
 #!/usr/bin/env bash
-mvn compile assembly:single
+
+if [[ $1 == "clean" ]]
+then
+    mvn clean
+else
+    mvn compile assembly:single
+fi
