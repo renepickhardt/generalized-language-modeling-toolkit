@@ -2,11 +2,11 @@ package de.glmtk.querying;
 
 public enum QueryType {
 
-    COND,
+    COND("Cond"),
 
-    SEQUENCE,
+    SEQUENCE("Sequence"),
 
-    MARKOV;
+    MARKOV("Markov");
 
     private static final String DELIM = "-";
 
@@ -42,6 +42,18 @@ public enum QueryType {
         String markovOrderStr =
                 string.substring(MARKOV.toString().length() + DELIM.length());
         return Integer.parseInt(markovOrderStr);
+    }
+
+    private String string;
+
+    private QueryType(
+            String string) {
+        this.string = string;
+    }
+
+    @Override
+    public String toString() {
+        return string;
     }
 
 }
