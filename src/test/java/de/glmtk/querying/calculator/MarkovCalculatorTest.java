@@ -8,17 +8,15 @@ import java.util.List;
 import org.junit.Test;
 
 import de.glmtk.common.ProbMode;
-import de.glmtk.querying.calculator.MarkovCalculator;
 
 public class MarkovCalculatorTest {
 
     @Test
     public void testComputeQueries() throws NoSuchMethodException,
-            SecurityException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
-        MarkovCalculator calculator = new MarkovCalculator();
+    SecurityException, IllegalAccessException,
+    IllegalArgumentException, InvocationTargetException {
+        MarkovCalculator calculator = new MarkovCalculator(4);
         calculator.setProbMode(ProbMode.MARG);
-        calculator.setOrder(4);
 
         Method computeQueries =
                 MarkovCalculator.class.getDeclaredMethod("computeQueries",

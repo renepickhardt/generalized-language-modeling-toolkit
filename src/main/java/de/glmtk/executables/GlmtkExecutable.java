@@ -30,6 +30,8 @@ import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
+import de.glmtk.querying.Query;
+import de.glmtk.querying.QueryType;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
@@ -341,13 +343,15 @@ public class GlmtkExecutable extends Executable {
 
             for (Model model : models) {
                 Estimator estimator = model.getEstimator();
-                glmtk.testSentenceFile(testFile, estimator, probMode,
-                        countCache);
+                Query query =
+                        glmtk.newQuery(QueryType.sequence(), testFile,
+                                estimator, probMode, countCache);
+                query.run();
             }
         }
 
         for (Map.Entry<Integer, Set<Path>> entry : testMarkovFiles.entrySet()) {
-            int order = entry.getKey();
+            int markovOrder = entry.getKey();
             Set<Path> testFiles = entry.getValue();
 
             for (Path testFile : testFiles) {
@@ -357,14 +361,16 @@ public class GlmtkExecutable extends Executable {
 
                 for (Model model : models) {
                     Estimator estimator = model.getEstimator();
-                    glmtk.testMarkovFile(testFile, estimator, probMode,
-                            countCache, order);
+                    Query query =
+                            glmtk.newQuery(QueryType.markov(markovOrder),
+                                    testFile, estimator, probMode, countCache);
+                    query.run();
                 }
             }
         }
 
         for (Map.Entry<Integer, Set<Path>> entry : testCondFiles.entrySet()) {
-            int order = entry.getKey();
+            int condOrder = entry.getKey();
             Set<Path> testFiles = entry.getValue();
 
             for (Path testFile : testFiles) {
@@ -374,8 +380,10 @@ public class GlmtkExecutable extends Executable {
 
                 for (Model model : models) {
                     Estimator estimator = model.getEstimator();
-                    glmtk.testCondFile(testFile, estimator, probMode,
-                            countCache, order);
+                    Query query =
+                            glmtk.newQuery(QueryType.cond(), testFile,
+                                    estimator, probMode, countCache);
+                    query.run();
                 }
             }
         }

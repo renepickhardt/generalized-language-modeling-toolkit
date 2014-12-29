@@ -8,19 +8,19 @@ import java.util.List;
 import org.junit.Test;
 
 import de.glmtk.common.ProbMode;
-import de.glmtk.querying.calculator.SentenceCalculator;
+import de.glmtk.querying.calculator.SequenceCalculator;
 
-public class SentenceCalculatorTest {
+public class SequenceCalculatorTest {
 
     @Test
     public void testComputeQueries() throws NoSuchMethodException,
             SecurityException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
-        SentenceCalculator calculator = new SentenceCalculator();
+        SequenceCalculator calculator = new SequenceCalculator();
         calculator.setProbMode(ProbMode.MARG);
 
         Method computeQueries =
-                SentenceCalculator.class.getDeclaredMethod("computeQueries",
+                SequenceCalculator.class.getDeclaredMethod("computeQueries",
                         List.class);
         computeQueries.setAccessible(true);
 

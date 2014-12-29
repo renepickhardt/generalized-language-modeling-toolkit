@@ -7,7 +7,7 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
-import de.glmtk.querying.calculator.SentenceCalculator;
+import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
@@ -57,7 +57,7 @@ public class QuickTest extends LoggingTest {
         //        System.out.println(e.probability(new NGram("insolation"), new NGram(
         //                "_ _ _ local")));
 
-        //        SentenceCalculator n = new SentenceCalculator();
+        //        SequenceCalculator n = new SequenceCalculator();
         //        n.setEstimator(e);
         //        n.setProbMode(ProbMode.MARG);
         //
@@ -196,7 +196,7 @@ public class QuickTest extends LoggingTest {
             e.setCountCache(cc);
             e.setProbMode(ProbMode.MARG);
 
-            SentenceCalculator c = new SentenceCalculator();
+            SequenceCalculator c = new SequenceCalculator();
             c.setEstimator(e);
             c.setProbMode(ProbMode.MARG);
 

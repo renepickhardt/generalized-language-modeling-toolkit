@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.calculator.Calculator;
-import de.glmtk.querying.calculator.SentenceCalculator;
+import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.testutil.EstimatorTestRunner;
 import de.glmtk.testutil.EstimatorTestRunner.EstimatorTestParameters;
@@ -122,7 +122,7 @@ public class EstimatorTest extends LoggingTest {
     @Test
     public void testNGramProbabilitiesSum() throws IOException {
         LOGGER.info("=== Test NGram Probabilities Sum");
-        Calculator calculator = new SentenceCalculator();
+        Calculator calculator = new SequenceCalculator();
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
         for (TestCorpus testCorpus : TEST_CORPORA) {

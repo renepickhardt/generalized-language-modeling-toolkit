@@ -4,15 +4,21 @@ import java.util.List;
 
 import de.glmtk.common.NGram;
 
-public class MarkovCalculator extends SentenceCalculator {
+public class MarkovCalculator extends SequenceCalculator {
 
-    private Integer order = 5;
+    private int markovOrder;
 
-    public void setOrder(int order) {
-        if (order <= 0) {
-            throw new IllegalArgumentException("Order must be > 0.");
+    public MarkovCalculator(
+            int markovOrder) {
+        this.markovOrder = markovOrder;
+    }
+
+    public void setMarkovOrder(int markovOrder) {
+        if (markovOrder <= 0) {
+            throw new IllegalArgumentException(
+                    "Markov markovOrder must be > 0.");
         }
-        this.order = order;
+        this.markovOrder = markovOrder;
     }
 
     @Override
@@ -24,8 +30,8 @@ public class MarkovCalculator extends SentenceCalculator {
         for (int i = 0; i != queries.size(); ++i) {
             SequenceAndHistory query = queries.get(i);
             NGram h = query.history;
-            if (h.size() >= order) {
-                query.history = h.range(h.size() - order + 1, h.size());
+            if (h.size() >= markovOrder) {
+                query.history = h.range(h.size() - markovOrder + 1, h.size());
             }
         }
 

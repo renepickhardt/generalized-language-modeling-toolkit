@@ -8,7 +8,7 @@ import java.util.List;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 
-public class SentenceCalculator extends Calculator {
+public class SequenceCalculator extends Calculator {
 
     /**
      * If {@link #probMode} = {@link ProbMode#COND}:<br>

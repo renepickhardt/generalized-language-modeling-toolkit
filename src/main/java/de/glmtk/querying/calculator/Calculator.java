@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
+import de.glmtk.querying.QueryType;
 import de.glmtk.querying.estimator.Estimator;
 
 public abstract class Calculator {
@@ -70,5 +71,22 @@ public abstract class Calculator {
 
     protected abstract List<SequenceAndHistory> computeQueries(
             List<String> words);
+
+    public static final Calculator forQueryTypeString(String queryTypeString) {
+        switch (QueryType.fromString(queryTypeString)) {
+            case COND:
+                return new CondCalculator();
+
+            case SEQUENCE:
+                return new SequenceCalculator();
+
+            case MARKOV:
+                return new MarkovCalculator(
+                        QueryType.getMarkovOrder(queryTypeString));
+
+            default:
+                throw new IllegalStateException();
+        }
+    }
 
 }

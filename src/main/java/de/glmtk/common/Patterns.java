@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import de.glmtk.querying.calculator.SentenceCalculator;
+import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 
 public class Patterns {
@@ -146,7 +146,7 @@ public class Patterns {
 
         estimator.setCountCache(tracker);
 
-        SentenceCalculator calculator = new SentenceCalculator();
+        SequenceCalculator calculator = new SequenceCalculator();
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
 
