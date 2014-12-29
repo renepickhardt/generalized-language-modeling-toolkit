@@ -1,6 +1,5 @@
 package de.glmtk.util;
 
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import org.apache.logging.log4j.Level;
@@ -14,6 +13,8 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+
+import de.glmtk.Constants;
 
 public enum LoggingHelper {
 
@@ -47,7 +48,7 @@ public enum LoggingHelper {
                 configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
         layout =
                 PatternLayout.createLayout(loggingPattern, configuration, null,
-                        Charset.defaultCharset(), true, true, null, null);
+                        Constants.CHARSET, true, true, null, null);
     }
 
     public Level getLogLevel() {

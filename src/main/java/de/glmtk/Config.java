@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -104,7 +103,7 @@ public enum Config {
         }
 
         try (BufferedReader reader =
-                Files.newBufferedReader(file, Charset.defaultCharset())) {
+                Files.newBufferedReader(file, Constants.CHARSET)) {
             String line;
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {

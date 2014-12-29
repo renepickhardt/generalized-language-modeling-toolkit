@@ -3,7 +3,6 @@ package de.glmtk;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -239,7 +238,7 @@ public class Status {
 
     private void readStatusFromFile() throws IOException {
         try (BufferedReader reader =
-                Files.newBufferedReader(file, Charset.defaultCharset())) {
+                Files.newBufferedReader(file, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) {
@@ -305,7 +304,7 @@ public class Status {
                 throw new RuntimeException("Illegal format for '"
                         + (continuation
                                 ? "continuationChunked"
-                                : "absoluteChunged") + "': " + patternAndChunks);
+                                        : "absoluteChunged") + "': " + patternAndChunks);
             }
 
             Pattern pattern = Patterns.get(split.get(0));

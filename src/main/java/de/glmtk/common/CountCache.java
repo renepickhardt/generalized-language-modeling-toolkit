@@ -6,7 +6,6 @@ import static de.glmtk.common.PatternElem.CNT;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,7 +58,7 @@ public class CountCache {
         lengthDistribution =
                 new LengthDistribution(
                         countsDir
-                        .resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
+                                .resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
                         false);
     }
 
@@ -73,7 +72,7 @@ public class CountCache {
                 absolute.put(pattern, counts);
 
                 try (BufferedReader reader =
-                        Files.newBufferedReader(file, Charset.defaultCharset())) {
+                        Files.newBufferedReader(file, Constants.CHARSET)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         Counter counter = new Counter();
@@ -96,7 +95,7 @@ public class CountCache {
                 continuation.put(pattern, counts);
 
                 try (BufferedReader reader =
-                        Files.newBufferedReader(file, Charset.defaultCharset())) {
+                        Files.newBufferedReader(file, Constants.CHARSET)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         Counter counter = new Counter();
@@ -112,8 +111,7 @@ public class CountCache {
     private void loadNGramTimes(Path countsDir) throws IOException {
         Path nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         try (BufferedReader reader =
-                Files.newBufferedReader(nGramTimesFile,
-                        Charset.defaultCharset())) {
+                Files.newBufferedReader(nGramTimesFile, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.splitAtChar(line, '\t');
@@ -159,7 +157,7 @@ public class CountCache {
         if (counts == null) {
             throw new IllegalStateException(
                     "No nGramTimes counts learned for pattern'" + pattern
-                    + "'.");
+                            + "'.");
         }
         return counts;
     }

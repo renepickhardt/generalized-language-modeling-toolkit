@@ -3,12 +3,12 @@ package de.glmtk.counting;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.glmtk.Constants;
 import de.glmtk.util.StringUtils;
 
 public class LengthDistribution {
@@ -30,7 +30,7 @@ public class LengthDistribution {
 
         int sum = 0;
         try (BufferedReader reader =
-                Files.newBufferedReader(trainingFile, Charset.defaultCharset())) {
+                Files.newBufferedReader(trainingFile, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 // TODO: This is a slow method to get sentence length, better would be to count number of spaces.
@@ -58,7 +58,7 @@ public class LengthDistribution {
         lengthDistribution = new ArrayList<Double>();
 
         try (BufferedReader reader =
-                Files.newBufferedReader(storeFile, Charset.defaultCharset())) {
+                Files.newBufferedReader(storeFile, Constants.CHARSET)) {
             String line;
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
@@ -68,8 +68,8 @@ public class LengthDistribution {
                 if (split.size() != 2) {
                     throw new IllegalStateException(
                             "Length distribution file '" + storeFile
-                                    + "' has illegal format in line " + lineNo
-                                    + ": '" + line + "'.");
+                            + "' has illegal format in line " + lineNo
+                            + ": '" + line + "'.");
                 }
 
                 int length = Integer.parseInt(split.get(0));
@@ -85,7 +85,7 @@ public class LengthDistribution {
 
     public void writeToStore(Path storeFile) throws IOException {
         try (BufferedWriter writer =
-                Files.newBufferedWriter(storeFile, Charset.defaultCharset())) {
+                Files.newBufferedWriter(storeFile, Constants.CHARSET)) {
             int length = 0;
             for (double frequency : lengthDistribution) {
                 writer.write(Integer.toString(length));

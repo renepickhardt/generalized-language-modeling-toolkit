@@ -7,7 +7,6 @@ import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -189,7 +188,7 @@ public class Glmtk {
                         CONFIG.getConsoleUpdateInterval(),
                         CONFIG.getLogUpdateInterval());
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -208,18 +207,16 @@ public class Glmtk {
         // N-Gram Times Counts
         LOGGER.info("nGramTimes counting -> '%s'.", nGramTimesFile);
         try (BufferedWriter writer =
-                Files.newBufferedWriter(nGramTimesFile,
-                        Charset.defaultCharset());
+                Files.newBufferedWriter(nGramTimesFile, Constants.CHARSET);
                 DirectoryStream<Path> absoluteFiles =
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
-                        Files.newBufferedReader(absoluteFile,
-                                Charset.defaultCharset())) {
+                        Files.newBufferedReader(absoluteFile, Constants.CHARSET)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         Counter counter = new Counter();
@@ -315,7 +312,7 @@ public class Glmtk {
             } else if (!NioUtils.checkFile(countFile, EXISTS)) {
                 throw new IllegalStateException(
                         "Don't have corpus counts pattern '" + pattern
-                                + "', needed for TestCounts.");
+                        + "', needed for TestCounts.");
             }
 
             SortedSet<String> neededSequences =
@@ -335,7 +332,7 @@ public class Glmtk {
 
         int patternSize = pattern.size();
         try (BufferedReader reader =
-                Files.newBufferedReader(testingFile, Charset.defaultCharset())) {
+                Files.newBufferedReader(testingFile, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] split =
@@ -359,10 +356,10 @@ public class Glmtk {
             Path testCountFile,
             SortedSet<String> neededSequences) throws IOException {
         try (BufferedReader reader =
-                Files.newBufferedReader(countFile, Charset.defaultCharset());
+                Files.newBufferedReader(countFile, Constants.CHARSET);
                 BufferedWriter writer =
                         Files.newBufferedWriter(testCountFile,
-                                Charset.defaultCharset())) {
+                                Constants.CHARSET)) {
             String nextSequence = neededSequences.first();
 
             String line;

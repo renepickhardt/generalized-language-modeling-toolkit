@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -21,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import de.glmtk.Constants;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Pattern;
@@ -46,11 +46,11 @@ public class CountingTest extends LoggingTest {
             name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {
-                    TestCorpus.ABC
-                }, {
-                    TestCorpus.MOBYDICK
-                }
+            {
+                TestCorpus.ABC
+            }, {
+                TestCorpus.MOBYDICK
+            }
         });
     }
 
@@ -63,7 +63,7 @@ public class CountingTest extends LoggingTest {
 
     @Test
     public void testCounting() throws IOException, NoSuchFieldException,
-    SecurityException, IllegalArgumentException, IllegalAccessException {
+            SecurityException, IllegalArgumentException, IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
@@ -71,7 +71,7 @@ public class CountingTest extends LoggingTest {
         List<String> corpusContents = new LinkedList<String>();
         try (BufferedReader reader =
                 Files.newBufferedReader(testCorpus.getCorpus(),
-                        Charset.defaultCharset())) {
+                        Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 corpusContents.add(line);
@@ -85,7 +85,7 @@ public class CountingTest extends LoggingTest {
         absoluteField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Long>> absolute =
-        (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+                (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
                 CONFIG.getLogUpdateInterval());
 
@@ -94,8 +94,8 @@ public class CountingTest extends LoggingTest {
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Counter>> continuation =
-        (Map<Pattern, Map<String, Counter>>) continuationField
-        .get(countCache);
+                (Map<Pattern, Map<String, Counter>>) continuationField
+                        .get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
                 CONFIG.getLogUpdateInterval());
     }
