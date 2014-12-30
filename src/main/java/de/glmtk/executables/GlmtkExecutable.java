@@ -11,11 +11,14 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.cli.Option;
@@ -33,6 +36,7 @@ import de.glmtk.common.ProbMode;
 import de.glmtk.querying.Query;
 import de.glmtk.querying.QueryType;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
@@ -44,6 +48,21 @@ public class GlmtkExecutable extends Executable {
 
     // TODO: API to count all patterns.
 
+    public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
+    static {
+        Map<String, Estimator> m = new LinkedHashMap<String, Estimator>();
+        m.put("MLE", Estimators.MLE);
+        m.put("MKN", Estimators.MOD_KNESER_NEY);
+        m.put("MKNS", Estimators.MOD_KNESER_NEY_SKP);
+        m.put("MKNA", Estimators.MOD_KNESER_NEY_ABS);
+        m.put("GLM", Estimators.GLM);
+        m.put("GLMD", Estimators.GLM_DEL);
+        m.put("GLMDF", Estimators.GLM_DEL_FRONT);
+        m.put("GLMSD", Estimators.GLM_SKP_AND_DEL);
+        m.put("GLMA", Estimators.GLM_ABS);
+        OPTION_ESTIMATOR_ARGUMENTS = m;
+    }
+
     private static final Option OPTION_HELP;
 
     private static final Option OPTION_VERSION;
@@ -52,7 +71,7 @@ public class GlmtkExecutable extends Executable {
 
     private static final Option OPTION_TRAINING_ORDER;
 
-    private static final Option OPTION_MODEL;
+    private static final Option OPTION_ESTIMATOR;
 
     private static final Option OPTION_TEST_SENTENCE;
 
@@ -77,27 +96,23 @@ public class GlmtkExecutable extends Executable {
                 new Option("w", "workingdir", true, "Working directory.");
         OPTION_WORKINGDIR.setArgName("WORKINGDIR");
 
-        StringBuilder modelOptDesc = new StringBuilder();
-        for (Model model : Model.values()) {
-            String abbreviation = model.getAbbreviation();
-            modelOptDesc.append(abbreviation);
-            modelOptDesc.append(StringUtils.repeat(" ",
-                    5 - abbreviation.length()));
-            modelOptDesc.append("- ");
-            modelOptDesc.append(model.getName());
-            modelOptDesc.append(".\n");
-        }
         OPTION_TRAINING_ORDER =
                 new Option("n", "training-order", true,
                         "Order to learn for training.");
         OPTION_TRAINING_ORDER.setArgName("ORDER");
 
-        OPTION_MODEL =
-                new Option("m", "model", true,
-                        "Can be specified multiple times.\n"
-                                + modelOptDesc.toString());
-        OPTION_MODEL.setArgName("MODEL...");
-        OPTION_MODEL.setArgs(Option.UNLIMITED_VALUES);
+        try (Formatter estimatorDesc = new Formatter()) {
+            estimatorDesc.format("Can be specified multiple times.\n");
+            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS
+                    .entrySet()) {
+                estimatorDesc.format("%-5s - %s\n", arg.getKey(), arg
+                        .getValue().getName());
+            }
+            OPTION_ESTIMATOR =
+                    new Option("e", "estimator", true, estimatorDesc.toString());
+            OPTION_ESTIMATOR.setArgName("ESTIMATOR...");
+            OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
+        }
 
         OPTION_TEST_SENTENCE =
                 new Option("ts", "test-sentence", true,
@@ -123,7 +138,7 @@ public class GlmtkExecutable extends Executable {
 
         OPTIONS =
                 Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
-                        OPTION_TRAINING_ORDER, OPTION_MODEL,
+                        OPTION_TRAINING_ORDER, OPTION_ESTIMATOR,
                         OPTION_TEST_SENTENCE, OPTION_TEST_MARKOV,
                         OPTION_TEST_COND, OPTION_LOG);
     }
@@ -134,7 +149,7 @@ public class GlmtkExecutable extends Executable {
 
     private Integer trainingOrder = null;
 
-    private Set<Model> models = new LinkedHashSet<Model>();
+    private Set<Estimator> estimators = new LinkedHashSet<Estimator>();
 
     private Set<Path> testSentenceFiles = new LinkedHashSet<Path>();
 
@@ -191,14 +206,15 @@ public class GlmtkExecutable extends Executable {
                         positiveIntOrFail(option.getValue(), "Illegal --"
                                 + option.getLongOpt() + " argument");
 
-            } else if (option.equals(OPTION_MODEL)) {
+            } else if (option.equals(OPTION_ESTIMATOR)) {
                 for (String opt : option.getValues()) {
-                    Model model = Model.fromAbbreviation(opt.toUpperCase());
-                    if (model == null) {
+                    Estimator estimator =
+                            OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
+                    if (estimator == null) {
                         throw new Termination(String.format(
-                                "Unkown models option '%s'.", opt));
+                                "Unkown estimators option '%s'.", opt));
                     }
-                    models.add(model);
+                    estimators.add(estimator);
                 }
 
             } else if (option.equals(OPTION_TEST_SENTENCE)) {
@@ -326,14 +342,13 @@ public class GlmtkExecutable extends Executable {
 
         ProbMode probMode = ProbMode.MARG;
 
-        if (models.isEmpty()) {
-            models.add(Model.MODIFIED_KNESER_NEY);
+        if (estimators.isEmpty()) {
+            estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator()
+                    .next());
         }
 
         Set<Pattern> neededPatterns = new HashSet<Pattern>();
-        for (Model model : models) {
-            Estimator estimator = model.getEstimator();
-
+        for (Estimator estimator : estimators) {
             neededPatterns.addAll(Patterns.getUsedPatterns(trainingOrder,
                     estimator, probMode));
             if (needPos) {
@@ -347,8 +362,7 @@ public class GlmtkExecutable extends Executable {
             CountCache countCache =
                     glmtk.getOrCreateTestCountCache(testFile, neededPatterns);
 
-            for (Model model : models) {
-                Estimator estimator = model.getEstimator();
+            for (Estimator estimator : estimators) {
                 Query query =
                         glmtk.newQuery(QueryType.sequence(), testFile,
                                 estimator, probMode, countCache);
@@ -365,8 +379,7 @@ public class GlmtkExecutable extends Executable {
                         glmtk.getOrCreateTestCountCache(testFile,
                                 neededPatterns);
 
-                for (Model model : models) {
-                    Estimator estimator = model.getEstimator();
+                for (Estimator estimator : estimators) {
                     Query query =
                             glmtk.newQuery(QueryType.markov(markovOrder),
                                     testFile, estimator, probMode, countCache);
@@ -384,8 +397,7 @@ public class GlmtkExecutable extends Executable {
                         glmtk.getOrCreateTestCountCache(testFile,
                                 neededPatterns);
 
-                for (Model model : models) {
-                    Estimator estimator = model.getEstimator();
+                for (Estimator estimator : estimators) {
                     Query query =
                             glmtk.newQuery(QueryType.cond(), testFile,
                                     estimator, probMode, countCache);

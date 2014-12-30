@@ -32,7 +32,7 @@ public class Constants {
 
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 
-    public static final int MODEL_SIZE = 5;
+    public static final int ORDER = 5;
 
     public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB;
 

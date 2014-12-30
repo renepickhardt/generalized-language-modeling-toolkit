@@ -49,10 +49,10 @@ public enum TestCorpus {
             Glmtk glmtk = new Glmtk(corpus, workingDir);
 
             Set<Pattern> neededPatterns =
-                    Patterns.getCombinations(Constants.MODEL_SIZE,
+                    Patterns.getCombinations(Constants.ORDER,
                             Arrays.asList(CNT, SKP));
             for (Pattern pattern : new HashSet<Pattern>(neededPatterns)) {
-                if (pattern.size() != Constants.MODEL_SIZE) {
+                if (pattern.size() != Constants.ORDER) {
                     neededPatterns.add(pattern.concat(WSKP));
                 }
 

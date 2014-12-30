@@ -200,14 +200,14 @@ public class Estimators {
     public static final InterpolationEstimator MOD_KNESER_NEY_SKP =
             makeMkn(BackoffMode.SKP);
     static {
-        MOD_KNESER_NEY_SKP.setName("Modified-Kneser-Ney (SKP Backoff)");
+        MOD_KNESER_NEY_SKP.setName("Modified-Kneser-Ney (SKP-Backoff)");
     }
 
     public static final InterpolationEstimator MOD_KNESER_NEY_ABS =
             new InterpolationEstimator(new ModifiedKneserNeyDiscountEstimator(
                     new MaximumLikelihoodEstimator()), BackoffMode.DEL);
     static {
-        MOD_KNESER_NEY_ABS.setName("Modified-Kneser-Ney (No-Lower-Order-Cont)");
+        MOD_KNESER_NEY_ABS.setName("Modified-Kneser-Ney (Abs-Lower-Order)");
     }
 
     private static DiffInterpolationEstimator makeGlm(BackoffMode BackoffMode) {
@@ -229,20 +229,20 @@ public class Estimators {
     public static final DiffInterpolationEstimator GLM_DEL =
             makeGlm(BackoffMode.DEL);
     static {
-        GLM_DEL.setName("Generalized-Language-Model (DEL Backoff)");
+        GLM_DEL.setName("Generalized-Language-Model (DEL-Backoff)");
     }
 
     public static final DiffInterpolationEstimator GLM_DEL_FRONT =
             makeGlm(BackoffMode.DEL_FRONT);
     static {
-        GLM_DEL_FRONT.setName("Generalized-Language-Model (DEL_FRONT Backoff)");
+        GLM_DEL_FRONT.setName("Generalized-Language-Model (DEL-FRONT-Backoff)");
     }
 
     public static final DiffInterpolationEstimator GLM_SKP_AND_DEL =
             makeGlm(BackoffMode.SKP_AND_DEL);
     static {
         GLM_SKP_AND_DEL
-        .setName("Generalized-Language-Model (SKP_AND_DEL Backoff)");
+        .setName("Generalized-Language-Model (SKP-AND-DEL-Backoff)");
     }
 
     public static final DiffInterpolationEstimator GLM_ABS =
@@ -250,7 +250,7 @@ public class Estimators {
                     new ModifiedKneserNeyDiscountEstimator(
                             new MaximumLikelihoodEstimator()), BackoffMode.SKP);
     static {
-        GLM_ABS.setName("Generalized-Language-Model (No-Lower-Order-Cont)");
+        GLM_ABS.setName("Generalized-Language-Model (Abs-Lower-Order)");
     }
 
 }
