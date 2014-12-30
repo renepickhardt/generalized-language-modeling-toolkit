@@ -96,11 +96,11 @@ public class InterpolationEstimator extends Estimator {
     }
 
     public final double gamma(NGram sequence, NGram history, int recDepth) {
-        logDebug(recDepth, "gamma({},{})", sequence, history);
+        logDebug(recDepth, "gamma(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcGamma(sequence, history, recDepth);
-        logDebug(recDepth, "result = {}", result);
+        logDebug(recDepth, "result = %f", result);
         return result;
     }
 
@@ -127,13 +127,13 @@ public class InterpolationEstimator extends Estimator {
                 double n2 = continuation.getTwoCount();
                 double n3p = continuation.getThreePlusCount();
 
-                logDebug(recDepth, "pattern = {}", pattern);
-                logDebug(recDepth, "d1      = {}", d1);
-                logDebug(recDepth, "d2      = {}", d2);
-                logDebug(recDepth, "d3p     = {}", d3p);
-                logDebug(recDepth, "n1      = {}", n1);
-                logDebug(recDepth, "n2      = {}", n2);
-                logDebug(recDepth, "n3p     = {}", n3p);
+                logDebug(recDepth, "pattern = %s", pattern);
+                logDebug(recDepth, "d1      = %f", d1);
+                logDebug(recDepth, "d2      = %f", d2);
+                logDebug(recDepth, "d3p     = %f", d3p);
+                logDebug(recDepth, "n1      = %f", n1);
+                logDebug(recDepth, "n2      = %f", n2);
+                logDebug(recDepth, "n3p     = %f", n3p);
 
                 return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
             } else {
@@ -142,9 +142,9 @@ public class InterpolationEstimator extends Estimator {
                         countCache.getContinuation(historyPlusWskp)
                                 .getOnePlusCount();
 
-                logDebug(recDepth, "denominator = {}", denominator);
-                logDebug(recDepth, "discount = {}", discout);
-                logDebug(recDepth, "n_1p = {}", n_1p);
+                logDebug(recDepth, "denominator = %f", denominator);
+                logDebug(recDepth, "discount = %f", discout);
+                logDebug(recDepth, "n_1p = %f", n_1p);
 
                 return discout * n_1p / denominator;
             }

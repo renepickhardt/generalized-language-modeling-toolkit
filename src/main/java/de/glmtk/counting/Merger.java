@@ -18,22 +18,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
+import de.glmtk.common.Console;
 import de.glmtk.common.Pattern;
 import de.glmtk.util.NioUtils;
 
 public class Merger {
 
-    private static final long B = 1L;
-
-    private static final long KB = 1024 * B;
-
-    private static final long MB = 1024 * KB;
-
     private static final int AVAILABLE_MEMORY_PERCENT = 40;
 
     private static final int NUM_PARALLEL_READERS = 10;
 
-    private static final Logger LOGGER = LogManager.getLogger(Merger.class);
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(Merger.class);
 
     private boolean continuation;
 
@@ -51,7 +47,7 @@ public class Merger {
             LOGGER.debug("No chunks to merge, returning.");
             return;
         }
-        LOGGER.debug("patterns = {}", patterns);
+        LOGGER.debug("patterns = %s", patterns);
         Files.createDirectories(countedDir);
 
         // Calculate Memory ////////////////////////////////////////////////////
@@ -65,10 +61,14 @@ public class Merger {
         long readerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
         long writerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
 
-        LOGGER.debug("totalFreeMemory = {}MB", totalFreeMemory / MB);
-        LOGGER.debug("availableMemory = {}MB", availableMemory / MB);
-        LOGGER.debug("readerMemory    = {}MB", readerMemory / MB);
-        LOGGER.debug("writerMemory    = {}MB", writerMemory / MB);
+        LOGGER.debug("totalFreeMemory = %s",
+                Console.humanReadableByteCount(totalFreeMemory, false));
+        LOGGER.debug("availableMemory = %s",
+                Console.humanReadableByteCount(availableMemory, false));
+        LOGGER.debug("readerMemory    = %s",
+                Console.humanReadableByteCount(readerMemory, false));
+        LOGGER.debug("writerMemory    = %s",
+                Console.humanReadableByteCount(writerMemory, false));
 
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Preparing Threads...");

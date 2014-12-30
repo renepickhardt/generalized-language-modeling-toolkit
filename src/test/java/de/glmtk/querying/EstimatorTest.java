@@ -50,7 +50,7 @@ import de.glmtk.testutil.TestCorpus;
 public class EstimatorTest extends LoggingTest {
 
     private static final Logger LOGGER = LogManager
-            .getLogger(EstimatorTest.class);
+            .getFormatterLogger(EstimatorTest.class);
 
     private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
             TestCorpus.ABC, TestCorpus.MOBYDICK);
@@ -111,7 +111,7 @@ public class EstimatorTest extends LoggingTest {
             boolean continuationEstimator,
             ProbMode probMode,
             int maxOrder) {
-        LOGGER.info("====== {} ({})", estimatorName, probMode);
+        LOGGER.info("====== %s (%s)", estimatorName, probMode);
 
         this.estimator = estimator;
         this.continuationEstimator = continuationEstimator;
@@ -126,7 +126,7 @@ public class EstimatorTest extends LoggingTest {
         calculator.setEstimator(estimator);
         calculator.setProbMode(probMode);
         for (TestCorpus testCorpus : TEST_CORPORA) {
-            LOGGER.info("# {} corpus", testCorpus.getCorpusName());
+            LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
             estimator.setCountCache(testCorpus.getCountCache());
 
@@ -141,10 +141,10 @@ public class EstimatorTest extends LoggingTest {
                 try {
                     Assert.assertEquals(1.0, sum, 0.01);
                 } catch (AssertionError e) {
-                    LOGGER.error("n={}: sum = {} fail", order, sum);
+                    LOGGER.error("n=%s: sum = %s fail", order, sum);
                     throw e;
                 }
-                LOGGER.info("n={}: sum = {}", order, sum);
+                LOGGER.info("n=%s: sum = %s", order, sum);
             }
         }
     }
@@ -154,12 +154,12 @@ public class EstimatorTest extends LoggingTest {
         LOGGER.info("=== Test Fixed History Sum");
 
         for (TestCorpus testCorpus : TEST_CORPORA) {
-            LOGGER.info("# {} corpus", testCorpus.getCorpusName());
+            LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
             estimator.setCountCache(testCorpus.getCountCache());
 
             for (int order = 1; order != maxOrder + 1; ++order) {
-                LOGGER.info("n={}", order);
+                LOGGER.info("n=%s", order);
                 for (int i = 0; i != (int) Math.pow(
                         testCorpus.getWords().length, order - 1); ++i) {
                     NGram history =
@@ -195,11 +195,11 @@ public class EstimatorTest extends LoggingTest {
                                 throw new IllegalStateException();
                         }
                     } catch (AssertionError e) {
-                        LOGGER.error("history = {}, sum = {} fail", history,
+                        LOGGER.error("history = %s, sum = %s fail", history,
                                 sum);
                         throw e;
                     }
-                    LOGGER.debug("history = {}, sum = {}", history, sum);
+                    LOGGER.debug("history = %s, sum = %s", history, sum);
                 }
             }
         }

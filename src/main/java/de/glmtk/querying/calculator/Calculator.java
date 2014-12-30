@@ -32,7 +32,8 @@ public abstract class Calculator {
 
     }
 
-    private static final Logger LOGGER = LogManager.getLogger(Calculator.class);
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(Calculator.class);
 
     protected Estimator estimator = null;
 
@@ -53,7 +54,7 @@ public abstract class Calculator {
     }
 
     public double probability(List<String> words) {
-        LOGGER.debug("{}#probability({},{})", getClass().getSimpleName(),
+        LOGGER.debug("%s#probability(%s,%s)", getClass().getSimpleName(),
                 estimator.getClass().getSimpleName(), words);
 
         estimator.setProbMode(probMode);
@@ -65,7 +66,7 @@ public abstract class Calculator {
             result *= estimator.probability(query.sequence, query.history);
         }
 
-        LOGGER.debug("  result = {}", result);
+        LOGGER.debug("  result = %f", result);
         return result;
     }
 

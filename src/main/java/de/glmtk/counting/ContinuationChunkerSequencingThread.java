@@ -35,7 +35,7 @@ import de.glmtk.util.StringUtils;
             ContinuationChunkerSequencingThread.class.getSimpleName();
 
     private static final Logger LOGGER = LogManager
-            .getLogger(ContinuationChunkerSequencingThread.class);
+            .getFormatterLogger(ContinuationChunkerSequencingThread.class);
 
     private ContinuationChunker continuationChunker;
 
@@ -105,7 +105,7 @@ import de.glmtk.util.StringUtils;
                     input = continuationChunkedDir;
                     chunked = true;
                 } else {
-                    LOGGER.trace("Pattern '{}' not available.", pattern);
+                    LOGGER.trace("Pattern '%s' not available.", pattern);
                     StatisticalNumberHelper.count("Pattern not available");
                     // wait for aggregators to finish pattern
                     Thread.sleep(SLEEP_TIME);
@@ -140,7 +140,7 @@ import de.glmtk.util.StringUtils;
             Path inputFile,
             boolean lastFile,
             boolean fromAbsolute) throws IOException, InterruptedException {
-        LOGGER.debug("Sequencing '{}' from '{}'.", pattern, inputFile);
+        LOGGER.debug("Sequencing '%s' from '%s'.", pattern, inputFile);
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                         Files.newInputStream(inputFile), Constants.CHARSET),
@@ -150,7 +150,7 @@ import de.glmtk.util.StringUtils;
                 List<String> split = StringUtils.splitAtChar(line, '\t');
                 if (split.size() < 2) {
                     LOGGER.error(
-                            "Unable to derminine sequence and counts of line '{}'.",
+                            "Unable to derminine sequence and counts of line '%s'.",
                             line);
                     continue;
                 }

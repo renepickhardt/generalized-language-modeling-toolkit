@@ -46,11 +46,11 @@ public class CountingTest extends LoggingTest {
             name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            {
-                TestCorpus.ABC
-            }, {
-                TestCorpus.MOBYDICK
-            }
+                {
+                    TestCorpus.ABC
+                }, {
+                    TestCorpus.MOBYDICK
+                }
         });
     }
 
@@ -63,7 +63,7 @@ public class CountingTest extends LoggingTest {
 
     @Test
     public void testCounting() throws IOException, NoSuchFieldException,
-            SecurityException, IllegalArgumentException, IllegalAccessException {
+    SecurityException, IllegalArgumentException, IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
@@ -85,7 +85,7 @@ public class CountingTest extends LoggingTest {
         absoluteField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Long>> absolute =
-                (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+        (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
                 CONFIG.getLogUpdateInterval());
 
@@ -94,8 +94,8 @@ public class CountingTest extends LoggingTest {
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Counter>> continuation =
-                (Map<Pattern, Map<String, Counter>>) continuationField
-                        .get(countCache);
+        (Map<Pattern, Map<String, Counter>>) continuationField
+        .get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
                 CONFIG.getLogUpdateInterval());
     }
@@ -154,7 +154,7 @@ public class CountingTest extends LoggingTest {
                 }
 
                 if (count != numMatches) {
-                    LOGGER.debug("{} (count=%s, matches=%s)", sequence, count,
+                    LOGGER.debug("%s (count=%s, matches=%s)", sequence, count,
                             numMatches);
                     assertEquals(numMatches, count);
                 }

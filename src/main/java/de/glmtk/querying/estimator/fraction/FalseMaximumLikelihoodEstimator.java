@@ -10,7 +10,7 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
     protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
         long fullSequenceCount = countCache.getAbsolute(fullSequence);
-        logDebug(recDepth, "fullSequence = {} ({})", fullSequence,
+        logDebug(recDepth, "fullSequence = %s (%d)", fullSequence,
                 fullSequenceCount);
         return fullSequenceCount;
     }
@@ -24,7 +24,7 @@ public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
         } else {
             historyCount = countCache.getAbsolute(history);
         }
-        logDebug(recDepth, "fullHistory = {} ({})", history, historyCount);
+        logDebug(recDepth, "fullHistory = %s (%d)", history, historyCount);
         return historyCount;
     }
 }

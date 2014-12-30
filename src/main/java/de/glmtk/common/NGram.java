@@ -155,12 +155,14 @@ public class NGram {
 
     public NGram range(int from, int to) {
         if (from < 0 || from > size()) {
-            throw new IllegalArgumentException("Illegal from index: " + from);
+            throw new IllegalArgumentException(String.format(
+                    "Illegal from index: %d", from));
         } else if (to < 0 || to > size()) {
-            throw new IllegalArgumentException("Illegal to index: " + to);
+            throw new IllegalArgumentException(String.format(
+                    "Illegal to index: %d", to));
         } else if (from > to) {
-            throw new IllegalArgumentException(
-                    "From index larger than to index: " + from + " > " + to);
+            throw new IllegalArgumentException(String.format(
+                    "From index larger than to index: %d > %d", from, to));
         }
 
         List<String> resultWords = new ArrayList<String>(to - from);

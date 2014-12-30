@@ -32,7 +32,7 @@ import de.glmtk.util.StatisticalNumberHelper;
     private static final String CLASS_NAME = MergerThread.class.getSimpleName();
 
     private static final Logger LOGGER = LogManager
-            .getLogger(MergerThread.class);
+            .getFormatterLogger(MergerThread.class);
 
     @SuppressWarnings("unused")
     private Merger merger;
@@ -100,7 +100,7 @@ import de.glmtk.util.StatisticalNumberHelper;
                                                     chunks.size())));
 
                     Path mergeFile = Paths.get("merge" + mergeCounter);
-                    LOGGER.debug("Merging pattern {}:\t{} -> {}.", pattern,
+                    LOGGER.debug("Merging pattern %s:\t%s -> %s.", pattern,
                             curChunks, mergeFile);
                     mergeChunksToFile(patternDir, curChunks, mergeFile);
                     status.performChunkedMerge(continuation, pattern,
@@ -115,7 +115,7 @@ import de.glmtk.util.StatisticalNumberHelper;
 
                 Path src = patternDir.resolve(chunks.get(0));
                 Path dest = countedDir.resolve(pattern.toString());
-                LOGGER.debug("Finishing pattern {}:\t{}\t-> {}.", pattern, src,
+                LOGGER.debug("Finishing pattern %s:\t%s\t-> %s.", pattern, src,
                         dest);
                 Files.deleteIfExists(dest);
                 Files.move(src, dest);
@@ -150,7 +150,7 @@ import de.glmtk.util.StatisticalNumberHelper;
                 readerQueue.add(new SequenceCountReader(new BufferedReader(
                         new InputStreamReader(Files.newInputStream(patternDir
                                 .resolve(chunk)), Constants.CHARSET),
-                        (int) readerMemory / numParallelReaders)));
+                                (int) readerMemory / numParallelReaders)));
             }
 
             String sequence = null;

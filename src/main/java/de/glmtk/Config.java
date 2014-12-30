@@ -123,13 +123,13 @@ public enum Config {
                 String value = keyValue.get(1).trim();
 
                 if (!fields.containsKey(key)) {
-                    throw error(file, line, lineNo, "Unknown key '" + key
-                            + "'.");
+                    throw error(file, line, lineNo,
+                            String.format("Unknown key '%s'.", key));
                 }
                 Field field = fields.get(key);
                 if (field == null) {
-                    throw error(file, line, lineNo, "Duplicated key '" + key
-                            + "'.");
+                    throw error(file, line, lineNo,
+                            String.format("Duplicated key '%s'.", key));
                 }
 
                 try {
@@ -138,14 +138,14 @@ public enum Config {
                         try {
                             field.set(this, Integer.valueOf(value));
                         } catch (NumberFormatException e) {
-                            throw error(file, line, lineNo,
-                                    "Expected number, found '" + value + "'.");
+                            throw error(file, line, lineNo, String.format(
+                                    "Expected number, found '%s'.", value));
                         }
                     } else if (field.getType().equals(Path.class)) {
                         Path path = Paths.get(value);
                         if (path == null) {
-                            throw error(file, line, lineNo,
-                                    "Expected path, found '" + value + "'.");
+                            throw error(file, line, lineNo, String.format(
+                                    "Expected path, found '%s'.", value));
                         }
                         field.set(this, path);
                     }
@@ -160,7 +160,8 @@ public enum Config {
 
         for (Entry<String, Field> entry : fields.entrySet()) {
             if (entry.getValue() != null) {
-                throw error(file, "Missing key '" + entry.getKey() + "'.");
+                throw error(file,
+                        String.format("Missing key '%s'.", entry.getKey()));
             }
         }
     }
@@ -173,13 +174,15 @@ public enum Config {
 
     private Exception error(Path file, String line, int lineNo, String msg)
             throws Exception {
-        return new Exception("Invalid config file '" + file
-                + "' entry at line '" + lineNo + "'. " + msg + " Line was: '"
-                + line + "'.");
+        return new Exception(
+                String.format(
+                        "Invalid config file '%s' entry at line '%d'. %s Line was: '%s'.",
+                        file, lineNo, msg, line));
     }
 
     private Exception error(Path file, String msg) {
-        return new Exception("Invalid config file '" + file + "'. " + msg);
+        return new Exception(String.format("Invalid config file '%s'. %s",
+                file, msg));
     }
 
     @Override

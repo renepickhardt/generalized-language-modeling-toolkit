@@ -1,6 +1,6 @@
 package de.glmtk.common;
 
-import java.text.NumberFormat;
+import java.util.Formatter;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
@@ -51,7 +51,7 @@ public enum Console {
 
         private String name;
 
-        private int number;
+        private int number = -1;
 
         private Phase(
                 String name) {
@@ -62,7 +62,7 @@ public enum Console {
             return name;
         }
 
-        public Integer getNumber() {
+        public int getNumber() {
             return number;
         }
 
@@ -123,44 +123,29 @@ public enum Console {
     }
 
     public void printStatus() {
-        if (ansiEnabled && lastPrintStatus) {
-            System.err.print(Ansi.ansi().cursorUp(1).eraseLine());
+        try (Formatter f = new Formatter()) {
+            if (ansiEnabled && lastPrintStatus) {
+                System.err.print(Ansi.ansi().cursorUp(1).eraseLine());
+            }
+            lastPrintStatus = true;
+
+            f.format("(%d/%d) ", phase.getNumber(), Phase.NUM_PHASES);
+            if (percent == DISABLE_PERCENT) {
+                f.format("%s...", phase.getName());
+            } else {
+                int numBlocks =
+                        (int) Math.ceil(percent * NUM_PERCENTEGEBAR_BLOCKS);
+                f.format("%-" + Phase.MAX_NAME_LENGTH + "s [%-"
+                        + NUM_PERCENTEGEBAR_BLOCKS + "s] %6.2f%%",
+                        phase.getName(), StringUtils.repeat("#", numBlocks),
+                        100.0 * percent);
+            }
+            System.err.println(f.toString());
         }
-        lastPrintStatus = true;
-
-        System.err.print("(" + phase.getNumber() + "/" + Phase.NUM_PHASES
-                + ") ");
-
-        System.err.print(phase.getName());
-
-        if (percent == DISABLE_PERCENT) {
-            System.err.print("...");
-        } else {
-            System.err.print(StringUtils.repeat(" ", Phase.MAX_NAME_LENGTH + 1
-                    - phase.getName().length()));
-
-            printPercentegeBar();
-        }
-
-        System.err.println();
     }
 
-    private void printPercentegeBar() {
-        int numBlocks = (int) Math.ceil(percent * NUM_PERCENTEGEBAR_BLOCKS);
-
-        System.err.print("[");
-        System.err.print(StringUtils.repeat("#", numBlocks));
-        System.err.print(StringUtils.repeat(" ", NUM_PERCENTEGEBAR_BLOCKS
-                - numBlocks));
-        System.err.print("]");
-
-        NumberFormat percentFormat = NumberFormat.getPercentInstance();
-        percentFormat.setMinimumFractionDigits(2);
-        percentFormat.setMaximumFractionDigits(2);
-        String percentStr = percentFormat.format(percent);
-        System.err.print(StringUtils.repeat(" ", " ###.##%".length()
-                - percentStr.length()));
-        System.err.print(percentStr);
+    public void printMessage(Object message) {
+        printMessage(message.toString());
     }
 
     public void printMessage(String message) {
@@ -175,14 +160,16 @@ public enum Console {
     }
 
     public void printCorpusAnalyzationDone(long size) {
-        if (ansiEnabled && lastPrintCorpusAnalyzation && lastPrintStatus) {
-            System.err.print(Ansi.ansi().cursorUp(1).eraseLine().cursorUp(1)
-                    .eraseLine());
+        try (Formatter f = new Formatter()) {
+            if (ansiEnabled && lastPrintCorpusAnalyzation && lastPrintStatus) {
+                System.err.print(Ansi.ansi().cursorUp(1).eraseLine()
+                        .cursorUp(1).eraseLine());
+            }
+            System.err.println(f.format("Corpus Analyzation done (%s taken).",
+                    humanReadableByteCount(size, false)));
+            lastPrintCorpusAnalyzation = true;
+            lastPrintStatus = false;
         }
-        System.err.println("Corpus Analyzation done ("
-                + humanReadableByteCount(size, false) + " taken).");
-        lastPrintCorpusAnalyzation = true;
-        lastPrintStatus = false;
     }
 
     /**

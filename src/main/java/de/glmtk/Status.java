@@ -34,7 +34,8 @@ import de.glmtk.util.StringUtils;
 
 public class Status {
 
-    private static final Logger LOGGER = LogManager.getLogger(Status.class);
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(Status.class);
 
     private Path file;
 
@@ -44,12 +45,12 @@ public class Status {
 
         NONE, DONE, DONE_WITH_POS;
 
-        public static TrainingStatus fromString(String trainginStatus) {
+        public static TrainingStatus fromString(String trainingStatus) {
             try {
-                return valueOf(trainginStatus.toUpperCase());
+                return valueOf(trainingStatus.toUpperCase());
             } catch (IllegalArgumentException e) {
-                LOGGER.warn("Unkown training status '" + trainginStatus
-                        + "'. Assuming 'NONE'.");
+                LOGGER.warn("Unkown training status '%s'. Assuming '%s'.",
+                        trainingStatus, NONE);
                 return NONE;
             }
         }
@@ -168,13 +169,13 @@ public class Status {
     }
 
     public void logStatus() {
-        LOGGER.debug("Status {}", StringUtils.repeat("-", 80 - 7));
-        LOGGER.debug("hash                = {}", hash);
-        LOGGER.debug("training            = {}", training);
-        LOGGER.debug("absoluteChunked     = {}", absoluteChunked);
-        LOGGER.debug("absoluteCounted     = {}", absoluteCounted);
-        LOGGER.debug("continuationChunked = {}", continuationChunked);
-        LOGGER.debug("continuationCounted = {}", continuationCounted);
+        LOGGER.debug("Status %s", StringUtils.repeat("-", 80 - 7));
+        LOGGER.debug("hash                = %s", hash);
+        LOGGER.debug("training            = %s", training);
+        LOGGER.debug("absoluteChunked     = %s", absoluteChunked);
+        LOGGER.debug("absoluteCounted     = %s", absoluteCounted);
+        LOGGER.debug("continuationChunked = %s", continuationChunked);
+        LOGGER.debug("continuationCounted = %s", continuationCounted);
     }
 
     private void writeStatusToFile() throws IOException {
@@ -301,10 +302,10 @@ public class Status {
                 matcher.group(1), ',')) {
             List<String> split = StringUtils.splitAtChar(patternAndChunks, ':');
             if (split.size() != 2) {
-                throw new RuntimeException("Illegal format for '"
-                        + (continuation
+                throw new RuntimeException(String.format(
+                        "Illegal format for '%s': %s", (continuation
                                 ? "continuationChunked"
-                                        : "absoluteChunged") + "': " + patternAndChunks);
+                                : "absoluteChunged"), patternAndChunks));
             }
 
             Pattern pattern = Patterns.get(split.get(0));

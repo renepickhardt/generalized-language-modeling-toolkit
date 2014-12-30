@@ -2,8 +2,6 @@ package de.glmtk.counting;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.Constants.B;
-import static de.glmtk.Constants.KB;
-import static de.glmtk.Constants.MB;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
+import de.glmtk.common.Console;
 import de.glmtk.common.Pattern;
 
 /* package */class AbsoluteChunker {
@@ -42,7 +41,7 @@ import de.glmtk.common.Pattern;
     private static final int QUEUE_MEMORY_PERCENT = 50;
 
     private static final Logger LOGGER = LogManager
-            .getLogger(AbsoluteChunker.class);
+            .getFormatterLogger(AbsoluteChunker.class);
 
     /* package */static class QueueItem {
 
@@ -70,7 +69,7 @@ import de.glmtk.common.Pattern;
             LOGGER.debug("No patterns to chunk, returning.");
             return;
         }
-        LOGGER.debug("patterns = {}", patterns);
+        LOGGER.debug("patterns = %s", patterns);
         Files.createDirectories(absoluteChunkedDir);
         for (Pattern pattern : patterns) {
             Files.createDirectories(absoluteChunkedDir.resolve(pattern
@@ -80,8 +79,8 @@ import de.glmtk.common.Pattern;
         int numSequencingThreads = 1;
         int numAggregatingThreads =
                 Math.max(1, CONFIG.getNumberOfCores() - numSequencingThreads);
-        LOGGER.debug("numSequencingThreads  = {}", numSequencingThreads);
-        LOGGER.debug("numAggregatingThreads = {}", numAggregatingThreads);
+        LOGGER.debug("numSequencingThreads  = %d", numSequencingThreads);
+        LOGGER.debug("numAggregatingThreads = %d", numAggregatingThreads);
 
         // Calculate Memory ////////////////////////////////////////////////////
         LOGGER.debug("Calculating Memory...");
@@ -101,11 +100,16 @@ import de.glmtk.common.Pattern;
         long readerMemory = (READER_MEMORY_PERCENT * remainingMemory) / 100;
         long queueMemory = (QUEUE_MEMORY_PERCENT * remainingMemory) / 100;
 
-        LOGGER.debug("totalFreeMemory = {}MB", totalFreeMemory / MB);
-        LOGGER.debug("availableMemory = {}MB", availableMemory / MB);
-        LOGGER.debug("readerMemory    = {}MB", readerMemory / MB);
-        LOGGER.debug("qeueMemory      = {}MB", queueMemory / MB);
-        LOGGER.debug("chunkSize       = {}KB", chunkSize / KB);
+        LOGGER.debug("totalFreeMemory = %s",
+                Console.humanReadableByteCount(totalFreeMemory, false));
+        LOGGER.debug("availableMemory = %s",
+                Console.humanReadableByteCount(availableMemory, false));
+        LOGGER.debug("readerMemory    = %s",
+                Console.humanReadableByteCount(readerMemory, false));
+        LOGGER.debug("qeueMemory      = %s",
+                Console.humanReadableByteCount(queueMemory, false));
+        LOGGER.debug("chunkSize       = %s",
+                Console.humanReadableByteCount(chunkSize, false));
 
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Praparing Threads...");

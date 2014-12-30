@@ -54,7 +54,7 @@ public class BackoffEstimator extends Estimator {
 
     @Override
     protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    calcProbability(NGram sequence, NGram history, int recDepth) {
         if (history.isEmpty()) {
             switch (probMode) {
                 case COND:
@@ -71,12 +71,12 @@ public class BackoffEstimator extends Estimator {
             double betaVal =
                     beta.probability(sequence, backoffHistory, recDepth);
             double gammaVal = gamma(sequence, history, recDepth);
-            logDebug(recDepth, "beta = {}", betaVal);
-            logDebug(recDepth, "gamma = {}", gammaVal);
+            logDebug(recDepth, "beta = %f", betaVal);
+            logDebug(recDepth, "gamma = %f", gammaVal);
             return gammaVal * betaVal;
         } else {
             double alphaVal = alpha.probability(sequence, history, recDepth);
-            logDebug(recDepth, "alpha = {}", alphaVal);
+            logDebug(recDepth, "alpha = %f", alphaVal);
             return alphaVal;
         }
     }
@@ -86,17 +86,17 @@ public class BackoffEstimator extends Estimator {
      * caching.
      */
     public double gamma(NGram sequence, NGram history, int recDepth) {
-        logDebug(recDepth, "gamma({},{})", sequence, history);
+        logDebug(recDepth, "gamma(%s,%s)", sequence, history);
         ++recDepth;
 
         Double result = gammaCache.get(history);
         if (result != null) {
-            logDebug(recDepth, "result = {} was cached.", result);
+            logDebug(recDepth, "result = %f was cached.", result);
             return result;
         } else {
             result = calcGamma(sequence, history, recDepth);
             gammaCache.put(history, result);
-            logDebug(recDepth, "result = {}", result);
+            logDebug(recDepth, "result = %f", result);
             return result;
         }
     }
@@ -119,8 +119,8 @@ public class BackoffEstimator extends Estimator {
             }
         }
 
-        logDebug(recDepth, "sumAlpha = {}", sumAlpha);
-        logDebug(recDepth, "sumBeta = {}", sumBeta);
+        logDebug(recDepth, "sumAlpha = %f", sumAlpha);
+        logDebug(recDepth, "sumBeta = %f", sumBeta);
 
         if (sumBeta == 0) {
             return 0.0;

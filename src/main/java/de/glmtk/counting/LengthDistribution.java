@@ -67,9 +67,9 @@ public class LengthDistribution {
 
                 if (split.size() != 2) {
                     throw new IllegalStateException(
-                            "Length distribution file '" + storeFile
-                            + "' has illegal format in line " + lineNo
-                            + ": '" + line + "'.");
+                            String.format(
+                                    "Length distribution file '%s' has illegal format in line %d: '%s'.",
+                                    storeFile, lineNo, line));
                 }
 
                 int length = Integer.parseInt(split.get(0));
@@ -99,8 +99,10 @@ public class LengthDistribution {
 
     public double getLengthFrequency(int length) {
         if (length < 1) {
-            throw new IllegalArgumentException("Illegal sentences length: '"
-                    + length + "'. Must be positive integer.");
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Illegal sentences length: '%d'. Must be positive integer.",
+                            length));
         }
         return lengthDistribution.get(length);
     }

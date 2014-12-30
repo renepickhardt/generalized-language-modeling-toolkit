@@ -17,7 +17,8 @@ public class MainClass {
                 break;
 
             default:
-                throw new IllegalStateException("Unkown main class specified.");
+                throw new IllegalStateException(String.format(
+                        "Unkown main class specified: '%s'.", mainClass));
         }
     }
 

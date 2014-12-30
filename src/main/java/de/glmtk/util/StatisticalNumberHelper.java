@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 public class StatisticalNumberHelper {
 
     private static final Logger LOGGER = LogManager
-            .getLogger(StatisticalNumberHelper.class);
+            .getFormatterLogger(StatisticalNumberHelper.class);
 
     private static class AverageItem {
 
@@ -70,14 +70,14 @@ public class StatisticalNumberHelper {
             for (Map.Entry<String, Long> entry : counters.entrySet()) {
                 String name = entry.getKey();
                 Long counter = entry.getValue();
-                LOGGER.debug("'" + name + "'-Counter = " + counter);
+                LOGGER.debug("'%s'-Counter = %d", name, counter);
             }
             for (Map.Entry<String, AverageItem> entry : averages.entrySet()) {
                 String name = entry.getKey();
                 AverageItem average = entry.getValue();
-                LOGGER.debug("'" + name + "'-Average = " + average.number
-                        / average.count + " (min=" + average.min + " max="
-                        + average.max + ")");
+                LOGGER.debug("'%s'-Average = %.2f (min=%d max=%d)", name,
+                        (double) average.number / average.count, average.min,
+                        average.max);
             }
         }
     }

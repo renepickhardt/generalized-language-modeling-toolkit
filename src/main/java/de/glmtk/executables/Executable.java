@@ -31,7 +31,8 @@ import de.glmtk.util.StringUtils;
 
 /* package */abstract class Executable {
 
-    private static Logger LOGGER = LogManager.getLogger(Executable.class);
+    private static Logger LOGGER = LogManager
+            .getFormatterLogger(Executable.class);
 
     protected static final String OPTION_HELP_SHORT = "h";
 
@@ -75,7 +76,8 @@ import de.glmtk.util.StringUtils;
                         PrintWriter stackTraceWriter =
                                 new PrintWriter(stackTrace)) {
                     e.printStackTrace(stackTraceWriter);
-                    LOGGER.error("Exception " + stackTrace.toString());
+                    LOGGER.error(String.format("Exception %s",
+                            stackTrace.toString()));
                 } catch (IOException ee) {
                     throw e;
                 }
@@ -113,7 +115,7 @@ import de.glmtk.util.StringUtils;
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out
-            .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+                    .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -144,7 +146,7 @@ import de.glmtk.util.StringUtils;
     }
 
     private void printLogHeader(String[] args) throws IOException,
-    InterruptedException {
+            InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -152,27 +154,27 @@ import de.glmtk.util.StringUtils;
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-                "git", "log", "-1", "--format=%H: %s"
+            "git", "log", "-1", "--format=%H: %s"
         }, null, CONFIG.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =
                 new BufferedReader(new InputStreamReader(
                         gitLogProc.getInputStream(), Constants.CHARSET))) {
             String gitCommit = gitLogReader.readLine();
-            LOGGER.info("Git Commit: {}", gitCommit);
+            LOGGER.info("Git Commit: %s", gitCommit);
         }
 
         // log user dir
-        LOGGER.info("User Dir: {}", CONFIG.getUserDir());
+        LOGGER.info("User Dir: %s", CONFIG.getUserDir());
 
         // log glmtk dir
-        LOGGER.info("Glmtk Dir: {}", CONFIG.getGlmtkDir());
+        LOGGER.info("Glmtk Dir: %s", CONFIG.getGlmtkDir());
 
         // log arguments
-        LOGGER.info("Arguments: {}", StringUtils.join(args, " "));
+        LOGGER.info("Arguments: %s", StringUtils.join(args, " "));
 
         // log config
-        LOGGER.info("Config: {}", CONFIG);
+        LOGGER.info("Config: %s", CONFIG);
 
         LOGGER.info(StringUtils.repeat("-", 80));
     }

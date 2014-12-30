@@ -17,7 +17,7 @@ import de.glmtk.common.Pattern;
 public class AbsoluteCounter {
 
     private static final Logger LOGGER = LogManager
-            .getLogger(AbsoluteCounter.class);
+            .getFormatterLogger(AbsoluteCounter.class);
 
     private Set<Pattern> neededPatterns;
 
@@ -40,7 +40,7 @@ public class AbsoluteCounter {
             Path trainingFile,
             Path absoluteCountedDir,
             Path absoluteChunkedDir) throws IOException {
-        LOGGER.info("Absolute counting '{}' -> '{}'.", trainingFile,
+        LOGGER.info("Absolute counting '%s' -> '%s'.", trainingFile,
                 absoluteCountedDir);
 
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);

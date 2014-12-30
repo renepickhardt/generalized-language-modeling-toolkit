@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Formatter;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -70,35 +71,18 @@ public class Query {
             percentFormatter.setMaximumFractionDigits(2);
             percentFormatter.setMinimumFractionDigits(2);
 
-            StringBuffer result = new StringBuffer();
-
-            result.append("Num Sequences (Prob != 0): ");
-            result.append(cntNonZero);
-            result.append(" (");
-            result.append(percentFormatter.format((double) cntNonZero / cnt));
-            result.append(")\n");
-
-            result.append("Num Sequences (Prob == 0): ");
-            result.append(cntZero);
-            result.append(" (");
-            result.append(percentFormatter.format((double) cntZero / cnt));
-            result.append(")\n");
-
-            result.append("Sum Probabilities........: ");
-            result.append(sum);
-            result.append("\n");
-
-            result.append("Entropy..................: ");
-            result.append(entropy);
-            result.append(' ');
-            result.append(getEntropyUnit(Constants.LOG_BASE));
-            result.append('\n');
-
-            result.append("Cross-Entropy............: ");
-            result.append(crossEntropy);
-            result.append(" Hart\n");
-
-            return result.toString();
+            try (Formatter f = new Formatter()) {
+                f.format("Num Sequences (Prob != 0): %d (%.2f)\n", cntNonZero,
+                        100.0 * cntNonZero / cnt);
+                f.format("Num Sequences (Prob == 0): %d (%.2f)\n", cntZero,
+                        100.0 * cntZero / cnt);
+                f.format("Sum Probabilities........: %f\n", sum);
+                f.format("Entropy..................: %f %s\n", entropy,
+                        getEntropyUnit(Constants.LOG_BASE));
+                f.format("Cross-Entropy............: %f %s\n", crossEntropy,
+                        getEntropyUnit(Constants.LOG_BASE));
+                return f.toString();
+            }
         }
 
         public static String getEntropyUnit(double logBase) {
@@ -106,7 +90,7 @@ public class Query {
                 return "Sh";
             } else if (logBase == 10.0) {
                 return "Hart";
-            } else if (logBase == Math.exp(1.0)) {
+            } else if (logBase == Math.E) {
                 return "nat";
             } else {
                 return "";
@@ -115,7 +99,8 @@ public class Query {
 
     }
 
-    public static final Logger LOGGER = LogManager.getLogger(Query.class);
+    public static final Logger LOGGER = LogManager
+            .getFormatterLogger(Query.class);
 
     private String queryTypeString;
 
@@ -158,16 +143,14 @@ public class Query {
         Files.createDirectories(outputDir);
         Files.deleteIfExists(outputFile);
 
-        LOGGER.info("Testing {} File '{}' -> '{}'.", queryTypeString,
+        LOGGER.info("Testing %s File '%s' -> '%s'.", queryTypeString,
                 inputFile, outputFile);
-        String msg =
-                "Testing " + queryTypeString + " File '"
-                        + CONSOLE.bold(inputFile.toString()) + "'";
-        if (estimatorName != null) {
-            msg += " with " + CONSOLE.bold(estimatorName);
-        }
-        msg += "...";
-        CONSOLE.printMessage(msg);
+        String estimatorMsg =
+                estimatorName == null ? "" : " with "
+                        + CONSOLE.bold(estimatorName);
+        CONSOLE.printMessage(String.format("Testing %s File '%s'%s...",
+                queryTypeString, CONSOLE.bold(inputFile.toString()),
+                estimatorMsg));
 
         estimator.setCountCache(countCache);
         calculator.setProbMode(probMode);
@@ -194,9 +177,9 @@ public class Query {
     private Path resolveOutputFile() {
         String date =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        return outputDir.resolve(date + " " + queryType.toString() + " "
-                + inputFile.getFileName()
-                + (estimatorName == null ? "" : (" " + estimatorName)));
+        return outputDir.resolve(String.format("%s %s %s%s", date,
+                queryType.toString(), inputFile.getFileName(),
+                estimatorName == null ? "" : (" " + estimatorName)));
     }
 
     private QueryStats queryFile(Path file, BufferedWriter writer)

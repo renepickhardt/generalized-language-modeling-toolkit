@@ -34,7 +34,7 @@ import de.glmtk.util.StringUtils;
             ContinuationChunkerAggregatingThread.class.getSimpleName();
 
     private static final Logger LOGGER = LogManager
-            .getLogger(ContinuationChunkerAggregatingThread.class);
+            .getFormatterLogger(ContinuationChunkerAggregatingThread.class);
 
     private static class Chunk {
 
@@ -118,7 +118,7 @@ import de.glmtk.util.StringUtils;
             writeChunkToFile(pattern, chunk);
             status.addChunked(true, pattern,
                     new LinkedList<Path>(chunkFiles.get(pattern)));
-            LOGGER.debug("Finished pattern '{}'.", pattern);
+            LOGGER.debug("Finished pattern '%s'.", pattern);
             return;
         }
 
@@ -130,7 +130,7 @@ import de.glmtk.util.StringUtils;
             counter = new Counter();
             chunk.size +=
                     seq.getBytes(Constants.CHARSET).length
-                            + TAB_COUNTER_NL_BYTES;
+                    + TAB_COUNTER_NL_BYTES;
             chunk.sequenceCounts.put(seq, counter);
         }
         counter.add(count);
@@ -163,7 +163,7 @@ import de.glmtk.util.StringUtils;
             }
         }
         chunkFiles.get(pattern).add(file.getFileName());
-        LOGGER.debug("Wrote chunk for pattern '{}': '{}'.", pattern, file);
+        LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern, file);
     }
 
 }

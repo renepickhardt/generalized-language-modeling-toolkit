@@ -112,9 +112,8 @@ public class EstimatorTestRunner extends Suite {
 
             @Override
             protected String testName(FrameworkMethod method) {
-                return method.getName() + " - "
-                        + TestRunnerForEstimator.this.getName() + " ("
-                        + getName() + ")";
+                return String.format("%s - %s (%s)", method.getName(),
+                        TestRunnerForEstimator.this.getName(), getName());
             }
 
             @Override
@@ -246,8 +245,9 @@ public class EstimatorTestRunner extends Suite {
             }
         }
 
-        throw new Exception("No public static parameters method on class "
-                + getTestClass().getName());
+        throw new Exception(String.format(
+                "No public static parameters method on class %s.",
+                getTestClass().getName()));
     }
 
     private void createRunnersForParameters(
@@ -261,10 +261,10 @@ public class EstimatorTestRunner extends Suite {
     }
 
     private Exception parametersMethodReturnedWrongType() throws Exception {
-        return new Exception(getTestClass().getName() + "."
-                + getParametersMethod().getName()
-                + "() must return an Iterable of "
-                + EstimatorTestParams.class.getSimpleName() + ".");
+        return new Exception(String.format(
+                "%s.%s() must return an Iterable of %s.", getTestClass()
+                .getName(), getParametersMethod().getName(),
+                EstimatorTestParams.class.getName()));
     }
 
 }

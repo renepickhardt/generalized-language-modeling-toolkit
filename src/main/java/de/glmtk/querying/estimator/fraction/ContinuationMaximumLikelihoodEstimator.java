@@ -14,20 +14,20 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
                         .convertSkpToWskp());
         long contFullSequenceCount =
                 countCache.getContinuation(contFullSequence).getOnePlusCount();
-        logDebug(recDepth, "contFullSequence = {} ({})", contFullSequence,
+        logDebug(recDepth, "contFullSequence = %s (%d)", contFullSequence,
                 contFullSequenceCount);
         return contFullSequenceCount;
     }
 
     @Override
     protected double
-    calcDenominator(NGram sequence, NGram history, int recDepth) {
+        calcDenominator(NGram sequence, NGram history, int recDepth) {
         NGram contFullHistory =
                 WSKP_NGRAM.concat(getFullHistory(sequence, history)
                         .convertSkpToWskp());
         long contFullHistoryCount =
                 countCache.getContinuation(contFullHistory).getOnePlusCount();
-        logDebug(recDepth, "contFullHistory = {} ({})", contFullHistory,
+        logDebug(recDepth, "contFullHistory = %s (%d)", contFullHistory,
                 contFullHistoryCount);
         return contFullHistoryCount;
     }

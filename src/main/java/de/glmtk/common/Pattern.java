@@ -69,8 +69,8 @@ public class Pattern implements Iterable<PatternElem> {
 
     public PatternElem get(int index) {
         if (index < 0 || index > size()) {
-            throw new IllegalArgumentException("Illegal index: " + index
-                    + ". Size: " + size() + ".");
+            throw new IllegalArgumentException(String.format(
+                    "Illegal index: %d. Size: %d.", index, size()));
         }
         return elems.get(index);
     }
@@ -153,13 +153,14 @@ public class Pattern implements Iterable<PatternElem> {
 
     public Pattern range(int from, int to) {
         if (from < 0 || from > size()) {
-            throw new IllegalArgumentException("Illegal from index: " + from);
+            throw new IllegalArgumentException(String.format(
+                    "Illegal from index: %d", from));
         } else if (to < 0 || to > size()) {
-            throw new IllegalArgumentException("Illegal to index: " + to);
+            throw new IllegalArgumentException(String.format(
+                    "Illegal to index: %d", to));
         } else if (from > to) {
-            throw new IllegalArgumentException(
-                    "From index larger or equal than to index: " + from
-                            + " >= " + to);
+            throw new IllegalArgumentException(String.format(
+                    "From index larger than to index: %d > %d", from, to));
         }
 
         List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
@@ -212,8 +213,8 @@ public class Pattern implements Iterable<PatternElem> {
             }
         }
 
-        throw new IllegalArgumentException("Pattern '" + this
-                + "' is not a continuation pattern.");
+        throw new IllegalArgumentException(String.format(
+                "Pattern '%s' is not a continuation pattern.", this));
     }
 
     // TODO: untested

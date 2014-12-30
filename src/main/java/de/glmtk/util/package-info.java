@@ -5,8 +5,8 @@
  * <p>
  * Naming conventions:
  * <ul>
- * <li>Name classes {@code <Subject>Util} when they are just a collection of
- * static methods.
- * <li>Name classes {@code <Subject>Helper} when they have state.
+ * <li>Classes that are just a collection of static methods are named
+ * {@code <Subject>Util}.
+ * <li>Singleton classes that carry state are named {@code <Subject>Helper}.
  */
 package de.glmtk.util;

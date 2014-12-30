@@ -38,11 +38,11 @@ public class CombinationEstimator extends Estimator {
 
     @Override
     protected double
-    calcProbability(NGram sequence, NGram history, int recDepth) {
+        calcProbability(NGram sequence, NGram history, int recDepth) {
         double alphaVal = alpha.probability(sequence, history, recDepth);
         double betaVal = beta.probability(sequence, history, recDepth);
-        logDebug(recDepth, "alpha = {}", alphaVal);
-        logDebug(recDepth, "beta = {}", betaVal);
+        logDebug(recDepth, "alpha = %f", alphaVal);
+        logDebug(recDepth, "beta = %f", betaVal);
         return lambda * alphaVal + (1.0 - lambda) * betaVal;
     }
 

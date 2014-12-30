@@ -19,7 +19,7 @@ public class ContinuationCounter {
     // TODO: Check why so many cont couts end with 0\t0.
 
     private static final Logger LOGGER = LogManager
-            .getLogger(ContinuationCounter.class);
+            .getFormatterLogger(ContinuationCounter.class);
 
     private Set<Pattern> neededPatterns;
 
@@ -43,7 +43,7 @@ public class ContinuationCounter {
             Path absoluteChunkedDir,
             Path continuationCountedDir,
             Path continuationChunkedDir) throws IOException {
-        LOGGER.info("Continuation counting '{}' -> '{}'.", absoluteCountedDir,
+        LOGGER.info("Continuation counting '%s' -> '%s'.", absoluteCountedDir,
                 continuationCountedDir);
 
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);

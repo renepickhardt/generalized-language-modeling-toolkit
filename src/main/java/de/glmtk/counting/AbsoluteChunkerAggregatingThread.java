@@ -37,7 +37,7 @@ import de.glmtk.util.StatisticalNumberHelper;
             AbsoluteChunkerAggregatingThread.class.getSimpleName();
 
     private static final Logger LOGGER = LogManager
-            .getLogger(AbsoluteChunkerAggregatingThread.class);
+            .getFormatterLogger(AbsoluteChunkerAggregatingThread.class);
 
     private static class Chunk {
 
@@ -99,7 +99,7 @@ import de.glmtk.util.StatisticalNumberHelper;
                 Pattern pattern = entry.getKey();
                 Chunk chunk = entry.getValue();
                 writeChunkToFile(pattern, chunk);
-                LOGGER.debug("Finished pattern '{}'.", pattern);
+                LOGGER.debug("Finished pattern '%s'.", pattern);
             }
 
             status.addChunked(false, chunkFiles);
@@ -123,7 +123,7 @@ import de.glmtk.util.StatisticalNumberHelper;
         if (count == null) {
             chunk.size +=
                     sequence.getBytes(Constants.CHARSET).length
-                    + TAB_COUNT_NL_BYTES;
+                            + TAB_COUNT_NL_BYTES;
             chunk.sequenceCounts.put(sequence, 1L);
         } else {
             chunk.sequenceCounts.put(sequence, count + 1L);
@@ -157,7 +157,7 @@ import de.glmtk.util.StatisticalNumberHelper;
             }
         }
         chunkFiles.get(pattern).add(file.getFileName());
-        LOGGER.debug("Wrote chunk for pattern '{}': '{}'.", pattern, file);
+        LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern, file);
     }
 
 }

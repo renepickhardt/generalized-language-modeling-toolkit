@@ -39,7 +39,8 @@ import de.glmtk.util.StringUtils;
 
 public class GlmtkExecutable extends Executable {
 
-    private static Logger LOGGER = LogManager.getLogger(Executable.class);
+    private static Logger LOGGER = LogManager
+            .getFormatterLogger(Executable.class);
 
     // TODO: API to count all patterns.
 
@@ -165,9 +166,8 @@ public class GlmtkExecutable extends Executable {
                 error = "Missing input.\n";
             } else {
                 error =
-                        "Incorrect input: "
-                                + StringUtils.join(line.getArgList(), " ")
-                                + "\n";
+                        String.format("Incorrect input: %s\n",
+                                StringUtils.join(line.getArgList(), " "));
             }
             throw new Termination(error
                     + "Try 'glmtk --help' for more information.");
@@ -175,8 +175,9 @@ public class GlmtkExecutable extends Executable {
 
         Path inputArg = Paths.get(line.getArgs()[0]);
         if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE)) {
-            throw new Termination("Input file/dir '" + inputArg
-                    + "' does not exist or is not readable.");
+            throw new Termination(String.format(
+                    "Input file/dir '%s' does not exist or is not readable.",
+                    inputArg));
         }
 
         for (Option option : line.getOptions()) {
@@ -187,16 +188,15 @@ public class GlmtkExecutable extends Executable {
             } else if (option.equals(OPTION_TRAINING_ORDER)) {
                 checkOptionMultipleTimes(trainingOrder, option);
                 trainingOrder =
-                        convertToPositiveInteger(option.getValue(),
-                                "Illegal --" + option.getLongOpt()
-                                + " argument");
+                        positiveIntOrFail(option.getValue(), "Illegal --"
+                                + option.getLongOpt() + " argument");
 
             } else if (option.equals(OPTION_MODEL)) {
                 for (String opt : option.getValues()) {
                     Model model = Model.fromAbbreviation(opt.toUpperCase());
                     if (model == null) {
-                        throw new Termination("Unkown models option '" + opt
-                                + "'.");
+                        throw new Termination(String.format(
+                                "Unkown models option '%s'.", opt));
                     }
                     models.add(model);
                 }
@@ -216,17 +216,18 @@ public class GlmtkExecutable extends Executable {
                 logToConsole = true;
 
             } else {
-                throw new IllegalStateException("Unexpected option: " + option
-                        + ".");
+                throw new IllegalStateException(String.format(
+                        "Unexpected option: '%s'.", option));
             }
         }
 
         if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
             if (workingDir != null) {
                 throw new Termination(
-                        "Can't use --"
-                                + OPTION_WORKINGDIR.getLongOpt()
-                                + " (-w) argument if using existing working directory as input.");
+                        String.format(
+                                "Can't use --%s (-%s) argument if using existing working directory as input.",
+                                OPTION_WORKINGDIR.getLongOpt(),
+                                OPTION_WORKINGDIR.getOpt()));
             }
 
             workingDir = inputArg;
@@ -239,8 +240,10 @@ public class GlmtkExecutable extends Executable {
                                 + Constants.STANDARD_WORKING_DIR_SUFFIX);
             }
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY)) {
-                throw new Termination("Working directory '" + workingDir
-                        + "' already exists but is not a directory.");
+                throw new Termination(
+                        String.format(
+                                "Working directory '%s' already exists but is not a directory.",
+                                workingDir));
             }
 
             corpus = inputArg;
@@ -253,20 +256,21 @@ public class GlmtkExecutable extends Executable {
 
     private void checkOptionMultipleTimes(Object value, Option option) {
         if (value != null) {
-            throw new Termination("Option --" + option.getLongOpt()
-                    + " can only be specified once.");
+            throw new Termination(String.format(
+                    "Option --%s (-%s) can only be specified once.",
+                    option.getLongOpt(), option.getOpt()));
         }
     }
 
-    private int convertToPositiveInteger(String val, String msg) {
+    private int positiveIntOrFail(String val, String msg) {
         Integer v = null;
         try {
             v = Integer.valueOf(val);
         } catch (NumberFormatException e) {
         }
         if (v == null || v <= 0) {
-            throw new Termination(msg + " '" + val
-                    + "'. Needs to be a positive integer.");
+            throw new Termination(String.format(
+                    "%s '%s'. Needs to be a positive integer.", msg, val));
         }
         return v;
     }
@@ -276,8 +280,9 @@ public class GlmtkExecutable extends Executable {
             Map<Integer, Set<Path>> orderToFiles) {
         String[] opts = option.getValues();
         int order =
-                convertToPositiveInteger(opts[0],
-                        "Illegal first argument for --" + option.getLongOpt());
+                positiveIntOrFail(opts[0], String.format(
+                        "Illegal first argument for --%s (-%s)",
+                        option.getLongOpt(), option.getOpt()));
         Set<Path> files = orderToFiles.get(order);
         if (files == null) {
             files = new LinkedHashSet<Path>();
@@ -291,8 +296,9 @@ public class GlmtkExecutable extends Executable {
     private Path getAndCheckFile(String filename) {
         Path file = workingDir.resolve(filename);
         if (!NioUtils.checkFile(file, EXISTS, IS_READABLE)) {
-            throw new Termination(filename + " file '" + file
-                    + "' does not exist or is not readable.");
+            throw new Termination(String.format(
+                    "%s file '%s' does not exist or is not readable.",
+                    filename, file));
         }
         return file;
     }
@@ -392,12 +398,12 @@ public class GlmtkExecutable extends Executable {
     }
 
     private void logOptions() {
-        LOGGER.debug("Corpus:            {}", corpus);
-        LOGGER.debug("WorkingDir:        {}", workingDir);
-        LOGGER.debug("TrainingOrder:     {}", trainingOrder);
-        LOGGER.debug("TestSentenceFiles: {}", testSentenceFiles);
-        LOGGER.debug("TestMarkovFiles:   {}", testMarkovFiles);
-        LOGGER.debug("TestCondFiles:     {}", testCondFiles);
+        LOGGER.debug("Corpus:            %s", corpus);
+        LOGGER.debug("WorkingDir:        %s", workingDir);
+        LOGGER.debug("TrainingOrder:     %s", trainingOrder);
+        LOGGER.debug("TestSentenceFiles: %s", testSentenceFiles);
+        LOGGER.debug("TestMarkovFiles:   %s", testMarkovFiles);
+        LOGGER.debug("TestCondFiles:     %s", testCondFiles);
     }
 
     public static void main(String[] args) throws Exception {

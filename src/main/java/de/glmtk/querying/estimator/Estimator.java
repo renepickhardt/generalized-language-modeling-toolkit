@@ -16,7 +16,8 @@ import de.glmtk.util.StringUtils;
 
 public abstract class Estimator {
 
-    private static final Logger LOGGER = LogManager.getLogger(Estimator.class);
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(Estimator.class);
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR =
             Estimators.ABS_UNIGRAM;
@@ -66,13 +67,13 @@ public abstract class Estimator {
      * logging.
      */
     public final double
-        probability(NGram sequence, NGram history, int recDepth) {
-        logDebug(recDepth, "{}#probability({},{})", getClass().getSimpleName(),
+    probability(NGram sequence, NGram history, int recDepth) {
+        logDebug(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
 
         double result = calcProbability(sequence, history, recDepth);
-        logDebug(recDepth, "result = {}", result);
+        logDebug(recDepth, "result = %f", result);
 
         return result;
     }
@@ -95,18 +96,18 @@ public abstract class Estimator {
     }
 
     protected static final void logDebug(int recDepth, String message) {
-        LOGGER.debug("{}" + message, StringUtils.repeat("  ", recDepth));
+        LOGGER.debug("%s%s", StringUtils.repeat("  ", recDepth), message);
     }
 
     protected static final void logDebug(
             int recDepth,
-            String message,
+            String format,
             Object... params) {
         Object[] logParams = new Object[params.length + 1];
         logParams[0] = StringUtils.repeat("  ", recDepth);
         System.arraycopy(params, 0, logParams, 1, params.length);
 
-        LOGGER.debug("{}" + message, logParams);
+        LOGGER.debug("%s" + format, logParams);
     }
 
 }

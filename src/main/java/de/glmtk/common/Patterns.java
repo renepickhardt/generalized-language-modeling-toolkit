@@ -64,8 +64,8 @@ public class Patterns {
             for (char elemAsChar : asString.toCharArray()) {
                 PatternElem elem = PatternElem.fromChar(elemAsChar);
                 if (elem == null) {
-                    throw new IllegalStateException("Unkown PatternElem: '"
-                            + elemAsChar + "'.");
+                    throw new IllegalStateException(String.format(
+                            "Unkown PatternElem: '%s'.", elemAsChar));
                 }
                 elems.add(elem);
             }
@@ -125,8 +125,8 @@ public class Patterns {
         public long[] getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
             return new long[] {
-                random.nextInt(10) + 1, random.nextInt(10) + 1,
-                random.nextInt(10) + 1, random.nextInt(10) + 1
+                    random.nextInt(10) + 1, random.nextInt(10) + 1,
+                    random.nextInt(10) + 1, random.nextInt(10) + 1
             };
         }
 

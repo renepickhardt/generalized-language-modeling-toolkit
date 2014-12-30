@@ -27,7 +27,8 @@ import de.glmtk.util.StringUtils;
  */
 public class CountCache {
 
-    private static final Logger LOGGER = LogManager.getLogger(CountCache.class);
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(CountCache.class);
 
     private Map<Pattern, Map<String, Long>> absolute =
             new HashMap<Pattern, Map<String, Long>>();
@@ -58,7 +59,7 @@ public class CountCache {
         lengthDistribution =
                 new LengthDistribution(
                         countsDir
-                                .resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
+                        .resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
                         false);
     }
 
@@ -116,8 +117,8 @@ public class CountCache {
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.splitAtChar(line, '\t');
                 if (split.size() != 5) {
-                    throw new IllegalStateException("Illegal nGramTimes file: "
-                            + nGramTimesFile);
+                    throw new IllegalStateException(String.format(
+                            "Illegal nGramTimes file: '%s'.", nGramTimesFile));
                 }
 
                 Pattern pattern = Patterns.get(split.get(0));
@@ -133,9 +134,9 @@ public class CountCache {
     public long getAbsolute(NGram sequence) {
         Map<String, Long> counts = absolute.get(sequence.getPattern());
         if (counts == null) {
-            throw new IllegalStateException(
-                    "No absolute counts learned for pattern: '"
-                            + sequence.getPattern() + "'.");
+            throw new IllegalStateException(String.format(
+                    "No absolute counts learned for pattern: '%s'.",
+                    sequence.getPattern()));
         }
         Long count = counts.get(sequence.toString());
         return count == null ? 0 : count;
@@ -144,9 +145,9 @@ public class CountCache {
     public Counter getContinuation(NGram sequence) {
         Map<String, Counter> counts = continuation.get(sequence.getPattern());
         if (counts == null) {
-            throw new IllegalStateException(
-                    "No continuation counts learned for pattern: '"
-                            + sequence.getPattern() + "'.");
+            throw new IllegalStateException(String.format(
+                    "No continuation counts learned for pattern: '%s'.",
+                    sequence.getPattern()));
         }
         Counter counter = counts.get(sequence.toString());
         return counter == null ? new Counter() : counter;
@@ -155,9 +156,8 @@ public class CountCache {
     public long[] getNGramTimes(Pattern pattern) {
         long[] counts = nGramTimes.get(pattern);
         if (counts == null) {
-            throw new IllegalStateException(
-                    "No nGramTimes counts learned for pattern'" + pattern
-                            + "'.");
+            throw new IllegalStateException(String.format(
+                    "No nGramTimes counts learned for pattern: '%s'.", pattern));
         }
         return counts;
     }

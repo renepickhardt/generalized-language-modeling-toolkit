@@ -32,11 +32,11 @@ public abstract class FractionEstimator extends Estimator {
     }
 
     public final double numerator(NGram sequence, NGram history, int recDepth) {
-        logDebug(recDepth, "numerator({},{})", sequence, history);
+        logDebug(recDepth, "numerator(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcNumerator(sequence, history, recDepth);
-        logDebug(recDepth, "result = {}", result);
+        logDebug(recDepth, "result = %f", result);
         return result;
     }
 
@@ -47,11 +47,11 @@ public abstract class FractionEstimator extends Estimator {
 
     public final double
         denominator(NGram sequence, NGram history, int recDepth) {
-        logDebug(recDepth, "denominator({},{})", sequence, history);
+        logDebug(recDepth, "denominator(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcDenominator(sequence, history, recDepth);
-        logDebug(recDepth, "result = {}", result);
+        logDebug(recDepth, "result = %f", result);
         return result;
     }
 

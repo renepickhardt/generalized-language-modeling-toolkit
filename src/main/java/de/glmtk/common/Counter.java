@@ -119,8 +119,9 @@ public class Counter {
             counter.setThreePlusCount(Long.parseLong(split.get(4)));
         } else {
             throw new IllegalArgumentException(
-                    "Couldn't not get Sequence and Counter of line '" + line
-                    + "'.");
+                    String.format(
+                            "Couldn't not get Sequence and Counter of line '%s'.",
+                            line));
         }
         return split.get(0);
     }

@@ -32,11 +32,11 @@ public abstract class DiscountEstimator extends FractionEstimator {
     }
 
     public final double discount(NGram sequence, NGram history, int recDepth) {
-        logDebug(recDepth, "discount({},{})", sequence, history);
+        logDebug(recDepth, "discount(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcDiscount(sequence, history, recDepth);
-        logDebug(recDepth, "result = {}", result);
+        logDebug(recDepth, "result = %f", result);
         return result;
     }
 
@@ -60,7 +60,7 @@ public abstract class DiscountEstimator extends FractionEstimator {
 
     @Override
     protected double
-        calcDenominator(NGram sequence, NGram history, int recDepth) {
+    calcDenominator(NGram sequence, NGram history, int recDepth) {
         return fractionEstimator.denominator(sequence, history, recDepth);
     }
 
