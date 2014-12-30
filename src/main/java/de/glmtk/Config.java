@@ -108,8 +108,7 @@ public enum Config {
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
-                line = line.trim();
-                if (line.isEmpty() || line.charAt(0) == '#') {
+                if (line.trim().isEmpty() || line.charAt(0) == '#') {
                     continue;
                 }
 

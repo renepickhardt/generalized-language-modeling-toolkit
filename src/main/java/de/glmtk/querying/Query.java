@@ -200,7 +200,6 @@ public class Query {
             while ((line = reader.readLine()) != null) {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
 
-                line = line.trim();
                 if (line.charAt(0) == '#') {
                     writer.append(line);
                     writer.append('\n');
@@ -214,7 +213,7 @@ public class Query {
                         && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                            .getLengthFrequency(sequenceSize);
+                                    .getLengthFrequency(sequenceSize);
                 }
                 stats.addProbability(probability);
 

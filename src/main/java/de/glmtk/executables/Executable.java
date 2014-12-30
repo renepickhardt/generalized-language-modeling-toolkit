@@ -81,9 +81,8 @@ import de.glmtk.util.StringUtils;
                 LOGGER.error(String.format("Exception %s",
                         stackTrace.toString()));
 
-                // Only output error if it didnt have to be rethrown.
+                // Only output error if it did not have to be rethrown.
                 OUTPUT.printError(e.getMessage());
-                OUTPUT.printError("See log for additional detail.");
             } catch (IOException ee) {
                 throw e;
             }
@@ -101,7 +100,7 @@ import de.glmtk.util.StringUtils;
                 .resolve(time + ".log"), "FileTimestamp", false);
     }
 
-    protected void parseArguments(String[] args) throws IOException {
+    protected void parseArguments(String[] args) throws Exception {
         Options options = new Options();
         for (Option option : getOptions()) {
             options.addOption(option);

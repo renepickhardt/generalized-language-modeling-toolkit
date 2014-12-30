@@ -4,6 +4,7 @@ import static de.glmtk.Config.CONFIG;
 
 import java.io.IOException;
 import java.util.Formatter;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -276,7 +277,10 @@ public enum Output {
             message =
                     "A critical error has occured, program execution had to be stopped.";
         }
-        System.err.println("Error: " + message);
+        List<String> lines = StringUtils.splitAtChar(message, '\n');
+        for (String line : lines) {
+            System.err.println("Error: " + line);
+        }
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
@@ -293,7 +297,11 @@ public enum Output {
         if (message == null || message.isEmpty()) {
             message = "A warning has occured.";
         }
-        System.err.println("Warning: " + message);
+
+        List<String> lines = StringUtils.splitAtChar(message, '\n');
+        for (String line : lines) {
+            System.err.println("Warning: " + line);
+        }
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;

@@ -7,6 +7,7 @@ import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -173,7 +174,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void parseArguments(String[] args) throws IOException {
+    protected void parseArguments(String[] args) throws Exception {
         super.parseArguments(args);
 
         if (line.getArgList() == null || line.getArgList().size() != 1) {
@@ -275,6 +276,8 @@ public class GlmtkExecutable extends Executable {
         Files.createDirectories(workingDir);
 
         configureLogging();
+
+        verifyTestFiles();
     }
 
     private void checkOptionMultipleTimes(Object value, Option option) {
@@ -337,9 +340,68 @@ public class GlmtkExecutable extends Executable {
         }
     }
 
+    private void verifyTestFiles() throws Exception {
+        for (Integer markovOrder : testMarkovFiles.keySet()) {
+            if (markovOrder > trainingOrder) {
+                throw new Exception(
+                        String.format(
+                                "Illegal markov query order '%d' (-%s, --%s): Higher than training order '%d' (-%s, --%s).",
+                                markovOrder, OPTION_TEST_MARKOV.getOpt(),
+                                OPTION_TEST_MARKOV.getLongOpt(), trainingOrder,
+                                OPTION_TRAINING_ORDER.getOpt(),
+                                OPTION_TRAINING_ORDER.getLongOpt()));
+            }
+        }
+
+        for (Integer condOrder : testCondFiles.keySet()) {
+            if (condOrder > trainingOrder) {
+                throw new Exception(
+                        String.format(
+                                "Illegal conditional query order '%d' (-%s, --%s): Higher than training order '%d' (-%s, --%s).",
+                                condOrder, OPTION_TEST_COND.getOpt(),
+                                OPTION_TEST_COND.getLongOpt(), trainingOrder,
+                                OPTION_TRAINING_ORDER.getOpt(),
+                                OPTION_TRAINING_ORDER.getLongOpt()));
+            }
+        }
+
+        for (Entry<Integer, Set<Path>> condTest : testCondFiles.entrySet()) {
+            int condOrder = condTest.getKey();
+            Set<Path> testFiles = condTest.getValue();
+
+            for (Path testFile : testFiles) {
+                verifyFileHasCondOrder(testFile, condOrder);
+            }
+        }
+    }
+
+    private void verifyFileHasCondOrder(Path testFile, int condOrder)
+            throws Exception {
+        try (BufferedReader reader =
+                Files.newBufferedReader(testFile, Constants.CHARSET)) {
+            String line;
+            int lineNo = 0;
+            while ((line = reader.readLine()) != null) {
+                ++lineNo;
+
+                List<String> words = StringUtils.splitAtChar(line, ' ');
+
+                if (words.size() != condOrder) {
+                    throw new Exception(
+                            String.format(
+                                    "Illegal line '%d' in file '%s': Line does not have specified condtional query order '%d' (-%s, --%s).\nLine was: '%s'. Length: '%d'.",
+                                    lineNo, testFile, condOrder,
+                                    OPTION_TEST_COND.getOpt(),
+                                    OPTION_TEST_COND.getLongOpt(), line,
+                                    words.size()));
+                }
+            }
+        }
+    }
+
     @Override
     protected void exec() throws IOException {
-        logOptions();
+        logFields();
 
         Glmtk glmtk = new Glmtk(corpus, workingDir);
 
@@ -393,10 +455,7 @@ public class GlmtkExecutable extends Executable {
             }
         }
 
-        for (Map.Entry<Integer, Set<Path>> entry : testCondFiles.entrySet()) {
-            int condOrder = entry.getKey();
-            Set<Path> testFiles = entry.getValue();
-
+        for (Set<Path> testFiles : testCondFiles.values()) {
             for (Path testFile : testFiles) {
                 CountCache countCache =
                         glmtk.getOrCreateTestCountCache(testFile,
@@ -414,7 +473,7 @@ public class GlmtkExecutable extends Executable {
         StatisticalNumberHelper.print();
     }
 
-    private void logOptions() {
+    private void logFields() {
         LOGGER.debug("Corpus:            %s", corpus);
         LOGGER.debug("WorkingDir:        %s", workingDir);
         LOGGER.debug("TrainingOrder:     %s", trainingOrder);
