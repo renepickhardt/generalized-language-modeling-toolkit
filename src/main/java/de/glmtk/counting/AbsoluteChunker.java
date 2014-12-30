@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
-import de.glmtk.common.Console;
+import de.glmtk.common.Output;
 import de.glmtk.common.Pattern;
 
 /* package */class AbsoluteChunker {
@@ -101,15 +101,15 @@ import de.glmtk.common.Pattern;
         long queueMemory = (QUEUE_MEMORY_PERCENT * remainingMemory) / 100;
 
         LOGGER.debug("totalFreeMemory = %s",
-                Console.humanReadableByteCount(totalFreeMemory, false));
+                Output.humanReadableByteCount(totalFreeMemory, false));
         LOGGER.debug("availableMemory = %s",
-                Console.humanReadableByteCount(availableMemory, false));
+                Output.humanReadableByteCount(availableMemory, false));
         LOGGER.debug("readerMemory    = %s",
-                Console.humanReadableByteCount(readerMemory, false));
+                Output.humanReadableByteCount(readerMemory, false));
         LOGGER.debug("qeueMemory      = %s",
-                Console.humanReadableByteCount(queueMemory, false));
+                Output.humanReadableByteCount(queueMemory, false));
         LOGGER.debug("chunkSize       = %s",
-                Console.humanReadableByteCount(chunkSize, false));
+                Output.humanReadableByteCount(chunkSize, false));
 
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Praparing Threads...");

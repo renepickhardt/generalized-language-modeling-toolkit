@@ -1,6 +1,6 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.common.Console.Phase;
+import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 
 public class ContinuationCounter {
@@ -53,13 +53,13 @@ public class ContinuationCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.info("1/2 Chunking:");
-        CONSOLE.setPhase(Phase.CONTINUATION_CHUNKING);
+        OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING, false);
         chunker.chunk(status, chunkingPatterns, absoluteCountedDir,
                 absoluteChunkedDir, continuationCountedDir,
                 continuationChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        CONSOLE.setPhase(Phase.CONTINUATION_MERGING);
+        OUTPUT.setPhase(Phase.CONTINUATION_MERGING, false);
         merger.merge(status, countingPatterns, continuationChunkedDir,
                 continuationCountedDir);
 

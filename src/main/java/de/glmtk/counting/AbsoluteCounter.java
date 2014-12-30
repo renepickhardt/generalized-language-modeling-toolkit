@@ -1,6 +1,6 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.common.Console.Phase;
+import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 
 public class AbsoluteCounter {
@@ -50,12 +50,12 @@ public class AbsoluteCounter {
         chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.info("1/2 Chunking:");
-        CONSOLE.setPhase(Phase.ABSOLUTE_CHUNKING, 0.0);
+        OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING, true);
         chunker.chunk(status, chunkingPatterns, trainingFile,
                 absoluteChunkedDir);
 
         LOGGER.info("2/2 Merging:");
-        CONSOLE.setPhase(Phase.ABSOLUTE_MERGING);
+        OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, false);
         merger.merge(status, countingPatterns, absoluteChunkedDir,
                 absoluteCountedDir);
 

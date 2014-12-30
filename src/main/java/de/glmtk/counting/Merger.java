@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
-import de.glmtk.common.Console;
+import de.glmtk.common.Output;
 import de.glmtk.common.Pattern;
 import de.glmtk.util.NioUtils;
 
@@ -62,13 +62,13 @@ public class Merger {
         long writerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
 
         LOGGER.debug("totalFreeMemory = %s",
-                Console.humanReadableByteCount(totalFreeMemory, false));
+                Output.humanReadableByteCount(totalFreeMemory, false));
         LOGGER.debug("availableMemory = %s",
-                Console.humanReadableByteCount(availableMemory, false));
+                Output.humanReadableByteCount(availableMemory, false));
         LOGGER.debug("readerMemory    = %s",
-                Console.humanReadableByteCount(readerMemory, false));
+                Output.humanReadableByteCount(readerMemory, false));
         LOGGER.debug("writerMemory    = %s",
-                Console.humanReadableByteCount(writerMemory, false));
+                Output.humanReadableByteCount(writerMemory, false));
 
         // Prepare Threads /////////////////////////////////////////////////////
         LOGGER.debug("Preparing Threads...");

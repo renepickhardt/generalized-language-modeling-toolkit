@@ -58,7 +58,7 @@ public enum LoggingHelper {
     public void addConsoleAppender(Target target) {
         Appender consoleApender =
                 ConsoleAppender.createAppender(layout, null, target.toString(),
-                        "Console", "true", "false");
+                        "Output", "true", "false");
         consoleApender.start();
         configuration.addAppender(consoleApender);
         loggerConfig.addAppender(consoleApender, null, null);

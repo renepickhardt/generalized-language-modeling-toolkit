@@ -1,7 +1,6 @@
 package de.glmtk.counting;
 
-import static de.glmtk.Config.CONFIG;
-import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +19,7 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.counting.AbsoluteChunker.QueueItem;
@@ -69,32 +69,16 @@ import de.glmtk.util.StringUtils;
                 new BufferedReader(new InputStreamReader(
                         Files.newInputStream(trainingFile), Constants.CHARSET),
                         (int) readerMemory)) {
-            long readSize = 0;
-            long totalSize = Files.size(trainingFile);
-            long consoleTime = System.currentTimeMillis();
-            long logTime = System.currentTimeMillis();
+            Progress progress = new Progress(Files.size(trainingFile));
 
             String line;
             while ((line = reader.readLine()) != null) {
-                readSize += line.getBytes(Constants.CHARSET).length;
-                long curTime = System.currentTimeMillis();
-                if (CONFIG.getConsoleUpdateInterval() != 0
-                        && curTime - consoleTime >= CONFIG
-                                .getConsoleUpdateInterval()) {
-                    consoleTime = curTime;
-                    CONSOLE.setPercent((double) readSize / totalSize);
-                }
-                if (CONFIG.getLogUpdateInterval() != 0
-                        && curTime - logTime >= CONFIG.getLogUpdateInterval()) {
-                    logTime = curTime;
-                    LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
-                }
-
+                progress.increase(line.getBytes(Constants.CHARSET).length);
                 generateAndQueueSequences(line);
             }
 
             absoluteChunker.sequencingIsDone();
-            CONSOLE.setPercent(1.0);
+            OUTPUT.setPercent(1.0);
             LOGGER.debug("Done.");
         } catch (InterruptedException | IOException e) {
             throw new IllegalStateException(e);

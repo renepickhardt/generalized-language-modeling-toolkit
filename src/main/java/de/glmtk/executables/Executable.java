@@ -1,7 +1,7 @@
 package de.glmtk.executables;
 
 import static de.glmtk.Config.CONFIG;
-import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import java.io.BufferedReader;
@@ -54,7 +54,7 @@ import de.glmtk.util.StringUtils;
 
     public void run(String[] args) throws Exception {
         try {
-            CONSOLE.enableAnsi();
+            OUTPUT.enableAnsi();
 
             parseArguments(args);
 

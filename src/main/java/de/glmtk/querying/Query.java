@@ -1,6 +1,6 @@
 package de.glmtk.querying;
 
-import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,6 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.common.CountCache;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
@@ -145,13 +147,12 @@ public class Query {
 
         LOGGER.info("Testing %s File '%s' -> '%s'.", queryTypeString,
                 inputFile, outputFile);
-        String estimatorMsg =
-                estimatorName == null ? "" : " with "
-                        + CONSOLE.bold(estimatorName);
-        CONSOLE.printMessage(String.format("Testing %s File '%s'%s...",
-                queryTypeString, CONSOLE.bold(inputFile.toString()),
-                estimatorMsg));
-
+        String message =
+                String.format("Testing %s File '%s'", queryTypeString,
+                        OUTPUT.bold(inputFile.toString()));
+        if (estimatorName != null) {
+            message += " with " + OUTPUT.bold(estimatorName);
+        }
         estimator.setCountCache(countCache);
         calculator.setProbMode(probMode);
         calculator.setEstimator(estimator);
@@ -159,7 +160,14 @@ public class Query {
         QueryStats stats;
         try (BufferedWriter writer =
                 Files.newBufferedWriter(outputFile, Constants.CHARSET)) {
+            OUTPUT.beginPhases(message + "...");
+
             stats = queryFile(inputFile, writer);
+
+            OUTPUT.endPhases(message + " done:");
+            OUTPUT.printMessage(String.format("    Saved as '%s' under '%s'.",
+                    OUTPUT.bold(outputFile.getFileName()),
+                    outputFile.getParent()));
 
             List<String> statsOutputLines =
                     StringUtils.splitAtChar(stats.toString(), '\n');
@@ -168,28 +176,35 @@ public class Query {
                 writer.append(statsOutputLine);
                 writer.append('\n');
                 LOGGER.info(statsOutputLine);
-                CONSOLE.printMessage("    " + statsOutputLine);
+                OUTPUT.printMessage("    " + statsOutputLine);
             }
         }
+
         return stats;
     }
 
     private Path resolveOutputFile() {
         String date =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-        return outputDir.resolve(String.format("%s %s %s%s", date,
-                queryType.toString(), inputFile.getFileName(),
-                estimatorName == null ? "" : (" " + estimatorName)));
+        return outputDir.resolve(String.format("%s %s %s %s",
+                inputFile.getFileName(), estimatorName, queryType.toString(),
+                date));
     }
 
     private QueryStats queryFile(Path file, BufferedWriter writer)
             throws IOException {
+        OUTPUT.setPhase(Phase.QUERYING_FILE, true);
+
         QueryStats stats = new QueryStats();
 
         try (BufferedReader reader =
                 Files.newBufferedReader(file, Constants.CHARSET)) {
+            Progress progress = new Progress(Files.size(inputFile));
+
             String line;
             while ((line = reader.readLine()) != null) {
+                progress.increase(line.getBytes(Constants.CHARSET).length);
+
                 line = line.trim();
                 if (line.charAt(0) == '#') {
                     writer.append(line);
@@ -204,7 +219,7 @@ public class Query {
                         && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                            .getLengthFrequency(sequenceSize);
+                                    .getLengthFrequency(sequenceSize);
                 }
                 stats.addProbability(probability);
 
@@ -218,5 +233,4 @@ public class Query {
             return stats;
         }
     }
-
 }

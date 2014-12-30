@@ -1,6 +1,6 @@
 package de.glmtk.executables;
 
-import static de.glmtk.common.Console.CONSOLE;
+import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
@@ -312,7 +312,7 @@ public class GlmtkExecutable extends Executable {
         if (logToConsole) {
             LOGGING_HELPER.addConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
-            CONSOLE.disableAnsi();
+            OUTPUT.disableAnsi();
         }
     }
 

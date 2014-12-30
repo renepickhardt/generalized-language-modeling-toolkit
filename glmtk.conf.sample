@@ -6,7 +6,7 @@ numberOfCores = 4
 
 # Delay in milliseconds before next percentage update is displayed.
 # 0 disables percentage updates.
-consoleUpdateInterval = 50
+consoleUpdateInterval = 100
 logUpdateInterval = 5000
 
 # .tagger file used for tagging.
