@@ -22,9 +22,19 @@ public abstract class Estimator {
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR =
             Estimators.ABS_UNIGRAM;
 
-    protected CountCache countCache;
+    private String name = "Unnamed";
 
-    protected ProbMode probMode;
+    protected CountCache countCache = null;
+
+    protected ProbMode probMode = null;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public void setCountCache(CountCache countCache) {
         this.countCache = countCache;
@@ -67,7 +77,7 @@ public abstract class Estimator {
      * logging.
      */
     public final double
-    probability(NGram sequence, NGram history, int recDepth) {
+        probability(NGram sequence, NGram history, int recDepth) {
         logDebug(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;

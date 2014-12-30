@@ -3,23 +3,23 @@ package de.glmtk.querying;
 import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.querying.estimator.Estimators.ABS_UNIGRAM;
 import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE;
-import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE_REC;
+import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE_NOREC;
 import static de.glmtk.querying.estimator.Estimators.CMLE;
 import static de.glmtk.querying.estimator.Estimators.COMB_MLE_CMLE;
 import static de.glmtk.querying.estimator.Estimators.CONT_UNIGRAM;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT;
-import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_REC;
-import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_REC;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL;
-import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_REC;
-import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_REC;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
 import static de.glmtk.querying.estimator.Estimators.FMLE;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL;
-import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL_REC;
+import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP;
-import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP_REC;
+import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 
@@ -71,25 +71,25 @@ public class EstimatorTest extends LoggingTest {
                 new EstimatorTestParams(CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                 // Backoff Estimators
+                new EstimatorTestParams(BACKOFF_CMLE_NOREC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
                 new EstimatorTestParams(BACKOFF_CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-                new EstimatorTestParams(BACKOFF_CMLE_REC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                 // Interpolation Estimators
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
 
                 // DiffInterpolation Estimators
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_REC, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 // HIGHEST_ORDER should actually also work, but takes far to long to calculate.
-                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_REC, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
@@ -106,12 +106,11 @@ public class EstimatorTest extends LoggingTest {
     private int maxOrder;
 
     public EstimatorTest(
-            String estimatorName,
             Estimator estimator,
             boolean continuationEstimator,
             ProbMode probMode,
             int maxOrder) {
-        LOGGER.info("====== %s (%s)", estimatorName, probMode);
+        LOGGER.info("====== %s (%s)", estimator.getName(), probMode);
 
         this.estimator = estimator;
         this.continuationEstimator = continuationEstimator;

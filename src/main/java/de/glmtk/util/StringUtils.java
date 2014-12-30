@@ -111,6 +111,20 @@ public class StringUtils {
         return result.toString();
     }
 
+    public static String
+    replaceAll(String string, String target, String replace) {
+        if (target.length() != replace.length()) {
+            throw new IllegalArgumentException(
+                    "<target> and <replace> need to be of same length.");
+        }
+
+        String result = string;
+        for (int i = 0; i != target.length(); ++i) {
+            result = result.replace(target.charAt(i), replace.charAt(i));
+        }
+        return result;
+    }
+
     /**
      * Puts {@code <s1/>}, {@code <s2/>}, ... up to {@code maxPatternLength}
      * tokens around {@code line}.

@@ -25,7 +25,7 @@ import org.junit.runners.model.Statement;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.EstimatorTest;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.querying.estimator.Estimators;
+import de.glmtk.util.StringUtils;
 
 /**
  * Highly specialized JUnit-Test Runner, so we can have nice code, output and
@@ -94,8 +94,8 @@ public class EstimatorTestRunner extends Suite {
                     IllegalAccessException, IllegalArgumentException,
                     InvocationTargetException {
                 return getTestClass().getOnlyConstructor().newInstance(
-                        estimatorName, estimator, continuationEstimator,
-                        probMode, highestOrder);
+                        estimator, continuationEstimator, probMode,
+                        highestOrder);
             }
 
             @Override
@@ -122,13 +122,12 @@ public class EstimatorTestRunner extends Suite {
                 Constructor<?> constructor =
                         getTestClass().getJavaClass().getConstructors()[0];
                 Class<?>[] types = constructor.getParameterTypes();
-                if (types.length != 5 || !types[0].equals(String.class)
-                        || !types[1].equals(Estimator.class)
-                        || !types[2].equals(boolean.class)
-                        || !types[3].equals(ProbMode.class)
-                        || !types[4].equals(int.class)) {
+                if (types.length != 4 || !types[0].equals(Estimator.class)
+                        || !types[1].equals(boolean.class)
+                        || !types[2].equals(ProbMode.class)
+                        || !types[3].equals(int.class)) {
                     errors.add(new Exception(
-                            "Test class constructor should take exactly these arguments: (String, Estimator, boolean, ProbMode, integer)"));
+                            "Test class constructor should take exactly these arguments: (Estimator, boolean, ProbMode, integer)"));
                 }
             }
 
@@ -148,8 +147,6 @@ public class EstimatorTestRunner extends Suite {
 
         private boolean continuationEstimator;
 
-        private String estimatorName;
-
         private final List<TestRunnerForProbMode> runners;
 
         public TestRunnerForEstimator(
@@ -159,7 +156,6 @@ public class EstimatorTestRunner extends Suite {
 
             estimator = params.estimator;
             continuationEstimator = params.continuationEstimator;
-            estimatorName = Estimators.getName(estimator);
 
             runners = new ArrayList<TestRunnerForProbMode>();
             createRunners(params);
@@ -167,7 +163,10 @@ public class EstimatorTestRunner extends Suite {
 
         @Override
         protected String getName() {
-            return estimatorName;
+            // Due to https://bugs.eclipse.org/bugs/show_bug.cgi?id=102512
+            // we have to replace () with [].
+            return StringUtils.replaceAll(estimator.getName(), "()", "[]")
+                    + " Estimator";
         }
 
         @SuppressWarnings({

@@ -23,7 +23,6 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.util.StringUtils;
 
 public class Query {
@@ -114,8 +113,6 @@ public class Query {
 
     private Estimator estimator;
 
-    private String estimatorName;
-
     private ProbMode probMode;
 
     private CountCache countCache;
@@ -134,7 +131,6 @@ public class Query {
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.estimator = estimator;
-        estimatorName = Estimators.getName(estimator);
         this.probMode = probMode;
         this.countCache = countCache;
         calculator = Calculator.forQueryTypeString(queryTypeString);
@@ -147,12 +143,7 @@ public class Query {
 
         LOGGER.info("Testing %s File '%s' -> '%s'.", queryTypeString,
                 inputFile, outputFile);
-        String message =
-                String.format("Testing %s File '%s'", queryTypeString,
-                        OUTPUT.bold(inputFile.toString()));
-        if (estimatorName != null) {
-            message += " with " + OUTPUT.bold(estimatorName);
-        }
+
         estimator.setCountCache(countCache);
         calculator.setProbMode(probMode);
         calculator.setEstimator(estimator);
@@ -160,11 +151,15 @@ public class Query {
         QueryStats stats;
         try (BufferedWriter writer =
                 Files.newBufferedWriter(outputFile, Constants.CHARSET)) {
+            String message =
+                    String.format("Testing %s File '%s' with %s Estimator",
+                            queryTypeString, OUTPUT.bold(inputFile.toString()),
+                            estimator.getName());
             OUTPUT.beginPhases(message + "...");
 
             stats = queryFile(inputFile, writer);
 
-            OUTPUT.endPhases(message + " done:");
+            OUTPUT.endPhases(message + ":");
             OUTPUT.printMessage(String.format("    Saved as '%s' under '%s'.",
                     OUTPUT.bold(outputFile.getFileName()),
                     outputFile.getParent()));
@@ -187,8 +182,8 @@ public class Query {
         String date =
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         return outputDir.resolve(String.format("%s %s %s %s",
-                inputFile.getFileName(), estimatorName, queryType.toString(),
-                date));
+                inputFile.getFileName(), estimator.getName(),
+                queryType.toString(), date));
     }
 
     private QueryStats queryFile(Path file, BufferedWriter writer)
@@ -219,7 +214,7 @@ public class Query {
                         && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                                    .getLengthFrequency(sequenceSize);
+                            .getLengthFrequency(sequenceSize);
                 }
                 stats.addProbability(probability);
 
