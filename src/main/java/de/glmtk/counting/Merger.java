@@ -1,6 +1,7 @@
 package de.glmtk.counting;
 
 import static de.glmtk.Config.CONFIG;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Status;
 import de.glmtk.common.Output;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.util.NioUtils;
 
@@ -33,6 +36,8 @@ public class Merger {
 
     private boolean continuation;
 
+    private Progress progress;
+
     /* package */Merger(
             boolean continuation) {
         this.continuation = continuation;
@@ -43,8 +48,16 @@ public class Merger {
             Set<Pattern> patterns,
             Path chunkedDir,
             Path countedDir) throws IOException {
+        if (!continuation) {
+            OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
+        } else {
+            OUTPUT.setPhase(Phase.CONTINUATION_MERGING, true);
+        }
+        progress = new Progress(patterns.size());
+
         if (patterns.isEmpty()) {
             LOGGER.debug("No chunks to merge, returning.");
+            progress.set(1.0);
             return;
         }
         LOGGER.debug("patterns = %s", patterns);
@@ -101,4 +114,11 @@ public class Merger {
             Files.deleteIfExists(chunkedDir);
         }
     }
+
+    /* package */void increaseProgress() {
+        synchronized (progress) {
+            progress.increase(1);
+        }
+    }
+
 }

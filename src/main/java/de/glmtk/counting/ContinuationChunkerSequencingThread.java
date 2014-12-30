@@ -126,6 +126,8 @@ import de.glmtk.util.StringUtils;
                         }
                     }
                 }
+
+                continuationChunker.increaseProgress();
             }
 
             continuationChunker.sequencingThreadDone();
@@ -169,8 +171,8 @@ import de.glmtk.util.StringUtils;
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average(
                             "ContinuationChunker.QueueItem Memory", MemoryUtil
-                            .deepMemoryUsageOf(item,
-                                    VisibilityFilter.ALL));
+                                    .deepMemoryUsageOf(item,
+                                            VisibilityFilter.ALL));
                 }
             }
             if (lastFile) {

@@ -34,7 +34,6 @@ import de.glmtk.util.StatisticalNumberHelper;
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(MergerThread.class);
 
-    @SuppressWarnings("unused")
     private Merger merger;
 
     private Status status;
@@ -121,6 +120,7 @@ import de.glmtk.util.StatisticalNumberHelper;
                 Files.move(src, dest);
 
                 status.finishChunkedMerge(continuation, pattern);
+                merger.increaseProgress();
 
                 if (NioUtils.isDirEmpty(patternDir)) {
                     Files.delete(patternDir);
@@ -150,7 +150,7 @@ import de.glmtk.util.StatisticalNumberHelper;
                 readerQueue.add(new SequenceCountReader(new BufferedReader(
                         new InputStreamReader(Files.newInputStream(patternDir
                                 .resolve(chunk)), Constants.CHARSET),
-                                (int) readerMemory / numParallelReaders)));
+                        (int) readerMemory / numParallelReaders)));
             }
 
             String sequence = null;

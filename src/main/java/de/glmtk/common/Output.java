@@ -100,13 +100,21 @@ public enum Output {
         }
 
         public void increase(long increase) {
-            current += increase;
+            set(current + increase);
+        }
+
+        public void set(double percent) {
+            set((long) Math.ceil(percent * total));
+        }
+
+        public void set(long current) {
+            this.current = current;
 
             long time = System.currentTimeMillis();
 
             if (updateConsole
                     && time - lastConsoleUpdate >= CONFIG
-                    .getConsoleUpdateInterval()) {
+                            .getConsoleUpdateInterval()) {
                 OUTPUT.setPercent((double) current / total);
                 lastConsoleUpdate = time;
             }

@@ -2,6 +2,7 @@ package de.glmtk.counting;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.Constants.B;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,6 +25,7 @@ import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.common.Output;
+import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 
 /* package */class AbsoluteChunker {
@@ -65,6 +67,7 @@ import de.glmtk.common.Pattern;
             Set<Pattern> patterns,
             Path trainingFile,
             Path absoluteChunkedDir) throws IOException {
+        OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING, true);
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
             return;

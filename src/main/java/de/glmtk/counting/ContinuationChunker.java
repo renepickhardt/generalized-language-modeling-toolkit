@@ -2,6 +2,7 @@ package de.glmtk.counting;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.Constants.B;
+import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,6 +29,8 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.common.Output;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 
@@ -76,6 +79,8 @@ import de.glmtk.common.PatternElem;
 
     private int numActiveSequencingThreads;
 
+    private Progress progress;
+
     public void chunk(
             Status status,
             Set<Pattern> patterns,
@@ -83,8 +88,12 @@ import de.glmtk.common.PatternElem;
             Path absoluteChunkedDir,
             Path continuationCountedDir,
             Path continuationChunkedDir) throws IOException {
+        OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING, true);
+        progress = new Progress(patterns.size());
+
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
+            progress.set(1.0);
             return;
         }
         LOGGER.debug("patterns = %s", patterns);
@@ -269,12 +278,16 @@ import de.glmtk.common.PatternElem;
         }
     }
 
-    public boolean isSequencingDone() {
+    /* package */boolean isSequencingDone() {
         return numActiveSequencingThreads == 0;
     }
 
-    public void sequencingThreadDone() {
+    /* package */void sequencingThreadDone() {
         --numActiveSequencingThreads;
+    }
+
+    /* package */void increaseProgress() {
+        progress.increase(1);
     }
 
 }
