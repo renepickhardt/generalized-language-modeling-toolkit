@@ -110,9 +110,7 @@ public class Glmtk {
         testCountsDir = workingDir.resolve("testcounts");
         testDir = workingDir.resolve("testing");
 
-        if (!Files.exists(workingDir)) {
-            Files.createDirectories(workingDir);
-        }
+        Files.createDirectories(workingDir);
 
         status = new Status(statusFile, corpus);
         status.logStatus();
@@ -190,7 +188,7 @@ public class Glmtk {
                         CONFIG.getConsoleUpdateInterval(),
                         CONFIG.getLogUpdateInterval());
         absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
@@ -215,7 +213,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                        0L, 0L, 0L, 0L
+                    0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =

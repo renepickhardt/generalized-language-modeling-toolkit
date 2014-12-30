@@ -55,39 +55,42 @@ import de.glmtk.util.StringUtils;
     public void run(String[] args) throws Exception {
         try {
             OUTPUT.enableAnsi();
+            configureLogging();
 
             parseArguments(args);
 
-            configureLogging();
-
+            // Calling {@link #printLogHeader(String[])} before
+            //  {@link #parseArguments(String[])} because
+            // {@link GlmtkExecutable} can only add Logger for
+            // "<workingdir>/log" after arguments are parsed.
             printLogHeader(args);
+
             exec();
+
             printLogFooter();
         } catch (Termination e) {
             if (e.getMessage() != null) {
                 System.err.println(e.getMessage());
             }
             // Terminate
-        } catch (Exception e) {
-            // If logging is already configured try to log exception,
-            // else just rethrow.
-            if (loggingConfigured) {
-                try (StringWriter stackTrace = new StringWriter();
-                        PrintWriter stackTraceWriter =
-                                new PrintWriter(stackTrace)) {
-                    e.printStackTrace(stackTraceWriter);
-                    LOGGER.error(String.format("Exception %s",
-                            stackTrace.toString()));
-                } catch (IOException ee) {
-                    throw e;
-                }
-            } else {
+        } catch (Throwable e) {
+
+            try (StringWriter stackTrace = new StringWriter();
+                    PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
+                e.printStackTrace(stackTraceWriter);
+                LOGGER.error(String.format("Exception %s",
+                        stackTrace.toString()));
+
+                // Only output error if it didnt have to be rethrown.
+                OUTPUT.printError(e.getMessage());
+                OUTPUT.printError("See log for additional detail.");
+            } catch (IOException ee) {
                 throw e;
             }
         }
     }
 
-    protected void configureLogging() {
+    private void configureLogging() {
         LOGGING_HELPER.addFileAppender(
                 CONFIG.getLogDir().resolve(Constants.ALL_LOG_FILE_NAME),
                 "FileAll", true);
@@ -96,11 +99,9 @@ import de.glmtk.util.StringUtils;
         String time = format.format(Calendar.getInstance().getTime());
         LOGGING_HELPER.addFileAppender(CONFIG.getLogDir()
                 .resolve(time + ".log"), "FileTimestamp", false);
-
-        loggingConfigured = true;
     }
 
-    protected void parseArguments(String[] args) {
+    protected void parseArguments(String[] args) throws IOException {
         Options options = new Options();
         for (Option option : getOptions()) {
             options.addOption(option);
@@ -115,7 +116,7 @@ import de.glmtk.util.StringUtils;
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out
-                    .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+            .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -146,7 +147,7 @@ import de.glmtk.util.StringUtils;
     }
 
     private void printLogHeader(String[] args) throws IOException,
-            InterruptedException {
+    InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -154,7 +155,7 @@ import de.glmtk.util.StringUtils;
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-            "git", "log", "-1", "--format=%H: %s"
+                "git", "log", "-1", "--format=%H: %s"
         }, null, CONFIG.getGlmtkDir().toFile());
         gitLogProc.waitFor();
         try (BufferedReader gitLogReader =

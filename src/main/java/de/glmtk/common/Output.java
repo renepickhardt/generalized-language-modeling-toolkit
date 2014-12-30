@@ -8,6 +8,7 @@ import java.util.Formatter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 
 import de.glmtk.util.StringUtils;
@@ -104,7 +105,7 @@ public enum Output {
 
             if (updateConsole
                     && time - lastConsoleUpdate >= CONFIG
-                            .getConsoleUpdateInterval()) {
+                    .getConsoleUpdateInterval()) {
                 OUTPUT.setPercent((double) current / total);
                 lastConsoleUpdate = time;
             }
@@ -144,13 +145,14 @@ public enum Output {
     private double percent = 0;
 
     /**
-     * Was the last print a call to {@link Output#beginPhases(String)}, ignoring
-     * succeeding {@link Output#printPhase()} calls.
+     * {@code true} if the last print was a call to {@link #beginPhases(String)}
+     * , or followed only by {@link #printPhase()} calls. {@code false} if not.
      */
     private boolean lastPrintBeginPhases = false;
 
     /**
-     * Was the last print a call to {@link Output#printPhase()}?
+     * {@code true} if the last print was a call to {@link #printPhase()}.
+     * {@code false} if not.
      */
     private boolean lastPrintPhase = false;
 
@@ -183,8 +185,8 @@ public enum Output {
         printPhase();
     }
 
-    public String bold(Object message) {
-        return bold(message.toString());
+    public String bold(Object object) {
+        return bold(object.toString());
     }
 
     public String bold(String message) {
@@ -258,4 +260,42 @@ public enum Output {
         lastPrintPhase = false;
     }
 
+    public void printError(Object object) {
+        printError(object.toString());
+    }
+
+    public void printError(Throwable throwable) {
+        printError(throwable.getMessage());
+    }
+
+    public void printError(String message) {
+        if (ansiEnabled) {
+            System.err.print(Ansi.ansi().fg(Color.RED));
+        }
+        if (message == null || message.isEmpty()) {
+            message =
+                    "A critical error has occured, program execution had to be stopped.";
+        }
+        System.err.println("Error: " + message);
+
+        lastPrintBeginPhases = false;
+        lastPrintPhase = false;
+    }
+
+    public void printWarning(Object object) {
+        printWarning(object.toString());
+    }
+
+    public void printWarning(String message) {
+        if (ansiEnabled) {
+            System.err.print(Ansi.ansi().fg(Color.YELLOW));
+        }
+        if (message == null || message.isEmpty()) {
+            message = "A warning has occured.";
+        }
+        System.err.println("Warning: " + message);
+
+        lastPrintBeginPhases = false;
+        lastPrintPhase = false;
+    }
 }

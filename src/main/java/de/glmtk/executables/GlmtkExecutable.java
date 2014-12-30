@@ -8,6 +8,7 @@ import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -172,7 +173,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void parseArguments(String[] args) {
+    protected void parseArguments(String[] args) throws IOException {
         super.parseArguments(args);
 
         if (line.getArgList() == null || line.getArgList().size() != 1) {
@@ -268,6 +269,12 @@ public class GlmtkExecutable extends Executable {
         if (trainingOrder == null) {
             trainingOrder = 5;
         }
+
+        // Need to create workingDirectory here in order to create Logger for
+        // "<workingdir>/log" as soon as possible.
+        Files.createDirectories(workingDir);
+
+        configureLogging();
     }
 
     private void checkOptionMultipleTimes(Object value, Option option) {
@@ -319,9 +326,7 @@ public class GlmtkExecutable extends Executable {
         return file;
     }
 
-    @Override
-    protected void configureLogging() {
-        super.configureLogging();
+    private void configureLogging() {
         LOGGING_HELPER.addFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
