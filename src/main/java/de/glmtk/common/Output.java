@@ -104,7 +104,7 @@ public enum Output {
 
             if (updateConsole
                     && time - lastConsoleUpdate >= CONFIG
-                    .getConsoleUpdateInterval()) {
+                            .getConsoleUpdateInterval()) {
                 OUTPUT.setPercent((double) current / total);
                 lastConsoleUpdate = time;
             }
@@ -121,8 +121,6 @@ public enum Output {
             .getFormatterLogger(Output.class);
 
     private static final double DISABLE_PERCENT = -1.0;
-
-    private static final int NUM_PERCENTEGEBAR_BLOCKS = 30;
 
     /**
      * See <a href="http://stackoverflow.com/a/3758880/211404">Stack Overflow:
@@ -145,6 +143,10 @@ public enum Output {
 
     private double percent = 0;
 
+    /**
+     * Was the last print a call to {@link Output#beginPhases(String)}, ignoring
+     * succeeding {@link Output#printPhase()} calls.
+     */
     private boolean lastPrintBeginPhases = false;
 
     /**
@@ -152,8 +154,14 @@ public enum Output {
      */
     private boolean lastPrintPhase = false;
 
+    private int numPercentegebarBlocks;
+
     private Output() {
         AnsiConsole.systemInstall();
+
+        Integer columns =
+                Integer.valueOf(System.getProperty("glmtk.columns", "80"));
+        numPercentegebarBlocks = columns - 17 - Phase.MAX_NAME_LENGTH;
     }
 
     public void enableAnsi() {
@@ -222,21 +230,18 @@ public enum Output {
                 f.format("%s...", phase.getName());
             } else {
                 int numBlocks =
-                        (int) Math.ceil(percent * NUM_PERCENTEGEBAR_BLOCKS);
-                f.format("%-" + Phase.MAX_NAME_LENGTH + "s [%-"
-                        + NUM_PERCENTEGEBAR_BLOCKS + "s] %6.2f%%",
-                        phase.getName(), StringUtils.repeat("#", numBlocks),
-                        100.0 * percent);
+                        (int) Math.ceil(percent * numPercentegebarBlocks);
+                f.format(
+                        "%-" + Phase.MAX_NAME_LENGTH + "s [%s%s] %6.2f%%",
+                        phase.getName(),
+                        StringUtils.repeat("#", numBlocks),
+                        StringUtils.repeat("-", numPercentegebarBlocks
+                                - numBlocks), 100.0 * percent);
             }
 
             message = f.toString();
         }
 
-        if (message.length() > 80) {
-            LOGGER.warn(
-                    "printStatus() message longer than 80 chars. Message: '%s'.",
-                    message);
-        }
         System.err.println(message);
 
         lastPrintPhase = true;
