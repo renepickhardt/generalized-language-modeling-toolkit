@@ -2,7 +2,9 @@ package de.glmtk.common;
 
 import static de.glmtk.Config.CONFIG;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Formatter;
 import java.util.List;
 
@@ -12,6 +14,7 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 
+import de.glmtk.Constants;
 import de.glmtk.util.StringUtils;
 
 public enum Output {
@@ -114,7 +117,7 @@ public enum Output {
 
             if (updateConsole
                     && time - lastConsoleUpdate >= CONFIG
-                            .getConsoleUpdateInterval()) {
+                    .getConsoleUpdateInterval()) {
                 OUTPUT.setPercent((double) current / total);
                 lastConsoleUpdate = time;
             }
@@ -147,6 +150,13 @@ public enum Output {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
+    private long lastUpdateConsoleParams = 0;
+
+    private boolean updateConsoleParams = CONFIG
+            .getConsoleParamsUpdateInterval() != 0;
+
+    private int numPercentegebarBlocks;
+
     private boolean ansiEnabled = false;
 
     private Phase phase = null;
@@ -165,14 +175,41 @@ public enum Output {
      */
     private boolean lastPrintPhase = false;
 
-    private int numPercentegebarBlocks;
-
     private Output() {
         AnsiConsole.systemInstall();
+        updateConsoleParams();
+    }
 
-        Integer columns =
-                Integer.valueOf(System.getProperty("glmtk.columns", "80"));
-        numPercentegebarBlocks = columns - 17 - Phase.MAX_NAME_LENGTH;
+    private void updateConsoleParams() {
+        long time = System.currentTimeMillis();
+        if (lastUpdateConsoleParams == 0
+                || (updateConsoleParams && time - lastUpdateConsoleParams >= CONFIG
+                .getConsoleParamsUpdateInterval())) {
+            int width = getTerminalWidth();
+            numPercentegebarBlocks = width - 17 - Phase.MAX_NAME_LENGTH;
+            lastUpdateConsoleParams = time;
+        }
+    }
+
+    /**
+     * See <a href="http://stackoverflow.com/a/18883172/211404">Stack Overflow:
+     * Can I find the console width with Java?</a>.
+     */
+    private int getTerminalWidth() {
+        int width = 80;
+        try {
+            Process tputColsProc = Runtime.getRuntime().exec(new String[] {
+                "bash", "-c", "tput cols 2> /dev/tty"
+            });
+            tputColsProc.waitFor();
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(
+                            tputColsProc.getInputStream(), Constants.CHARSET))) {
+                width = Integer.parseInt(reader.readLine());
+            }
+        } catch (IOException | InterruptedException | NumberFormatException e) {
+        }
+        return width;
     }
 
     public void enableAnsi() {
@@ -229,6 +266,8 @@ public enum Output {
         if (phase == null) {
             return;
         }
+
+        updateConsoleParams();
 
         if (ansiEnabled && lastPrintPhase) {
             System.err.print(Ansi.ansi().cursorUp(1).eraseLine());
@@ -314,4 +353,5 @@ public enum Output {
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
     }
+
 }

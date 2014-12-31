@@ -115,7 +115,7 @@ import de.glmtk.util.StringUtils;
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out
-            .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+                    .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -146,7 +146,7 @@ import de.glmtk.util.StringUtils;
     }
 
     private void printLogHeader(String[] args) throws IOException,
-    InterruptedException {
+            InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -154,13 +154,13 @@ import de.glmtk.util.StringUtils;
 
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-                "git", "log", "-1", "--format=%H: %s"
+            "git", "log", "-1", "--format=%H: %s"
         }, null, CONFIG.getGlmtkDir().toFile());
         gitLogProc.waitFor();
-        try (BufferedReader gitLogReader =
+        try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(
                         gitLogProc.getInputStream(), Constants.CHARSET))) {
-            String gitCommit = gitLogReader.readLine();
+            String gitCommit = reader.readLine();
             LOGGER.info("Git Commit: %s", gitCommit);
         }
 

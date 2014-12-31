@@ -9,5 +9,8 @@ numberOfCores = 4
 consoleUpdateInterval = 200
 logUpdateInterval = 5000
 
+# Delay in milliseconds before console parameters are updated
+consoleParamsUpdateInterval = 1000
+
 # .tagger file used for tagging.
 model = stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger

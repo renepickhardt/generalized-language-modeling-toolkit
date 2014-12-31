@@ -42,6 +42,8 @@ public enum Config {
 
     private int logUpdateInterval;
 
+    private int consoleParamsUpdateInterval;
+
     private Path model;
 
     public Path getUserDir() {
@@ -70,6 +72,10 @@ public enum Config {
 
     public int getLogUpdateInterval() {
         return logUpdateInterval;
+    }
+
+    public int getConsoleParamsUpdateInterval() {
+        return consoleParamsUpdateInterval;
     }
 
     public Path getModel() {
