@@ -23,10 +23,7 @@ public class AbsoluteCounter {
     private Merger merger;
 
     public AbsoluteCounter(
-            Set<Pattern> neededPatterns,
-            int numberOfCores,
-            int consoleUpdateInterval,
-            int logUpdateInterval) {
+            Set<Pattern> neededPatterns) {
         this.neededPatterns = neededPatterns;
         chunker = new AbsoluteChunker();
         merger = new Merger(false);
@@ -36,7 +33,7 @@ public class AbsoluteCounter {
             Status status,
             Path trainingFile,
             Path absoluteCountedDir,
-            Path absoluteChunkedDir) throws IOException {
+            Path absoluteChunkedDir) throws IOException, InterruptedException {
         LOGGER.info("Absolute counting '%s' -> '%s'.", trainingFile,
                 absoluteCountedDir);
 

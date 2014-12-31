@@ -118,7 +118,7 @@ public class Glmtk {
     }
 
     public void count(boolean needPos, Set<Pattern> neededPatterns)
-            throws IOException {
+            throws IOException, InterruptedException {
         // TODO: update status with smaller increments (each completed pattern).
 
         Set<Pattern> neededAbsolute = new HashSet<Pattern>();
@@ -183,20 +183,14 @@ public class Glmtk {
 
         // Absolute ////////////////////////////////////////////////////////////
 
-        AbsoluteCounter absoluteCounter =
-                new AbsoluteCounter(neededAbsolute, CONFIG.getNumberOfCores(),
-                        CONFIG.getConsoleUpdateInterval(),
-                        CONFIG.getLogUpdateInterval());
+        AbsoluteCounter absoluteCounter = new AbsoluteCounter(neededAbsolute);
         absoluteCounter
-                .count(status, trainingFile, absoluteDir, absoluteTmpDir);
+        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
 
         // Continuation ////////////////////////////////////////////////////////
 
         ContinuationCounter continuationCounter =
-                new ContinuationCounter(neededContinuation,
-                        CONFIG.getNumberOfCores(),
-                        CONFIG.getConsoleUpdateInterval(),
-                        CONFIG.getLogUpdateInterval());
+                new ContinuationCounter(neededContinuation);
         continuationCounter.count(status, absoluteDir, absoluteTmpDir,
                 continuationDir, continuationTmpDir);
 
@@ -213,7 +207,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =

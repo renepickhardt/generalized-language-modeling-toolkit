@@ -416,7 +416,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void exec() throws IOException {
+    protected void exec() throws IOException, InterruptedException {
         logFields();
 
         Glmtk glmtk = new Glmtk(corpus, workingDir);

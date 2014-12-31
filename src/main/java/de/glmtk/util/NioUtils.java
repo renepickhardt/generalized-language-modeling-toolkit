@@ -1,6 +1,11 @@
 package de.glmtk.util;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -123,6 +128,22 @@ public class NioUtils {
             sum += calcFileSize(path);
         }
         return sum;
+    }
+
+    public static BufferedReader newBufferedReader(
+            Path path,
+            Charset charset,
+            int sz) throws IOException {
+        return new BufferedReader(new InputStreamReader(
+                Files.newInputStream(path), charset), sz);
+    }
+
+    public static BufferedWriter newBufferedWriter(
+            Path path,
+            Charset charset,
+            int sz) throws IOException {
+        return new BufferedWriter(new OutputStreamWriter(
+                Files.newOutputStream(path), charset), sz);
     }
 
 }

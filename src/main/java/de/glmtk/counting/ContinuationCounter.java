@@ -25,10 +25,7 @@ public class ContinuationCounter {
     private Merger merger;
 
     public ContinuationCounter(
-            Set<Pattern> neededPatterns,
-            int numberOfCores,
-            int consoleUpdateInterval,
-            int logUpdateInterval) {
+            Set<Pattern> neededPatterns) {
         this.neededPatterns = neededPatterns;
         chunker = new ContinuationChunker();
         merger = new Merger(true);
@@ -39,7 +36,8 @@ public class ContinuationCounter {
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
             Path continuationCountedDir,
-            Path continuationChunkedDir) throws IOException {
+            Path continuationChunkedDir) throws IOException,
+            InterruptedException {
         LOGGER.info("Continuation counting '%s' -> '%s'.", absoluteCountedDir,
                 continuationCountedDir);
 
