@@ -102,6 +102,11 @@ import de.glmtk.util.ThreadUtils;
 
     }
 
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(Merger.class);
+
+    private static final int AVAILABLE_MEMORY_PERCENT = 35;
+
     private class Thread implements Runnable {
 
         @Override
@@ -112,7 +117,7 @@ import de.glmtk.util.ThreadUtils;
                             queue.poll(Constants.QUEUE_IDLE_TIME,
                                     TimeUnit.MILLISECONDS);
                     if (pattern == null) {
-                        LOGGER.debug("Idle.");
+                        LOGGER.trace("Thread Idle.");
                         StatisticalNumberHelper.count("Merger#Thread idle");
                         return;
                     }
@@ -124,6 +129,7 @@ import de.glmtk.util.ThreadUtils;
                 // to throw checked exceptions from threads.
                 throw new RuntimeException(e);
             }
+
             LOGGER.debug("Thread finished.");
         }
 
@@ -234,26 +240,21 @@ import de.glmtk.util.ThreadUtils;
         }
     }
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(Merger.class);
-
-    private static final int AVAILABLE_MEMORY_PERCENT = 35;
-
     private boolean continuation;
 
     private int numParallelReaders;
 
     private Status status;
 
+    private long readerMemory;
+
+    private long writerMemory;
+
     private BlockingQueue<Pattern> queue;
 
     private Path chunkedDir;
 
     private Path countedDir;
-
-    private long readerMemory;
-
-    private long writerMemory;
 
     private Progress progress;
 
@@ -268,10 +269,6 @@ import de.glmtk.util.ThreadUtils;
             Set<Pattern> patterns,
             Path chunkedDir,
             Path countedDir) throws IOException, InterruptedException {
-        this.status = status;
-        this.chunkedDir = chunkedDir;
-        this.countedDir = countedDir;
-
         if (!continuation) {
             OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
         } else {
@@ -287,15 +284,13 @@ import de.glmtk.util.ThreadUtils;
         Files.createDirectories(countedDir);
 
         calculateMemory();
-
+        this.status = status;
+        this.chunkedDir = chunkedDir;
+        this.countedDir = countedDir;
         progress = new Progress(patterns.size());
         queue = new LinkedBlockingDeque<Pattern>(patterns);
 
-        LOGGER.debug("Preparing Threads...");
-        List<Runnable> threads = new LinkedList<Runnable>();
-        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
-            threads.add(new Thread());
-        }
+        List<Runnable> threads = prepareThreads();
 
         LOGGER.debug("Launching Threads...");
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
@@ -324,6 +319,15 @@ import de.glmtk.util.ThreadUtils;
                 Output.humanReadableByteCount(readerMemory, false));
         LOGGER.debug("writerMemory    = %s",
                 Output.humanReadableByteCount(writerMemory, false));
+    }
+
+    private List<Runnable> prepareThreads() {
+        LOGGER.debug("Preparing Threads...");
+        List<Runnable> threads = new LinkedList<Runnable>();
+        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
+            threads.add(new Thread());
+        }
+        return threads;
     }
 
 }
