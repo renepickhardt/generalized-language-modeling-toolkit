@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.Formatter;
 import java.util.List;
 
@@ -180,7 +180,8 @@ public class Query {
 
     private Path resolveOutputFile() {
         String date =
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar
+                        .getInstance().getTime());
         return outputDir.resolve(String.format("%s %s %s %s",
                 inputFile.getFileName(), estimator.getName(),
                 queryType.toString(), date));
@@ -213,7 +214,7 @@ public class Query {
                         && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                                    .getLengthFrequency(sequenceSize);
+                            .getLengthFrequency(sequenceSize);
                 }
                 stats.addProbability(probability);
 

@@ -138,7 +138,7 @@ import de.glmtk.util.StringUtils;
             try (PrintWriter pw =
                     new PrintWriter(new OutputStreamWriter(AnsiConsole.out,
                             Constants.CHARSET))) {
-                formatter.printHelp(pw, 80, getUsage(), header, options, 2, 4,
+                formatter.printHelp(pw, 80, getUsage(), header, options, 2, 8,
                         footer);
             }
             throw new Termination();

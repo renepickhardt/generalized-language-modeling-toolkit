@@ -55,6 +55,10 @@ public enum LoggingHelper {
         return loggerConfig.getLevel();
     }
 
+    public void setLogLevel(Level level) {
+        loggerConfig.setLevel(level);
+    }
+
     public void addConsoleAppender(Target target) {
         Appender consoleApender =
                 ConsoleAppender.createAppender(layout, null, target.toString(),

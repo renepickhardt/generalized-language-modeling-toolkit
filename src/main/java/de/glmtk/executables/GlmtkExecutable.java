@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.cli.Option;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
@@ -81,7 +82,9 @@ public class GlmtkExecutable extends Executable {
 
     private static final Option OPTION_TEST_COND;
 
-    private static final Option OPTION_LOG;
+    private static final Option OPTION_LOG_CONSOLE;
+
+    private static final Option OPTION_LOG_DEBUG;
 
     private static final List<Option> OPTIONS;
 
@@ -134,15 +137,19 @@ public class GlmtkExecutable extends Executable {
         OPTION_TEST_COND.setArgName("ORDER> <FILE...");
         OPTION_TEST_COND.setArgs(Option.UNLIMITED_VALUES);
 
-        OPTION_LOG =
+        OPTION_LOG_CONSOLE =
                 new Option(null, "log", false,
                         "If set will also log to console");
+
+        OPTION_LOG_DEBUG =
+                new Option(null, "debug", false,
+                        "If set, log level will be increased to 'Debug'.");
 
         OPTIONS =
                 Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
                         OPTION_TRAINING_ORDER, OPTION_ESTIMATOR,
                         OPTION_TEST_SENTENCE, OPTION_TEST_MARKOV,
-                        OPTION_TEST_COND, OPTION_LOG);
+                        OPTION_TEST_COND, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
     }
 
     private Path corpus = null;
@@ -161,7 +168,9 @@ public class GlmtkExecutable extends Executable {
     private Map<Integer, Set<Path>> testCondFiles =
             new HashMap<Integer, Set<Path>>();
 
-    private boolean logToConsole = false;
+    private boolean logConsole = false;
+
+    private boolean logDebug = false;
 
     @Override
     protected List<Option> getOptions() {
@@ -230,8 +239,11 @@ public class GlmtkExecutable extends Executable {
             } else if (option.equals(OPTION_TEST_COND)) {
                 extractOrderAndFiles(option, testCondFiles);
 
-            } else if (option.equals(OPTION_LOG)) {
-                logToConsole = true;
+            } else if (option.equals(OPTION_LOG_CONSOLE)) {
+                logConsole = true;
+
+            } else if (option.equals(OPTION_LOG_DEBUG)) {
+                logDebug = true;
 
             } else {
                 throw new IllegalStateException(String.format(
@@ -276,6 +288,10 @@ public class GlmtkExecutable extends Executable {
         Files.createDirectories(workingDir);
 
         configureLogging();
+
+        if (logDebug) {
+            LOGGING_HELPER.setLogLevel(Level.DEBUG);
+        }
 
         verifyTestFiles();
     }
@@ -333,7 +349,7 @@ public class GlmtkExecutable extends Executable {
         LOGGING_HELPER.addFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
-        if (logToConsole) {
+        if (logConsole) {
             LOGGING_HELPER.addConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
             OUTPUT.disableAnsi();
