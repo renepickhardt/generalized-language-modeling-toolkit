@@ -39,28 +39,28 @@ public enum Merger {
     MERGER;
 
     private static class SequenceCountReader implements Closeable,
-            AutoCloseable {
+    AutoCloseable {
 
         public static final Comparator<SequenceCountReader> COMPARATOR =
                 new Comparator<Merger.SequenceCountReader>() {
 
-                    @Override
-                    public int compare(
-                            SequenceCountReader lhs,
-                            SequenceCountReader rhs) {
-                        if (lhs == rhs) {
-                            return 0;
-                        } else if (lhs == null) {
-                            return 1;
-                        } else if (rhs == null) {
-                            return -1;
-                        } else {
-                            return StringUtils.compare(lhs.sequence,
-                                    rhs.sequence);
-                        }
-                    }
+            @Override
+            public int compare(
+                    SequenceCountReader lhs,
+                    SequenceCountReader rhs) {
+                if (lhs == rhs) {
+                    return 0;
+                } else if (lhs == null) {
+                    return 1;
+                } else if (rhs == null) {
+                    return -1;
+                } else {
+                    return StringUtils.compare(lhs.sequence,
+                            rhs.sequence);
+                }
+            }
 
-                };
+        };
 
         private BufferedReader reader;
 
@@ -140,7 +140,7 @@ public enum Merger {
         }
 
         private void mergePattern(Pattern pattern) throws InterruptedException,
-                IOException {
+        IOException {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             int mergeCounter = 0;
@@ -168,6 +168,8 @@ public enum Merger {
                 for (Path chunk : chunksToMerge) {
                     Files.delete(patternDir.resolve(chunk));
                 }
+
+                ++mergeCounter;
             }
 
             Path src = patternDir.resolve(chunksForPattern.get(0));
