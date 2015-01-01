@@ -37,28 +37,28 @@ import de.glmtk.util.ThreadUtils;
 /* package */class Merger {
 
     private static class SequenceCountReader implements Closeable,
-    AutoCloseable {
+            AutoCloseable {
 
         public static final Comparator<SequenceCountReader> COMPARATOR =
                 new Comparator<Merger.SequenceCountReader>() {
 
-                    @Override
-                    public int compare(
-                            SequenceCountReader lhs,
-                            SequenceCountReader rhs) {
-                        if (lhs == rhs) {
-                            return 0;
-                        } else if (lhs == null) {
-                            return 1;
-                        } else if (rhs == null) {
-                            return -1;
-                        } else {
-                            return StringUtils.compare(lhs.sequence,
-                                    rhs.sequence);
-                        }
-            }
+            @Override
+            public int compare(
+                    SequenceCountReader lhs,
+                    SequenceCountReader rhs) {
+                if (lhs == rhs) {
+                    return 0;
+                } else if (lhs == null) {
+                    return 1;
+                } else if (rhs == null) {
+                    return -1;
+                } else {
+                    return StringUtils.compare(lhs.sequence,
+                            rhs.sequence);
+                }
+                    }
 
-                };
+        };
 
         private BufferedReader reader;
 
@@ -119,10 +119,14 @@ import de.glmtk.util.ThreadUtils;
                     if (pattern == null) {
                         LOGGER.trace("Thread Idle.");
                         StatisticalNumberHelper.count("Merger#Thread idle");
-                        return;
+                        continue;
                     }
 
                     mergePattern(pattern);
+
+                    synchronized (progress) {
+                        progress.increase(1);
+                    }
                 }
             } catch (InterruptedException | IOException e) {
                 // Rethrow as unchecked exception, because it is not allowed
@@ -134,7 +138,7 @@ import de.glmtk.util.ThreadUtils;
         }
 
         private void mergePattern(Pattern pattern) throws InterruptedException,
-        IOException {
+                IOException {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             int mergeCounter = 0;
@@ -171,10 +175,6 @@ import de.glmtk.util.ThreadUtils;
             Files.deleteIfExists(dest);
             Files.move(src, dest);
             status.finishChunkedMerge(continuation, pattern);
-
-            synchronized (progress) {
-                progress.increase(1);
-            }
 
             if (NioUtils.isDirEmpty(patternDir)) {
                 Files.delete(patternDir);

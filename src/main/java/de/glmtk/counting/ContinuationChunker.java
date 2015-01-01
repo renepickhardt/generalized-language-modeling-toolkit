@@ -4,7 +4,11 @@ import static de.glmtk.Config.CONFIG;
 import static de.glmtk.Constants.B;
 import static de.glmtk.common.Output.OUTPUT;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,26 +19,36 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.javamex.classmexer.MemoryUtil;
+import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
+
 import de.glmtk.Constants;
 import de.glmtk.Status;
+import de.glmtk.common.Counter;
 import de.glmtk.common.Output;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.util.StatisticalNumberHelper;
+import de.glmtk.util.StringUtils;
+import de.glmtk.util.ThreadUtils;
 
 /* package */class ContinuationChunker {
+
+    private static final Logger LOGGER = LogManager
+            .getFormatterLogger(ContinuationChunker.class);
 
     private static final long CHUNK_MAX_SIZE = Constants.CHUNK_MAX_SIZE;
 
@@ -44,29 +58,30 @@ import de.glmtk.common.PatternElem;
 
     private static final int CHUNK_SIZE_MEMORY_PERCENT = 70;
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(ContinuationChunker.class);
+    private static final int TAB_COUNTER_NL_BYTES = ("\t"
+            + new Counter(10, 10, 10, 10).toString() + "\n")
+            .getBytes(Constants.CHARSET).length;
 
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-                @Override
-                public int compare(Pattern a, Pattern b) {
-                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+        @Override
+        public int compare(Pattern a, Pattern b) {
+            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
                     .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-                }
+        }
 
-            };
+    };
 
-    /* package */static class QueueItem {
+    private static class NGramWithCount {
 
-        public Pattern pattern;
+        private Pattern pattern;
 
-        public String sequence;
+        private String sequence;
 
-        public long count;
+        private long count;
 
-        public QueueItem(
+        public NGramWithCount(
                 Pattern pattern,
                 String sequence,
                 long count) {
@@ -75,9 +90,338 @@ import de.glmtk.common.PatternElem;
             this.count = count;
         }
 
+        public Pattern getPattern() {
+            return pattern;
+        }
+
+        public String getSequence() {
+            return sequence;
+        }
+
+        public long getCount() {
+            return count;
+        }
+
+    }
+
+    private static class Chunk {
+
+        private int size = 0;
+
+        private int counter = 0;
+
+        private Map<String, Counter> sequenceCounts;
+
+        public Chunk(
+                int counter) {
+            size = 0;
+            this.counter = counter;
+            sequenceCounts = new HashMap<String, Counter>();
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public void increaseSize(int increase) {
+            size += increase;
+        }
+
+        public int getCounter() {
+            return counter;
+        }
+
+        public Map<String, Counter> getSequenceCounts() {
+            return sequenceCounts;
+        }
+
+        public Counter getSequenceCount(String sequence) {
+            return sequenceCounts.get(sequence);
+        }
+
+        public void putSequenceCount(String sequence, Counter counter) {
+            sequenceCounts.put(sequence, counter);
+        }
+
+    }
+
+    private class SequencingThread implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                while (!patternsQueue.isEmpty()) {
+                    Pattern pattern =
+                            patternsQueue.poll(Constants.QUEUE_IDLE_TIME,
+                                    TimeUnit.MILLISECONDS);
+                    if (pattern == null) {
+                        LOGGER.trace("SequencingThread idle, because queue empty.");
+                        StatisticalNumberHelper
+                        .count("ContinuationChunker#SequencingThread idle, because queue empty");
+                        continue;
+                    }
+
+                    boolean[] args = new boolean[2];
+                    Path patternDir = getPatternDir(pattern, args);
+                    if (patternDir == null) {
+                        LOGGER.trace("Pattern '%s' not available.", pattern);
+                        StatisticalNumberHelper.count("Pattern not available");
+                        // wait for agregators to finish pattern
+                        Thread.sleep(10);
+                        patternsQueue.put(pattern);
+                        continue;
+                    }
+                    boolean chunked = args[0];
+                    boolean fromAbsolute = args[1];
+
+                    if (!chunked) {
+                        sequence(pattern, patternDir, true, fromAbsolute);
+                    } else {
+                        try (DirectoryStream<Path> inputDirStream =
+                                Files.newDirectoryStream(patternDir)) {
+                            Iterator<Path> iter = inputDirStream.iterator();
+                            while (iter.hasNext()) {
+                                sequence(pattern, iter.next(), !iter.hasNext(),
+                                        fromAbsolute);
+                            }
+                        }
+                    }
+
+                    synchronized (progress) {
+                        progress.increase(1);
+                    }
+                }
+            } catch (Exception e) {
+                // Rethrow as unchecked exception, because it is not allowed
+                // to throw checked exceptions from threads.
+                throw new RuntimeException(e);
+            }
+
+            --numActiveSequencingThreads;
+            LOGGER.debug("SequencingThread finished");
+        }
+
+        private Path getPatternDir(Pattern pattern, boolean[] args)
+                throws InterruptedException {
+            Path patternDir;
+            boolean chunked;
+            boolean fromAbsolute;
+
+            boolean isAbsolute = pattern.isAbsolute();
+            if (isAbsolute && status.getCounted(false).contains(pattern)) {
+                patternDir = absoluteCountedDir;
+                chunked = false;
+                fromAbsolute = true;
+            } else if (isAbsolute
+                    && status.getChunkedPatterns(false).contains(pattern)) {
+                patternDir = absoluteChunkedDir;
+                chunked = true;
+                fromAbsolute = true;
+            } else if (!isAbsolute && status.getCounted(true).contains(pattern)) {
+                patternDir = continuationCountedDir;
+                chunked = false;
+                fromAbsolute = false;
+            } else if (!isAbsolute
+                    && status.getChunkedPatterns(true).contains(pattern)) {
+                patternDir = continuationChunkedDir;
+                chunked = true;
+                fromAbsolute = false;
+            } else {
+                return null;
+            }
+            patternDir = patternDir.resolve(pattern.toString());
+
+            args[0] = chunked;
+            args[1] = fromAbsolute;
+            return patternDir;
+        }
+
+        private void sequence(
+                Pattern pattern,
+                Path inputFile,
+                boolean lastFile,
+                boolean fromAbsolute) throws IOException, InterruptedException {
+            LOGGER.debug("Sequencing '%s' from '%s'.", pattern, inputFile);
+            try (BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    Files.newInputStream(inputFile),
+                                    Constants.CHARSET), (int) readerMemory)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    List<String> split = StringUtils.splitAtChar(line, '\t');
+                    if (split.size() < 2) {
+                        LOGGER.error(
+                                "Unable to derminine sequence and counts of line '%s'.",
+                                line);
+                        continue;
+                    }
+
+                    String sequence = split.get(0);
+                    long count =
+                            fromAbsolute ? 1 : Long.parseLong(split.get(1));
+                    NGramWithCount item =
+                            new NGramWithCount(pattern, sequence, count);
+
+                    while (!aggregatingQueues.get(pattern).offer(item,
+                            Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
+                        LOGGER.trace("Idle, because queue full.");
+                        StatisticalNumberHelper
+                        .count("ContinuationChunker#SequencingThread idle, beacause queue full");
+                    }
+
+                    if (Constants.DEBUG_AVERAGE_MEMORY) {
+                        StatisticalNumberHelper.average(
+                                "ContinuationChunker.NGramWithCount Memory",
+                                MemoryUtil.deepMemoryUsageOf(item,
+                                        VisibilityFilter.ALL));
+                    }
+                }
+                if (lastFile) {
+                    NGramWithCount item = new NGramWithCount(pattern, null, 0);
+                    while (!aggregatingQueues.get(pattern).offer(item,
+                            Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
+                        LOGGER.trace("Idle, because queue full.");
+                        StatisticalNumberHelper
+                        .count("ContinuationChunker#SequencingThread idle, beacause queue full");
+                    }
+                }
+            }
+        }
+
+    }
+
+    private class AggregatingThread implements Runnable {
+
+        private BlockingQueue<NGramWithCount> queue;
+
+        private Map<Pattern, List<Pattern>> sourceToPattern;
+
+        private Map<Pattern, Chunk> chunks;
+
+        private Map<Pattern, List<Path>> chunkFiles;
+
+        public AggregatingThread(
+                BlockingQueue<NGramWithCount> queue,
+                Map<Pattern, List<Pattern>> sourceToPattern) {
+            this.queue = queue;
+            this.sourceToPattern = sourceToPattern;
+            chunks = new HashMap<Pattern, Chunk>();
+            chunkFiles = new HashMap<Pattern, List<Path>>();
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!(numActiveSequencingThreads == 0 && queue.isEmpty())) {
+                    NGramWithCount nGramWithCount =
+                            queue.poll(Constants.QUEUE_IDLE_TIME,
+                                    TimeUnit.MILLISECONDS);
+                    if (nGramWithCount == null) {
+                        LOGGER.trace("AggregatingThread idle, because queue empty.");
+                        StatisticalNumberHelper
+                                .count("ContinuationChunker#AggregatingThread idle, because queue empty");
+                        continue;
+                    }
+
+                    for (Pattern pattern : sourceToPattern.get(nGramWithCount
+                            .getPattern())) {
+                        addToChunk(pattern, nGramWithCount.getSequence(),
+                                nGramWithCount.getCount());
+                    }
+                }
+            } catch (InterruptedException | IOException e) {
+                // Rethrow as unchecked exception, because it is not allowed
+                // to throw checked exceptions from threads.
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void addToChunk(Pattern pattern, String sequence, long count)
+                throws IOException {
+            Chunk chunk = chunks.get(pattern);
+            if (chunk == null) {
+                chunk = new Chunk(0);
+                chunks.put(pattern, chunk);
+                chunkFiles.put(pattern, new LinkedList<Path>());
+            }
+
+            if (sequence == null) {
+                writeChunkToFile(pattern, chunk);
+                status.addChunked(true, pattern, new LinkedList<Path>(
+                        chunkFiles.get(pattern)));
+                LOGGER.debug("Finished pattern '%s'.", pattern);
+                return;
+            }
+
+            String seq =
+                    pattern.apply(StringUtils.splitAtChar(sequence, ' ')
+                            .toArray(new String[0]));
+            Counter counter = chunk.getSequenceCount(seq);
+            if (counter == null) {
+                counter = new Counter();
+                chunk.increaseSize(seq.getBytes(Constants.CHARSET).length
+                        + TAB_COUNTER_NL_BYTES);
+                chunk.putSequenceCount(seq, counter);
+            }
+            counter.add(count);
+
+            if (chunk.getSize() > chunkSize) {
+                writeChunkToFile(pattern, chunk);
+                chunks.put(pattern, new Chunk(chunk.getCounter() + 1));
+            }
+        }
+
+        private void writeChunkToFile(Pattern pattern, Chunk chunk)
+                throws IOException {
+            Path chunkFile =
+                    continuationChunkedDir.resolve(pattern.toString()).resolve(
+                            "chunk" + chunk.getCounter());
+            Files.deleteIfExists(chunkFile);
+
+            try (BufferedWriter writer =
+                    Files.newBufferedWriter(chunkFile, Constants.CHARSET)) {
+                Map<String, Counter> sortedSequenceCounts =
+                        new TreeMap<String, Counter>(chunk.getSequenceCounts());
+                for (Entry<String, Counter> entry : sortedSequenceCounts
+                        .entrySet()) {
+                    writer.write(entry.getKey());
+                    writer.write('\t');
+                    writer.write(entry.getValue().toString());
+                    writer.write('\n');
+                }
+            }
+
+            chunkFiles.get(pattern).add(chunkFile.getFileName());
+            LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern,
+                    chunkFile);
+        }
+
     }
 
     private int numActiveSequencingThreads;
+
+    private Status status;
+
+    private long chunkSize;
+
+    private long readerMemory;
+
+    private long queueMemory;
+
+    private Path absoluteCountedDir;
+
+    private Path absoluteChunkedDir;
+
+    private Path continuationCountedDir;
+
+    private Path continuationChunkedDir;
+
+    private Set<Pattern> patterns;
+
+    private BlockingQueue<Pattern> patternsQueue;
+
+    private Map<Pattern, BlockingQueue<NGramWithCount>> aggregatingQueues;
 
     private Progress progress;
 
@@ -87,9 +431,9 @@ import de.glmtk.common.PatternElem;
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
             Path continuationCountedDir,
-            Path continuationChunkedDir) throws IOException {
+            Path continuationChunkedDir) throws IOException,
+            InterruptedException {
         OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING, true);
-        progress = new Progress(patterns.size());
 
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
@@ -109,7 +453,28 @@ import de.glmtk.common.PatternElem;
         LOGGER.debug("numSequencingThreads  = %d", numSequencingThreads);
         LOGGER.debug("numAggregatingThreads = %d", numAggregatingThreads);
 
-        // Calculate Memory ////////////////////////////////////////////////////
+        calculateMemory(patterns.size(), numSequencingThreads,
+                numAggregatingThreads);
+        this.status = status;
+        this.absoluteCountedDir = absoluteCountedDir;
+        this.absoluteChunkedDir = absoluteChunkedDir;
+        this.continuationCountedDir = continuationCountedDir;
+        this.continuationChunkedDir = continuationChunkedDir;
+        this.patterns = patterns;
+        progress = new Progress(patterns.size());
+
+        List<Runnable> threads =
+                prepareThreads(numSequencingThreads, numAggregatingThreads);
+
+        LOGGER.debug("Launching Threads...");
+        numActiveSequencingThreads = numSequencingThreads;
+        ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
+    }
+
+    private void calculateMemory(
+            int numPatterns,
+            int numSequencingThreads,
+            int numAggregatingThreads) {
         LOGGER.debug("Calculating Memory...");
         Runtime r = Runtime.getRuntime();
         r.gc();
@@ -120,11 +485,11 @@ import de.glmtk.common.PatternElem;
 
         long chunkMemory =
                 Math.min((CHUNK_SIZE_MEMORY_PERCENT * availableMemory) / 100,
-                        CHUNK_MAX_SIZE * patterns.size());
-        long chunkSize = chunkMemory / patterns.size();
+                        CHUNK_MAX_SIZE * numPatterns);
+        chunkSize = chunkMemory / numPatterns;
 
-        long readerMemory = chunkSize;
-        long queueMemory =
+        readerMemory = chunkSize;
+        queueMemory =
                 (availableMemory - chunkMemory - readerMemory
                         * numSequencingThreads)
                         / numAggregatingThreads;
@@ -139,8 +504,11 @@ import de.glmtk.common.PatternElem;
                 Output.humanReadableByteCount(queueMemory, false));
         LOGGER.debug("chunkSize       = %s",
                 Output.humanReadableByteCount(chunkSize, false));
+    }
 
-        // Prepare Threads /////////////////////////////////////////////////////
+    private List<Runnable> prepareThreads(
+            int numSequencingThreads,
+            int numAggregatingThreads) {
         LOGGER.debug("Preparing Threads...");
 
         Map<Pattern, Pattern> patternToSource = new HashMap<Pattern, Pattern>();
@@ -150,13 +518,14 @@ import de.glmtk.common.PatternElem;
         Map<Pattern, List<Pattern>> sourceToPattern =
                 computeSourceToPattern(patternToSource, status);
 
-        List<BlockingQueue<QueueItem>> aggregatingQueues =
-                new ArrayList<BlockingQueue<QueueItem>>(numAggregatingThreads);
+        List<BlockingQueue<NGramWithCount>> aggregatingQueues =
+                new ArrayList<BlockingQueue<NGramWithCount>>(
+                        numAggregatingThreads);
         List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern =
                 new ArrayList<Map<Pattern, List<Pattern>>>(
                         numAggregatingThreads);
-        Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueue =
-                new HashMap<Pattern, BlockingQueue<QueueItem>>();
+        Map<Pattern, BlockingQueue<NGramWithCount>> sourceToAggregatingQueue =
+                new HashMap<Pattern, BlockingQueue<NGramWithCount>>();
         setupThreadParameters(numAggregatingThreads, queueMemory,
                 sourceToPattern, aggregatingQueues, aggregatingSourceToPattern,
                 sourceToAggregatingQueue);
@@ -166,44 +535,18 @@ import de.glmtk.common.PatternElem;
                         SOURCE_PATTERN_COMPARATOR);
         sourcePatternsQueue.addAll(sourceToPattern.keySet());
 
-        List<ContinuationChunkerSequencingThread> sequencingThreads =
-                new LinkedList<ContinuationChunkerSequencingThread>();
+        patternsQueue = sourcePatternsQueue;
+        this.aggregatingQueues = sourceToAggregatingQueue;
+
+        List<Runnable> threads = new LinkedList<Runnable>();
         for (int i = 0; i != numSequencingThreads; ++i) {
-            sequencingThreads.add(new ContinuationChunkerSequencingThread(this,
-                    status, sourcePatternsQueue, sourceToAggregatingQueue,
-                    absoluteCountedDir, absoluteChunkedDir,
-                    continuationCountedDir, continuationChunkedDir,
-                    readerMemory));
+            threads.add(new SequencingThread());
         }
-
-        List<ContinuationChunkerAggregatingThread> aggregatingThreads =
-                new LinkedList<ContinuationChunkerAggregatingThread>();
         for (int i = 0; i != numAggregatingThreads; ++i) {
-            aggregatingThreads.add(new ContinuationChunkerAggregatingThread(
-                    this, status, aggregatingQueues.get(i),
-                    aggregatingSourceToPattern.get(i), continuationChunkedDir,
-                    chunkSize));
+            threads.add(new AggregatingThread(aggregatingQueues.get(i),
+                    aggregatingSourceToPattern.get(i)));
         }
-
-        // Launch Threads //////////////////////////////////////////////////////
-        LOGGER.debug("Launching Threads...");
-        numActiveSequencingThreads = numSequencingThreads;
-        try {
-            ExecutorService executorService =
-                    Executors.newFixedThreadPool(CONFIG.getNumberOfCores());
-
-            for (ContinuationChunkerSequencingThread sequencingThread : sequencingThreads) {
-                executorService.execute(sequencingThread);
-            }
-            for (ContinuationChunkerAggregatingThread aggregatingThread : aggregatingThreads) {
-                executorService.execute(aggregatingThread);
-            }
-
-            executorService.shutdown();
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new IllegalStateException(e);
-        }
+        return threads;
     }
 
     private Map<Pattern, List<Pattern>> computeSourceToPattern(
@@ -252,18 +595,20 @@ import de.glmtk.common.PatternElem;
         return result;
     }
 
-    private void setupThreadParameters(
+    private
+    void
+    setupThreadParameters(
             int numAggregatingThreads,
             long queueMemory,
             Map<Pattern, List<Pattern>> sourceToPattern,
-            List<BlockingQueue<QueueItem>> aggregatingQueues,
+            List<BlockingQueue<NGramWithCount>> aggregatingQueues,
             List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
-            Map<Pattern, BlockingQueue<QueueItem>> sourceToAggregatingQueues) {
+            Map<Pattern, BlockingQueue<NGramWithCount>> sourceToAggregatingQueues) {
         for (int i = 0; i != numAggregatingThreads; ++i) {
-            aggregatingQueues.add(new ArrayBlockingQueue<QueueItem>(
+            aggregatingQueues.add(new ArrayBlockingQueue<NGramWithCount>(
                     (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
             aggregatingSourceToPattern
-                    .add(new HashMap<Pattern, List<Pattern>>());
+            .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         int threadIter = 0;
@@ -276,18 +621,6 @@ import de.glmtk.common.PatternElem;
                     aggregatingQueues.get(threadIter));
             threadIter = (threadIter + 1) % numAggregatingThreads;
         }
-    }
-
-    /* package */boolean isSequencingDone() {
-        return numActiveSequencingThreads == 0;
-    }
-
-    /* package */void sequencingThreadDone() {
-        --numActiveSequencingThreads;
-    }
-
-    /* package */void increaseProgress() {
-        progress.increase(1);
     }
 
 }

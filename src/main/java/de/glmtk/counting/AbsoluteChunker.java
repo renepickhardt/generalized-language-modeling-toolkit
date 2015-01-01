@@ -95,6 +95,10 @@ import de.glmtk.util.ThreadUtils;
             return sequenceCounts;
         }
 
+        public Long getSequenceCount(String sequence) {
+            return sequenceCounts.get(sequence);
+        }
+
         public void putSequenceCount(String sequence, long count) {
             sequenceCounts.put(sequence, count);
         }
@@ -144,7 +148,6 @@ import de.glmtk.util.ThreadUtils;
             }
 
             sequencingDone = true;
-            OUTPUT.setPercent(1.0);
             LOGGER.debug("SequencingThread finished.");
         }
 
@@ -171,15 +174,15 @@ import de.glmtk.util.ThreadUtils;
                                 TimeUnit.MILLISECONDS)) {
                             LOGGER.trace("SequencingThread Idle, because queue full.");
                             StatisticalNumberHelper
-                                    .count("AbsoluteChunker#SequencingThread idle (queue full).");
+                            .count("AbsoluteChunker#SequencingThread idle (queue full).");
                         }
 
                         if (Constants.DEBUG_AVERAGE_MEMORY) {
                             StatisticalNumberHelper
-                                    .average(
-                                            "AbsoluteChunker.PatternAndSequence Memory",
-                                            MemoryUtil.deepMemoryUsageOf(item,
-                                                    VisibilityFilter.ALL));
+                            .average(
+                                    "AbsoluteChunker.PatternAndSequence Memory",
+                                    MemoryUtil.deepMemoryUsageOf(item,
+                                            VisibilityFilter.ALL));
                         }
                     }
                 }
@@ -212,7 +215,7 @@ import de.glmtk.util.ThreadUtils;
                     if (patternAndSequence == null) {
                         LOGGER.trace("AggregatingThreaed idle, because queue empty.");
                         StatisticalNumberHelper
-                                .count("AbsoluteChunker#AggregatingThread Idle, because queue empty.");
+                        .count("AbsoluteChunker#AggregatingThread Idle, because queue empty.");
                         continue;
                     }
 
@@ -246,7 +249,7 @@ import de.glmtk.util.ThreadUtils;
                 chunkFiles.put(pattern, new LinkedList<Path>());
             }
 
-            Long count = chunk.sequenceCounts.get(sequence);
+            Long count = chunk.getSequenceCount(sequence);
             if (count == null) {
                 chunk.increaseSize(sequence.getBytes(Constants.CHARSET).length
                         + TAB_COUNT_NL_BYTES);
