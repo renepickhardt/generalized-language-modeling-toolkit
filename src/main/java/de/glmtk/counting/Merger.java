@@ -34,7 +34,9 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-/* package */class Merger {
+public enum Merger {
+
+    MERGER;
 
     private static class SequenceCountReader implements Closeable,
             AutoCloseable {
@@ -42,23 +44,23 @@ import de.glmtk.util.ThreadUtils;
         public static final Comparator<SequenceCountReader> COMPARATOR =
                 new Comparator<Merger.SequenceCountReader>() {
 
-            @Override
-            public int compare(
-                    SequenceCountReader lhs,
-                    SequenceCountReader rhs) {
-                if (lhs == rhs) {
-                    return 0;
-                } else if (lhs == null) {
-                    return 1;
-                } else if (rhs == null) {
-                    return -1;
-                } else {
-                    return StringUtils.compare(lhs.sequence,
-                            rhs.sequence);
-                }
+                    @Override
+                    public int compare(
+                            SequenceCountReader lhs,
+                            SequenceCountReader rhs) {
+                        if (lhs == rhs) {
+                            return 0;
+                        } else if (lhs == null) {
+                            return 1;
+                        } else if (rhs == null) {
+                            return -1;
+                        } else {
+                            return StringUtils.compare(lhs.sequence,
+                                    rhs.sequence);
+                        }
                     }
 
-        };
+                };
 
         private BufferedReader reader;
 
@@ -242,7 +244,7 @@ import de.glmtk.util.ThreadUtils;
 
     private boolean continuation;
 
-    private int numParallelReaders;
+    private int numParallelReaders = 10;
 
     private Status status;
 
@@ -258,14 +260,9 @@ import de.glmtk.util.ThreadUtils;
 
     private Progress progress;
 
-    public Merger(
-            boolean continuation) {
-        this.continuation = continuation;
-        numParallelReaders = 10;
-    }
-
     public void merge(
             Status status,
+            boolean continuation,
             Set<Pattern> patterns,
             Path chunkedDir,
             Path countedDir) throws IOException, InterruptedException {
@@ -285,6 +282,7 @@ import de.glmtk.util.ThreadUtils;
 
         calculateMemory();
         this.status = status;
+        this.continuation = continuation;
         this.chunkedDir = chunkedDir;
         this.countedDir = countedDir;
         progress = new Progress(patterns.size());

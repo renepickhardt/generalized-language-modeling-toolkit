@@ -39,7 +39,9 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-/* package */class AbsoluteChunker {
+public enum AbsoluteChunker {
+
+    ABSOLUTE_CHUNKER;
 
     private static class PatternAndSequence {
 
@@ -174,15 +176,15 @@ import de.glmtk.util.ThreadUtils;
                                 TimeUnit.MILLISECONDS)) {
                             LOGGER.trace("SequencingThread Idle, because queue full.");
                             StatisticalNumberHelper
-                            .count("AbsoluteChunker#SequencingThread idle (queue full).");
+                                    .count("AbsoluteChunker#SequencingThread idle (queue full).");
                         }
 
                         if (Constants.DEBUG_AVERAGE_MEMORY) {
                             StatisticalNumberHelper
-                            .average(
-                                    "AbsoluteChunker.PatternAndSequence Memory",
-                                    MemoryUtil.deepMemoryUsageOf(item,
-                                            VisibilityFilter.ALL));
+                                    .average(
+                                            "AbsoluteChunker.PatternAndSequence Memory",
+                                            MemoryUtil.deepMemoryUsageOf(item,
+                                                    VisibilityFilter.ALL));
                         }
                     }
                 }
@@ -215,7 +217,7 @@ import de.glmtk.util.ThreadUtils;
                     if (patternAndSequence == null) {
                         LOGGER.trace("AggregatingThreaed idle, because queue empty.");
                         StatisticalNumberHelper
-                        .count("AbsoluteChunker#AggregatingThread Idle, because queue empty.");
+                                .count("AbsoluteChunker#AggregatingThread Idle, because queue empty.");
                         continue;
                     }
 

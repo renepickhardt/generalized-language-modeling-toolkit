@@ -45,7 +45,9 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-/* package */class ContinuationChunker {
+public enum ContinuationChunker {
+
+    CONTINUATION_CHUNKER;
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(ContinuationChunker.class);
@@ -65,13 +67,13 @@ import de.glmtk.util.ThreadUtils;
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-        @Override
-        public int compare(Pattern a, Pattern b) {
-            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
-                    .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-        }
+                @Override
+                public int compare(Pattern a, Pattern b) {
+                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+                            .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
+                }
 
-    };
+            };
 
     private static class NGramWithCount {
 
@@ -157,7 +159,7 @@ import de.glmtk.util.ThreadUtils;
                     if (pattern == null) {
                         LOGGER.trace("SequencingThread idle, because queue empty.");
                         StatisticalNumberHelper
-                        .count("ContinuationChunker#SequencingThread idle, because queue empty");
+                                .count("ContinuationChunker#SequencingThread idle, because queue empty");
                         continue;
                     }
 
@@ -267,7 +269,7 @@ import de.glmtk.util.ThreadUtils;
                             Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("Idle, because queue full.");
                         StatisticalNumberHelper
-                        .count("ContinuationChunker#SequencingThread idle, beacause queue full");
+                                .count("ContinuationChunker#SequencingThread idle, beacause queue full");
                     }
 
                     if (Constants.DEBUG_AVERAGE_MEMORY) {
@@ -283,7 +285,7 @@ import de.glmtk.util.ThreadUtils;
                             Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("Idle, because queue full.");
                         StatisticalNumberHelper
-                        .count("ContinuationChunker#SequencingThread idle, beacause queue full");
+                                .count("ContinuationChunker#SequencingThread idle, beacause queue full");
                     }
                 }
             }
@@ -320,7 +322,7 @@ import de.glmtk.util.ThreadUtils;
                     if (nGramWithCount == null) {
                         LOGGER.trace("AggregatingThread idle, because queue empty.");
                         StatisticalNumberHelper
-                                .count("ContinuationChunker#AggregatingThread idle, because queue empty");
+                        .count("ContinuationChunker#AggregatingThread idle, because queue empty");
                         continue;
                     }
 
@@ -596,19 +598,19 @@ import de.glmtk.util.ThreadUtils;
     }
 
     private
-    void
-    setupThreadParameters(
-            int numAggregatingThreads,
-            long queueMemory,
-            Map<Pattern, List<Pattern>> sourceToPattern,
-            List<BlockingQueue<NGramWithCount>> aggregatingQueues,
-            List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
-            Map<Pattern, BlockingQueue<NGramWithCount>> sourceToAggregatingQueues) {
+        void
+        setupThreadParameters(
+                int numAggregatingThreads,
+                long queueMemory,
+                Map<Pattern, List<Pattern>> sourceToPattern,
+                List<BlockingQueue<NGramWithCount>> aggregatingQueues,
+                List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
+                Map<Pattern, BlockingQueue<NGramWithCount>> sourceToAggregatingQueues) {
         for (int i = 0; i != numAggregatingThreads; ++i) {
             aggregatingQueues.add(new ArrayBlockingQueue<NGramWithCount>(
                     (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
             aggregatingSourceToPattern
-            .add(new HashMap<Pattern, List<Pattern>>());
+                    .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         int threadIter = 0;

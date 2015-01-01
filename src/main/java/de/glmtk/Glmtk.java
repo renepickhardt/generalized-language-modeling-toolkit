@@ -2,6 +2,9 @@ package de.glmtk;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.counting.AbsoluteChunker.ABSOLUTE_CHUNKER;
+import static de.glmtk.counting.ContinuationChunker.CONTINUATION_CHUNKER;
+import static de.glmtk.counting.Merger.MERGER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
 import java.io.BufferedReader;
@@ -30,8 +33,6 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
-import de.glmtk.counting.AbsoluteCounter;
-import de.glmtk.counting.ContinuationCounter;
 import de.glmtk.counting.LengthDistribution;
 import de.glmtk.counting.Tagger;
 import de.glmtk.querying.Query;
@@ -181,18 +182,8 @@ public class Glmtk {
 
         OUTPUT.beginPhases("Corpus Analyzation...");
 
-        // Absolute ////////////////////////////////////////////////////////////
-
-        AbsoluteCounter absoluteCounter = new AbsoluteCounter(neededAbsolute);
-        absoluteCounter
-        .count(status, trainingFile, absoluteDir, absoluteTmpDir);
-
-        // Continuation ////////////////////////////////////////////////////////
-
-        ContinuationCounter continuationCounter =
-                new ContinuationCounter(neededContinuation);
-        continuationCounter.count(status, absoluteDir, absoluteTmpDir,
-                continuationDir, continuationTmpDir);
+        countAbsolute(neededAbsolute);
+        countContinuation(neededContinuation);
 
         // Evaluating //////////////////////////////////////////////////////////
 
@@ -255,6 +246,40 @@ public class Glmtk {
                                 lengthDistributionFile));
         OUTPUT.endPhases(String.format("Corpus Analyzation done (uses %s).",
                 Output.humanReadableByteCount(corpusSize, false)));
+    }
+
+    private void countAbsolute(Set<Pattern> neededPatterns) throws IOException,
+            InterruptedException {
+        LOGGER.info("Absolute counting '%s' -> '%s'.", trainingFile,
+                absoluteDir);
+
+        Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
+        countingPatterns.removeAll(status.getCounted(false));
+
+        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
+        countingPatterns.removeAll(status.getChunkedPatterns(false));
+
+        ABSOLUTE_CHUNKER.chunk(status, chunkingPatterns, trainingFile,
+                absoluteTmpDir);
+        MERGER.merge(status, false, countingPatterns, absoluteTmpDir,
+                absoluteDir);
+    }
+
+    private void countContinuation(Set<Pattern> neededPatterns)
+            throws IOException, InterruptedException {
+        LOGGER.info("Continuation counting '%s' -> '%s'.", absoluteDir,
+                continuationDir);
+
+        Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
+        countingPatterns.removeAll(status.getCounted(true));
+
+        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(neededPatterns);
+        chunkingPatterns.removeAll(status.getChunkedPatterns(true));
+
+        CONTINUATION_CHUNKER.chunk(status, chunkingPatterns, absoluteDir,
+                absoluteTmpDir, continuationDir, continuationTmpDir);
+        MERGER.merge(status, true, countingPatterns, continuationTmpDir,
+                continuationDir);
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
