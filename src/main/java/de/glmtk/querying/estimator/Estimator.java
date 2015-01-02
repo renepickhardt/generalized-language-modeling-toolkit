@@ -77,7 +77,7 @@ public abstract class Estimator {
      * logging.
      */
     public final double
-        probability(NGram sequence, NGram history, int recDepth) {
+    probability(NGram sequence, NGram history, int recDepth) {
         logDebug(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
@@ -106,18 +106,14 @@ public abstract class Estimator {
     }
 
     protected static final void logDebug(int recDepth, String message) {
-        LOGGER.debug("%s%s", StringUtils.repeat("  ", recDepth), message);
+        LOGGER.debug(StringUtils.repeat("  ", recDepth) + message);
     }
 
     protected static final void logDebug(
             int recDepth,
             String format,
             Object... params) {
-        Object[] logParams = new Object[params.length + 1];
-        logParams[0] = StringUtils.repeat("  ", recDepth);
-        System.arraycopy(params, 0, logParams, 1, params.length);
-
-        LOGGER.debug("%s" + format, logParams);
+        LOGGER.debug(StringUtils.repeat("  ", recDepth) + format, params);
     }
 
 }

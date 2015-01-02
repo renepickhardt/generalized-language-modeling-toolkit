@@ -57,6 +57,8 @@ public enum LoggingHelper {
 
     public void setLogLevel(Level level) {
         loggerConfig.setLevel(level);
+
+        loggerContext.updateLoggers();
     }
 
     public void addConsoleAppender(Target target) {
