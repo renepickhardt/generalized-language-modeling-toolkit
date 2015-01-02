@@ -201,7 +201,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                        0L, 0L, 0L, 0L
+                    0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -235,7 +235,7 @@ public class Glmtk {
         }
         progress.increase(1);
 
-        // Sentence Length Distribution
+        // Sequence Length Distribution
         if (!NioUtils.checkFile(lengthDistributionFile, EXISTS)) {
             LengthDistribution lengthDistribution =
                     new LengthDistribution(trainingFile, true);

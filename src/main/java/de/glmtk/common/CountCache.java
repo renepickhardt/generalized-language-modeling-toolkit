@@ -55,11 +55,11 @@ public class CountCache {
         loadContinuation(countsDir);
         LOGGER.debug("Loading nGramTimes counts...");
         loadNGramTimes(countsDir);
-        LOGGER.debug("Loading Sentence Length Distribution...");
+        LOGGER.debug("Loading Sequence Length Distribution...");
         lengthDistribution =
                 new LengthDistribution(
                         countsDir
-                        .resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
+                                .resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
                         false);
     }
 

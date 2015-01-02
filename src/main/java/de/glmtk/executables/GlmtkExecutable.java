@@ -75,11 +75,11 @@ public class GlmtkExecutable extends Executable {
 
     private static final Option OPTION_ESTIMATOR;
 
-    private static final Option OPTION_TEST_SENTENCE;
+    private static final Option OPTION_QUERY_SEQUENCE;
 
-    private static final Option OPTION_TEST_MARKOV;
+    private static final Option OPTION_QUERY_MARKOV;
 
-    private static final Option OPTION_TEST_COND;
+    private static final Option OPTION_QUERY_COND;
 
     private static final Option OPTION_LOG_CONSOLE;
 
@@ -118,23 +118,23 @@ public class GlmtkExecutable extends Executable {
             OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
         }
 
-        OPTION_TEST_SENTENCE =
-                new Option("ts", "test-sentence", true,
-                        "Files to take testing sentences from.");
-        OPTION_TEST_SENTENCE.setArgName("FILE...");
-        OPTION_TEST_SENTENCE.setArgs(Option.UNLIMITED_VALUES);
+        OPTION_QUERY_SEQUENCE =
+                new Option("qs", "query-sequence", true,
+                        "Files to take querying sequences from.");
+        OPTION_QUERY_SEQUENCE.setArgName("FILE...");
+        OPTION_QUERY_SEQUENCE.setArgs(Option.UNLIMITED_VALUES);
 
-        OPTION_TEST_MARKOV =
-                new Option("tm", "test-markov", true,
-                        "Files to take testing markov sentences from.");
-        OPTION_TEST_MARKOV.setArgName("MARKOV> <FILE...");
-        OPTION_TEST_MARKOV.setArgs(Option.UNLIMITED_VALUES);
+        OPTION_QUERY_MARKOV =
+                new Option("qm", "query-markov", true,
+                        "Files to take quering markov sequences from.");
+        OPTION_QUERY_MARKOV.setArgName("MARKOV> <FILE...");
+        OPTION_QUERY_MARKOV.setArgs(Option.UNLIMITED_VALUES);
 
-        OPTION_TEST_COND =
-                new Option("tc", "test-cond", true,
-                        "Files to take testing conditional seuqences from.");
-        OPTION_TEST_COND.setArgName("ORDER> <FILE...");
-        OPTION_TEST_COND.setArgs(Option.UNLIMITED_VALUES);
+        OPTION_QUERY_COND =
+                new Option("qc", "query-cond", true,
+                        "Files to take querying conditional seuqences from.");
+        OPTION_QUERY_COND.setArgName("ORDER> <FILE...");
+        OPTION_QUERY_COND.setArgs(Option.UNLIMITED_VALUES);
 
         OPTION_LOG_CONSOLE =
                 new Option(null, "log", false,
@@ -147,8 +147,8 @@ public class GlmtkExecutable extends Executable {
         OPTIONS =
                 Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
                         OPTION_TRAINING_ORDER, OPTION_ESTIMATOR,
-                        OPTION_TEST_SENTENCE, OPTION_TEST_MARKOV,
-                        OPTION_TEST_COND, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
+                        OPTION_QUERY_SEQUENCE, OPTION_QUERY_MARKOV,
+                        OPTION_QUERY_COND, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
     }
 
     private Path corpus = null;
@@ -159,12 +159,12 @@ public class GlmtkExecutable extends Executable {
 
     private Set<Estimator> estimators = new LinkedHashSet<Estimator>();
 
-    private Set<Path> testSentenceFiles = new LinkedHashSet<Path>();
+    private Set<Path> querySequenceFiles = new LinkedHashSet<Path>();
 
-    private Map<Integer, Set<Path>> testMarkovFiles =
+    private Map<Integer, Set<Path>> queryMarkovFiles =
             new HashMap<Integer, Set<Path>>();
 
-    private Map<Integer, Set<Path>> testCondFiles =
+    private Map<Integer, Set<Path>> queryCondFiles =
             new HashMap<Integer, Set<Path>>();
 
     private boolean logConsole = false;
@@ -227,16 +227,16 @@ public class GlmtkExecutable extends Executable {
                     estimators.add(estimator);
                 }
 
-            } else if (option.equals(OPTION_TEST_SENTENCE)) {
+            } else if (option.equals(OPTION_QUERY_SEQUENCE)) {
                 for (String opt : option.getValues()) {
-                    testSentenceFiles.add(Paths.get(opt.trim()));
+                    querySequenceFiles.add(Paths.get(opt.trim()));
                 }
 
-            } else if (option.equals(OPTION_TEST_MARKOV)) {
-                extractOrderAndFiles(option, testMarkovFiles);
+            } else if (option.equals(OPTION_QUERY_MARKOV)) {
+                extractOrderAndFiles(option, queryMarkovFiles);
 
-            } else if (option.equals(OPTION_TEST_COND)) {
-                extractOrderAndFiles(option, testCondFiles);
+            } else if (option.equals(OPTION_QUERY_COND)) {
+                extractOrderAndFiles(option, queryCondFiles);
 
             } else if (option.equals(OPTION_LOG_CONSOLE)) {
                 logConsole = true;
@@ -292,7 +292,7 @@ public class GlmtkExecutable extends Executable {
             LOGGING_HELPER.setLogLevel(Level.DEBUG);
         }
 
-        verifyTestFiles();
+        verifyQueryFiles();
     }
 
     private void checkOptionMultipleTimes(Object value, Option option) {
@@ -355,45 +355,45 @@ public class GlmtkExecutable extends Executable {
         }
     }
 
-    private void verifyTestFiles() throws Exception {
-        for (Integer markovOrder : testMarkovFiles.keySet()) {
+    private void verifyQueryFiles() throws Exception {
+        for (Integer markovOrder : queryMarkovFiles.keySet()) {
             if (markovOrder > trainingOrder) {
                 throw new Exception(
                         String.format(
                                 "Illegal markov query order '%d' (-%s, --%s): Higher than training order '%d' (-%s, --%s).",
-                                markovOrder, OPTION_TEST_MARKOV.getOpt(),
-                                OPTION_TEST_MARKOV.getLongOpt(), trainingOrder,
-                                OPTION_TRAINING_ORDER.getOpt(),
+                                markovOrder, OPTION_QUERY_MARKOV.getOpt(),
+                                OPTION_QUERY_MARKOV.getLongOpt(),
+                                trainingOrder, OPTION_TRAINING_ORDER.getOpt(),
                                 OPTION_TRAINING_ORDER.getLongOpt()));
             }
         }
 
-        for (Integer condOrder : testCondFiles.keySet()) {
+        for (Integer condOrder : queryCondFiles.keySet()) {
             if (condOrder > trainingOrder) {
                 throw new Exception(
                         String.format(
                                 "Illegal conditional query order '%d' (-%s, --%s): Higher than training order '%d' (-%s, --%s).",
-                                condOrder, OPTION_TEST_COND.getOpt(),
-                                OPTION_TEST_COND.getLongOpt(), trainingOrder,
+                                condOrder, OPTION_QUERY_COND.getOpt(),
+                                OPTION_QUERY_COND.getLongOpt(), trainingOrder,
                                 OPTION_TRAINING_ORDER.getOpt(),
                                 OPTION_TRAINING_ORDER.getLongOpt()));
             }
         }
 
-        for (Entry<Integer, Set<Path>> condTest : testCondFiles.entrySet()) {
-            int condOrder = condTest.getKey();
-            Set<Path> testFiles = condTest.getValue();
+        for (Entry<Integer, Set<Path>> condQuery : queryCondFiles.entrySet()) {
+            int condOrder = condQuery.getKey();
+            Set<Path> queryFiles = condQuery.getValue();
 
-            for (Path testFile : testFiles) {
-                verifyFileHasCondOrder(testFile, condOrder);
+            for (Path queryFile : queryFiles) {
+                verifyFileHasCondOrder(queryFile, condOrder);
             }
         }
     }
 
-    private void verifyFileHasCondOrder(Path testFile, int condOrder)
+    private void verifyFileHasCondOrder(Path queryFile, int condOrder)
             throws Exception {
         try (BufferedReader reader =
-                Files.newBufferedReader(testFile, Constants.CHARSET)) {
+                Files.newBufferedReader(queryFile, Constants.CHARSET)) {
             String line;
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
@@ -405,9 +405,9 @@ public class GlmtkExecutable extends Executable {
                     throw new Exception(
                             String.format(
                                     "Illegal line '%d' in file '%s': Line does not have specified condtional query order '%d' (-%s, --%s).\nLine was: '%s'. Length: '%d'.",
-                                    lineNo, testFile, condOrder,
-                                    OPTION_TEST_COND.getOpt(),
-                                    OPTION_TEST_COND.getLongOpt(), line,
+                                    lineNo, queryFile, condOrder,
+                                    OPTION_QUERY_COND.getOpt(),
+                                    OPTION_QUERY_COND.getLongOpt(), line,
                                     words.size()));
                 }
             }
@@ -440,45 +440,45 @@ public class GlmtkExecutable extends Executable {
 
         glmtk.count(neededPatterns);
 
-        for (Path testFile : testSentenceFiles) {
+        for (Path queryFile : querySequenceFiles) {
             CountCache countCache =
-                    glmtk.getOrCreateTestCountCache(testFile, neededPatterns);
+                    glmtk.getOrCreateTestCountCache(queryFile, neededPatterns);
 
             for (Estimator estimator : estimators) {
                 Query query =
-                        glmtk.newQuery(QueryType.sequence(), testFile,
+                        glmtk.newQuery(QueryType.sequence(), queryFile,
                                 estimator, probMode, countCache);
                 query.run();
             }
         }
 
-        for (Map.Entry<Integer, Set<Path>> entry : testMarkovFiles.entrySet()) {
+        for (Map.Entry<Integer, Set<Path>> entry : queryMarkovFiles.entrySet()) {
             int markovOrder = entry.getKey();
-            Set<Path> testFiles = entry.getValue();
+            Set<Path> queryFiles = entry.getValue();
 
-            for (Path testFile : testFiles) {
+            for (Path queryFile : queryFiles) {
                 CountCache countCache =
-                        glmtk.getOrCreateTestCountCache(testFile,
+                        glmtk.getOrCreateTestCountCache(queryFile,
                                 neededPatterns);
 
                 for (Estimator estimator : estimators) {
                     Query query =
                             glmtk.newQuery(QueryType.markov(markovOrder),
-                                    testFile, estimator, probMode, countCache);
+                                    queryFile, estimator, probMode, countCache);
                     query.run();
                 }
             }
         }
 
-        for (Set<Path> testFiles : testCondFiles.values()) {
-            for (Path testFile : testFiles) {
+        for (Set<Path> queryFiles : queryCondFiles.values()) {
+            for (Path queryFile : queryFiles) {
                 CountCache countCache =
-                        glmtk.getOrCreateTestCountCache(testFile,
+                        glmtk.getOrCreateTestCountCache(queryFile,
                                 neededPatterns);
 
                 for (Estimator estimator : estimators) {
                     Query query =
-                            glmtk.newQuery(QueryType.cond(), testFile,
+                            glmtk.newQuery(QueryType.cond(), queryFile,
                                     estimator, probMode, countCache);
                     query.run();
                 }
@@ -489,12 +489,12 @@ public class GlmtkExecutable extends Executable {
     }
 
     private void logFields() {
-        LOGGER.debug("Corpus:            %s", corpus);
-        LOGGER.debug("WorkingDir:        %s", workingDir);
-        LOGGER.debug("TrainingOrder:     %s", trainingOrder);
-        LOGGER.debug("TestSentenceFiles: %s", testSentenceFiles);
-        LOGGER.debug("TestMarkovFiles:   %s", testMarkovFiles);
-        LOGGER.debug("TestCondFiles:     %s", testCondFiles);
+        LOGGER.debug("Corpus:             %s", corpus);
+        LOGGER.debug("WorkingDir:         %s", workingDir);
+        LOGGER.debug("TrainingOrder:      %s", trainingOrder);
+        LOGGER.debug("QuerySequenceFiles: %s", querySequenceFiles);
+        LOGGER.debug("QueryMarkovFiles:   %s", queryMarkovFiles);
+        LOGGER.debug("QueryCondFiles:     %s", queryCondFiles);
     }
 
     public static void main(String[] args) throws Exception {

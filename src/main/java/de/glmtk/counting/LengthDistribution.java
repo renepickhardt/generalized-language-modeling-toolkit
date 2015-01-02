@@ -33,7 +33,7 @@ public class LengthDistribution {
                 Files.newBufferedReader(trainingFile, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                // TODO: This is a slow method to get sentence length, better would be to count number of spaces.
+                // TODO: This is a slow method to get sequence length, better would be to count number of spaces.
                 int length = StringUtils.splitAtChar(line, ' ').size();
 
                 ++sum;
@@ -101,7 +101,7 @@ public class LengthDistribution {
         if (length < 1) {
             throw new IllegalArgumentException(
                     String.format(
-                            "Illegal sentences length: '%d'. Must be positive integer.",
+                            "Illegal sequences length: '%d'. Must be positive integer.",
                             length));
         }
         return lengthDistribution.get(length);

@@ -141,7 +141,7 @@ public class Query {
         Files.createDirectories(outputDir);
         Files.deleteIfExists(outputFile);
 
-        LOGGER.info("Testing %s File '%s' -> '%s'.", queryTypeString,
+        LOGGER.info("Querying %s File '%s' -> '%s'.", queryTypeString,
                 inputFile, outputFile);
 
         estimator.setCountCache(countCache);
@@ -152,7 +152,7 @@ public class Query {
         try (BufferedWriter writer =
                 Files.newBufferedWriter(outputFile, Constants.CHARSET)) {
             String message =
-                    String.format("Testing %s File '%s' with %s Estimator",
+                    String.format("Querying %s File '%s' with %s Estimator",
                             queryTypeString, OUTPUT.bold(inputFile.toString()),
                             estimator.getName());
             OUTPUT.beginPhases(message + "...");
@@ -214,7 +214,7 @@ public class Query {
                         && probability != 0) {
                     probability *=
                             countCache.getLengthDistribution()
-                            .getLengthFrequency(sequenceSize);
+                                    .getLengthFrequency(sequenceSize);
                 }
                 stats.addProbability(probability);
 
