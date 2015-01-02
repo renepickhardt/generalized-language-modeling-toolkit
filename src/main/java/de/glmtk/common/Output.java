@@ -25,6 +25,8 @@ public enum Output {
 
     public static enum Phase {
 
+        TAGGING(1, 1, "Tagging Training"),
+
         ABSOLUTE_CHUNKING(1, 5, "Chunking Absolute"),
 
         ABSOLUTE_MERGING(2, 5, "Merging Absolute"),
@@ -117,7 +119,7 @@ public enum Output {
 
             if (updateConsole
                     && time - lastConsoleUpdate >= CONFIG
-                    .getConsoleUpdateInterval()) {
+                            .getConsoleUpdateInterval()) {
                 OUTPUT.setPercent((double) current / total);
                 lastConsoleUpdate = time;
             }
@@ -169,7 +171,7 @@ public enum Output {
         long time = System.currentTimeMillis();
         if (lastUpdateConsoleParams == 0
                 || (updateConsoleParams && time - lastUpdateConsoleParams >= CONFIG
-                .getConsoleParamsUpdateInterval())) {
+                        .getConsoleParamsUpdateInterval())) {
             int width = getTerminalWidth();
             numPercentegebarBlocks = width - 17 - Phase.MAX_NAME_LENGTH;
             lastUpdateConsoleParams = time;
@@ -184,7 +186,7 @@ public enum Output {
         int width = 80;
         try {
             Process tputColsProc = Runtime.getRuntime().exec(new String[] {
-                "bash", "-c", "tput cols 2> /dev/tty"
+                    "bash", "-c", "tput cols 2> /dev/tty"
             });
             tputColsProc.waitFor();
             try (BufferedReader reader =

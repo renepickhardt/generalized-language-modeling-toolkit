@@ -61,7 +61,7 @@ public enum TestCorpus {
                 }
             }
 
-            glmtk.count(false, neededPatterns);
+            glmtk.count(neededPatterns);
         } catch (Exception e) {
             // Because of enum nature it is necessary to not throw any checked
             // exceptions during construction.

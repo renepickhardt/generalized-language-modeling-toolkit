@@ -9,18 +9,28 @@ public class Constants {
 
     public static final String STANDARD_WORKING_DIR_SUFFIX = ".out";
 
+    public static final String STATUS_FILE_NAME = "status";
+
     public static final String TRAINING_FILE_NAME = "training";
 
-    public static final String STATUS_FILE_NAME = "status";
+    public static final String UNTAGGED_SUFFIX = ".untagged";
+
+    public static final String COUNTS_DIR_NAME = "counts";
 
     public static final String ABSOLUTE_DIR_NAME = "absolute";
 
     public static final String CONTINUATION_DIR_NAME = "continuation";
 
+    public static final String CHUNKED_SUFFIX = ".chunked";
+
     public static final String NGRAMTIMES_FILE_NAME = "ngramtimes";
 
     public static final String LENGTHDISTRIBUTION_FILE_NAME =
             "lengthdistribution";
+
+    public static final String QUERIESHACHES_DIR_NAME = "queriescaches";
+
+    public static final String QUERIES_DIR_NAME = "queries";
 
     public static final String LOG_DIR_NAME = "logs";
 

@@ -438,7 +438,7 @@ public class GlmtkExecutable extends Executable {
             }
         }
 
-        glmtk.count(needPos, neededPatterns);
+        glmtk.count(neededPatterns);
 
         for (Path testFile : testSentenceFiles) {
             CountCache countCache =

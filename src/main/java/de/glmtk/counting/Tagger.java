@@ -1,13 +1,14 @@
 package de.glmtk.counting;
 
+import static de.glmtk.Config.CONFIG;
+import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.util.PrintUtils.humanReadableByteCount;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,107 +16,90 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
+import de.glmtk.util.NioUtils;
+import de.glmtk.util.StringUtils;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public class Tagger {
+public enum Tagger {
+
+    TAGGER;
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Tagger.class);
 
-    /**
-     * How much percent of total free memory to be allocated.
-     *
-     * Careful: Java allocates memory for other tasks, so we can't just set this
-     * to 100%. I manually tested estimated this number experimentally.
-     */
-    private static final int MEMORY_PERCENT = 30;
+    private MaxentTagger tagger =
+            new MaxentTagger(CONFIG.getModel().toString());
 
-    private int updateInterval;
+    private int readerMemory;
 
-    private MaxentTagger tagger;
-
-    public Tagger(
-            int updateInterval,
-            Path modelFile) {
-        this.updateInterval = updateInterval;
-        tagger = new MaxentTagger(modelFile.toString());
-    }
+    private int writerMemory;
 
     public void tag(Path inputFile, Path outputFile) throws IOException {
-        LOGGER.info("Tagging '%s' -> '%s'.", inputFile, outputFile);
+        OUTPUT.setPhase(Phase.TAGGING, true);
+        Progress progress = new Progress(Files.size(inputFile));
 
         if (inputFile.equals(outputFile)) {
-            Path tmpFile = Paths.get(inputFile + ".tmp");
-            Files.deleteIfExists(tmpFile);
-            Files.move(inputFile, tmpFile);
-            inputFile = tmpFile;
+            throw new IllegalArgumentException(String.format(
+                    "Input- equals OutputFile: '%s'.", inputFile));
         }
 
-        Runtime r = Runtime.getRuntime();
-        r.gc();
-        long totalFreeMemory = r.maxMemory() - r.totalMemory() + r.freeMemory();
-        long memory = (MEMORY_PERCENT * totalFreeMemory) / 100;
-
-        long readerMemory = memory * 50 / 100;
-        long writerMemory = memory * 50 / 100;
-
-        long readSize = 0;
-        long totalSize = Files.size(inputFile);
-        long time = System.currentTimeMillis();
+        calculateMemory();
 
         try (BufferedReader reader =
-                new BufferedReader(new InputStreamReader(
-                        Files.newInputStream(inputFile), Constants.CHARSET),
-                        (int) readerMemory);
+                NioUtils.newBufferedReader(inputFile, Constants.CHARSET,
+                        readerMemory);
                 BufferedWriter writer =
-                        new BufferedWriter(new OutputStreamWriter(
-                                Files.newOutputStream(outputFile),
-                                Constants.CHARSET), (int) writerMemory)) {
+                        NioUtils.newBufferedWriter(outputFile,
+                                Constants.CHARSET, writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                readSize += line.getBytes(Constants.CHARSET).length;
+                progress.increase(line.getBytes(Constants.CHARSET).length);
 
                 // Tag
-                String[] sentence = line.split("\\s");
-                List<TaggedWord> taggedSentence =
-                        tagger.tagSentence(arrayToListHasWords(sentence));
+                List<HasWord> sequence = new LinkedList<HasWord>();
+                for (String token : StringUtils.splitAtChar(line, ' ')) {
+                    sequence.add(new Word(token));
+                }
+                List<TaggedWord> taggedSequence = tagger.tagSentence(sequence);
 
                 // Write
                 boolean first = true;
-                for (TaggedWord tagged : taggedSentence) {
+                for (TaggedWord tagged : taggedSequence) {
                     if (first) {
                         first = false;
                     } else {
-                        writer.write(" ");
+                        writer.write(' ');
                     }
                     writer.write(tagged.word());
-                    writer.write("/");
+                    writer.write('/');
                     writer.write(tagged.tag());
                 }
-                writer.write("\n");
-
-                if (updateInterval != 0) {
-                    long curTime = System.currentTimeMillis();
-                    if (curTime - time >= updateInterval) {
-                        time = curTime;
-                        LOGGER.info("%6.2f%%", 100.f * readSize / totalSize);
-                    }
-                }
+                writer.write('\n');
             }
         }
-
-        LOGGER.info("Tagging done.");
     }
 
-    private static List<HasWord> arrayToListHasWords(String[] array) {
-        List<HasWord> result = new LinkedList<HasWord>();
-        for (String word : array) {
-            result.add(new Word(word));
-        }
-        return result;
+    private void calculateMemory() {
+        double AVAILABLE_MEM_RATIO = 0.35;
+
+        Runtime r = Runtime.getRuntime();
+        r.gc();
+
+        long totalFreeMem = r.maxMemory() - r.totalMemory() + r.freeMemory();
+        long availableMem = (long) (AVAILABLE_MEM_RATIO * totalFreeMem);
+
+        readerMemory = (int) (availableMem / 2);
+        writerMemory = (int) (availableMem - readerMemory);
+
+        LOGGER.debug("totalFreeMem = %s", humanReadableByteCount(totalFreeMem));
+        LOGGER.debug("availableMem = %s", humanReadableByteCount(availableMem));
+        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
+        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
 
 }

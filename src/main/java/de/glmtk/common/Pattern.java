@@ -111,19 +111,23 @@ public class Pattern implements Iterable<PatternElem> {
             throw new IllegalArgumentException("Argument was empty collection.");
         }
         outerLoop:
-            for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
-                    continue outerLoop;
+        for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems) {
+                    if (elem.equals(e)) {
+                        continue outerLoop;
+                    }
                 }
+                return false;
             }
-            return false;
-        }
         return true;
     }
 
     public boolean isAbsolute() {
         return containsOnly(Arrays.asList(CNT, SKP, POS));
+    }
+
+    public boolean isPos() {
+        return contains(Arrays.asList(POS, PSKP));
     }
 
     public int numElems(Collection<PatternElem> elems) {
@@ -132,14 +136,14 @@ public class Pattern implements Iterable<PatternElem> {
         }
         int result = 0;
         outerLoop:
-        for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
-                    ++result;
-                    continue outerLoop;
+            for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems) {
+                    if (elem.equals(e)) {
+                        ++result;
+                        continue outerLoop;
+                    }
                 }
             }
-        }
         return result;
     }
 
