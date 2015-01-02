@@ -261,7 +261,7 @@ public class Glmtk {
 
         ABSOLUTE_CHUNKER.chunk(status, chunkingPatterns, trainingFile,
                 absoluteTmpDir);
-        MERGER.merge(status, false, countingPatterns, absoluteTmpDir,
+        MERGER.mergeAbsolute(status, countingPatterns, absoluteTmpDir,
                 absoluteDir);
     }
 
@@ -278,7 +278,7 @@ public class Glmtk {
 
         CONTINUATION_CHUNKER.chunk(status, chunkingPatterns, absoluteDir,
                 absoluteTmpDir, continuationDir, continuationTmpDir);
-        MERGER.merge(status, true, countingPatterns, continuationTmpDir,
+        MERGER.mergeContinuation(status, countingPatterns, continuationTmpDir,
                 continuationDir);
     }
 

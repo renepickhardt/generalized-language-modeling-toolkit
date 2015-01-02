@@ -2,6 +2,7 @@ package de.glmtk.counting;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,7 +32,6 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.util.NioUtils;
-import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
@@ -41,28 +41,28 @@ public enum Merger {
     MERGER;
 
     private static class SequenceCountReader implements Closeable,
-    AutoCloseable {
+            AutoCloseable {
 
         public static final Comparator<SequenceCountReader> COMPARATOR =
                 new Comparator<Merger.SequenceCountReader>() {
 
-            @Override
-            public int compare(
-                    SequenceCountReader lhs,
-                    SequenceCountReader rhs) {
-                if (lhs == rhs) {
-                    return 0;
-                } else if (lhs == null) {
-                    return 1;
-                } else if (rhs == null) {
-                    return -1;
-                } else {
-                    return StringUtils.compare(lhs.sequence,
-                            rhs.sequence);
-                }
-            }
+                    @Override
+                    public int compare(
+                            SequenceCountReader lhs,
+                            SequenceCountReader rhs) {
+                        if (lhs == rhs) {
+                            return 0;
+                        } else if (lhs == null) {
+                            return 1;
+                        } else if (rhs == null) {
+                            return -1;
+                        } else {
+                            return StringUtils.compare(lhs.sequence,
+                                    rhs.sequence);
+                        }
+                    }
 
-        };
+                };
 
         private Path path;
 
@@ -130,9 +130,9 @@ public enum Merger {
 
         @Override
         public Object call() throws InterruptedException, IOException {
-            while (!queue.isEmpty()) {
+            while (!patternQueue.isEmpty()) {
                 Pattern pattern =
-                        queue.poll(Constants.QUEUE_TIMEOUT,
+                        patternQueue.poll(Constants.QUEUE_TIMEOUT,
                                 TimeUnit.MILLISECONDS);
                 if (pattern == null) {
                     LOGGER.trace("Thread Idle.");
@@ -152,7 +152,7 @@ public enum Merger {
         }
 
         private void mergePattern(Pattern pattern) throws InterruptedException,
-        IOException {
+                IOException {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             int mergeCounter = 0;
@@ -214,9 +214,9 @@ public enum Merger {
                         (int) (readerMemory / chunksToMerge.size());
                 for (Path chunk : chunksToMerge) {
                     readerQueue
-                            .add(new SequenceCountReader(patternDir
-                                    .resolve(chunk), Constants.CHARSET,
-                                    memoryPerReader));
+                    .add(new SequenceCountReader(patternDir
+                            .resolve(chunk), Constants.CHARSET,
+                            memoryPerReader));
                 }
 
                 String lastSequence = null;
@@ -255,55 +255,69 @@ public enum Merger {
         }
     }
 
-    private boolean continuation;
-
     private int numParallelReaders = 10;
 
+    private Progress progress;
+
+    private boolean continuation;
+
     private Status status;
-
-    private long readerMemory;
-
-    private long writerMemory;
-
-    private BlockingQueue<Pattern> queue;
 
     private Path chunkedDir;
 
     private Path countedDir;
 
-    private Progress progress;
+    private BlockingQueue<Pattern> patternQueue;
 
-    public void merge(
+    private long readerMemory;
+
+    private long writerMemory;
+
+    public void mergeAbsolute(
             Status status,
-            boolean continuation,
             Set<Pattern> patterns,
             Path chunkedDir,
             Path countedDir) throws Exception {
-        if (!continuation) {
-            OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
-        } else {
-            OUTPUT.setPhase(Phase.CONTINUATION_MERGING, true);
-        }
+        OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
+        merge(false, status, patterns, chunkedDir, countedDir);
+    }
+
+    public void mergeContinuation(
+            Status status,
+            Set<Pattern> patterns,
+            Path chunkedDir,
+            Path countedDir) throws Exception {
+        OUTPUT.setPhase(Phase.CONTINUATION_MERGING, true);
+        merge(true, status, patterns, chunkedDir, countedDir);
+    }
+
+    private void merge(
+            boolean continuation,
+            Status status,
+            Set<Pattern> patterns,
+            Path chunkedDir,
+            Path countedDir) throws Exception {
+        LOGGER.debug("patterns = %s", patterns);
+        progress = new Progress(patterns.size());
         if (patterns.isEmpty()) {
             LOGGER.debug("No chunks to merge, returning.");
-            OUTPUT.setPercent(1.0);
+            progress.set(1.0);
             return;
         }
 
-        LOGGER.debug("patterns = %s", patterns);
         Files.createDirectories(countedDir);
 
-        calculateMemory();
-        this.status = status;
         this.continuation = continuation;
+        this.status = status;
         this.chunkedDir = chunkedDir;
         this.countedDir = countedDir;
-        progress = new Progress(patterns.size());
-        queue = new LinkedBlockingDeque<Pattern>(patterns);
+        patternQueue = new LinkedBlockingDeque<Pattern>(patterns);
+        calculateMemory();
 
-        List<Callable<Object>> threads = prepareThreads();
-
-        LOGGER.debug("Launching Threads...");
+        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
+        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
+            threads.add(new Thread());
+        }
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
 
         if (NioUtils.isDirEmpty(chunkedDir)) {
@@ -312,33 +326,23 @@ public enum Merger {
     }
 
     private void calculateMemory() {
-        LOGGER.debug("Calculating Memory...");
+        double AVAILABLE_MEM_RATIO = 0.5;
+
         Runtime r = Runtime.getRuntime();
         r.gc();
 
-        long totalFreeMemory = r.maxMemory() - r.totalMemory() + r.freeMemory();
-        long availableMemory =
-                (AVAILABLE_MEMORY_PERCENT * totalFreeMemory) / 100;
-        readerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
-        writerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
+        long totalFreeMem = r.maxMemory() - r.totalMemory() + r.freeMemory();
+        long availableMem = (long) (AVAILABLE_MEM_RATIO * totalFreeMem);
+        long memPerThread = availableMem / CONFIG.getNumberOfCores();
 
-        LOGGER.debug("totalFreeMemory = %s",
-                PrintUtils.humanReadableByteCount(totalFreeMemory, false));
-        LOGGER.debug("availableMemory = %s",
-                PrintUtils.humanReadableByteCount(availableMemory, false));
-        LOGGER.debug("readerMemory    = %s",
-                PrintUtils.humanReadableByteCount(readerMemory, false));
-        LOGGER.debug("writerMemory    = %s",
-                PrintUtils.humanReadableByteCount(writerMemory, false));
-    }
+        readerMemory = memPerThread / 2;
+        writerMemory = memPerThread - readerMemory;
 
-    private List<Callable<Object>> prepareThreads() {
-        LOGGER.debug("Preparing Threads...");
-        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
-        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
-            threads.add(new Thread());
-        }
-        return threads;
+        LOGGER.debug("totalFreeMem = %s", humanReadableByteCount(totalFreeMem));
+        LOGGER.debug("availableMem = %s", humanReadableByteCount(availableMem));
+        LOGGER.debug("memPerThread = %s", humanReadableByteCount(memPerThread));
+        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
+        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
 
 }

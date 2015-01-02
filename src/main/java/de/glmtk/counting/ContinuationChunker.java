@@ -250,12 +250,6 @@ public enum ContinuationChunker {
 
     private Progress progress;
 
-    private int readerMemory;
-
-    private int writerMemory;
-
-    private long maxChunkSize;
-
     private Status status;
 
     private Path absoluteCountedDir;
@@ -267,6 +261,12 @@ public enum ContinuationChunker {
     private Path continuationChunkedDir;
 
     private BlockingQueue<Pattern> patternQueue;
+
+    private int readerMemory;
+
+    private int writerMemory;
+
+    private long maxChunkSize;
 
     public void chunk(
             Status status,
@@ -285,7 +285,6 @@ public enum ContinuationChunker {
             return;
         }
 
-        calculateMemory();
         this.status = status;
         this.absoluteCountedDir = absoluteCountedDir;
         this.absoluteChunkedDir = absoluteChunkedDir;
@@ -304,6 +303,7 @@ public enum ContinuationChunker {
 
                         });
         patternQueue.addAll(patterns);
+        calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
@@ -313,8 +313,8 @@ public enum ContinuationChunker {
     }
 
     private void calculateMemory() {
-        double CHUNK_LOAD_FACTOR = 5.5;
         double AVAILABLE_MEM_RATIO = 0.5;
+        double CHUNK_LOAD_FACTOR = 5.5;
 
         Runtime r = Runtime.getRuntime();
         r.gc();
