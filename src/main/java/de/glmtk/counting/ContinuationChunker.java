@@ -37,11 +37,11 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.common.Counter;
-import de.glmtk.common.Output;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
@@ -53,7 +53,7 @@ public enum ContinuationChunker {
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(ContinuationChunker.class);
 
-    private static final long CHUNK_MAX_SIZE = Constants.CHUNK_MAX_SIZE;
+    private static final long CHUNK_MAX_SIZE = Constants.CHUNK_SIZE;
 
     private static final long AVERAGE_QUEUE_ITEM_SIZE = 580 * B;
 
@@ -154,7 +154,7 @@ public enum ContinuationChunker {
         public Object call() throws InterruptedException, IOException {
             while (!patternsQueue.isEmpty()) {
                 Pattern pattern =
-                        patternsQueue.poll(Constants.QUEUE_IDLE_TIME,
+                        patternsQueue.poll(Constants.QUEUE_TIMEOUT,
                                 TimeUnit.MILLISECONDS);
                 if (pattern == null) {
                     LOGGER.trace("SequencingThread idle, because queue empty.");
@@ -261,7 +261,7 @@ public enum ContinuationChunker {
                             new NGramWithCount(pattern, sequence, count);
 
                     while (!aggregatingQueues.get(pattern).offer(item,
-                            Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
+                            Constants.QUEUE_TIMEOUT, TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("Idle, because queue full.");
                         StatisticalNumberHelper
                         .count("ContinuationChunker#SequencingThread idle, beacause queue full");
@@ -277,7 +277,7 @@ public enum ContinuationChunker {
                 if (lastFile) {
                     NGramWithCount item = new NGramWithCount(pattern, null, 0);
                     while (!aggregatingQueues.get(pattern).offer(item,
-                            Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
+                            Constants.QUEUE_TIMEOUT, TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("Idle, because queue full.");
                         StatisticalNumberHelper
                         .count("ContinuationChunker#SequencingThread idle, beacause queue full");
@@ -311,7 +311,7 @@ public enum ContinuationChunker {
         public Object call() throws InterruptedException, IOException {
             while (!(numActiveSequencingThreads == 0 && queue.isEmpty())) {
                 NGramWithCount nGramWithCount =
-                        queue.poll(Constants.QUEUE_IDLE_TIME,
+                        queue.poll(Constants.QUEUE_TIMEOUT,
                                 TimeUnit.MILLISECONDS);
                 if (nGramWithCount == null) {
                     LOGGER.trace("AggregatingThread idle, because queue empty.");
@@ -488,15 +488,15 @@ public enum ContinuationChunker {
                         / numAggregatingThreads;
 
         LOGGER.debug("totalFreeMemory = %s",
-                Output.humanReadableByteCount(totalFreeMemory, false));
+                PrintUtils.humanReadableByteCount(totalFreeMemory, false));
         LOGGER.debug("availableMemory = %s",
-                Output.humanReadableByteCount(availableMemory, false));
+                PrintUtils.humanReadableByteCount(availableMemory, false));
         LOGGER.debug("readerMemory    = %s",
-                Output.humanReadableByteCount(readerMemory, false));
+                PrintUtils.humanReadableByteCount(readerMemory, false));
         LOGGER.debug("queueMemory     = %s",
-                Output.humanReadableByteCount(queueMemory, false));
+                PrintUtils.humanReadableByteCount(queueMemory, false));
         LOGGER.debug("chunkSize       = %s",
-                Output.humanReadableByteCount(chunkSize, false));
+                PrintUtils.humanReadableByteCount(chunkSize, false));
     }
 
     private List<Callable<Object>> prepareThreads(

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,11 +27,11 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Status;
 import de.glmtk.common.Counter;
-import de.glmtk.common.Output;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.util.NioUtils;
+import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
@@ -63,26 +64,41 @@ public enum Merger {
 
         };
 
+        private Path path;
+
         private BufferedReader reader;
+
+        private int lineNo;
 
         private String sequence;
 
         private Counter counter;
 
         public SequenceCountReader(
-                BufferedReader reader) throws IOException {
-            this.reader = reader;
+                Path path,
+                Charset charset,
+                int sz) throws IOException {
+            this.path = path;
+            reader = NioUtils.newBufferedReader(path, charset, sz);
+            lineNo = -1;
             nextLine();
         }
 
         public void nextLine() throws IOException {
             String line = reader.readLine();
+            ++lineNo;
             if (line == null) {
                 sequence = null;
                 counter = null;
             } else {
                 counter = new Counter();
-                sequence = Counter.getSequenceAndCounter(line, counter);
+                try {
+                    sequence = Counter.getSequenceAndCounter(line, counter);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException(String.format(
+                            "Illegal line '%d' in file '%s'.\n%s", lineNo,
+                            path, e.getMessage()));
+                }
             }
         }
 
@@ -116,7 +132,7 @@ public enum Merger {
         public Object call() throws InterruptedException, IOException {
             while (!queue.isEmpty()) {
                 Pattern pattern =
-                        queue.poll(Constants.QUEUE_IDLE_TIME,
+                        queue.poll(Constants.QUEUE_TIMEOUT,
                                 TimeUnit.MILLISECONDS);
                 if (pattern == null) {
                     LOGGER.trace("Thread Idle.");
@@ -197,11 +213,10 @@ public enum Merger {
                 int memoryPerReader =
                         (int) (readerMemory / chunksToMerge.size());
                 for (Path chunk : chunksToMerge) {
-                    BufferedReader reader =
-                            NioUtils.newBufferedReader(
-                                    patternDir.resolve(chunk),
-                                    Constants.CHARSET, memoryPerReader);
-                    readerQueue.add(new SequenceCountReader(reader));
+                    readerQueue
+                            .add(new SequenceCountReader(patternDir
+                                    .resolve(chunk), Constants.CHARSET,
+                                    memoryPerReader));
                 }
 
                 String lastSequence = null;
@@ -308,13 +323,13 @@ public enum Merger {
         writerMemory = availableMemory / CONFIG.getNumberOfCores() / 2;
 
         LOGGER.debug("totalFreeMemory = %s",
-                Output.humanReadableByteCount(totalFreeMemory, false));
+                PrintUtils.humanReadableByteCount(totalFreeMemory, false));
         LOGGER.debug("availableMemory = %s",
-                Output.humanReadableByteCount(availableMemory, false));
+                PrintUtils.humanReadableByteCount(availableMemory, false));
         LOGGER.debug("readerMemory    = %s",
-                Output.humanReadableByteCount(readerMemory, false));
+                PrintUtils.humanReadableByteCount(readerMemory, false));
         LOGGER.debug("writerMemory    = %s",
-                Output.humanReadableByteCount(writerMemory, false));
+                PrintUtils.humanReadableByteCount(writerMemory, false));
     }
 
     private List<Callable<Object>> prepareThreads() {

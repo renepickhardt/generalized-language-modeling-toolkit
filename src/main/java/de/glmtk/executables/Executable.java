@@ -74,7 +74,6 @@ import de.glmtk.util.StringUtils;
             }
             // Terminate
         } catch (Throwable e) {
-
             try (StringWriter stackTrace = new StringWriter();
                     PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
                 e.printStackTrace(stackTraceWriter);

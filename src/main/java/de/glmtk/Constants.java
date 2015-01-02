@@ -34,11 +34,14 @@ public class Constants {
 
     public static final int ORDER = 5;
 
-    public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB;
+    public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB,
+            GB = 1024 * MB;
 
-    public static final long CHUNK_MAX_SIZE = 500 * KB;
+    public static final long CHUNK_SIZE = 500 * MB;
 
-    public static final long QUEUE_IDLE_TIME = 10;
+    public static final int BUFFER_SIZE = (int) (50 * MB);
+
+    public static final long QUEUE_TIMEOUT = 10;
 
     public static final String UNKOWN_POS = "UNKP";
 

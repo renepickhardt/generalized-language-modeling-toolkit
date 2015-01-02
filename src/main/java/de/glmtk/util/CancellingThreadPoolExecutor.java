@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CancellingThreadPoolExecutor extends ThreadPoolExecutor {
 
-    private Exception exception = null;
+    private Throwable throwable = null;
 
     public CancellingThreadPoolExecutor(
             int corePoolSize,
@@ -80,24 +80,22 @@ public class CancellingThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
 
-        if (t != null && !(t instanceof InterruptedException)) {
+        if (throwable == null && t != null
+                && !(t instanceof InterruptedException)) {
             shutdownNow();
-            if (t instanceof Error) {
-                throw (Error) t;
-            } else if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else if (t instanceof Exception) {
-                exception = (Exception) t;
-            } else {
-                throw new RuntimeException(t);
-            }
+            throwable = t;
         }
     }
 
     public void rethrowIfException() throws Exception {
-        if (exception != null) {
-            throw exception;
+        if (throwable != null) {
+            if (throwable instanceof Error) {
+                throw (Error) throwable;
+            } else if (throwable instanceof RuntimeException) {
+                throw (RuntimeException) throwable;
+            } else {
+                throw (Exception) throwable;
+            }
         }
     }
-
 }

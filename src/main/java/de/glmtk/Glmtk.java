@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Status.TrainingStatus;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
-import de.glmtk.common.Output;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
@@ -39,6 +38,7 @@ import de.glmtk.querying.Query;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;
+import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StringUtils;
 
 /**
@@ -60,6 +60,7 @@ public class Glmtk {
     // TODO: only count nGramTimes if needed
     // TODO: enable comment syntax in input files
     // TODO: how is testing file input treated? (empty lines?)
+    // TODO: verify that training does not contain any reserved symbols (_ % /)
 
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Glmtk.class);
@@ -198,7 +199,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -245,7 +246,7 @@ public class Glmtk {
                         .asList(absoluteDir, continuationDir, nGramTimesFile,
                                 lengthDistributionFile));
         OUTPUT.endPhases(String.format("Corpus Analyzation done (uses %s).",
-                Output.humanReadableByteCount(corpusSize, false)));
+                PrintUtils.humanReadableByteCount(corpusSize, false)));
     }
 
     private void countAbsolute(Set<Pattern> neededPatterns) throws Exception {
