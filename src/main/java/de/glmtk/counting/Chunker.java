@@ -33,6 +33,7 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
+import de.glmtk.Status.TrainingStatus;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -43,20 +44,20 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-public enum ContinuationChunker {
+public enum Chunker {
 
-    CONTINUATION_CHUNKER;
+    CHUNKER;
 
     private static final Logger LOGGER = LogManager
-            .getFormatterLogger(ContinuationChunker.class);
+            .getFormatterLogger(Chunker.class);
 
     private static final int TAB_COUNTER_NL_BYTES = ("\t"
             + new Counter(10, 10, 10, 10).toString() + "\n")
             .getBytes(Constants.CHARSET).length;
 
-    private class Thread implements Callable<Object> {
+    private abstract class Thread implements Callable<Object> {
 
-        private Pattern pattern;
+        protected Pattern pattern;
 
         private Path patternDir;
 
@@ -86,9 +87,14 @@ public enum ContinuationChunker {
                     continue;
                 }
 
-                LOGGER.debug("Counting pattern '%s'.", pattern);
+                LOGGER.debug("Chunking pattern '%s'.", pattern);
 
-                patternDir = continuationChunkedDir.resolve(pattern.toString());
+                if (!continuation) {
+                    patternDir = absoluteChunkedDir.resolve(pattern.toString());
+                } else {
+                    patternDir =
+                            continuationChunkedDir.resolve(pattern.toString());
+                }
                 chunkFiles = new LinkedList<Path>();
                 chunkSize = 0L;
                 chunkCounts = new HashMap<String, Counter>();
@@ -104,7 +110,7 @@ public enum ContinuationChunker {
 
                 Map<Pattern, List<Path>> m = new HashMap<Pattern, List<Path>>();
                 m.put(pattern, chunkFiles);
-                status.addChunked(true, m);
+                status.addChunked(continuation, m);
 
                 LOGGER.debug("Finished pattern '%s'.", pattern);
 
@@ -117,7 +123,102 @@ public enum ContinuationChunker {
             return null;
         }
 
-        private List<Path> getInputFiles() throws IOException {
+        protected abstract List<Path> getInputFiles() throws Exception;
+
+        protected abstract void sequenceInput(Path inputFile) throws Exception;
+
+        protected void countSequence(String sequence, long count)
+                throws IOException {
+            Counter counter = chunkCounts.get(sequence);
+            if (counter == null) {
+                counter = new Counter();
+                chunkCounts.put(sequence, counter);
+                chunkSize +=
+                        sequence.getBytes(Constants.CHARSET).length
+                        + TAB_COUNTER_NL_BYTES;
+            }
+            counter.add(count);
+
+            if (chunkSize > Constants.MAX_CHUNK_SIZE) {
+                if (Constants.DEBUG_AVERAGE_MEMORY) {
+                    StatisticalNumberHelper.average("Chunk Map Memory",
+                            MemoryUtil.deepMemoryUsageOf(chunkCounts,
+                                    VisibilityFilter.ALL));
+                }
+
+                writeChunkToFile();
+                chunkSize = 0L;
+                chunkCounts = new HashMap<String, Counter>();
+            }
+        }
+
+        private void writeChunkToFile() throws IOException {
+            Path chunkFile = patternDir.resolve("chunk" + chunkFiles.size());
+            Files.deleteIfExists(chunkFile);
+
+            try (BufferedWriter writer =
+                    NioUtils.newBufferedWriter(chunkFile, Constants.CHARSET,
+                            writerMemory)) {
+                Map<String, Counter> sortedCounts =
+                        new TreeMap<String, Counter>(chunkCounts);
+                for (Entry<String, Counter> entry : sortedCounts.entrySet()) {
+                    writer.write(entry.getKey());
+                    writer.write('\t');
+                    if (!continuation) {
+                        writer.write(Long.toString(entry.getValue()
+                                .getOnePlusCount()));
+                    } else {
+                        writer.write(entry.getValue().toString());
+                    }
+                    writer.write('\n');
+                }
+            }
+
+            chunkFiles.add(chunkFile.getFileName());
+
+            LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern,
+                    chunkFile);
+        }
+
+    }
+
+    private class AbsoluteThread extends Thread {
+
+        @Override
+        protected List<Path> getInputFiles() throws Exception {
+            return Arrays.asList(trainingFile);
+        }
+
+        @Override
+        protected void sequenceInput(Path inputFile) throws Exception {
+            int patternSize = pattern.size();
+            try (BufferedReader reader =
+                    NioUtils.newBufferedReader(inputFile, Constants.CHARSET,
+                            readerMemory)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] split =
+                            StringUtils.splitAtChar(line, ' ').toArray(
+                                    new String[0]);
+                    String[] words = new String[split.length];
+                    String[] poses = new String[split.length];
+                    StringUtils.extractWordsAndPoses(split, trainingFileHasPos,
+                            words, poses);
+
+                    for (int p = 0; p <= split.length - patternSize; ++p) {
+                        String sequence = pattern.apply(words, poses, p);
+                        countSequence(sequence, 1L);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private class ContinuationThread extends Thread {
+
+        @Override
+        protected List<Path> getInputFiles() throws IOException {
             Pattern inputPattern = pattern.getContinuationSource();
 
             Path inputDir;
@@ -159,7 +260,8 @@ public enum ContinuationChunker {
             }
         }
 
-        private void sequenceInput(Path inputFile) throws IOException {
+        @Override
+        protected void sequenceInput(Path inputFile) throws Exception {
             LOGGER.debug("Sequencing '%s' from '%s'.", pattern, inputFile);
             try (BufferedReader reader =
                     NioUtils.newBufferedReader(inputFile, Constants.CHARSET,
@@ -197,60 +299,17 @@ public enum ContinuationChunker {
             }
         }
 
-        private void countSequence(String sequence, long count)
-                throws IOException {
-            Counter counter = chunkCounts.get(sequence);
-            if (counter == null) {
-                counter = new Counter();
-                chunkCounts.put(sequence, counter);
-                chunkSize +=
-                        sequence.getBytes(Constants.CHARSET).length
-                                + TAB_COUNTER_NL_BYTES;
-            }
-            counter.add(count);
-
-            if (chunkSize > Constants.MAX_CHUNK_SIZE) {
-                if (Constants.DEBUG_AVERAGE_MEMORY) {
-                    StatisticalNumberHelper.average(
-                            "ContinuationChunk Map Memory", MemoryUtil
-                            .deepMemoryUsageOf(chunkCounts,
-                                    VisibilityFilter.ALL));
-                }
-
-                writeChunkToFile();
-                chunkSize = 0L;
-                chunkCounts = new HashMap<String, Counter>();
-            }
-        }
-
-        private void writeChunkToFile() throws IOException {
-            Path chunkFile = patternDir.resolve("chunk" + chunkFiles.size());
-            Files.deleteIfExists(chunkFile);
-
-            try (BufferedWriter writer =
-                    NioUtils.newBufferedWriter(chunkFile, Constants.CHARSET,
-                            writerMemory)) {
-                Map<String, Counter> sortedCounts =
-                        new TreeMap<String, Counter>(chunkCounts);
-                for (Entry<String, Counter> entry : sortedCounts.entrySet()) {
-                    writer.write(entry.getKey());
-                    writer.write('\t');
-                    writer.write(entry.getValue().toString());
-                    writer.write('\n');
-                }
-            }
-
-            chunkFiles.add(chunkFile.getFileName());
-
-            LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern,
-                    chunkFile);
-        }
-
     }
 
     private Progress progress;
 
+    private boolean continuation;
+
     private Status status;
+
+    private Path trainingFile;
+
+    private boolean trainingFileHasPos;
 
     private Path absoluteCountedDir;
 
@@ -268,14 +327,38 @@ public enum ContinuationChunker {
 
     private long maxChunkSize;
 
-    public void chunk(
-            Status status,
+    public void chunkAbsolute(
             Set<Pattern> patterns,
+            Status status,
+            Path trainingFile,
+            Path absoluteChunkedDir) throws Exception {
+        OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING, true);
+        this.status = status;
+        this.trainingFile = trainingFile;
+        trainingFileHasPos =
+                status.getTraining() == TrainingStatus.DONE_WITH_POS;
+        this.absoluteChunkedDir = absoluteChunkedDir;
+        chunk(false, patterns);
+    }
+
+    public void chunkContinuation(
+            Set<Pattern> patterns,
+            Status status,
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
             Path continuationCountedDir,
             Path continuationChunkedDir) throws Exception {
         OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING, true);
+        this.status = status;
+        this.absoluteCountedDir = absoluteCountedDir;
+        this.absoluteChunkedDir = absoluteChunkedDir;
+        this.continuationCountedDir = continuationCountedDir;
+        this.continuationChunkedDir = continuationChunkedDir;
+        chunk(true, patterns);
+    }
+
+    private void chunk(boolean continuation, Set<Pattern> patterns)
+            throws Exception {
         LOGGER.debug("patterns = '%s'", patterns);
         progress = new Progress(patterns.size());
 
@@ -285,29 +368,27 @@ public enum ContinuationChunker {
             return;
         }
 
-        this.status = status;
-        this.absoluteCountedDir = absoluteCountedDir;
-        this.absoluteChunkedDir = absoluteChunkedDir;
-        this.continuationCountedDir = continuationCountedDir;
-        this.continuationChunkedDir = continuationChunkedDir;
+        this.continuation = continuation;
         patternQueue =
                 new PriorityBlockingQueue<Pattern>(patterns.size(),
                         new Comparator<Pattern>() {
 
-                            @Override
-                            public int compare(Pattern lhs, Pattern rhs) {
-                                return Integer.compare(
-                                        lhs.numElems(PatternElem.CSKIP_ELEMS),
-                                        rhs.numElems(PatternElem.CSKIP_ELEMS));
-                            }
+                    @Override
+                    public int compare(Pattern lhs, Pattern rhs) {
+                        return Integer.compare(
+                                lhs.numElems(PatternElem.CSKIP_ELEMS),
+                                rhs.numElems(PatternElem.CSKIP_ELEMS));
+                    }
 
-                        });
+                });
         patternQueue.addAll(patterns);
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
-            threads.add(new Thread());
+            threads.add(!continuation
+                    ? new AbsoluteThread()
+                    : new ContinuationThread());
         }
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
     }

@@ -2,8 +2,7 @@ package de.glmtk;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
-import static de.glmtk.counting.AbsoluteChunker.ABSOLUTE_CHUNKER;
-import static de.glmtk.counting.ContinuationChunker.CONTINUATION_CHUNKER;
+import static de.glmtk.counting.Chunker.CHUNKER;
 import static de.glmtk.counting.Merger.MERGER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
@@ -199,7 +198,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                        0L, 0L, 0L, 0L
+                    0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -259,7 +258,7 @@ public class Glmtk {
         Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
         countingPatterns.removeAll(status.getChunkedPatterns(false));
 
-        ABSOLUTE_CHUNKER.chunk(status, chunkingPatterns, trainingFile,
+        CHUNKER.chunkAbsolute(chunkingPatterns, status, trainingFile,
                 absoluteTmpDir);
         MERGER.mergeAbsolute(status, countingPatterns, absoluteTmpDir,
                 absoluteDir);
@@ -276,7 +275,7 @@ public class Glmtk {
         Set<Pattern> chunkingPatterns = new HashSet<Pattern>(neededPatterns);
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
-        CONTINUATION_CHUNKER.chunk(status, chunkingPatterns, absoluteDir,
+        CHUNKER.chunkContinuation(chunkingPatterns, status, absoluteDir,
                 absoluteTmpDir, continuationDir, continuationTmpDir);
         MERGER.mergeContinuation(status, countingPatterns, continuationTmpDir,
                 continuationDir);

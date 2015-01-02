@@ -124,8 +124,6 @@ public enum Merger {
     private static final Logger LOGGER = LogManager
             .getFormatterLogger(Merger.class);
 
-    private static final int AVAILABLE_MEMORY_PERCENT = 35;
-
     private class Thread implements Callable<Object> {
 
         @Override
@@ -326,7 +324,7 @@ public enum Merger {
     }
 
     private void calculateMemory() {
-        double AVAILABLE_MEM_RATIO = 0.5;
+        double AVAILABLE_MEM_RATIO = 0.35;
 
         Runtime r = Runtime.getRuntime();
         r.gc();
