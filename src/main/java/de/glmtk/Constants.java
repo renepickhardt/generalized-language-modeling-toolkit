@@ -37,7 +37,7 @@ public class Constants {
     public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB,
             GB = 1024 * MB;
 
-    public static final long CHUNK_SIZE = 500 * MB;
+    public static final long MAX_CHUNK_SIZE = 500 * MB;
 
     public static final int BUFFER_SIZE = (int) (50 * MB);
 

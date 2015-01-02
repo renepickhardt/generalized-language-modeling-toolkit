@@ -78,26 +78,7 @@ public enum AbsoluteChunker {
 
                 Files.createDirectories(patternDir);
 
-                int patternSize = pattern.size();
-                try (BufferedReader reader =
-                        NioUtils.newBufferedReader(trainingFile,
-                                Constants.CHARSET, readerMemory)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        String[] split =
-                                StringUtils.splitAtChar(line, ' ').toArray(
-                                        new String[0]);
-                        String[] words = new String[split.length];
-                        String[] poses = new String[split.length];
-                        StringUtils.extractWordsAndPoses(split,
-                                trainingFileHasPos, words, poses);
-
-                        for (int p = 0; p <= split.length - patternSize; ++p) {
-                            String sequence = pattern.apply(words, poses, p);
-                            countSequenceInChunk(sequence);
-                        }
-                    }
-                }
+                sequenceInput(trainingFile, trainingFileHasPos);
 
                 writeChunkToFile(); // Write remaining partial chunk.
                 chunkCounts = null; // Free memory of map.
@@ -117,18 +98,42 @@ public enum AbsoluteChunker {
             return null;
         }
 
-        private void countSequenceInChunk(String sequence) throws IOException {
+        private void sequenceInput(Path inputFile, boolean hasPos)
+                throws IOException {
+            int patternSize = pattern.size();
+            try (BufferedReader reader =
+                    NioUtils.newBufferedReader(inputFile, Constants.CHARSET,
+                            readerMemory)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] split =
+                            StringUtils.splitAtChar(line, ' ').toArray(
+                                    new String[0]);
+                    String[] words = new String[split.length];
+                    String[] poses = new String[split.length];
+                    StringUtils.extractWordsAndPoses(split, hasPos, words,
+                            poses);
+
+                    for (int p = 0; p <= split.length - patternSize; ++p) {
+                        String sequence = pattern.apply(words, poses, p);
+                        countSequence(sequence);
+                    }
+                }
+            }
+        }
+
+        private void countSequence(String sequence) throws IOException {
             Long count = chunkCounts.get(sequence);
             if (count == null) {
+                chunkCounts.put(sequence, 1L);
                 chunkSize +=
                         sequence.getBytes(Constants.CHARSET).length
                         + TAB_COUNT_NL_BYTES;
-                chunkCounts.put(sequence, 1L);
             } else {
                 chunkCounts.put(sequence, count + 1L);
             }
 
-            if (chunkSize > Constants.CHUNK_SIZE) {
+            if (chunkSize > maxChunkSize) {
                 if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average("AbsoluteChunk Map Memory",
                             MemoryUtil.deepMemoryUsageOf(chunkCounts,
@@ -172,7 +177,7 @@ public enum AbsoluteChunker {
 
     private int writerMemory;
 
-    private long chunkSize;
+    private long maxChunkSize;
 
     private Status status;
 
@@ -217,7 +222,6 @@ public enum AbsoluteChunker {
         double CHUNK_LOAD_FACTOR = 5.5;
         double AVAILABLE_MEM_RATIO = 0.5;
 
-        LOGGER.debug("Calculating Memory...");
         Runtime r = Runtime.getRuntime();
         r.gc();
 
@@ -228,16 +232,16 @@ public enum AbsoluteChunker {
         readerMemory = Constants.BUFFER_SIZE;
         writerMemory = Constants.BUFFER_SIZE;
         long chunkMemory =
-                (long) Math.min(CHUNK_LOAD_FACTOR * Constants.CHUNK_SIZE,
+                (long) Math.min(CHUNK_LOAD_FACTOR * Constants.MAX_CHUNK_SIZE,
                         memPerThread - readerMemory - writerMemory);
-        chunkSize = (long) (chunkMemory / CHUNK_LOAD_FACTOR);
+        maxChunkSize = (long) (chunkMemory / CHUNK_LOAD_FACTOR);
 
         LOGGER.debug("totalFreeMem = %s", humanReadableByteCount(totalFreeMem));
         LOGGER.debug("availableMem = %s", humanReadableByteCount(availableMem));
         LOGGER.debug("memPerThread = %s", humanReadableByteCount(memPerThread));
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
-        LOGGER.debug("chunkSize    = %s", humanReadableByteCount(chunkSize));
+        LOGGER.debug("maxChunkSize = %s", humanReadableByteCount(maxChunkSize));
     }
 
 }

@@ -1,5 +1,5 @@
 # Main memory (RAM) to be assigned to GLMTK in MB.
-mainMemory = 1024
+mainMemory = 4096
 
 # Number of parallel threads used.
 numberOfCores = 4
