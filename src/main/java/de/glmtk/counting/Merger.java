@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -109,34 +110,29 @@ public enum Merger {
 
     private static final int AVAILABLE_MEMORY_PERCENT = 35;
 
-    private class Thread implements Runnable {
+    private class Thread implements Callable<Object> {
 
         @Override
-        public void run() {
-            try {
-                while (!queue.isEmpty()) {
-                    Pattern pattern =
-                            queue.poll(Constants.QUEUE_IDLE_TIME,
-                                    TimeUnit.MILLISECONDS);
-                    if (pattern == null) {
-                        LOGGER.trace("Thread Idle.");
-                        StatisticalNumberHelper.count("Merger#Thread idle");
-                        continue;
-                    }
-
-                    mergePattern(pattern);
-
-                    synchronized (progress) {
-                        progress.increase(1);
-                    }
+        public Object call() throws InterruptedException, IOException {
+            while (!queue.isEmpty()) {
+                Pattern pattern =
+                        queue.poll(Constants.QUEUE_IDLE_TIME,
+                                TimeUnit.MILLISECONDS);
+                if (pattern == null) {
+                    LOGGER.trace("Thread Idle.");
+                    StatisticalNumberHelper.count("Merger#Thread idle");
+                    continue;
                 }
-            } catch (InterruptedException | IOException e) {
-                // Rethrow as unchecked exception, because it is not allowed
-                // to throw checked exceptions from threads.
-                throw new RuntimeException(e);
+
+                mergePattern(pattern);
+
+                synchronized (progress) {
+                    progress.increase(1);
+                }
             }
 
             LOGGER.debug("Thread finished.");
+            return null;
         }
 
         private void mergePattern(Pattern pattern) throws InterruptedException,
@@ -267,7 +263,7 @@ public enum Merger {
             boolean continuation,
             Set<Pattern> patterns,
             Path chunkedDir,
-            Path countedDir) throws IOException, InterruptedException {
+            Path countedDir) throws Exception {
         if (!continuation) {
             OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
         } else {
@@ -290,7 +286,7 @@ public enum Merger {
         progress = new Progress(patterns.size());
         queue = new LinkedBlockingDeque<Pattern>(patterns);
 
-        List<Runnable> threads = prepareThreads();
+        List<Callable<Object>> threads = prepareThreads();
 
         LOGGER.debug("Launching Threads...");
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
@@ -321,9 +317,9 @@ public enum Merger {
                 Output.humanReadableByteCount(writerMemory, false));
     }
 
-    private List<Runnable> prepareThreads() {
+    private List<Callable<Object>> prepareThreads() {
         LOGGER.debug("Preparing Threads...");
-        List<Runnable> threads = new LinkedList<Runnable>();
+        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
             threads.add(new Thread());
         }

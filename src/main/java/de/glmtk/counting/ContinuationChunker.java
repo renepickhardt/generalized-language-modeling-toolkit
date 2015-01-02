@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -67,13 +68,13 @@ public enum ContinuationChunker {
     private static final Comparator<Pattern> SOURCE_PATTERN_COMPARATOR =
             new Comparator<Pattern>() {
 
-                @Override
-                public int compare(Pattern a, Pattern b) {
-                    return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
-                            .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
-                }
+        @Override
+        public int compare(Pattern a, Pattern b) {
+            return ((Integer) a.numElems(PatternElem.CSKIP_ELEMS))
+                    .compareTo(b.numElems(PatternElem.CSKIP_ELEMS));
+        }
 
-            };
+    };
 
     private static class NGramWithCount {
 
@@ -147,64 +148,58 @@ public enum ContinuationChunker {
 
     }
 
-    private class SequencingThread implements Runnable {
+    private class SequencingThread implements Callable<Object> {
 
         @Override
-        public void run() {
-            try {
-                while (!patternsQueue.isEmpty()) {
-                    Pattern pattern =
-                            patternsQueue.poll(Constants.QUEUE_IDLE_TIME,
-                                    TimeUnit.MILLISECONDS);
-                    if (pattern == null) {
-                        LOGGER.trace("SequencingThread idle, because queue empty.");
-                        StatisticalNumberHelper
-                                .count("ContinuationChunker#SequencingThread idle, because queue empty");
-                        continue;
-                    }
+        public Object call() throws InterruptedException, IOException {
+            while (!patternsQueue.isEmpty()) {
+                Pattern pattern =
+                        patternsQueue.poll(Constants.QUEUE_IDLE_TIME,
+                                TimeUnit.MILLISECONDS);
+                if (pattern == null) {
+                    LOGGER.trace("SequencingThread idle, because queue empty.");
+                    StatisticalNumberHelper
+                    .count("ContinuationChunker#SequencingThread idle, because queue empty");
+                    continue;
+                }
 
-                    boolean[] args = new boolean[2];
-                    Path patternDir = getPatternDir(pattern, args);
-                    if (patternDir == null) {
-                        LOGGER.trace("Pattern '%s' not available.", pattern);
-                        StatisticalNumberHelper.count("Pattern not available");
-                        // wait for agregators to finish pattern
-                        Thread.sleep(10);
-                        patternsQueue.put(pattern);
-                        continue;
-                    }
-                    boolean chunked = args[0];
-                    boolean fromAbsolute = args[1];
+                boolean[] args = new boolean[2];
+                Path patternDir = getPatternDir(pattern, args);
+                if (patternDir == null) {
+                    LOGGER.trace("Pattern '%s' not available.", pattern);
+                    StatisticalNumberHelper.count("Pattern not available");
+                    // wait for agregators to finish pattern
+                    Thread.sleep(10);
+                    patternsQueue.put(pattern);
+                    continue;
+                }
+                boolean chunked = args[0];
+                boolean fromAbsolute = args[1];
 
-                    if (!chunked) {
-                        sequence(pattern, patternDir, true, fromAbsolute);
-                    } else {
-                        try (DirectoryStream<Path> inputDirStream =
-                                Files.newDirectoryStream(patternDir)) {
-                            Iterator<Path> iter = inputDirStream.iterator();
-                            while (iter.hasNext()) {
-                                sequence(pattern, iter.next(), !iter.hasNext(),
-                                        fromAbsolute);
-                            }
+                if (!chunked) {
+                    sequence(pattern, patternDir, true, fromAbsolute);
+                } else {
+                    try (DirectoryStream<Path> inputDirStream =
+                            Files.newDirectoryStream(patternDir)) {
+                        Iterator<Path> iter = inputDirStream.iterator();
+                        while (iter.hasNext()) {
+                            sequence(pattern, iter.next(), !iter.hasNext(),
+                                    fromAbsolute);
                         }
                     }
-
-                    synchronized (progress) {
-                        progress.increase(1);
-                    }
                 }
-            } catch (Exception e) {
-                // Rethrow as unchecked exception, because it is not allowed
-                // to throw checked exceptions from threads.
-                throw new RuntimeException(e);
+
+                synchronized (progress) {
+                    progress.increase(1);
+                }
             }
 
             --numActiveSequencingThreads;
             LOGGER.debug("SequencingThread finished");
+            return null;
         }
 
-        private Path getPatternDir(Pattern pattern, boolean[] args)
-                throws InterruptedException {
+        private Path getPatternDir(Pattern pattern, boolean[] args) {
             Path patternDir;
             boolean chunked;
             boolean fromAbsolute;
@@ -269,7 +264,7 @@ public enum ContinuationChunker {
                             Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("Idle, because queue full.");
                         StatisticalNumberHelper
-                                .count("ContinuationChunker#SequencingThread idle, beacause queue full");
+                        .count("ContinuationChunker#SequencingThread idle, beacause queue full");
                     }
 
                     if (Constants.DEBUG_AVERAGE_MEMORY) {
@@ -285,7 +280,7 @@ public enum ContinuationChunker {
                             Constants.QUEUE_IDLE_TIME, TimeUnit.MILLISECONDS)) {
                         LOGGER.trace("Idle, because queue full.");
                         StatisticalNumberHelper
-                                .count("ContinuationChunker#SequencingThread idle, beacause queue full");
+                        .count("ContinuationChunker#SequencingThread idle, beacause queue full");
                     }
                 }
             }
@@ -293,7 +288,7 @@ public enum ContinuationChunker {
 
     }
 
-    private class AggregatingThread implements Runnable {
+    private class AggregatingThread implements Callable<Object> {
 
         private BlockingQueue<NGramWithCount> queue;
 
@@ -313,30 +308,27 @@ public enum ContinuationChunker {
         }
 
         @Override
-        public void run() {
-            try {
-                while (!(numActiveSequencingThreads == 0 && queue.isEmpty())) {
-                    NGramWithCount nGramWithCount =
-                            queue.poll(Constants.QUEUE_IDLE_TIME,
-                                    TimeUnit.MILLISECONDS);
-                    if (nGramWithCount == null) {
-                        LOGGER.trace("AggregatingThread idle, because queue empty.");
-                        StatisticalNumberHelper
-                        .count("ContinuationChunker#AggregatingThread idle, because queue empty");
-                        continue;
-                    }
-
-                    for (Pattern pattern : sourceToPattern.get(nGramWithCount
-                            .getPattern())) {
-                        addToChunk(pattern, nGramWithCount.getSequence(),
-                                nGramWithCount.getCount());
-                    }
+        public Object call() throws InterruptedException, IOException {
+            while (!(numActiveSequencingThreads == 0 && queue.isEmpty())) {
+                NGramWithCount nGramWithCount =
+                        queue.poll(Constants.QUEUE_IDLE_TIME,
+                                TimeUnit.MILLISECONDS);
+                if (nGramWithCount == null) {
+                    LOGGER.trace("AggregatingThread idle, because queue empty.");
+                    StatisticalNumberHelper
+                    .count("ContinuationChunker#AggregatingThread idle, because queue empty");
+                    continue;
                 }
-            } catch (InterruptedException | IOException e) {
-                // Rethrow as unchecked exception, because it is not allowed
-                // to throw checked exceptions from threads.
-                throw new RuntimeException(e);
+
+                for (Pattern pattern : sourceToPattern.get(nGramWithCount
+                        .getPattern())) {
+                    addToChunk(pattern, nGramWithCount.getSequence(),
+                            nGramWithCount.getCount());
+                }
             }
+
+            LOGGER.debug("AggregatingThread finished.");
+            return null;
         }
 
         private void addToChunk(Pattern pattern, String sequence, long count)
@@ -433,8 +425,7 @@ public enum ContinuationChunker {
             Path absoluteCountedDir,
             Path absoluteChunkedDir,
             Path continuationCountedDir,
-            Path continuationChunkedDir) throws IOException,
-            InterruptedException {
+            Path continuationChunkedDir) throws Exception {
         OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING, true);
 
         if (patterns.isEmpty()) {
@@ -465,7 +456,7 @@ public enum ContinuationChunker {
         this.patterns = patterns;
         progress = new Progress(patterns.size());
 
-        List<Runnable> threads =
+        List<Callable<Object>> threads =
                 prepareThreads(numSequencingThreads, numAggregatingThreads);
 
         LOGGER.debug("Launching Threads...");
@@ -508,7 +499,7 @@ public enum ContinuationChunker {
                 Output.humanReadableByteCount(chunkSize, false));
     }
 
-    private List<Runnable> prepareThreads(
+    private List<Callable<Object>> prepareThreads(
             int numSequencingThreads,
             int numAggregatingThreads) {
         LOGGER.debug("Preparing Threads...");
@@ -540,7 +531,7 @@ public enum ContinuationChunker {
         patternsQueue = sourcePatternsQueue;
         this.aggregatingQueues = sourceToAggregatingQueue;
 
-        List<Runnable> threads = new LinkedList<Runnable>();
+        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != numSequencingThreads; ++i) {
             threads.add(new SequencingThread());
         }
@@ -598,19 +589,19 @@ public enum ContinuationChunker {
     }
 
     private
-        void
-        setupThreadParameters(
-                int numAggregatingThreads,
-                long queueMemory,
-                Map<Pattern, List<Pattern>> sourceToPattern,
-                List<BlockingQueue<NGramWithCount>> aggregatingQueues,
-                List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
-                Map<Pattern, BlockingQueue<NGramWithCount>> sourceToAggregatingQueues) {
+    void
+    setupThreadParameters(
+            int numAggregatingThreads,
+            long queueMemory,
+            Map<Pattern, List<Pattern>> sourceToPattern,
+            List<BlockingQueue<NGramWithCount>> aggregatingQueues,
+            List<Map<Pattern, List<Pattern>>> aggregatingSourceToPattern,
+            Map<Pattern, BlockingQueue<NGramWithCount>> sourceToAggregatingQueues) {
         for (int i = 0; i != numAggregatingThreads; ++i) {
             aggregatingQueues.add(new ArrayBlockingQueue<NGramWithCount>(
                     (int) (queueMemory / AVERAGE_QUEUE_ITEM_SIZE)));
             aggregatingSourceToPattern
-                    .add(new HashMap<Pattern, List<Pattern>>());
+            .add(new HashMap<Pattern, List<Pattern>>());
         }
 
         int threadIter = 0;

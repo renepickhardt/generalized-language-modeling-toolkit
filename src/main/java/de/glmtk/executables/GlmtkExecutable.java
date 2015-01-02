@@ -8,7 +8,6 @@ import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -416,7 +415,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void exec() throws IOException, InterruptedException {
+    protected void exec() throws Exception {
         logFields();
 
         Glmtk glmtk = new Glmtk(corpus, workingDir);

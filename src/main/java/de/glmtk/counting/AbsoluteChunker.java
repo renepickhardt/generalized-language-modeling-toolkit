@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -125,32 +126,29 @@ public enum AbsoluteChunker {
     private static final int TAB_COUNT_NL_BYTES = "\t10\n"
             .getBytes(Constants.CHARSET).length;
 
-    private class SequencingThread implements Runnable {
+    private class SequencingThread implements Callable<Object> {
 
         private Map<Integer, Set<Pattern>> patternsBySize;
 
         @Override
-        public void run() {
+        public Object call() throws InterruptedException, IOException {
             patternsBySize = Patterns.groupPatternsBySize(patterns);
+            Progress progress = new Progress(Files.size(trainingFile));
 
             try (BufferedReader reader =
                     NioUtils.newBufferedReader(trainingFile, Constants.CHARSET,
                             (int) readerMemory)) {
-                Progress progress = new Progress(Files.size(trainingFile));
 
                 String line;
                 while ((line = reader.readLine()) != null) {
                     progress.increase(line.getBytes(Constants.CHARSET).length);
                     generateAndQueueSequences(line);
                 }
-            } catch (InterruptedException | IOException e) {
-                // Rethrow as unchecked exception, because it is not allowed
-                // to throw checked exceptions from threads.
-                throw new RuntimeException(e);
             }
 
             sequencingDone = true;
             LOGGER.debug("SequencingThread finished.");
+            return null;
         }
 
         private void generateAndQueueSequences(String line)
@@ -176,15 +174,15 @@ public enum AbsoluteChunker {
                                 TimeUnit.MILLISECONDS)) {
                             LOGGER.trace("SequencingThread Idle, because queue full.");
                             StatisticalNumberHelper
-                                    .count("AbsoluteChunker#SequencingThread idle (queue full).");
+                            .count("AbsoluteChunker#SequencingThread idle (queue full).");
                         }
 
                         if (Constants.DEBUG_AVERAGE_MEMORY) {
                             StatisticalNumberHelper
-                                    .average(
-                                            "AbsoluteChunker.PatternAndSequence Memory",
-                                            MemoryUtil.deepMemoryUsageOf(item,
-                                                    VisibilityFilter.ALL));
+                            .average(
+                                    "AbsoluteChunker.PatternAndSequence Memory",
+                                    MemoryUtil.deepMemoryUsageOf(item,
+                                            VisibilityFilter.ALL));
                         }
                     }
                 }
@@ -192,7 +190,7 @@ public enum AbsoluteChunker {
         }
     }
 
-    private class AggregatingThread implements Runnable {
+    private class AggregatingThread implements Callable<Object> {
 
         private BlockingQueue<PatternAndSequence> queue;
 
@@ -208,38 +206,33 @@ public enum AbsoluteChunker {
         }
 
         @Override
-        public void run() {
-            try {
-                while (!(sequencingDone && queue.isEmpty())) {
-                    PatternAndSequence patternAndSequence =
-                            queue.poll(Constants.QUEUE_IDLE_TIME,
-                                    TimeUnit.MILLISECONDS);
-                    if (patternAndSequence == null) {
-                        LOGGER.trace("AggregatingThreaed idle, because queue empty.");
-                        StatisticalNumberHelper
-                                .count("AbsoluteChunker#AggregatingThread Idle, because queue empty.");
-                        continue;
-                    }
-
-                    addToChunk(patternAndSequence.getPattern(),
-                            patternAndSequence.getSequence());
+        public Object call() throws InterruptedException, IOException {
+            while (!(sequencingDone && queue.isEmpty())) {
+                PatternAndSequence patternAndSequence =
+                        queue.poll(Constants.QUEUE_IDLE_TIME,
+                                TimeUnit.MILLISECONDS);
+                if (patternAndSequence == null) {
+                    LOGGER.trace("AggregatingThreaed idle, because queue empty.");
+                    StatisticalNumberHelper
+                    .count("AbsoluteChunker#AggregatingThread Idle, because queue empty.");
+                    continue;
                 }
 
-                for (Entry<Pattern, Chunk> entry : chunks.entrySet()) {
-                    Pattern pattern = entry.getKey();
-                    Chunk chunk = entry.getValue();
-                    writeChunkToFile(pattern, chunk);
-                    LOGGER.debug("Finished pattern '%s'.", pattern);
-                }
-
-                status.addChunked(false, chunkFiles);
-            } catch (InterruptedException | IOException e) {
-                // Rethrow as unchecked exception, because it is not allowed
-                // to throw checked exceptions from threads.
-                throw new RuntimeException(e);
+                addToChunk(patternAndSequence.getPattern(),
+                        patternAndSequence.getSequence());
             }
 
+            for (Entry<Pattern, Chunk> entry : chunks.entrySet()) {
+                Pattern pattern = entry.getKey();
+                Chunk chunk = entry.getValue();
+                writeChunkToFile(pattern, chunk);
+                LOGGER.debug("Finished pattern '%s'.", pattern);
+            }
+
+            status.addChunked(false, chunkFiles);
+
             LOGGER.debug("AggregatingThread finished.");
+            return null;
         }
 
         private void addToChunk(Pattern pattern, String sequence)
@@ -317,7 +310,7 @@ public enum AbsoluteChunker {
             Status status,
             Set<Pattern> patterns,
             Path trainingFile,
-            Path absoluteChunkedDir) throws IOException, InterruptedException {
+            Path absoluteChunkedDir) throws Exception {
         OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING, true);
         if (patterns.isEmpty()) {
             LOGGER.debug("No patterns to chunk, returning.");
@@ -342,7 +335,7 @@ public enum AbsoluteChunker {
         aggregatingQueues =
                 new HashMap<Pattern, BlockingQueue<PatternAndSequence>>();
 
-        List<Runnable> threads = prepareThreds();
+        List<Callable<Object>> threads = prepareThreds();
 
         LOGGER.debug("Launching Threads...");
         sequencingDone = false;
@@ -379,7 +372,7 @@ public enum AbsoluteChunker {
                 Output.humanReadableByteCount(chunkSize, false));
     }
 
-    private List<Runnable> prepareThreds() {
+    private List<Callable<Object>> prepareThreds() {
         LOGGER.debug("Praparing Threads...");
         int numSequencingThreads = 1;
         int numAggregatingThreads =
@@ -387,7 +380,7 @@ public enum AbsoluteChunker {
         LOGGER.debug("numSequencingThreads  = %d", numSequencingThreads);
         LOGGER.debug("numAggregatingThreads = %d", numAggregatingThreads);
 
-        List<Runnable> threads = new LinkedList<Runnable>();
+        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         threads.add(new SequencingThread());
 
         List<Pattern> reamainingPatterns = new LinkedList<Pattern>(patterns);

@@ -119,7 +119,7 @@ public class Glmtk {
     }
 
     public void count(boolean needPos, Set<Pattern> neededPatterns)
-            throws IOException, InterruptedException {
+            throws Exception {
         // TODO: update status with smaller increments (each completed pattern).
 
         Set<Pattern> neededAbsolute = new HashSet<Pattern>();
@@ -198,7 +198,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                        0L, 0L, 0L, 0L
+                    0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -248,8 +248,7 @@ public class Glmtk {
                 Output.humanReadableByteCount(corpusSize, false)));
     }
 
-    private void countAbsolute(Set<Pattern> neededPatterns) throws IOException,
-            InterruptedException {
+    private void countAbsolute(Set<Pattern> neededPatterns) throws Exception {
         LOGGER.info("Absolute counting '%s' -> '%s'.", trainingFile,
                 absoluteDir);
 
@@ -266,7 +265,7 @@ public class Glmtk {
     }
 
     private void countContinuation(Set<Pattern> neededPatterns)
-            throws IOException, InterruptedException {
+            throws Exception {
         LOGGER.info("Continuation counting '%s' -> '%s'.", absoluteDir,
                 continuationDir);
 
