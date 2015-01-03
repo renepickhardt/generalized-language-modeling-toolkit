@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Constants {
-    public static final String STANDARD_WORKING_DIR_SUFFIX = ".out";
+    public static final String WORKING_DIR_SUFFIX = ".glmtk";
 
     public static final String STATUS_FILE_NAME = "status";
 

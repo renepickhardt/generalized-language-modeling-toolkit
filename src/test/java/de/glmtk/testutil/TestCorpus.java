@@ -34,7 +34,7 @@ public enum TestCorpus {
             corpusName = toString();
             corpus = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
             workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
-                    + Constants.STANDARD_WORKING_DIR_SUFFIX);
+                    + Constants.WORKING_DIR_SUFFIX);
 
             Glmtk glmtk = new Glmtk(corpus, workingDir);
 

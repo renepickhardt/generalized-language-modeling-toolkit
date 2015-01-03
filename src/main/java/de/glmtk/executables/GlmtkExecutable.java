@@ -221,7 +221,7 @@ public class GlmtkExecutable extends Executable {
         } else {
             if (workingDir == null)
                 workingDir = Paths.get(inputArg
-                        + Constants.STANDARD_WORKING_DIR_SUFFIX);
+                        + Constants.WORKING_DIR_SUFFIX);
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
                 throw new Termination(
                         String.format(
