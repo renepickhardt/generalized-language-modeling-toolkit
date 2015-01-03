@@ -11,8 +11,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -154,23 +155,27 @@ public enum Merger {
                 IOException {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
-            int mergeCounter = 0;
-            List<Path> chunksForPattern, chunksToMerge = null;
+            Set<String> chunksForPattern;
             while ((chunksForPattern =
                     status.getChunksForPattern(continuation, pattern)).size() != 1) {
                 int numParallelChunks =
                         Math.min(numParallelReaders, chunksForPattern.size());
-                chunksToMerge =
-                        new ArrayList<Path>(chunksForPattern.subList(0,
-                                numParallelChunks));
 
-                Path mergeFile = patternDir.resolve("merge" + mergeCounter);
+                Set<String> chunksToMerge = new LinkedHashSet<String>();
+                Iterator<String> iter = chunksForPattern.iterator();
+                for (int i = 0; i != numParallelChunks; ++i) {
+                    chunksToMerge.add(iter.next());
+                }
+
+                Path mergeFile =
+                        patternDir.resolve("merge"
+                                + getMergeCounter(chunksForPattern));
                 LOGGER.debug("Merging pattern %s:\t%s -> %s.", pattern,
                         chunksToMerge, mergeFile.getFileName());
                 mergeChunksToFile(patternDir, chunksToMerge, mergeFile);
                 try {
                     status.performMergeForChunks(continuation, pattern,
-                            chunksToMerge, mergeFile.getFileName());
+                            chunksToMerge, mergeFile.getFileName().toString());
                 } catch (IOException e) {
                     // Updating status did not work, we continue in the hope
                     // it works next time.
@@ -178,14 +183,12 @@ public enum Merger {
                             + ExceptionUtils.getStackTrace(e));
                 }
 
-                for (Path chunk : chunksToMerge) {
-                    Files.delete(patternDir.resolve(chunk));
+                for (String chunk : chunksToMerge) {
+                    Files.deleteIfExists(patternDir.resolve(chunk));
                 }
-
-                ++mergeCounter;
             }
 
-            Path src = patternDir.resolve(chunksForPattern.get(0));
+            Path src = patternDir.resolve(chunksForPattern.iterator().next());
             Path dest = countedDir.resolve(pattern.toString());
             LOGGER.debug("Finishing pattern %s:\t%s\t -> %s.", pattern, src,
                     dest);
@@ -194,13 +197,28 @@ public enum Merger {
             status.finishMerge(continuation, pattern);
 
             if (NioUtils.isDirEmpty(patternDir)) {
-                Files.delete(patternDir);
+                Files.deleteIfExists(patternDir);
             }
+        }
+
+        private int getMergeCounter(Set<String> chunksForPattern) {
+            int maxMergeNr = 0;
+            for (String chunk : chunksForPattern) {
+                if (chunk.startsWith("merge")) {
+                    int mergeNr =
+                            Character.getNumericValue(chunk.charAt("merge"
+                                    .length()));
+                    if (maxMergeNr < mergeNr) {
+                        maxMergeNr = mergeNr;
+                    }
+                }
+            }
+            return maxMergeNr + 1;
         }
 
         private void mergeChunksToFile(
                 Path patternDir,
-                List<Path> chunksToMerge,
+                Set<String> chunksToMerge,
                 Path mergeFile) throws IOException {
             Files.deleteIfExists(mergeFile);
 
@@ -213,7 +231,7 @@ public enum Merger {
                                 SequenceCountReader.COMPARATOR);
                 int memoryPerReader =
                         (int) (readerMemory / chunksToMerge.size());
-                for (Path chunk : chunksToMerge) {
+                for (String chunk : chunksToMerge) {
                     readerQueue
                     .add(new SequenceCountReader(patternDir
                             .resolve(chunk), Constants.CHARSET,

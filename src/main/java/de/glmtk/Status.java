@@ -7,9 +7,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,9 +54,9 @@ public class Status {
 
     private Set<Pattern> continuationCounted;
 
-    private Map<Pattern, List<Path>> absoluteChunked;
+    private Map<Pattern, Set<String>> absoluteChunked;
 
-    private Map<Pattern, List<Path>> continuationChunked;
+    private Map<Pattern, Set<String>> continuationChunked;
 
     private int lineNo;
 
@@ -78,8 +80,8 @@ public class Status {
         training = Training.NONE;
         absoluteCounted = new HashSet<Pattern>();
         continuationCounted = new HashSet<Pattern>();
-        absoluteChunked = new HashMap<Pattern, List<Path>>();
-        continuationChunked = new HashMap<Pattern, List<Path>>();
+        absoluteChunked = new HashMap<Pattern, Set<String>>();
+        continuationChunked = new HashMap<Pattern, Set<String>>();
     }
 
     public void logStatus() {
@@ -140,7 +142,7 @@ public class Status {
         return !continuation ? absoluteCounted : continuationCounted;
     }
 
-    private Map<Pattern, List<Path>> chunked(boolean continuation) {
+    private Map<Pattern, Set<String>> chunked(boolean continuation) {
         return !continuation ? absoluteChunked : continuationChunked;
     }
 
@@ -156,10 +158,10 @@ public class Status {
         }
     }
 
-    public List<Path>
+    public Set<String>
         getChunksForPattern(boolean continuation, Pattern pattern) {
         synchronized (this) {
-            return Collections.unmodifiableList(chunked(continuation).get(
+            return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
         }
     }
@@ -167,9 +169,10 @@ public class Status {
     public void setChunksForPattern(
             boolean continuation,
             Pattern pattern,
-            List<Path> chunks) throws IOException {
+            Collection<String> chunks) throws IOException {
         synchronized (this) {
-            chunked(continuation).put(pattern, new ArrayList<Path>(chunks));
+            chunked(continuation).put(pattern,
+                    new LinkedHashSet<String>(chunks));
             writeStatusToFile();
         }
     }
@@ -177,10 +180,10 @@ public class Status {
     public void performMergeForChunks(
             boolean continuation,
             Pattern pattern,
-            List<Path> mergedChunks,
-            Path mergeFile) throws IOException {
+            Collection<String> mergedChunks,
+            String mergeFile) throws IOException {
         synchronized (this) {
-            List<Path> chunks = chunked(continuation).get(pattern);
+            Set<String> chunks = chunked(continuation).get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
             writeStatusToFile();
@@ -264,7 +267,7 @@ public class Status {
                     "Illegal line '%d' in file '%s'.\n"
                             + "Expected line to have format: '%s = <value>'.\n"
                             + "Line was: '%s'.", lineNo, file, expectedKey,
-                            line));
+                    line));
         }
 
         String key = split.get(0).trim();
@@ -275,7 +278,7 @@ public class Status {
                     "Illegal next key on line '%d' in file '%s'.\n"
                             + "Expected Key '%s', but was '%s'.\n"
                             + "Line was: '%s'.", lineNo, file, expectedKey,
-                            key, line));
+                    key, line));
         }
 
         return value != "null" ? value : null;
@@ -315,7 +318,7 @@ public class Status {
             throw new Exception(String.format(
                     "Illegal training value '%s' on line '%d' in file '%s'.\n"
                             + "Possible values are: %s.", value, lineNo, file,
-                            possibleValues));
+                    possibleValues));
         }
     }
 
@@ -327,8 +330,9 @@ public class Status {
         return result;
     }
 
-    private Map<Pattern, List<Path>> readChunked(String value) throws Exception {
-        Map<Pattern, List<Path>> result = new HashMap<Pattern, List<Path>>();
+    private Map<Pattern, Set<String>> readChunked(String value)
+            throws Exception {
+        Map<Pattern, Set<String>> result = new HashMap<Pattern, Set<String>>();
         for (String patternAndChunks : StringUtils.splitAtChar(value, ';')) {
             List<String> split = StringUtils.splitAtChar(patternAndChunks, ':');
             if (split.size() != 2) {
@@ -340,10 +344,9 @@ public class Status {
                                 value));
             }
             Pattern pattern = readPattern(split.get(0));
-            List<Path> chunks = new ArrayList<Path>();
-            for (String chunkStr : StringUtils.splitAtChar(split.get(1), ',')) {
-                chunks.add(Paths.get(chunkStr));
-            }
+            Set<String> chunks =
+                    new LinkedHashSet<String>(StringUtils.splitAtChar(
+                            split.get(1), ','));
             result.put(pattern, chunks);
         }
         return result;
@@ -389,9 +392,9 @@ public class Status {
         return StringUtils.join(counted, ";");
     }
 
-    private String serializedChunked(Map<Pattern, List<Path>> chunked) {
+    private String serializedChunked(Map<Pattern, Set<String>> chunked) {
         List<String> patternAndChunks = new ArrayList<String>(chunked.size());
-        for (Entry<Pattern, List<Path>> entry : chunked.entrySet()) {
+        for (Entry<Pattern, Set<String>> entry : chunked.entrySet()) {
             patternAndChunks.add(String.format("%s:%s", entry.getKey(),
                     StringUtils.join(entry.getValue(), ",")));
         }

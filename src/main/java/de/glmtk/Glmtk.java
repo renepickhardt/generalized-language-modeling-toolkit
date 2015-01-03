@@ -249,7 +249,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -383,8 +383,11 @@ public class Glmtk {
 
         CHUNKER.chunkAbsolute(chunkingPatterns, status, trainingFile,
                 absoluteChunkedDir);
+        validateExpectedResults(false, false, chunkingPatterns);
+
         MERGER.mergeAbsolute(status, countingPatterns, absoluteChunkedDir,
                 absoluteDir);
+        validateExpectedResults(false, true, countingPatterns);
     }
 
     private void countContinuation(Set<Pattern> neededPatterns)
@@ -404,8 +407,32 @@ public class Glmtk {
 
         CHUNKER.chunkContinuation(chunkingPatterns, status, absoluteDir,
                 absoluteChunkedDir, continuationDir, continuationChunkedDir);
+        validateExpectedResults(true, false, chunkingPatterns);
+
         MERGER.mergeContinuation(status, countingPatterns,
                 continuationChunkedDir, continuationDir);
+        validateExpectedResults(true, true, countingPatterns);
+    }
+
+    private void validateExpectedResults(
+            boolean continuation,
+            boolean counting,
+            Set<Pattern> expected) throws Exception {
+        Set<Pattern> computed =
+                !counting ? status.getChunkedPatterns(continuation) : status
+                        .getCounted(continuation);
+        if (!computed.containsAll(expected)) {
+            String continuationStr =
+                            !continuation ? "Absolute" : "Continuation";
+            String countingStr = !counting ? "chunking" : "counting";
+            throw new Exception(
+                    String.format(
+                            "%s %s did not yield expected result.\n"
+                                    + "Expected patterns: %s.\n"
+                                    + "Computed patterns: %s.\n"
+                                    + "Try running again.", continuationStr,
+                                            countingStr, expected, computed));
+        }
     }
 
     public CountCache getOrCreateCountCache() throws IOException {

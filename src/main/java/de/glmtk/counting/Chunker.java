@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public enum Chunker {
 
         private Path patternDir;
 
-        private List<Path> chunkFiles;
+        private Set<String> chunkFiles;
 
         private long chunkSize;
 
@@ -95,7 +96,7 @@ public enum Chunker {
                     patternDir =
                             continuationChunkedDir.resolve(pattern.toString());
                 }
-                chunkFiles = new LinkedList<Path>();
+                chunkFiles = new LinkedHashSet<String>();
                 chunkSize = 0L;
                 chunkCounts = new HashMap<String, Counter>();
 
@@ -172,7 +173,7 @@ public enum Chunker {
                 }
             }
 
-            chunkFiles.add(chunkFile.getFileName());
+            chunkFiles.add(chunkFile.getFileName().toString());
 
             LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern,
                     chunkFile);
