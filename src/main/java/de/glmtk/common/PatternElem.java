@@ -7,25 +7,43 @@ import java.util.Map;
 import java.util.Set;
 
 public enum PatternElem {
-
     CNT('1'),
-
     POS('2'),
-
     SKP('0'),
-
     WSKP('x'),
-
     PSKP('y'),
-
     WPOS('z'),
-
     DEL('d');
+
+    public static final String SKP_WORD = "_";
+    public static final String WSKP_WORD = "%";
+    public static final Set<PatternElem> CSKIP_ELEMS = new HashSet<PatternElem>(
+            Arrays.asList(WSKP, PSKP, WPOS));
+    private static final Map<Character, PatternElem> CHAR_TO_ELEM = new HashMap<Character, PatternElem>();
+    static {
+        for (PatternElem elem : values())
+            CHAR_TO_ELEM.put(elem.asChar, elem);
+    }
+
+    /**
+     * Returns {@code null} on fail.
+     */
+    public static PatternElem fromChar(char elem) {
+        return CHAR_TO_ELEM.get(elem);
+    }
+
+    public static PatternElem fromWord(String word) {
+        if (word.equals(SKP_WORD))
+            return SKP;
+        else if (word.equals(WSKP_WORD))
+            return WSKP;
+        else
+            return CNT;
+    }
 
     private char asChar;
 
-    private PatternElem(
-            char asChar) {
+    private PatternElem(char asChar) {
         this.asChar = asChar;
     }
 
@@ -56,7 +74,8 @@ public enum PatternElem {
         }
     }
 
-    public String apply(String word, String pos) {
+    public String apply(String word,
+                        String pos) {
         switch (this) {
             case CNT:
                 return word;
@@ -74,37 +93,4 @@ public enum PatternElem {
 
         }
     }
-
-    public static final String SKP_WORD = "_";
-
-    public static final String WSKP_WORD = "%";
-
-    public static final Set<PatternElem> CSKIP_ELEMS =
-            new HashSet<PatternElem>(Arrays.asList(WSKP, PSKP, WPOS));
-
-    private static final Map<Character, PatternElem> CHAR_TO_ELEM =
-            new HashMap<Character, PatternElem>();
-    static {
-        for (PatternElem elem : values()) {
-            CHAR_TO_ELEM.put(elem.asChar, elem);
-        }
-    }
-
-    /**
-     * Returns {@code null} on fail.
-     */
-    public static PatternElem fromChar(char elem) {
-        return CHAR_TO_ELEM.get(elem);
-    }
-
-    public static PatternElem fromWord(String word) {
-        if (word.equals(SKP_WORD)) {
-            return SKP;
-        } else if (word.equals(WSKP_WORD)) {
-            return WSKP;
-        } else {
-            return CNT;
-        }
-    }
-
 }

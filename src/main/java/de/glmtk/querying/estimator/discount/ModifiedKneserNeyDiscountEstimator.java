@@ -9,11 +9,9 @@ import de.glmtk.common.Pattern;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 
 public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
-
     private Map<Pattern, double[]> discounts = null;
 
-    public ModifiedKneserNeyDiscountEstimator(
-            FractionEstimator fractionEstimator) {
+    public ModifiedKneserNeyDiscountEstimator(FractionEstimator fractionEstimator) {
         super(fractionEstimator);
     }
 
@@ -25,7 +23,9 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
     }
 
     @Override
-    protected double calcDiscount(NGram sequence, NGram history, int recDepth) {
+    protected double calcDiscount(NGram sequence,
+                                  NGram history,
+                                  int recDepth) {
         double[] discounts = getDiscounts(history.getPattern());
         switch ((int) countCache.getAbsolute(history)) {
             case 0:
@@ -41,20 +41,14 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
 
     public double[] getDiscounts(Pattern pattern) {
         double[] result = discounts.get(pattern);
-        if (result != null) {
+        if (result != null)
             return result;
-        }
 
         long[] n = countCache.getNGramTimes(pattern);
         double y = (double) n[0] / (n[0] + n[1]);
-        result =
-                new double[] {
-                    1.0f - 2.0f * y * n[1] / n[0],
-                    2.0f - 3.0f * y * n[2] / n[1],
-                    3.0f - 4.0f * y * n[3] / n[2]
-                };
+        result = new double[] {1.0f - 2.0f * y * n[1] / n[0],
+                2.0f - 3.0f * y * n[2] / n[1], 3.0f - 4.0f * y * n[3] / n[2]};
         discounts.put(pattern, result);
         return result;
     }
-
 }

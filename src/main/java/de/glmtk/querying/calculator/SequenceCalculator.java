@@ -9,7 +9,6 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 
 public class SequenceCalculator extends Calculator {
-
     /**
      * If {@link #probMode} = {@link ProbMode#COND}:<br>
      * {@code P(a b c) = P(c | a b) * P(b _ | a) * P (a _ _ | )}
@@ -27,18 +26,15 @@ public class SequenceCalculator extends Calculator {
             // build s
             s = new ArrayList<String>(i + 1);
             s.add(h.get(h.size() - 1));
-            if (probMode == ProbMode.COND) {
-                for (int j = 0; j != i; ++j) {
+            if (probMode == ProbMode.COND)
+                for (int j = 0; j != i; ++j)
                     s.add(SKP_WORD);
-                }
-            }
 
             // build h
-            if (h.size() >= 1) {
+            if (h.size() >= 1)
                 h = new ArrayList<String>(h.subList(0, h.size() - 1));
-            } else {
+            else
                 h = new ArrayList<String>();
-            }
 
             queries.add(new SequenceAndHistory(new NGram(s), new NGram(h)));
         }

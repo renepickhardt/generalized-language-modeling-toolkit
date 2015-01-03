@@ -35,47 +35,35 @@ import de.glmtk.util.StringUtils;
  */
 @RunWith(Parameterized.class)
 public class CountingTest extends LoggingTest {
-
     // TODO: implement test for continuation counts
     // TODO: extend for POS
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(CountingTest.class);
+    private static final Logger LOGGER = LogManager.getFormatterLogger(CountingTest.class);
 
-    @Parameters(
-            name = "{0}")
+    @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                {
-                    TestCorpus.ABC
-                }, {
-                    TestCorpus.MOBYDICK
-                }
-        });
+        return Arrays.asList(new Object[][] { {TestCorpus.ABC},
+                {TestCorpus.MOBYDICK}});
     }
 
     private TestCorpus testCorpus;
 
-    public CountingTest(
-            TestCorpus testCorpus) {
+    public CountingTest(TestCorpus testCorpus) {
         this.testCorpus = testCorpus;
     }
 
     @Test
-    public void testCounting() throws IOException, NoSuchFieldException,
-    SecurityException, IllegalArgumentException, IllegalAccessException {
+    public void testCounting() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
         long corpusSize = Files.size(testCorpus.getCorpus());
         List<String> corpusContents = new LinkedList<String>();
-        try (BufferedReader reader =
-                Files.newBufferedReader(testCorpus.getCorpus(),
-                        Constants.CHARSET)) {
+        try (BufferedReader reader = Files.newBufferedReader(
+                testCorpus.getCorpus(), Constants.CHARSET)) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null)
                 corpusContents.add(line);
-            }
         }
 
         LOGGER.info("Loading counts...");
@@ -84,31 +72,25 @@ public class CountingTest extends LoggingTest {
         Field absoluteField = CountCache.class.getDeclaredField("absolute");
         absoluteField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        Map<Pattern, Map<String, Long>> absolute =
-        (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+        Map<Pattern, Map<String, Long>> absolute = (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
                 CONFIG.getLogUpdateInterval());
 
-        Field continuationField =
-                CountCache.class.getDeclaredField("continuation");
+        Field continuationField = CountCache.class.getDeclaredField("continuation");
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        Map<Pattern, Map<String, Counter>> continuation =
-        (Map<Pattern, Map<String, Counter>>) continuationField
-        .get(countCache);
+        Map<Pattern, Map<String, Counter>> continuation = (Map<Pattern, Map<String, Counter>>) continuationField.get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
                 CONFIG.getLogUpdateInterval());
     }
 
-    private void testAbsoluteCounts(
-            List<String> corpusContents,
-            long corpusSize,
-            Map<Pattern, Map<String, Long>> absoluteCounts,
-            int updateInterval) {
+    private void testAbsoluteCounts(List<String> corpusContents,
+                                    long corpusSize,
+                                    Map<Pattern, Map<String, Long>> absoluteCounts,
+                                    int updateInterval) {
         LOGGER.info("=== Absolute");
 
-        for (Map.Entry<Pattern, Map<String, Long>> patternCounts : absoluteCounts
-                .entrySet()) {
+        for (Map.Entry<Pattern, Map<String, Long>> patternCounts : absoluteCounts.entrySet()) {
             Pattern pattern = patternCounts.getKey();
             Map<String, Long> counts = patternCounts.getValue();
 
@@ -123,8 +105,7 @@ public class CountingTest extends LoggingTest {
                 long count = sequenceCount.getValue();
 
                 String regexString = sequenceToRegex(sequence);
-                java.util.regex.Pattern regex =
-                        java.util.regex.Pattern.compile(regexString);
+                java.util.regex.Pattern regex = java.util.regex.Pattern.compile(regexString);
                 LOGGER.trace("  %s (regex='%s')", sequence, regexString);
                 int numMatches = 0;
                 for (String line : corpusContents) {
@@ -141,12 +122,11 @@ public class CountingTest extends LoggingTest {
                     Matcher matcher = regex.matcher(line);
 
                     int numLineMatches = 0;
-                    if (matcher.find()) {
+                    if (matcher.find())
                         do {
                             ++numLineMatches;
                             LOGGER.trace(matcher);
                         } while (matcher.find(matcher.start(1)));
-                    }
 
                     numMatches += numLineMatches;
 
@@ -162,11 +142,10 @@ public class CountingTest extends LoggingTest {
         }
     }
 
-    private void testContinuationCounts(
-            List<String> corpusContents,
-            long corpusSize,
-            Map<Pattern, Map<String, Counter>> continuationCounts,
-            int updateInterval) {
+    private void testContinuationCounts(List<String> corpusContents,
+                                        long corpusSize,
+                                        Map<Pattern, Map<String, Counter>> continuationCounts,
+                                        int updateInterval) {
         LOGGER.info("=== Continuation");
     }
 
@@ -176,15 +155,13 @@ public class CountingTest extends LoggingTest {
 
         boolean first = true;
         for (String word : StringUtils.splitAtChar(sequence, ' ')) {
-            if (!first) {
+            if (!first)
                 regex.append(' ');
-            }
 
-            if (!word.equals(PatternElem.SKP_WORD)) {
+            if (!word.equals(PatternElem.SKP_WORD))
                 regex.append(word.replaceAll("[^\\w ]", "\\\\$0"));
-            } else {
+            else
                 regex.append("\\S+");
-            }
 
             if (first) {
                 regex.append("()");
@@ -195,5 +172,4 @@ public class CountingTest extends LoggingTest {
         regex.append("(?: |$)");
         return regex.toString();
     }
-
 }

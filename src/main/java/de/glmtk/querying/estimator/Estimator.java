@@ -15,17 +15,35 @@ import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
 import de.glmtk.util.StringUtils;
 
 public abstract class Estimator {
+    private static final Logger LOGGER = LogManager.getFormatterLogger(Estimator.class);
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(Estimator.class);
+    protected static final NGram getFullSequence(NGram sequence,
+                                                 NGram history) {
+        return history.concat(sequence);
+    }
 
-    protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR =
-            Estimators.ABS_UNIGRAM;
+    protected static final NGram getFullHistory(NGram sequence,
+                                                NGram history) {
+        List<String> skippedSequence = new ArrayList<String>(sequence.size());
+        for (int i = 0; i != sequence.size(); ++i)
+            skippedSequence.add(SKP_WORD);
+        return history.concat(new NGram(skippedSequence));
+    }
 
+    protected static final void logDebug(int recDepth,
+                                         String message) {
+        LOGGER.debug(StringUtils.repeat("  ", recDepth) + message);
+    }
+
+    protected static final void logDebug(int recDepth,
+                                         String format,
+                                         Object... params) {
+        LOGGER.debug(StringUtils.repeat("  ", recDepth) + format, params);
+    }
+
+    protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR = Estimators.ABS_UNIGRAM;
     private String name = "Unnamed";
-
     protected CountCache countCache = null;
-
     protected ProbMode probMode = null;
 
     public String getName() {
@@ -39,45 +57,43 @@ public abstract class Estimator {
     public void setCountCache(CountCache countCache) {
         this.countCache = countCache;
 
-        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
+        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)
             SUBSTITUTE_ESTIMATOR.setCountCache(countCache);
-        }
     }
 
     public void setProbMode(ProbMode probMode) {
         this.probMode = probMode;
 
-        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
+        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)
             SUBSTITUTE_ESTIMATOR.setProbMode(probMode);
-        }
     }
 
     /**
      * Wrapper around {@link #probability(NGram, NGram, int)} to hide recDepth
      * parameter, and to perform error checking.
      */
-    public final double probability(NGram sequence, NGram history) {
-        if (countCache == null) {
+    public final double probability(NGram sequence,
+                                    NGram history) {
+        if (countCache == null)
             throw new NullPointerException(
                     "You have to set a countCache that is not null before using this method");
-        }
-        if (probMode == null) {
+        if (probMode == null)
             throw new NullPointerException(
                     "You have to set a probability mode that is not null before using this method.");
-        }
 
         return probability(sequence, history, 1);
     }
 
     /**
-     * This method should only be called from other estimators. All other
-     * users probably want to call {@link #probability(NGram, NGram)}.
+     * This method should only be called from other estimators. All other users
+     * probably want to call {@link #probability(NGram, NGram)}.
      *
      * Wrapper around {@link #calcProbability(NGram, NGram, int)} to add
      * logging.
      */
-    public final double
-    probability(NGram sequence, NGram history, int recDepth) {
+    public final double probability(NGram sequence,
+                                    NGram history,
+                                    int recDepth) {
         logDebug(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
@@ -88,32 +104,7 @@ public abstract class Estimator {
         return result;
     }
 
-    protected abstract double calcProbability(
-            NGram sequence,
-            NGram history,
-            int recDepth);
-
-    protected static final NGram getFullSequence(NGram sequence, NGram history) {
-        return history.concat(sequence);
-    }
-
-    protected static final NGram getFullHistory(NGram sequence, NGram history) {
-        List<String> skippedSequence = new ArrayList<String>(sequence.size());
-        for (int i = 0; i != sequence.size(); ++i) {
-            skippedSequence.add(SKP_WORD);
-        }
-        return history.concat(new NGram(skippedSequence));
-    }
-
-    protected static final void logDebug(int recDepth, String message) {
-        LOGGER.debug(StringUtils.repeat("  ", recDepth) + message);
-    }
-
-    protected static final void logDebug(
-            int recDepth,
-            String format,
-            Object... params) {
-        LOGGER.debug(StringUtils.repeat("  ", recDepth) + format, params);
-    }
-
+    protected abstract double calcProbability(NGram sequence,
+                                              NGram history,
+                                              int recDepth);
 }

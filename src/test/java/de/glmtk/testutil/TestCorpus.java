@@ -20,45 +20,32 @@ import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 
 public enum TestCorpus {
-
     ABC,
-
     MOBYDICK,
-
     EN0008T;
 
     private String corpusName;
-
     private Path corpus;
-
     private Path workingDir;
-
     private CountCache countCache;
 
     private TestCorpus() {
         try {
             corpusName = toString();
-            corpus =
-                    Constants.TEST_RESSOURCES_DIR.resolve(corpusName
-                            .toLowerCase());
-            workingDir =
-                    Constants.TEST_RESSOURCES_DIR.resolve(corpusName
-                            .toLowerCase()
-                            + Constants.STANDARD_WORKING_DIR_SUFFIX);
+            corpus = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
+            workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
+                    + Constants.STANDARD_WORKING_DIR_SUFFIX);
 
             Glmtk glmtk = new Glmtk(corpus, workingDir);
 
-            Set<Pattern> neededPatterns =
-                    Patterns.getCombinations(Constants.ORDER,
-                            Arrays.asList(CNT, SKP));
+            Set<Pattern> neededPatterns = Patterns.getCombinations(
+                    Constants.ORDER, Arrays.asList(CNT, SKP));
             for (Pattern pattern : new HashSet<Pattern>(neededPatterns)) {
-                if (pattern.size() != Constants.ORDER) {
+                if (pattern.size() != Constants.ORDER)
                     neededPatterns.add(pattern.concat(WSKP));
-                }
 
-                if (pattern.contains(SKP)) {
+                if (pattern.contains(SKP))
                     neededPatterns.add(pattern.replace(SKP, WSKP));
-                }
             }
 
             glmtk.count(neededPatterns);
@@ -85,9 +72,8 @@ public enum TestCorpus {
      * Lazily loaded.
      */
     public CountCache getCountCache() throws IOException {
-        if (countCache == null) {
+        if (countCache == null)
             countCache = new CountCache(workingDir);
-        }
         return countCache;
     }
 
@@ -96,7 +82,8 @@ public enum TestCorpus {
         return words.toArray(new String[words.size()]);
     }
 
-    public List<String> getSequenceList(int n, int length) {
+    public List<String> getSequenceList(int n,
+                                        int length) {
         List<String> result = new LinkedList<String>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);
@@ -105,5 +92,4 @@ public enum TestCorpus {
         Collections.reverse(result);
         return result;
     }
-
 }

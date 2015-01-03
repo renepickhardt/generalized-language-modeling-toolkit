@@ -10,22 +10,17 @@ import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 
 public class BackoffEstimator extends Estimator {
-
     private Map<NGram, Double> gammaCache;
-
     private Estimator alpha;
-
     private Estimator beta;
 
-    public BackoffEstimator(
-            Estimator alpha) {
+    public BackoffEstimator(Estimator alpha) {
         this.alpha = alpha;
         beta = this;
     }
 
-    public BackoffEstimator(
-            Estimator alpha,
-            Estimator beta) {
+    public BackoffEstimator(Estimator alpha,
+                            Estimator beta) {
         this.alpha = alpha;
         this.beta = beta;
     }
@@ -34,9 +29,8 @@ public class BackoffEstimator extends Estimator {
     public void setCountCache(CountCache countCache) {
         super.setCountCache(countCache);
         alpha.setCountCache(countCache);
-        if (beta != this) {
+        if (beta != this)
             beta.setCountCache(countCache);
-        }
 
         gammaCache = new HashMap<NGram, Double>();
     }
@@ -45,17 +39,17 @@ public class BackoffEstimator extends Estimator {
     public void setProbMode(ProbMode probMode) {
         super.setProbMode(probMode);
         alpha.setProbMode(probMode);
-        if (beta != this) {
+        if (beta != this)
             beta.setProbMode(probMode);
-        }
 
         gammaCache = new HashMap<NGram, Double>();
     }
 
     @Override
-    protected double
-    calcProbability(NGram sequence, NGram history, int recDepth) {
-        if (history.isEmpty()) {
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
+        if (history.isEmpty())
             switch (probMode) {
                 case COND:
                     return 0;
@@ -65,11 +59,11 @@ public class BackoffEstimator extends Estimator {
                 default:
                     throw new IllegalStateException();
             }
-        } else if (countCache.getAbsolute(getFullSequence(sequence, history)) == 0) {
+        else if (countCache.getAbsolute(getFullSequence(sequence, history)) == 0) {
             NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
 
-            double betaVal =
-                    beta.probability(sequence, backoffHistory, recDepth);
+            double betaVal = beta.probability(sequence, backoffHistory,
+                    recDepth);
             double gammaVal = gamma(sequence, history, recDepth);
             logDebug(recDepth, "beta = %f", betaVal);
             logDebug(recDepth, "gamma = %f", gammaVal);
@@ -85,7 +79,9 @@ public class BackoffEstimator extends Estimator {
      * Wrapper around {@link #calcGamma(NGram, NGram, int)} to add logging and
      * caching.
      */
-    public double gamma(NGram sequence, NGram history, int recDepth) {
+    public double gamma(NGram sequence,
+                        NGram history,
+                        int recDepth) {
         logDebug(recDepth, "gamma(%s,%s)", sequence, history);
         ++recDepth;
 
@@ -101,7 +97,9 @@ public class BackoffEstimator extends Estimator {
         }
     }
 
-    public double calcGamma(NGram sequence, NGram history, int recDepth) {
+    public double calcGamma(NGram sequence,
+                            NGram history,
+                            int recDepth) {
         double sumAlpha = 0;
         double sumBeta = 0;
 
@@ -109,24 +107,20 @@ public class BackoffEstimator extends Estimator {
 
         for (String word : countCache.getWords()) {
             NGram s = history.concat(word);
-            if (countCache.getAbsolute(s) == 0) {
-                sumBeta +=
-                        beta.probability(new NGram(word), backoffHistory,
-                                recDepth);
-            } else {
-                sumAlpha +=
-                        alpha.probability(new NGram(word), history, recDepth);
-            }
+            if (countCache.getAbsolute(s) == 0)
+                sumBeta += beta.probability(new NGram(word), backoffHistory,
+                        recDepth);
+            else
+                sumAlpha += alpha.probability(new NGram(word), history,
+                        recDepth);
         }
 
         logDebug(recDepth, "sumAlpha = %f", sumAlpha);
         logDebug(recDepth, "sumBeta = %f", sumBeta);
 
-        if (sumBeta == 0) {
+        if (sumBeta == 0)
             return 0.0;
-        } else {
+        else
             return (1.0 - sumAlpha) / sumBeta;
-        }
     }
-
 }

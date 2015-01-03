@@ -20,18 +20,14 @@ import de.glmtk.util.StringUtils;
  * Immutable.
  */
 public class NGram {
-
     // TODO: Test this class;
     // TODO: Replace 'word' with 'token'.
 
     public static final NGram SKP_NGRAM = new NGram(SKP_WORD);
-
     public static final NGram WSKP_NGRAM = new NGram(WSKP_WORD);
 
     private final List<String> words;
-
     private String asString;
-
     private Pattern pattern;
 
     public NGram() {
@@ -40,38 +36,33 @@ public class NGram {
         pattern = Patterns.get();
     }
 
-    public NGram(
-            String word) {
+    public NGram(String word) {
         words = Arrays.asList(word);
         asString = word;
         pattern = Patterns.get(PatternElem.fromWord(word));
     }
 
-    public NGram(
-            List<String> words) {
+    public NGram(List<String> words) {
         this.words = words;
         asString = StringUtils.join(words, " ");
 
-        List<PatternElem> patternElems =
-                new ArrayList<PatternElem>(words.size());
-        for (String word : words) {
+        List<PatternElem> patternElems = new ArrayList<PatternElem>(
+                words.size());
+        for (String word : words)
             patternElems.add(PatternElem.fromWord(word));
-        }
         pattern = Patterns.get(patternElems);
     }
 
-    private NGram(
-            List<String> words,
-            Pattern pattern) {
+    private NGram(List<String> words,
+                  Pattern pattern) {
         this.words = words;
         asString = StringUtils.join(words, " ");
         this.pattern = pattern;
     }
 
-    private NGram(
-            List<String> words,
-            String asString,
-            Pattern pattern) {
+    private NGram(List<String> words,
+                  String asString,
+                  Pattern pattern) {
         this.words = words;
         this.asString = asString;
         this.pattern = pattern;
@@ -79,11 +70,10 @@ public class NGram {
 
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
+        if (other == this)
             return true;
-        } else if (other == null || getClass() != other.getClass()) {
+        else if (other == null || getClass() != other.getClass())
             return false;
-        }
 
         NGram o = (NGram) other;
         return words.equals(o.words);
@@ -121,14 +111,11 @@ public class NGram {
     }
 
     public boolean isEmptyOrOnlySkips() {
-        if (isEmpty()) {
+        if (isEmpty())
             return true;
-        }
-        for (String word : words) {
-            if (!word.equals(SKP_WORD)) {
+        for (String word : words)
+            if (!word.equals(SKP_WORD))
                 return false;
-            }
-        }
         return true;
     }
 
@@ -153,21 +140,21 @@ public class NGram {
         return new NGram(resultWords);
     }
 
-    public NGram range(int from, int to) {
-        if (from < 0 || from > size()) {
+    public NGram range(int from,
+                       int to) {
+        if (from < 0 || from > size())
             throw new IllegalArgumentException(String.format(
                     "Illegal from index: %d", from));
-        } else if (to < 0 || to > size()) {
+        else if (to < 0 || to > size())
             throw new IllegalArgumentException(String.format(
                     "Illegal to index: %d", to));
-        } else if (from > to) {
+        else if (from > to)
             throw new IllegalArgumentException(String.format(
                     "From index larger than to index: %d > %d", from, to));
-        }
 
         List<String> resultWords = new ArrayList<String>(to - from);
-        List<PatternElem> resultPatternElems =
-                new ArrayList<PatternElem>(to - from);
+        List<PatternElem> resultPatternElems = new ArrayList<PatternElem>(to
+                - from);
 
         for (int i = from; i != to; ++i) {
             resultWords.add(words.get(i));
@@ -177,16 +164,15 @@ public class NGram {
         return new NGram(resultWords, Patterns.get(resultPatternElems));
     }
 
-    public NGram replace(String target, String replacement) {
+    public NGram replace(String target,
+                         String replacement) {
         List<String> resultWords = new ArrayList<String>(size());
 
-        for (String word : words) {
-            if (word.equals(target)) {
+        for (String word : words)
+            if (word.equals(target))
                 resultWords.add(replacement);
-            } else {
+            else
                 resultWords.add(word);
-            }
-        }
 
         return new NGram(resultWords);
     }
@@ -196,9 +182,8 @@ public class NGram {
     }
 
     public NGram backoff(BackoffMode backoffMode) {
-        if (isEmpty()) {
+        if (isEmpty())
             throw new IllegalStateException("Can't backoff empty ngrams.");
-        }
 
         // TODO: Rene, is this really correct?
         switch (backoffMode) {
@@ -206,18 +191,15 @@ public class NGram {
                 List<String> resultWords = new ArrayList<String>(words.size());
 
                 boolean replaced = false;
-                for (String word : words) {
+                for (String word : words)
                     if (!replaced && !word.equals(SKP_WORD)) {
                         resultWords.add(SKP_WORD);
                         replaced = true;
-                    } else {
+                    } else
                         resultWords.add(word);
-                    }
-                }
-                if (!replaced) {
+                if (!replaced)
                     throw new IllegalStateException(
                             "Can't backoff ngrams containing only skips.");
-                }
                 return new NGram(resultWords);
 
             case DEL:
@@ -233,12 +215,11 @@ public class NGram {
      * it is greater zero. If not possible returns zero. Returned sequence may
      * be empty.
      */
-    public NGram
-    backoffUntilSeen(BackoffMode backoffMode, CountCache countCache) {
+    public NGram backoffUntilSeen(BackoffMode backoffMode,
+                                  CountCache countCache) {
         NGram result = backoff(backoffMode);
-        while (!result.seen(countCache)) {
+        while (!result.seen(countCache))
             result = result.backoff(backoffMode);
-        }
         return result;
     }
 
@@ -260,5 +241,4 @@ public class NGram {
         }
         return result;
     }
-
 }

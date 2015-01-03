@@ -4,7 +4,6 @@ package de.glmtk.common;
  * ProbabilityMode
  */
 public enum ProbMode {
-
     /**
      * Conditional Probability
      */
@@ -14,5 +13,4 @@ public enum ProbMode {
      * Marginal Probability
      */
     MARG
-
 }

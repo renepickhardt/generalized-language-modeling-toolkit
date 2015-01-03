@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Constants {
-
     public static final String STANDARD_WORKING_DIR_SUFFIX = ".out";
 
     public static final String STATUS_FILE_NAME = "status";
@@ -25,8 +24,7 @@ public class Constants {
 
     public static final String NGRAMTIMES_FILE_NAME = "ngramtimes";
 
-    public static final String LENGTHDISTRIBUTION_FILE_NAME =
-            "lengthdistribution";
+    public static final String LENGTHDISTRIBUTION_FILE_NAME = "lengthdistribution";
 
     public static final String QUERIESHACHES_DIR_NAME = "queriescaches";
 
@@ -59,7 +57,5 @@ public class Constants {
 
     public static final boolean DEBUG_AVERAGE_MEMORY = false;
 
-    public static final Path TEST_RESSOURCES_DIR = Paths
-            .get("src/test/resources");
-
+    public static final Path TEST_RESSOURCES_DIR = Paths.get("src/test/resources");
 }

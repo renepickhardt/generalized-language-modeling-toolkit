@@ -8,28 +8,23 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 
 public class DiffInterpolationEstimator extends InterpolationEstimator {
-
-    public DiffInterpolationEstimator(
-            DiscountEstimator alpha) {
+    public DiffInterpolationEstimator(DiscountEstimator alpha) {
         super(alpha, BackoffMode.SKP);
     }
 
-    public DiffInterpolationEstimator(
-            DiscountEstimator alpha,
-            Estimator beta) {
+    public DiffInterpolationEstimator(DiscountEstimator alpha,
+                                      Estimator beta) {
         super(alpha, beta, BackoffMode.SKP);
     }
 
-    public DiffInterpolationEstimator(
-            DiscountEstimator alpha,
-            Estimator beta,
-            BackoffMode backoffMode) {
+    public DiffInterpolationEstimator(DiscountEstimator alpha,
+                                      Estimator beta,
+                                      BackoffMode backoffMode) {
         super(alpha, beta, backoffMode);
     }
 
-    public DiffInterpolationEstimator(
-            DiscountEstimator alpha,
-            BackoffMode backoffMode) {
+    public DiffInterpolationEstimator(DiscountEstimator alpha,
+                                      BackoffMode backoffMode) {
         super(alpha, backoffMode);
     }
 
@@ -41,26 +36,23 @@ public class DiffInterpolationEstimator extends InterpolationEstimator {
     }
 
     @Override
-    protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
-        if (history.isEmptyOrOnlySkips()) {
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
+        if (history.isEmptyOrOnlySkips())
             //if (history.isEmpty()) {
             return super.calcProbability(sequence, history, recDepth);
-        } else {
+        else {
             double alphaVal = alpha.probability(sequence, history, recDepth);
             double betaVal = 0;
-            Set<NGram> differentiatedHistories =
-                    history.getDifferentiatedNGrams(backoffMode);
-            for (NGram differentiatedHistory : differentiatedHistories) {
-                betaVal +=
-                        beta.probability(sequence, differentiatedHistory,
-                                recDepth);
-            }
+            Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
+            for (NGram differentiatedHistory : differentiatedHistories)
+                betaVal += beta.probability(sequence, differentiatedHistory,
+                        recDepth);
             betaVal /= differentiatedHistories.size();
             double gammaVal = gamma(sequence, history, recDepth);
 
             return alphaVal + gammaVal * betaVal;
         }
     }
-
 }

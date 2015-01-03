@@ -17,11 +17,9 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 import de.glmtk.Constants;
 
 public enum LoggingHelper {
-
     LOGGING_HELPER;
 
-    private static final String loggingPattern =
-            "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
+    private static final String loggingPattern = "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
 
     /**
      * Log4j LoggerContext.
@@ -34,8 +32,7 @@ public enum LoggingHelper {
     private Configuration configuration;
 
     /**
-     * Serializable
-     * Log4j Root Logger Configuration.
+     * Serializable Log4j Root Logger Configuration.
      */
     private LoggerConfig loggerConfig;
 
@@ -44,11 +41,9 @@ public enum LoggingHelper {
     private LoggingHelper() {
         loggerContext = (LoggerContext) LogManager.getContext(false);
         configuration = loggerContext.getConfiguration();
-        loggerConfig =
-                configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-        layout =
-                PatternLayout.createLayout(loggingPattern, configuration, null,
-                        Constants.CHARSET, true, true, null, null);
+        loggerConfig = configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        layout = PatternLayout.createLayout(loggingPattern, configuration,
+                null, Constants.CHARSET, true, true, null, null);
     }
 
     public Level getLogLevel() {
@@ -62,9 +57,8 @@ public enum LoggingHelper {
     }
 
     public void addConsoleAppender(Target target) {
-        Appender consoleApender =
-                ConsoleAppender.createAppender(layout, null, target.toString(),
-                        "Output", "true", "false");
+        Appender consoleApender = ConsoleAppender.createAppender(layout, null,
+                target.toString(), "Output", "true", "false");
         consoleApender.start();
         configuration.addAppender(consoleApender);
         loggerConfig.addAppender(consoleApender, null, null);
@@ -80,20 +74,20 @@ public enum LoggingHelper {
      * @param name
      *            Log4j Internal Appender Name.
      * @param append
-     *            If {@code true} log messages are appended to the file.
-     *            If {@code false} log message replace file contents.
+     *            If {@code true} log messages are appended to the file. If
+     *            {@code false} log message replace file contents.
      */
-    public void addFileAppender(Path logFile, String name, boolean append) {
-        Appender fileLocalAppender =
-                FileAppender.createAppender(logFile.toString(),
-                        Boolean.toString(append), "false", name, "false",
-                        "false", "true", "8192", layout, null, "false",
-                        "false", configuration);
+    public void addFileAppender(Path logFile,
+                                String name,
+                                boolean append) {
+        Appender fileLocalAppender = FileAppender.createAppender(
+                logFile.toString(), Boolean.toString(append), "false", name,
+                "false", "false", "true", "8192", layout, null, "false",
+                "false", configuration);
         fileLocalAppender.start();
         configuration.addAppender(fileLocalAppender);
         loggerConfig.addAppender(fileLocalAppender, null, null);
 
         loggerContext.updateLoggers();
     }
-
 }

@@ -12,13 +12,11 @@ import de.glmtk.testutil.LoggingTest;
 import de.glmtk.testutil.TestCorpus;
 
 // TODO: Make a not rudimentary test.
-
 public class LengthDistributionTest extends LoggingTest {
-
     @Test
     public void testPersistency() throws IOException {
-        LengthDistribution d =
-                new LengthDistribution(TestCorpus.EN0008T.getCorpus(), true);
+        LengthDistribution d = new LengthDistribution(
+                TestCorpus.EN0008T.getCorpus(), true);
         Path s = Files.createTempFile("", "");
         d.writeToStore(s);
 
@@ -33,8 +31,8 @@ public class LengthDistributionTest extends LoggingTest {
 
     @Test
     public void testSumEqualsOne() throws IOException {
-        LengthDistribution d =
-                new LengthDistribution(TestCorpus.EN0008T.getCorpus(), true);
+        LengthDistribution d = new LengthDistribution(
+                TestCorpus.EN0008T.getCorpus(), true);
 
         double sum = 0;
         for (int i = 1; i != d.getMaxLength() + 1; ++i) {
@@ -43,5 +41,4 @@ public class LengthDistributionTest extends LoggingTest {
         }
         assertEquals(1.0, sum, 0.01);
     }
-
 }

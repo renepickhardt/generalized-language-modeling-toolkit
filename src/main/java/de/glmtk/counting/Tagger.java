@@ -26,55 +26,46 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 public enum Tagger {
-
     TAGGER;
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(Tagger.class);
+    private static final Logger LOGGER = LogManager.getFormatterLogger(Tagger.class);
 
-    private MaxentTagger tagger =
-            new MaxentTagger(CONFIG.getModel().toString());
-
+    private MaxentTagger tagger = new MaxentTagger(CONFIG.getModel().toString());
     private int readerMemory;
-
     private int writerMemory;
 
-    public void tag(Path inputFile, Path outputFile) throws IOException {
+    public void tag(Path inputFile,
+                    Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.TAGGING, true);
         Progress progress = new Progress(Files.size(inputFile));
 
-        if (inputFile.equals(outputFile)) {
+        if (inputFile.equals(outputFile))
             throw new IllegalArgumentException(String.format(
                     "Input- equals OutputFile: '%s'.", inputFile));
-        }
 
         calculateMemory();
 
-        try (BufferedReader reader =
-                NioUtils.newBufferedReader(inputFile, Constants.CHARSET,
-                        readerMemory);
-                BufferedWriter writer =
-                        NioUtils.newBufferedWriter(outputFile,
-                                Constants.CHARSET, writerMemory)) {
+        try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
+                     Constants.CHARSET, readerMemory);
+             BufferedWriter writer = NioUtils.newBufferedWriter(outputFile,
+                     Constants.CHARSET, writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
 
                 // Tag
                 List<HasWord> sequence = new LinkedList<HasWord>();
-                for (String token : StringUtils.splitAtChar(line, ' ')) {
+                for (String token : StringUtils.splitAtChar(line, ' '))
                     sequence.add(new Word(token));
-                }
                 List<TaggedWord> taggedSequence = tagger.tagSentence(sequence);
 
                 // Write
                 boolean first = true;
                 for (TaggedWord tagged : taggedSequence) {
-                    if (first) {
+                    if (first)
                         first = false;
-                    } else {
+                    else
                         writer.write(' ');
-                    }
                     writer.write(tagged.word());
                     writer.write('/');
                     writer.write(tagged.tag());
@@ -101,5 +92,4 @@ public enum Tagger {
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
-
 }

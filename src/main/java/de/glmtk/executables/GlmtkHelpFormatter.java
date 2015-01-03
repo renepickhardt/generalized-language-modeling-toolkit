@@ -12,17 +12,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 public class GlmtkHelpFormatter extends HelpFormatter {
-
-    @SuppressWarnings({
-        "unchecked", "deprecation"
-    })
+    @SuppressWarnings({"unchecked", "deprecation"})
     @Override
-    protected StringBuffer renderOptions(
-            StringBuffer sb,
-            int width,
-            Options options,
-            int leftPad,
-            int descPad) {
+    protected StringBuffer renderOptions(StringBuffer sb,
+                                         int width,
+                                         Options options,
+                                         int leftPad,
+                                         int descPad) {
         final String lpad = createPadding(leftPad);
         final String dpad = createPadding(descPad);
 
@@ -32,8 +28,8 @@ public class GlmtkHelpFormatter extends HelpFormatter {
             helpOptions.setAccessible(true);
             optList = (List<Option>) helpOptions.invoke(options);
         } catch (NoSuchMethodException | SecurityException
-                | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
+                 | IllegalAccessException | IllegalArgumentException
+                 | InvocationTargetException e) {
             // lets hope this doesnt happen
             throw new RuntimeException(e);
         }
@@ -42,41 +38,36 @@ public class GlmtkHelpFormatter extends HelpFormatter {
 
         boolean first = true;
         for (Option option : optList) {
-            if (first) {
+            if (first)
                 first = false;
-            } else {
+            else
                 sb.append(defaultNewLine);
-            }
 
             StringBuffer optBuf = new StringBuffer(8);
 
-            if (option.getOpt() == null) {
-                optBuf.append(lpad).append("   ").append(defaultLongOptPrefix)
-                        .append(OUTPUT.bold(option.getLongOpt()));
-            } else {
-                optBuf.append(lpad).append(defaultOptPrefix)
-                .append(OUTPUT.bold(option.getOpt()));
-                if (option.hasLongOpt()) {
-                    optBuf.append(',')
-                            .append(defaultLongOptPrefix)
-                    .append(OUTPUT.bold(option.getLongOpt()));
-                }
+            if (option.getOpt() == null)
+                optBuf.append(lpad).append("   ").append(defaultLongOptPrefix).append(
+                        OUTPUT.bold(option.getLongOpt()));
+            else {
+                optBuf.append(lpad).append(defaultOptPrefix).append(
+                        OUTPUT.bold(option.getOpt()));
+                if (option.hasLongOpt())
+                    optBuf.append(',').append(defaultLongOptPrefix).append(
+                            OUTPUT.bold(option.getLongOpt()));
             }
 
-            if (option.hasArg()) {
-                if (option.hasArgName()) {
+            if (option.hasArg())
+                if (option.hasArgName())
                     optBuf.append(" <").append(option.getArgName()).append(">");
-                } else {
+                else
                     optBuf.append(' ');
-                }
-            }
             renderWrappedText(sb, width, width, optBuf.toString());
 
             if (option.getDescription() != null) {
                 sb.append(defaultNewLine);
                 StringBuffer descBuf = new StringBuffer();
-                descBuf.append(lpad).append(dpad)
-                        .append(option.getDescription());
+                descBuf.append(lpad).append(dpad).append(
+                        option.getDescription());
                 renderWrappedText(sb, width, leftPad + descPad,
                         descBuf.toString());
             }

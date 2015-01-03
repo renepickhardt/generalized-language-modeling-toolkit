@@ -8,24 +8,19 @@ import java.util.List;
 import org.junit.Test;
 
 import de.glmtk.common.ProbMode;
-import de.glmtk.querying.calculator.SequenceCalculator;
 
 public class SequenceCalculatorTest {
-
     @Test
-    public void testComputeQueries() throws NoSuchMethodException,
-            SecurityException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+    public void testComputeQueries() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         SequenceCalculator calculator = new SequenceCalculator();
         calculator.setProbMode(ProbMode.MARG);
 
-        Method computeQueries =
-                SequenceCalculator.class.getDeclaredMethod("computeQueries",
-                        List.class);
+        Method computeQueries = SequenceCalculator.class.getDeclaredMethod(
+                "computeQueries", List.class);
         computeQueries.setAccessible(true);
 
         // TODO: Write actual test.
-        System.out.println(computeQueries.invoke(calculator,
-                Arrays.asList("a", "b", "c", "d", "e", "f", "g")));
+        System.out.println(computeQueries.invoke(calculator, Arrays.asList("a",
+                "b", "c", "d", "e", "f", "g")));
     }
 }

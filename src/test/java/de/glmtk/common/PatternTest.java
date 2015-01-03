@@ -16,12 +16,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import de.glmtk.common.Pattern;
-import de.glmtk.common.PatternElem;
-import de.glmtk.common.Patterns;
-
 public class PatternTest {
-
     @Test
     public void testEqual() {
         Pattern a = Patterns.get("101x");
@@ -56,9 +51,8 @@ public class PatternTest {
     public void testIterator() {
         Pattern a = Patterns.get("101x");
         int i = -1;
-        for (PatternElem elem : a) {
+        for (PatternElem elem : a)
             assertEquals(elem, a.get(++i));
-        }
     }
 
     @Test
@@ -222,14 +216,14 @@ public class PatternTest {
 
     @Test
     public void testGetContinuationSource() {
-        assertEquals(Patterns.get("1011"), Patterns.get("101x")
-                .getContinuationSource());
-        assertEquals(Patterns.get("1110"), Patterns.get("1x10")
-                .getContinuationSource());
-        assertEquals(Patterns.get("1x01"), Patterns.get("1x0x")
-                .getContinuationSource());
-        assertEquals(Patterns.get("1xy02"), Patterns.get("1xy0y")
-                .getContinuationSource());
+        assertEquals(Patterns.get("1011"),
+                Patterns.get("101x").getContinuationSource());
+        assertEquals(Patterns.get("1110"),
+                Patterns.get("1x10").getContinuationSource());
+        assertEquals(Patterns.get("1x01"),
+                Patterns.get("1x0x").getContinuationSource());
+        assertEquals(Patterns.get("1xy02"),
+                Patterns.get("1xy0y").getContinuationSource());
 
         try {
             Patterns.get("1011").getContinuationSource();

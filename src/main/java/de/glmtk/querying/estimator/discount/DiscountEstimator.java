@@ -6,11 +6,9 @@ import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 
 public abstract class DiscountEstimator extends FractionEstimator {
-
     private FractionEstimator fractionEstimator;
 
-    public DiscountEstimator(
-            FractionEstimator fractionEstimator) {
+    public DiscountEstimator(FractionEstimator fractionEstimator) {
         this.fractionEstimator = fractionEstimator;
     }
 
@@ -31,7 +29,9 @@ public abstract class DiscountEstimator extends FractionEstimator {
         fractionEstimator.setProbMode(probMode);
     }
 
-    public final double discount(NGram sequence, NGram history, int recDepth) {
+    public final double discount(NGram sequence,
+                                 NGram history,
+                                 int recDepth) {
         logDebug(recDepth, "discount(%s,%s)", sequence, history);
         ++recDepth;
 
@@ -40,28 +40,28 @@ public abstract class DiscountEstimator extends FractionEstimator {
         return result;
     }
 
-    protected abstract double calcDiscount(
-            NGram sequence,
-            NGram history,
-            int recDepth);
+    protected abstract double calcDiscount(NGram sequence,
+                                           NGram history,
+                                           int recDepth);
 
     @Override
-    protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
-        double numeratorVal =
-                fractionEstimator.numerator(sequence, history, recDepth);
+    protected double calcNumerator(NGram sequence,
+                                   NGram history,
+                                   int recDepth) {
+        double numeratorVal = fractionEstimator.numerator(sequence, history,
+                recDepth);
         double discountVal = discount(sequence, history, recDepth);
 
-        if (discountVal > numeratorVal) {
+        if (discountVal > numeratorVal)
             return 0;
-        } else {
+        else
             return numeratorVal - discountVal;
-        }
     }
 
     @Override
-    protected double
-    calcDenominator(NGram sequence, NGram history, int recDepth) {
+    protected double calcDenominator(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
         return fractionEstimator.denominator(sequence, history, recDepth);
     }
-
 }

@@ -8,25 +8,19 @@ import java.util.List;
 import org.junit.Test;
 
 import de.glmtk.common.ProbMode;
-import de.glmtk.querying.calculator.CondCalculator;
 
 public class CondCalculatorTest {
-
     @Test
-    public void testComputQueries() throws NoSuchMethodException,
-            SecurityException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+    public void testComputQueries() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         CondCalculator calculator = new CondCalculator();
         calculator.setProbMode(ProbMode.MARG);
 
-        Method computeQueries =
-                CondCalculator.class.getDeclaredMethod("computeQueries",
-                        List.class);
+        Method computeQueries = CondCalculator.class.getDeclaredMethod(
+                "computeQueries", List.class);
         computeQueries.setAccessible(true);
 
         // TODO: Write actual test.
-        System.out.println(computeQueries.invoke(calculator,
-                Arrays.asList("a", "b", "c", "d", "e", "f", "g")));
+        System.out.println(computeQueries.invoke(calculator, Arrays.asList("a",
+                "b", "c", "d", "e", "f", "g")));
     }
-
 }

@@ -18,7 +18,6 @@ import de.glmtk.testutil.LoggingTest;
 import de.glmtk.util.StringUtils;
 
 public class QuickTest extends LoggingTest {
-
     //    @Test
     //    public void test() throws Exception {
     public static void main(String args[]) throws Exception {
@@ -123,69 +122,61 @@ public class QuickTest extends LoggingTest {
         Estimator[] es = new Estimator[6];
 
         ns[0] = "MKN_DEL";
-        es[0] =
+        es[0] = new InterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
                 new InterpolationEstimator(
                         new ModifiedKneserNeyDiscountEstimator(
-                                new MaximumLikelihoodEstimator()),
-                                new InterpolationEstimator(
-                                        new ModifiedKneserNeyDiscountEstimator(
-                                                new ContinuationMaximumLikelihoodEstimator()),
-                                                BackoffMode.DEL), BackoffMode.DEL);
+                                new ContinuationMaximumLikelihoodEstimator()),
+                        BackoffMode.DEL), BackoffMode.DEL);
 
         ns[1] = "MKN_SKP";
-        es[1] =
+        es[1] = new InterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
                 new InterpolationEstimator(
                         new ModifiedKneserNeyDiscountEstimator(
-                                new MaximumLikelihoodEstimator()),
-                                new InterpolationEstimator(
-                                        new ModifiedKneserNeyDiscountEstimator(
-                                                new ContinuationMaximumLikelihoodEstimator()),
-                                                BackoffMode.SKP), BackoffMode.SKP);
+                                new ContinuationMaximumLikelihoodEstimator()),
+                        BackoffMode.SKP), BackoffMode.SKP);
 
         ns[2] = "GLM_SKP";
-        es[2] =
+        es[2] = new DiffInterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
                 new DiffInterpolationEstimator(
                         new ModifiedKneserNeyDiscountEstimator(
-                                new MaximumLikelihoodEstimator()),
-                                new DiffInterpolationEstimator(
-                                        new ModifiedKneserNeyDiscountEstimator(
-                                                new ContinuationMaximumLikelihoodEstimator()),
-                                                BackoffMode.SKP), BackoffMode.SKP);
+                                new ContinuationMaximumLikelihoodEstimator()),
+                        BackoffMode.SKP), BackoffMode.SKP);
 
         ns[3] = "GLM_DEL";
-        es[3] =
+        es[3] = new DiffInterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
                 new DiffInterpolationEstimator(
                         new ModifiedKneserNeyDiscountEstimator(
-                                new MaximumLikelihoodEstimator()),
-                                new DiffInterpolationEstimator(
-                                        new ModifiedKneserNeyDiscountEstimator(
-                                                new ContinuationMaximumLikelihoodEstimator()),
-                                                BackoffMode.DEL), BackoffMode.DEL);
+                                new ContinuationMaximumLikelihoodEstimator()),
+                        BackoffMode.DEL), BackoffMode.DEL);
 
         ns[4] = "GLM_DEL_FRONT";
-        es[4] =
+        es[4] = new DiffInterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
                 new DiffInterpolationEstimator(
                         new ModifiedKneserNeyDiscountEstimator(
-                                new MaximumLikelihoodEstimator()),
-                                new DiffInterpolationEstimator(
-                                        new ModifiedKneserNeyDiscountEstimator(
-                                                new ContinuationMaximumLikelihoodEstimator()),
-                                                BackoffMode.DEL_FRONT), BackoffMode.DEL_FRONT);
+                                new ContinuationMaximumLikelihoodEstimator()),
+                        BackoffMode.DEL_FRONT), BackoffMode.DEL_FRONT);
 
         ns[5] = "GLM_SKP_AND_DEL";
-        es[5] =
+        es[5] = new DiffInterpolationEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new MaximumLikelihoodEstimator()),
                 new DiffInterpolationEstimator(
                         new ModifiedKneserNeyDiscountEstimator(
-                                new MaximumLikelihoodEstimator()),
-                                new DiffInterpolationEstimator(
-                                        new ModifiedKneserNeyDiscountEstimator(
-                                                new ContinuationMaximumLikelihoodEstimator()),
-                                                BackoffMode.SKP_AND_DEL),
-                        BackoffMode.SKP_AND_DEL);
+                                new ContinuationMaximumLikelihoodEstimator()),
+                        BackoffMode.SKP_AND_DEL), BackoffMode.SKP_AND_DEL);
 
-        CountCache cc =
-                new CountCache(
-                        Paths.get("/home/lukas/langmodels/data/en0008t.out/testcounts/354440f49cc27ea0dd1a61fd719ef855"));
+        CountCache cc = new CountCache(
+                Paths.get("/home/lukas/langmodels/data/en0008t.out/testcounts/354440f49cc27ea0dd1a61fd719ef855"));
 
         for (int i = 0; i != es.length; ++i) {
             String n = ns[i];
@@ -200,9 +191,8 @@ public class QuickTest extends LoggingTest {
             c.setEstimator(e);
             c.setProbMode(ProbMode.MARG);
 
-            List<String> w =
-                    StringUtils
-                    .splitAtChar("further edits should be made", ' ');
+            List<String> w = StringUtils.splitAtChar(
+                    "further edits should be made", ' ');
             NGram h = new NGram(w.subList(0, 4));
             NGram s = new NGram(w.get(4));
 

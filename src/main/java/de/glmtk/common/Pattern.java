@@ -19,25 +19,22 @@ import java.util.List;
  * Tests for this class can be found in {@link PatternTest}.
  */
 public class Pattern implements Iterable<PatternElem> {
-
     private List<PatternElem> elems;
-
     private String asString;
 
-    /* package */Pattern(
-            List<PatternElem> elems,
-            String asString) {
+    /* package */Pattern(List<PatternElem> elems,
+                         String asString) {
         this.elems = elems;
         this.asString = asString;
     }
 
     /**
      * Because all Patterns are cached, and can only be accessed through
-     * {@link Pattern#get()}, there can never be two instances of equal
-     * Patterns, thus it suffices to check for object identity.
+     * {@link Patterns#get}, there can never be two instances of equal Patterns,
+     * thus it suffices to check for object identity.
      *
-     * We could just omit this definition since it's default, but it's left
-     * for clarification.
+     * We could just omit this definition since it's default, but it's left for
+     * clarification.
      */
     @Override
     public boolean equals(Object other) {
@@ -68,19 +65,16 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public PatternElem get(int index) {
-        if (index < 0 || index > size()) {
+        if (index < 0 || index > size())
             throw new IllegalArgumentException(String.format(
                     "Illegal index: %d. Size: %d.", index, size()));
-        }
         return elems.get(index);
     }
 
     public PatternElem getFirstNonSkp() {
-        for (PatternElem elem : elems) {
-            if (!elem.equals(SKP)) {
+        for (PatternElem elem : elems)
+            if (!elem.equals(SKP))
                 return elem;
-            }
-        }
         return SKP;
     }
 
@@ -89,16 +83,12 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public boolean contains(Collection<PatternElem> elems) {
-        if (elems.isEmpty()) {
+        if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
-        }
-        for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems) {
-                if (elem.equals(e)) {
+        for (PatternElem elem : this.elems)
+            for (PatternElem e : elems)
+                if (elem.equals(e))
                     return true;
-                }
-            }
-        }
         return false;
     }
 
@@ -107,18 +97,15 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public boolean containsOnly(Collection<PatternElem> elems) {
-        if (elems.isEmpty()) {
+        if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
-        }
         outerLoop:
-        for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems) {
-                    if (elem.equals(e)) {
-                        continue outerLoop;
-                    }
-                }
-                return false;
-            }
+            for (PatternElem elem : this.elems) {
+            for (PatternElem e : elems)
+                if (elem.equals(e))
+                    continue outerLoop;
+            return false;
+        }
         return true;
     }
 
@@ -131,19 +118,16 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public int numElems(Collection<PatternElem> elems) {
-        if (elems.isEmpty()) {
+        if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
-        }
         int result = 0;
         outerLoop:
-            for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems) {
-                    if (elem.equals(e)) {
-                        ++result;
-                        continue outerLoop;
-                    }
+        for (PatternElem elem : this.elems)
+            for (PatternElem e : elems)
+                if (elem.equals(e)) {
+                    ++result;
+                    continue outerLoop;
                 }
-            }
         return result;
     }
 
@@ -155,50 +139,48 @@ public class Pattern implements Iterable<PatternElem> {
         return Patterns.get(asString + other.asString);
     }
 
-    public Pattern range(int from, int to) {
-        if (from < 0 || from > size()) {
+    public Pattern range(int from,
+                         int to) {
+        if (from < 0 || from > size())
             throw new IllegalArgumentException(String.format(
                     "Illegal from index: %d", from));
-        } else if (to < 0 || to > size()) {
+        else if (to < 0 || to > size())
             throw new IllegalArgumentException(String.format(
                     "Illegal to index: %d", to));
-        } else if (from > to) {
+        else if (from > to)
             throw new IllegalArgumentException(String.format(
                     "From index larger than to index: %d > %d", from, to));
-        }
 
         List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
 
-        for (int i = from; i != to; ++i) {
+        for (int i = from; i != to; ++i)
             resultElems.add(elems.get(i));
-        }
 
         return Patterns.get(resultElems);
     }
 
-    public Pattern replace(PatternElem target, PatternElem replacement) {
+    public Pattern replace(PatternElem target,
+                           PatternElem replacement) {
         StringBuilder resultAsString = new StringBuilder();
 
-        for (PatternElem elem : elems) {
-            if (elem.equals(target)) {
+        for (PatternElem elem : elems)
+            if (elem.equals(target))
                 resultAsString.append(replacement.toChar());
-            } else {
+            else
                 resultAsString.append(elem.toChar());
-            }
-        }
 
         return Patterns.get(resultAsString.toString());
     }
 
-    public Pattern replaceLast(PatternElem target, PatternElem replacement) {
+    public Pattern replaceLast(PatternElem target,
+                               PatternElem replacement) {
         List<PatternElem> resultElems = new ArrayList<PatternElem>(elems);
 
-        for (int i = size() - 1; i != -1; --i) {
+        for (int i = size() - 1; i != -1; --i)
             if (elems.get(i).equals(target)) {
                 resultElems.set(i, replacement);
                 break;
             }
-        }
 
         return Patterns.get(resultElems);
     }
@@ -230,9 +212,8 @@ public class Pattern implements Iterable<PatternElem> {
             PatternElem elem = elems.get(i);
 
             if (elem != DEL) {
-                if (!first) {
+                if (!first)
                     result.append(' ');
-                }
                 first = false;
             }
 
@@ -243,7 +224,9 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     // TODO: untested
-    public String apply(String[] words, String[] pos, int p) {
+    public String apply(String[] words,
+                        String[] pos,
+                        int p) {
         StringBuilder result = new StringBuilder();
 
         boolean first = true;
@@ -251,9 +234,8 @@ public class Pattern implements Iterable<PatternElem> {
             PatternElem elem = elems.get(i);
 
             if (elem != DEL) {
-                if (!first) {
+                if (!first)
                     result.append(' ');
-                }
                 first = false;
             }
 
@@ -262,5 +244,4 @@ public class Pattern implements Iterable<PatternElem> {
 
         return result.toString();
     }
-
 }

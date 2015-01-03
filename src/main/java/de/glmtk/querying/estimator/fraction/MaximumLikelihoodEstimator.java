@@ -3,9 +3,10 @@ package de.glmtk.querying.estimator.fraction;
 import de.glmtk.common.NGram;
 
 public class MaximumLikelihoodEstimator extends FractionEstimator {
-
     @Override
-    protected double calcNumerator(NGram sequence, NGram history, int recDepth) {
+    protected double calcNumerator(NGram sequence,
+                                   NGram history,
+                                   int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
         long fullSequenceCount = countCache.getAbsolute(fullSequence);
         logDebug(recDepth, "fullSequence = %s (%d)", fullSequence,
@@ -14,13 +15,13 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
     }
 
     @Override
-    protected double
-    calcDenominator(NGram sequence, NGram history, int recDepth) {
+    protected double calcDenominator(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
         long fullHistoryCount = countCache.getAbsolute(fullHistory);
         logDebug(recDepth, "fullHistory = %s (%d)", fullHistory,
                 fullHistoryCount);
         return fullHistoryCount;
     }
-
 }

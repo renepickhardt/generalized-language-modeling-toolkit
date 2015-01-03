@@ -39,47 +39,33 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
 public enum Merger {
-
     MERGER;
 
-    private static class SequenceCountReader implements Closeable,
-            AutoCloseable {
-
-        public static final Comparator<SequenceCountReader> COMPARATOR =
-                new Comparator<Merger.SequenceCountReader>() {
-
-                    @Override
-                    public int compare(
-                            SequenceCountReader lhs,
-                            SequenceCountReader rhs) {
-                        if (lhs == rhs) {
-                            return 0;
-                        } else if (lhs == null) {
-                            return 1;
-                        } else if (rhs == null) {
-                            return -1;
-                        } else {
-                            return StringUtils.compare(lhs.sequence,
-                                    rhs.sequence);
-                        }
-                    }
-
-                };
+    private static class SequenceCountReader implements Closeable, AutoCloseable {
+        public static final Comparator<SequenceCountReader> COMPARATOR = new Comparator<Merger.SequenceCountReader>() {
+            @Override
+            public int compare(SequenceCountReader lhs,
+                               SequenceCountReader rhs) {
+                if (lhs == rhs)
+                    return 0;
+                else if (lhs == null)
+                    return 1;
+                else if (rhs == null)
+                    return -1;
+                else
+                    return StringUtils.compare(lhs.sequence, rhs.sequence);
+            }
+        };
 
         private Path path;
-
         private BufferedReader reader;
-
         private int lineNo;
-
         private String sequence;
-
         private Counter counter;
 
-        public SequenceCountReader(
-                Path path,
-                Charset charset,
-                int sz) throws IOException {
+        public SequenceCountReader(Path path,
+                                   Charset charset,
+                                   int sz) throws IOException {
             this.path = path;
             reader = NioUtils.newBufferedReader(path, charset, sz);
             lineNo = -1;
@@ -120,20 +106,16 @@ public enum Merger {
         public void close() throws IOException {
             reader.close();
         }
-
     }
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(Merger.class);
+    private static final Logger LOGGER = LogManager.getFormatterLogger(Merger.class);
 
     private class Thread implements Callable<Object> {
-
         @Override
         public Object call() throws InterruptedException, IOException {
             while (!patternQueue.isEmpty()) {
-                Pattern pattern =
-                        patternQueue.poll(Constants.QUEUE_TIMEOUT,
-                                TimeUnit.MILLISECONDS);
+                Pattern pattern = patternQueue.poll(Constants.QUEUE_TIMEOUT,
+                        TimeUnit.MILLISECONDS);
                 if (pattern == null) {
                     LOGGER.trace("Thread Idle.");
                     StatisticalNumberHelper.count("Merger#Thread idle");
@@ -151,25 +133,22 @@ public enum Merger {
             return null;
         }
 
-        private void mergePattern(Pattern pattern) throws InterruptedException,
-                IOException {
+        private void mergePattern(Pattern pattern) throws InterruptedException, IOException {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             Set<String> chunksForPattern;
-            while ((chunksForPattern =
-                    status.getChunksForPattern(continuation, pattern)).size() != 1) {
-                int numParallelChunks =
-                        Math.min(numParallelReaders, chunksForPattern.size());
+            while ((chunksForPattern = status.getChunksForPattern(continuation,
+                    pattern)).size() != 1) {
+                int numParallelChunks = Math.min(numParallelReaders,
+                        chunksForPattern.size());
 
                 Set<String> chunksToMerge = new LinkedHashSet<String>();
                 Iterator<String> iter = chunksForPattern.iterator();
-                for (int i = 0; i != numParallelChunks; ++i) {
+                for (int i = 0; i != numParallelChunks; ++i)
                     chunksToMerge.add(iter.next());
-                }
 
-                Path mergeFile =
-                        patternDir.resolve("merge"
-                                + getMergeCounter(chunksForPattern));
+                Path mergeFile = patternDir.resolve("merge"
+                        + getMergeCounter(chunksForPattern));
                 LOGGER.debug("Merging pattern %s:\t%s -> %s.", pattern,
                         chunksToMerge, mergeFile.getFileName());
                 mergeChunksToFile(patternDir, chunksToMerge, mergeFile);
@@ -183,9 +162,8 @@ public enum Merger {
                             + ExceptionUtils.getStackTrace(e));
                 }
 
-                for (String chunk : chunksToMerge) {
+                for (String chunk : chunksToMerge)
                     Files.deleteIfExists(patternDir.resolve(chunk));
-                }
             }
 
             Path src = patternDir.resolve(chunksForPattern.iterator().next());
@@ -196,47 +174,35 @@ public enum Merger {
             Files.move(src, dest);
             status.finishMerge(continuation, pattern);
 
-            if (NioUtils.isDirEmpty(patternDir)) {
+            if (NioUtils.isDirEmpty(patternDir))
                 Files.deleteIfExists(patternDir);
-            }
         }
 
         private int getMergeCounter(Set<String> chunksForPattern) {
             int maxMergeNr = 0;
-            for (String chunk : chunksForPattern) {
+            for (String chunk : chunksForPattern)
                 if (chunk.startsWith("merge")) {
-                    int mergeNr =
-                            Character.getNumericValue(chunk.charAt("merge"
-                                    .length()));
-                    if (maxMergeNr < mergeNr) {
+                    int mergeNr = Character.getNumericValue(chunk.charAt("merge".length()));
+                    if (maxMergeNr < mergeNr)
                         maxMergeNr = mergeNr;
-                    }
                 }
-            }
             return maxMergeNr + 1;
         }
 
-        private void mergeChunksToFile(
-                Path patternDir,
-                Set<String> chunksToMerge,
-                Path mergeFile) throws IOException {
+        private void mergeChunksToFile(Path patternDir,
+                                       Set<String> chunksToMerge,
+                                       Path mergeFile) throws IOException {
             Files.deleteIfExists(mergeFile);
 
-            try (BufferedWriter writer =
-                    NioUtils.newBufferedWriter(mergeFile, Constants.CHARSET,
-                            (int) writerMemory)) {
-                PriorityQueue<SequenceCountReader> readerQueue =
-                        new PriorityQueue<SequenceCountReader>(
-                                chunksToMerge.size(),
-                                SequenceCountReader.COMPARATOR);
-                int memoryPerReader =
-                        (int) (readerMemory / chunksToMerge.size());
-                for (String chunk : chunksToMerge) {
-                    readerQueue
-                    .add(new SequenceCountReader(patternDir
-                            .resolve(chunk), Constants.CHARSET,
+            try (BufferedWriter writer = NioUtils.newBufferedWriter(mergeFile,
+                    Constants.CHARSET, (int) writerMemory)) {
+                PriorityQueue<SequenceCountReader> readerQueue = new PriorityQueue<SequenceCountReader>(
+                        chunksToMerge.size(), SequenceCountReader.COMPARATOR);
+                int memoryPerReader = (int) (readerMemory / chunksToMerge.size());
+                for (String chunk : chunksToMerge)
+                    readerQueue.add(new SequenceCountReader(
+                            patternDir.resolve(chunk), Constants.CHARSET,
                             memoryPerReader));
-                }
 
                 String lastSequence = null;
                 Counter aggregationCounter = null;
@@ -250,18 +216,16 @@ public enum Merger {
                     String sequence = reader.getSequence();
                     Counter counter = reader.getCounter();
 
-                    if (sequence.equals(lastSequence)) {
+                    if (sequence.equals(lastSequence))
                         aggregationCounter.add(counter);
-                    } else {
+                    else {
                         if (lastSequence != null) {
                             writer.write(lastSequence);
                             writer.write('\t');
-                            if (continuation) {
+                            if (continuation)
                                 writer.write(aggregationCounter.toString());
-                            } else {
-                                writer.write(Long.toString(aggregationCounter
-                                        .getOnePlusCount()));
-                            }
+                            else
+                                writer.write(Long.toString(aggregationCounter.getOnePlusCount()));
                             writer.write('\n');
                         }
                         lastSequence = sequence;
@@ -275,47 +239,36 @@ public enum Merger {
     }
 
     private int numParallelReaders = 10;
-
     private Progress progress;
-
     private boolean continuation;
-
     private Status status;
-
     private Path chunkedDir;
-
     private Path countedDir;
-
     private BlockingQueue<Pattern> patternQueue;
-
     private long readerMemory;
-
     private long writerMemory;
 
-    public void mergeAbsolute(
-            Status status,
-            Set<Pattern> patterns,
-            Path chunkedDir,
-            Path countedDir) throws Exception {
+    public void mergeAbsolute(Status status,
+                              Set<Pattern> patterns,
+                              Path chunkedDir,
+                              Path countedDir) throws Exception {
         OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
         merge(false, status, patterns, chunkedDir, countedDir);
     }
 
-    public void mergeContinuation(
-            Status status,
-            Set<Pattern> patterns,
-            Path chunkedDir,
-            Path countedDir) throws Exception {
+    public void mergeContinuation(Status status,
+                                  Set<Pattern> patterns,
+                                  Path chunkedDir,
+                                  Path countedDir) throws Exception {
         OUTPUT.setPhase(Phase.CONTINUATION_MERGING, true);
         merge(true, status, patterns, chunkedDir, countedDir);
     }
 
-    private void merge(
-            boolean continuation,
-            Status status,
-            Set<Pattern> patterns,
-            Path chunkedDir,
-            Path countedDir) throws Exception {
+    private void merge(boolean continuation,
+                       Status status,
+                       Set<Pattern> patterns,
+                       Path chunkedDir,
+                       Path countedDir) throws Exception {
         LOGGER.debug("patterns = %s", patterns);
         progress = new Progress(patterns.size());
         if (patterns.isEmpty()) {
@@ -334,14 +287,12 @@ public enum Merger {
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
-        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i) {
+        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i)
             threads.add(new Thread());
-        }
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
 
-        if (NioUtils.isDirEmpty(chunkedDir)) {
+        if (NioUtils.isDirEmpty(chunkedDir))
             Files.deleteIfExists(chunkedDir);
-        }
     }
 
     private void calculateMemory() {
@@ -363,5 +314,4 @@ public enum Merger {
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
-
 }

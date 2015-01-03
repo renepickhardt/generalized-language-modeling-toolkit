@@ -30,21 +30,13 @@ import de.glmtk.Termination;
 import de.glmtk.util.StringUtils;
 
 /* package */abstract class Executable {
-
-    private static Logger LOGGER = LogManager
-            .getFormatterLogger(Executable.class);
-
+    private static Logger LOGGER = LogManager.getFormatterLogger(Executable.class);
     protected static final String OPTION_HELP_SHORT = "h";
-
     protected static final String OPTION_HELP_LONG = "help";
-
     protected static final String OPTION_VERSION_SHORT = "v";
-
     protected static final String OPTION_VERSION_LONG = "version";
 
     protected CommandLine line = null;
-
-    protected boolean loggingConfigured = false;
 
     protected abstract List<Option> getOptions();
 
@@ -69,13 +61,11 @@ import de.glmtk.util.StringUtils;
 
             printLogFooter();
         } catch (Termination e) {
-            if (e.getMessage() != null) {
+            if (e.getMessage() != null)
                 System.err.println(e.getMessage());
-            }
-            // Terminate
         } catch (Throwable e) {
             try (StringWriter stackTrace = new StringWriter();
-                    PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
+                 PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
                 e.printStackTrace(stackTraceWriter);
                 LOGGER.error(String.format("Exception %s",
                         stackTrace.toString()));
@@ -89,21 +79,20 @@ import de.glmtk.util.StringUtils;
     }
 
     private void configureLogging() {
-        LOGGING_HELPER.addFileAppender(
-                CONFIG.getLogDir().resolve(Constants.ALL_LOG_FILE_NAME),
-                "FileAll", true);
+        LOGGING_HELPER.addFileAppender(CONFIG.getLogDir().resolve(
+                Constants.ALL_LOG_FILE_NAME), "FileAll", true);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = format.format(Calendar.getInstance().getTime());
-        LOGGING_HELPER.addFileAppender(CONFIG.getLogDir()
-                .resolve(time + ".log"), "FileTimestamp", false);
+        LOGGING_HELPER.addFileAppender(
+                CONFIG.getLogDir().resolve(time + ".log"), "FileTimestamp",
+                false);
     }
 
     protected void parseArguments(String[] args) throws Exception {
         Options options = new Options();
-        for (Option option : getOptions()) {
+        for (Option option : getOptions())
             options.addOption(option);
-        }
 
         try {
             CommandLineParser parser = new PosixParser();
@@ -113,8 +102,7 @@ import de.glmtk.util.StringUtils;
         }
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
-            System.out
-                    .println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+            System.out.println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -125,7 +113,8 @@ import de.glmtk.util.StringUtils;
             formatter.setOptionComparator(new Comparator<Option>() {
 
                 @Override
-                public int compare(Option o1, Option o2) {
+                public int compare(Option o1,
+                                   Option o2) {
                     return getOptions().indexOf(o1) - getOptions().indexOf(o2);
                 }
 
@@ -134,9 +123,8 @@ import de.glmtk.util.StringUtils;
             String header = null;
             String footer = null;
 
-            try (PrintWriter pw =
-                    new PrintWriter(new OutputStreamWriter(AnsiConsole.out,
-                            Constants.CHARSET))) {
+            try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(
+                    AnsiConsole.out, Constants.CHARSET))) {
                 formatter.printHelp(pw, 80, getUsage(), header, options, 2, 8,
                         footer);
             }
@@ -144,21 +132,19 @@ import de.glmtk.util.StringUtils;
         }
     }
 
-    private void printLogHeader(String[] args) throws IOException,
-            InterruptedException {
+    private void printLogHeader(String[] args) throws IOException, InterruptedException {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
         LOGGER.info(StringUtils.repeat("-", 80));
 
         // log git commit
-        Process gitLogProc = Runtime.getRuntime().exec(new String[] {
-            "git", "log", "-1", "--format=%H: %s"
-        }, null, CONFIG.getGlmtkDir().toFile());
+        Process gitLogProc = Runtime.getRuntime().exec(
+                new String[] {"git", "log", "-1", "--format=%H: %s"}, null,
+                CONFIG.getGlmtkDir().toFile());
         gitLogProc.waitFor();
-        try (BufferedReader reader =
-                new BufferedReader(new InputStreamReader(
-                        gitLogProc.getInputStream(), Constants.CHARSET))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                gitLogProc.getInputStream(), Constants.CHARSET))) {
             String gitCommit = reader.readLine();
             LOGGER.info("Git Commit: %s", gitCommit);
         }
@@ -181,5 +167,4 @@ import de.glmtk.util.StringUtils;
     private void printLogFooter() {
         LOGGER.info("done.");
     }
-
 }

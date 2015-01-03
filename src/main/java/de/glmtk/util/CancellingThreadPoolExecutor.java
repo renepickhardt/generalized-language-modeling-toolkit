@@ -14,48 +14,43 @@ import java.util.concurrent.TimeUnit;
  * exception, instead of waiting for remaining tasks to finish.
  */
 public class CancellingThreadPoolExecutor extends ThreadPoolExecutor {
-
     private Throwable throwable = null;
 
-    public CancellingThreadPoolExecutor(
-            int corePoolSize,
-            int maximumPoolSize,
-            long keepAliveTime,
-            TimeUnit unit,
-            BlockingQueue<Runnable> workQueue) {
+    public CancellingThreadPoolExecutor(int corePoolSize,
+                                        int maximumPoolSize,
+                                        long keepAliveTime,
+                                        TimeUnit unit,
+                                        BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
 
-    public CancellingThreadPoolExecutor(
-            int corePoolSize,
-            int maximumPoolSize,
-            long keepAliveTime,
-            TimeUnit unit,
-            BlockingQueue<Runnable> workQueue,
-            ThreadFactory threadFactory) {
+    public CancellingThreadPoolExecutor(int corePoolSize,
+                                        int maximumPoolSize,
+                                        long keepAliveTime,
+                                        TimeUnit unit,
+                                        BlockingQueue<Runnable> workQueue,
+                                        ThreadFactory threadFactory) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
                 threadFactory);
     }
 
-    public CancellingThreadPoolExecutor(
-            int corePoolSize,
-            int maximumPoolSize,
-            long keepAliveTime,
-            TimeUnit unit,
-            BlockingQueue<Runnable> workQueue,
-            RejectedExecutionHandler handler) {
+    public CancellingThreadPoolExecutor(int corePoolSize,
+                                        int maximumPoolSize,
+                                        long keepAliveTime,
+                                        TimeUnit unit,
+                                        BlockingQueue<Runnable> workQueue,
+                                        RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
                 handler);
     }
 
-    public CancellingThreadPoolExecutor(
-            int corePoolSize,
-            int maximumPoolSize,
-            long keepAliveTime,
-            TimeUnit unit,
-            BlockingQueue<Runnable> workQueue,
-            ThreadFactory threadFactory,
-            RejectedExecutionHandler handler) {
+    public CancellingThreadPoolExecutor(int corePoolSize,
+                                        int maximumPoolSize,
+                                        long keepAliveTime,
+                                        TimeUnit unit,
+                                        BlockingQueue<Runnable> workQueue,
+                                        ThreadFactory threadFactory,
+                                        RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
                 threadFactory, handler);
     }
@@ -64,21 +59,20 @@ public class CancellingThreadPoolExecutor extends ThreadPoolExecutor {
      * See {@link ThreadPoolExecutor#afterExecute(Runnable, Throwable)}.
      */
     @Override
-    protected void afterExecute(Runnable r, Throwable t) {
+    protected void afterExecute(Runnable r,
+                                Throwable t) {
         super.afterExecute(r, t);
 
-        if (t == null && r instanceof Future<?>) {
+        if (t == null && r instanceof Future)
             try {
                 Future<?> f = (Future<?>) r;
-                if (!f.isCancelled()) {
+                if (!f.isCancelled())
                     f.get();
-                }
             } catch (InterruptedException | CancellationException e) {
                 t = e;
             } catch (ExecutionException e) {
                 t = e.getCause();
             }
-        }
 
         if (throwable == null && t != null
                 && !(t instanceof InterruptedException)) {
@@ -88,14 +82,12 @@ public class CancellingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     public void rethrowIfException() throws Exception {
-        if (throwable != null) {
-            if (throwable instanceof Error) {
+        if (throwable != null)
+            if (throwable instanceof Error)
                 throw (Error) throwable;
-            } else if (throwable instanceof RuntimeException) {
+            else if (throwable instanceof RuntimeException)
                 throw (RuntimeException) throwable;
-            } else {
+            else
                 throw (Exception) throwable;
-            }
-        }
     }
 }

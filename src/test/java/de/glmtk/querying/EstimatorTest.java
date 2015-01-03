@@ -48,13 +48,9 @@ import de.glmtk.testutil.TestCorpus;
 @RunWith(EstimatorTestRunner.class)
 @IgnoreProbMode(ProbMode.COND)
 public class EstimatorTest extends LoggingTest {
-
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(EstimatorTest.class);
-
+    private static final Logger LOGGER = LogManager.getFormatterLogger(EstimatorTest.class);
     private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
             TestCorpus.ABC, TestCorpus.MOBYDICK);
-
     private static final int HIGHEST_ORDER = 5;
 
     @EstimatorTestParameters
@@ -94,22 +90,18 @@ public class EstimatorTest extends LoggingTest {
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
                 //@formatter:on
-                );
+        );
     }
 
     private Estimator estimator;
-
     private boolean continuationEstimator;
-
     private ProbMode probMode;
-
     private int maxOrder;
 
-    public EstimatorTest(
-            Estimator estimator,
-            boolean continuationEstimator,
-            ProbMode probMode,
-            int maxOrder) {
+    public EstimatorTest(Estimator estimator,
+                         boolean continuationEstimator,
+                         ProbMode probMode,
+                         int maxOrder) {
         LOGGER.info("====== %s (%s)", estimator.getName(), probMode);
 
         this.estimator = estimator;
@@ -133,8 +125,7 @@ public class EstimatorTest extends LoggingTest {
                 double sum = 0;
                 for (int i = 0; i != (int) Math.pow(
                         testCorpus.getWords().length, order); ++i) {
-                    List<String> sequence =
-                            testCorpus.getSequenceList(i, order);
+                    List<String> sequence = testCorpus.getSequenceList(i, order);
                     sum += calculator.probability(sequence);
                 }
                 try {
@@ -161,14 +152,13 @@ public class EstimatorTest extends LoggingTest {
                 LOGGER.info("n=%s", order);
                 for (int i = 0; i != (int) Math.pow(
                         testCorpus.getWords().length, order - 1); ++i) {
-                    NGram history =
-                            new NGram(testCorpus.getSequenceList(i, order - 1));
+                    NGram history = new NGram(testCorpus.getSequenceList(i,
+                            order - 1));
 
                     double sum = 0;
                     for (int j = 0; j != testCorpus.getWords().length; ++j) {
-                        NGram sequence =
-                                new NGram(
-                                        Arrays.asList(testCorpus.getWords()[j]));
+                        NGram sequence = new NGram(
+                                Arrays.asList(testCorpus.getWords()[j]));
                         sum += estimator.probability(sequence, history);
                     }
 
@@ -176,16 +166,12 @@ public class EstimatorTest extends LoggingTest {
                         switch (probMode) {
                             case COND:
                                 NGram checkHistory = history.concat(SKP_NGRAM);
-                                if (continuationEstimator) {
-                                    checkHistory =
-                                            SKP_NGRAM.concat(checkHistory);
-                                }
-                                if (checkHistory.seen(testCorpus
-                                        .getCountCache())) {
+                                if (continuationEstimator)
+                                    checkHistory = SKP_NGRAM.concat(checkHistory);
+                                if (checkHistory.seen(testCorpus.getCountCache()))
                                     Assert.assertEquals(1.0, sum, 0.01);
-                                } else {
+                                else
                                     Assert.assertEquals(0.0, sum, 0.01);
-                                }
                                 break;
                             case MARG:
                                 Assert.assertEquals(1.0, sum, 0.01);

@@ -8,11 +8,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class HashUtils {
-
     /**
-     * @see <a href=
-     *      "http://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java"
-     *      >Stack Overflow: Getting a File's MD5 Checksum in Java</a>.
+     * <a href=
+     * "http://stackoverflow.com/questions/304268/getting-a-files-md5-checksum-in-java"
+     * >Stack Overflow: Getting a File's MD5 Checksum in Java</a>.
      */
     public static String generateMd5Hash(Path file) throws IOException {
         try {
@@ -24,23 +23,20 @@ public class HashUtils {
             int numRead;
             do {
                 numRead = input.read(buffer);
-                if (numRead > 0) {
+                if (numRead > 0)
                     digest.update(buffer, 0, numRead);
-                }
             } while (numRead != -1);
 
             input.close();
 
             byte[] resultByte = digest.digest();
             StringBuilder result = new StringBuilder();
-            for (int i = 0; i != resultByte.length; ++i) {
+            for (int i = 0; i != resultByte.length; ++i)
                 result.append(Integer.toString((resultByte[i] & 0xff) + 0x100,
                         16).substring(1));
-            }
             return result.toString();
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
     }
-
 }

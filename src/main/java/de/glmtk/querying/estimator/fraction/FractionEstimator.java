@@ -4,16 +4,15 @@ import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.Estimator;
 
 public abstract class FractionEstimator extends Estimator {
-
     @Override
-    protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
         if (history.seen(countCache)) {
             double numeratorVal = numerator(sequence, history, recDepth);
             double denominatorVal = denominator(sequence, history, recDepth);
-            if (denominatorVal != 0) {
+            if (denominatorVal != 0)
                 return numeratorVal / denominatorVal;
-            }
         }
 
         // Fraction estimator probability is undefined.
@@ -31,7 +30,9 @@ public abstract class FractionEstimator extends Estimator {
         }
     }
 
-    public final double numerator(NGram sequence, NGram history, int recDepth) {
+    public final double numerator(NGram sequence,
+                                  NGram history,
+                                  int recDepth) {
         logDebug(recDepth, "numerator(%s,%s)", sequence, history);
         ++recDepth;
 
@@ -40,13 +41,13 @@ public abstract class FractionEstimator extends Estimator {
         return result;
     }
 
-    protected abstract double calcNumerator(
-            NGram sequence,
-            NGram history,
-            int recDepth);
+    protected abstract double calcNumerator(NGram sequence,
+                                            NGram history,
+                                            int recDepth);
 
-    public final double
-        denominator(NGram sequence, NGram history, int recDepth) {
+    public final double denominator(NGram sequence,
+                                    NGram history,
+                                    int recDepth) {
         logDebug(recDepth, "denominator(%s,%s)", sequence, history);
         ++recDepth;
 
@@ -55,9 +56,7 @@ public abstract class FractionEstimator extends Estimator {
         return result;
     }
 
-    protected abstract double calcDenominator(
-            NGram sequence,
-            NGram history,
-            int recDepth);
-
+    protected abstract double calcDenominator(NGram sequence,
+                                              NGram history,
+                                              int recDepth);
 }

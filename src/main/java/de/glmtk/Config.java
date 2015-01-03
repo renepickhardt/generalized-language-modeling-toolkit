@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import de.glmtk.util.StringUtils;
 
 public enum Config {
-
     CONFIG;
 
     /**
@@ -35,15 +34,10 @@ public enum Config {
     private final Path logDir;
 
     private int mainMemory;
-
     private int numberOfCores;
-
     private int consoleUpdateInterval;
-
     private int logUpdateInterval;
-
     private int consoleParamsUpdateInterval;
-
     private Path model;
 
     public Path getUserDir() {
@@ -84,8 +78,7 @@ public enum Config {
 
     private Config() {
         userDir = Paths.get(System.getProperty("user.dir"));
-        glmtkDir =
-                Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
+        glmtkDir = Paths.get(System.getProperty("glmtk.dir", userDir.toString()));
         logDir = glmtkDir.resolve(Constants.LOG_DIR_NAME);
 
         Path file = glmtkDir.resolve(Constants.CONFIG_LOCATION);
@@ -102,56 +95,50 @@ public enum Config {
     private void loadConfig(Path file) throws IOException, Exception {
         Map<String, Field> fields = new HashMap<String, Field>();
         for (Field field : Config.class.getDeclaredFields()) {
-            if (isNotConfigurableField(field)) {
+            if (isNotConfigurableField(field))
                 continue;
-            }
             fields.put(field.getName(), field);
         }
 
-        try (BufferedReader reader =
-                Files.newBufferedReader(file, Constants.CHARSET)) {
+        try (BufferedReader reader = Files.newBufferedReader(file,
+                Constants.CHARSET)) {
             String line;
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
-                if (line.trim().isEmpty() || line.charAt(0) == '#') {
+                if (line.trim().isEmpty() || line.charAt(0) == '#')
                     continue;
-                }
 
                 List<String> keyValue = StringUtils.splitAtChar(line, '=');
-                if (keyValue.size() != 2) {
+                if (keyValue.size() != 2)
                     throw error(file, line, lineNo,
                             "Entrys have to be in the form of '<key> = <value>'.");
-                }
 
                 String key = keyValue.get(0).trim();
                 String value = keyValue.get(1).trim();
 
-                if (!fields.containsKey(key)) {
-                    throw error(file, line, lineNo,
-                            String.format("Unknown key '%s'.", key));
-                }
+                if (!fields.containsKey(key))
+                    throw error(file, line, lineNo, String.format(
+                            "Unknown key '%s'.", key));
                 Field field = fields.get(key);
-                if (field == null) {
-                    throw error(file, line, lineNo,
-                            String.format("Duplicated key '%s'.", key));
-                }
+                if (field == null)
+                    throw error(file, line, lineNo, String.format(
+                            "Duplicated key '%s'.", key));
 
                 try {
                     if (field.getType().equals(int.class)
-                            || field.getType().equals(Integer.class)) {
+                            || field.getType().equals(Integer.class))
                         try {
                             field.set(this, Integer.valueOf(value));
                         } catch (NumberFormatException e) {
                             throw error(file, line, lineNo, String.format(
                                     "Expected number, found '%s'.", value));
                         }
-                    } else if (field.getType().equals(Path.class)) {
+                    else if (field.getType().equals(Path.class)) {
                         Path path = Paths.get(value);
-                        if (path == null) {
+                        if (path == null)
                             throw error(file, line, lineNo, String.format(
                                     "Expected path, found '%s'.", value));
-                        }
                         field.set(this, path);
                     }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -163,12 +150,10 @@ public enum Config {
             }
         }
 
-        for (Entry<String, Field> entry : fields.entrySet()) {
-            if (entry.getValue() != null) {
-                throw error(file,
-                        String.format("Missing key '%s'.", entry.getKey()));
-            }
-        }
+        for (Entry<String, Field> entry : fields.entrySet())
+            if (entry.getValue() != null)
+                throw error(file, String.format("Missing key '%s'.",
+                        entry.getKey()));
     }
 
     private boolean isNotConfigurableField(Field field) {
@@ -177,15 +162,18 @@ public enum Config {
                 || field.isEnumConstant();
     }
 
-    private Exception error(Path file, String line, int lineNo, String msg)
-            throws Exception {
+    private Exception error(Path file,
+                            String line,
+                            int lineNo,
+                            String msg) throws Exception {
         return new Exception(
                 String.format(
                         "Invalid config file '%s' entry at line '%d'. %s Line was: '%s'.",
                         file, lineNo, msg, line));
     }
 
-    private Exception error(Path file, String msg) {
+    private Exception error(Path file,
+                            String msg) {
         return new Exception(String.format("Invalid config file '%s'. %s",
                 file, msg));
     }
@@ -194,9 +182,8 @@ public enum Config {
     public String toString() {
         StringBuilder result = new StringBuilder();
         for (Field field : Config.class.getDeclaredFields()) {
-            if (isNotConfigurableField(field)) {
+            if (isNotConfigurableField(field))
                 continue;
-            }
 
             Object value = null;
             try {
@@ -213,5 +200,4 @@ public enum Config {
         }
         return result.toString();
     }
-
 }

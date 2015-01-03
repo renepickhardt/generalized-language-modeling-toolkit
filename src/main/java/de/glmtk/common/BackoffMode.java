@@ -1,13 +1,8 @@
 package de.glmtk.common;
 
 public enum BackoffMode {
-
     SKP,
-
     DEL,
-
     DEL_FRONT,
-
     SKP_AND_DEL;
-
 }

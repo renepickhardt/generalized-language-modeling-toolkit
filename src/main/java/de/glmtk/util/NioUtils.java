@@ -20,22 +20,15 @@ import java.util.concurrent.atomic.AtomicLong;
  * api).
  */
 public class NioUtils {
-
     /**
      * @see NioUtils#checkFile(Path, CheckFile...)
      */
     public enum CheckFile {
-
         EXISTS,
-
         IS_READABLE,
-
         IS_REGULAR_FILE,
-
         IS_DIRECTORY,
-
         IS_NO_DIRECTORY;
-
     }
 
     /**
@@ -60,39 +53,34 @@ public class NioUtils {
      *
      * @return {@code true} if all {@code checks} pass, else {@code false}.
      */
-    public static boolean checkFile(Path path, CheckFile... checks) {
-        for (CheckFile check : checks) {
+    public static boolean checkFile(Path path,
+                                    CheckFile... checks) {
+        for (CheckFile check : checks)
             switch (check) {
                 case EXISTS:
-                    if (!Files.exists(path)) {
+                    if (!Files.exists(path))
                         return false;
-                    }
                     break;
                 case IS_READABLE:
-                    if (!Files.isReadable(path)) {
+                    if (!Files.isReadable(path))
                         return false;
-                    }
                     break;
                 case IS_REGULAR_FILE:
-                    if (!Files.isRegularFile(path)) {
+                    if (!Files.isRegularFile(path))
                         return false;
-                    }
                     break;
                 case IS_DIRECTORY:
-                    if (!Files.isDirectory(path)) {
+                    if (!Files.isDirectory(path))
                         return false;
-                    }
                     break;
                 case IS_NO_DIRECTORY:
-                    if (Files.isDirectory(path)) {
+                    if (Files.isDirectory(path))
                         return false;
-                    }
                     break;
 
                 default:
                     throw new IllegalStateException();
             }
-        }
         return true;
     }
 
@@ -111,9 +99,8 @@ public class NioUtils {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 
             @Override
-            public FileVisitResult visitFile(
-                    Path file,
-                    BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file,
+                                             BasicFileAttributes attrs) throws IOException {
                 size.addAndGet(attrs.size());
                 return FileVisitResult.CONTINUE;
             }
@@ -124,26 +111,22 @@ public class NioUtils {
 
     public static long calcFileSize(List<Path> paths) throws IOException {
         long sum = 0;
-        for (Path path : paths) {
+        for (Path path : paths)
             sum += calcFileSize(path);
-        }
         return sum;
     }
 
-    public static BufferedReader newBufferedReader(
-            Path path,
-            Charset charset,
-            int sz) throws IOException {
+    public static BufferedReader newBufferedReader(Path path,
+                                                   Charset charset,
+                                                   int sz) throws IOException {
         return new BufferedReader(new InputStreamReader(
                 Files.newInputStream(path), charset), sz);
     }
 
-    public static BufferedWriter newBufferedWriter(
-            Path path,
-            Charset charset,
-            int sz) throws IOException {
+    public static BufferedWriter newBufferedWriter(Path path,
+                                                   Charset charset,
+                                                   int sz) throws IOException {
         return new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(path), charset), sz);
     }
-
 }

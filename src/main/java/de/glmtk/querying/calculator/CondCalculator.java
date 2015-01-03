@@ -6,7 +6,6 @@ import java.util.List;
 import de.glmtk.common.NGram;
 
 public class CondCalculator extends Calculator {
-
     @Override
     protected List<SequenceAndHistory> computeQueries(List<String> words) {
         List<SequenceAndHistory> queries = new ArrayList<SequenceAndHistory>();
@@ -15,5 +14,4 @@ public class CondCalculator extends Calculator {
         queries.add(new SequenceAndHistory(new NGram(s), new NGram(h)));
         return queries;
     }
-
 }

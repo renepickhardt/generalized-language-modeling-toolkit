@@ -6,17 +6,13 @@ import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 
 public class CombinationEstimator extends Estimator {
-
     private double lambda;
-
     private Estimator alpha;
-
     private Estimator beta;
 
-    public CombinationEstimator(
-            Estimator alpha,
-            Estimator beta,
-            double lambda) {
+    public CombinationEstimator(Estimator alpha,
+                                Estimator beta,
+                                double lambda) {
         this.alpha = alpha;
         this.beta = beta;
         this.lambda = lambda;
@@ -37,13 +33,13 @@ public class CombinationEstimator extends Estimator {
     }
 
     @Override
-    protected double
-        calcProbability(NGram sequence, NGram history, int recDepth) {
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
         double alphaVal = alpha.probability(sequence, history, recDepth);
         double betaVal = beta.probability(sequence, history, recDepth);
         logDebug(recDepth, "alpha = %f", alphaVal);
         logDebug(recDepth, "beta = %f", betaVal);
         return lambda * alphaVal + (1.0 - lambda) * betaVal;
     }
-
 }
