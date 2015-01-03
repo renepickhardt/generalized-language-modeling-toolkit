@@ -201,7 +201,7 @@ public class Query {
             while ((line = reader.readLine()) != null) {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
 
-                if (line.charAt(0) == '#') {
+                if (line.trim().isEmpty() || line.trim().charAt(0) == '#') {
                     writer.append(line);
                     writer.append('\n');
                     continue;

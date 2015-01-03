@@ -155,7 +155,7 @@ public enum Merger {
 
             int mergeCounter = 0;
             List<Path> chunksForPattern, chunksToMerge = null;
-            while ((chunksForPattern = status.getChunks(continuation, pattern))
+            while ((chunksForPattern = status.getChunksForPattern(continuation, pattern))
                     .size() != 1) {
                 int numParallelChunks =
                         Math.min(numParallelReaders, chunksForPattern.size());
@@ -168,7 +168,7 @@ public enum Merger {
                         chunksToMerge, mergeFile.getFileName());
                 mergeChunksToFile(patternDir, chunksToMerge, mergeFile);
                 try {
-                    status.performChunkedMerge(continuation, pattern,
+                    status.performMergeForChunks(continuation, pattern,
                             chunksToMerge, mergeFile.getFileName());
                 } catch (IOException e) {
                     // Updating status did not work, we continue in the hope
@@ -188,7 +188,7 @@ public enum Merger {
                     dest);
             Files.deleteIfExists(dest);
             Files.move(src, dest);
-            status.finishChunkedMerge(continuation, pattern);
+            status.finishMerge(continuation, pattern);
 
             if (NioUtils.isDirEmpty(patternDir)) {
                 Files.delete(patternDir);

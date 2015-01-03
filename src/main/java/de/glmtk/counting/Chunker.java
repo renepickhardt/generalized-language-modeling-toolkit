@@ -33,7 +33,7 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.Status;
-import de.glmtk.Status.TrainingStatus;
+import de.glmtk.Status.Training;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -108,9 +108,7 @@ public enum Chunker {
                 writeChunkToFile(); // Write remaining partial chunk.
                 chunkCounts = null; // Free memory of map.
 
-                Map<Pattern, List<Path>> m = new HashMap<Pattern, List<Path>>();
-                m.put(pattern, chunkFiles);
-                status.addChunked(continuation, m);
+                status.setChunksForPattern(continuation, pattern, chunkFiles);
 
                 LOGGER.debug("Finished pattern '%s'.", pattern);
 
@@ -335,8 +333,7 @@ public enum Chunker {
         OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING, true);
         this.status = status;
         this.trainingFile = trainingFile;
-        trainingFileHasPos =
-                status.getTraining() == TrainingStatus.DONE_WITH_POS;
+        trainingFileHasPos = status.getTraining() == Training.TAGGED;
         this.absoluteChunkedDir = absoluteChunkedDir;
         chunk(false, patterns);
     }

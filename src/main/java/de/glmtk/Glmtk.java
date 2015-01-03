@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Status.TrainingStatus;
+import de.glmtk.Status.Training;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
@@ -131,7 +131,7 @@ public class Glmtk {
 
     public Glmtk(
             Path corpus,
-            Path workingDir) throws IOException {
+            Path workingDir) throws Exception {
         this.corpus = corpus;
         this.workingDir = workingDir;
 
@@ -156,7 +156,7 @@ public class Glmtk {
 
         Files.createDirectories(workingDir);
 
-        status = new Status(statusFile, corpus);
+        status = new Status(this, statusFile, corpus);
         status.logStatus();
         // TODO: check file system if status is accurate.
     }
@@ -181,6 +181,54 @@ public class Glmtk {
         return result;
     }
 
+    public Path getWorkingDir() {
+        return workingDir;
+    }
+
+    public Path getTrainingFile() {
+        return trainingFile;
+    }
+
+    public Path getUntaggedTrainingFile() {
+        return untaggedTrainingFile;
+    }
+
+    public Path getCountsDir() {
+        return countsDir;
+    }
+
+    public Path getAbsoluteDir() {
+        return absoluteDir;
+    }
+
+    public Path getAbsoluteChunkedDir() {
+        return absoluteChunkedDir;
+    }
+
+    public Path getContinuationDir() {
+        return continuationDir;
+    }
+
+    public Path getContinuationChunkedDir() {
+        return continuationChunkedDir;
+    }
+
+    public Path getnGramTimesFile() {
+        return nGramTimesFile;
+    }
+
+    public Path getLengthDistributionFile() {
+        return lengthDistributionFile;
+    }
+
+    public Path getQueriesCacheDir() {
+        return queriesCacheDir;
+    }
+
+    public Path getQueriesDir() {
+        return queriesDir;
+    }
+
     public void count(Set<Pattern> neededPatterns) throws Exception {
         NeededComputations needed = computeNeeded(neededPatterns);
 
@@ -201,7 +249,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                    0L, 0L, 0L, 0L
+                        0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -282,28 +330,41 @@ public class Glmtk {
         // TODO: doesn't detect the setting that user changed from untagged training file, to tagged file with same corpus.
         // TODO: doesn't detect when switching from untagged training to continuing with now tagged corpus.
 
-        if (status.getTraining() == TrainingStatus.DONE_WITH_POS) {
-            LOGGER.info("Detected training already present.");
+        if (status.getTraining() == Training.TAGGED) {
+            LOGGER.info("Detected tagged training already present.");
             return;
         }
 
-        if (needTagging) {
-            Files.deleteIfExists(untaggedTrainingFile);
-            Files.copy(corpus, untaggedTrainingFile);
-            Files.deleteIfExists(trainingFile);
+        if (!needTagging) {
+            if (status.getTraining() == Training.UNTAGGED) {
+                LOGGER.info("Detected training already present");
+                return;
+            }
 
-            TAGGER.tag(untaggedTrainingFile, trainingFile);
-            status.setTraining(TrainingStatus.DONE_WITH_POS, trainingFile);
-            return;
+            if (!corpus.equals(trainingFile)) {
+                Files.deleteIfExists(trainingFile);
+                Files.copy(corpus, trainingFile);
+            }
+            if (status.isCorpusTagged()) {
+                status.setTraining(Training.TAGGED);
+            } else {
+                status.setTraining(Training.UNTAGGED);
+            }
+        } else {
+            if (status.isCorpusTagged()) {
+                if (!corpus.equals(trainingFile)) {
+                    Files.deleteIfExists(trainingFile);
+                    Files.copy(corpus, trainingFile);
+                }
+            } else {
+                Files.deleteIfExists(untaggedTrainingFile);
+                Files.copy(corpus, untaggedTrainingFile);
+                Files.deleteIfExists(trainingFile);
+
+                TAGGER.tag(untaggedTrainingFile, trainingFile);
+            }
+            status.setTraining(Training.TAGGED);
         }
-
-        if (status.getTraining() == TrainingStatus.DONE) {
-            return;
-        }
-
-        Files.deleteIfExists(trainingFile);
-        Files.copy(corpus, trainingFile);
-        status.setTraining(TrainingStatus.DONE, trainingFile);
     }
 
     private void countAbsolute(Set<Pattern> neededPatterns) throws Exception {
@@ -315,6 +376,10 @@ public class Glmtk {
 
         Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
         countingPatterns.removeAll(status.getChunkedPatterns(false));
+
+        LOGGER.debug("neededPatterns   = %s", neededPatterns);
+        LOGGER.debug("countingPatterns = %s", countingPatterns);
+        LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
         CHUNKER.chunkAbsolute(chunkingPatterns, status, trainingFile,
                 absoluteChunkedDir);
@@ -330,8 +395,12 @@ public class Glmtk {
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(true));
 
-        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(neededPatterns);
+        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
+
+        LOGGER.debug("neededPatterns   = %s", neededPatterns);
+        LOGGER.debug("countingPatterns = %s", countingPatterns);
+        LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
         CHUNKER.chunkContinuation(chunkingPatterns, status, absoluteDir,
                 absoluteChunkedDir, continuationDir, continuationChunkedDir);
