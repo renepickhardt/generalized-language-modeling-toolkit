@@ -249,7 +249,7 @@ public class Glmtk {
                         Files.newDirectoryStream(absoluteDir)) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {
-                        0L, 0L, 0L, 0L
+                    0L, 0L, 0L, 0L
                 };
 
                 try (BufferedReader reader =
@@ -375,7 +375,7 @@ public class Glmtk {
         countingPatterns.removeAll(status.getCounted(false));
 
         Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
-        countingPatterns.removeAll(status.getChunkedPatterns(false));
+        chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.debug("neededPatterns   = %s", neededPatterns);
         LOGGER.debug("countingPatterns = %s", countingPatterns);

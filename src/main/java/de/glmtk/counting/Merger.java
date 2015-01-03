@@ -31,6 +31,7 @@ import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
+import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
@@ -155,8 +156,8 @@ public enum Merger {
 
             int mergeCounter = 0;
             List<Path> chunksForPattern, chunksToMerge = null;
-            while ((chunksForPattern = status.getChunksForPattern(continuation, pattern))
-                    .size() != 1) {
+            while ((chunksForPattern =
+                    status.getChunksForPattern(continuation, pattern)).size() != 1) {
                 int numParallelChunks =
                         Math.min(numParallelReaders, chunksForPattern.size());
                 chunksToMerge =
@@ -173,6 +174,8 @@ public enum Merger {
                 } catch (IOException e) {
                     // Updating status did not work, we continue in the hope
                     // it works next time.
+                    LOGGER.warn("Unable to write status, continuing: "
+                            + ExceptionUtils.getStackTrace(e));
                 }
 
                 for (Path chunk : chunksToMerge) {
