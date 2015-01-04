@@ -36,7 +36,7 @@ public enum Tagger {
 
     public void tag(Path inputFile,
                     Path outputFile) throws IOException {
-        OUTPUT.setPhase(Phase.TAGGING, true);
+        OUTPUT.setPhase(Phase.TAGGING);
         Progress progress = new Progress(Files.size(inputFile));
 
         if (inputFile.equals(outputFile))

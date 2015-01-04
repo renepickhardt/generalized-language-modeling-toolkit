@@ -286,7 +286,7 @@ public enum Chunker {
                               Status status,
                               Path trainingFile,
                               Path absoluteChunkedDir) throws Exception {
-        OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING, true);
+        OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING);
         this.status = status;
         this.trainingFile = trainingFile;
         trainingFileHasPos = status.getTraining() == Training.TAGGED;
@@ -300,7 +300,7 @@ public enum Chunker {
                                   Path absoluteChunkedDir,
                                   Path continuationCountedDir,
                                   Path continuationChunkedDir) throws Exception {
-        OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING, true);
+        OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING);
         this.status = status;
         this.absoluteCountedDir = absoluteCountedDir;
         this.absoluteChunkedDir = absoluteChunkedDir;

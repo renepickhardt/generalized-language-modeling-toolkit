@@ -118,7 +118,7 @@ public class Glmtk {
         countAbsolute(needed.getAbsolute());
         countContinuation(needed.getContinuation());
 
-        OUTPUT.setPhase(Phase.EVALUATING, true);
+        OUTPUT.setPhase(Phase.EVALUATING);
         Progress progress = new Progress(2);
 
         // N-Gram Times Counts

@@ -168,7 +168,7 @@ public class Query {
 
     private QueryStats queryFile(Path file,
                                  BufferedWriter writer) throws IOException {
-        OUTPUT.setPhase(Phase.QUERYING_FILE, true);
+        OUTPUT.setPhase(Phase.QUERYING_FILE);
 
         QueryStats stats = new QueryStats();
 

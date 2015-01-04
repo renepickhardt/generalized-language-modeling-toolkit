@@ -252,7 +252,7 @@ public enum Merger {
                               Set<Pattern> patterns,
                               Path chunkedDir,
                               Path countedDir) throws Exception {
-        OUTPUT.setPhase(Phase.ABSOLUTE_MERGING, true);
+        OUTPUT.setPhase(Phase.ABSOLUTE_MERGING);
         merge(false, status, patterns, chunkedDir, countedDir);
     }
 
@@ -260,7 +260,7 @@ public enum Merger {
                                   Set<Pattern> patterns,
                                   Path chunkedDir,
                                   Path countedDir) throws Exception {
-        OUTPUT.setPhase(Phase.CONTINUATION_MERGING, true);
+        OUTPUT.setPhase(Phase.CONTINUATION_MERGING);
         merge(true, status, patterns, chunkedDir, countedDir);
     }
 

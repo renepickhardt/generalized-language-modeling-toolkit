@@ -173,10 +173,9 @@ public enum Output {
         ansiEnabled = false;
     }
 
-    public void setPhase(Phase phase,
-                         boolean progress) {
+    public void setPhase(Phase phase) {
         this.phase = phase;
-        percent = progress ? 0.0 : -1.0;
+        percent = -1.0;
         printPhase();
 
         LOGGER.info("(%d/%d) %s", phase.getNumber(), phase.getMaxNumber(),
