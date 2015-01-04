@@ -1,4 +1,4 @@
-package de.glmtk.counting;
+package de.glmtk.api;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
@@ -24,7 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.api.Status;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;

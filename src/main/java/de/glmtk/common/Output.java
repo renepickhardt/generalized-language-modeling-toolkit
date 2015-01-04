@@ -37,7 +37,8 @@ public enum Output {
         SCANNING_COUNTS(1, 1, "Scanning Counts"),
 
         // Querying
-        QUERYING_FILE(1, 1, "Querying");
+        QUERYING(1, 2, "Querying"),
+        ASSEMBLING(1, 2, "Assembling");
 
         public static final int MAX_NAME_LENGTH;
         static {
@@ -260,6 +261,7 @@ public enum Output {
     }
 
     public void printMessage(String message) {
+        LOGGER.info(message);
         System.err.println(message);
 
         lastPrintBeginPhases = false;
@@ -280,8 +282,10 @@ public enum Output {
         if (message == null || message.isEmpty())
             message = "A critical error has occured, program execution had to be stopped.";
         List<String> lines = StringUtils.splitAtChar(message, '\n');
-        for (String line : lines)
+        for (String line : lines) {
+            LOGGER.error(line);
             System.err.println("Error: " + line);
+        }
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
@@ -298,8 +302,10 @@ public enum Output {
             message = "A warning has occured.";
 
         List<String> lines = StringUtils.splitAtChar(message, '\n');
-        for (String line : lines)
+        for (String line : lines) {
+            LOGGER.warn(line);
             System.err.println("Warning: " + line);
+        }
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;

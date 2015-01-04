@@ -28,7 +28,7 @@ public class GlmtkPaths {
     private Path nGramTimesFile;
     private Path lengthDistributionFile;
 
-    private Path queryCacheDir;
+    private Path queryCachesDir;
     private Path queriesDir;
 
     public GlmtkPaths(Path workingDir) {
@@ -46,7 +46,7 @@ public class GlmtkPaths {
         nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         lengthDistributionFile = countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
 
-        queryCacheDir = dir.resolve(Constants.QUERYHACHES_DIR_NAME);
+        queryCachesDir = dir.resolve(Constants.QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(Constants.QUERIES_DIR_NAME);
     }
 
@@ -63,7 +63,7 @@ public class GlmtkPaths {
     public GlmtkPaths newQueryCache(String name) {
         GlmtkPaths queryCache = new GlmtkPaths(dir);
         queryCache.root = this;
-        queryCache.dir = queryCacheDir.resolve(name);
+        queryCache.dir = queryCachesDir.resolve(name);
         fillCountsDirPaths(queryCache);
         return queryCache;
     }
@@ -82,7 +82,7 @@ public class GlmtkPaths {
         LOGGER.debug("continuationChunkedDir = %s", continuationChunkedDir);
         LOGGER.debug("nGramTimesFile         = %s", nGramTimesFile);
         LOGGER.debug("lengthDistributionFile = %s", lengthDistributionFile);
-        LOGGER.debug("queriesCacheDir        = %s", queryCacheDir);
+        LOGGER.debug("queryCachesDir         = %s", queryCachesDir);
         LOGGER.debug("queriesDir             = %s", queriesDir);
     }
 
@@ -134,8 +134,8 @@ public class GlmtkPaths {
         return lengthDistributionFile;
     }
 
-    public Path getQueriesCacheDir() {
-        return queryCacheDir;
+    public Path getQueryCachesDir() {
+        return queryCachesDir;
     }
 
     public Path getQueriesDir() {

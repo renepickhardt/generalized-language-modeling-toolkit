@@ -31,7 +31,6 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 import de.glmtk.Constants;
 import de.glmtk.Termination;
 import de.glmtk.api.Glmtk;
-import de.glmtk.api.Query;
 import de.glmtk.api.QueryType;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
@@ -387,11 +386,9 @@ public class GlmtkExecutable extends Executable {
             CountCache countCache = glmtk.provideQueryCache(queryFile,
                     neededPatterns);
 
-            for (Estimator estimator : estimators) {
-                Query query = glmtk.newQuery(QueryType.sequence(), queryFile,
-                        estimator, probMode, countCache);
-                query.run();
-            }
+            for (Estimator estimator : estimators)
+                glmtk.runQuery(QueryType.sequence(), queryFile, estimator,
+                        probMode, countCache);
         }
 
         for (Map.Entry<Integer, Set<Path>> entry : queryMarkovFiles.entrySet()) {
@@ -402,11 +399,9 @@ public class GlmtkExecutable extends Executable {
                 CountCache countCache = glmtk.provideQueryCache(queryFile,
                         neededPatterns);
 
-                for (Estimator estimator : estimators) {
-                    Query query = glmtk.newQuery(QueryType.markov(markovOrder),
-                            queryFile, estimator, probMode, countCache);
-                    query.run();
-                }
+                for (Estimator estimator : estimators)
+                    glmtk.runQuery(QueryType.markov(markovOrder), queryFile,
+                            estimator, probMode, countCache);
             }
         }
 
@@ -415,11 +410,9 @@ public class GlmtkExecutable extends Executable {
                 CountCache countCache = glmtk.provideQueryCache(queryFile,
                         neededPatterns);
 
-                for (Estimator estimator : estimators) {
-                    Query query = glmtk.newQuery(QueryType.cond(), queryFile,
-                            estimator, probMode, countCache);
-                    query.run();
-                }
+                for (Estimator estimator : estimators)
+                    glmtk.runQuery(QueryType.cond(), queryFile, estimator,
+                            probMode, countCache);
             }
 
         StatisticalNumberHelper.print();

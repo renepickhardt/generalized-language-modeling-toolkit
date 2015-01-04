@@ -1,9 +1,10 @@
 package de.glmtk.api;
 
+import static de.glmtk.api.QueryCacherCreator.QUERY_CACHE_CREATOR;
+import static de.glmtk.api.QueryRunner.QUERY_RUNNER;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.counting.Chunker.CHUNKER;
 import static de.glmtk.counting.Merger.MERGER;
-import static de.glmtk.counting.QueryCacherCreator.QUERY_CACHE_CREATOR;
 import static de.glmtk.counting.Tagger.TAGGER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
@@ -308,8 +309,7 @@ public class Glmtk {
         GlmtkPaths queryCachePaths = paths.newQueryCache(name);
         queryCachePaths.logPaths();
 
-        String message = String.format("QueryCache creation for file '%s'",
-                queryFile);
+        String message = String.format("QueryCache for file '%s'", queryFile);
         OUTPUT.beginPhases(message + "...");
 
         Set<Pattern> neededPatterns = new HashSet<Pattern>(patterns);
@@ -327,7 +327,7 @@ public class Glmtk {
 
         Path dir = queryCachePaths.getDir();
         long size = NioUtils.calcFileSize(dir);
-        OUTPUT.endPhases(message + ":");
+        OUTPUT.endPhases(message + " done:");
         OUTPUT.printMessage(String.format(
                 "    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
                 dir.getParent(), PrintUtils.humanReadableByteCount(size)));
@@ -351,12 +351,12 @@ public class Glmtk {
         }
     }
 
-    public Query newQuery(String queryTypeString,
-                          Path inputFile,
-                          Estimator estimator,
-                          ProbMode probMode,
-                          CountCache countCache) {
-        return new Query(queryTypeString, inputFile, paths.getQueriesDir(),
-                estimator, probMode, countCache);
+    public QueryStats runQuery(String queryTypeString,
+                               Path inputFile,
+                               Estimator estimator,
+                               ProbMode probMode,
+                               CountCache countCache) throws Exception {
+        return QUERY_RUNNER.runQuery(queryTypeString, inputFile,
+                paths.getQueriesDir(), estimator, probMode, countCache);
     }
 }
