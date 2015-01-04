@@ -1,10 +1,11 @@
-package de.glmtk;
+package de.glmtk.api;
 
 import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Constants;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkPaths {
@@ -27,7 +28,7 @@ public class GlmtkPaths {
     private Path nGramTimesFile;
     private Path lengthDistributionFile;
 
-    private Path queriesCacheDir;
+    private Path queryCacheDir;
     private Path queriesDir;
 
     public GlmtkPaths(Path workingDir) {
@@ -45,7 +46,7 @@ public class GlmtkPaths {
         nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         lengthDistributionFile = countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
 
-        queriesCacheDir = dir.resolve(Constants.QUERIESHACHES_DIR_NAME);
+        queryCacheDir = dir.resolve(Constants.QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(Constants.QUERIES_DIR_NAME);
     }
 
@@ -59,10 +60,10 @@ public class GlmtkPaths {
                 + Constants.CHUNKED_SUFFIX);
     }
 
-    public GlmtkPaths newQueryCache(String queryHash) {
+    public GlmtkPaths newQueryCache(String name) {
         GlmtkPaths queryCache = new GlmtkPaths(dir);
         queryCache.root = this;
-        queryCache.dir = queriesCacheDir.resolve(queryHash);
+        queryCache.dir = queryCacheDir.resolve(name);
         fillCountsDirPaths(queryCache);
         return queryCache;
     }
@@ -81,7 +82,7 @@ public class GlmtkPaths {
         LOGGER.debug("continuationChunkedDir = %s", continuationChunkedDir);
         LOGGER.debug("nGramTimesFile         = %s", nGramTimesFile);
         LOGGER.debug("lengthDistributionFile = %s", lengthDistributionFile);
-        LOGGER.debug("queriesCacheDir        = %s", queriesCacheDir);
+        LOGGER.debug("queriesCacheDir        = %s", queryCacheDir);
         LOGGER.debug("queriesDir             = %s", queriesDir);
     }
 
@@ -134,7 +135,7 @@ public class GlmtkPaths {
     }
 
     public Path getQueriesCacheDir() {
-        return queriesCacheDir;
+        return queryCacheDir;
     }
 
     public Path getQueriesDir() {

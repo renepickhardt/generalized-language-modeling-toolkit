@@ -1,4 +1,4 @@
-package de.glmtk.querying;
+package de.glmtk.api;
 
 import static de.glmtk.common.Output.OUTPUT;
 
@@ -133,8 +133,9 @@ public class Query {
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
                 Constants.CHARSET)) {
             String message = String.format(
-                    "Querying %s File '%s' with %s Estimator", queryTypeString,
-                    OUTPUT.bold(inputFile.toString()), estimator.getName());
+                    "Querying %s File '%s' with %s estimation",
+                    queryTypeString, OUTPUT.bold(inputFile.toString()),
+                    estimator.getName());
             OUTPUT.beginPhases(message + "...");
 
             stats = queryFile(inputFile, writer);

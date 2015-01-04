@@ -29,14 +29,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
 import de.glmtk.Constants;
-import de.glmtk.Glmtk;
 import de.glmtk.Termination;
+import de.glmtk.api.Glmtk;
+import de.glmtk.api.Query;
+import de.glmtk.api.QueryType;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
-import de.glmtk.querying.Query;
-import de.glmtk.querying.QueryType;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.util.NioUtils;
@@ -382,7 +382,7 @@ public class GlmtkExecutable extends Executable {
         glmtk.count(neededPatterns);
 
         for (Path queryFile : querySequenceFiles) {
-            CountCache countCache = glmtk.getOrCreateTestCountCache(queryFile,
+            CountCache countCache = glmtk.provideQueryCache(queryFile,
                     neededPatterns);
 
             for (Estimator estimator : estimators) {
@@ -397,7 +397,7 @@ public class GlmtkExecutable extends Executable {
             Set<Path> queryFiles = entry.getValue();
 
             for (Path queryFile : queryFiles) {
-                CountCache countCache = glmtk.getOrCreateTestCountCache(
+                CountCache countCache = glmtk.provideQueryCache(
                         queryFile, neededPatterns);
 
                 for (Estimator estimator : estimators) {
@@ -410,7 +410,7 @@ public class GlmtkExecutable extends Executable {
 
         for (Set<Path> queryFiles : queryCondFiles.values())
             for (Path queryFile : queryFiles) {
-                CountCache countCache = glmtk.getOrCreateTestCountCache(
+                CountCache countCache = glmtk.provideQueryCache(
                         queryFile, neededPatterns);
 
                 for (Estimator estimator : estimators) {

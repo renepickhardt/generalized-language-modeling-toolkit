@@ -26,7 +26,7 @@ public class Constants {
 
     public static final String LENGTHDISTRIBUTION_FILE_NAME = "lengthdistribution";
 
-    public static final String QUERIESHACHES_DIR_NAME = "queriescaches";
+    public static final String QUERYHACHES_DIR_NAME = "querycaches";
 
     public static final String QUERIES_DIR_NAME = "queries";
 

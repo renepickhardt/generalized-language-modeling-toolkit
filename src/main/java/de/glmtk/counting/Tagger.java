@@ -30,6 +30,28 @@ public enum Tagger {
 
     private static final Logger LOGGER = LogManager.getFormatterLogger(Tagger.class);
 
+    public static boolean detectFileTagged(Path file) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(file,
+                Constants.CHARSET)) {
+            String line;
+            int lineNo = 0;
+            while ((line = reader.readLine()) != null) {
+                ++lineNo;
+                for (String tokenAndTag : StringUtils.splitAtChar(line, ' ')) {
+                    int lastSlash = tokenAndTag.lastIndexOf('/');
+                    if (lastSlash <= 0 || lastSlash == tokenAndTag.length() - 1) {
+                        LOGGER.debug(
+                                "Detected Corpus untagged, because in line '%d' at least one token does not have the form '<token>/<pos>'.",
+                                lineNo);
+                        return false;
+                    }
+                }
+            }
+        }
+        LOGGER.info("Detected Corpus tagged.");
+        return true;
+    }
+
     private MaxentTagger tagger = null;
     private int readerMemory;
     private int writerMemory;

@@ -23,12 +23,20 @@ public enum Output {
     // TODO: Check if this works on windows.
 
     public static enum Phase {
+        // Tagging
         TAGGING(1, 1, "Tagging Training"),
+
+        // Counting
         ABSOLUTE_CHUNKING(1, 5, "Chunking Absolute"),
         ABSOLUTE_MERGING(2, 5, "Merging Absolute"),
         CONTINUATION_CHUNKING(3, 5, "Chunking Continuation"),
         CONTINUATION_MERGING(4, 5, "Merging Continuation"),
         EVALUATING(5, 5, "Evaluating"),
+
+        // QueryCache
+        SCANNING_COUNTS(1, 1, "Scanning Counts"),
+
+        // Querying
         QUERYING_FILE(1, 1, "Querying");
 
         public static final int MAX_NAME_LENGTH;

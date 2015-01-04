@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.glmtk.Constants;
-import de.glmtk.Glmtk;
+import de.glmtk.api.Glmtk;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;

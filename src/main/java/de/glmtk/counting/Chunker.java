@@ -34,8 +34,7 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
-import de.glmtk.Status;
-import de.glmtk.Status.Training;
+import de.glmtk.api.Status;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -52,6 +51,14 @@ public enum Chunker {
     private static final Logger LOGGER = LogManager.getFormatterLogger(Chunker.class);
     private static final int TAB_COUNTER_NL_BYTES = ("\t"
             + new Counter(10, 10, 10, 10).toString() + "\n").getBytes(Constants.CHARSET).length;
+    private static final Comparator<Pattern> PATTERN_COMPARATOR = new Comparator<Pattern>() {
+        @Override
+        public int compare(Pattern lhs,
+                           Pattern rhs) {
+            return Integer.compare(lhs.numElems(PatternElem.CSKIP_ELEMS),
+                    rhs.numElems(PatternElem.CSKIP_ELEMS));
+        }
+    };
 
     private abstract class Thread implements Callable<Object> {
         protected Pattern pattern;
@@ -179,7 +186,7 @@ public enum Chunker {
                             new String[0]);
                     String[] words = new String[split.length];
                     String[] poses = new String[split.length];
-                    StringUtils.extractWordsAndPoses(split, trainingFileHasPos,
+                    StringUtils.extractWordsAndPoses(split, trainingFileTagged,
                             words, poses);
 
                     for (int p = 0; p <= split.length - patternSize; ++p) {
@@ -201,7 +208,7 @@ public enum Chunker {
 
             boolean isAbsolute = inputPattern.isAbsolute();
             if (isAbsolute && status.getCounted(false).contains(inputPattern)) {
-                inputDir = absoluteCountedDir;
+                inputDir = absoluteDir;
                 fromChunked = false;
             } else if (isAbsolute
                     && status.getChunkedPatterns(false).contains(inputPattern)) {
@@ -209,7 +216,7 @@ public enum Chunker {
                 fromChunked = true;
             } else if (!isAbsolute
                     && status.getCounted(true).contains(inputPattern)) {
-                inputDir = continuationCountedDir;
+                inputDir = continuationDir;
                 fromChunked = false;
             } else if (!isAbsolute
                     && status.getChunkedPatterns(true).contains(inputPattern)) {
@@ -277,39 +284,40 @@ public enum Chunker {
     private boolean continuation;
     private Status status;
     private Path trainingFile;
-    private boolean trainingFileHasPos;
-    private Path absoluteCountedDir;
+    private boolean trainingFileTagged;
+    private Path absoluteDir;
+    private Path continuationDir;
     private Path absoluteChunkedDir;
-    private Path continuationCountedDir;
     private Path continuationChunkedDir;
     private BlockingQueue<Pattern> patternQueue;
     private int readerMemory;
     private int writerMemory;
     private long maxChunkSize;
 
-    public void chunkAbsolute(Set<Pattern> patterns,
-                              Status status,
+    public void chunkAbsolute(Status status,
+                              Set<Pattern> patterns,
                               Path trainingFile,
+                              boolean trainingFileTagged,
                               Path absoluteChunkedDir) throws Exception {
         OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING);
         this.status = status;
         this.trainingFile = trainingFile;
-        trainingFileHasPos = status.getTraining() == Training.TAGGED;
+        this.trainingFileTagged = trainingFileTagged;
         this.absoluteChunkedDir = absoluteChunkedDir;
         chunk(false, patterns);
     }
 
-    public void chunkContinuation(Set<Pattern> patterns,
-                                  Status status,
-                                  Path absoluteCountedDir,
+    public void chunkContinuation(Status status,
+                                  Set<Pattern> patterns,
+                                  Path absoluteDir,
+                                  Path continuationDir,
                                   Path absoluteChunkedDir,
-                                  Path continuationCountedDir,
                                   Path continuationChunkedDir) throws Exception {
         OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING);
         this.status = status;
-        this.absoluteCountedDir = absoluteCountedDir;
+        this.absoluteDir = absoluteDir;
         this.absoluteChunkedDir = absoluteChunkedDir;
-        this.continuationCountedDir = continuationCountedDir;
+        this.continuationDir = continuationDir;
         this.continuationChunkedDir = continuationChunkedDir;
         chunk(true, patterns);
     }
@@ -317,27 +325,12 @@ public enum Chunker {
     private void chunk(boolean continuation,
                        Set<Pattern> patterns) throws Exception {
         LOGGER.debug("patterns = '%s'", patterns);
-        progress = new Progress(patterns.size());
-
-        if (patterns.isEmpty()) {
-            LOGGER.debug("No patterns to chunk, returning.");
-            progress.set(1.0);
+        if (patterns.isEmpty())
             return;
-        }
 
         this.continuation = continuation;
         patternQueue = new PriorityBlockingQueue<Pattern>(patterns.size(),
-                new Comparator<Pattern>() {
-
-            @Override
-            public int compare(Pattern lhs,
-                               Pattern rhs) {
-                return Integer.compare(
-                        lhs.numElems(PatternElem.CSKIP_ELEMS),
-                        rhs.numElems(PatternElem.CSKIP_ELEMS));
-            }
-
-        });
+                PATTERN_COMPARATOR);
         patternQueue.addAll(patterns);
         calculateMemory();
 
@@ -345,7 +338,9 @@ public enum Chunker {
         for (int i = 0; i != CONFIG.getNumberOfCores(); ++i)
             threads.add(!continuation
                     ? new AbsoluteThread()
-                    : new ContinuationThread());
+            : new ContinuationThread());
+
+        progress = new Progress(patterns.size());
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
     }
 
@@ -362,6 +357,7 @@ public enum Chunker {
 
         readerMemory = Constants.BUFFER_SIZE;
         writerMemory = Constants.BUFFER_SIZE;
+        // TODO: error if too few chunk memory
         long chunkMemory = (long) Math.min(CHUNK_LOAD_FACTOR
                 * Constants.MAX_CHUNK_SIZE, memPerThread - readerMemory
                 - writerMemory);

@@ -1,8 +1,9 @@
-package de.glmtk;
+package de.glmtk.api;
 
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.counting.Chunker.CHUNKER;
 import static de.glmtk.counting.Merger.MERGER;
+import static de.glmtk.counting.QueryCacherCreator.QUERY_CACHE_CREATOR;
 import static de.glmtk.counting.Tagger.TAGGER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
@@ -13,19 +14,16 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Formatter;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Status.Training;
+import de.glmtk.Constants;
+import de.glmtk.api.Status.Training;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
@@ -33,12 +31,11 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.counting.LengthDistribution;
-import de.glmtk.querying.Query;
+import de.glmtk.counting.Tagger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.PrintUtils;
-import de.glmtk.util.StringUtils;
 
 /**
  * Here happens counting (during training phase) and also querying (during
@@ -257,13 +254,17 @@ public class Glmtk {
         LOGGER.debug("countingPatterns = %s", countingPatterns);
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
-        CHUNKER.chunkAbsolute(chunkingPatterns, status,
-                paths.getTrainingFile(), paths.getAbsoluteChunkedDir());
-        validateExpectedResults(false, false, chunkingPatterns);
+        CHUNKER.chunkAbsolute(status, chunkingPatterns,
+                paths.getTrainingFile(),
+                status.getTraining() == Training.TAGGED,
+                paths.getAbsoluteChunkedDir());
+        validateExpectedResults("Absolute chunking", chunkingPatterns,
+                status.getChunkedPatterns(false));
 
         MERGER.mergeAbsolute(status, countingPatterns,
                 paths.getAbsoluteChunkedDir(), paths.getAbsoluteDir());
-        validateExpectedResults(false, true, countingPatterns);
+        validateExpectedResults("Absolute counting", countingPatterns,
+                status.getCounted(false));
     }
 
     private void countContinuation(Set<Pattern> neededPatterns) throws Exception {
@@ -280,34 +281,17 @@ public class Glmtk {
         LOGGER.debug("countingPatterns = %s", countingPatterns);
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
-        CHUNKER.chunkContinuation(chunkingPatterns, status,
-                paths.getAbsoluteDir(), paths.getAbsoluteChunkedDir(),
-                paths.getContinuationDir(), paths.getContinuationChunkedDir());
-        validateExpectedResults(true, false, chunkingPatterns);
+        CHUNKER.chunkContinuation(status, chunkingPatterns,
+                paths.getAbsoluteDir(), paths.getContinuationDir(),
+                paths.getAbsoluteChunkedDir(),
+                paths.getContinuationChunkedDir());
+        validateExpectedResults("Continuation chunking", chunkingPatterns,
+                status.getChunkedPatterns(true));
 
         MERGER.mergeContinuation(status, countingPatterns,
                 paths.getContinuationChunkedDir(), paths.getContinuationDir());
-        validateExpectedResults(true, true, countingPatterns);
-    }
-
-    private void validateExpectedResults(boolean continuation,
-                                         boolean counting,
-                                         Set<Pattern> expected) throws Exception {
-        Set<Pattern> computed;
-        if (!counting)
-            computed = status.getChunkedPatterns(continuation);
-        else
-            computed = status.getCounted(continuation);
-        if (!computed.containsAll(expected))
-            try (Formatter f = new Formatter()) {
-                f.format("%s %s did not yield expected result.%n",
-                        (!continuation ? "Absolute" : "Continuation"),
-                        (!counting ? "chunking" : "couting"));
-                f.format("Expected patterns: %s.%n", expected);
-                f.format("Computed patterns: %s.%n", computed);
-                f.format("Try running again.");
-                throw new Exception(f.toString());
-            }
+        validateExpectedResults("Continuation counting", countingPatterns,
+                status.getCounted(true));
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -316,113 +300,53 @@ public class Glmtk {
         return countCache;
     }
 
-    public CountCache getOrCreateTestCountCache(Path testingFile,
-                                                Set<Pattern> neededPatterns) throws IOException {
-        // TODO: detect if test file has tagging
-        boolean hasPos = false;
+    public CountCache provideQueryCache(Path queryFile,
+                                        Set<Pattern> patterns) throws Exception {
 
-        String hash = HashUtils.generateMd5Hash(testingFile);
+        String name = HashUtils.generateMd5Hash(queryFile);
+        GlmtkPaths queryCachePaths = paths.newQueryCache(name);
+        queryCachePaths.logPaths();
 
-        GlmtkPaths queryCachePath = paths.newQueryCache(hash);
-        queryCachePath.logPaths();
+        String message = String.format("QueryCache creation for file '%s'",
+                queryFile);
+        OUTPUT.beginPhases(message + "...");
 
-        Path absoluteDir = queryCachePath.getAbsoluteDir();
-        Path continuationDir = queryCachePath.getContinuationDir();
-        Path nGramCountsFile = queryCachePath.getNGramTimesFile();
-        Path lengthDistributionFile = queryCachePath.getLengthDistributionFile();
+        Set<Pattern> neededPatterns = new HashSet<Pattern>(patterns);
+        neededPatterns.removeAll(status.getQueryCacheCounted(name));
 
-        LOGGER.info("TestCountCache '%s' -> '%s'.", testingFile,
-                queryCachePath.getDir());
-        LOGGER.debug("Needed Patterns: %s", neededPatterns);
+        LOGGER.debug("neededPatterns = %s", neededPatterns);
 
-        Files.createDirectories(absoluteDir);
-        Files.createDirectories(continuationDir);
+        boolean tagged = Tagger.detectFileTagged(queryFile);
+        QUERY_CACHE_CREATOR.createQueryCache(status, neededPatterns, name,
+                queryFile, tagged, paths.getAbsoluteDir(),
+                paths.getContinuationDir(), queryCachePaths.getAbsoluteDir(),
+                queryCachePaths.getContinuationDir());
+        validateExpectedResults("Caching pattern counts", neededPatterns,
+                status.getQueryCacheCounted(name));
 
-        if (!NioUtils.checkFile(nGramCountsFile, EXISTS))
-            Files.copy(paths.getNGramTimesFile(), nGramCountsFile);
+        Path dir = queryCachePaths.getDir();
+        long size = NioUtils.calcFileSize(dir);
+        OUTPUT.endPhases(message + ":");
+        OUTPUT.printMessage(String.format(
+                "    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
+                dir.getParent(), PrintUtils.humanReadableByteCount(size)));
 
-        if (!NioUtils.checkFile(lengthDistributionFile, EXISTS))
-            Files.copy(paths.getLengthDistributionFile(),
-                    lengthDistributionFile);
-
-        for (Pattern pattern : neededPatterns) {
-            Path countFile, testCountFile;
-            if (pattern.isAbsolute()) {
-                countFile = paths.getAbsoluteDir().resolve(pattern.toString());
-                testCountFile = absoluteDir.resolve(pattern.toString());
-            } else {
-                countFile = paths.getContinuationDir().resolve(
-                        pattern.toString());
-                testCountFile = continuationDir.resolve(pattern.toString());
-            }
-            if (NioUtils.checkFile(testCountFile, EXISTS))
-                continue;
-            else if (!NioUtils.checkFile(countFile, EXISTS))
-                throw new IllegalStateException(
-                        String.format(
-                                "Don't have corpus counts pattern '%s', needed for TestCounts.",
-                                pattern));
-
-            SortedSet<String> neededSequences = new TreeSet<String>(
-                    extractSequencesForPattern(testingFile, hasPos, pattern));
-            filterAndWriteTestCounts(countFile, testCountFile, neededSequences);
-        }
-
-        return new CountCache(queryCachePath);
+        return new CountCache(queryCachePaths);
     }
 
-    private Set<String> extractSequencesForPattern(Path testingFile,
-                                                   boolean hasPos,
-                                                   Pattern pattern) throws IOException {
-        Set<String> result = new HashSet<String>();
+    private void validateExpectedResults(String operation,
+                                         Set<Pattern> expected,
+                                         Set<Pattern> computed) throws Exception {
+        if (!computed.containsAll(expected)) {
+            Set<Pattern> missing = new HashSet<Pattern>();
+            missing.addAll(expected);
+            missing.removeAll(computed);
 
-        int patternSize = pattern.size();
-        try (BufferedReader reader = Files.newBufferedReader(testingFile,
-                Constants.CHARSET)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] split = StringUtils.splitAtChar(line, ' ').toArray(
-                        new String[0]);
-                String[] words = new String[split.length];
-                String[] poses = new String[split.length];
-                StringUtils.extractWordsAndPoses(split, hasPos, words, poses);
-
-                for (int p = 0; p <= split.length - patternSize; ++p)
-                    result.add(pattern.apply(words, poses, p));
-            }
-        }
-
-        return result;
-    }
-
-    private void filterAndWriteTestCounts(Path countFile,
-                                          Path testCountFile,
-                                          SortedSet<String> neededSequences) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(countFile,
-                Constants.CHARSET);
-                BufferedWriter writer = Files.newBufferedWriter(testCountFile,
-                        Constants.CHARSET)) {
-            String nextSequence = neededSequences.first();
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                int p = line.indexOf('\t');
-                String sequence = p == -1 ? line : line.substring(0, p);
-
-                int compare;
-                while ((compare = sequence.compareTo(nextSequence)) >= 0) {
-                    if (compare == 0) {
-                        writer.write(line);
-                        writer.write('\n');
-                    }
-
-                    neededSequences.remove(nextSequence);
-                    nextSequence = neededSequences.first();
-                }
-            }
-        } catch (NoSuchElementException e) {
-            // neededSequences.first() fails, because neededSequences is empty,
-            // so we are done.
+            LOGGER.error("%s did not yield expected result.%n", operation);
+            LOGGER.error("Expected patterns = %s.%n", expected);
+            LOGGER.error("Computed patterns = %s.%n", computed);
+            LOGGER.error("Missing  patterns = %s.", missing);
+            throw new Exception("%s failed.");
         }
     }
 

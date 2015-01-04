@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.Status;
+import de.glmtk.api.Status;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -274,12 +274,8 @@ public enum Merger {
                        Path chunkedDir,
                        Path countedDir) throws Exception {
         LOGGER.debug("patterns = %s", patterns);
-        progress = new Progress(patterns.size());
-        if (patterns.isEmpty()) {
-            LOGGER.debug("No chunks to merge, returning.");
-            progress.set(1.0);
+        if (patterns.isEmpty())
             return;
-        }
 
         Files.createDirectories(countedDir);
 
@@ -293,6 +289,8 @@ public enum Merger {
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != CONFIG.getNumberOfCores(); ++i)
             threads.add(new Thread());
+
+        progress = new Progress(patterns.size());
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
 
         if (NioUtils.isDirEmpty(chunkedDir))

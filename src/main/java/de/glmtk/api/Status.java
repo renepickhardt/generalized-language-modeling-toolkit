@@ -1,4 +1,4 @@
-package de.glmtk;
+package de.glmtk.api;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,8 +21,10 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.Constants;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
+import de.glmtk.counting.Tagger;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
@@ -42,10 +44,12 @@ public class Status {
     private String hash;
     private String taggedHash;
     private Training training;
+    private Set<Pattern> counted;
     private Set<Pattern> absoluteCounted;
     private Set<Pattern> continuationCounted;
     private Map<Pattern, Set<String>> absoluteChunked;
     private Map<Pattern, Set<String>> continuationChunked;
+    private Map<String, Set<Pattern>> queryCacheCounted;
     private int lineNo;
 
     public Status(GlmtkPaths paths,
@@ -53,7 +57,7 @@ public class Status {
         this.paths = paths;
         file = paths.getStatusFile();
         this.corpus = corpus;
-        corpusTagged = detectCorpusTagged();
+        corpusTagged = Tagger.detectFileTagged(corpus);
 
         setVoidSettings();
         if (Files.exists(file))
@@ -63,10 +67,12 @@ public class Status {
 
     private void setVoidSettings() {
         training = Training.NONE;
+        counted = new HashSet<Pattern>();
         absoluteCounted = new HashSet<Pattern>();
         continuationCounted = new HashSet<Pattern>();
         absoluteChunked = new HashMap<Pattern, Set<String>>();
         continuationChunked = new HashMap<Pattern, Set<String>>();
+        queryCacheCounted = new HashMap<String, Set<Pattern>>();
     }
 
     public void logStatus() {
@@ -130,6 +136,12 @@ public class Status {
         return !continuation ? absoluteChunked : continuationChunked;
     }
 
+    public Set<Pattern> getCounted() {
+        synchronized (this) {
+            return Collections.unmodifiableSet(counted);
+        }
+    }
+
     public Set<Pattern> getCounted(boolean continuation) {
         synchronized (this) {
             return Collections.unmodifiableSet(counted(continuation));
@@ -175,32 +187,30 @@ public class Status {
     public void finishMerge(boolean continuation,
                             Pattern pattern) throws IOException {
         synchronized (this) {
+            counted.add(pattern);
             counted(continuation).add(pattern);
             chunked(continuation).remove(pattern);
             writeStatusToFile();
         }
     }
 
-    private boolean detectCorpusTagged() throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(corpus,
-                Constants.CHARSET)) {
-            String line;
-            int lineNo = 0;
-            while ((line = reader.readLine()) != null) {
-                ++lineNo;
-                for (String tokenAndTag : StringUtils.splitAtChar(line, ' ')) {
-                    int lastSlash = tokenAndTag.lastIndexOf('/');
-                    if (lastSlash <= 0 || lastSlash == tokenAndTag.length() - 1) {
-                        LOGGER.info(
-                                "Detected Corpus untagged, because in line '%d' at least one token does not have the form '<token>/<pos>'.",
-                                lineNo);
-                        return false;
-                    }
-                }
-            }
+    public Set<Pattern> getQueryCacheCounted(String name) {
+        synchronized (this) {
+            Set<Pattern> patterns = queryCacheCounted.get(name);
+            return patterns != null ? patterns : new HashSet<Pattern>();
         }
-        LOGGER.info("Detected Corpus tagged.");
-        return true;
+    }
+
+    public void addQueryCacheCounted(String name,
+                                     Pattern pattern) {
+        synchronized (this) {
+            Set<Pattern> patterns = queryCacheCounted.get(name);
+            if (patterns == null) {
+                patterns = new HashSet<Pattern>();
+                queryCacheCounted.put(name, patterns);
+            }
+            patterns.add(pattern);
+        }
     }
 
     private void readStatusFromFile() throws Exception {
@@ -225,6 +235,9 @@ public class Status {
                     "absoluteChunked"));
             continuationChunked = readChunked(readNextValue(reader,
                     "continuationChunked"));
+            counted = new HashSet<Pattern>();
+            counted.addAll(absoluteCounted);
+            counted.addAll(continuationCounted);
         }
     }
 
