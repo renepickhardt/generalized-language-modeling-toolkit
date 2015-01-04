@@ -101,19 +101,9 @@ public enum Tagger {
     }
 
     private void calculateMemory() {
-        double AVAILABLE_MEM_RATIO = 0.35;
+        readerMemory = CONFIG.getReaderMemory();
+        writerMemory = CONFIG.getWriterMemory();
 
-        Runtime r = Runtime.getRuntime();
-        r.gc();
-
-        long totalFreeMem = r.maxMemory() - r.totalMemory() + r.freeMemory();
-        long availableMem = (long) (AVAILABLE_MEM_RATIO * totalFreeMem);
-
-        readerMemory = (int) (availableMem / 2);
-        writerMemory = (int) (availableMem - readerMemory);
-
-        LOGGER.debug("totalFreeMem = %s", humanReadableByteCount(totalFreeMem));
-        LOGGER.debug("availableMem = %s", humanReadableByteCount(availableMem));
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }

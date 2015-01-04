@@ -42,12 +42,49 @@ public class Constants {
 
     public static final int ORDER = 5;
 
-    public static final long B = 1L, KB = 1024 * B, MB = 1024 * KB,
-            GB = 1024 * MB;
+    /**
+     * Size of one byte.
+     *
+     * Used as a unit for memory.
+     *
+     * @see #KiB
+     * @see #MiB
+     * @see #GiB
+     */
+    public static final long B = 1L;
 
-    public static final long MAX_CHUNK_SIZE = 50 * MB;
+    /**
+     * Size of one kibibyte.
+     *
+     * Used as a unit for memory.
+     *
+     * @see #B
+     * @see #MiB
+     * @see #GiB
+     */
+    public static final long KiB = 1024 * B;
 
-    public static final int BUFFER_SIZE = (int) (50 * MB);
+    /**
+     * Size of one mebibyte.
+     *
+     * Used as a unit for memory.
+     *
+     * @see #B
+     * @see #KiB
+     * @see #GiB
+     */
+    public static final long MiB = 1024 * KiB;
+
+    /**
+     * Size of one gibibyte.
+     *
+     * Used as a unit for memory.
+     *
+     * @see #B
+     * @see #KiB
+     * @see #MiB
+     */
+    public static final long GiB = 1024 * MiB;
 
     public static final long QUEUE_TIMEOUT = 10;
 

@@ -131,7 +131,7 @@ public enum Chunker {
             }
             counter.add(count);
 
-            if (chunkSize > Constants.MAX_CHUNK_SIZE) {
+            if (chunkSize > maxChunkSize) {
                 if (Constants.DEBUG_AVERAGE_MEMORY)
                     StatisticalNumberHelper.average("Chunk Map Memory",
                             MemoryUtil.deepMemoryUsageOf(chunkCounts,
@@ -335,37 +335,20 @@ public enum Chunker {
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
-        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i)
+        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
             threads.add(!continuation
                     ? new AbsoluteThread()
-            : new ContinuationThread());
+                    : new ContinuationThread());
 
         progress = new Progress(patterns.size());
-        ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
+        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
     }
 
     private void calculateMemory() {
-        double AVAILABLE_MEM_RATIO = 0.5;
-        double CHUNK_LOAD_FACTOR = 5.5;
+        readerMemory = CONFIG.getReaderMemory();
+        writerMemory = CONFIG.getWriterMemory();
+        maxChunkSize = CONFIG.getMaxChunkSize();
 
-        Runtime r = Runtime.getRuntime();
-        r.gc();
-
-        long totalFreeMem = r.maxMemory() - r.totalMemory() + r.freeMemory();
-        long availableMem = (long) (AVAILABLE_MEM_RATIO * totalFreeMem);
-        long memPerThread = availableMem / CONFIG.getNumberOfCores();
-
-        readerMemory = Constants.BUFFER_SIZE;
-        writerMemory = Constants.BUFFER_SIZE;
-        // TODO: error if too few chunk memory
-        long chunkMemory = (long) Math.min(CHUNK_LOAD_FACTOR
-                * Constants.MAX_CHUNK_SIZE, memPerThread - readerMemory
-                - writerMemory);
-        maxChunkSize = (long) (chunkMemory / CHUNK_LOAD_FACTOR);
-
-        LOGGER.debug("totalFreeMem = %s", humanReadableByteCount(totalFreeMem));
-        LOGGER.debug("availableMem = %s", humanReadableByteCount(availableMem));
-        LOGGER.debug("memPerThread = %s", humanReadableByteCount(memPerThread));
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
         LOGGER.debug("maxChunkSize = %s", humanReadableByteCount(maxChunkSize));

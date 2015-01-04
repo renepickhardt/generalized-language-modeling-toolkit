@@ -1,8 +1,15 @@
-# Main memory (RAM) to be assigned to GLMTK in MB.
+# Main memory (RAM) to be assigned to GLMTK in Mebibytes (MiB).
 mainMemory = 4096
 
 # Number of parallel threads used.
-numberOfCores = 4
+numberOfThreads = 4
+
+# reader memory per thread in Mebibytes (MiB)
+readerMemory = 50
+# writer memory per thread in Mebibytes (MiB)
+writerMemory = 50
+# max chunk size int Mebibytes (MiB)
+maxChunkSize = 500
 
 # Delay in milliseconds before next percentage update is displayed.
 # 0 disables percentage updates.

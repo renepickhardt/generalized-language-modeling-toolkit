@@ -1,12 +1,14 @@
 package de.glmtk;
 
+import static de.glmtk.Constants.MiB;
+
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,9 @@ import java.util.Map.Entry;
 
 import de.glmtk.util.StringUtils;
 
+/**
+ * All field values (except those declared final) are read from config file.
+ */
 public enum Config {
     CONFIG;
 
@@ -34,7 +39,10 @@ public enum Config {
     private final Path logDir;
 
     private int mainMemory;
-    private int numberOfCores;
+    private int numberOfThreads;
+    private int readerMemory;
+    private int writerMemory;
+    private long maxChunkSize;
     private int consoleUpdateInterval;
     private int logUpdateInterval;
     private int consoleParamsUpdateInterval;
@@ -56,8 +64,20 @@ public enum Config {
         return mainMemory;
     }
 
-    public int getNumberOfCores() {
-        return numberOfCores;
+    public int getNumberOfThreads() {
+        return numberOfThreads;
+    }
+
+    public int getReaderMemory() {
+        return readerMemory;
+    }
+
+    public int getWriterMemory() {
+        return writerMemory;
+    }
+
+    public long getMaxChunkSize() {
+        return maxChunkSize;
     }
 
     public int getConsoleUpdateInterval() {
@@ -88,11 +108,12 @@ public enum Config {
         } catch (Exception e) {
             // Because of enum nature it is necessary to not throw any checked
             // exceptions during construction.
+            System.err.println(e.getMessage());
             throw new RuntimeException(e);
         }
     }
 
-    private void loadConfig(Path file) throws IOException, Exception {
+    private void loadConfig(Path file) throws Exception {
         Map<String, Field> fields = new HashMap<String, Field>();
         for (Field field : Config.class.getDeclaredFields()) {
             if (isNotConfigurableField(field))
@@ -126,15 +147,23 @@ public enum Config {
                             "Duplicated key '%s'.", key));
 
                 try {
-                    if (field.getType().equals(int.class)
+                    Class<?> type = field.getType();
+                    if (type.equals(int.class)
                             || field.getType().equals(Integer.class))
                         try {
-                            field.set(this, Integer.valueOf(value));
+                            field.set(this, Integer.parseInt(value));
                         } catch (NumberFormatException e) {
                             throw error(file, line, lineNo, String.format(
                                     "Expected number, found '%s'.", value));
                         }
-                    else if (field.getType().equals(Path.class)) {
+                    else if (type.equals(long.class))
+                        try {
+                            field.set(this, Long.parseLong(value));
+                        } catch (NumberFormatException e) {
+                            throw error(file, line, lineNo, String.format(
+                                    "Expected number, found '%s'.", value));
+                        }
+                    else if (type.equals(Path.class)) {
                         Path path = Paths.get(value);
                         if (path == null)
                             throw error(file, line, lineNo, String.format(
@@ -154,6 +183,25 @@ public enum Config {
             if (entry.getValue() != null)
                 throw error(file, String.format("Missing key '%s'.",
                         entry.getKey()));
+
+        completeConfig(file);
+    }
+
+    private void completeConfig(Path file) throws Exception {
+        if (readerMemory * MiB > Integer.MAX_VALUE)
+            throw new Exception(
+                    String.format(
+                            "To large readerMemory specified in '%s'. Does not fit into integer.",
+                            file));
+        if (writerMemory * MiB > Integer.MAX_VALUE)
+            throw new Exception(
+                    String.format(
+                            "To large writerMemory specified in '%s'. Does not fit into integer.",
+                            file));
+
+        readerMemory *= MiB;
+        writerMemory *= MiB;
+        maxChunkSize *= MiB;
     }
 
     private boolean isNotConfigurableField(Field field) {
@@ -166,15 +214,17 @@ public enum Config {
                             String line,
                             int lineNo,
                             String msg) throws Exception {
-        return new Exception(
-                String.format(
-                        "Invalid config file '%s' entry at line '%d'. %s Line was: '%s'.",
-                        file, lineNo, msg, line));
+        try (Formatter f = new Formatter()) {
+            f.format("Invalid line '%d' in config file '%s'.%n", lineNo, file);
+            f.format("%s%n", msg);
+            f.format("Line was: '%s'.", line);
+            throw new Exception(f.toString());
+        }
     }
 
     private Exception error(Path file,
                             String msg) {
-        return new Exception(String.format("Invalid config file '%s'. %s",
+        return new Exception(String.format("Invalid config file '%s'.%n%s",
                 file, msg));
     }
 

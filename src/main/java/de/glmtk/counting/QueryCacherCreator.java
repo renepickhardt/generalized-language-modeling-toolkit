@@ -179,29 +179,17 @@ public enum QueryCacherCreator {
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
-        for (int i = 0; i != CONFIG.getNumberOfCores(); ++i)
+        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
         progress = new Progress(patternQueue.size());
-        ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
+        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
     }
 
     private void calculateMemory() {
-        double AVAILABLE_MEM_RATIO = 0.5;
+        readerMemory = CONFIG.getReaderMemory();
+        writerMemory = CONFIG.getWriterMemory();
 
-        Runtime r = Runtime.getRuntime();
-        r.gc();
-
-        long totalFreeMem = r.maxMemory() - r.totalMemory() + r.freeMemory();
-        long availableMem = (long) (AVAILABLE_MEM_RATIO * totalFreeMem);
-        long memPerThread = availableMem / CONFIG.getNumberOfCores();
-
-        readerMemory = Constants.BUFFER_SIZE;
-        writerMemory = Constants.BUFFER_SIZE;
-
-        LOGGER.debug("totalFreeMem = %s", humanReadableByteCount(totalFreeMem));
-        LOGGER.debug("availableMem = %s", humanReadableByteCount(availableMem));
-        LOGGER.debug("memPerThread = %s", humanReadableByteCount(memPerThread));
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
