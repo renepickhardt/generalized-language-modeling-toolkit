@@ -96,6 +96,7 @@ public class Glmtk {
         this.corpus = corpus;
 
         paths = new GlmtkPaths(workingDir);
+        paths.logPaths();
 
         Files.createDirectories(workingDir);
 
@@ -293,20 +294,20 @@ public class Glmtk {
                                          Set<Pattern> expected) throws Exception {
         Set<Pattern> computed = !counting
                 ? status.getChunkedPatterns(continuation)
-                : status.getCounted(continuation);
-                if (!computed.containsAll(expected)) {
-                    String continuationStr = !continuation
-                    ? "Absolute"
-                    : "Continuation";
-                    String countingStr = !counting ? "chunking" : "counting";
-                    throw new Exception(
-                            String.format(
-                                    "%s %s did not yield expected result.\n"
-                                            + "Expected patterns: %s.\n"
-                                            + "Computed patterns: %s.\n"
-                                            + "Try running again.", continuationStr,
-                            countingStr, expected, computed));
-                }
+                        : status.getCounted(continuation);
+        if (!computed.containsAll(expected)) {
+            String continuationStr = !continuation
+                            ? "Absolute"
+                                    : "Continuation";
+            String countingStr = !counting ? "chunking" : "counting";
+            throw new Exception(
+                    String.format(
+                            "%s %s did not yield expected result.\n"
+                                    + "Expected patterns: %s.\n"
+                                    + "Computed patterns: %s.\n"
+                                    + "Try running again.", continuationStr,
+                                            countingStr, expected, computed));
+        }
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -322,34 +323,37 @@ public class Glmtk {
 
         String hash = HashUtils.generateMd5Hash(testingFile);
 
-        Path testCountDir = paths.getQueriesCacheDir().resolve(hash);
-        Path testAbsoluteDir = testCountDir.resolve(Constants.ABSOLUTE_DIR_NAME);
-        Path testContinuationDir = testCountDir.resolve(Constants.CONTINUATION_DIR_NAME);
-        Path testNGramCountsFile = testCountDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
-        Path testLengthDistributionFile = testCountDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
+        GlmtkPaths queryCachePath = paths.newQueryCache(hash);
+        queryCachePath.logPaths();
 
-        LOGGER.info("TestCountCache '%s' -> '%s'.", testingFile, testCountDir);
+        Path absoluteDir = queryCachePath.getAbsoluteDir();
+        Path continuationDir = queryCachePath.getContinuationDir();
+        Path nGramCountsFile = queryCachePath.getNGramTimesFile();
+        Path lengthDistributionFile = queryCachePath.getLengthDistributionFile();
+
+        LOGGER.info("TestCountCache '%s' -> '%s'.", testingFile,
+                queryCachePath.getDir());
         LOGGER.debug("Needed Patterns: %s", neededPatterns);
 
-        Files.createDirectories(testAbsoluteDir);
-        Files.createDirectories(testContinuationDir);
+        Files.createDirectories(absoluteDir);
+        Files.createDirectories(continuationDir);
 
-        if (!NioUtils.checkFile(testNGramCountsFile, EXISTS))
-            Files.copy(paths.getNGramTimesFile(), testNGramCountsFile);
+        if (!NioUtils.checkFile(nGramCountsFile, EXISTS))
+            Files.copy(paths.getNGramTimesFile(), nGramCountsFile);
 
-        if (!NioUtils.checkFile(testLengthDistributionFile, EXISTS))
+        if (!NioUtils.checkFile(lengthDistributionFile, EXISTS))
             Files.copy(paths.getLengthDistributionFile(),
-                    testLengthDistributionFile);
+                    lengthDistributionFile);
 
         for (Pattern pattern : neededPatterns) {
             Path countFile, testCountFile;
             if (pattern.isAbsolute()) {
                 countFile = paths.getAbsoluteDir().resolve(pattern.toString());
-                testCountFile = testAbsoluteDir.resolve(pattern.toString());
+                testCountFile = absoluteDir.resolve(pattern.toString());
             } else {
                 countFile = paths.getContinuationDir().resolve(
                         pattern.toString());
-                testCountFile = testContinuationDir.resolve(pattern.toString());
+                testCountFile = continuationDir.resolve(pattern.toString());
             }
             if (NioUtils.checkFile(testCountFile, EXISTS))
                 continue;
@@ -364,12 +368,12 @@ public class Glmtk {
             filterAndWriteTestCounts(countFile, testCountFile, neededSequences);
         }
 
-        return new CountCache(new GlmtkPaths(testCountDir));
+        return new CountCache(queryCachePath);
     }
 
     private Set<String> extractSequencesForPattern(Path testingFile,
-                                                   boolean hasPos,
-                                                   Pattern pattern) throws IOException {
+            boolean hasPos,
+            Pattern pattern) throws IOException {
         Set<String> result = new HashSet<String>();
 
         int patternSize = pattern.size();

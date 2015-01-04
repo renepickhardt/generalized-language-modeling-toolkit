@@ -30,7 +30,7 @@ public enum Tagger {
 
     private static final Logger LOGGER = LogManager.getFormatterLogger(Tagger.class);
 
-    private MaxentTagger tagger = new MaxentTagger(CONFIG.getModel().toString());
+    private MaxentTagger tagger = null;
     private int readerMemory;
     private int writerMemory;
 
@@ -45,10 +45,13 @@ public enum Tagger {
 
         calculateMemory();
 
+        if (tagger == null)
+            tagger = new MaxentTagger(CONFIG.getModel().toString());
+
         try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
-                     Constants.CHARSET, readerMemory);
-             BufferedWriter writer = NioUtils.newBufferedWriter(outputFile,
-                     Constants.CHARSET, writerMemory)) {
+                Constants.CHARSET, readerMemory);
+                BufferedWriter writer = NioUtils.newBufferedWriter(outputFile,
+                        Constants.CHARSET, writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
