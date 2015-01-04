@@ -1,12 +1,11 @@
 package de.glmtk.api;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
@@ -37,6 +36,12 @@ public class Status {
         TAGGED;
     }
 
+    private static enum NextLine {
+        EOF,
+        SECTION,
+        KEYVALUE;
+    }
+
     private GlmtkPaths paths;
     private Path file;
     private Path corpus;
@@ -50,6 +55,8 @@ public class Status {
     private Map<Pattern, Set<String>> absoluteChunked;
     private Map<Pattern, Set<String>> continuationChunked;
     private Map<String, Set<Pattern>> queryCacheCounted;
+    private List<String> lines;
+    private String line;
     private int lineNo;
 
     public Status(GlmtkPaths paths,
@@ -202,7 +209,7 @@ public class Status {
     }
 
     public void addQueryCacheCounted(String name,
-                                     Pattern pattern) {
+                                     Pattern pattern) throws IOException {
         synchronized (this) {
             Set<Pattern> patterns = queryCacheCounted.get(name);
             if (patterns == null) {
@@ -210,51 +217,95 @@ public class Status {
                 queryCacheCounted.put(name, patterns);
             }
             patterns.add(pattern);
+            writeStatusToFile();
         }
     }
 
     private void readStatusFromFile() throws Exception {
         LOGGER.debug("Reading status from file '%s'.", file);
 
+        lines = Files.readAllLines(file, Constants.CHARSET);
         lineNo = 0;
-        try (BufferedReader reader = Files.newBufferedReader(file,
-                Constants.CHARSET)) {
-            hash = readNextValue(reader, "hash");
-            taggedHash = readNextValue(reader, "taggedHash");
-            if (!validCorpusHash()) {
-                setVoidSettings();
-                return;
-            }
 
-            training = readTraining(readNextValue(reader, "training"));
-            absoluteCounted = readCounted(readNextValue(reader,
-                    "absoluteCounted"));
-            continuationCounted = readCounted(readNextValue(reader,
-                    "continuationCounted"));
-            absoluteChunked = readChunked(readNextValue(reader,
-                    "absoluteChunked"));
-            continuationChunked = readChunked(readNextValue(reader,
-                    "continuationChunked"));
-            counted = new HashSet<Pattern>();
-            counted.addAll(absoluteCounted);
-            counted.addAll(continuationCounted);
+        hash = readNextValue("hash");
+        taggedHash = readNextValue("taggedHash");
+        if (!validCorpusHash()) {
+            setVoidSettings();
+            return;
+        }
+
+        training = readTraining("training");
+        absoluteCounted = readCounted("absoluteCounted");
+        continuationCounted = readCounted("continuationCounted");
+        absoluteChunked = readChunked("absoluteChunked");
+        continuationChunked = readChunked("continuationChunked");
+        queryCacheCounted = readQueryCacheCounted("queryCacheCounted");
+
+        counted = new HashSet<Pattern>();
+        counted.addAll(absoluteCounted);
+        counted.addAll(continuationCounted);
+    }
+
+    private void assertNextSection(String expectedSection) throws Exception {
+        LOGGER.trace("Status.assertNextSection(expectedSection=%s)",
+                expectedSection);
+
+        String section = readNextSection();
+
+        if (!section.equals(expectedSection))
+            try (Formatter f = new Formatter()) {
+                f.format("Illegal line '%d' in file '%s'.%n", lineNo, file);
+                f.format("Expected section '%s', but was '%s' instead.%n",
+                        expectedSection, section);
+                f.format("Line was: '%s'.", line);
+                throw new Exception(f.toString());
+            }
+    }
+
+    private String readNextSection() throws Exception {
+        LOGGER.trace("Status.readNextSection()");
+
+        readNextLine(false);
+
+        String trimmed = line.trim();
+        if (trimmed.endsWith(":")) {
+            String section = line.substring(0, line.length() - 1).trim();
+            if (section != null && !section.isEmpty())
+                return section;
+        }
+
+        try (Formatter f = new Formatter()) {
+            f.format("Illegal line '%d' in file '%s'.%n", lineNo, file);
+            f.format("Expected line to have format: '<sectionname>:'.");
+            f.format("Line was: '%s'.", line);
+            throw new Exception(f.toString());
         }
     }
 
-    private String readNextValue(BufferedReader reader,
-                                 String expectedKey) throws Exception {
-        String line;
-        do {
-            line = reader.readLine();
-            ++lineNo;
+    private String readNextValue(String expectedKey) throws Exception {
+        LOGGER.trace("Status.readNextValue(expectedKey=%s)", expectedKey);
 
-            if (line == null)
-                try (Formatter f = new Formatter()) {
-                    f.format("Unexcpected End of File in file '%s'.%n", file);
-                    f.format("Expected Key '%s' instead.", expectedKey);
-                    throw new Exception(f.toString());
-                }
-        } while (line.trim().isEmpty());
+        Entry<String, String> entry = readNextKeyValue();
+        String key = entry.getKey();
+        String value = entry.getValue();
+
+        if (!key.equals(expectedKey))
+            try (Formatter f = new Formatter()) {
+                f.format("Illegal key on line '%d' in file '%s'.%n", lineNo,
+                        file);
+                f.format("Expected key '%s', but was '%s' instead.%n",
+                        expectedKey, key);
+                f.format("Line was: '%s'.", line);
+                throw new Exception(f.toString());
+            }
+
+        return value;
+    }
+
+    private Entry<String, String> readNextKeyValue() throws Exception {
+        LOGGER.trace("Status.readNextKeyValue()");
+
+        readNextLine(false);
 
         List<String> split = StringUtils.splitAtChar(line, '=');
         if (split.size() != 2)
@@ -267,18 +318,43 @@ public class Status {
 
         String key = split.get(0).trim();
         String value = split.get(1).trim();
+        if (value.equals("null") || value.isEmpty())
+            value = null;
+        return new SimpleEntry<String, String>(key, value);
+    }
 
-        if (!key.equals(expectedKey))
-            try (Formatter f = new Formatter()) {
-                f.format("Illegal next key on line '%d' in file '%s'.%n",
-                        lineNo, file);
-                f.format("Expected key '%s', but was '%s' instead.%n",
-                        expectedKey, key);
-                f.format("Line was: '%s'.", line);
-                throw new Exception(f.toString());
+    private NextLine peekNextLine() throws Exception {
+        LOGGER.trace("Status.peekNextLine()");
+
+        int numReadLines = readNextLine(true);
+        lineNo -= numReadLines;
+
+        if (line == null)
+            return NextLine.EOF;
+        else if (line.trim().endsWith(":"))
+            return NextLine.SECTION;
+        else
+            return NextLine.KEYVALUE;
+    }
+
+    private int readNextLine(boolean allowEof) throws Exception {
+        LOGGER.trace("Status.readNextLine(allowEof=%b)", allowEof);
+
+        int numReadLines = 0;
+        do {
+            ++numReadLines;
+            try {
+                line = lines.get(lineNo++);
+            } catch (IndexOutOfBoundsException e) {
+                if (allowEof) {
+                    line = null;
+                    break;
+                } else
+                    throw new Exception(String.format(
+                            "Unexcpected End of File in file '%s'.", file));
             }
-
-        return !value.equals("null") ? value : null;
+        } while (line.trim().isEmpty());
+        return numReadLines;
     }
 
     private boolean validCorpusHash() throws IOException {
@@ -302,7 +378,8 @@ public class Status {
         return false;
     }
 
-    private Training readTraining(String value) throws Exception {
+    private Training readTraining(String key) throws Exception {
+        String value = readNextValue("training");
         try {
             return Training.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -318,30 +395,69 @@ public class Status {
         }
     }
 
-    private Set<Pattern> readCounted(String value) {
+    private Set<Pattern> readCounted(String key) throws Exception {
+        String value = readNextValue(key);
         Set<Pattern> result = new HashSet<Pattern>();
-        for (String patternStr : StringUtils.splitAtChar(value, ';'))
+        if (value == null)
+            return result;
+        for (String patternStr : StringUtils.splitAtChar(value, ','))
             result.add(readPattern(patternStr));
         return result;
     }
 
-    private Map<Pattern, Set<String>> readChunked(String value) throws Exception {
-        Map<Pattern, Set<String>> result = new HashMap<Pattern, Set<String>>();
-        for (String patternAndChunks : StringUtils.splitAtChar(value, ';')) {
-            List<String> split = StringUtils.splitAtChar(patternAndChunks, ':');
-            if (split.size() != 2)
-                try (Formatter f = new Formatter()) {
-                    f.format("Illegal value on line '%d' in file '%s'.%n",
-                            lineNo, file);
-                    f.format("Expected list of '<pattern>:<chunklist>' pairs.%n");
-                    f.format("Found value was '%s' instead.", value);
-                    throw new Exception(f.toString());
-                }
+    private Map<Pattern, Set<String>> readChunked(String section) throws Exception {
+        assertNextSection(section);
 
-            Pattern pattern = readPattern(split.get(0));
-            Set<String> chunks = new LinkedHashSet<String>(
-                    StringUtils.splitAtChar(split.get(1), ','));
+        Map<Pattern, Set<String>> result = new HashMap<Pattern, Set<String>>();
+        while (peekNextLine() == NextLine.KEYVALUE) {
+            Entry<String, String> entry = readNextKeyValue();
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value == null)
+                continue;
+
+            Set<String> chunks = new HashSet<String>();
+            for (String chunkStr : StringUtils.splitAtChar(value, ','))
+                chunks.add(chunkStr);
+
+            Pattern pattern = readPattern(key);
+            if (result.containsKey(pattern))
+                try (Formatter f = new Formatter()) {
+                    f.format("Illegal key on line '%d' in file '%s'.%n",
+                            lineNo, file);
+                    f.format(
+                            "Key '%s' was already found previously for section '%s'.",
+                            key, section);
+                }
             result.put(pattern, chunks);
+        }
+        return result;
+    }
+
+    private Map<String, Set<Pattern>> readQueryCacheCounted(String section) throws Exception {
+        assertNextSection(section);
+
+        Map<String, Set<Pattern>> result = new HashMap<String, Set<Pattern>>();
+        while (peekNextLine() == NextLine.KEYVALUE) {
+            Entry<String, String> entry = readNextKeyValue();
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (value == null)
+                continue;
+
+            Set<Pattern> patterns = new HashSet<Pattern>();
+            for (String patternStr : StringUtils.splitAtChar(value, ','))
+                patterns.add(readPattern(patternStr));
+
+            if (result.containsKey(key))
+                try (Formatter f = new Formatter()) {
+                    f.format("Illegal key on line '%d' in file '%s'.%n",
+                            lineNo, file);
+                    f.format(
+                            "Key '%s' was already found previously for section '%s'.",
+                            key, section);
+                }
+            result.put(key, patterns);
         }
         return result;
     }
@@ -363,35 +479,42 @@ public class Status {
             writeKeyValue(writer, "hash", hash);
             writeKeyValue(writer, "taggedHash", taggedHash);
             writeKeyValue(writer, "training", training.toString());
-            writeKeyValue(writer, "absoluteCounted",
-                    serializeCounted(absoluteCounted));
-            writeKeyValue(writer, "continuationCounted",
-                    serializeCounted(continuationCounted));
-            writeKeyValue(writer, "absoluteChunked",
-                    serializedChunked(absoluteChunked));
-            writeKeyValue(writer, "continuationChunked",
-                    serializedChunked(continuationChunked));
+            writeSet(writer, "absoluteCounted", absoluteCounted);
+            writeSet(writer, "continuationCounted", continuationCounted);
+            writeMapSet(writer, "absoluteChunked", absoluteChunked);
+            writeMapSet(writer, "continuationChunked", continuationChunked);
+            writeMapSet(writer, "queryCacheCounted", queryCacheCounted);
         }
 
         Files.deleteIfExists(file);
         Files.move(tmpFile, file);
     }
 
+    private void writeSection(BufferedWriter writer,
+                              String section) throws IOException {
+        writer.append('\n' + section + ":\n");
+    }
+
     private void writeKeyValue(BufferedWriter writer,
                                String key,
                                String value) throws IOException {
-        writer.append(String.format("%s = %s\n", key, value));
+        writer.append(key + " = " + value + '\n');
     }
 
-    private String serializeCounted(Set<Pattern> counted) {
-        return StringUtils.join(counted, ";");
+    private <T, V> void writeSet(BufferedWriter writer,
+                                 T key,
+                                 Set<V> set) throws IOException {
+        writeKeyValue(writer, key.toString(), StringUtils.join(set, ","));
     }
 
-    private String serializedChunked(Map<Pattern, Set<String>> chunked) {
-        List<String> patternAndChunks = new ArrayList<String>(chunked.size());
-        for (Entry<Pattern, Set<String>> entry : chunked.entrySet())
-            patternAndChunks.add(String.format("%s:%s", entry.getKey(),
-                    StringUtils.join(entry.getValue(), ",")));
-        return StringUtils.join(patternAndChunks, ";");
+    private <T, V> void writeMapSet(BufferedWriter writer,
+                                    String section,
+                                    Map<T, Set<V>> mapSet) throws IOException {
+        writeSection(writer, section);
+        for (Entry<T, Set<V>> entry : mapSet.entrySet()) {
+            T key = entry.getKey();
+            Set<V> set = entry.getValue();
+            writeSet(writer, key, set);
+        }
     }
 }

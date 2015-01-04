@@ -47,6 +47,8 @@ public class GlmtkExecutable extends Executable {
     private static Logger LOGGER = LogManager.getFormatterLogger(Executable.class);
 
     // TODO: API to count all patterns.
+    // TODO: API to only create querycache
+    // TODO: API for interactive mode
 
     public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
     static {
@@ -397,8 +399,8 @@ public class GlmtkExecutable extends Executable {
             Set<Path> queryFiles = entry.getValue();
 
             for (Path queryFile : queryFiles) {
-                CountCache countCache = glmtk.provideQueryCache(
-                        queryFile, neededPatterns);
+                CountCache countCache = glmtk.provideQueryCache(queryFile,
+                        neededPatterns);
 
                 for (Estimator estimator : estimators) {
                     Query query = glmtk.newQuery(QueryType.markov(markovOrder),
@@ -410,8 +412,8 @@ public class GlmtkExecutable extends Executable {
 
         for (Set<Path> queryFiles : queryCondFiles.values())
             for (Path queryFile : queryFiles) {
-                CountCache countCache = glmtk.provideQueryCache(
-                        queryFile, neededPatterns);
+                CountCache countCache = glmtk.provideQueryCache(queryFile,
+                        neededPatterns);
 
                 for (Estimator estimator : estimators) {
                     Query query = glmtk.newQuery(QueryType.cond(), queryFile,

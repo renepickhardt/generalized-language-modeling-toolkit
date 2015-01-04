@@ -32,11 +32,11 @@ public abstract class DiscountEstimator extends FractionEstimator {
     public final double discount(NGram sequence,
                                  NGram history,
                                  int recDepth) {
-        logDebug(recDepth, "discount(%s,%s)", sequence, history);
+        logTrace(recDepth, "discount(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcDiscount(sequence, history, recDepth);
-        logDebug(recDepth, "result = %f", result);
+        logTrace(recDepth, "result = %f", result);
         return result;
     }
 

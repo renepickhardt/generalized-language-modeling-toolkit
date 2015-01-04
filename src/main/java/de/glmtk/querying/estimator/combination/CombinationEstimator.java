@@ -38,8 +38,8 @@ public class CombinationEstimator extends Estimator {
                                      int recDepth) {
         double alphaVal = alpha.probability(sequence, history, recDepth);
         double betaVal = beta.probability(sequence, history, recDepth);
-        logDebug(recDepth, "alpha = %f", alphaVal);
-        logDebug(recDepth, "beta = %f", betaVal);
+        logTrace(recDepth, "alpha = %f", alphaVal);
+        logTrace(recDepth, "beta = %f", betaVal);
         return lambda * alphaVal + (1.0 - lambda) * betaVal;
     }
 }

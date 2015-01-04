@@ -62,7 +62,7 @@ public abstract class Calculator {
     }
 
     public double probability(List<String> words) {
-        LOGGER.debug("%s#probability(%s,%s)", getClass().getSimpleName(),
+        LOGGER.trace("%s#probability(%s,%s)", getClass().getSimpleName(),
                 estimator.getClass().getSimpleName(), words);
 
         estimator.setProbMode(probMode);
@@ -73,7 +73,7 @@ public abstract class Calculator {
         for (SequenceAndHistory query : queries)
             result *= estimator.probability(query.sequence, query.history);
 
-        LOGGER.debug("  result = %f", result);
+        LOGGER.trace("  result = %f", result);
         return result;
     }
 

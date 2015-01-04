@@ -8,7 +8,7 @@ public class UniformEstimator extends SubstituteEstimator {
                                      NGram history,
                                      int recDepth) {
         long vocabSize = countCache.getVocabSize();
-        logDebug(recDepth, "vocabSize = %d", vocabSize);
+        logTrace(recDepth, "vocabSize = %d", vocabSize);
         return 1.0 / vocabSize;
     }
 }

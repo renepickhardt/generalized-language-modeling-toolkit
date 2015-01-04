@@ -30,15 +30,15 @@ public abstract class Estimator {
         return history.concat(new NGram(skippedSequence));
     }
 
-    protected static final void logDebug(int recDepth,
+    protected static final void logTrace(int recDepth,
                                          String message) {
-        LOGGER.debug(StringUtils.repeat("  ", recDepth) + message);
+        LOGGER.trace(StringUtils.repeat("  ", recDepth) + message);
     }
 
-    protected static final void logDebug(int recDepth,
+    protected static final void logTrace(int recDepth,
                                          String format,
                                          Object... params) {
-        LOGGER.debug(StringUtils.repeat("  ", recDepth) + format, params);
+        LOGGER.trace(StringUtils.repeat("  ", recDepth) + format, params);
     }
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR = Estimators.ABS_UNIGRAM;
@@ -94,12 +94,12 @@ public abstract class Estimator {
     public final double probability(NGram sequence,
                                     NGram history,
                                     int recDepth) {
-        logDebug(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
+        logTrace(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
                 sequence, history);
         ++recDepth;
 
         double result = calcProbability(sequence, history, recDepth);
-        logDebug(recDepth, "result = %f", result);
+        logTrace(recDepth, "result = %f", result);
 
         return result;
     }

@@ -55,6 +55,7 @@ public class Glmtk {
     // TODO: how is testing file input treated? (empty lines?)
     // TODO: verify that training does not contain any reserved symbols (_ % / multiple spaces)
     // TODO: update status with smaller increments (each completed pattern).
+    // TODO: check to see if we can use SLF4j
 
     private static final Logger LOGGER = LogManager.getFormatterLogger(Glmtk.class);
 

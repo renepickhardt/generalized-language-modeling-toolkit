@@ -18,10 +18,10 @@ public abstract class FractionEstimator extends Estimator {
         // Fraction estimator probability is undefined.
         switch (probMode) {
             case COND:
-                logDebug(recDepth, "Probability undefined, returning 0 (COND):");
+                logTrace(recDepth, "Probability undefined, returning 0 (COND):");
                 return 0;
             case MARG:
-                logDebug(recDepth,
+                logTrace(recDepth,
                         "Probability undefined, returning substitute (MARG):");
                 return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
                         recDepth);
@@ -33,11 +33,11 @@ public abstract class FractionEstimator extends Estimator {
     public final double numerator(NGram sequence,
                                   NGram history,
                                   int recDepth) {
-        logDebug(recDepth, "numerator(%s,%s)", sequence, history);
+        logTrace(recDepth, "numerator(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcNumerator(sequence, history, recDepth);
-        logDebug(recDepth, "result = %f", result);
+        logTrace(recDepth, "result = %f", result);
         return result;
     }
 
@@ -48,11 +48,11 @@ public abstract class FractionEstimator extends Estimator {
     public final double denominator(NGram sequence,
                                     NGram history,
                                     int recDepth) {
-        logDebug(recDepth, "denominator(%s,%s)", sequence, history);
+        logTrace(recDepth, "denominator(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcDenominator(sequence, history, recDepth);
-        logDebug(recDepth, "result = %f", result);
+        logTrace(recDepth, "result = %f", result);
         return result;
     }
 

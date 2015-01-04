@@ -70,7 +70,7 @@ public class InterpolationEstimator extends Estimator {
                                      int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             //if (history.isEmpty()) {
-            logDebug(recDepth,
+            logTrace(recDepth,
                     "history empty, returning fraction estimator probability");
             return alpha.getFractionEstimator().probability(sequence, history,
                     recDepth);
@@ -89,11 +89,11 @@ public class InterpolationEstimator extends Estimator {
     public final double gamma(NGram sequence,
                               NGram history,
                               int recDepth) {
-        logDebug(recDepth, "gamma(%s,%s)", sequence, history);
+        logTrace(recDepth, "gamma(%s,%s)", sequence, history);
         ++recDepth;
 
         double result = calcGamma(sequence, history, recDepth);
-        logDebug(recDepth, "result = %f", result);
+        logTrace(recDepth, "result = %f", result);
         return result;
     }
 
@@ -103,7 +103,7 @@ public class InterpolationEstimator extends Estimator {
         double denominator = alpha.denominator(sequence, history, recDepth);
 
         if (denominator == 0) {
-            logDebug(recDepth, "denominator = 0, setting gamma = 0:");
+            logTrace(recDepth, "denominator = 0, setting gamma = 0:");
             return 0;
         } else {
             NGram historyPlusWskp = history.concat(WSKP_WORD);
@@ -120,22 +120,22 @@ public class InterpolationEstimator extends Estimator {
                 double n2 = continuation.getTwoCount();
                 double n3p = continuation.getThreePlusCount();
 
-                logDebug(recDepth, "pattern = %s", pattern);
-                logDebug(recDepth, "d1      = %f", d1);
-                logDebug(recDepth, "d2      = %f", d2);
-                logDebug(recDepth, "d3p     = %f", d3p);
-                logDebug(recDepth, "n1      = %f", n1);
-                logDebug(recDepth, "n2      = %f", n2);
-                logDebug(recDepth, "n3p     = %f", n3p);
+                logTrace(recDepth, "pattern = %s", pattern);
+                logTrace(recDepth, "d1      = %f", d1);
+                logTrace(recDepth, "d2      = %f", d2);
+                logTrace(recDepth, "d3p     = %f", d3p);
+                logTrace(recDepth, "n1      = %f", n1);
+                logTrace(recDepth, "n2      = %f", n2);
+                logTrace(recDepth, "n3p     = %f", n3p);
 
                 return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
             } else {
                 double discout = alpha.discount(sequence, history, recDepth);
                 double n_1p = countCache.getContinuation(historyPlusWskp).getOnePlusCount();
 
-                logDebug(recDepth, "denominator = %f", denominator);
-                logDebug(recDepth, "discount = %f", discout);
-                logDebug(recDepth, "n_1p = %f", n_1p);
+                logTrace(recDepth, "denominator = %f", denominator);
+                logTrace(recDepth, "discount = %f", discout);
+                logTrace(recDepth, "n_1p = %f", n_1p);
 
                 return discout * n_1p / denominator;
             }

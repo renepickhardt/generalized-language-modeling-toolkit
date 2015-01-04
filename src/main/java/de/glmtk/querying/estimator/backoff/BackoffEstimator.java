@@ -65,12 +65,12 @@ public class BackoffEstimator extends Estimator {
             double betaVal = beta.probability(sequence, backoffHistory,
                     recDepth);
             double gammaVal = gamma(sequence, history, recDepth);
-            logDebug(recDepth, "beta = %f", betaVal);
-            logDebug(recDepth, "gamma = %f", gammaVal);
+            logTrace(recDepth, "beta = %f", betaVal);
+            logTrace(recDepth, "gamma = %f", gammaVal);
             return gammaVal * betaVal;
         } else {
             double alphaVal = alpha.probability(sequence, history, recDepth);
-            logDebug(recDepth, "alpha = %f", alphaVal);
+            logTrace(recDepth, "alpha = %f", alphaVal);
             return alphaVal;
         }
     }
@@ -82,17 +82,17 @@ public class BackoffEstimator extends Estimator {
     public double gamma(NGram sequence,
                         NGram history,
                         int recDepth) {
-        logDebug(recDepth, "gamma(%s,%s)", sequence, history);
+        logTrace(recDepth, "gamma(%s,%s)", sequence, history);
         ++recDepth;
 
         Double result = gammaCache.get(history);
         if (result != null) {
-            logDebug(recDepth, "result = %f was cached.", result);
+            logTrace(recDepth, "result = %f was cached.", result);
             return result;
         } else {
             result = calcGamma(sequence, history, recDepth);
             gammaCache.put(history, result);
-            logDebug(recDepth, "result = %f", result);
+            logTrace(recDepth, "result = %f", result);
             return result;
         }
     }
@@ -115,8 +115,8 @@ public class BackoffEstimator extends Estimator {
                         recDepth);
         }
 
-        logDebug(recDepth, "sumAlpha = %f", sumAlpha);
-        logDebug(recDepth, "sumBeta = %f", sumBeta);
+        logTrace(recDepth, "sumAlpha = %f", sumAlpha);
+        logTrace(recDepth, "sumBeta = %f", sumBeta);
 
         if (sumBeta == 0)
             return 0.0;
