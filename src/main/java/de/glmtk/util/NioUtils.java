@@ -1,8 +1,10 @@
 package de.glmtk.util;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
@@ -128,5 +130,24 @@ public class NioUtils {
                                                    int sz) throws IOException {
         return new BufferedWriter(new OutputStreamWriter(
                 Files.newOutputStream(path), charset), sz);
+    }
+
+    public static int getNumberOfLines(Path file) throws IOException {
+        try (InputStream reader = new BufferedInputStream(
+                Files.newInputStream(file))) {
+            byte[] c = new byte[1024];
+            int count = 0;
+            int readChars = 0;
+            boolean endsWithoutNewLine = false;
+            while ((readChars = reader.read(c)) != -1) {
+                for (int i = 0; i != readChars; ++i)
+                    if (c[i] == '\n')
+                        ++count;
+                endsWithoutNewLine = c[readChars - 1] != '\n';
+            }
+            if (endsWithoutNewLine)
+                ++count;
+            return count;
+        }
     }
 }
