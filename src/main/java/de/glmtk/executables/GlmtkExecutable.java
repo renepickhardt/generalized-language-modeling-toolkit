@@ -92,9 +92,9 @@ public class GlmtkExecutable extends Executable {
         OPTION_TRAINING_ORDER.setArgName("ORDER");
 
         try (Formatter estimatorDesc = new Formatter()) {
-            estimatorDesc.format("Can be specified multiple times.\n");
+            estimatorDesc.format("Can be specified multiple times.%n");
             for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet())
-                estimatorDesc.format("%-5s - %s\n", arg.getKey(),
+                estimatorDesc.format("%-5s - %s%n", arg.getKey(),
                         arg.getValue().getName());
             OPTION_ESTIMATOR = new Option("e", "estimator", true,
                     estimatorDesc.toString());
@@ -162,7 +162,7 @@ public class GlmtkExecutable extends Executable {
             if (line.getArgList().size() == 0)
                 error = "Missing input.\n";
             else
-                error = String.format("Incorrect input: %s\n",
+                error = String.format("Incorrect input: %s%n",
                         StringUtils.join(line.getArgList(), " "));
             throw new Termination(error
                     + "Try 'glmtk --help' for more information.");
@@ -220,8 +220,7 @@ public class GlmtkExecutable extends Executable {
             getAndCheckFile(Constants.STATUS_FILE_NAME);
         } else {
             if (workingDir == null)
-                workingDir = Paths.get(inputArg
-                        + Constants.WORKING_DIR_SUFFIX);
+                workingDir = Paths.get(inputArg + Constants.WORKING_DIR_SUFFIX);
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
                 throw new Termination(
                         String.format(
@@ -344,13 +343,17 @@ public class GlmtkExecutable extends Executable {
                 List<String> words = StringUtils.splitAtChar(line, ' ');
 
                 if (words.size() != condOrder)
-                    throw new Exception(
-                            String.format(
-                                    "Illegal line '%d' in file '%s': Line does not have specified condtional query order '%d' (-%s, --%s).\nLine was: '%s'. Length: '%d'.",
-                                    lineNo, queryFile, condOrder,
-                                    OPTION_QUERY_COND.getOpt(),
-                                    OPTION_QUERY_COND.getLongOpt(), line,
-                                    words.size()));
+                    try (Formatter f = new Formatter()) {
+                        f.format("Illegal line '%d' in file '%s'.%n", lineNo,
+                                queryFile);
+                        f.format(
+                                "Line does not have specified conditional query order '%d' (-%s, --%s).%n",
+                                condOrder, OPTION_QUERY_COND.getOpt(),
+                                OPTION_QUERY_COND.getLongOpt());
+                        f.format("Found order: '%d'.%n", words.size());
+                        f.format("Line was: '%s'.", line);
+                        throw new Exception(f.toString());
+                    }
             }
         }
     }

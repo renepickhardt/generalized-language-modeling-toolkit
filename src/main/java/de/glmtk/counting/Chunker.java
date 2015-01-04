@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -254,10 +255,14 @@ public enum Chunker {
                         else
                             throw new IllegalStateException();
                     } catch (IllegalStateException | NumberFormatException e) {
-                        throw new IllegalStateException(
-                                String.format(
-                                        "Illegal input line '%d' in file '%s'. Need to be of format '<sequence> <count> (<count> <count> <count)'. Where <sequence> is a sequence of strings, and <count> is an integer.\nLine was: '%s'.",
-                                        lineNo, inputFile, line));
+                        try (Formatter f = new Formatter()) {
+                            f.format("Illegal input line '%d' in file '%s'.%n",
+                                    lineNo, inputFile);
+                            f.format("Needs to be of format '<sequence>(<tab><count>){1,4}'.%n");
+                            f.format("Where <count> needs to be a valid integer.%n");
+                            f.format("Line was: '%s'.", line);
+                            throw new Exception(f.toString());
+                        }
                     }
 
                     String sequence = pattern.apply(StringUtils.splitAtChar(
@@ -324,15 +329,15 @@ public enum Chunker {
         patternQueue = new PriorityBlockingQueue<Pattern>(patterns.size(),
                 new Comparator<Pattern>() {
 
-                    @Override
-                    public int compare(Pattern lhs,
-                                       Pattern rhs) {
-                        return Integer.compare(
-                                lhs.numElems(PatternElem.CSKIP_ELEMS),
-                                rhs.numElems(PatternElem.CSKIP_ELEMS));
-                    }
+            @Override
+            public int compare(Pattern lhs,
+                               Pattern rhs) {
+                return Integer.compare(
+                        lhs.numElems(PatternElem.CSKIP_ELEMS),
+                        rhs.numElems(PatternElem.CSKIP_ELEMS));
+            }
 
-                });
+        });
         patternQueue.addAll(patterns);
         calculateMemory();
 
@@ -340,7 +345,7 @@ public enum Chunker {
         for (int i = 0; i != CONFIG.getNumberOfCores(); ++i)
             threads.add(!continuation
                     ? new AbsoluteThread()
-            : new ContinuationThread());
+                    : new ContinuationThread());
         ThreadUtils.executeThreads(CONFIG.getNumberOfCores(), threads);
     }
 

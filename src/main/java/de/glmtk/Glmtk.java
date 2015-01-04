@@ -13,6 +13,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -292,22 +293,21 @@ public class Glmtk {
     private void validateExpectedResults(boolean continuation,
                                          boolean counting,
                                          Set<Pattern> expected) throws Exception {
-        Set<Pattern> computed = !counting
-                ? status.getChunkedPatterns(continuation)
-                        : status.getCounted(continuation);
-        if (!computed.containsAll(expected)) {
-            String continuationStr = !continuation
-                            ? "Absolute"
-                                    : "Continuation";
-            String countingStr = !counting ? "chunking" : "counting";
-            throw new Exception(
-                    String.format(
-                            "%s %s did not yield expected result.\n"
-                                    + "Expected patterns: %s.\n"
-                                    + "Computed patterns: %s.\n"
-                                    + "Try running again.", continuationStr,
-                                            countingStr, expected, computed));
-        }
+        Set<Pattern> computed;
+        if (!counting)
+            computed = status.getChunkedPatterns(continuation);
+        else
+            computed = status.getCounted(continuation);
+        if (!computed.containsAll(expected))
+            try (Formatter f = new Formatter()) {
+                f.format("%s %s did not yield expected result.%n",
+                        (!continuation ? "Absolute" : "Continuation"),
+                        (!counting ? "chunking" : "couting"));
+                f.format("Expected patterns: %s.%n", expected);
+                f.format("Computed patterns: %s.%n", computed);
+                f.format("Try running again.");
+                throw new Exception(f.toString());
+            }
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
@@ -372,8 +372,8 @@ public class Glmtk {
     }
 
     private Set<String> extractSequencesForPattern(Path testingFile,
-            boolean hasPos,
-            Pattern pattern) throws IOException {
+                                                   boolean hasPos,
+                                                   Pattern pattern) throws IOException {
         Set<String> result = new HashSet<String>();
 
         int patternSize = pattern.size();

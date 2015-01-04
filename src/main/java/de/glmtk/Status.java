@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -108,7 +109,7 @@ public class Status {
             } else {
                 if (taggedHash == null)
                     taggedHash = hash;
-                if (taggedHash.equals(taggedHash)) {
+                if (taggedHash.equals(hash)) {
                     writeStatusToFile();
                     return;
                 }
@@ -142,7 +143,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-            Pattern pattern) {
+                                           Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -235,31 +236,36 @@ public class Status {
             ++lineNo;
 
             if (line == null)
-                // EOF
-                throw new Exception(String.format(
-                        "Unexpected End of File in file '%s'.\n"
-                                + "Expected key '%s'.", file, expectedKey));
+                try (Formatter f = new Formatter()) {
+                    f.format("Unexcpected End of File in file '%s'.%n", file);
+                    f.format("Expected Key '%s' instead.", expectedKey);
+                    throw new Exception(f.toString());
+                }
         } while (line.trim().isEmpty());
 
         List<String> split = StringUtils.splitAtChar(line, '=');
         if (split.size() != 2)
-            throw new Exception(String.format(
-                    "Illegal line '%d' in file '%s'.\n"
-                            + "Expected line to have format: '%s = <value>'.\n"
-                            + "Line was: '%s'.", lineNo, file, expectedKey,
-                    line));
+            try (Formatter f = new Formatter()) {
+                f.format("Illegal line '%d' in file '%s'.%n", lineNo, file);
+                f.format("Expected line to have format: '<key> = <value>'.%n");
+                f.format("Line was: '%s'.", line);
+                throw new Exception(f.toString());
+            }
 
         String key = split.get(0).trim();
         String value = split.get(1).trim();
 
         if (!key.equals(expectedKey))
-            throw new Exception(String.format(
-                    "Illegal next key on line '%d' in file '%s'.\n"
-                            + "Expected Key '%s', but was '%s'.\n"
-                            + "Line was: '%s'.", lineNo, file, expectedKey,
-                    key, line));
+            try (Formatter f = new Formatter()) {
+                f.format("Illegal next key on line '%d' in file '%s'.%n",
+                        lineNo, file);
+                f.format("Expected key '%s', but was '%s' instead.%n",
+                        expectedKey, key);
+                f.format("Line was: '%s'.", line);
+                throw new Exception(f.toString());
+            }
 
-        return value != "null" ? value : null;
+        return !value.equals("null") ? value : null;
     }
 
     private boolean validCorpusHash() throws IOException {
@@ -289,10 +295,13 @@ public class Status {
         } catch (IllegalArgumentException e) {
             String possibleValues = "'"
                     + StringUtils.join(Training.values(), "', '") + "'";
-            throw new Exception(String.format(
-                    "Illegal training value '%s' on line '%d' in file '%s'.\n"
-                            + "Possible values are: %s.", value, lineNo, file,
-                    possibleValues));
+            try (Formatter f = new Formatter()) {
+                f.format("Illegal training value on line '%d' in file '%s'.%n",
+                        lineNo, file);
+                f.format("Possible values are: %s.%n", possibleValues);
+                f.format("Found value '%s' instead.", value);
+                throw new Exception(f.toString());
+            }
         }
     }
 
@@ -308,12 +317,14 @@ public class Status {
         for (String patternAndChunks : StringUtils.splitAtChar(value, ';')) {
             List<String> split = StringUtils.splitAtChar(patternAndChunks, ':');
             if (split.size() != 2)
-                throw new Exception(
-                        String.format(
-                                "Illegal value on line '%d' in file '%s'.\n"
-                                        + "Expected list of '<pattern>:<chunklist>' pairs.\n"
-                                        + "Value was: '%s'.", lineNo, file,
-                                value));
+                try (Formatter f = new Formatter()) {
+                    f.format("Illegal value on line '%d' in file '%s'.%n",
+                            lineNo, file);
+                    f.format("Expected list of '<pattern>:<chunklist>' pairs.%n");
+                    f.format("Found value was '%s' instead.", value);
+                    throw new Exception(f.toString());
+                }
+
             Pattern pattern = readPattern(split.get(0));
             Set<String> chunks = new LinkedHashSet<String>(
                     StringUtils.splitAtChar(split.get(1), ','));

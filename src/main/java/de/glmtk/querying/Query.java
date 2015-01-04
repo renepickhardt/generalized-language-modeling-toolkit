@@ -45,8 +45,7 @@ public class Query {
             }
         }
 
-        @Override
-        public void finalize() {
+        public void complete() {
             if (cntNonZero != 0) {
                 double baseLog = Math.log(Constants.LOG_BASE);
                 entropy /= baseLog;
@@ -200,7 +199,7 @@ public class Query {
                 writer.append(Double.toString(probability));
                 writer.append('\n');
             }
-            stats.finalize();
+            stats.complete();
 
             return stats;
         }

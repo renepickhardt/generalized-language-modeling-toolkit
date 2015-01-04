@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -83,9 +84,12 @@ public enum Merger {
                 try {
                     sequence = Counter.getSequenceAndCounter(line, counter);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException(String.format(
-                            "Illegal line '%d' in file '%s'.\n%s", lineNo,
-                            path, e.getMessage()));
+                    try (Formatter f = new Formatter()) {
+                        f.format("Illegal line '%d' in file '%s'.%n", lineNo,
+                                path);
+                        f.format(e.getMessage());
+                        throw new RuntimeException(f.toString());
+                    }
                 }
             }
         }

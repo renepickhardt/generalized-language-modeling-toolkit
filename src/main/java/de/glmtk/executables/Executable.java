@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -27,6 +26,7 @@ import org.fusesource.jansi.AnsiConsole;
 
 import de.glmtk.Constants;
 import de.glmtk.Termination;
+import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.StringUtils;
 
 /* package */abstract class Executable {
@@ -64,17 +64,9 @@ import de.glmtk.util.StringUtils;
             if (e.getMessage() != null)
                 System.err.println(e.getMessage());
         } catch (Throwable e) {
-            try (StringWriter stackTrace = new StringWriter();
-                 PrintWriter stackTraceWriter = new PrintWriter(stackTrace)) {
-                e.printStackTrace(stackTraceWriter);
-                LOGGER.error(String.format("Exception %s",
-                        stackTrace.toString()));
-
-                // Only output error if it did not have to be rethrown.
-                OUTPUT.printError(e.getMessage());
-            } catch (IOException ee) {
-                throw e;
-            }
+            LOGGER.error(String.format("Exception %s",
+                    ExceptionUtils.getStackTrace(e)));
+            OUTPUT.printError(e.getMessage());
         }
     }
 

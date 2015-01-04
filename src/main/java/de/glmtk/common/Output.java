@@ -93,17 +93,18 @@ public enum Output {
         public void set(long current) {
             this.current = current;
 
-            long time = System.currentTimeMillis();
-
-            if (updateConsole
-                    && time - lastConsoleUpdate >= CONFIG.getConsoleUpdateInterval()) {
-                OUTPUT.setPercent((double) current / total);
-                lastConsoleUpdate = time;
-            }
-            if (updateLog
-                    && time - lastLogUpdate >= CONFIG.getLogUpdateInterval()) {
-                LOGGER.info("%6.2f%%", 100.0 * current / total);
-                lastLogUpdate = time;
+            if (updateConsole || updateLog) {
+                long time = System.currentTimeMillis();
+                if (updateConsole
+                        && time - lastConsoleUpdate >= CONFIG.getConsoleUpdateInterval()) {
+                    OUTPUT.setPercent((double) current / total);
+                    lastConsoleUpdate = time;
+                }
+                if (updateLog
+                        && time - lastLogUpdate >= CONFIG.getLogUpdateInterval()) {
+                    LOGGER.info("%6.2f%%", 100.0 * current / total);
+                    lastLogUpdate = time;
+                }
             }
         }
     }
