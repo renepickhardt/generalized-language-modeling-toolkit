@@ -34,7 +34,7 @@ public class Status {
         TAGGED;
     }
 
-    private Glmtk glmtk;
+    private GlmtkPaths paths;
     private Path file;
     private Path corpus;
     private boolean corpusTagged;
@@ -47,11 +47,10 @@ public class Status {
     private Map<Pattern, Set<String>> continuationChunked;
     private int lineNo;
 
-    public Status(Glmtk glmtk,
-                  Path file,
+    public Status(GlmtkPaths paths,
                   Path corpus) throws Exception {
-        this.glmtk = glmtk;
-        this.file = file;
+        this.paths = paths;
+        file = paths.getStatusFile();
         this.corpus = corpus;
         corpusTagged = detectCorpusTagged();
 
@@ -96,7 +95,7 @@ public class Status {
                 this.training = Training.NONE;
             }
 
-            String hash = HashUtils.generateMd5Hash(glmtk.getTrainingFile());
+            String hash = HashUtils.generateMd5Hash(paths.getTrainingFile());
             if (training == Training.UNTAGGED) {
                 if (this.hash == null)
                     this.hash = hash;
@@ -142,7 +141,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-            Pattern pattern) {
+                                           Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -247,7 +246,7 @@ public class Status {
                     "Illegal line '%d' in file '%s'.\n"
                             + "Expected line to have format: '%s = <value>'.\n"
                             + "Line was: '%s'.", lineNo, file, expectedKey,
-                    line));
+                            line));
 
         String key = split.get(0).trim();
         String value = split.get(1).trim();
@@ -257,7 +256,7 @@ public class Status {
                     "Illegal next key on line '%d' in file '%s'.\n"
                             + "Expected Key '%s', but was '%s'.\n"
                             + "Line was: '%s'.", lineNo, file, expectedKey,
-                    key, line));
+                            key, line));
 
         return value != "null" ? value : null;
     }
@@ -292,7 +291,7 @@ public class Status {
             throw new Exception(String.format(
                     "Illegal training value '%s' on line '%d' in file '%s'.\n"
                             + "Possible values are: %s.", value, lineNo, file,
-                    possibleValues));
+                            possibleValues));
         }
     }
 
@@ -313,7 +312,7 @@ public class Status {
                                 "Illegal value on line '%d' in file '%s'.\n"
                                         + "Expected list of '<pattern>:<chunklist>' pairs.\n"
                                         + "Value was: '%s'.", lineNo, file,
-                                value));
+                                        value));
             Pattern pattern = readPattern(split.get(0));
             Set<String> chunks = new LinkedHashSet<String>(
                     StringUtils.splitAtChar(split.get(1), ','));

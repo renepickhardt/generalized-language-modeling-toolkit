@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.LengthDistribution;
 import de.glmtk.util.StringUtils;
 
@@ -33,27 +34,26 @@ public class CountCache {
     private Map<Pattern, long[]> nGramTimes = new HashMap<Pattern, long[]>();
     private LengthDistribution lengthDistribution;
 
-    public CountCache(Path countsDir) throws IOException {
-        // Allowing workingDir == null to make
+    public CountCache(GlmtkPaths paths) throws IOException {
+        // Allowing paths == null to make
         // {@link Patterns#getUsedPatterns(ParamEstimator, ProbMode)} work.
-        if (countsDir == null)
+        if (paths == null)
             return;
 
         LOGGER.info("Loading counts...");
         LOGGER.debug("Loading absolute counts...");
-        loadAbsolute(countsDir);
+        loadAbsolute(paths.getAbsoluteDir());
         LOGGER.debug("Loading continuation counts...");
-        loadContinuation(countsDir);
+        loadContinuation(paths.getContinuationDir());
         LOGGER.debug("Loading nGramTimes counts...");
-        loadNGramTimes(countsDir);
+        loadNGramTimes(paths.getNGramTimesFile());
         LOGGER.debug("Loading Sequence Length Distribution...");
         lengthDistribution = new LengthDistribution(
-                countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME),
-                false);
+                paths.getLengthDistributionFile(), false);
     }
 
-    private void loadAbsolute(Path countsDir) throws IOException {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(countsDir.resolve(Constants.ABSOLUTE_DIR_NAME))) {
+    private void loadAbsolute(Path absoluteDir) throws IOException {
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(absoluteDir)) {
             for (Path file : files) {
                 Pattern pattern = Patterns.get(file.getFileName().toString());
                 Map<String, Long> counts = new HashMap<String, Long>();
@@ -73,8 +73,8 @@ public class CountCache {
         }
     }
 
-    private void loadContinuation(Path countsDir) throws IOException {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(countsDir.resolve(Constants.CONTINUATION_DIR_NAME))) {
+    private void loadContinuation(Path continuationDir) throws IOException {
+        try (DirectoryStream<Path> files = Files.newDirectoryStream(continuationDir)) {
             for (Path file : files) {
                 Pattern pattern = Patterns.get(file.getFileName().toString());
                 Map<String, Counter> counts = new HashMap<String, Counter>();
@@ -94,8 +94,7 @@ public class CountCache {
         }
     }
 
-    private void loadNGramTimes(Path countsDir) throws IOException {
-        Path nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
+    private void loadNGramTimes(Path nGramTimesFile) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(nGramTimesFile,
                 Constants.CHARSET)) {
             String line;

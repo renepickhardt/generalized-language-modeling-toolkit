@@ -13,10 +13,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
@@ -89,116 +87,25 @@ public class Glmtk {
     }
 
     private Path corpus;
-    private Path workingDir;
-    private Path statusFile;
-    private Path trainingFile;
-    private Path untaggedTrainingFile;
-    private Path countsDir;
-    private Path absoluteDir;
-    private Path absoluteChunkedDir;
-    private Path continuationDir;
-    private Path continuationChunkedDir;
-    private Path nGramTimesFile;
-    private Path lengthDistributionFile;
-    private Path queriesCacheDir;
-    private Path queriesDir;
+    private GlmtkPaths paths;
     private Status status;
     private CountCache countCache = null;
 
     public Glmtk(Path corpus,
                  Path workingDir) throws Exception {
         this.corpus = corpus;
-        this.workingDir = workingDir;
 
-        statusFile = workingDir.resolve(Constants.STATUS_FILE_NAME);
-
-        trainingFile = workingDir.resolve(Constants.TRAINING_FILE_NAME);
-        untaggedTrainingFile = workingDir.resolve(Constants.TRAINING_FILE_NAME
-                + Constants.UNTAGGED_SUFFIX);
-
-        countsDir = workingDir.resolve(Constants.COUNTS_DIR_NAME);
-        Map<String, Path> countPaths = getCountPaths(countsDir);
-        absoluteDir = countPaths.get("absoluteDir");
-        absoluteChunkedDir = countPaths.get("absoluteChunkedDir");
-        continuationDir = countPaths.get("continuationDir");
-        continuationChunkedDir = countPaths.get("continuationChunkedDir");
-        nGramTimesFile = countPaths.get("nGramTimesFile");
-        lengthDistributionFile = countPaths.get("lengthDistributionFile");
-
-        queriesCacheDir = workingDir.resolve(Constants.QUERIESHACHES_DIR_NAME);
-        queriesDir = workingDir.resolve(Constants.QUERIES_DIR_NAME);
+        paths = new GlmtkPaths(workingDir);
 
         Files.createDirectories(workingDir);
 
-        status = new Status(this, statusFile, corpus);
+        status = new Status(paths, corpus);
         status.logStatus();
         // TODO: check file system if status is accurate.
     }
 
-    private Map<String, Path> getCountPaths(Path base) {
-        Map<String, Path> result = new HashMap<String, Path>();
-        result.put("absoluteDir", base.resolve(Constants.ABSOLUTE_DIR_NAME));
-        result.put("absoluteChunkedDir",
-                base.resolve(Constants.ABSOLUTE_DIR_NAME
-                        + Constants.CHUNKED_SUFFIX));
-        result.put("continuationDir",
-                base.resolve(Constants.CONTINUATION_DIR_NAME));
-        result.put("continuationChunkedDir",
-                base.resolve(Constants.CONTINUATION_DIR_NAME
-                        + Constants.CHUNKED_SUFFIX));
-        result.put("nGramTimesFile",
-                base.resolve(Constants.NGRAMTIMES_FILE_NAME));
-        result.put("lengthDistributionFile",
-                base.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME));
-        return result;
-    }
-
-    public Path getWorkingDir() {
-        return workingDir;
-    }
-
-    public Path getTrainingFile() {
-        return trainingFile;
-    }
-
-    public Path getUntaggedTrainingFile() {
-        return untaggedTrainingFile;
-    }
-
-    public Path getCountsDir() {
-        return countsDir;
-    }
-
-    public Path getAbsoluteDir() {
-        return absoluteDir;
-    }
-
-    public Path getAbsoluteChunkedDir() {
-        return absoluteChunkedDir;
-    }
-
-    public Path getContinuationDir() {
-        return continuationDir;
-    }
-
-    public Path getContinuationChunkedDir() {
-        return continuationChunkedDir;
-    }
-
-    public Path getnGramTimesFile() {
-        return nGramTimesFile;
-    }
-
-    public Path getLengthDistributionFile() {
-        return lengthDistributionFile;
-    }
-
-    public Path getQueriesCacheDir() {
-        return queriesCacheDir;
-    }
-
-    public Path getQueriesDir() {
-        return queriesDir;
+    public GlmtkPaths getPaths() {
+        return paths;
     }
 
     public void count(Set<Pattern> neededPatterns) throws Exception {
@@ -214,10 +121,10 @@ public class Glmtk {
         Progress progress = new Progress(2);
 
         // N-Gram Times Counts
-        LOGGER.info("nGramTimes counting -> '%s'.", nGramTimesFile);
-        try (BufferedWriter writer = Files.newBufferedWriter(nGramTimesFile,
-                Constants.CHARSET);
-                DirectoryStream<Path> absoluteFiles = Files.newDirectoryStream(absoluteDir)) {
+        LOGGER.info("nGramTimes counting -> '%s'.", paths.getNGramTimesFile());
+        try (BufferedWriter writer = Files.newBufferedWriter(
+                paths.getNGramTimesFile(), Constants.CHARSET);
+                DirectoryStream<Path> absoluteFiles = Files.newDirectoryStream(paths.getAbsoluteDir())) {
             for (Path absoluteFile : absoluteFiles) {
                 long[] nGramTimes = {0L, 0L, 0L, 0L};
 
@@ -252,14 +159,14 @@ public class Glmtk {
         progress.increase(1);
 
         // Sequence Length Distribution
-        if (!NioUtils.checkFile(lengthDistributionFile, EXISTS)) {
+        if (!NioUtils.checkFile(paths.getLengthDistributionFile(), EXISTS)) {
             LengthDistribution lengthDistribution = new LengthDistribution(
-                    trainingFile, true);
-            lengthDistribution.writeToStore(lengthDistributionFile);
+                    paths.getTrainingFile(), true);
+            lengthDistribution.writeToStore(paths.getLengthDistributionFile());
         }
         progress.increase(1);
 
-        long corpusSize = NioUtils.calcFileSize(Arrays.asList(countsDir));
+        long corpusSize = NioUtils.calcFileSize(Arrays.asList(paths.getCountsDir()));
         OUTPUT.endPhases(String.format("Corpus Analyzation done (uses %s).",
                 PrintUtils.humanReadableByteCount(corpusSize)));
     }
@@ -301,6 +208,7 @@ public class Glmtk {
             return;
         }
 
+        Path trainingFile = paths.getTrainingFile();
         if (!needTagging) {
             if (status.getTraining() == Training.UNTAGGED) {
                 LOGGER.info("Detected training already present");
@@ -322,6 +230,7 @@ public class Glmtk {
                     Files.copy(corpus, trainingFile);
                 }
             } else {
+                Path untaggedTrainingFile = paths.getUntaggedTrainingFile();
                 Files.deleteIfExists(untaggedTrainingFile);
                 Files.copy(corpus, untaggedTrainingFile);
                 Files.deleteIfExists(trainingFile);
@@ -333,8 +242,8 @@ public class Glmtk {
     }
 
     private void countAbsolute(Set<Pattern> neededPatterns) throws Exception {
-        LOGGER.info("Absolute counting '%s' -> '%s'.", trainingFile,
-                absoluteDir);
+        LOGGER.info("Absolute counting '%s' -> '%s'.", paths.getTrainingFile(),
+                paths.getAbsoluteDir());
 
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(false));
@@ -346,18 +255,18 @@ public class Glmtk {
         LOGGER.debug("countingPatterns = %s", countingPatterns);
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
-        CHUNKER.chunkAbsolute(chunkingPatterns, status, trainingFile,
-                absoluteChunkedDir);
+        CHUNKER.chunkAbsolute(chunkingPatterns, status,
+                paths.getTrainingFile(), paths.getAbsoluteChunkedDir());
         validateExpectedResults(false, false, chunkingPatterns);
 
-        MERGER.mergeAbsolute(status, countingPatterns, absoluteChunkedDir,
-                absoluteDir);
+        MERGER.mergeAbsolute(status, countingPatterns,
+                paths.getAbsoluteChunkedDir(), paths.getAbsoluteDir());
         validateExpectedResults(false, true, countingPatterns);
     }
 
     private void countContinuation(Set<Pattern> neededPatterns) throws Exception {
-        LOGGER.info("Continuation counting '%s' -> '%s'.", absoluteDir,
-                continuationDir);
+        LOGGER.info("Continuation counting '%s' -> '%s'.",
+                paths.getAbsoluteDir(), paths.getContinuationDir());
 
         Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(true));
@@ -369,12 +278,13 @@ public class Glmtk {
         LOGGER.debug("countingPatterns = %s", countingPatterns);
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
-        CHUNKER.chunkContinuation(chunkingPatterns, status, absoluteDir,
-                absoluteChunkedDir, continuationDir, continuationChunkedDir);
+        CHUNKER.chunkContinuation(chunkingPatterns, status,
+                paths.getAbsoluteDir(), paths.getAbsoluteChunkedDir(),
+                paths.getContinuationDir(), paths.getContinuationChunkedDir());
         validateExpectedResults(true, false, chunkingPatterns);
 
         MERGER.mergeContinuation(status, countingPatterns,
-                continuationChunkedDir, continuationDir);
+                paths.getContinuationChunkedDir(), paths.getContinuationDir());
         validateExpectedResults(true, true, countingPatterns);
     }
 
@@ -383,25 +293,25 @@ public class Glmtk {
                                          Set<Pattern> expected) throws Exception {
         Set<Pattern> computed = !counting
                 ? status.getChunkedPatterns(continuation)
-                        : status.getCounted(continuation);
-        if (!computed.containsAll(expected)) {
-            String continuationStr = !continuation
-                            ? "Absolute"
-                                    : "Continuation";
-            String countingStr = !counting ? "chunking" : "counting";
-            throw new Exception(
-                    String.format(
-                            "%s %s did not yield expected result.\n"
-                                    + "Expected patterns: %s.\n"
-                                    + "Computed patterns: %s.\n"
-                                    + "Try running again.", continuationStr,
-                                            countingStr, expected, computed));
-        }
+                : status.getCounted(continuation);
+                if (!computed.containsAll(expected)) {
+                    String continuationStr = !continuation
+                    ? "Absolute"
+                    : "Continuation";
+                    String countingStr = !counting ? "chunking" : "counting";
+                    throw new Exception(
+                            String.format(
+                                    "%s %s did not yield expected result.\n"
+                                            + "Expected patterns: %s.\n"
+                                            + "Computed patterns: %s.\n"
+                                            + "Try running again.", continuationStr,
+                            countingStr, expected, computed));
+                }
     }
 
     public CountCache getOrCreateCountCache() throws IOException {
         if (countCache == null)
-            countCache = new CountCache(workingDir);
+            countCache = new CountCache(paths);
         return countCache;
     }
 
@@ -412,7 +322,7 @@ public class Glmtk {
 
         String hash = HashUtils.generateMd5Hash(testingFile);
 
-        Path testCountDir = queriesCacheDir.resolve(hash);
+        Path testCountDir = paths.getQueriesCacheDir().resolve(hash);
         Path testAbsoluteDir = testCountDir.resolve(Constants.ABSOLUTE_DIR_NAME);
         Path testContinuationDir = testCountDir.resolve(Constants.CONTINUATION_DIR_NAME);
         Path testNGramCountsFile = testCountDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
@@ -425,18 +335,20 @@ public class Glmtk {
         Files.createDirectories(testContinuationDir);
 
         if (!NioUtils.checkFile(testNGramCountsFile, EXISTS))
-            Files.copy(nGramTimesFile, testNGramCountsFile);
+            Files.copy(paths.getNGramTimesFile(), testNGramCountsFile);
 
         if (!NioUtils.checkFile(testLengthDistributionFile, EXISTS))
-            Files.copy(lengthDistributionFile, testLengthDistributionFile);
+            Files.copy(paths.getLengthDistributionFile(),
+                    testLengthDistributionFile);
 
         for (Pattern pattern : neededPatterns) {
             Path countFile, testCountFile;
             if (pattern.isAbsolute()) {
-                countFile = absoluteDir.resolve(pattern.toString());
+                countFile = paths.getAbsoluteDir().resolve(pattern.toString());
                 testCountFile = testAbsoluteDir.resolve(pattern.toString());
             } else {
-                countFile = continuationDir.resolve(pattern.toString());
+                countFile = paths.getContinuationDir().resolve(
+                        pattern.toString());
                 testCountFile = testContinuationDir.resolve(pattern.toString());
             }
             if (NioUtils.checkFile(testCountFile, EXISTS))
@@ -452,12 +364,12 @@ public class Glmtk {
             filterAndWriteTestCounts(countFile, testCountFile, neededSequences);
         }
 
-        return new CountCache(testCountDir);
+        return new CountCache(new GlmtkPaths(testCountDir));
     }
 
     private Set<String> extractSequencesForPattern(Path testingFile,
-            boolean hasPos,
-            Pattern pattern) throws IOException {
+                                                   boolean hasPos,
+                                                   Pattern pattern) throws IOException {
         Set<String> result = new HashSet<String>();
 
         int patternSize = pattern.size();
@@ -515,7 +427,7 @@ public class Glmtk {
                           Estimator estimator,
                           ProbMode probMode,
                           CountCache countCache) {
-        return new Query(queryTypeString, inputFile, queriesDir, estimator,
-                probMode, countCache);
+        return new Query(queryTypeString, inputFile, paths.getQueriesDir(),
+                estimator, probMode, countCache);
     }
 }

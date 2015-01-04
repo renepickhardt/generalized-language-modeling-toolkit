@@ -27,7 +27,7 @@ public enum TestCorpus {
     private String corpusName;
     private Path corpus;
     private Path workingDir;
-    private CountCache countCache;
+    private Glmtk glmtk;
 
     private TestCorpus() {
         try {
@@ -36,7 +36,7 @@ public enum TestCorpus {
             workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
                     + Constants.WORKING_DIR_SUFFIX);
 
-            Glmtk glmtk = new Glmtk(corpus, workingDir);
+            glmtk = new Glmtk(corpus, workingDir);
 
             Set<Pattern> neededPatterns = Patterns.getCombinations(
                     Constants.ORDER, Arrays.asList(CNT, SKP));
@@ -72,18 +72,16 @@ public enum TestCorpus {
      * Lazily loaded.
      */
     public CountCache getCountCache() throws IOException {
-        if (countCache == null)
-            countCache = new CountCache(workingDir);
-        return countCache;
+        return glmtk.getOrCreateCountCache();
     }
 
-    public String[] getWords() {
-        Set<String> words = countCache.getWords();
+    public String[] getWords() throws IOException {
+        Set<String> words = getCountCache().getWords();
         return words.toArray(new String[words.size()]);
     }
 
     public List<String> getSequenceList(int n,
-                                        int length) {
+                                        int length) throws IOException {
         List<String> result = new LinkedList<String>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);

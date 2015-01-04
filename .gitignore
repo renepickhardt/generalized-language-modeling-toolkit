@@ -3,7 +3,7 @@
 /.settings
 /bin
 /logs
-/src/test/resources/*.out/
+/src/test/resources/*.glmtk/
 /target
 /stanford-postagger-full-2014-01-04
 /scripts/brownPlain.txt
