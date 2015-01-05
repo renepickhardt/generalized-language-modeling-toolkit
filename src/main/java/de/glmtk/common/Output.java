@@ -21,6 +21,7 @@ public enum Output {
     OUTPUT;
 
     // TODO: Check if this works on windows.
+    // TODO: Strip Ansi from logged output.
 
     public static enum Phase {
         // Tagging

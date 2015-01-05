@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +42,8 @@ public enum QueryRunner {
                 int lineNo;
                 synchronized (linesQueue) {
                     line = linesQueue.poll();
-                    lineNo = curLineNo++;
+                    lineNo = curLineNo;
+                    ++curLineNo;
                 }
                 if (line == null)
                     break;
@@ -120,7 +120,7 @@ public enum QueryRunner {
         queryFile();
         assembleFile();
 
-        OUTPUT.endPhases(message + ":");
+        OUTPUT.endPhases(message + " done:");
 
         OUTPUT.printMessage(String.format("    Saved as '%s' under '%s'.",
                 OUTPUT.bold(outputFile.getFileName()), outputFile.getParent()));
@@ -156,7 +156,7 @@ public enum QueryRunner {
         calculator.setEstimator(estimator);
 
         curLineNo = 0;
-        linesQueue = new LinkedBlockingQueue<String>();
+        linesQueue = new LinkedList<String>();
         try (BufferedReader reader = Files.newBufferedReader(inputFile,
                 Constants.CHARSET)) {
             String line;
@@ -177,6 +177,8 @@ public enum QueryRunner {
     }
 
     private void assembleFile() throws IOException {
+        OUTPUT.setPhase(Phase.ASSEMBLING);
+
         Files.createDirectories(outputDir);
         Files.deleteIfExists(outputFile);
 
@@ -186,6 +188,7 @@ public enum QueryRunner {
                 writer.write(line);
                 writer.write('\n');
             }
+            resultingLines = null; // Free memory
 
             List<String> statsOutputLines = StringUtils.splitAtChar(
                     stats.toString(), '\n');

@@ -13,7 +13,7 @@ public class QueryStats {
     private double crossEntropy = 0.0;
     private String string = null;
 
-    /* package */void addProbability(double probability) {
+    public void addProbability(double probability) {
         if (probability == 0)
             ++cntZero;
         else {
@@ -25,7 +25,7 @@ public class QueryStats {
         }
     }
 
-    /* package */void complete() {
+    public void complete() {
         if (cntNonZero != 0) {
             double baseLog = Math.log(Constants.LOG_BASE);
             entropy /= baseLog;
