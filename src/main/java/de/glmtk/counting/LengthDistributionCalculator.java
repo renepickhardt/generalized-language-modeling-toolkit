@@ -16,9 +16,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.common.Status;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.common.Status;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
@@ -39,7 +39,7 @@ public enum LengthDistributionCalculator {
         OUTPUT.setPhase(Phase.LENGTH_DISTRIBUATION_CALCULATING);
 
         if (status.isLengthDistributionCalculated()) {
-            LOGGER.debug("Status reports Length Distribution already calculated, returning.");
+            LOGGER.debug("Status reports length distribution already calculated, returning.");
             return;
         }
 

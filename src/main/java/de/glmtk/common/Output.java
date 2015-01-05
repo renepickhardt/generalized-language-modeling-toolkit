@@ -36,6 +36,9 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6,
                 "Length Distribution Calculating"),
 
+        // CountCache
+        LOADING_COUNTS(1, 1, "Loading Counts"),
+
         // QueryCache
         SCANNING_COUNTS(1, 1, "Scanning Counts"),
 

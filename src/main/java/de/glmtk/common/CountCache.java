@@ -9,9 +9,13 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -20,7 +24,9 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
-import de.glmtk.counting.LengthDistribution;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
+import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.StringUtils;
 
 /**
@@ -29,88 +35,51 @@ import de.glmtk.util.StringUtils;
 public class CountCache {
     private static final Logger LOGGER = LogManager.getFormatterLogger(CountCache.class);
 
-    private Map<Pattern, Map<String, Long>> absolute = new HashMap<Pattern, Map<String, Long>>();
-    private Map<Pattern, Map<String, Counter>> continuation = new HashMap<Pattern, Map<String, Counter>>();
-    private Map<Pattern, long[]> nGramTimes = new HashMap<Pattern, long[]>();
-    private LengthDistribution lengthDistribution;
+    private static Set<Pattern> getAvailablePatternsFromFilesystem(GlmtkPaths paths) throws IOException {
+        Set<Pattern> patterns = new HashSet<Pattern>();
+        try (DirectoryStream<Path> absoluteDirStream = Files.newDirectoryStream(paths.getAbsoluteDir())) {
+            for (Path patternFile : absoluteDirStream)
+                patterns.add(Patterns.get(patternFile.getFileName().toString()));
+        }
+        try (DirectoryStream<Path> continuationDirStream = Files.newDirectoryStream(paths.getContinuationDir())) {
+            for (Path patternFile : continuationDirStream)
+                patterns.add(Patterns.get(patternFile.getFileName().toString()));
+        }
+        return patterns;
+    }
 
-    public CountCache(GlmtkPaths paths) throws IOException {
-        // Allowing paths == null to make
+    private Progress progress;
+    private Map<Pattern, Map<String, Long>> absolute;
+    private Map<Pattern, Map<String, Counter>> continuation;
+    private Map<Pattern, long[]> nGramTimes;
+    private List<Double> lengthFrequencies;
+
+    public CountCache(Set<Pattern> patterns,
+                      GlmtkPaths paths) throws Exception {
+        // Allowing arguments == null to make
         // {@link Patterns#getUsedPatterns(ParamEstimator, ProbMode)} work.
-        if (paths == null)
+        if (patterns == null || paths == null)
             return;
 
-        LOGGER.info("Loading counts...");
-        LOGGER.debug("Loading absolute counts...");
-        loadAbsolute(paths.getAbsoluteDir());
-        LOGGER.debug("Loading continuation counts...");
-        loadContinuation(paths.getContinuationDir());
-        LOGGER.debug("Loading nGramTimes counts...");
+        String message = "Loading counts into memory";
+        Output.OUTPUT.beginPhases(message + "...");
+        Output.OUTPUT.setPhase(Phase.LOADING_COUNTS);
+
+        progress = new Progress(patterns.size() + 2);
+
+        loadCounts(paths.getAbsoluteDir(), paths.getContinuationDir(), patterns);
         loadNGramTimes(paths.getNGramTimesFile());
-        LOGGER.debug("Loading Sequence Length Distribution...");
-        lengthDistribution = new LengthDistribution(
-                paths.getLengthDistributionFile(), false);
+        loadLengthDistribution(paths.getLengthDistributionFile());
+
+        Output.OUTPUT.endPhases(message + ".");
     }
 
-    private void loadAbsolute(Path absoluteDir) throws IOException {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(absoluteDir)) {
-            for (Path file : files) {
-                Pattern pattern = Patterns.get(file.getFileName().toString());
-                Map<String, Long> counts = new HashMap<String, Long>();
-                absolute.put(pattern, counts);
-
-                try (BufferedReader reader = Files.newBufferedReader(file,
-                        Constants.CHARSET)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        Counter counter = new Counter();
-                        String sequence = Counter.getSequenceAndCounter(line,
-                                counter);
-                        counts.put(sequence, counter.getOnePlusCount());
-                    }
-                }
-            }
-        }
-    }
-
-    private void loadContinuation(Path continuationDir) throws IOException {
-        try (DirectoryStream<Path> files = Files.newDirectoryStream(continuationDir)) {
-            for (Path file : files) {
-                Pattern pattern = Patterns.get(file.getFileName().toString());
-                Map<String, Counter> counts = new HashMap<String, Counter>();
-                continuation.put(pattern, counts);
-
-                try (BufferedReader reader = Files.newBufferedReader(file,
-                        Constants.CHARSET)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        Counter counter = new Counter();
-                        String sequence = Counter.getSequenceAndCounter(line,
-                                counter);
-                        counts.put(sequence, counter);
-                    }
-                }
-            }
-        }
-    }
-
-    private void loadNGramTimes(Path nGramTimesFile) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(nGramTimesFile,
-                Constants.CHARSET)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                List<String> split = StringUtils.splitAtChar(line, '\t');
-                if (split.size() != 5)
-                    throw new IllegalStateException(String.format(
-                            "Illegal nGramTimes file: '%s'.", nGramTimesFile));
-
-                Pattern pattern = Patterns.get(split.get(0));
-                long[] counts = new long[4];
-                for (int i = 0; i != 4; ++i)
-                    counts[i] = Long.parseLong(split.get(i + 1));
-                nGramTimes.put(pattern, counts);
-            }
-        }
+    /**
+     * Debugging constructor, that just loads all patterns in folder into
+     * memory.
+     */
+    public CountCache(GlmtkPaths paths) throws Exception {
+        this(getAvailablePatternsFromFilesystem(paths), paths);
     }
 
     public long getAbsolute(NGram sequence) {
@@ -136,9 +105,24 @@ public class CountCache {
     public long[] getNGramTimes(Pattern pattern) {
         long[] counts = nGramTimes.get(pattern);
         if (counts == null)
-            throw new IllegalStateException(String.format(
-                    "No nGramTimes counts learned for pattern: '%s'.", pattern));
+            throw new IllegalStateException(
+                    String.format(
+                            "No ngram times counts learned for pattern: '%s'.",
+                            pattern));
         return counts;
+    }
+
+    public double getLengthFrequency(int length) {
+        if (length < 1)
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Illegal sequence length: '%d'. Must be a positive integer.",
+                            length));
+        return lengthFrequencies.get(length);
+    }
+
+    public int getMaxSequenceLength() {
+        return lengthFrequencies.size() + 1;
     }
 
     public long getNumWords() {
@@ -153,7 +137,150 @@ public class CountCache {
         return new TreeSet<String>(absolute.get(Patterns.get(CNT)).keySet());
     }
 
-    public LengthDistribution getLengthDistribution() {
-        return lengthDistribution;
+    private void loadCounts(Path absoluteDir,
+                            Path continuationDir,
+                            Set<Pattern> patterns) throws Exception {
+        LOGGER.debug("Loading counts...");
+        absolute = new HashMap<Pattern, Map<String, Long>>();
+        continuation = new HashMap<Pattern, Map<String, Counter>>();
+
+        for (Pattern pattern : patterns) {
+            boolean isPatternAbsolute;
+            Path inputDir;
+            Map<String, Long> absoluteCounts = null;
+            Map<String, Counter> continuationCounts = null;
+            if (pattern.isAbsolute()) {
+                isPatternAbsolute = true;
+                inputDir = absoluteDir;
+                absoluteCounts = new HashMap<String, Long>();
+                absolute.put(pattern, absoluteCounts);
+            } else {
+                isPatternAbsolute = false;
+                inputDir = continuationDir;
+                continuationCounts = new HashMap<String, Counter>();
+                continuation.put(pattern, continuationCounts);
+            }
+
+            Path inputFile = inputDir.resolve(pattern.toString());
+            try (BufferedReader reader = Files.newBufferedReader(inputFile,
+                    Constants.CHARSET)) {
+                String line;
+                int lineNo = 0;
+                while ((line = reader.readLine()) != null) {
+                    ++lineNo;
+                    Counter counter = new Counter();
+                    String sequence = null;
+                    try {
+                        sequence = Counter.getSequenceAndCounter(line, counter);
+                    } catch (RuntimeException e) {
+                        String type = isPatternAbsolute
+                                ? "absolute"
+                                : "continuation";
+                        throwParseError(type + " counts", line, lineNo,
+                                inputFile, e.getMessage());
+                    }
+                    if (isPatternAbsolute)
+                        absoluteCounts.put(sequence, counter.getOnePlusCount());
+                    else
+                        continuationCounts.put(sequence, counter);
+                }
+            }
+
+            progress.increase(1);
+        }
+    }
+
+    private void loadNGramTimes(Path file) throws Exception {
+        LOGGER.debug("Loading NGram times counts...");
+        nGramTimes = new HashMap<Pattern, long[]>();
+        try (BufferedReader reader = Files.newBufferedReader(file,
+                Constants.CHARSET)) {
+            String line;
+            int lineNo = 0;
+            while ((line = reader.readLine()) != null) {
+                ++lineNo;
+                List<String> split = StringUtils.splitAtChar(line, '\t');
+
+                if (split.size() != 5)
+                    throwParseError(
+                            "ngram times",
+                            line,
+                            lineNo,
+                            file,
+                            "Expected line to have format '<pattern>\\t<count>\\t<count>\\t<count>\\t<count>'.");
+
+                Pattern pattern = null;
+                try {
+                    pattern = Patterns.get(split.get(0));
+                } catch (RuntimeException e) {
+                    throwParseError("ngram times", line, lineNo, file,
+                            "Unable to parse '%s' as a pattern.", split.get(0));
+                }
+                long[] counts = new long[4];
+                for (int i = 0; i != 4; ++i)
+                    try {
+                        counts[i] = Long.parseLong(split.get(i + 1));
+                    } catch (NumberFormatException e) {
+                        throwParseError("ngram times", line, lineNo, file,
+                                "Unable to parse '%d' as an intger.",
+                                split.get(i + 1));
+                    }
+                nGramTimes.put(pattern, counts);
+            }
+        }
+        progress.increase(1);
+    }
+
+    private void loadLengthDistribution(Path file) throws Exception {
+        LOGGER.debug("Loading Sequence Length Distribution...");
+        lengthFrequencies = new ArrayList<Double>();
+        try (BufferedReader reader = Files.newBufferedReader(file,
+                Constants.CHARSET)) {
+            String line;
+            int lineNo = 0;
+            while ((line = reader.readLine()) != null) {
+                ++lineNo;
+                List<String> split = StringUtils.splitAtChar(line, '\t');
+
+                if (split.size() != 2)
+                    throwParseError("length distribution", line, lineNo, file,
+                            "Expected line to have format '<sequence-length>\\t<frequency>'.");
+
+                int length = 0;
+                try {
+                    length = Integer.parseInt(split.get(0));
+                } catch (NumberFormatException e) {
+                    throwParseError("length distribution", line, lineNo, file,
+                            "Unable to parse '%s' as an integer.", split.get(0));
+                }
+
+                double frequency = 0.0;
+                try {
+                    frequency = Double.parseDouble(split.get(1));
+                } catch (NumberFormatException e) {
+                    throwParseError("length distribution", line, lineNo, file,
+                            "Unable to parse '%s' as a floating point number.",
+                            split.get(1));
+                }
+
+                CollectionUtils.ensureListSize(lengthFrequencies, length, 0.0);
+                lengthFrequencies.set(length, frequency);
+            }
+        }
+        progress.increase(1);
+    }
+
+    private void throwParseError(String type,
+                                 String line,
+                                 int lineNo,
+                                 Path file,
+                                 String message,
+                                 Object... params) throws Exception {
+        try (Formatter f = new Formatter()) {
+            f.format("Illegal line '%d' in file %s '%s'.%n", lineNo, type, file);
+            f.format(message + "%n", params);
+            f.format("Line was: '%s'.", line);
+            throw new Exception(f.toString());
+        }
     }
 }

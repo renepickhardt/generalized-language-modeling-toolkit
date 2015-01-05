@@ -16,10 +16,10 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Counter;
-import de.glmtk.common.Status;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.Status;
 import de.glmtk.util.NioUtils;
 
 public enum NGramTimesCounter {
@@ -41,7 +41,7 @@ public enum NGramTimesCounter {
         OUTPUT.setPhase(Phase.NGRAM_TIMES_COUNTING);
 
         if (status.isNGramTimesCounted()) {
-            LOGGER.debug("Status reports NGram Times already counted, returning.");
+            LOGGER.debug("Status reports ngram times already counted, returning.");
             return;
         }
 
@@ -71,7 +71,7 @@ public enum NGramTimesCounter {
 
                 Path inputDir = pattern.isAbsolute()
                         ? absoluteDir
-                                : continuationDir;
+                        : continuationDir;
                 Path inputFile = inputDir.resolve(pattern.toString());
                 try (BufferedReader reader = NioUtils.newBufferedReader(
                         inputFile, Constants.CHARSET, readerMemory)) {

@@ -23,7 +23,6 @@ import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_S
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -111,7 +110,7 @@ public class EstimatorTest extends LoggingTest {
     }
 
     @Test
-    public void testNGramProbabilitiesSum() throws IOException {
+    public void testNGramProbabilitiesSum() throws Exception {
         LOGGER.info("=== Test NGram Probabilities Sum");
         Calculator calculator = new SequenceCalculator();
         calculator.setEstimator(estimator);
@@ -140,7 +139,7 @@ public class EstimatorTest extends LoggingTest {
     }
 
     @Test
-    public void testFixedHistorySum() throws IOException {
+    public void testFixedHistorySum() throws Exception {
         LOGGER.info("=== Test Fixed History Sum");
 
         for (TestCorpus testCorpus : TEST_CORPORA) {

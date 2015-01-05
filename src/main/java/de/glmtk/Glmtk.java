@@ -246,9 +246,9 @@ public class Glmtk {
                 status.getCounted(true));
     }
 
-    public CountCache getOrCreateCountCache() throws IOException {
+    public CountCache getOrCreateCountCache() throws Exception {
         if (countCache == null)
-            countCache = new CountCache(paths);
+            countCache = new CountCache(status.getCounted(), paths);
         return countCache;
     }
 
@@ -282,7 +282,8 @@ public class Glmtk {
                 "    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
                 dir.getParent(), PrintUtils.humanReadableByteCount(size)));
 
-        return new CountCache(queryCachePaths);
+        return new CountCache(status.getQueryCacheCounted(name),
+                queryCachePaths);
     }
 
     private void validateExpectedResults(String operation,

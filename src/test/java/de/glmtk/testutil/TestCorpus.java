@@ -4,7 +4,6 @@ import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.WSKP;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,17 +70,17 @@ public enum TestCorpus {
     /**
      * Lazily loaded.
      */
-    public CountCache getCountCache() throws IOException {
+    public CountCache getCountCache() throws Exception {
         return glmtk.getOrCreateCountCache();
     }
 
-    public String[] getWords() throws IOException {
+    public String[] getWords() throws Exception {
         Set<String> words = getCountCache().getWords();
         return words.toArray(new String[words.size()]);
     }
 
     public List<String> getSequenceList(int n,
-                                        int length) throws IOException {
+                                        int length) throws Exception {
         List<String> result = new LinkedList<String>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);

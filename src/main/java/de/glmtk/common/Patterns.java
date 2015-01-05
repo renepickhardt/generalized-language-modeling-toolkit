@@ -61,7 +61,7 @@ public class Patterns {
             for (char elemAsChar : asString.toCharArray()) {
                 PatternElem elem = PatternElem.fromChar(elemAsChar);
                 if (elem == null)
-                    throw new IllegalStateException(String.format(
+                    throw new RuntimeException(String.format(
                             "Unkown PatternElem: '%s'.", elemAsChar));
                 elems.add(elem);
             }
@@ -80,8 +80,8 @@ public class Patterns {
         private Set<Pattern> usedPatterns = new HashSet<Pattern>();
         private Random random = new Random();
 
-        public PatternTrackingCountCache() throws IOException {
-            super(null);
+        public PatternTrackingCountCache() throws Exception {
+            super(null, null);
         }
 
         public Set<Pattern> getUsedPatterns() {
@@ -123,7 +123,7 @@ public class Patterns {
 
     public static Set<Pattern> getUsedPatterns(int modelSize,
             Estimator estimator,
-            ProbMode probMode) {
+            ProbMode probMode) throws Exception {
         PatternTrackingCountCache tracker;
         try {
             tracker = new PatternTrackingCountCache();

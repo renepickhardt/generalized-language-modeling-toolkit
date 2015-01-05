@@ -15,22 +15,29 @@ public class Counter {
         List<String> split = StringUtils.splitAtChar(line, '\t');
         if (split.size() == 2) {
             // absolute
-            counter.setOnePlusCount(Long.parseLong(split.get(1)));
+            counter.setOnePlusCount(parseLong(split.get(1)));
             counter.setOneCount(0L);
             counter.setTwoCount(0L);
             counter.setThreePlusCount(0L);
         } else if (split.size() == 5) {
             // continuation
-            counter.setOnePlusCount(Long.parseLong(split.get(1)));
-            counter.setOneCount(Long.parseLong(split.get(2)));
-            counter.setTwoCount(Long.parseLong(split.get(3)));
-            counter.setThreePlusCount(Long.parseLong(split.get(4)));
+            counter.setOnePlusCount(parseLong(split.get(1)));
+            counter.setOneCount(parseLong(split.get(2)));
+            counter.setTwoCount(parseLong(split.get(3)));
+            counter.setThreePlusCount(parseLong(split.get(4)));
         } else
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Couldn't not get Sequence and Counter of line '%s'.",
-                            line));
+            throw new RuntimeException(
+                    "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
         return split.get(0);
+    }
+
+    private static long parseLong(String value) throws NumberFormatException {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(String.format(
+                    "Unable to parse '%s' as a floating point.", value));
+        }
     }
 
     private long onePlusCount;

@@ -68,8 +68,7 @@ public enum QueryRunner {
             double probability = calculator.probability(sequence);
             if ((queryType == QueryType.SEQUENCE || queryType == QueryType.MARKOV)
                     && probability != 0)
-                probability *= countCache.getLengthDistribution().getLengthFrequency(
-                        sequence.size());
+                probability *= countCache.getLengthFrequency(sequence.size());
 
             synchronized (stats) {
                 stats.addProbability(probability);

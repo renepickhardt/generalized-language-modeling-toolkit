@@ -4,7 +4,6 @@ import static de.glmtk.Config.CONFIG;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -53,7 +52,7 @@ public class CountingTest extends LoggingTest {
     }
 
     @Test
-    public void testCounting() throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    public void testCounting() throws Exception {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
 
         LOGGER.info("Loading corpus...");
