@@ -7,6 +7,10 @@ import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -48,7 +52,7 @@ public enum QueryRunner {
                 if (line == null)
                     break;
 
-                resultingLines[lineNo] = calculatePropability(line);
+                resultingLines[lineNo] = processLine(line);
 
                 synchronized (progress) {
                     progress.increase(1);
@@ -58,24 +62,6 @@ public enum QueryRunner {
             LOGGER.debug("Thread finished.");
             return null;
         }
-
-        private String calculatePropability(String line) {
-            String trimmed = line.trim();
-            if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
-                return line;
-
-            List<String> sequence = StringUtils.splitAtChar(trimmed, ' ');
-            double probability = calculator.probability(sequence);
-            if ((queryType == QueryType.SEQUENCE || queryType == QueryType.MARKOV)
-                    && probability != 0)
-                probability *= countCache.getLengthFrequency(sequence.size());
-
-            synchronized (stats) {
-                stats.addProbability(probability);
-            }
-
-            return line + '\t' + Double.toString(probability);
-        }
     }
 
     private Progress progress;
@@ -84,7 +70,6 @@ public enum QueryRunner {
     private Path outputDir;
     private Path outputFile;
     private Estimator estimator;
-    private ProbMode probMode;
     private CountCache countCache;
     private Calculator calculator;
     private QueryStats stats;
@@ -94,22 +79,66 @@ public enum QueryRunner {
     private int readerMemory;
     private int writerMemory;
 
-    public QueryStats runQuery(String queryTypeString,
-                               Path inputFile,
-                               Path outputDir,
-                               Estimator estimator,
-                               ProbMode probMode,
-                               CountCache countCache) throws Exception {
+    public QueryStats runQueriesOnInputStream(String queryTypeString,
+                                              InputStream inputStream,
+                                              OutputStream outputStream,
+                                              Estimator estimator,
+                                              ProbMode probMode,
+                                              CountCache countCache) throws Exception {
+        queryType = QueryType.fromString(queryTypeString);
+        this.estimator = estimator;
+        this.countCache = countCache;
+        calculator = Calculator.forQueryTypeString(queryTypeString);
+        stats = new QueryStats();
+        calculateMemory();
+
+        estimator.setCountCache(countCache);
+        calculator.setProbMode(probMode);
+        calculator.setEstimator(estimator);
+
+        OUTPUT.printMessage(String.format(
+                "Interactive querying with %s estimator:", estimator.getName()));
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                inputStream, Constants.CHARSET));
+                OutputStreamWriter writer = new OutputStreamWriter(
+                        outputStream, Constants.CHARSET)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(processLine(line));
+                writer.write('\n');
+                writer.flush();
+            }
+            stats.complete();
+
+            List<String> statsOutputLines = StringUtils.splitAtChar(
+                    stats.toString(), '\n');
+            for (String statsOutputLine : statsOutputLines)
+                writer.write("# " + statsOutputLine + '\n');
+        }
+
+        return stats;
+    }
+
+    public QueryStats runQueriesOnFile(String queryTypeString,
+                                       Path inputFile,
+                                       Path outputDir,
+                                       Estimator estimator,
+                                       ProbMode probMode,
+                                       CountCache countCache) throws Exception {
         queryType = QueryType.fromString(queryTypeString);
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.estimator = estimator;
-        this.probMode = probMode;
         this.countCache = countCache;
         calculator = Calculator.forQueryTypeString(queryTypeString);
         stats = new QueryStats();
         outputFile = resolveOutputFile();
         calculateMemory();
+
+        estimator.setCountCache(countCache);
+        calculator.setProbMode(probMode);
+        calculator.setEstimator(estimator);
 
         String message = String.format(
                 "Querying %s File '%s' with %s estimation", queryTypeString,
@@ -149,10 +178,6 @@ public enum QueryRunner {
 
     private void queryFile() throws Exception {
         OUTPUT.setPhase(Phase.QUERYING);
-
-        estimator.setCountCache(countCache);
-        calculator.setProbMode(probMode);
-        calculator.setEstimator(estimator);
 
         curLineNo = 0;
         linesQueue = new LinkedList<String>();
@@ -197,5 +222,23 @@ public enum QueryRunner {
                 writer.append('\n');
             }
         }
+    }
+
+    private String processLine(String line) {
+        String trimmed = line.trim();
+        if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
+            return line;
+
+        List<String> sequence = StringUtils.splitAtChar(line, ' ');
+        double probability = calculator.probability(sequence);
+        if ((queryType == QueryType.SEQUENCE || queryType == QueryType.MARKOV)
+                && probability != 0)
+            probability *= countCache.getLengthFrequency(sequence.size());
+
+        synchronized (stats) {
+            stats.addProbability(probability);
+        }
+
+        return line + '\t' + Double.toString(probability);
     }
 }

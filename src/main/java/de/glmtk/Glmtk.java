@@ -10,6 +10,8 @@ import static de.glmtk.querying.QueryCacherCreator.QUERY_CACHE_CREATOR;
 import static de.glmtk.querying.QueryRunner.QUERY_RUNNER;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -252,6 +254,10 @@ public class Glmtk {
         return countCache;
     }
 
+    public CountCache createCountCache(Set<Pattern> patterns) throws Exception {
+        return new CountCache(patterns, paths);
+    }
+
     public CountCache provideQueryCache(Path queryFile,
                                         Set<Pattern> patterns) throws Exception {
 
@@ -302,12 +308,22 @@ public class Glmtk {
         }
     }
 
-    public QueryStats runQuery(String queryTypeString,
-                               Path inputFile,
-                               Estimator estimator,
-                               ProbMode probMode,
-                               CountCache countCache) throws Exception {
-        return QUERY_RUNNER.runQuery(queryTypeString, inputFile,
+    public QueryStats runQueriesOnInputStream(String queryTypeString,
+                                              InputStream inputStream,
+                                              OutputStream outputStream,
+                                              Estimator estimator,
+                                              ProbMode probMode,
+                                              CountCache countCache) throws Exception {
+        return QUERY_RUNNER.runQueriesOnInputStream(queryTypeString,
+                inputStream, outputStream, estimator, probMode, countCache);
+    }
+
+    public QueryStats runQueriesOnFile(String queryTypeString,
+                                       Path inputFile,
+                                       Estimator estimator,
+                                       ProbMode probMode,
+                                       CountCache countCache) throws Exception {
+        return QUERY_RUNNER.runQueriesOnFile(queryTypeString, inputFile,
                 paths.getQueriesDir(), estimator, probMode, countCache);
     }
 }

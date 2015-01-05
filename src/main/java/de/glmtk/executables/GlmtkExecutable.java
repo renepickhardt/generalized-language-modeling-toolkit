@@ -11,7 +11,9 @@ import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +45,7 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExecutable extends Executable {
-    private static Logger LOGGER = LogManager.getFormatterLogger(Executable.class);
+    private static final Logger LOGGER = LogManager.getFormatterLogger(Executable.class);
 
     // TODO: API to count all patterns.
     // TODO: API to only create querycache
@@ -69,6 +71,9 @@ public class GlmtkExecutable extends Executable {
     private static final Option OPTION_WORKINGDIR;
     private static final Option OPTION_TRAINING_ORDER;
     private static final Option OPTION_ESTIMATOR;
+    private static final Option OPTION_INTERACTIVE_SEQUENCE;
+    private static final Option OPTION_INTERACTIVE_MARKOV;
+    private static final Option OPTION_INTERACTIVE_COND;
     private static final Option OPTION_QUERY_SEQUENCE;
     private static final Option OPTION_QUERY_MARKOV;
     private static final Option OPTION_QUERY_COND;
@@ -76,6 +81,8 @@ public class GlmtkExecutable extends Executable {
     private static final Option OPTION_LOG_DEBUG;
 
     private static final List<Option> OPTIONS;
+    private static final List<Option> OPTIONS_INTERACTIVE;
+    private static final List<Option> OPTIONS_QUERYING;
 
     static {
         OPTION_HELP = new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
@@ -103,6 +110,19 @@ public class GlmtkExecutable extends Executable {
             OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
         }
 
+        OPTION_INTERACTIVE_SEQUENCE = new Option("is", "interactive-seuence",
+                false, "Takes sequence queries from standart input.");
+
+        OPTION_INTERACTIVE_MARKOV = new Option("im", "interactive-markov",
+                true, "Takes markov queries from standart input.");
+        OPTION_INTERACTIVE_MARKOV.setArgName("MARKOV");
+        OPTION_INTERACTIVE_MARKOV.setArgs(1);
+
+        OPTION_INTERACTIVE_COND = new Option("ic", "interactive-cond", true,
+                "Takes conditional queries from standart input.");
+        OPTION_INTERACTIVE_COND.setArgName("COND");
+        OPTION_INTERACTIVE_COND.setArgs(1);
+
         OPTION_QUERY_SEQUENCE = new Option("qs", "query-sequence", true,
                 "Files to take querying sequences from.");
         OPTION_QUERY_SEQUENCE.setArgName("FILE...");
@@ -125,9 +145,15 @@ public class GlmtkExecutable extends Executable {
                 "If set, log level will be increased to 'Debug'.");
 
         OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
-                OPTION_TRAINING_ORDER, OPTION_ESTIMATOR, OPTION_QUERY_SEQUENCE,
+                OPTION_TRAINING_ORDER, OPTION_ESTIMATOR,
+                OPTION_INTERACTIVE_SEQUENCE, OPTION_INTERACTIVE_MARKOV,
+                OPTION_INTERACTIVE_COND, OPTION_QUERY_SEQUENCE,
                 OPTION_QUERY_MARKOV, OPTION_QUERY_COND, OPTION_LOG_CONSOLE,
                 OPTION_LOG_DEBUG);
+        OPTIONS_INTERACTIVE = Arrays.asList(OPTION_INTERACTIVE_SEQUENCE,
+                OPTION_INTERACTIVE_MARKOV, OPTION_INTERACTIVE_COND);
+        OPTIONS_QUERYING = Arrays.asList(OPTION_QUERY_SEQUENCE,
+                OPTION_QUERY_MARKOV, OPTION_QUERY_COND);
     }
 
     public static void main(String[] args) throws Exception {
@@ -138,6 +164,8 @@ public class GlmtkExecutable extends Executable {
     private Path workingDir = null;
     private Integer trainingOrder = null;
     private Set<Estimator> estimators = new LinkedHashSet<Estimator>();
+    private String interactiveQueryType = null;
+    private int interactiveCondOrder = 0;
     private Set<Path> querySequenceFiles = new LinkedHashSet<Path>();
     private Map<Integer, Set<Path>> queryMarkovFiles = new HashMap<Integer, Set<Path>>();
     private Map<Integer, Set<Path>> queryCondFiles = new HashMap<Integer, Set<Path>>();
@@ -193,17 +221,43 @@ public class GlmtkExecutable extends Executable {
                                 "Unkown estimators option '%s'.", opt));
                     estimators.add(estimator);
                 }
-            else if (option.equals(OPTION_QUERY_SEQUENCE))
+
+            else if (option.equals(OPTION_INTERACTIVE_SEQUENCE)) {
+                optionsMutuallyExclusiveOrFail(interactiveQueryType,
+                        OPTIONS_INTERACTIVE);
+                interactiveQueryType = QueryType.sequence();
+
+            } else if (option.equals(OPTION_INTERACTIVE_MARKOV)) {
+                optionsMutuallyExclusiveOrFail(interactiveQueryType,
+                        OPTIONS_INTERACTIVE);
+                interactiveQueryType = QueryType.markov(positiveIntOrFail(
+                        option.getValue(), "Illegal argument for --%s (-%s)",
+                        option.getLongOpt(), option.getOpt()));
+
+            } else if (option.equals(OPTION_INTERACTIVE_COND)) {
+                optionsMutuallyExclusiveOrFail(interactiveQueryType,
+                        OPTIONS_INTERACTIVE);
+                interactiveQueryType = QueryType.cond();
+                interactiveCondOrder = positiveIntOrFail(option.getValue(),
+                        "Illegal argument for --%s (-%s)", option.getLongOpt(),
+                        option.getOpt());
+
+            } else if (option.equals(OPTION_QUERY_SEQUENCE))
                 for (String opt : option.getValues())
                     querySequenceFiles.add(Paths.get(opt.trim()));
+
             else if (option.equals(OPTION_QUERY_MARKOV))
                 extractOrderAndFiles(option, queryMarkovFiles);
+
             else if (option.equals(OPTION_QUERY_COND))
                 extractOrderAndFiles(option, queryCondFiles);
+
             else if (option.equals(OPTION_LOG_CONSOLE))
                 logConsole = true;
+
             else if (option.equals(OPTION_LOG_DEBUG))
                 logDebug = true;
+
             else
                 throw new IllegalStateException(String.format(
                         "Unexpected option: '%s'.", option));
@@ -234,6 +288,23 @@ public class GlmtkExecutable extends Executable {
         if (trainingOrder == null)
             trainingOrder = 5;
 
+        if (estimators.isEmpty())
+            estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
+
+        if (interactiveQueryType != null
+                && !(querySequenceFiles.isEmpty() && queryMarkovFiles.isEmpty() && queryCondFiles.isEmpty()))
+            throw new Termination(
+                    String.format(
+                            "Illegal options, can not specify interactive mode(%s) and qyering mode(%s) at the same time.",
+                            makeOptionsString(OPTIONS_INTERACTIVE),
+                            makeOptionsString(OPTIONS_QUERYING)));
+
+        if (interactiveQueryType != null && estimators.size() > 1)
+            throw new Termination(
+                    String.format(
+                            "Can specify at most one estimator in interactive mode (%s).",
+                            makeOptionsString(OPTIONS_INTERACTIVE)));
+
         // Need to create workingDirectory here in order to create Logger for
         // "<workingdir>/log" as soon as possible.
         Files.createDirectories(workingDir);
@@ -246,33 +317,57 @@ public class GlmtkExecutable extends Executable {
         verifyQueryFiles();
     }
 
+    private String makeOptionString(Option option) {
+        return String.format("--%s (-%s)", option.getLongOpt(), option.getOpt());
+    }
+
+    private String makeOptionsString(Collection<Option> options) {
+        List<String> optionsStr = new ArrayList<String>(options.size());
+        for (Option option : options)
+            optionsStr.add(makeOptionString(option));
+        return StringUtils.join(optionsStr, ", ");
+    }
+
     private void checkOptionMultipleTimes(Object value,
                                           Option option) {
         if (value != null)
             throw new Termination(String.format(
-                    "Option --%s (-%s) can only be specified once.",
-                    option.getLongOpt(), option.getOpt()));
+                    "Option %s must not be specified more than once.",
+                    makeOptionString(option)));
     }
 
-    private int positiveIntOrFail(String val,
-                                  String msg) {
+    private <T> void optionsMutuallyExclusiveOrFail(T value,
+                                                    Collection<Option> options) {
+        if (value != null)
+            throw new Termination(String.format(
+                    "The options %s are mutually exclusive.",
+                    makeOptionsString(options)));
+    }
+
+    private int positiveIntOrFail(String value,
+                                  String message,
+                                  Object... params) {
         Integer v = null;
         try {
-            v = Integer.valueOf(val);
+            v = Integer.valueOf(value);
         } catch (NumberFormatException e) {
         }
         if (v == null || v <= 0)
-            throw new Termination(String.format(
-                    "%s '%s'. Needs to be a positive integer.", msg, val));
+            try (Formatter f = new Formatter()) {
+                f.format(message, params);
+                f.format(" '%s'.%n", value);
+                f.format("Needs to be a positive integer");
+                throw new Termination(f.toString());
+            }
         return v;
     }
 
     private void extractOrderAndFiles(Option option,
                                       Map<Integer, Set<Path>> orderToFiles) {
         String[] opts = option.getValues();
-        int order = positiveIntOrFail(opts[0], String.format(
+        int order = positiveIntOrFail(opts[0],
                 "Illegal first argument for --%s (-%s)", option.getLongOpt(),
-                option.getOpt()));
+                option.getOpt());
         Set<Path> files = orderToFiles.get(order);
         if (files == null) {
             files = new LinkedHashSet<Path>();
@@ -369,9 +464,6 @@ public class GlmtkExecutable extends Executable {
 
         ProbMode probMode = ProbMode.MARG;
 
-        if (estimators.isEmpty())
-            estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
-
         Set<Pattern> neededPatterns = new HashSet<Pattern>();
         for (Estimator estimator : estimators) {
             neededPatterns.addAll(Patterns.getUsedPatterns(trainingOrder,
@@ -382,13 +474,20 @@ public class GlmtkExecutable extends Executable {
 
         glmtk.count(neededPatterns);
 
+        if (interactiveQueryType != null) {
+            Estimator estimator = estimators.iterator().next();
+            CountCache countCache = glmtk.createCountCache(neededPatterns);
+            glmtk.runQueriesOnInputStream(interactiveQueryType, System.in,
+                    System.out, estimator, probMode, countCache);
+        }
+
         for (Path queryFile : querySequenceFiles) {
             CountCache countCache = glmtk.provideQueryCache(queryFile,
                     neededPatterns);
 
             for (Estimator estimator : estimators)
-                glmtk.runQuery(QueryType.sequence(), queryFile, estimator,
-                        probMode, countCache);
+                glmtk.runQueriesOnFile(QueryType.sequence(), queryFile,
+                        estimator, probMode, countCache);
         }
 
         for (Map.Entry<Integer, Set<Path>> entry : queryMarkovFiles.entrySet()) {
@@ -400,8 +499,8 @@ public class GlmtkExecutable extends Executable {
                         neededPatterns);
 
                 for (Estimator estimator : estimators)
-                    glmtk.runQuery(QueryType.markov(markovOrder), queryFile,
-                            estimator, probMode, countCache);
+                    glmtk.runQueriesOnFile(QueryType.markov(markovOrder),
+                            queryFile, estimator, probMode, countCache);
             }
         }
 
@@ -411,19 +510,25 @@ public class GlmtkExecutable extends Executable {
                         neededPatterns);
 
                 for (Estimator estimator : estimators)
-                    glmtk.runQuery(QueryType.cond(), queryFile, estimator,
-                            probMode, countCache);
+                    glmtk.runQueriesOnFile(QueryType.cond(), queryFile,
+                            estimator, probMode, countCache);
             }
 
         StatisticalNumberHelper.print();
     }
 
     private void logFields() {
-        LOGGER.debug("Corpus:             %s", corpus);
-        LOGGER.debug("WorkingDir:         %s", workingDir);
-        LOGGER.debug("TrainingOrder:      %s", trainingOrder);
-        LOGGER.debug("QuerySequenceFiles: %s", querySequenceFiles);
-        LOGGER.debug("QueryMarkovFiles:   %s", queryMarkovFiles);
-        LOGGER.debug("QueryCondFiles:     %s", queryCondFiles);
+        LOGGER.debug("GlmtkExecutables Fields %s", StringUtils.repeat("-",
+                "GlmtkExecutables Fields ".length()));
+        LOGGER.debug("Corpus:               %s", corpus);
+        LOGGER.debug("WorkingDir:           %s", workingDir);
+        LOGGER.debug("TrainingOrder:        %s", trainingOrder);
+        LOGGER.debug("InteractiveQueryType: %s", interactiveQueryType);
+        LOGGER.debug("InteractiveCondOrder: %s", interactiveCondOrder);
+        LOGGER.debug("QuerySequenceFiles:   %s", querySequenceFiles);
+        LOGGER.debug("QueryMarkovFiles:     %s", queryMarkovFiles);
+        LOGGER.debug("QueryCondFiles:       %s", queryCondFiles);
+        LOGGER.debug("LogConsole:           %s", logConsole);
+        LOGGER.debug("LogDebug:             %s", logDebug);
     }
 }
