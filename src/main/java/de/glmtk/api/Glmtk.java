@@ -4,15 +4,14 @@ import static de.glmtk.api.QueryCacherCreator.QUERY_CACHE_CREATOR;
 import static de.glmtk.api.QueryRunner.QUERY_RUNNER;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.counting.Chunker.CHUNKER;
+import static de.glmtk.counting.LengthDistributionCalculator.LENGTH_DISTRIBUTION_CALCULATOR;
 import static de.glmtk.counting.Merger.MERGER;
 import static de.glmtk.counting.NGramTimesCounter.NGRAM_TIMES_COUNTER;
 import static de.glmtk.counting.Tagger.TAGGER;
-import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -23,10 +22,8 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.api.Status.Training;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
-import de.glmtk.counting.LengthDistribution;
 import de.glmtk.counting.Tagger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
@@ -110,20 +107,15 @@ public class Glmtk {
         provideTraining(needed.needTagging());
 
         OUTPUT.beginPhases("Corpus Analyzation...");
+
         countAbsolute(needed.getAbsolute());
         countContinuation(needed.getContinuation());
         NGRAM_TIMES_COUNTER.count(status, paths.getNGramTimesFile(),
                 paths.getAbsoluteDir(), paths.getContinuationDir());
+        LENGTH_DISTRIBUTION_CALCULATOR.calculate(status,
+                paths.getTrainingFile(), paths.getLengthDistributionFile());
 
-        // Sequence Length Distribution
-        OUTPUT.setPhase(Phase.LENGTH_DISTRIBUATION_CALCULATING);
-        if (!NioUtils.checkFile(paths.getLengthDistributionFile(), EXISTS)) {
-            LengthDistribution lengthDistribution = new LengthDistribution(
-                    paths.getTrainingFile(), true);
-            lengthDistribution.writeToStore(paths.getLengthDistributionFile());
-        }
-
-        long corpusSize = NioUtils.calcFileSize(Arrays.asList(paths.getCountsDir()));
+        long corpusSize = NioUtils.calcFileSize(paths.getCountsDir());
         OUTPUT.endPhases(String.format("Corpus Analyzation done (uses %s).",
                 PrintUtils.humanReadableByteCount(corpusSize)));
     }
