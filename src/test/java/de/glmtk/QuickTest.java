@@ -3,7 +3,6 @@ package de.glmtk;
 import java.nio.file.Paths;
 import java.util.List;
 
-import de.glmtk.api.GlmtkPaths;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;

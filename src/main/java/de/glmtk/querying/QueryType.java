@@ -1,4 +1,4 @@
-package de.glmtk.api;
+package de.glmtk.querying;
 
 public enum QueryType {
     COND("Cond"),

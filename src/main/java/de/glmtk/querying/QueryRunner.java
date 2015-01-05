@@ -1,4 +1,4 @@
-package de.glmtk.api;
+package de.glmtk.querying;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;

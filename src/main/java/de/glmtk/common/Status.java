@@ -1,4 +1,4 @@
-package de.glmtk.api;
+package de.glmtk.common;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,8 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.common.Pattern;
-import de.glmtk.common.Patterns;
+import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;

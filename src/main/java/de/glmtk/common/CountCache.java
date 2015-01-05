@@ -19,7 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.api.GlmtkPaths;
+import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.LengthDistribution;
 import de.glmtk.util.StringUtils;
 

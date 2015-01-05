@@ -1,4 +1,4 @@
-package de.glmtk.api;
+package de.glmtk.querying;
 
 import static de.glmtk.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
@@ -27,6 +27,7 @@ import de.glmtk.Constants;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.Status;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;

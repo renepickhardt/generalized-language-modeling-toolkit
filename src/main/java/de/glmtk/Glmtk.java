@@ -1,13 +1,13 @@
-package de.glmtk.api;
+package de.glmtk;
 
-import static de.glmtk.api.QueryCacherCreator.QUERY_CACHE_CREATOR;
-import static de.glmtk.api.QueryRunner.QUERY_RUNNER;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.counting.Chunker.CHUNKER;
 import static de.glmtk.counting.LengthDistributionCalculator.LENGTH_DISTRIBUTION_CALCULATOR;
 import static de.glmtk.counting.Merger.MERGER;
 import static de.glmtk.counting.NGramTimesCounter.NGRAM_TIMES_COUNTER;
 import static de.glmtk.counting.Tagger.TAGGER;
+import static de.glmtk.querying.QueryCacherCreator.QUERY_CACHE_CREATOR;
+import static de.glmtk.querying.QueryRunner.QUERY_RUNNER;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,11 +20,13 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.api.Status.Training;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
+import de.glmtk.common.Status;
+import de.glmtk.common.Status.Training;
 import de.glmtk.counting.Tagger;
+import de.glmtk.querying.QueryStats;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;

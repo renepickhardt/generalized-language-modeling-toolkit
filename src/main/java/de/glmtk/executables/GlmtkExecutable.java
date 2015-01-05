@@ -29,13 +29,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
 import de.glmtk.Constants;
+import de.glmtk.Glmtk;
 import de.glmtk.Termination;
-import de.glmtk.api.Glmtk;
-import de.glmtk.api.QueryType;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
+import de.glmtk.querying.QueryType;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.util.NioUtils;

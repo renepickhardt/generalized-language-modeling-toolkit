@@ -1,11 +1,10 @@
-package de.glmtk.api;
+package de.glmtk;
 
 import java.nio.file.Path;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Constants;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkPaths {

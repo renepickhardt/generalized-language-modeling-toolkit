@@ -1,4 +1,4 @@
-package de.glmtk.api;
+package de.glmtk.querying;
 
 import java.text.NumberFormat;
 import java.util.Formatter;
