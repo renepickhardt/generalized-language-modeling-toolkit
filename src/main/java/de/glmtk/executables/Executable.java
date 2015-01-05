@@ -46,10 +46,10 @@ import de.glmtk.util.StringUtils;
 
     public void run(String[] args) throws Exception {
         try {
-            OUTPUT.enableAnsi();
-            configureLogging();
-
             parseArguments(args);
+
+            configureLogging();
+            OUTPUT.enableAnsi();
 
             // Calling {@link #printLogHeader(String[])} before
             //  {@link #parseArguments(String[])} because
@@ -70,7 +70,7 @@ import de.glmtk.util.StringUtils;
         }
     }
 
-    private void configureLogging() {
+    protected void configureLogging() {
         LOGGING_HELPER.addFileAppender(CONFIG.getLogDir().resolve(
                 Constants.ALL_LOG_FILE_NAME), "FileAll", true);
 
@@ -81,7 +81,7 @@ import de.glmtk.util.StringUtils;
                 false);
     }
 
-    protected void parseArguments(String[] args) throws Exception {
+    protected void parseArguments(String[] args) {
         Options options = new Options();
         for (Option option : getOptions())
             options.addOption(option);

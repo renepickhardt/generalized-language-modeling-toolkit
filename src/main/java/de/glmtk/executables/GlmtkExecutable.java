@@ -8,6 +8,7 @@ import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -183,7 +184,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
+    protected void parseArguments(String[] args) {
         super.parseArguments(args);
 
         if (line.getArgList() == null || line.getArgList().size() != 1) {
@@ -307,9 +308,12 @@ public class GlmtkExecutable extends Executable {
 
         // Need to create workingDirectory here in order to create Logger for
         // "<workingdir>/log" as soon as possible.
-        Files.createDirectories(workingDir);
-
-        configureLogging();
+        try {
+            Files.createDirectories(workingDir);
+        } catch (IOException e) {
+            throw new Termination(String.format(
+                    "Could not create working directory '%s'.", workingDir));
+        }
 
         if (logDebug)
             LOGGING_HELPER.setLogLevel(Level.DEBUG);
@@ -386,7 +390,10 @@ public class GlmtkExecutable extends Executable {
         return file;
     }
 
-    private void configureLogging() {
+    @Override
+    protected void configureLogging() {
+        super.configureLogging();
+
         LOGGING_HELPER.addFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
@@ -397,10 +404,10 @@ public class GlmtkExecutable extends Executable {
         }
     }
 
-    private void verifyQueryFiles() throws Exception {
+    private void verifyQueryFiles() {
         for (Integer markovOrder : queryMarkovFiles.keySet())
             if (markovOrder > trainingOrder)
-                throw new Exception(
+                throw new Termination(
                         String.format(
                                 "Illegal markov query order '%d' (-%s, --%s): Higher than training order '%d' (-%s, --%s).",
                                 markovOrder, OPTION_QUERY_MARKOV.getOpt(),
@@ -410,7 +417,7 @@ public class GlmtkExecutable extends Executable {
 
         for (Integer condOrder : queryCondFiles.keySet())
             if (condOrder > trainingOrder)
-                throw new Exception(
+                throw new Termination(
                         String.format(
                                 "Illegal conditional query order '%d' (-%s, --%s): Higher than training order '%d' (-%s, --%s).",
                                 condOrder, OPTION_QUERY_COND.getOpt(),
@@ -428,7 +435,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     private void verifyFileHasCondOrder(Path queryFile,
-                                        int condOrder) throws Exception {
+                                        int condOrder) {
         try (BufferedReader reader = Files.newBufferedReader(queryFile,
                 Constants.CHARSET)) {
             String line;
@@ -448,9 +455,12 @@ public class GlmtkExecutable extends Executable {
                                 OPTION_QUERY_COND.getLongOpt());
                         f.format("Found order: '%d'.%n", words.size());
                         f.format("Line was: '%s'.", line);
-                        throw new Exception(f.toString());
+                        throw new Termination(f.toString());
                     }
             }
+        } catch (IOException e) {
+            throw new Termination(String.format(
+                    "Error reading query file '%s'.", queryFile));
         }
     }
 

@@ -97,7 +97,8 @@ public enum QueryRunner {
         calculator.setEstimator(estimator);
 
         OUTPUT.printMessage(String.format(
-                "Interactive querying with %s estimator:", estimator.getName()));
+                "Interactive querying with %s estimator...",
+                estimator.getName()));
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 inputStream, Constants.CHARSET));

@@ -3,8 +3,11 @@ package de.glmtk.common;
 import static de.glmtk.Config.CONFIG;
 
 import java.io.BufferedReader;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Formatter;
 import java.util.List;
 
@@ -13,8 +16,12 @@ import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
+import org.fusesource.jansi.AnsiOutputStream;
+import org.fusesource.jansi.WindowsAnsiOutputStream;
 
 import de.glmtk.Constants;
+import de.glmtk.util.ExceptionUtils;
+import de.glmtk.util.ReflectionUtils;
 import de.glmtk.util.StringUtils;
 
 public enum Output {
@@ -36,15 +43,15 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6,
                 "Length Distribution Calculating"),
 
-        // CountCache
-        LOADING_COUNTS(1, 1, "Loading Counts"),
+                // CountCache
+                LOADING_COUNTS(1, 1, "Loading Counts"),
 
-        // QueryCache
-        SCANNING_COUNTS(1, 1, "Scanning Counts"),
+                // QueryCache
+                SCANNING_COUNTS(1, 1, "Scanning Counts"),
 
-        // Querying
-        QUERYING(1, 2, "Querying"),
-        ASSEMBLING(1, 2, "Assembling");
+                // Querying
+                QUERYING(1, 2, "Querying"),
+                ASSEMBLING(1, 2, "Assembling");
 
         public static final int MAX_NAME_LENGTH;
         static {
@@ -127,6 +134,30 @@ public enum Output {
     private static final Logger LOGGER = LogManager.getFormatterLogger(Output.class);
     private static final double DISABLE_PERCENT = -1.0;
 
+    /**
+     * We use this function to replace
+     * {@link AnsiConsole#wrapOutputStream(OutputStream)}, because we want do do
+     * our own checking if we wan't ansi codes.
+     */
+    private static OutputStream wrapStderrStream(OutputStream stream) {
+        String os = System.getProperty("os.name");
+        if (os.startsWith("Windows"))
+            try {
+                return new WindowsAnsiOutputStream(stream);
+            } catch (Throwable ignore) {
+                return new AnsiOutputStream(stream);
+            }
+
+        return new FilterOutputStream(stream) {
+            @Override
+            public void close() throws IOException {
+                write(AnsiOutputStream.REST_CODE);
+                flush();
+                super.close();
+            }
+        };
+    }
+
     private long lastUpdateConsoleParams = 0;
     private boolean updateConsoleParams = CONFIG.getConsoleParamsUpdateInterval() != 0;
     private int numPercentegebarBlocks;
@@ -146,12 +177,47 @@ public enum Output {
      */
     private boolean lastPrintPhase = false;
 
+    /**
+     * {@link AnsiConsole#systemInstall()}
+     */
     private Output() {
-        AnsiConsole.systemInstall();
         updateConsoleParams();
     }
 
+    public void enableAnsi() {
+        ansiEnabled = false;
+
+        boolean isttyStderr = Boolean.parseBoolean(System.getProperty("glmtk.isttyStderr"));
+        if (!isttyStderr) {
+            LOGGER.debug("Ansi Codes will not be enabled because ISTTY_STDERR is 'false'.");
+            return;
+        }
+
+        try {
+            ReflectionUtils.setFinalStaticField(
+                    AnsiConsole.class.getField("out"), AnsiConsole.system_out);
+            ReflectionUtils.setFinalStaticField(
+                    AnsiConsole.class.getField("err"), new PrintStream(
+                            wrapStderrStream(AnsiConsole.system_err)));
+            AnsiConsole.systemInstall();
+            ansiEnabled = true;
+            LOGGER.debug("Ansi Codes enabled.");
+        } catch (Throwable e) {
+            LOGGER.error("Ansi Codes could not be enabled because: "
+                    + ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    public void disableAnsi() {
+        ansiEnabled = false;
+    }
+
     private void updateConsoleParams() {
+        if (!ansiEnabled) {
+            numPercentegebarBlocks = 80 - 17 - Phase.MAX_NAME_LENGTH;
+            return;
+        }
+
         long time = System.currentTimeMillis();
         if (lastUpdateConsoleParams == 0
                 || (updateConsoleParams && time - lastUpdateConsoleParams >= CONFIG.getConsoleParamsUpdateInterval())) {
@@ -179,14 +245,6 @@ public enum Output {
         } catch (IOException | InterruptedException | NumberFormatException e) {
         }
         return width;
-    }
-
-    public void enableAnsi() {
-        ansiEnabled = true;
-    }
-
-    public void disableAnsi() {
-        ansiEnabled = false;
     }
 
     public void setPhase(Phase phase) {
