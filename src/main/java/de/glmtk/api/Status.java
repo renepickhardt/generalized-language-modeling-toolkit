@@ -52,6 +52,8 @@ public class Status {
     private Set<Pattern> counted;
     private Set<Pattern> absoluteCounted;
     private Set<Pattern> continuationCounted;
+    private boolean nGramTimesCounted = true;
+    private boolean lengthDistributionCalculated = true;
     private Map<Pattern, Set<String>> absoluteChunked;
     private Map<Pattern, Set<String>> continuationChunked;
     private Map<String, Set<Pattern>> queryCacheCounted;
@@ -75,6 +77,8 @@ public class Status {
     private void setVoidSettings() {
         training = Training.NONE;
         counted = new HashSet<Pattern>();
+        nGramTimesCounted = true;
+        lengthDistributionCalculated = true;
         absoluteCounted = new HashSet<Pattern>();
         continuationCounted = new HashSet<Pattern>();
         absoluteChunked = new HashMap<Pattern, Set<String>>();
@@ -194,6 +198,8 @@ public class Status {
     public void finishMerge(boolean continuation,
                             Pattern pattern) throws IOException {
         synchronized (this) {
+            nGramTimesCounted = false;
+            lengthDistributionCalculated = false;
             counted.add(pattern);
             counted(continuation).add(pattern);
             chunked(continuation).remove(pattern);
@@ -205,6 +211,28 @@ public class Status {
         synchronized (this) {
             Set<Pattern> patterns = queryCacheCounted.get(name);
             return patterns != null ? patterns : new HashSet<Pattern>();
+        }
+    }
+
+    public boolean isNGramTimesCounted() {
+        return nGramTimesCounted;
+    }
+
+    public void setNGramTimesCounted() throws IOException {
+        synchronized (this) {
+            nGramTimesCounted = true;
+            writeStatusToFile();
+        }
+    }
+
+    public boolean isLengthDistributionCalculated() {
+        return lengthDistributionCalculated;
+    }
+
+    public void setLengthDistributionCalculated() throws IOException {
+        synchronized (this) {
+            lengthDistributionCalculated = true;
+            writeStatusToFile();
         }
     }
 
@@ -237,6 +265,8 @@ public class Status {
         training = readTraining("training");
         absoluteCounted = readCounted("absoluteCounted");
         continuationCounted = readCounted("continuationCounted");
+        nGramTimesCounted = readBoolean("nGramTimesCounted");
+        lengthDistributionCalculated = readBoolean("lengthDistributionCalculated");
         absoluteChunked = readChunked("absoluteChunked");
         continuationChunked = readChunked("continuationChunked");
         queryCacheCounted = readQueryCacheCounted("queryCacheCounted");
@@ -434,6 +464,11 @@ public class Status {
         return result;
     }
 
+    private boolean readBoolean(String key) throws Exception {
+        String value = readNextValue(key);
+        return Boolean.parseBoolean(value);
+    }
+
     private Map<String, Set<Pattern>> readQueryCacheCounted(String section) throws Exception {
         assertNextSection(section);
 
@@ -481,6 +516,9 @@ public class Status {
             writeKeyValue(writer, "training", training.toString());
             writeSet(writer, "absoluteCounted", absoluteCounted);
             writeSet(writer, "continuationCounted", continuationCounted);
+            writeBoolean(writer, "nGramTimesCounted", nGramTimesCounted);
+            writeBoolean(writer, "lengthDistributionCalculated",
+                    lengthDistributionCalculated);
             writeMapSet(writer, "absoluteChunked", absoluteChunked);
             writeMapSet(writer, "continuationChunked", continuationChunked);
             writeMapSet(writer, "queryCacheCounted", queryCacheCounted);
@@ -495,16 +533,25 @@ public class Status {
         writer.append('\n' + section + ":\n");
     }
 
-    private void writeKeyValue(BufferedWriter writer,
-                               String key,
-                               String value) throws IOException {
-        writer.append(key + " = " + value + '\n');
+    private <T, V> void writeKeyValue(BufferedWriter writer,
+                                      T key,
+                                      V value) throws IOException {
+        writer.append(key.toString());
+        writer.append(" = ");
+        writer.append(value != null ? value.toString() : "null");
+        writer.append('\n');
+    }
+
+    private <T> void writeBoolean(BufferedWriter writer,
+                                  T key,
+                                  boolean value) throws IOException {
+        writeKeyValue(writer, key, Boolean.toString(value));
     }
 
     private <T, V> void writeSet(BufferedWriter writer,
                                  T key,
                                  Set<V> set) throws IOException {
-        writeKeyValue(writer, key.toString(), StringUtils.join(set, ","));
+        writeKeyValue(writer, key, StringUtils.join(set, ","));
     }
 
     private <T, V> void writeMapSet(BufferedWriter writer,

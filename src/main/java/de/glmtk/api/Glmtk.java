@@ -5,13 +5,11 @@ import static de.glmtk.api.QueryRunner.QUERY_RUNNER;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.counting.Chunker.CHUNKER;
 import static de.glmtk.counting.Merger.MERGER;
+import static de.glmtk.counting.NGramTimesCounter.NGRAM_TIMES_COUNTER;
 import static de.glmtk.counting.Tagger.TAGGER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -23,12 +21,9 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.glmtk.Constants;
 import de.glmtk.api.Status.Training;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.counting.LengthDistribution;
@@ -117,55 +112,16 @@ public class Glmtk {
         OUTPUT.beginPhases("Corpus Analyzation...");
         countAbsolute(needed.getAbsolute());
         countContinuation(needed.getContinuation());
-
-        OUTPUT.setPhase(Phase.EVALUATING);
-        Progress progress = new Progress(2);
-
-        // N-Gram Times Counts
-        LOGGER.info("nGramTimes counting -> '%s'.", paths.getNGramTimesFile());
-        try (BufferedWriter writer = Files.newBufferedWriter(
-                paths.getNGramTimesFile(), Constants.CHARSET);
-                DirectoryStream<Path> absoluteFiles = Files.newDirectoryStream(paths.getAbsoluteDir())) {
-            for (Path absoluteFile : absoluteFiles) {
-                long[] nGramTimes = {0L, 0L, 0L, 0L};
-
-                try (BufferedReader reader = Files.newBufferedReader(
-                        absoluteFile, Constants.CHARSET)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        Counter counter = new Counter();
-                        Counter.getSequenceAndCounter(line, counter);
-
-                        // downcast is ok here
-                        int count = (int) counter.getOnePlusCount();
-
-                        if (count == 0 || count > 4)
-                            continue;
-                        ++nGramTimes[count - 1];
-                    }
-                }
-
-                writer.write(absoluteFile.getFileName().toString());
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[0]));
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[1]));
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[2]));
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[3]));
-                writer.write('\n');
-            }
-        }
-        progress.increase(1);
+        NGRAM_TIMES_COUNTER.count(status, paths.getNGramTimesFile(),
+                paths.getAbsoluteDir(), paths.getContinuationDir());
 
         // Sequence Length Distribution
+        OUTPUT.setPhase(Phase.LENGTH_DISTRIBUATION_CALCULATING);
         if (!NioUtils.checkFile(paths.getLengthDistributionFile(), EXISTS)) {
             LengthDistribution lengthDistribution = new LengthDistribution(
                     paths.getTrainingFile(), true);
             lengthDistribution.writeToStore(paths.getLengthDistributionFile());
         }
-        progress.increase(1);
 
         long corpusSize = NioUtils.calcFileSize(Arrays.asList(paths.getCountsDir()));
         OUTPUT.endPhases(String.format("Corpus Analyzation done (uses %s).",

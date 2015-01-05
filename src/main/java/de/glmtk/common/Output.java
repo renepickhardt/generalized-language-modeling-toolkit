@@ -28,11 +28,13 @@ public enum Output {
         TAGGING(1, 1, "Tagging Training"),
 
         // Counting
-        ABSOLUTE_CHUNKING(1, 5, "Chunking Absolute"),
-        ABSOLUTE_MERGING(2, 5, "Merging Absolute"),
-        CONTINUATION_CHUNKING(3, 5, "Chunking Continuation"),
-        CONTINUATION_MERGING(4, 5, "Merging Continuation"),
-        EVALUATING(5, 5, "Evaluating"),
+        ABSOLUTE_CHUNKING(1, 6, "Chunking Absolute"),
+        ABSOLUTE_MERGING(2, 6, "Merging Absolute"),
+        CONTINUATION_CHUNKING(3, 6, "Chunking Continuation"),
+        CONTINUATION_MERGING(4, 6, "Merging Continuation"),
+        NGRAM_TIMES_COUNTING(5, 6, "NGram Times Counting"),
+        LENGTH_DISTRIBUATION_CALCULATING(6, 6,
+                "Length Distribution Calculating"),
 
         // QueryCache
         SCANNING_COUNTS(1, 1, "Scanning Counts"),
