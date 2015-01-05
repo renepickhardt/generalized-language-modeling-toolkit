@@ -178,22 +178,30 @@ public enum Chunker {
         @Override
         protected void sequenceInput(Path inputFile) throws Exception {
             int patternSize = pattern.size();
-            try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
-                    Constants.CHARSET, readerMemory)) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] split = StringUtils.splitAtChar(line, ' ').toArray(
-                            new String[0]);
-                    String[] words = new String[split.length];
-                    String[] poses = new String[split.length];
-                    StringUtils.extractWordsAndPoses(split, trainingFileTagged,
-                            words, poses);
-
-                    for (int p = 0; p <= split.length - patternSize; ++p) {
-                        String sequence = pattern.apply(words, poses, p);
-                        countSequence(sequence, 1L);
-                    }
+            if (trainingCache != null)
+                for (String line : trainingCache)
+                    perLine(line, patternSize);
+            else
+                try (BufferedReader reader = NioUtils.newBufferedReader(
+                        inputFile, Constants.CHARSET, readerMemory)) {
+                    String line;
+                    while ((line = reader.readLine()) != null)
+                        perLine(line, patternSize);
                 }
+        }
+
+        private void perLine(String line,
+                             int patternSize) throws IOException {
+            String[] split = StringUtils.splitAtChar(line, ' ').toArray(
+                    new String[0]);
+            String[] words = new String[split.length];
+            String[] poses = new String[split.length];
+            StringUtils.extractWordsAndPoses(split, trainingFileTagged, words,
+                    poses);
+
+            for (int p = 0; p <= split.length - patternSize; ++p) {
+                String sequence = pattern.apply(words, poses, p);
+                countSequence(sequence, 1L);
             }
         }
     }
@@ -248,35 +256,40 @@ public enum Chunker {
                 int lineNo = -1;
                 while ((line = reader.readLine()) != null) {
                     ++lineNo;
-
-                    List<String> split = StringUtils.splitAtChar(line, '\t');
-                    String seq = split.get(0);
-                    long count;
-                    try {
-                        if (split.size() == 2)
-                            // from Absolute
-                            count = 1;
-                        else if (split.size() == 5)
-                            // from Continuation
-                            count = Long.parseLong(split.get(1));
-                        else
-                            throw new IllegalStateException();
-                    } catch (IllegalStateException | NumberFormatException e) {
-                        try (Formatter f = new Formatter()) {
-                            f.format("Illegal input line '%d' in file '%s'.%n",
-                                    lineNo, inputFile);
-                            f.format("Needs to be of format '<sequence>(<tab><count>){1,4}'.%n");
-                            f.format("Where <count> needs to be a valid integer.%n");
-                            f.format("Line was: '%s'.", line);
-                            throw new Exception(f.toString());
-                        }
-                    }
-
-                    String sequence = pattern.apply(StringUtils.splitAtChar(
-                            seq, ' ').toArray(new String[0]));
-                    countSequence(sequence, count);
+                    perLine(line, lineNo, inputFile);
                 }
             }
+        }
+
+        private void perLine(String line,
+                             int lineNo,
+                             Path inputFile) throws Exception {
+            List<String> split = StringUtils.splitAtChar(line, '\t');
+            String seq = split.get(0);
+            long count;
+            try {
+                if (split.size() == 2)
+                    // from Absolute
+                    count = 1;
+                else if (split.size() == 5)
+                    // from Continuation
+                    count = Long.parseLong(split.get(1));
+                else
+                    throw new IllegalStateException();
+            } catch (IllegalStateException | NumberFormatException e) {
+                try (Formatter f = new Formatter()) {
+                    f.format("Illegal input line '%d' in file '%s'.%n", lineNo,
+                            inputFile);
+                    f.format("Needs to be of format '<sequence>(<tab><count>){1,4}'.%n");
+                    f.format("Where <count> needs to be a valid integer.%n");
+                    f.format("Line was: '%s'.", line);
+                    throw new Exception(f.toString());
+                }
+            }
+
+            String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(
+                    new String[0]));
+            countSequence(sequence, count);
         }
     }
 
@@ -290,6 +303,7 @@ public enum Chunker {
     private Path absoluteChunkedDir;
     private Path continuationChunkedDir;
     private BlockingQueue<Pattern> patternQueue;
+    private List<String> trainingCache;
     private int readerMemory;
     private int writerMemory;
     private long maxChunkSize;
@@ -334,11 +348,24 @@ public enum Chunker {
         patternQueue.addAll(patterns);
         calculateMemory();
 
+        if (continuation
+                || Files.size(trainingFile) < CONFIG.getTrainingCacheThreshold())
+            trainingCache = null;
+        else
+            try (BufferedReader reader = NioUtils.newBufferedReader(
+                    trainingFile, Constants.CHARSET, readerMemory)) {
+                trainingCache = new ArrayList<String>();
+                String line;
+                while ((line = reader.readLine()) != null)
+                    trainingCache.add(line);
+            }
+
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
-            threads.add(!continuation
-                    ? new AbsoluteThread()
-                    : new ContinuationThread());
+            if (!continuation)
+                threads.add(new AbsoluteThread());
+            else
+                threads.add(new ContinuationThread());
 
         progress = new Progress(patterns.size());
         ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);

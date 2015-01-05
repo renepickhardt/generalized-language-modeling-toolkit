@@ -43,6 +43,7 @@ public enum Config {
     private int readerMemory;
     private int writerMemory;
     private long maxChunkSize;
+    private long trainingCacheThreshold;
     private int consoleUpdateInterval;
     private int logUpdateInterval;
     private int consoleParamsUpdateInterval;
@@ -78,6 +79,10 @@ public enum Config {
 
     public long getMaxChunkSize() {
         return maxChunkSize;
+    }
+
+    public long getTrainingCacheThreshold() {
+        return trainingCacheThreshold;
     }
 
     public int getConsoleUpdateInterval() {
@@ -202,6 +207,7 @@ public enum Config {
         readerMemory *= MiB;
         writerMemory *= MiB;
         maxChunkSize *= MiB;
+        trainingCacheThreshold *= MiB;
     }
 
     private boolean isNotConfigurableField(Field field) {
