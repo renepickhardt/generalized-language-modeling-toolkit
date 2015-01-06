@@ -67,6 +67,7 @@ import de.glmtk.util.StringUtils;
             LOGGER.error(String.format("Exception %s",
                     ExceptionUtils.getStackTrace(e)));
             OUTPUT.printError(e.getMessage());
+            System.out.println(ExceptionUtils.getStackTrace(e));
         }
     }
 

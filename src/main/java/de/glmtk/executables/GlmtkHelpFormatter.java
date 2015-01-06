@@ -58,7 +58,7 @@ public class GlmtkHelpFormatter extends HelpFormatter {
 
             if (option.hasArg())
                 if (option.hasArgName())
-                    optBuf.append(" <").append(option.getArgName()).append(">");
+                    optBuf.append(' ').append(option.getArgName());
                 else
                     optBuf.append(' ');
             renderWrappedText(sb, width, width, optBuf.toString());

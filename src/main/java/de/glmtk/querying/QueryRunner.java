@@ -65,7 +65,7 @@ public enum QueryRunner {
     }
 
     private Progress progress;
-    private QueryType queryType;
+    private QueryMode queryMode;
     private Path inputFile;
     private Path outputDir;
     private Path outputFile;
@@ -79,16 +79,16 @@ public enum QueryRunner {
     private int readerMemory;
     private int writerMemory;
 
-    public QueryStats runQueriesOnInputStream(String queryTypeString,
+    public QueryStats runQueriesOnInputStream(QueryMode queryMode,
                                               InputStream inputStream,
                                               OutputStream outputStream,
                                               Estimator estimator,
                                               ProbMode probMode,
                                               CountCache countCache) throws Exception {
-        queryType = QueryType.fromString(queryTypeString);
+        this.queryMode = queryMode;
         this.estimator = estimator;
         this.countCache = countCache;
-        calculator = Calculator.forQueryTypeString(queryTypeString);
+        calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
         calculateMemory();
 
@@ -121,18 +121,18 @@ public enum QueryRunner {
         return stats;
     }
 
-    public QueryStats runQueriesOnFile(String queryTypeString,
+    public QueryStats runQueriesOnFile(QueryMode queryMode,
                                        Path inputFile,
                                        Path outputDir,
                                        Estimator estimator,
                                        ProbMode probMode,
                                        CountCache countCache) throws Exception {
-        queryType = QueryType.fromString(queryTypeString);
+        this.queryMode = queryMode;
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.estimator = estimator;
         this.countCache = countCache;
-        calculator = Calculator.forQueryTypeString(queryTypeString);
+        calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
         outputFile = resolveOutputFile();
         calculateMemory();
@@ -142,7 +142,7 @@ public enum QueryRunner {
         calculator.setEstimator(estimator);
 
         String message = String.format(
-                "Querying %s File '%s' with %s estimation", queryTypeString,
+                "Querying %s File '%s' with %s estimation", queryMode,
                 OUTPUT.bold(inputFile.toString()), estimator.getName());
         OUTPUT.beginPhases(message + "...");
 
@@ -165,8 +165,7 @@ public enum QueryRunner {
     private Path resolveOutputFile() {
         String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         return outputDir.resolve(String.format("%s %s %s %s",
-                inputFile.getFileName(), estimator.getName(),
-                queryType.toString(), date));
+                inputFile.getFileName(), estimator.getName(), queryMode, date));
     }
 
     private void calculateMemory() {
@@ -232,8 +231,7 @@ public enum QueryRunner {
 
         List<String> sequence = StringUtils.splitAtChar(line, ' ');
         double probability = calculator.probability(sequence);
-        if ((queryType == QueryType.SEQUENCE || queryType == QueryType.MARKOV)
-                && probability != 0)
+        if (queryMode.isWithLengthFreq() && probability != 0)
             probability *= countCache.getLengthFrequency(sequence.size());
 
         synchronized (stats) {

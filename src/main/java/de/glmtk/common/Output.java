@@ -161,7 +161,7 @@ public enum Output {
     private long lastUpdateConsoleParams = 0;
     private boolean updateConsoleParams = CONFIG.getConsoleParamsUpdateInterval() != 0;
     private int numPercentegebarBlocks;
-    private boolean ansiEnabled = false;
+    private Boolean ansiEnabled = null;
     private Phase phase = null;
     private double percent = 0;
 
@@ -184,7 +184,14 @@ public enum Output {
         updateConsoleParams();
     }
 
+    public void disableAnsi() {
+        ansiEnabled = false;
+    }
+
     public void enableAnsi() {
+        if (ansiEnabled != null && !ansiEnabled)
+            return;
+
         ansiEnabled = false;
 
         boolean isttyStderr = Boolean.parseBoolean(System.getProperty("glmtk.isttyStderr"));
@@ -208,12 +215,12 @@ public enum Output {
         }
     }
 
-    public void disableAnsi() {
-        ansiEnabled = false;
+    public boolean isAnsiEnabled() {
+        return ansiEnabled != null && ansiEnabled;
     }
 
     private void updateConsoleParams() {
-        if (!ansiEnabled) {
+        if (!isAnsiEnabled()) {
             numPercentegebarBlocks = 80 - 17 - Phase.MAX_NAME_LENGTH;
             return;
         }
@@ -266,7 +273,7 @@ public enum Output {
     }
 
     public String bold(String message) {
-        if (ansiEnabled)
+        if (isAnsiEnabled())
             return Ansi.ansi().bold() + message + Ansi.ansi().boldOff();
         else
             return message;
@@ -280,7 +287,7 @@ public enum Output {
     }
 
     public void endPhases(String message) {
-        if (ansiEnabled && lastPrintBeginPhases && lastPrintPhase)
+        if (isAnsiEnabled() && lastPrintBeginPhases && lastPrintPhase)
             System.err.print(Ansi.ansi().cursorUp(1).eraseLine().cursorUp(1).eraseLine());
 
         System.err.println(message);
@@ -295,7 +302,7 @@ public enum Output {
 
         updateConsoleParams();
 
-        if (ansiEnabled && lastPrintPhase)
+        if (isAnsiEnabled() && lastPrintPhase)
             System.err.print(Ansi.ansi().cursorUp(1).eraseLine());
 
         String message;
@@ -341,7 +348,7 @@ public enum Output {
     }
 
     public void printError(String message) {
-        if (ansiEnabled)
+        if (isAnsiEnabled())
             System.err.print(Ansi.ansi().fg(Color.RED));
         if (message == null || message.isEmpty())
             message = "A critical error has occured, program execution had to be stopped.";
@@ -360,7 +367,7 @@ public enum Output {
     }
 
     public void printWarning(String message) {
-        if (ansiEnabled)
+        if (isAnsiEnabled())
             System.err.print(Ansi.ansi().fg(Color.YELLOW));
         if (message == null || message.isEmpty())
             message = "A warning has occured.";

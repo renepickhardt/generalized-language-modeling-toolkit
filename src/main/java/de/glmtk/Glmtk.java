@@ -28,6 +28,7 @@ import de.glmtk.common.ProbMode;
 import de.glmtk.common.Status;
 import de.glmtk.common.Status.Training;
 import de.glmtk.counting.Tagger;
+import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.QueryStats;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
@@ -288,8 +289,7 @@ public class Glmtk {
                 "    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
                 dir.getParent(), PrintUtils.humanReadableByteCount(size)));
 
-        return new CountCache(status.getQueryCacheCounted(name),
-                queryCachePaths);
+        return new CountCache(patterns, queryCachePaths);
     }
 
     private void validateExpectedResults(String operation,
@@ -308,22 +308,22 @@ public class Glmtk {
         }
     }
 
-    public QueryStats runQueriesOnInputStream(String queryTypeString,
+    public QueryStats runQueriesOnInputStream(QueryMode queryMode,
                                               InputStream inputStream,
                                               OutputStream outputStream,
                                               Estimator estimator,
                                               ProbMode probMode,
                                               CountCache countCache) throws Exception {
-        return QUERY_RUNNER.runQueriesOnInputStream(queryTypeString,
-                inputStream, outputStream, estimator, probMode, countCache);
+        return QUERY_RUNNER.runQueriesOnInputStream(queryMode, inputStream,
+                outputStream, estimator, probMode, countCache);
     }
 
-    public QueryStats runQueriesOnFile(String queryTypeString,
+    public QueryStats runQueriesOnFile(QueryMode queryMode,
                                        Path inputFile,
                                        Estimator estimator,
                                        ProbMode probMode,
                                        CountCache countCache) throws Exception {
-        return QUERY_RUNNER.runQueriesOnFile(queryTypeString, inputFile,
+        return QUERY_RUNNER.runQueriesOnFile(queryMode, inputFile,
                 paths.getQueriesDir(), estimator, probMode, countCache);
     }
 }

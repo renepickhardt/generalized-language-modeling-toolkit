@@ -46,6 +46,11 @@ public abstract class Estimator {
     protected CountCache countCache = null;
     protected ProbMode probMode = null;
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     public String getName() {
         return name;
     }
