@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.LogManager;Needs to
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,9 +34,6 @@ import de.glmtk.util.StringUtils;
  */
 @RunWith(Parameterized.class)
 public class CountingTest extends LoggingTest {
-    // TODO: implement test for continuation counts
-    // TODO: extend for POS
-
     private static final Logger LOGGER = LogManager.getFormatterLogger(CountingTest.class);
 
     @Parameters(name = "{0}")

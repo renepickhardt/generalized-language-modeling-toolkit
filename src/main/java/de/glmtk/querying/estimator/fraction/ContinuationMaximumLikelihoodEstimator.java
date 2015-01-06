@@ -4,7 +4,6 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 import de.glmtk.common.NGram;
 
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
-    // TODO: bugs with GLM.
 
     @Override
     protected double calcNumerator(NGram sequence,

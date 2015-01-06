@@ -47,11 +47,6 @@ import de.glmtk.util.StringUtils;
 public class GlmtkExecutable extends Executable {
     private static final Logger LOGGER = LogManager.getFormatterLogger(Executable.class);
 
-    // TODO: API to count all patterns.
-    // TODO: API to only create querycache
-    // TODO: API for interactive mode
-    // TODO: log to stderr if using --log.
-
     private static final Option OPTION_HELP;
     private static final Option OPTION_VERSION;
     private static final Option OPTION_WORKINGDIR;
@@ -104,11 +99,6 @@ public class GlmtkExecutable extends Executable {
                 OPTION_TRAINING_ORDER, OPTION_ESTIMATOR, OPTION_IO,
                 OPTION_QUERY, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
     }
-
-    // TODO: API to count all patterns.
-    // TODO: API to only create querycache
-    // TODO: API for interactive mode
-    // TODO: log to stderr if using --log.
 
     public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
     static {

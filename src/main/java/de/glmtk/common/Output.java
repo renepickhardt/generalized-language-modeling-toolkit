@@ -27,9 +27,6 @@ import de.glmtk.util.StringUtils;
 public enum Output {
     OUTPUT;
 
-    // TODO: Check if this works on windows.
-    // TODO: Strip Ansi from logged output.
-
     public static enum Phase {
         // Tagging
         TAGGING(1, 1, "Tagging Training"),
@@ -43,15 +40,15 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6,
                 "Length Distribution Calculating"),
 
-                // CountCache
-                LOADING_COUNTS(1, 1, "Loading Counts"),
+        // CountCache
+        LOADING_COUNTS(1, 1, "Loading Counts"),
 
-                // QueryCache
-                SCANNING_COUNTS(1, 1, "Scanning Counts"),
+        // QueryCache
+        SCANNING_COUNTS(1, 1, "Scanning Counts"),
 
-                // Querying
-                QUERYING(1, 2, "Querying"),
-                ASSEMBLING(1, 2, "Assembling");
+        // Querying
+        QUERYING(1, 2, "Querying"),
+        ASSEMBLING(1, 2, "Assembling");
 
         public static final int MAX_NAME_LENGTH;
         static {

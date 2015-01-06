@@ -21,9 +21,6 @@ import de.glmtk.util.StringUtils;
  * Immutable.
  */
 public class NGram {
-    // TODO: Test this class;
-    // TODO: Replace 'word' with 'token'.
-
     public static final NGram SKP_NGRAM = new NGram(SKP_WORD);
     public static final NGram WSKP_NGRAM = new NGram(WSKP_WORD);
 

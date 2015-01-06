@@ -166,7 +166,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-            Pattern pattern) {
+                                           Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -283,8 +283,8 @@ public class Status {
 
         if (!section.equals(expectedSection))
             throw newFileFormatException("format",
-                    "Expected section '%s', but was '%s' instead.%n",
-                    expectedSection, section);
+                                         "Expected section '%s', but was '%s' instead.%n",
+                                         expectedSection, section);
     }
 
     private String readNextSection() {
@@ -312,8 +312,8 @@ public class Status {
 
         if (!key.equals(expectedKey))
             throw newFileFormatException("key",
-                    "Expected key '%s', but was '%s' instead.%n", expectedKey,
-                    key);
+                                         "Expected key '%s', but was '%s' instead.%n", expectedKey,
+                                         key);
 
         return value;
     }
@@ -398,8 +398,8 @@ public class Status {
             String possibleValues = "'"
                     + StringUtils.join(Training.values(), "', '") + "'";
             throw newFileFormatException("training value",
-                    "Possible values are: %s.%nFound value '%s' instead.",
-                    possibleValues, value);
+                                         "Possible values are: %s.%nFound value '%s' instead.",
+                                         possibleValues, value);
         }
     }
 
@@ -431,9 +431,9 @@ public class Status {
             Pattern pattern = readPattern(key);
             if (result.containsKey(pattern))
                 throw newFileFormatException(
-                                             "key",
-                                             "Key '%s' was already found previously for section '%s'.",
-                                             key, section);
+                        "key",
+                        "Key '%s' was already found previously for section '%s'.",
+                        key, section);
             result.put(pattern, chunks);
         }
         return result;
@@ -461,9 +461,9 @@ public class Status {
 
             if (result.containsKey(key))
                 throw newFileFormatException(
-                        "key",
-                        "Key '%s' was already found previously for section '%s'.",
-                        key, section);
+                                             "key",
+                                             "Key '%s' was already found previously for section '%s'.",
+                                             key, section);
             result.put(key, patterns);
         }
         return result;
@@ -472,9 +472,9 @@ public class Status {
     private Pattern readPattern(String patternStr) {
         try {
             return Patterns.get(patternStr);
-        } catch (RuntimeException e) {
-            // TODO: Better error.
-            throw e;
+        } catch (IllegalArgumentException e) {
+            throw newFileFormatException("pattern",
+                    "Could not parse '%s' as a valid pattern.", patternStr);
         }
     }
 

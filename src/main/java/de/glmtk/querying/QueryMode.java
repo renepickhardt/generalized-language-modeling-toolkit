@@ -12,7 +12,6 @@ public class QueryMode {
         COND;
     }
 
-    // TODO: better names?
     public static QueryMode forString(String string) {
         String stringLower = string.toLowerCase();
         int pos = posOfFirstNumber(stringLower);

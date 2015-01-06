@@ -18,7 +18,6 @@ public class MarkovCalculator extends SequenceCalculator {
         this.markovOrder = markovOrder;
     }
 
-    // TODO: what to do for conditional case?
     @Override
     protected List<SequenceAndHistory> computeQueries(List<String> words) {
         List<SequenceAndHistory> queries = super.computeQueries(words);

@@ -12,7 +12,6 @@ public abstract class DiscountEstimator extends FractionEstimator {
         this.fractionEstimator = fractionEstimator;
     }
 
-    // TODO: hack
     public FractionEstimator getFractionEstimator() {
         return fractionEstimator;
     }

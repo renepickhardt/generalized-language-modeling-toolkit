@@ -71,7 +71,7 @@ public enum LengthDistributionCalculator {
             while ((line = reader.readLine()) != null) {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
 
-                // TODO: This is a slow method to get sequence length, better would be to count number of spaces.
+                // This is a slow method to get sequence length, better would be to count number of spaces.
                 int length = StringUtils.splitAtChar(line, ' ').size();
 
                 ++sum;

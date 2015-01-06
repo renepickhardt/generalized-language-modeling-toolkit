@@ -40,21 +40,9 @@ import de.glmtk.util.PrintUtils;
  * application phase) This class is been called either by one of the Executable
  * classes and filled from config or console input or it is called from
  * UnitTests Expects parameters to be set via setters before calling any other
- * method TODO: what about default parameters
+ * method
  */
 public class Glmtk {
-    // TODO: API bugs with spaces in filenames
-    // TODO: fix needPos (reduntant parameter)
-    // TODO: Output should be empty if a phase is skipped
-    // TODO: Some Unicode bug prevents "海底軍艦 , to be Undersea" from turning up in en0008t corpus absolute 11111 counts.
-    // TODO: Detect ngram model length from testing.
-    // TODO: only count nGramTimes if needed
-    // TODO: enable comment syntax in input files
-    // TODO: how is testing file input treated? (empty lines?)
-    // TODO: verify that training does not contain any reserved symbols (_ % / multiple spaces)
-    // TODO: update status with smaller increments (each completed pattern).
-    // TODO: check to see if we can use SLF4j
-
     private static final Logger LOGGER = LogManager.getFormatterLogger(Glmtk.class);
 
     private static class NeededComputations {
@@ -99,7 +87,6 @@ public class Glmtk {
 
         status = new Status(paths, corpus);
         status.logStatus();
-        // TODO: check file system if status is accurate.
     }
 
     public GlmtkPaths getPaths() {
@@ -153,10 +140,6 @@ public class Glmtk {
     }
 
     private void provideTraining(boolean needTagging) throws IOException {
-        // TODO: Need to check if training is already tagged and act accordingly.
-        // TODO: doesn't detect the setting that user changed from untagged training file, to tagged file with same corpus.
-        // TODO: doesn't detect when switching from untagged training to continuing with now tagged corpus.
-
         if (status.getTraining() == Training.TAGGED) {
             LOGGER.info("Detected tagged training already present.");
             return;
