@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.estimator.Estimator;
 
@@ -44,7 +45,7 @@ public abstract class Calculator {
                 return new CondCalculator();
 
             default:
-                throw new RuntimeException();
+                throw new SwitchCaseNotImplementedException();
         }
     }
 

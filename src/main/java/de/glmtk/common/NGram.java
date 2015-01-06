@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.StringUtils;
 
 /**
@@ -31,7 +32,7 @@ public class NGram {
     private Pattern pattern;
 
     public NGram() {
-        words = new ArrayList<String>();
+        words = new ArrayList<>();
         asString = "";
         pattern = Patterns.get();
     }
@@ -46,8 +47,7 @@ public class NGram {
         this.words = words;
         asString = StringUtils.join(words, " ");
 
-        List<PatternElem> patternElems = new ArrayList<PatternElem>(
-                words.size());
+        List<PatternElem> patternElems = new ArrayList<>(words.size());
         for (String word : words)
             patternElems.add(PatternElem.fromWord(word));
         pattern = Patterns.get(patternElems);
@@ -128,14 +128,14 @@ public class NGram {
     }
 
     public NGram concat(String word) {
-        List<String> resultWords = new ArrayList<String>(words);
+        List<String> resultWords = new ArrayList<>(words);
         resultWords.add(word);
         return new NGram(resultWords, asString + " " + word,
                 pattern.concat(PatternElem.fromWord(word)));
     }
 
     public NGram concat(NGram other) {
-        List<String> resultWords = new ArrayList<String>(words);
+        List<String> resultWords = new ArrayList<>(words);
         resultWords.addAll(other.words);
         return new NGram(resultWords);
     }
@@ -152,9 +152,8 @@ public class NGram {
             throw new IllegalArgumentException(String.format(
                     "From index larger than to index: %d > %d", from, to));
 
-        List<String> resultWords = new ArrayList<String>(to - from);
-        List<PatternElem> resultPatternElems = new ArrayList<PatternElem>(to
-                - from);
+        List<String> resultWords = new ArrayList<>(to - from);
+        List<PatternElem> resultPatternElems = new ArrayList<>(to - from);
 
         for (int i = from; i != to; ++i) {
             resultWords.add(words.get(i));
@@ -166,7 +165,7 @@ public class NGram {
 
     public NGram replace(String target,
                          String replacement) {
-        List<String> resultWords = new ArrayList<String>(size());
+        List<String> resultWords = new ArrayList<>(size());
 
         for (String word : words)
             if (word.equals(target))
@@ -188,7 +187,7 @@ public class NGram {
         // TODO: Rene, is this really correct?
         switch (backoffMode) {
             case SKP:
-                List<String> resultWords = new ArrayList<String>(words.size());
+                List<String> resultWords = new ArrayList<>(words.size());
 
                 boolean replaced = false;
                 for (String word : words)
@@ -205,8 +204,10 @@ public class NGram {
             case DEL:
                 return new NGram(words.subList(1, words.size()));
 
+            case DEL_FRONT:
+            case SKP_AND_DEL:
             default:
-                throw new IllegalStateException("Unimplemented case in switch.");
+                throw new SwitchCaseNotImplementedException();
         }
     }
 
@@ -224,17 +225,17 @@ public class NGram {
     }
 
     public Set<NGram> getDifferentiatedNGrams(BackoffMode backoffMode) {
-        Set<NGram> result = new LinkedHashSet<NGram>();
+        Set<NGram> result = new LinkedHashSet<>();
         for (int i = 0; i != size(); ++i) {
             if (backoffMode == SKP_AND_DEL || backoffMode == DEL
                     || (backoffMode == DEL_FRONT && i == 0)) {
-                List<String> newWords = new LinkedList<String>(words);
+                List<String> newWords = new LinkedList<>(words);
                 newWords.remove(i);
                 result.add(new NGram(newWords));
             }
             if ((backoffMode == SKP || backoffMode == SKP_AND_DEL || (backoffMode == DEL_FRONT && i != 0))
                     && !words.get(i).equals(SKP_WORD)) {
-                List<String> newWords = new LinkedList<String>(words);
+                List<String> newWords = new LinkedList<>(words);
                 newWords.set(i, SKP_WORD);
                 result.add(new NGram(newWords));
             }

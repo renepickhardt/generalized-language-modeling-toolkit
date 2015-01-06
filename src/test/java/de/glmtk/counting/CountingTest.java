@@ -57,7 +57,7 @@ public class CountingTest extends LoggingTest {
 
         LOGGER.info("Loading corpus...");
         long corpusSize = Files.size(testCorpus.getCorpus());
-        List<String> corpusContents = new LinkedList<String>();
+        List<String> corpusContents = new LinkedList<>();
         try (BufferedReader reader = Files.newBufferedReader(
                 testCorpus.getCorpus(), Constants.CHARSET)) {
             String line;
@@ -141,6 +141,7 @@ public class CountingTest extends LoggingTest {
         }
     }
 
+    @SuppressWarnings("unused")
     private void testContinuationCounts(List<String> corpusContents,
                                         long corpusSize,
                                         Map<Pattern, Map<String, Counter>> continuationCounts,

@@ -79,7 +79,7 @@ public enum Tagger {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
 
                 // Tag
-                List<HasWord> sequence = new LinkedList<HasWord>();
+                List<HasWord> sequence = new LinkedList<>();
                 for (String token : StringUtils.splitAtChar(line, ' '))
                     sequence.add(new Word(token));
                 List<TaggedWord> taggedSequence = tagger.tagSentence(sequence);

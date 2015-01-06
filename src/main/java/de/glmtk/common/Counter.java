@@ -11,7 +11,7 @@ import de.glmtk.util.StringUtils;
  */
 public class Counter {
     public static String getSequenceAndCounter(String line,
-                                               Counter counter) {
+                                               Counter counter) throws IllegalArgumentException {
         List<String> split = StringUtils.splitAtChar(line, '\t');
         if (split.size() == 2) {
             // absolute
@@ -26,7 +26,7 @@ public class Counter {
             counter.setTwoCount(parseLong(split.get(3)));
             counter.setThreePlusCount(parseLong(split.get(4)));
         } else
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
         return split.get(0);
     }

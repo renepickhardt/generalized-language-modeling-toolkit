@@ -7,6 +7,7 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.estimator.Estimator;
 
 public class BackoffEstimator extends Estimator {
@@ -32,7 +33,7 @@ public class BackoffEstimator extends Estimator {
         if (beta != this)
             beta.setCountCache(countCache);
 
-        gammaCache = new HashMap<NGram, Double>();
+        gammaCache = new HashMap<>();
     }
 
     @Override
@@ -42,7 +43,7 @@ public class BackoffEstimator extends Estimator {
         if (beta != this)
             beta.setProbMode(probMode);
 
-        gammaCache = new HashMap<NGram, Double>();
+        gammaCache = new HashMap<>();
     }
 
     @Override
@@ -57,7 +58,7 @@ public class BackoffEstimator extends Estimator {
                     return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
                             recDepth);
                 default:
-                    throw new IllegalStateException();
+                    throw new SwitchCaseNotImplementedException();
             }
         else if (countCache.getAbsolute(getFullSequence(sequence, history)) == 0) {
             NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
@@ -89,14 +90,15 @@ public class BackoffEstimator extends Estimator {
         if (result != null) {
             logTrace(recDepth, "result = %f was cached.", result);
             return result;
-        } else {
-            result = calcGamma(sequence, history, recDepth);
-            gammaCache.put(history, result);
-            logTrace(recDepth, "result = %f", result);
-            return result;
         }
+
+        result = calcGamma(sequence, history, recDepth);
+        gammaCache.put(history, result);
+        logTrace(recDepth, "result = %f", result);
+        return result;
     }
 
+    @SuppressWarnings("unused")
     public double calcGamma(NGram sequence,
                             NGram history,
                             int recDepth) {
@@ -120,7 +122,6 @@ public class BackoffEstimator extends Estimator {
 
         if (sumBeta == 0)
             return 0.0;
-        else
-            return (1.0 - sumAlpha) / sumBeta;
+        return (1.0 - sumAlpha) / sumBeta;
     }
 }

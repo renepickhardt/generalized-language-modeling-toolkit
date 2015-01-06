@@ -151,7 +151,7 @@ public class Pattern implements Iterable<PatternElem> {
             throw new IllegalArgumentException(String.format(
                     "From index larger than to index: %d > %d", from, to));
 
-        List<PatternElem> resultElems = new ArrayList<PatternElem>(to - from);
+        List<PatternElem> resultElems = new ArrayList<>(to - from);
 
         for (int i = from; i != to; ++i)
             resultElems.add(elems.get(i));
@@ -174,7 +174,7 @@ public class Pattern implements Iterable<PatternElem> {
 
     public Pattern replaceLast(PatternElem target,
                                PatternElem replacement) {
-        List<PatternElem> resultElems = new ArrayList<PatternElem>(elems);
+        List<PatternElem> resultElems = new ArrayList<>(elems);
 
         for (int i = size() - 1; i != -1; --i)
             if (elems.get(i).equals(target)) {
@@ -186,7 +186,7 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     public Pattern getContinuationSource() {
-        List<PatternElem> resultElems = new ArrayList<PatternElem>(elems);
+        List<PatternElem> resultElems = new ArrayList<>(elems);
 
         for (int i = size() - 1; i != -1; --i) {
             PatternElem elem = get(i);

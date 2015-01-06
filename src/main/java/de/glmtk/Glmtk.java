@@ -127,10 +127,10 @@ public class Glmtk {
 
     private NeededComputations computeNeeded(Set<Pattern> neededPatterns) {
         boolean tagging = false;
-        Set<Pattern> absolute = new HashSet<Pattern>();
-        Set<Pattern> continuation = new HashSet<Pattern>();
+        Set<Pattern> absolute = new HashSet<>();
+        Set<Pattern> continuation = new HashSet<>();
 
-        Queue<Pattern> queue = new LinkedList<Pattern>(neededPatterns);
+        Queue<Pattern> queue = new LinkedList<>(neededPatterns);
         while (!queue.isEmpty()) {
             Pattern pattern = queue.poll();
             if (pattern.isPos())
@@ -199,10 +199,10 @@ public class Glmtk {
         LOGGER.info("Absolute counting '%s' -> '%s'.", paths.getTrainingFile(),
                 paths.getAbsoluteDir());
 
-        Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
+        Set<Pattern> countingPatterns = new HashSet<>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(false));
 
-        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
+        Set<Pattern> chunkingPatterns = new HashSet<>(countingPatterns);
         chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.debug("neededPatterns   = %s", neededPatterns);
@@ -226,10 +226,10 @@ public class Glmtk {
         LOGGER.info("Continuation counting '%s' -> '%s'.",
                 paths.getAbsoluteDir(), paths.getContinuationDir());
 
-        Set<Pattern> countingPatterns = new HashSet<Pattern>(neededPatterns);
+        Set<Pattern> countingPatterns = new HashSet<>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(true));
 
-        Set<Pattern> chunkingPatterns = new HashSet<Pattern>(countingPatterns);
+        Set<Pattern> chunkingPatterns = new HashSet<>(countingPatterns);
         chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.debug("neededPatterns   = %s", neededPatterns);
@@ -269,7 +269,7 @@ public class Glmtk {
         String message = String.format("QueryCache for file '%s'", queryFile);
         OUTPUT.beginPhases(message + "...");
 
-        Set<Pattern> neededPatterns = new HashSet<Pattern>(patterns);
+        Set<Pattern> neededPatterns = new HashSet<>(patterns);
         neededPatterns.removeAll(status.getQueryCacheCounted(name));
 
         LOGGER.debug("neededPatterns = %s", neededPatterns);
@@ -294,9 +294,9 @@ public class Glmtk {
 
     private void validateExpectedResults(String operation,
                                          Set<Pattern> expected,
-                                         Set<Pattern> computed) throws Exception {
+                                         Set<Pattern> computed) {
         if (!computed.containsAll(expected)) {
-            Set<Pattern> missing = new HashSet<Pattern>();
+            Set<Pattern> missing = new HashSet<>();
             missing.addAll(expected);
             missing.removeAll(computed);
 
@@ -304,7 +304,7 @@ public class Glmtk {
             LOGGER.error("Expected patterns = %s.%n", expected);
             LOGGER.error("Computed patterns = %s.%n", computed);
             LOGGER.error("Missing  patterns = %s.", missing);
-            throw new Exception("%s failed.");
+            throw new RuntimeException("%s failed.");
         }
     }
 

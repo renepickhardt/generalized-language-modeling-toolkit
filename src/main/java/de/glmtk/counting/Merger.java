@@ -33,10 +33,11 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
+import de.glmtk.util.ObjectUtils;
 import de.glmtk.util.StatisticalNumberHelper;
-import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
 public enum Merger {
@@ -54,7 +55,7 @@ public enum Merger {
                 else if (rhs == null)
                     return -1;
                 else
-                    return StringUtils.compare(lhs.sequence, rhs.sequence);
+                    return ObjectUtils.compare(lhs.sequence, rhs.sequence);
             }
         };
 
@@ -88,7 +89,8 @@ public enum Merger {
                         f.format("Illegal line '%d' in file '%s'.%n", lineNo,
                                 path);
                         f.format(e.getMessage());
-                        throw new RuntimeException(f.toString());
+                        f.format("%nLine was: '%s'.", line);
+                        throw new FileFormatException(f.toString());
                     }
                 }
             }
@@ -137,7 +139,7 @@ public enum Merger {
             return null;
         }
 
-        private void mergePattern(Pattern pattern) throws InterruptedException, IOException {
+        private void mergePattern(Pattern pattern) throws IOException {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             Set<String> chunksForPattern;
@@ -146,7 +148,7 @@ public enum Merger {
                 int numParallelChunks = Math.min(numParallelReaders,
                         chunksForPattern.size());
 
-                Set<String> chunksToMerge = new LinkedHashSet<String>();
+                Set<String> chunksToMerge = new LinkedHashSet<>();
                 Iterator<String> iter = chunksForPattern.iterator();
                 for (int i = 0; i != numParallelChunks; ++i)
                     chunksToMerge.add(iter.next());
@@ -200,20 +202,23 @@ public enum Merger {
 
             try (BufferedWriter writer = NioUtils.newBufferedWriter(mergeFile,
                     Constants.CHARSET, (int) writerMemory)) {
-                PriorityQueue<SequenceCountReader> readerQueue = new PriorityQueue<SequenceCountReader>(
+                PriorityQueue<SequenceCountReader> readerQueue = new PriorityQueue<>(
                         chunksToMerge.size(), SequenceCountReader.COMPARATOR);
                 int memoryPerReader = (int) (readerMemory / chunksToMerge.size());
                 for (String chunk : chunksToMerge) {
                     Path chunkFile = patternDir.resolve(chunk);
                     int memory = (int) Math.min(Files.size(chunkFile),
                             memoryPerReader);
-                    readerQueue.add(new SequenceCountReader(chunkFile,
-                            Constants.CHARSET, memory));
+                    @SuppressWarnings("resource")
+                    SequenceCountReader sequenceCountReader = new SequenceCountReader(
+                            chunkFile, Constants.CHARSET, memory);
+                    readerQueue.add(sequenceCountReader);
                 }
 
                 String lastSequence = null;
                 Counter aggregationCounter = null;
                 while (!readerQueue.isEmpty()) {
+                    @SuppressWarnings("resource")
                     SequenceCountReader reader = readerQueue.poll();
                     if (reader.isEmpty()) {
                         reader.close();
@@ -285,10 +290,10 @@ public enum Merger {
         this.status = status;
         this.chunkedDir = chunkedDir;
         this.countedDir = countedDir;
-        patternQueue = new LinkedBlockingDeque<Pattern>(patterns);
+        patternQueue = new LinkedBlockingDeque<>(patterns);
         calculateMemory();
 
-        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
+        List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 

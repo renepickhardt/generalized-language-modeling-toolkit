@@ -7,7 +7,7 @@ import java.util.List;
 public class CollectionUtils {
     public static <T> boolean equal(Collection<T> lhs,
                                     Collection<T> rhs) {
-        List<T> lhsElems = new ArrayList<T>(lhs);
+        List<T> lhsElems = new ArrayList<>(lhs);
         for (T rhsElem : rhs)
             if (!lhsElems.remove(rhsElem))
                 return false;

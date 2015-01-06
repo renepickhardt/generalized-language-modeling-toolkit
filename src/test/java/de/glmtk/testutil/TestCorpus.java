@@ -39,7 +39,7 @@ public enum TestCorpus {
 
             Set<Pattern> neededPatterns = Patterns.getCombinations(
                     Constants.ORDER, Arrays.asList(CNT, SKP));
-            for (Pattern pattern : new HashSet<Pattern>(neededPatterns)) {
+            for (Pattern pattern : new HashSet<>(neededPatterns)) {
                 if (pattern.size() != Constants.ORDER)
                     neededPatterns.add(pattern.concat(WSKP));
 
@@ -51,7 +51,7 @@ public enum TestCorpus {
         } catch (Exception e) {
             // Because of enum nature it is necessary to not throw any checked
             // exceptions during construction.
-            throw new IllegalStateException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -80,8 +80,8 @@ public enum TestCorpus {
     }
 
     public List<String> getSequenceList(int n,
-                                        int length) throws Exception {
-        List<String> result = new LinkedList<String>();
+            int length) throws Exception {
+        List<String> result = new LinkedList<>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);
             n /= getWords().length;

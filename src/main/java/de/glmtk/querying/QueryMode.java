@@ -1,5 +1,6 @@
 package de.glmtk.querying;
 
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.ObjectUtils;
 
 public class QueryMode {
@@ -112,7 +113,7 @@ public class QueryMode {
                 result.append("Cond");
                 break;
             default:
-                throw new RuntimeException();
+                throw new SwitchCaseNotImplementedException();
         }
         if (order != null)
             result.append(order);

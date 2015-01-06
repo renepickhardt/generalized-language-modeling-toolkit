@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+
 public enum PatternElem {
     CNT('1'),
     POS('2'),
@@ -17,9 +19,9 @@ public enum PatternElem {
 
     public static final String SKP_WORD = "_";
     public static final String WSKP_WORD = "%";
-    public static final Set<PatternElem> CSKIP_ELEMS = new HashSet<PatternElem>(
+    public static final Set<PatternElem> CSKIP_ELEMS = new HashSet<>(
             Arrays.asList(WSKP, PSKP, WPOS));
-    private static final Map<Character, PatternElem> CHAR_TO_ELEM = new HashMap<Character, PatternElem>();
+    private static final Map<Character, PatternElem> CHAR_TO_ELEM = new HashMap<>();
     static {
         for (PatternElem elem : values())
             CHAR_TO_ELEM.put(elem.asChar, elem);
@@ -66,11 +68,12 @@ public enum PatternElem {
                 return SKP_WORD;
             case WSKP:
                 return WSKP_WORD;
+
             case PSKP:
             case WPOS:
-
+            case DEL:
             default:
-                throw new IllegalStateException("Unimplemented case in switch.");
+                throw new SwitchCaseNotImplementedException();
         }
     }
 
@@ -85,11 +88,12 @@ public enum PatternElem {
                 return SKP_WORD;
             case WSKP:
                 return WSKP_WORD;
+
             case PSKP:
             case WPOS:
-
+            case DEL:
             default:
-                throw new IllegalStateException("Unimplemented case in switch.");
+                throw new SwitchCaseNotImplementedException();
 
         }
     }

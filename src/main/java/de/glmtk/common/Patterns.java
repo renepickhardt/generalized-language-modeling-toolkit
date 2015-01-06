@@ -5,7 +5,6 @@ import static de.glmtk.common.PatternElem.POS;
 import static de.glmtk.common.PatternElem.PSKP;
 import static de.glmtk.common.PatternElem.WSKP;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,7 +18,7 @@ import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 
 public class Patterns {
-    private static final Map<String, Pattern> AS_STRING_TO_PATTERN = new HashMap<String, Pattern>();
+    private static final Map<String, Pattern> AS_STRING_TO_PATTERN = new HashMap<>();
 
     public static Pattern get() {
         Pattern pattern = AS_STRING_TO_PATTERN.get("");
@@ -56,13 +55,14 @@ public class Patterns {
     public static Pattern get(String asString) {
         Pattern pattern = AS_STRING_TO_PATTERN.get(asString);
         if (pattern == null) {
-            List<PatternElem> elems = new ArrayList<PatternElem>(
-                    asString.length());
+            List<PatternElem> elems = new ArrayList<>(asString.length());
             for (char elemAsChar : asString.toCharArray()) {
                 PatternElem elem = PatternElem.fromChar(elemAsChar);
                 if (elem == null)
-                    throw new RuntimeException(String.format(
-                            "Unkown PatternElem: '%s'.", elemAsChar));
+                    throw new IllegalArgumentException(
+                            String.format(
+                                    "Illegal 'asString' Argument '%s': unkown PatternElem: '%s'.",
+                                    asString, elemAsChar));
                 elems.add(elem);
             }
 
@@ -77,7 +77,7 @@ public class Patterns {
     }
 
     private static class PatternTrackingCountCache extends CountCache {
-        private Set<Pattern> usedPatterns = new HashSet<Pattern>();
+        private Set<Pattern> usedPatterns = new HashSet<>();
         private Random random = new Random();
 
         public PatternTrackingCountCache() throws Exception {
@@ -95,8 +95,7 @@ public class Patterns {
             // is it possible that sequence is unseen?
             if (sequence.isEmptyOrOnlySkips())
                 return random.nextInt(10) + 1;
-            else
-                return random.nextInt(11);
+            return random.nextInt(11);
         }
 
         @Override
@@ -108,9 +107,9 @@ public class Patterns {
                 return new Counter(random.nextInt(10) + 1,
                         random.nextInt(10) + 1, random.nextInt(10) + 1,
                         random.nextInt(10) + 1);
-            else
-                return new Counter(random.nextInt(11), random.nextInt(11),
-                        random.nextInt(11), random.nextInt(11));
+
+            return new Counter(random.nextInt(11), random.nextInt(11),
+                    random.nextInt(11), random.nextInt(11));
         }
 
         @Override
@@ -122,15 +121,9 @@ public class Patterns {
     }
 
     public static Set<Pattern> getUsedPatterns(int modelSize,
-            Estimator estimator,
-            ProbMode probMode) throws Exception {
-        PatternTrackingCountCache tracker;
-        try {
-            tracker = new PatternTrackingCountCache();
-        } catch (IOException e) {
-            // Can't occur.
-            throw new RuntimeException(e);
-        }
+                                               Estimator estimator,
+                                               ProbMode probMode) throws Exception {
+        PatternTrackingCountCache tracker = new PatternTrackingCountCache();
 
         estimator.setCountCache(tracker);
 
@@ -139,7 +132,7 @@ public class Patterns {
         calculator.setProbMode(probMode);
 
         for (int n = 0; n != modelSize; ++n) {
-            List<String> sequence = new ArrayList<String>(n);
+            List<String> sequence = new ArrayList<>(n);
             for (int i = 0; i != n + 1; ++i)
                 sequence.add("a");
             for (int i = 0; i != 10; ++i)
@@ -151,7 +144,7 @@ public class Patterns {
 
     // TODO: while loop is almost certainly wrong
     public static Set<Pattern> getPosPatterns(Set<Pattern> patterns) {
-        Set<Pattern> result = new HashSet<Pattern>();
+        Set<Pattern> result = new HashSet<>();
         for (Pattern pattern : patterns) {
             Pattern curPattern = pattern, lastPattern = null;
             do {
@@ -165,12 +158,12 @@ public class Patterns {
     }
 
     public static Set<Pattern> getCombinations(int modelSize,
-            List<PatternElem> elems) {
-        Set<Pattern> result = new HashSet<Pattern>();
+                                               List<PatternElem> elems) {
+        Set<Pattern> result = new HashSet<>();
 
         for (int i = 1; i != modelSize + 1; ++i)
             for (int j = 0; j != pow(elems.size(), i); ++j) {
-                List<PatternElem> pattern = new ArrayList<PatternElem>(i);
+                List<PatternElem> pattern = new ArrayList<>(i);
                 int n = j;
                 for (int k = 0; k != i; ++k) {
                     pattern.add(elems.get(n % elems.size()));
@@ -195,11 +188,11 @@ public class Patterns {
     }
 
     public static Map<Integer, Set<Pattern>> groupPatternsBySize(Set<Pattern> patterns) {
-        Map<Integer, Set<Pattern>> result = new HashMap<Integer, Set<Pattern>>();
+        Map<Integer, Set<Pattern>> result = new HashMap<>();
         for (Pattern pattern : patterns) {
             Set<Pattern> patternsWithSize = result.get(pattern.size());
             if (patternsWithSize == null) {
-                patternsWithSize = new HashSet<Pattern>();
+                patternsWithSize = new HashSet<>();
                 result.put(pattern.size(), patternsWithSize);
             }
             patternsWithSize.add(pattern);

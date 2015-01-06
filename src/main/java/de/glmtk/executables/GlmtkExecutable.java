@@ -32,11 +32,11 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.Termination;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
+import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -112,7 +112,7 @@ public class GlmtkExecutable extends Executable {
 
     public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
     static {
-        Map<String, Estimator> m = new LinkedHashMap<String, Estimator>();
+        Map<String, Estimator> m = new LinkedHashMap<>();
         m.put("MLE", Estimators.MLE);
         m.put("MKN", Estimators.MOD_KNESER_NEY);
         m.put("MKNS", Estimators.MOD_KNESER_NEY_SKP);
@@ -125,16 +125,16 @@ public class GlmtkExecutable extends Executable {
         OPTION_ESTIMATOR_ARGUMENTS = m;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         new GlmtkExecutable().run(args);
     }
 
     private Path corpus = null;
     private Path workingDir = null;
     private Integer trainingOrder = null;
-    private Set<Estimator> estimators = new LinkedHashSet<Estimator>();
+    private Set<Estimator> estimators = new LinkedHashSet<>();
     private QueryMode ioQueryMode = null;
-    private List<Entry<QueryMode, Set<Path>>> queries = new LinkedList<Entry<QueryMode, Set<Path>>>();
+    private List<Entry<QueryMode, Set<Path>>> queries = new LinkedList<>();
     private boolean logConsole = false;
     private boolean logDebug = false;
 
@@ -179,7 +179,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void parseArguments(String[] args) {
+    protected void parseArguments(String[] args) throws Exception {
         super.parseArguments(args);
 
         if (line.getArgList() == null || line.getArgList().size() != 1) {
@@ -189,13 +189,13 @@ public class GlmtkExecutable extends Executable {
             else
                 error = String.format("Incorrect input: %s%n",
                         StringUtils.join(line.getArgList(), " "));
-            throw new Termination(error
+            throw new CliArgumentException(error
                     + "Try 'glmtk --help' for more information.");
         }
 
         Path inputArg = Paths.get(line.getArgs()[0]);
         if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
-            throw new Termination(String.format(
+            throw new CliArgumentException(String.format(
                     "Input file/dir '%s' does not exist or is not readable.",
                     inputArg));
 
@@ -213,7 +213,7 @@ public class GlmtkExecutable extends Executable {
                 for (String opt : option.getValues()) {
                     Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
                     if (estimator == null)
-                        throw new Termination(
+                        throw new CliArgumentException(
                                 String.format(
                                         "Illegal %s argument. Unkown estimators option '%s'.",
                                         makeOptionString(option), opt));
@@ -223,7 +223,7 @@ public class GlmtkExecutable extends Executable {
             else if (option.equals(OPTION_IO)) {
                 optionFirstTimeOrFail(ioQueryMode, option);
                 if (!queries.isEmpty())
-                    throw new Termination(String.format(
+                    throw new CliArgumentException(String.format(
                             "The options %s and %s are mutually exclusive.",
                             makeOptionString(OPTION_IO),
                             makeOptionString(OPTION_QUERY)));
@@ -231,21 +231,21 @@ public class GlmtkExecutable extends Executable {
                 try {
                     ioQueryMode = QueryMode.forString(option.getValue());
                 } catch (RuntimeException e) {
-                    throw new Termination(String.format(
+                    throw new CliArgumentException(String.format(
                             "Illegal %s argument: %s",
                             makeOptionString(option), e.getMessage()));
                 }
 
             } else if (option.equals(OPTION_QUERY)) {
                 if (ioQueryMode != null)
-                    throw new Termination(String.format(
+                    throw new CliArgumentException(String.format(
                             "The options %s and %s are mutually exclusive.",
                             makeOptionString(OPTION_IO),
                             makeOptionString(OPTION_QUERY)));
 
                 String[] opts = option.getValues();
                 if (opts.length < 2)
-                    throw new Termination(
+                    throw new CliArgumentException(
                             String.format(
                                     "Illegal %s argument: Must specify mode and at least one file.",
                                     makeOptionString(option)));
@@ -254,17 +254,16 @@ public class GlmtkExecutable extends Executable {
                 try {
                     queryMode = QueryMode.forString(opts[0]);
                 } catch (RuntimeException e) {
-                    throw new Termination(String.format(
+                    throw new CliArgumentException(String.format(
                             "Illegal %s argument: %s",
                             makeOptionString(option), e.getMessage()));
                 }
 
-                Set<Path> files = new HashSet<Path>();
+                Set<Path> files = new HashSet<>();
                 for (int i = 1; i != opts.length; ++i)
                     files.add(getAndCheckFile(opts[i]));
 
-                queries.add(new SimpleEntry<QueryMode, Set<Path>>(queryMode,
-                        files));
+                queries.add(new SimpleEntry<>(queryMode, files));
             }
 
             else if (option.equals(OPTION_LOG_CONSOLE))
@@ -274,12 +273,12 @@ public class GlmtkExecutable extends Executable {
                 logDebug = true;
 
             else
-                throw new IllegalStateException(String.format(
+                throw new CliArgumentException(String.format(
                         "Unexpected option: '%s'.", option));
 
         if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
             if (workingDir != null)
-                throw new Termination(
+                throw new CliArgumentException(
                         String.format(
                                 "Can't use --%s (-%s) argument if using existing working directory as input.",
                                 OPTION_WORKINGDIR.getLongOpt(),
@@ -292,7 +291,7 @@ public class GlmtkExecutable extends Executable {
             if (workingDir == null)
                 workingDir = Paths.get(inputArg + Constants.WORKING_DIR_SUFFIX);
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
-                throw new Termination(
+                throw new IOException(
                         String.format(
                                 "Working directory '%s' already exists but is not a directory.",
                                 workingDir));
@@ -304,7 +303,7 @@ public class GlmtkExecutable extends Executable {
             estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
 
         if (ioQueryMode != null && estimators.size() > 1)
-            throw new Termination(String.format(
+            throw new CliArgumentException(String.format(
                     "Can specify at most one estimator if using option %s.",
                     makeOptionString(OPTION_IO)));
 
@@ -318,8 +317,8 @@ public class GlmtkExecutable extends Executable {
         try {
             Files.createDirectories(workingDir);
         } catch (IOException e) {
-            throw new Termination(String.format(
-                    "Could not create working directory '%s'.", workingDir));
+            throw new IOException(String.format(
+                    "Could not create working directory '%s'.", workingDir), e);
         }
     }
 
@@ -330,7 +329,7 @@ public class GlmtkExecutable extends Executable {
     private void optionFirstTimeOrFail(Object value,
                                        Option option) {
         if (value != null)
-            throw new Termination(String.format(
+            throw new CliArgumentException(String.format(
                     "Option %s must not be specified more than once.",
                     makeOptionString(option)));
     }
@@ -348,29 +347,29 @@ public class GlmtkExecutable extends Executable {
                 f.format(message, params);
                 f.format(" '%s'.%n", value);
                 f.format("Needs to be a positive integer");
-                throw new Termination(f.toString());
+                throw new CliArgumentException(f.toString());
             }
         return v;
     }
 
-    private Path getAndCheckFile(String filename) {
+    private Path getAndCheckFile(String filename) throws IOException {
         Path file = Paths.get(filename);
         if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
-            throw new Termination(String.format(
+            throw new IOException(String.format(
                     "File %s does not exist or is not readable.", filename));
         return file;
     }
 
-    private Path getWorkingDirFile(String filename) {
+    private Path getWorkingDirFile(String filename) throws IOException {
         Path file = workingDir.resolve(filename);
         if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
-            throw new Termination(String.format(
+            throw new IOException(String.format(
                     "%s file '%s' does not exist or is not readable.",
                     filename, file));
         return file;
     }
 
-    private int calculateTrainingOrder() {
+    private int calculateTrainingOrder() throws IOException {
         int maxOrder = 0;
         for (Entry<QueryMode, Set<Path>> entry : queries) {
             QueryMode queryMode = entry.getKey();
@@ -395,8 +394,8 @@ public class GlmtkExecutable extends Executable {
                             maxOrder = lineOrder;
                     }
                 } catch (IOException e) {
-                    throw new Termination(String.format(
-                            "Error reading file '%s'.", file));
+                    throw new IOException(String.format(
+                            "Error reading file '%s'.", file), e);
                 }
         }
 
@@ -411,7 +410,7 @@ public class GlmtkExecutable extends Executable {
             QueryMode queryMode = entry.getKey();
             Integer queryOrder = queryMode.getOrder();
             if (queryOrder != null && queryOrder > trainingOrder)
-                throw new Termination(
+                throw new CliArgumentException(
                         String.format(
                                 "Given order for query '%s' is higher than given training order '%d'.",
                                 queryMode, trainingOrder));
@@ -446,7 +445,7 @@ public class GlmtkExecutable extends Executable {
 
         ProbMode probMode = ProbMode.MARG;
 
-        Set<Pattern> neededPatterns = new HashSet<Pattern>();
+        Set<Pattern> neededPatterns = new HashSet<>();
         for (Estimator estimator : estimators) {
             neededPatterns.addAll(Patterns.getUsedPatterns(trainingOrder,
                     estimator, probMode));

@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
@@ -89,7 +90,7 @@ public class EstimatorTest extends LoggingTest {
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
                 //@formatter:on
-        );
+                );
     }
 
     private Estimator estimator;
@@ -176,7 +177,7 @@ public class EstimatorTest extends LoggingTest {
                                 Assert.assertEquals(1.0, sum, 0.01);
                                 break;
                             default:
-                                throw new IllegalStateException();
+                                throw new SwitchCaseNotImplementedException();
                         }
                     } catch (AssertionError e) {
                         LOGGER.error("history = %s, sum = %s fail", history,

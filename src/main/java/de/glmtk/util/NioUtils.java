@@ -17,6 +17,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+
 /**
  * Util class containing various static helper methods related to nio (Java 7 io
  * api).
@@ -81,7 +83,7 @@ public class NioUtils {
                     break;
 
                 default:
-                    throw new IllegalStateException();
+                    throw new SwitchCaseNotImplementedException();
             }
         return true;
     }

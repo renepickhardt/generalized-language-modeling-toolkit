@@ -26,6 +26,7 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.StringUtils;
 
@@ -36,7 +37,7 @@ public class CountCache {
     private static final Logger LOGGER = LogManager.getFormatterLogger(CountCache.class);
 
     private static Set<Pattern> getAvailablePatternsFromFilesystem(GlmtkPaths paths) throws IOException {
-        Set<Pattern> patterns = new HashSet<Pattern>();
+        Set<Pattern> patterns = new HashSet<>();
         try (DirectoryStream<Path> absoluteDirStream = Files.newDirectoryStream(paths.getAbsoluteDir())) {
             for (Path patternFile : absoluteDirStream)
                 patterns.add(Patterns.get(patternFile.getFileName().toString()));
@@ -53,9 +54,12 @@ public class CountCache {
     private Map<Pattern, Map<String, Counter>> continuation;
     private Map<Pattern, long[]> nGramTimes;
     private List<Double> lengthFrequencies;
+    private int lineNo;
+    private String line;
+    private Path file;
 
     public CountCache(Set<Pattern> patterns,
-                      GlmtkPaths paths) throws Exception {
+                      GlmtkPaths paths) throws IOException {
         // Allowing arguments == null to make
         // {@link Patterns#getUsedPatterns(ParamEstimator, ProbMode)} work.
         if (patterns == null || paths == null)
@@ -118,6 +122,8 @@ public class CountCache {
                     String.format(
                             "Illegal sequence length: '%d'. Must be a positive integer.",
                             length));
+        if (length >= lengthFrequencies.size())
+            return 0.0;
         return lengthFrequencies.get(length);
     }
 
@@ -134,15 +140,15 @@ public class CountCache {
     }
 
     public SortedSet<String> getWords() {
-        return new TreeSet<String>(absolute.get(Patterns.get(CNT)).keySet());
+        return new TreeSet<>(absolute.get(Patterns.get(CNT)).keySet());
     }
 
     private void loadCounts(Path absoluteDir,
                             Path continuationDir,
-                            Set<Pattern> patterns) throws Exception {
+                            Set<Pattern> patterns) throws IOException {
         LOGGER.debug("Loading counts...");
-        absolute = new HashMap<Pattern, Map<String, Long>>();
-        continuation = new HashMap<Pattern, Map<String, Counter>>();
+        absolute = new HashMap<>();
+        continuation = new HashMap<>();
 
         for (Pattern pattern : patterns) {
             boolean isPatternAbsolute;
@@ -152,32 +158,31 @@ public class CountCache {
             if (pattern.isAbsolute()) {
                 isPatternAbsolute = true;
                 inputDir = absoluteDir;
-                absoluteCounts = new HashMap<String, Long>();
+                absoluteCounts = new HashMap<>();
                 absolute.put(pattern, absoluteCounts);
             } else {
                 isPatternAbsolute = false;
                 inputDir = continuationDir;
-                continuationCounts = new HashMap<String, Counter>();
+                continuationCounts = new HashMap<>();
                 continuation.put(pattern, continuationCounts);
             }
 
-            Path inputFile = inputDir.resolve(pattern.toString());
-            try (BufferedReader reader = Files.newBufferedReader(inputFile,
+            file = inputDir.resolve(pattern.toString());
+            try (BufferedReader reader = Files.newBufferedReader(file,
                     Constants.CHARSET)) {
-                String line;
-                int lineNo = 0;
+                lineNo = 0;
                 while ((line = reader.readLine()) != null) {
                     ++lineNo;
                     Counter counter = new Counter();
                     String sequence = null;
                     try {
                         sequence = Counter.getSequenceAndCounter(line, counter);
-                    } catch (RuntimeException e) {
+                    } catch (IllegalArgumentException e) {
                         String type = isPatternAbsolute
                                 ? "absolute"
                                 : "continuation";
-                        throwParseError(type + " counts", line, lineNo,
-                                inputFile, e.getMessage());
+                        throw newFileFormatException(type + " counts",
+                                e.getMessage());
                     }
                     if (isPatternAbsolute)
                         absoluteCounts.put(sequence, counter.getOnePlusCount());
@@ -190,30 +195,27 @@ public class CountCache {
         }
     }
 
-    private void loadNGramTimes(Path file) throws Exception {
+    private void loadNGramTimes(Path file) throws IOException {
         LOGGER.debug("Loading NGram times counts...");
-        nGramTimes = new HashMap<Pattern, long[]>();
+        nGramTimes = new HashMap<>();
+        this.file = file;
         try (BufferedReader reader = Files.newBufferedReader(file,
                 Constants.CHARSET)) {
-            String line;
-            int lineNo = 0;
+            lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
                 List<String> split = StringUtils.splitAtChar(line, '\t');
 
                 if (split.size() != 5)
-                    throwParseError(
+                    throw newFileFormatException(
                             "ngram times",
-                            line,
-                            lineNo,
-                            file,
                             "Expected line to have format '<pattern>\\t<count>\\t<count>\\t<count>\\t<count>'.");
 
                 Pattern pattern = null;
                 try {
                     pattern = Patterns.get(split.get(0));
                 } catch (RuntimeException e) {
-                    throwParseError("ngram times", line, lineNo, file,
+                    throw newFileFormatException("ngram times",
                             "Unable to parse '%s' as a pattern.", split.get(0));
                 }
                 long[] counts = new long[4];
@@ -221,9 +223,9 @@ public class CountCache {
                     try {
                         counts[i] = Long.parseLong(split.get(i + 1));
                     } catch (NumberFormatException e) {
-                        throwParseError("ngram times", line, lineNo, file,
+                        throw newFileFormatException("ngram times",
                                 "Unable to parse '%d' as an intger.",
-                                split.get(i + 1));
+                                                     split.get(i + 1));
                     }
                 nGramTimes.put(pattern, counts);
             }
@@ -231,26 +233,26 @@ public class CountCache {
         progress.increase(1);
     }
 
-    private void loadLengthDistribution(Path file) throws Exception {
+    private void loadLengthDistribution(Path file) throws IOException {
         LOGGER.debug("Loading Sequence Length Distribution...");
-        lengthFrequencies = new ArrayList<Double>();
+        lengthFrequencies = new ArrayList<>();
+        this.file = file;
         try (BufferedReader reader = Files.newBufferedReader(file,
                 Constants.CHARSET)) {
-            String line;
-            int lineNo = 0;
+            lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
                 List<String> split = StringUtils.splitAtChar(line, '\t');
 
                 if (split.size() != 2)
-                    throwParseError("length distribution", line, lineNo, file,
+                    throw newFileFormatException("length distribution",
                             "Expected line to have format '<sequence-length>\\t<frequency>'.");
 
                 int length = 0;
                 try {
                     length = Integer.parseInt(split.get(0));
                 } catch (NumberFormatException e) {
-                    throwParseError("length distribution", line, lineNo, file,
+                    throw newFileFormatException("length distribution",
                             "Unable to parse '%s' as an integer.", split.get(0));
                 }
 
@@ -258,9 +260,9 @@ public class CountCache {
                 try {
                     frequency = Double.parseDouble(split.get(1));
                 } catch (NumberFormatException e) {
-                    throwParseError("length distribution", line, lineNo, file,
+                    throw newFileFormatException("length distribution",
                             "Unable to parse '%s' as a floating point number.",
-                            split.get(1));
+                                                 split.get(1));
                 }
 
                 CollectionUtils.ensureListSize(lengthFrequencies, length, 0.0);
@@ -270,17 +272,15 @@ public class CountCache {
         progress.increase(1);
     }
 
-    private void throwParseError(String type,
-                                 String line,
-                                 int lineNo,
-                                 Path file,
-                                 String message,
-                                 Object... params) throws Exception {
+    private FileFormatException newFileFormatException(String fileType,
+                                                       String message,
+                                                       Object... params) {
         try (Formatter f = new Formatter()) {
-            f.format("Illegal line '%d' in file %s '%s'.%n", lineNo, type, file);
-            f.format(message + "%n", params);
-            f.format("Line was: '%s'.", line);
-            throw new Exception(f.toString());
+            f.format("Illegal line '%d' in %s file '%s'.%n", lineNo, fileType,
+                    file);
+            f.format(message, params);
+            f.format("%nLine was: '%s'.", line);
+            return new FileFormatException(f.toString());
         }
     }
 }

@@ -1,6 +1,7 @@
 package de.glmtk.querying.estimator.fraction;
 
 import de.glmtk.common.NGram;
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.estimator.Estimator;
 
 public abstract class FractionEstimator extends Estimator {
@@ -26,7 +27,7 @@ public abstract class FractionEstimator extends Estimator {
                 return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
                         recDepth);
             default:
-                throw new IllegalStateException();
+                throw new SwitchCaseNotImplementedException();
         }
     }
 

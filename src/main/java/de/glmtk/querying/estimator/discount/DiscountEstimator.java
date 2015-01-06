@@ -54,8 +54,7 @@ public abstract class DiscountEstimator extends FractionEstimator {
 
         if (discountVal > numeratorVal)
             return 0;
-        else
-            return numeratorVal - discountVal;
+        return numeratorVal - discountVal;
     }
 
     @Override

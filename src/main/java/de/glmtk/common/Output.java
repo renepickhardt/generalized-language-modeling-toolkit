@@ -273,10 +273,9 @@ public enum Output {
     }
 
     public String bold(String message) {
-        if (isAnsiEnabled())
-            return Ansi.ansi().bold() + message + Ansi.ansi().boldOff();
-        else
+        if (!isAnsiEnabled())
             return message;
+        return Ansi.ansi().bold() + message + Ansi.ansi().boldOff();
     }
 
     public void beginPhases(String message) {

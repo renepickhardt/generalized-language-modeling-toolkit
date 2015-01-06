@@ -15,19 +15,18 @@ public class HashUtils {
      */
     public static String generateMd5Hash(Path file) throws IOException {
         try {
-            InputStream input = Files.newInputStream(file);
+            MessageDigest digest = null;
+            try (InputStream input = Files.newInputStream(file)) {
+                byte[] buffer = new byte[1024];
+                digest = MessageDigest.getInstance("MD5");
 
-            byte[] buffer = new byte[1024];
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-
-            int numRead;
-            do {
-                numRead = input.read(buffer);
-                if (numRead > 0)
-                    digest.update(buffer, 0, numRead);
-            } while (numRead != -1);
-
-            input.close();
+                int numRead;
+                do {
+                    numRead = input.read(buffer);
+                    if (numRead > 0)
+                        digest.update(buffer, 0, numRead);
+                } while (numRead != -1);
+            }
 
             byte[] resultByte = digest.digest();
             StringBuilder result = new StringBuilder();
@@ -36,7 +35,7 @@ public class HashUtils {
                         16).substring(1));
             return result.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
+            throw new RuntimeException(e);
         }
     }
 }

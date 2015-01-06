@@ -60,7 +60,7 @@ public enum LengthDistributionCalculator {
     }
 
     private List<Double> calculateLengthDistribution() throws IOException {
-        List<Double> frequencies = new ArrayList<Double>();
+        List<Double> frequencies = new ArrayList<>();
 
         int sum = 0;
 

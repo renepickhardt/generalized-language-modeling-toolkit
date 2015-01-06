@@ -3,6 +3,7 @@ package de.glmtk;
 import static de.glmtk.Constants.MiB;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
 /**
@@ -118,8 +120,8 @@ public enum Config {
         }
     }
 
-    private void loadConfig(Path file) throws Exception {
-        Map<String, Field> fields = new HashMap<String, Field>();
+    private void loadConfig(Path file) throws IOException {
+        Map<String, Field> fields = new HashMap<>();
         for (Field field : Config.class.getDeclaredFields()) {
             if (isNotConfigurableField(field))
                 continue;
@@ -137,19 +139,19 @@ public enum Config {
 
                 List<String> keyValue = StringUtils.splitAtChar(line, '=');
                 if (keyValue.size() != 2)
-                    throw error(file, line, lineNo,
+                    throw newFileFormatException(file, line, lineNo,
                             "Entrys have to be in the form of '<key> = <value>'.");
 
                 String key = keyValue.get(0).trim();
                 String value = keyValue.get(1).trim();
 
                 if (!fields.containsKey(key))
-                    throw error(file, line, lineNo, String.format(
-                            "Unknown key '%s'.", key));
+                    throw newFileFormatException(file, line, lineNo,
+                                                 String.format("Unknown key '%s'.", key));
                 Field field = fields.get(key);
                 if (field == null)
-                    throw error(file, line, lineNo, String.format(
-                            "Duplicated key '%s'.", key));
+                    throw newFileFormatException(file, line, lineNo,
+                                                 String.format("Duplicated key '%s'.", key));
 
                 try {
                     Class<?> type = field.getType();
@@ -158,21 +160,26 @@ public enum Config {
                         try {
                             field.set(this, Integer.parseInt(value));
                         } catch (NumberFormatException e) {
-                            throw error(file, line, lineNo, String.format(
-                                    "Expected number, found '%s'.", value));
+                            throw newFileFormatException(file, line, lineNo,
+                                                         String.format(
+                                                                 "Expected number, found '%s'.",
+                                                                 value));
                         }
                     else if (type.equals(long.class))
                         try {
                             field.set(this, Long.parseLong(value));
                         } catch (NumberFormatException e) {
-                            throw error(file, line, lineNo, String.format(
-                                    "Expected number, found '%s'.", value));
+                            throw newFileFormatException(file, line, lineNo,
+                                                         String.format(
+                                                                 "Expected number, found '%s'.",
+                                                                 value));
                         }
                     else if (type.equals(Path.class)) {
                         Path path = Paths.get(value);
                         if (path == null)
-                            throw error(file, line, lineNo, String.format(
-                                    "Expected path, found '%s'.", value));
+                            throw newFileFormatException(file, line, lineNo,
+                                                         String.format("Expected path, found '%s'.",
+                                                                 value));
                         field.set(this, path);
                     }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -186,20 +193,20 @@ public enum Config {
 
         for (Entry<String, Field> entry : fields.entrySet())
             if (entry.getValue() != null)
-                throw error(file, String.format("Missing key '%s'.",
-                        entry.getKey()));
+                throw newFileFormatException(file, String.format(
+                        "Missing key '%s'.", entry.getKey()));
 
         completeConfig(file);
     }
 
-    private void completeConfig(Path file) throws Exception {
+    private void completeConfig(Path file) {
         if (readerMemory * MiB > Integer.MAX_VALUE)
-            throw new Exception(
+            throw new FileFormatException(
                     String.format(
                             "To large readerMemory specified in '%s'. Does not fit into integer.",
                             file));
         if (writerMemory * MiB > Integer.MAX_VALUE)
-            throw new Exception(
+            throw new FileFormatException(
                     String.format(
                             "To large writerMemory specified in '%s'. Does not fit into integer.",
                             file));
@@ -216,22 +223,22 @@ public enum Config {
                 || field.isEnumConstant();
     }
 
-    private Exception error(Path file,
-                            String line,
-                            int lineNo,
-                            String msg) throws Exception {
+    private FileFormatException newFileFormatException(Path file,
+                                                       String line,
+                                                       int lineNo,
+                                                       String msg) {
         try (Formatter f = new Formatter()) {
             f.format("Invalid line '%d' in config file '%s'.%n", lineNo, file);
             f.format("%s%n", msg);
             f.format("Line was: '%s'.", line);
-            throw new Exception(f.toString());
+            return new FileFormatException(f.toString());
         }
     }
 
-    private Exception error(Path file,
-                            String msg) {
-        return new Exception(String.format("Invalid config file '%s'.%n%s",
-                file, msg));
+    private FileFormatException newFileFormatException(Path file,
+                                                       String msg) {
+        return new FileFormatException(String.format(
+                "Invalid config file '%s'.%n%s", file, msg));
     }
 
     @Override
@@ -244,9 +251,9 @@ public enum Config {
             Object value = null;
             try {
                 value = field.get(this);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 // Shouldn't be possible
-                throw new IllegalStateException(e);
+                throw new RuntimeException(e);
             }
 
             result.append(field.getName()).append('=').append(value).append(

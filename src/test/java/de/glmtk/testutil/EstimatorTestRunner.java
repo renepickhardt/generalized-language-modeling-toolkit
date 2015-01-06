@@ -23,6 +23,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
 import de.glmtk.common.ProbMode;
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.EstimatorTest;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
@@ -91,7 +92,7 @@ public class EstimatorTestRunner extends Suite {
                     case MARG:
                         return "Marginal";
                     default:
-                        throw new IllegalStateException();
+                        throw new SwitchCaseNotImplementedException();
                 }
             }
 
@@ -136,7 +137,7 @@ public class EstimatorTestRunner extends Suite {
             estimator = params.estimator;
             continuationEstimator = params.continuationEstimator;
 
-            runners = new ArrayList<TestRunnerForProbMode>();
+            runners = new ArrayList<>();
             createRunners(params);
         }
 
@@ -184,7 +185,7 @@ public class EstimatorTestRunner extends Suite {
     }
 
     private void loadIgnoredProbModes() {
-        ignoredProbModes = new HashSet<ProbMode>();
+        ignoredProbModes = new HashSet<>();
         for (Annotation annotation : getTestClass().getAnnotations())
             if (annotation instanceof IgnoreProbMode) {
                 IgnoreProbMode a = (IgnoreProbMode) annotation;
@@ -215,7 +216,7 @@ public class EstimatorTestRunner extends Suite {
     }
 
     private void createRunnersForParameters(Iterable<EstimatorTestParams> allParameters) throws InitializationError {
-        runners = new ArrayList<TestRunnerForEstimator>();
+        runners = new ArrayList<>();
         for (EstimatorTestParams parameters : allParameters)
             runners.add(new TestRunnerForEstimator(
                     getTestClass().getJavaClass(), parameters));

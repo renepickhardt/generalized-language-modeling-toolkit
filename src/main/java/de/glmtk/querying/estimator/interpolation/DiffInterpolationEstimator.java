@@ -42,17 +42,16 @@ public class DiffInterpolationEstimator extends InterpolationEstimator {
         if (history.isEmptyOrOnlySkips())
             //if (history.isEmpty()) {
             return super.calcProbability(sequence, history, recDepth);
-        else {
-            double alphaVal = alpha.probability(sequence, history, recDepth);
-            double betaVal = 0;
-            Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
-            for (NGram differentiatedHistory : differentiatedHistories)
-                betaVal += beta.probability(sequence, differentiatedHistory,
-                        recDepth);
-            betaVal /= differentiatedHistories.size();
-            double gammaVal = gamma(sequence, history, recDepth);
 
-            return alphaVal + gammaVal * betaVal;
-        }
+        double alphaVal = alpha.probability(sequence, history, recDepth);
+        double betaVal = 0;
+        Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
+        for (NGram differentiatedHistory : differentiatedHistories)
+            betaVal += beta.probability(sequence, differentiatedHistory,
+                    recDepth);
+        betaVal /= differentiatedHistories.size();
+        double gammaVal = gamma(sequence, history, recDepth);
+
+        return alphaVal + gammaVal * betaVal;
     }
 }

@@ -8,14 +8,14 @@ public class MainClass {
             throw new IllegalArgumentException("No main class specified.");
 
         String mainClass = args[0];
-        args = Arrays.copyOfRange(args, 1, args.length);
+        String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
         switch (mainClass) {
             case "glmtk":
-                GlmtkExecutable.main(args);
+                GlmtkExecutable.main(newArgs);
                 break;
 
             default:
-                throw new IllegalStateException(String.format(
+                throw new IllegalArgumentException(String.format(
                         "Unkown main class specified: '%s'.", mainClass));
         }
     }

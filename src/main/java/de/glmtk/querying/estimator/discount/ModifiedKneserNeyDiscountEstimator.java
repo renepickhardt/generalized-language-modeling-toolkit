@@ -19,7 +19,7 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
     public void setCountCache(CountCache countCache) {
         super.setCountCache(countCache);
 
-        discounts = new HashMap<Pattern, double[]>();
+        discounts = new HashMap<>();
     }
 
     @Override

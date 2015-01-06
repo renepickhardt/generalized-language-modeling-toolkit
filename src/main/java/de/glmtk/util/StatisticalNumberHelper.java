@@ -20,8 +20,8 @@ public class StatisticalNumberHelper {
         public long count = 0;
     }
 
-    private static Map<String, Long> counters = new HashMap<String, Long>();
-    private static Map<String, AverageItem> averages = new HashMap<String, AverageItem>();
+    private static Map<String, Long> counters = new HashMap<>();
+    private static Map<String, AverageItem> averages = new HashMap<>();
 
     public static void count(String name) {
         count(name, 1);

@@ -4,6 +4,7 @@ import static de.glmtk.common.PatternElem.SKP_WORD;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,7 @@ public abstract class Estimator {
 
     protected static final NGram getFullHistory(NGram sequence,
                                                 NGram history) {
-        List<String> skippedSequence = new ArrayList<String>(sequence.size());
+        List<String> skippedSequence = new ArrayList<>(sequence.size());
         for (int i = 0; i != sequence.size(); ++i)
             skippedSequence.add(SKP_WORD);
         return history.concat(new NGram(skippedSequence));
@@ -79,12 +80,10 @@ public abstract class Estimator {
      */
     public final double probability(NGram sequence,
                                     NGram history) {
-        if (countCache == null)
-            throw new NullPointerException(
-                    "You have to set a countCache that is not null before using this method");
-        if (probMode == null)
-            throw new NullPointerException(
-                    "You have to set a probability mode that is not null before using this method.");
+        Objects.requireNonNull(countCache,
+                "You have to set a countCache that is not null before using this method");
+        Objects.requireNonNull(probMode,
+                "You have to set a probability mode that is not null before using this method.");
 
         return probability(sequence, history, 1);
     }

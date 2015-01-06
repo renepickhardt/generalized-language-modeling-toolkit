@@ -71,7 +71,7 @@ public enum QueryCacherCreator {
         }
 
         private void extractSequences() throws IOException {
-            Set<String> sequences = new HashSet<String>();
+            Set<String> sequences = new HashSet<>();
 
             int patternSize = pattern.size();
             try (BufferedReader reader = NioUtils.newBufferedReader(queryFile,
@@ -92,8 +92,8 @@ public enum QueryCacherCreator {
                 }
             }
 
-            neededSequences = new LinkedList<String>();
-            neededSequences.addAll(new TreeSet<String>(sequences));
+            neededSequences = new LinkedList<>();
+            neededSequences.addAll(new TreeSet<>(sequences));
         }
 
         private void getPatternFiles() {
@@ -172,11 +172,11 @@ public enum QueryCacherCreator {
         this.continuationDir = continuationDir;
         this.targetAbsoluteDir = targetAbsoluteDir;
         this.targetContinuationDir = targetContinuationDir;
-        patternQueue = new LinkedBlockingQueue<Pattern>();
+        patternQueue = new LinkedBlockingQueue<>();
         patternQueue.addAll(patterns);
         calculateMemory();
 
-        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
+        List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 

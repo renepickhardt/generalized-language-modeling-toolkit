@@ -74,16 +74,14 @@ public class InterpolationEstimator extends Estimator {
                     "history empty, returning fraction estimator probability");
             return alpha.getFractionEstimator().probability(sequence, history,
                     recDepth);
-        } else {
-            NGram backoffHistory = history.backoffUntilSeen(backoffMode,
-                    countCache);
-            double alphaVal = alpha.probability(sequence, history, recDepth);
-            double betaVal = beta.probability(sequence, backoffHistory,
-                    recDepth);
-            double gammaVal = gamma(sequence, history, recDepth);
-
-            return alphaVal + gammaVal * betaVal;
         }
+
+        NGram backoffHistory = history.backoffUntilSeen(backoffMode, countCache);
+        double alphaVal = alpha.probability(sequence, history, recDepth);
+        double betaVal = beta.probability(sequence, backoffHistory, recDepth);
+        double gammaVal = gamma(sequence, history, recDepth);
+
+        return alphaVal + gammaVal * betaVal;
     }
 
     public final double gamma(NGram sequence,
@@ -105,40 +103,40 @@ public class InterpolationEstimator extends Estimator {
         if (denominator == 0) {
             logTrace(recDepth, "denominator = 0, setting gamma = 0:");
             return 0;
-        } else {
-            NGram historyPlusWskp = history.concat(WSKP_WORD);
-            if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
-                ModifiedKneserNeyDiscountEstimator a = (ModifiedKneserNeyDiscountEstimator) alpha;
-                Pattern pattern = history.getPattern();
-                double[] d = a.getDiscounts(pattern);
-                double d1 = d[0];
-                double d2 = d[1];
-                double d3p = d[2];
-
-                Counter continuation = countCache.getContinuation(historyPlusWskp);
-                double n1 = continuation.getOneCount();
-                double n2 = continuation.getTwoCount();
-                double n3p = continuation.getThreePlusCount();
-
-                logTrace(recDepth, "pattern = %s", pattern);
-                logTrace(recDepth, "d1      = %f", d1);
-                logTrace(recDepth, "d2      = %f", d2);
-                logTrace(recDepth, "d3p     = %f", d3p);
-                logTrace(recDepth, "n1      = %f", n1);
-                logTrace(recDepth, "n2      = %f", n2);
-                logTrace(recDepth, "n3p     = %f", n3p);
-
-                return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
-            } else {
-                double discout = alpha.discount(sequence, history, recDepth);
-                double n_1p = countCache.getContinuation(historyPlusWskp).getOnePlusCount();
-
-                logTrace(recDepth, "denominator = %f", denominator);
-                logTrace(recDepth, "discount = %f", discout);
-                logTrace(recDepth, "n_1p = %f", n_1p);
-
-                return discout * n_1p / denominator;
-            }
         }
+
+        NGram historyPlusWskp = history.concat(WSKP_WORD);
+        if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
+            ModifiedKneserNeyDiscountEstimator a = (ModifiedKneserNeyDiscountEstimator) alpha;
+            Pattern pattern = history.getPattern();
+            double[] d = a.getDiscounts(pattern);
+            double d1 = d[0];
+            double d2 = d[1];
+            double d3p = d[2];
+
+            Counter continuation = countCache.getContinuation(historyPlusWskp);
+            double n1 = continuation.getOneCount();
+            double n2 = continuation.getTwoCount();
+            double n3p = continuation.getThreePlusCount();
+
+            logTrace(recDepth, "pattern = %s", pattern);
+            logTrace(recDepth, "d1      = %f", d1);
+            logTrace(recDepth, "d2      = %f", d2);
+            logTrace(recDepth, "d3p     = %f", d3p);
+            logTrace(recDepth, "n1      = %f", n1);
+            logTrace(recDepth, "n2      = %f", n2);
+            logTrace(recDepth, "n3p     = %f", n3p);
+
+            return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
+        }
+
+        double discout = alpha.discount(sequence, history, recDepth);
+        double n_1p = countCache.getContinuation(historyPlusWskp).getOnePlusCount();
+
+        logTrace(recDepth, "denominator = %f", denominator);
+        logTrace(recDepth, "discount = %f", discout);
+        logTrace(recDepth, "n_1p = %f", n_1p);
+
+        return discout * n_1p / denominator;
     }
 }

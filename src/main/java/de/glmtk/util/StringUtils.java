@@ -11,23 +11,6 @@ import de.glmtk.Constants;
  */
 public class StringUtils {
     /**
-     * Same as {@link String#compareTo(String)} but allowing {@code null} for
-     * both parameters.
-     */
-    public static int compare(String lhs,
-                              String rhs) {
-        if (lhs == null) {
-            if (rhs == null)
-                return 0;
-            else
-                return 1;
-        } else if (rhs == null)
-            return -1;
-        else
-            return lhs.compareTo(rhs);
-    }
-
-    /**
      * Takes a {@code string} and returns a list containing all substrings which
      * are separated by character {@code split}.
      *
@@ -35,8 +18,8 @@ public class StringUtils {
      * {@code string.split(' ')} since it is much faster.
      */
     public static List<String> splitAtChar(String string,
-                                           char split) {
-        List<String> result = new ArrayList<String>();
+            char split) {
+        List<String> result = new ArrayList<>();
 
         int sp1 = 0, sp2;
         while (true) {
@@ -47,12 +30,12 @@ public class StringUtils {
                 if (!substr.isEmpty())
                     result.add(substr);
                 break;
-            } else {
-                String substr = string.substring(sp1, sp2);
-                if (!substr.isEmpty())
-                    result.add(substr);
-                sp1 = sp2 + 1;
             }
+
+            String substr = string.substring(sp1, sp2);
+            if (!substr.isEmpty())
+                result.add(substr);
+            sp1 = sp2 + 1;
         }
 
         return result;

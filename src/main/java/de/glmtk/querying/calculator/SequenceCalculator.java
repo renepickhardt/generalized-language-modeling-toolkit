@@ -19,12 +19,12 @@ public class SequenceCalculator extends Calculator {
      */
     @Override
     protected List<SequenceAndHistory> computeQueries(List<String> words) {
-        List<SequenceAndHistory> queries = new ArrayList<SequenceAndHistory>();
+        List<SequenceAndHistory> queries = new ArrayList<>();
 
-        List<String> s, h = new ArrayList<String>(words);
+        List<String> s, h = new ArrayList<>(words);
         for (int i = 0; i != words.size(); ++i) {
             // build s
-            s = new ArrayList<String>(i + 1);
+            s = new ArrayList<>(i + 1);
             s.add(h.get(h.size() - 1));
             if (probMode == ProbMode.COND)
                 for (int j = 0; j != i; ++j)
@@ -32,9 +32,9 @@ public class SequenceCalculator extends Calculator {
 
             // build h
             if (h.size() >= 1)
-                h = new ArrayList<String>(h.subList(0, h.size() - 1));
+                h = new ArrayList<>(h.subList(0, h.size() - 1));
             else
-                h = new ArrayList<String>();
+                h = new ArrayList<>();
 
             queries.add(new SequenceAndHistory(new NGram(s), new NGram(h)));
         }

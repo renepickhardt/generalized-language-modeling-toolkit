@@ -14,7 +14,7 @@ public class ThreadUtils {
                 nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>());
 
-        List<Future<T>> futures = new ArrayList<Future<T>>(threads.size());
+        List<Future<T>> futures = new ArrayList<>(threads.size());
         for (Callable<T> callable : threads)
             futures.add(threadPool.submit(callable));
         threadPool.shutdown();
@@ -22,7 +22,7 @@ public class ThreadUtils {
 
         threadPool.rethrowIfException();
 
-        List<T> result = new ArrayList<T>(threads.size());
+        List<T> result = new ArrayList<>(threads.size());
         for (Future<T> future : futures)
             result.add(future.get());
         return result;

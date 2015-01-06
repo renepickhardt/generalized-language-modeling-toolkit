@@ -177,7 +177,7 @@ public enum QueryRunner {
         OUTPUT.setPhase(Phase.QUERYING);
 
         curLineNo = 0;
-        linesQueue = new LinkedList<String>();
+        linesQueue = new LinkedList<>();
         try (BufferedReader reader = Files.newBufferedReader(inputFile,
                 Constants.CHARSET)) {
             String line;
@@ -187,7 +187,7 @@ public enum QueryRunner {
 
         resultingLines = new String[linesQueue.size()];
 
-        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
+        List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 

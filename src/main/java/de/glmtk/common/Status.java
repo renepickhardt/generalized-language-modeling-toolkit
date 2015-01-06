@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
@@ -61,7 +62,7 @@ public class Status {
     private int lineNo;
 
     public Status(GlmtkPaths paths,
-                  Path corpus) throws Exception {
+                  Path corpus) throws IOException {
         this.paths = paths;
         file = paths.getStatusFile();
         this.corpus = corpus;
@@ -75,14 +76,14 @@ public class Status {
 
     private void setVoidSettings() {
         training = Training.NONE;
-        counted = new HashSet<Pattern>();
+        counted = new HashSet<>();
         nGramTimesCounted = true;
         lengthDistributionCalculated = true;
-        absoluteCounted = new HashSet<Pattern>();
-        continuationCounted = new HashSet<Pattern>();
-        absoluteChunked = new HashMap<Pattern, Set<String>>();
-        continuationChunked = new HashMap<Pattern, Set<String>>();
-        queryCacheCounted = new HashMap<String, Set<Pattern>>();
+        absoluteCounted = new HashSet<>();
+        continuationCounted = new HashSet<>();
+        absoluteChunked = new HashMap<>();
+        continuationChunked = new HashMap<>();
+        queryCacheCounted = new HashMap<>();
     }
 
     public void logStatus() {
@@ -176,8 +177,7 @@ public class Status {
                                     Pattern pattern,
                                     Collection<String> chunks) throws IOException {
         synchronized (this) {
-            chunked(continuation).put(pattern,
-                    new LinkedHashSet<String>(chunks));
+            chunked(continuation).put(pattern, new LinkedHashSet<>(chunks));
             writeStatusToFile();
         }
     }
@@ -240,7 +240,7 @@ public class Status {
         synchronized (this) {
             Set<Pattern> patterns = queryCacheCounted.get(name);
             if (patterns == null) {
-                patterns = new HashSet<Pattern>();
+                patterns = new HashSet<>();
                 queryCacheCounted.put(name, patterns);
             }
             patterns.add(pattern);
@@ -248,7 +248,7 @@ public class Status {
         }
     }
 
-    private void readStatusFromFile() throws Exception {
+    private void readStatusFromFile() throws IOException {
         LOGGER.debug("Reading status from file '%s'.", file);
 
         lines = Files.readAllLines(file, Constants.CHARSET);
@@ -270,28 +270,24 @@ public class Status {
         continuationChunked = readChunked("continuationChunked");
         queryCacheCounted = readQueryCacheCounted("queryCacheCounted");
 
-        counted = new HashSet<Pattern>();
+        counted = new HashSet<>();
         counted.addAll(absoluteCounted);
         counted.addAll(continuationCounted);
     }
 
-    private void assertNextSection(String expectedSection) throws Exception {
+    private void assertNextSection(String expectedSection) {
         LOGGER.trace("Status.assertNextSection(expectedSection=%s)",
                 expectedSection);
 
         String section = readNextSection();
 
         if (!section.equals(expectedSection))
-            try (Formatter f = new Formatter()) {
-                f.format("Illegal line '%d' in file '%s'.%n", lineNo, file);
-                f.format("Expected section '%s', but was '%s' instead.%n",
-                        expectedSection, section);
-                f.format("Line was: '%s'.", line);
-                throw new Exception(f.toString());
-            }
+            throw newFileFormatException("format",
+                    "Expected section '%s', but was '%s' instead.%n",
+                    expectedSection, section);
     }
 
-    private String readNextSection() throws Exception {
+    private String readNextSection() {
         LOGGER.trace("Status.readNextSection()");
 
         readNextLine(false);
@@ -303,15 +299,11 @@ public class Status {
                 return section;
         }
 
-        try (Formatter f = new Formatter()) {
-            f.format("Illegal line '%d' in file '%s'.%n", lineNo, file);
-            f.format("Expected line to have format: '<sectionname>:'.");
-            f.format("Line was: '%s'.", line);
-            throw new Exception(f.toString());
-        }
+        throw newFileFormatException("format",
+                "Expected line to have format: '<sectionname>:'.");
     }
 
-    private String readNextValue(String expectedKey) throws Exception {
+    private String readNextValue(String expectedKey) {
         LOGGER.trace("Status.readNextValue(expectedKey=%s)", expectedKey);
 
         Entry<String, String> entry = readNextKeyValue();
@@ -319,40 +311,31 @@ public class Status {
         String value = entry.getValue();
 
         if (!key.equals(expectedKey))
-            try (Formatter f = new Formatter()) {
-                f.format("Illegal key on line '%d' in file '%s'.%n", lineNo,
-                        file);
-                f.format("Expected key '%s', but was '%s' instead.%n",
-                        expectedKey, key);
-                f.format("Line was: '%s'.", line);
-                throw new Exception(f.toString());
-            }
+            throw newFileFormatException("key",
+                    "Expected key '%s', but was '%s' instead.%n", expectedKey,
+                    key);
 
         return value;
     }
 
-    private Entry<String, String> readNextKeyValue() throws Exception {
+    private Entry<String, String> readNextKeyValue() {
         LOGGER.trace("Status.readNextKeyValue()");
 
         readNextLine(false);
 
         List<String> split = StringUtils.splitAtChar(line, '=');
         if (split.size() != 2)
-            try (Formatter f = new Formatter()) {
-                f.format("Illegal line '%d' in file '%s'.%n", lineNo, file);
-                f.format("Expected line to have format: '<key> = <value>'.%n");
-                f.format("Line was: '%s'.", line);
-                throw new Exception(f.toString());
-            }
+            throw newFileFormatException("format",
+                    "Expected line to have format: '<key> = <value>'.");
 
         String key = split.get(0).trim();
         String value = split.get(1).trim();
         if (value.equals("null") || value.isEmpty())
             value = null;
-        return new SimpleEntry<String, String>(key, value);
+        return new SimpleEntry<>(key, value);
     }
 
-    private NextLine peekNextLine() throws Exception {
+    private NextLine peekNextLine() {
         LOGGER.trace("Status.peekNextLine()");
 
         int numReadLines = readNextLine(true);
@@ -366,7 +349,7 @@ public class Status {
             return NextLine.KEYVALUE;
     }
 
-    private int readNextLine(boolean allowEof) throws Exception {
+    private int readNextLine(boolean allowEof) {
         LOGGER.trace("Status.readNextLine(allowEof=%b)", allowEof);
 
         int numReadLines = 0;
@@ -378,9 +361,9 @@ public class Status {
                 if (allowEof) {
                     line = null;
                     break;
-                } else
-                    throw new Exception(String.format(
-                            "Unexcpected End of File in file '%s'.", file));
+                }
+                throw new FileFormatException(String.format(
+                        "Unexcpected End of File in file '%s'.", file));
             }
         } while (line.trim().isEmpty());
         return numReadLines;
@@ -407,26 +390,22 @@ public class Status {
         return false;
     }
 
-    private Training readTraining(String key) throws Exception {
-        String value = readNextValue("training");
+    private Training readTraining(String key) {
+        String value = readNextValue(key);
         try {
             return Training.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
             String possibleValues = "'"
                     + StringUtils.join(Training.values(), "', '") + "'";
-            try (Formatter f = new Formatter()) {
-                f.format("Illegal training value on line '%d' in file '%s'.%n",
-                        lineNo, file);
-                f.format("Possible values are: %s.%n", possibleValues);
-                f.format("Found value '%s' instead.", value);
-                throw new Exception(f.toString());
-            }
+            throw newFileFormatException("training value",
+                    "Possible values are: %s.%nFound value '%s' instead.",
+                    possibleValues, value);
         }
     }
 
-    private Set<Pattern> readCounted(String key) throws Exception {
+    private Set<Pattern> readCounted(String key) {
         String value = readNextValue(key);
-        Set<Pattern> result = new HashSet<Pattern>();
+        Set<Pattern> result = new HashSet<>();
         if (value == null)
             return result;
         for (String patternStr : StringUtils.splitAtChar(value, ','))
@@ -434,10 +413,10 @@ public class Status {
         return result;
     }
 
-    private Map<Pattern, Set<String>> readChunked(String section) throws Exception {
+    private Map<Pattern, Set<String>> readChunked(String section) {
         assertNextSection(section);
 
-        Map<Pattern, Set<String>> result = new HashMap<Pattern, Set<String>>();
+        Map<Pattern, Set<String>> result = new HashMap<>();
         while (peekNextLine() == NextLine.KEYVALUE) {
             Entry<String, String> entry = readNextKeyValue();
             String key = entry.getKey();
@@ -445,33 +424,30 @@ public class Status {
             if (value == null)
                 continue;
 
-            Set<String> chunks = new HashSet<String>();
+            Set<String> chunks = new HashSet<>();
             for (String chunkStr : StringUtils.splitAtChar(value, ','))
                 chunks.add(chunkStr);
 
             Pattern pattern = readPattern(key);
             if (result.containsKey(pattern))
-                try (Formatter f = new Formatter()) {
-                    f.format("Illegal key on line '%d' in file '%s'.%n",
-                            lineNo, file);
-                    f.format(
-                            "Key '%s' was already found previously for section '%s'.",
-                            key, section);
-                }
+                throw newFileFormatException(
+                                             "key",
+                                             "Key '%s' was already found previously for section '%s'.",
+                                             key, section);
             result.put(pattern, chunks);
         }
         return result;
     }
 
-    private boolean readBoolean(String key) throws Exception {
+    private boolean readBoolean(String key) {
         String value = readNextValue(key);
         return Boolean.parseBoolean(value);
     }
 
-    private Map<String, Set<Pattern>> readQueryCacheCounted(String section) throws Exception {
+    private Map<String, Set<Pattern>> readQueryCacheCounted(String section) {
         assertNextSection(section);
 
-        Map<String, Set<Pattern>> result = new HashMap<String, Set<Pattern>>();
+        Map<String, Set<Pattern>> result = new HashMap<>();
         while (peekNextLine() == NextLine.KEYVALUE) {
             Entry<String, String> entry = readNextKeyValue();
             String key = entry.getKey();
@@ -479,18 +455,15 @@ public class Status {
             if (value == null)
                 continue;
 
-            Set<Pattern> patterns = new HashSet<Pattern>();
+            Set<Pattern> patterns = new HashSet<>();
             for (String patternStr : StringUtils.splitAtChar(value, ','))
                 patterns.add(readPattern(patternStr));
 
             if (result.containsKey(key))
-                try (Formatter f = new Formatter()) {
-                    f.format("Illegal key on line '%d' in file '%s'.%n",
-                            lineNo, file);
-                    f.format(
-                            "Key '%s' was already found previously for section '%s'.",
-                            key, section);
-                }
+                throw newFileFormatException(
+                        "key",
+                        "Key '%s' was already found previously for section '%s'.",
+                        key, section);
             result.put(key, patterns);
         }
         return result;
@@ -502,6 +475,18 @@ public class Status {
         } catch (RuntimeException e) {
             // TODO: Better error.
             throw e;
+        }
+    }
+
+    private FileFormatException newFileFormatException(String type,
+                                                       String message,
+                                                       Object... params) {
+        try (Formatter f = new Formatter()) {
+            f.format("Illegal %s on line '%d' in file '%s'.%n", type, lineNo,
+                    file);
+            f.format(message, params);
+            f.format("%nLine was: '%s'.", line);
+            return new FileFormatException(f.toString());
         }
     }
 

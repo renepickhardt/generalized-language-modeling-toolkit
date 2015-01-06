@@ -19,13 +19,12 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
-import de.glmtk.Termination;
+import de.glmtk.exceptions.Termination;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.StringUtils;
 
@@ -46,7 +45,7 @@ import de.glmtk.util.StringUtils;
 
     protected abstract void exec() throws Exception;
 
-    public void run(String[] args) throws Exception {
+    public void run(String[] args) {
         try {
             parseArguments(args);
 
@@ -84,17 +83,13 @@ import de.glmtk.util.StringUtils;
                 false);
     }
 
-    protected void parseArguments(String[] args) {
+    protected void parseArguments(String[] args) throws Exception {
         Options options = new Options();
         for (Option option : getOptions())
             options.addOption(option);
 
-        try {
-            CommandLineParser parser = new PosixParser();
-            line = parser.parse(options, args);
-        } catch (ParseException e) {
-            throw new Termination(e.getMessage());
-        }
+        CommandLineParser parser = new PosixParser();
+        line = parser.parse(options, args);
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
             System.out.println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");

@@ -40,6 +40,7 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Status;
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
@@ -91,9 +92,9 @@ public enum Chunker {
                     patternDir = absoluteChunkedDir.resolve(pattern.toString());
                 else
                     patternDir = continuationChunkedDir.resolve(pattern.toString());
-                chunkFiles = new LinkedHashSet<String>();
+                chunkFiles = new LinkedHashSet<>();
                 chunkSize = 0L;
-                chunkCounts = new HashMap<String, Counter>();
+                chunkCounts = new HashMap<>();
 
                 Files.createDirectories(patternDir);
 
@@ -139,7 +140,7 @@ public enum Chunker {
 
                 writeChunkToFile();
                 chunkSize = 0L;
-                chunkCounts = new HashMap<String, Counter>();
+                chunkCounts = new HashMap<>();
             }
         }
 
@@ -149,8 +150,7 @@ public enum Chunker {
 
             try (BufferedWriter writer = NioUtils.newBufferedWriter(chunkFile,
                     Constants.CHARSET, writerMemory)) {
-                Map<String, Counter> sortedCounts = new TreeMap<String, Counter>(
-                        chunkCounts);
+                Map<String, Counter> sortedCounts = new TreeMap<>(chunkCounts);
                 for (Entry<String, Counter> entry : sortedCounts.entrySet()) {
                     writer.append(entry.getKey()).append('\t');
                     if (!continuation)
@@ -238,14 +238,13 @@ public enum Chunker {
 
             if (!fromChunked)
                 return Arrays.asList(inputDir);
-            else {
-                List<Path> result = new ArrayList<Path>();
-                try (DirectoryStream<Path> inputDirStream = Files.newDirectoryStream(inputDir)) {
-                    for (Path inputFile : inputDirStream)
-                        result.add(inputFile);
-                }
-                return result;
+
+            List<Path> result = new ArrayList<>();
+            try (DirectoryStream<Path> inputDirStream = Files.newDirectoryStream(inputDir)) {
+                for (Path inputFile : inputDirStream)
+                    result.add(inputFile);
             }
+            return result;
         }
 
         @Override
@@ -265,7 +264,7 @@ public enum Chunker {
 
         private void perLine(String line,
                              int lineNo,
-                             Path inputFile) throws Exception {
+                             Path file) throws IOException {
             List<String> split = StringUtils.splitAtChar(line, '\t');
             String seq = split.get(0);
             long count;
@@ -277,15 +276,15 @@ public enum Chunker {
                     // from Continuation
                     count = Long.parseLong(split.get(1));
                 else
-                    throw new IllegalStateException();
-            } catch (IllegalStateException | NumberFormatException e) {
+                    throw new RuntimeException();
+            } catch (RuntimeException e) {
                 try (Formatter f = new Formatter()) {
                     f.format("Illegal input line '%d' in file '%s'.%n", lineNo,
-                            inputFile);
+                            file);
                     f.format("Needs to be of format '<sequence>(<tab><count>){1,4}'.%n");
                     f.format("Where <count> needs to be a valid integer.%n");
                     f.format("Line was: '%s'.", line);
-                    throw new Exception(f.toString());
+                    throw new FileFormatException(f.toString());
                 }
             }
 
@@ -345,7 +344,7 @@ public enum Chunker {
             return;
 
         this.continuation = continuation;
-        patternQueue = new PriorityBlockingQueue<Pattern>(patterns.size(),
+        patternQueue = new PriorityBlockingQueue<>(patterns.size(),
                 PATTERN_COMPARATOR);
         patternQueue.addAll(patterns);
         calculateMemory();
@@ -357,14 +356,14 @@ public enum Chunker {
             int memory = (int) Math.min(Files.size(trainingFile), readerMemory);
             try (BufferedReader reader = NioUtils.newBufferedReader(
                     trainingFile, Constants.CHARSET, memory)) {
-                trainingCache = new ArrayList<String>();
+                trainingCache = new ArrayList<>();
                 String line;
                 while ((line = reader.readLine()) != null)
                     trainingCache.add(line);
             }
         }
 
-        List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
+        List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
             if (!continuation)
                 threads.add(new AbsoluteThread());
