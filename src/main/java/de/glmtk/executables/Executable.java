@@ -16,13 +16,13 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.fusesource.jansi.AnsiConsole;
 
 import de.glmtk.Constants;
 import de.glmtk.Termination;
@@ -40,7 +40,9 @@ import de.glmtk.util.StringUtils;
 
     protected abstract List<Option> getOptions();
 
-    protected abstract String getUsage();
+    protected abstract String getHelpHeader();
+
+    protected abstract String getHelpFooter();
 
     protected abstract void exec() throws Exception;
 
@@ -100,27 +102,25 @@ import de.glmtk.util.StringUtils;
         }
 
         if (line.hasOption(OPTION_HELP_LONG)) {
-            GlmtkHelpFormatter formatter = new GlmtkHelpFormatter();
-            formatter.setSyntaxPrefix("Usage: ");
+            System.out.print(getHelpHeader());
+
+            PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out,
+                    Constants.CHARSET));
+            //            GlmtkHelpFormatter formatter = new GlmtkHelpFormatter();
+            HelpFormatter formatter = new HelpFormatter();
             formatter.setLongOptPrefix(" --");
             formatter.setOptionComparator(new Comparator<Option>() {
-
                 @Override
                 public int compare(Option o1,
                                    Option o2) {
                     return getOptions().indexOf(o1) - getOptions().indexOf(o2);
                 }
-
             });
+            formatter.printOptions(pw, 80, options, 2, 2);
+            pw.flush();
+            // do not close stream to System.out
 
-            String header = null;
-            String footer = null;
-
-            try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(
-                    AnsiConsole.out, Constants.CHARSET))) {
-                formatter.printHelp(pw, 80, getUsage(), header, options, 2, 8,
-                        footer);
-            }
+            System.out.print(getHelpFooter());
             throw new Termination();
         }
     }

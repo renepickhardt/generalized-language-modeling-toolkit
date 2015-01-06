@@ -52,21 +52,6 @@ public class GlmtkExecutable extends Executable {
     // TODO: API for interactive mode
     // TODO: log to stderr if using --log.
 
-    public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
-    static {
-        Map<String, Estimator> m = new LinkedHashMap<String, Estimator>();
-        m.put("MLE", Estimators.MLE);
-        m.put("MKN", Estimators.MOD_KNESER_NEY);
-        m.put("MKNS", Estimators.MOD_KNESER_NEY_SKP);
-        m.put("MKNA", Estimators.MOD_KNESER_NEY_ABS);
-        m.put("GLM", Estimators.GLM);
-        m.put("GLMD", Estimators.GLM_DEL);
-        m.put("GLMDF", Estimators.GLM_DEL_FRONT);
-        m.put("GLMSD", Estimators.GLM_SKP_AND_DEL);
-        m.put("GLMA", Estimators.GLM_ABS);
-        OPTION_ESTIMATOR_ARGUMENTS = m;
-    }
-
     private static final Option OPTION_HELP;
     private static final Option OPTION_VERSION;
     private static final Option OPTION_WORKINGDIR;
@@ -88,31 +73,25 @@ public class GlmtkExecutable extends Executable {
 
         OPTION_WORKINGDIR = new Option("w", "workingdir", true,
                 "Working directory.");
-        OPTION_WORKINGDIR.setArgName("<WORKINGDIR>");
+        OPTION_WORKINGDIR.setArgName("DIRECTORY");
 
         OPTION_TRAINING_ORDER = new Option("n", "training-order", true,
                 "Order to learn for training.");
-        OPTION_TRAINING_ORDER.setArgName("<ORDER>");
+        OPTION_TRAINING_ORDER.setArgName("ORDER");
 
-        try (Formatter estimatorDesc = new Formatter()) {
-            estimatorDesc.format("Can be specified multiple times.%n");
-            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet())
-                estimatorDesc.format("%-5s - %s%n", arg.getKey(),
-                        arg.getValue().getName());
-            OPTION_ESTIMATOR = new Option("e", "estimator", true,
-                    estimatorDesc.toString());
-            OPTION_ESTIMATOR.setArgName("<ESTIMATOR>...");
-            OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
-        }
+        OPTION_ESTIMATOR = new Option("e", "estimator", true,
+                "Can be specified multiple times.");
+        OPTION_ESTIMATOR.setArgName("ESTIMATOR...");
+        OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
 
         OPTION_IO = new Option("i", "io", true,
-                "Takes queries from standart input with given mode");
-        OPTION_IO.setArgName("<MODE>");
+                "Takes queries from standart input with given mode.");
+        OPTION_IO.setArgName("MODE");
         OPTION_IO.setArgs(1);
 
         OPTION_QUERY = new Option("q", "query", true,
                 "Queries the given files with given mode.");
-        OPTION_QUERY.setArgName("<MODE> <FILE>...");
+        OPTION_QUERY.setArgName("MODE> <FILE...");
         OPTION_QUERY.setArgs(Option.UNLIMITED_VALUES);
 
         OPTION_LOG_CONSOLE = new Option(null, "log", false,
@@ -124,6 +103,26 @@ public class GlmtkExecutable extends Executable {
         OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
                 OPTION_TRAINING_ORDER, OPTION_ESTIMATOR, OPTION_IO,
                 OPTION_QUERY, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
+    }
+
+    // TODO: API to count all patterns.
+    // TODO: API to only create querycache
+    // TODO: API for interactive mode
+    // TODO: log to stderr if using --log.
+
+    public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
+    static {
+        Map<String, Estimator> m = new LinkedHashMap<String, Estimator>();
+        m.put("MLE", Estimators.MLE);
+        m.put("MKN", Estimators.MOD_KNESER_NEY);
+        m.put("MKNS", Estimators.MOD_KNESER_NEY_SKP);
+        m.put("MKNA", Estimators.MOD_KNESER_NEY_ABS);
+        m.put("GLM", Estimators.GLM);
+        m.put("GLMD", Estimators.GLM_DEL);
+        m.put("GLMDF", Estimators.GLM_DEL_FRONT);
+        m.put("GLMSD", Estimators.GLM_SKP_AND_DEL);
+        m.put("GLMA", Estimators.GLM_ABS);
+        OPTION_ESTIMATOR_ARGUMENTS = m;
     }
 
     public static void main(String[] args) throws Exception {
@@ -145,8 +144,38 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected String getUsage() {
-        return "glmtk <INPUT> [OPTION]...";
+    protected String getHelpHeader() {
+        try (Formatter f = new Formatter()) {
+            f.format("glmtk <INPUT> [<OPTION...>]%n");
+            f.format("Invokes the Generalized Language Model Toolkit.%n");
+
+            f.format("\nMandatory arguments to long options are mandatory for short options too.%n");
+
+            return f.toString();
+        }
+    }
+
+    @Override
+    protected String getHelpFooter() {
+        try (Formatter f = new Formatter()) {
+            f.format("%nWhere <ORDER> may be any postive integer.%n");
+
+            f.format("%nWhere <ESTIMATOR> may be any of:%n");
+            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet())
+                f.format("  * %-5s  %s%n", arg.getKey(),
+                        arg.getValue().getName());
+
+            f.format("%nWhere <MODE> may be any of:%n");
+            f.format("  * <ORDER>        P^n%n");
+            f.format("  * Sequence       P^*%n");
+            f.format("  * Markov<ORDER>  P^* with markov%n");
+            f.format("  * Cond<ORDER>    Conditional P%n");
+
+            f.format("%nFor more information, see:%n");
+            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
+
+            return f.toString();
+        }
     }
 
     @Override

@@ -102,6 +102,11 @@ public class StringUtils {
      */
     public static String repeat(String string,
                                 int times) {
+        if (times < 0)
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Argument 'times' needs to be greater or equal to zero, was '%d'.",
+                            times));
         StringBuilder result = new StringBuilder();
         for (int i = 0; i != times; ++i)
             result.append(string);
