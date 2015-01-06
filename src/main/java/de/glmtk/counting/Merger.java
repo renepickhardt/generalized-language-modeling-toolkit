@@ -203,10 +203,13 @@ public enum Merger {
                 PriorityQueue<SequenceCountReader> readerQueue = new PriorityQueue<SequenceCountReader>(
                         chunksToMerge.size(), SequenceCountReader.COMPARATOR);
                 int memoryPerReader = (int) (readerMemory / chunksToMerge.size());
-                for (String chunk : chunksToMerge)
-                    readerQueue.add(new SequenceCountReader(
-                            patternDir.resolve(chunk), Constants.CHARSET,
-                            memoryPerReader));
+                for (String chunk : chunksToMerge) {
+                    Path chunkFile = patternDir.resolve(chunk);
+                    int memory = (int) Math.min(Files.size(chunkFile),
+                            memoryPerReader);
+                    readerQueue.add(new SequenceCountReader(chunkFile,
+                            Constants.CHARSET, memory));
+                }
 
                 String lastSequence = null;
                 Counter aggregationCounter = null;

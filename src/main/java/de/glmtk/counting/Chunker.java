@@ -180,13 +180,15 @@ public enum Chunker {
             if (trainingCache != null)
                 for (String line : trainingCache)
                     perLine(line, patternSize);
-            else
+            else {
+                int memory = (int) Math.min(Files.size(inputFile), readerMemory);
                 try (BufferedReader reader = NioUtils.newBufferedReader(
-                        inputFile, Constants.CHARSET, readerMemory)) {
+                        inputFile, Constants.CHARSET, memory)) {
                     String line;
                     while ((line = reader.readLine()) != null)
                         perLine(line, patternSize);
                 }
+            }
         }
 
         private void perLine(String line,
@@ -249,8 +251,9 @@ public enum Chunker {
         @Override
         protected void sequenceInput(Path inputFile) throws Exception {
             LOGGER.debug("Sequencing '%s' from '%s'.", pattern, inputFile);
+            int memory = (int) Math.min(Files.size(inputFile), readerMemory);
             try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
-                    Constants.CHARSET, readerMemory)) {
+                    Constants.CHARSET, memory)) {
                 String line;
                 int lineNo = -1;
                 while ((line = reader.readLine()) != null) {
@@ -350,14 +353,16 @@ public enum Chunker {
         if (continuation
                 || Files.size(trainingFile) < CONFIG.getTrainingCacheThreshold())
             trainingCache = null;
-        else
+        else {
+            int memory = (int) Math.min(Files.size(trainingFile), readerMemory);
             try (BufferedReader reader = NioUtils.newBufferedReader(
-                    trainingFile, Constants.CHARSET, readerMemory)) {
+                    trainingFile, Constants.CHARSET, memory)) {
                 trainingCache = new ArrayList<String>();
                 String line;
                 while ((line = reader.readLine()) != null)
                     trainingCache.add(line);
             }
+        }
 
         List<Callable<Object>> threads = new LinkedList<Callable<Object>>();
         for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)

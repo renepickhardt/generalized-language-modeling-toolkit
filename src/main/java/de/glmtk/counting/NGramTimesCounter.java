@@ -71,10 +71,11 @@ public enum NGramTimesCounter {
 
                 Path inputDir = pattern.isAbsolute()
                         ? absoluteDir
-                                : continuationDir;
+                        : continuationDir;
                 Path inputFile = inputDir.resolve(pattern.toString());
+                int memory = (int) Math.min(Files.size(inputFile), readerMemory);
                 try (BufferedReader reader = NioUtils.newBufferedReader(
-                        inputFile, Constants.CHARSET, readerMemory)) {
+                        inputFile, Constants.CHARSET, memory)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         Counter.getSequenceAndCounter(line, counter);
