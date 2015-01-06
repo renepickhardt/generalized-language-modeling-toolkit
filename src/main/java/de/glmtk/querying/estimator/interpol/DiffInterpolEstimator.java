@@ -1,4 +1,4 @@
-package de.glmtk.querying.estimator.interpolation;
+package de.glmtk.querying.estimator.interpol;
 
 import java.util.Set;
 
@@ -7,31 +7,31 @@ import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 
-public class DiffInterpolationEstimator extends InterpolationEstimator {
-    public DiffInterpolationEstimator(DiscountEstimator alpha) {
+public class DiffInterpolEstimator extends InterpolEstimator {
+    public DiffInterpolEstimator(DiscountEstimator alpha) {
         super(alpha, BackoffMode.SKP);
     }
 
-    public DiffInterpolationEstimator(DiscountEstimator alpha,
-                                      Estimator beta) {
+    public DiffInterpolEstimator(DiscountEstimator alpha,
+                                 Estimator beta) {
         super(alpha, beta, BackoffMode.SKP);
     }
 
-    public DiffInterpolationEstimator(DiscountEstimator alpha,
-                                      Estimator beta,
-                                      BackoffMode backoffMode) {
+    public DiffInterpolEstimator(DiscountEstimator alpha,
+                                 Estimator beta,
+                                 BackoffMode backoffMode) {
         super(alpha, beta, backoffMode);
     }
 
-    public DiffInterpolationEstimator(DiscountEstimator alpha,
-                                      BackoffMode backoffMode) {
+    public DiffInterpolEstimator(DiscountEstimator alpha,
+                                 BackoffMode backoffMode) {
         super(alpha, backoffMode);
     }
 
     @Override
     public void setBackoffMode(BackoffMode backoffMode) {
         // Here all backoffModes are allowed, as opposed to
-        // {@link InterpolationEstimator#setBackoffMode(BackoffMode)}.
+        // {@link InterpolEstimator#setBackoffMode(BackoffMode)}.
         this.backoffMode = backoffMode;
     }
 

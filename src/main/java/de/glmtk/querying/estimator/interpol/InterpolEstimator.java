@@ -1,4 +1,4 @@
-package de.glmtk.querying.estimator.interpolation;
+package de.glmtk.querying.estimator.interpol;
 
 import static de.glmtk.common.PatternElem.WSKP_WORD;
 import de.glmtk.common.BackoffMode;
@@ -11,30 +11,30 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 
-public class InterpolationEstimator extends Estimator {
+public class InterpolEstimator extends Estimator {
     protected DiscountEstimator alpha;
     protected Estimator beta;
     protected BackoffMode backoffMode;
 
-    public InterpolationEstimator(DiscountEstimator alpha,
-                                  Estimator beta) {
+    public InterpolEstimator(DiscountEstimator alpha,
+                             Estimator beta) {
         this(alpha, beta, BackoffMode.DEL);
     }
 
-    public InterpolationEstimator(DiscountEstimator alpha) {
+    public InterpolEstimator(DiscountEstimator alpha) {
         this(alpha, BackoffMode.DEL);
     }
 
-    public InterpolationEstimator(DiscountEstimator alpha,
-                                  BackoffMode backoffMode) {
+    public InterpolEstimator(DiscountEstimator alpha,
+                             BackoffMode backoffMode) {
         this.alpha = alpha;
         beta = this;
         setBackoffMode(backoffMode);
     }
 
-    public InterpolationEstimator(DiscountEstimator alpha,
-                                  Estimator beta,
-                                  BackoffMode backoffMode) {
+    public InterpolEstimator(DiscountEstimator alpha,
+                             Estimator beta,
+                             BackoffMode backoffMode) {
         this.alpha = alpha;
         this.beta = beta;
         setBackoffMode(backoffMode);

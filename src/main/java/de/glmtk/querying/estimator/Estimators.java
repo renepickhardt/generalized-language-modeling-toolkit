@@ -8,8 +8,8 @@ import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.FalseMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
-import de.glmtk.querying.estimator.interpolation.DiffInterpolationEstimator;
-import de.glmtk.querying.estimator.interpolation.InterpolationEstimator;
+import de.glmtk.querying.estimator.interpol.DiffInterpolEstimator;
+import de.glmtk.querying.estimator.interpol.InterpolEstimator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
@@ -71,78 +71,78 @@ public class Estimators {
         BACKOFF_CMLE.setName("Backoff-Continuation MaximumlikeLikeLihood");
     }
 
-    // Interpolation Estimators ////////////////////////////////////////////////
+    // Interpol Estimators /////////////////////////////////////////////////////
 
-    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC = new InterpolationEstimator(
+    public static final InterpolEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC = new InterpolEstimator(
             ABS_DISCOUNT_MLE, MLE, BackoffMode.SKP);
     static {
-        INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC.setName("Interpolation-MaximumLikelihood (SKP Backoff, Non-Recursive)");
+        INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC.setName("Interpol-MaximumLikelihood (SKP Backoff, Non-Recursive)");
     }
 
-    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC = new InterpolationEstimator(
+    public static final InterpolEstimator INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC = new InterpolEstimator(
             ABS_DISCOUNT_MLE, MLE, BackoffMode.DEL);
     static {
-        INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC.setName("Interpolation-MaximumLikelihood (DEL Backoff, Non-Recursive)");
+        INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC.setName("Interpol-MaximumLikelihood (DEL Backoff, Non-Recursive)");
     }
 
-    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP = new InterpolationEstimator(
+    public static final InterpolEstimator INTERPOL_ABS_DISCOUNT_MLE_SKP = new InterpolEstimator(
             ABS_DISCOUNT_MLE, BackoffMode.SKP);
     static {
-        INTERPOL_ABS_DISCOUNT_MLE_SKP.setName("Interpolation-MaximumLikelihood (SKP Backoff)");
+        INTERPOL_ABS_DISCOUNT_MLE_SKP.setName("Interpol-MaximumLikelihood (SKP Backoff)");
     }
 
-    public static final InterpolationEstimator INTERPOL_ABS_DISCOUNT_MLE_DEL = new InterpolationEstimator(
+    public static final InterpolEstimator INTERPOL_ABS_DISCOUNT_MLE_DEL = new InterpolEstimator(
             ABS_DISCOUNT_MLE, BackoffMode.DEL);
     static {
-        INTERPOL_ABS_DISCOUNT_MLE_DEL.setName("Interpolation-MaximumLikelihood (DEL Backoff)");
+        INTERPOL_ABS_DISCOUNT_MLE_DEL.setName("Interpol-MaximumLikelihood (DEL Backoff)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, MLE, BackoffMode.SKP);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC.setName("DiffInterpolation-MaximumLikelihood (SKP Backoff, Non-Recursive)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC.setName("DiffInterpol-MaximumLikelihood (SKP Backoff, Non-Recursive)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, MLE, BackoffMode.DEL);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC.setName("DiffInterpolation-MaximumLikelihood (DEL Backoff, Non-Recursive)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC.setName("DiffInterpol-MaximumLikelihood (DEL Backoff, Non-Recursive)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, MLE, BackoffMode.DEL_FRONT);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC.setName("DiffInterpolation-MaximumLikelihood (DEL_FRONT Backoff, Non-Recursive)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC.setName("DiffInterpol-MaximumLikelihood (DEL_FRONT Backoff, Non-Recursive)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, MLE, BackoffMode.SKP_AND_DEL);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC.setName("DiffInterpolation-MaximumLikelihood (SKP_AND_DEL Backoff, Non-Recursive)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC.setName("DiffInterpol-MaximumLikelihood (SKP_AND_DEL Backoff, Non-Recursive)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, BackoffMode.SKP);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP.setName("DiffInterpolation-MaximumLikelihood (SKP Backoff)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP.setName("DiffInterpol-MaximumLikelihood (SKP Backoff)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, BackoffMode.DEL);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL.setName("DiffInterpolation-MaximumLikelihood (DEL Backoff)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL.setName("DiffInterpol-MaximumLikelihood (DEL Backoff)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, BackoffMode.DEL_FRONT);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT.setName("DiffInterpolation-MaximumLikelihood (DEL_FRONT Backoff)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT.setName("DiffInterpol-MaximumLikelihood (DEL_FRONT Backoff)");
     }
 
-    public static final DiffInterpolationEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL = new DiffInterpolEstimator(
             ABS_DISCOUNT_MLE, BackoffMode.SKP_AND_DEL);
     static {
-        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL.setName("DiffInterpolation-MaximumLikelihood (SKP_AND_DEL Backoff)");
+        DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL.setName("DiffInterpol-MaximumLikelihood (SKP_AND_DEL Backoff)");
     }
 
     // Combination Estimators //////////////////////////////////////////////////
@@ -155,67 +155,67 @@ public class Estimators {
 
     // Combined Estimators /////////////////////////////////////////////////////
 
-    public static final InterpolationEstimator MOD_KNESER_NEY = makeMkn(BackoffMode.DEL);
+    public static final InterpolEstimator MOD_KNESER_NEY = makeMkn(BackoffMode.DEL);
     static {
         MOD_KNESER_NEY.setName("Modified-Kneser-Ney");
     }
 
-    public static final InterpolationEstimator MOD_KNESER_NEY_SKP = makeMkn(BackoffMode.SKP);
+    public static final InterpolEstimator MOD_KNESER_NEY_SKP = makeMkn(BackoffMode.SKP);
     static {
         MOD_KNESER_NEY_SKP.setName("Modified-Kneser-Ney (SKP-Backoff)");
     }
 
-    public static final InterpolationEstimator MOD_KNESER_NEY_ABS = new InterpolationEstimator(
+    public static final InterpolEstimator MOD_KNESER_NEY_ABS = new InterpolEstimator(
             new ModifiedKneserNeyDiscountEstimator(
                     new MaximumLikelihoodEstimator()), BackoffMode.DEL);
     static {
         MOD_KNESER_NEY_ABS.setName("Modified-Kneser-Ney (Abs-Lower-Order)");
     }
 
-    public static final DiffInterpolationEstimator GLM = makeGlm(BackoffMode.SKP);
+    public static final DiffInterpolEstimator GLM = makeGlm(BackoffMode.SKP);
     static {
         GLM.setName("Generalized-Language-Model");
     }
 
-    public static final DiffInterpolationEstimator GLM_DEL = makeGlm(BackoffMode.DEL);
+    public static final DiffInterpolEstimator GLM_DEL = makeGlm(BackoffMode.DEL);
     static {
         GLM_DEL.setName("Generalized-Language-Model (DEL-Backoff)");
     }
 
-    public static final DiffInterpolationEstimator GLM_DEL_FRONT = makeGlm(BackoffMode.DEL_FRONT);
+    public static final DiffInterpolEstimator GLM_DEL_FRONT = makeGlm(BackoffMode.DEL_FRONT);
     static {
         GLM_DEL_FRONT.setName("Generalized-Language-Model (DEL-FRONT-Backoff)");
     }
 
-    public static final DiffInterpolationEstimator GLM_SKP_AND_DEL = makeGlm(BackoffMode.SKP_AND_DEL);
+    public static final DiffInterpolEstimator GLM_SKP_AND_DEL = makeGlm(BackoffMode.SKP_AND_DEL);
     static {
         GLM_SKP_AND_DEL.setName("Generalized-Language-Model (SKP-AND-DEL-Backoff)");
     }
 
-    public static final DiffInterpolationEstimator GLM_ABS = new DiffInterpolationEstimator(
+    public static final DiffInterpolEstimator GLM_ABS = new DiffInterpolEstimator(
             new ModifiedKneserNeyDiscountEstimator(
                     new MaximumLikelihoodEstimator()), BackoffMode.SKP);
     static {
         GLM_ABS.setName("Generalized-Language-Model (Abs-Lower-Order)");
     }
 
-    private static InterpolationEstimator makeMkn(BackoffMode BackoffMode) {
+    private static InterpolEstimator makeMkn(BackoffMode BackoffMode) {
         ModifiedKneserNeyDiscountEstimator alpha = new ModifiedKneserNeyDiscountEstimator(
                 new MaximumLikelihoodEstimator());
-        InterpolationEstimator beta = new InterpolationEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
-                        new ContinuationMaximumLikelihoodEstimator()),
-                BackoffMode);
-        return new InterpolationEstimator(alpha, beta, BackoffMode);
-    }
-
-    private static DiffInterpolationEstimator makeGlm(BackoffMode BackoffMode) {
-        ModifiedKneserNeyDiscountEstimator alpha = new ModifiedKneserNeyDiscountEstimator(
-                new MaximumLikelihoodEstimator());
-        DiffInterpolationEstimator beta = new DiffInterpolationEstimator(
+        InterpolEstimator beta = new InterpolEstimator(
                 new ModifiedKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode);
-        return new DiffInterpolationEstimator(alpha, beta, BackoffMode);
+        return new InterpolEstimator(alpha, beta, BackoffMode);
+    }
+
+    private static DiffInterpolEstimator makeGlm(BackoffMode BackoffMode) {
+        ModifiedKneserNeyDiscountEstimator alpha = new ModifiedKneserNeyDiscountEstimator(
+                new MaximumLikelihoodEstimator());
+        DiffInterpolEstimator beta = new DiffInterpolEstimator(
+                new ModifiedKneserNeyDiscountEstimator(
+                        new ContinuationMaximumLikelihoodEstimator()),
+                BackoffMode);
+        return new DiffInterpolEstimator(alpha, beta, BackoffMode);
     }
 }
