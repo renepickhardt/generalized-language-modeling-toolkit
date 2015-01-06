@@ -165,7 +165,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-                                           Pattern pattern) {
+            Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -529,16 +529,15 @@ public class Status {
 
     private void writeSection(BufferedWriter writer,
                               String section) throws IOException {
-        writer.append('\n' + section + ":\n");
+        writer.append('\n').append(section).append(":\n");
     }
 
     private <T, V> void writeKeyValue(BufferedWriter writer,
                                       T key,
                                       V value) throws IOException {
-        writer.append(key.toString());
-        writer.append(" = ");
-        writer.append(value != null ? value.toString() : "null");
-        writer.append('\n');
+        String valueStr = value != null ? value.toString() : "null";
+        writer.append(key.toString()).append(" = ").append(valueStr).append(
+                '\n');
     }
 
     private <T> void writeBoolean(BufferedWriter writer,

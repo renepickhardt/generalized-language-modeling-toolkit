@@ -249,10 +249,8 @@ public enum Config {
                 throw new IllegalStateException(e);
             }
 
-            result.append(field.getName());
-            result.append('=');
-            result.append(value);
-            result.append("; ");
+            result.append(field.getName()).append('=').append(value).append(
+                    "; ");
         }
         return result.toString();
     }

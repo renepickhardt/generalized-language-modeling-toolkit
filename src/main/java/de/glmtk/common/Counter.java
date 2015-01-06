@@ -82,12 +82,9 @@ public class Counter {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append(Long.toString(onePlusCount));
-        result.append('\t');
-        result.append(Long.toString(oneCount));
-        result.append('\t');
-        result.append(Long.toString(twoCount));
-        result.append('\t');
+        result.append(Long.toString(onePlusCount)).append('\t');
+        result.append(Long.toString(oneCount)).append('\t');
+        result.append(Long.toString(twoCount)).append('\t');
         result.append(Long.toString(threePlusCount));
         return result.toString();
     }

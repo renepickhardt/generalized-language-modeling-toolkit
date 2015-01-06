@@ -152,13 +152,12 @@ public enum Chunker {
                 Map<String, Counter> sortedCounts = new TreeMap<String, Counter>(
                         chunkCounts);
                 for (Entry<String, Counter> entry : sortedCounts.entrySet()) {
-                    writer.write(entry.getKey());
-                    writer.write('\t');
+                    writer.append(entry.getKey()).append('\t');
                     if (!continuation)
-                        writer.write(Long.toString(entry.getValue().getOnePlusCount()));
+                        writer.append(Long.toString(entry.getValue().getOnePlusCount()));
                     else
-                        writer.write(entry.getValue().toString());
-                    writer.write('\n');
+                        writer.append(entry.getValue().toString());
+                    writer.append('\n');
                 }
             }
 

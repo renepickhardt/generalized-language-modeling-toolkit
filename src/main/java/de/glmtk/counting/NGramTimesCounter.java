@@ -71,7 +71,7 @@ public enum NGramTimesCounter {
 
                 Path inputDir = pattern.isAbsolute()
                         ? absoluteDir
-                        : continuationDir;
+                                : continuationDir;
                 Path inputFile = inputDir.resolve(pattern.toString());
                 try (BufferedReader reader = NioUtils.newBufferedReader(
                         inputFile, Constants.CHARSET, readerMemory)) {
@@ -86,16 +86,11 @@ public enum NGramTimesCounter {
                     }
                 }
 
-                writer.write(pattern.toString());
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[0]));
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[1]));
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[2]));
-                writer.write('\t');
-                writer.write(Long.toString(nGramTimes[3]));
-                writer.write('\n');
+                writer.append(pattern.toString()).append('\t');
+                writer.append(Long.toString(nGramTimes[0])).append('\t');
+                writer.append(Long.toString(nGramTimes[1])).append('\t');
+                writer.append(Long.toString(nGramTimes[2])).append('\t');
+                writer.append(Long.toString(nGramTimes[3])).append('\n');
 
                 progress.increase(1);
             }

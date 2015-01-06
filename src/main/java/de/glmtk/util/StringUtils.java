@@ -35,7 +35,7 @@ public class StringUtils {
      * {@code string.split(' ')} since it is much faster.
      */
     public static List<String> splitAtChar(String string,
-            char split) {
+                                           char split) {
         List<String> result = new ArrayList<String>();
 
         int sp1 = 0, sp2;
@@ -134,17 +134,11 @@ public class StringUtils {
     public static String surroundWithTokens(int maxPatternLength,
                                             String line) {
         StringBuilder lineBuilder = new StringBuilder();
-        for (int i = 1; i != maxPatternLength; ++i) {
-            lineBuilder.append("<s");
-            lineBuilder.append(i);
-            lineBuilder.append(">/<BOS> ");
-        }
+        for (int i = 1; i != maxPatternLength; ++i)
+            lineBuilder.append("<s").append(i).append(">/<BOS> ");
         lineBuilder.append(line);
-        for (int i = maxPatternLength - 1; i != 0; --i) {
-            lineBuilder.append(" </s");
-            lineBuilder.append(i);
-            lineBuilder.append(">/<EOS>");
-        }
+        for (int i = maxPatternLength - 1; i != 0; --i)
+            lineBuilder.append(" </s").append(i).append(">/<EOS>");
         return lineBuilder.toString();
     }
 

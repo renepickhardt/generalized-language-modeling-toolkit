@@ -90,12 +90,11 @@ public enum Tagger {
                     if (first)
                         first = false;
                     else
-                        writer.write(' ');
-                    writer.write(tagged.word());
-                    writer.write('/');
-                    writer.write(tagged.tag());
+                        writer.append(' ');
+                    writer.append(tagged.word()).append('/').append(
+                            tagged.tag());
                 }
-                writer.write('\n');
+                writer.append('\n');
             }
         }
     }

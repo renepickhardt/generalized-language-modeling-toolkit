@@ -90,12 +90,9 @@ public enum LengthDistributionCalculator {
     private void writeLengthDistributionToFile(List<Double> frequencies) throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
                 Constants.CHARSET)) {
-            for (int i = 0; i != frequencies.size(); ++i) {
-                writer.write(Integer.toString(i));
-                writer.write('\t');
-                writer.write(Double.toString(frequencies.get(i)));
-                writer.write('\n');
-            }
+            for (int i = 0; i != frequencies.size(); ++i)
+                writer.append(Integer.toString(i)).append('\t').append(
+                        Double.toString(frequencies.get(i))).append('\n');
         }
     }
 }

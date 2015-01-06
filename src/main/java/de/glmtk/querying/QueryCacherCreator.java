@@ -123,10 +123,8 @@ public enum QueryCacherCreator {
                     int cmp;
                     while (nextSequence != null
                             && (cmp = sequence.compareTo(nextSequence)) >= 0) {
-                        if (cmp == 0) {
-                            writer.write(line);
-                            writer.write('\n');
-                        }
+                        if (cmp == 0)
+                            writer.append(line).append('\n');
 
                         nextSequence = neededSequences.poll();
                     }

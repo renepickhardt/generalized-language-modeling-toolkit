@@ -71,7 +71,7 @@ public class CountCache {
         loadNGramTimes(paths.getNGramTimesFile());
         loadLengthDistribution(paths.getLengthDistributionFile());
 
-        Output.OUTPUT.endPhases(message + ".");
+        Output.OUTPUT.endPhases(message + " done.");
     }
 
     /**

@@ -29,10 +29,10 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Counter;
-import de.glmtk.common.Status;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.Status;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
@@ -224,13 +224,12 @@ public enum Merger {
                         aggregationCounter.add(counter);
                     else {
                         if (lastSequence != null) {
-                            writer.write(lastSequence);
-                            writer.write('\t');
+                            writer.append(lastSequence).append('\t');
                             if (continuation)
-                                writer.write(aggregationCounter.toString());
+                                writer.append(aggregationCounter.toString());
                             else
-                                writer.write(Long.toString(aggregationCounter.getOnePlusCount()));
-                            writer.write('\n');
+                                writer.append(Long.toString(aggregationCounter.getOnePlusCount()));
+                            writer.append('\n');
                         }
                         lastSequence = sequence;
                         aggregationCounter = counter;

@@ -105,17 +105,14 @@ public enum QueryRunner {
                 OutputStreamWriter writer = new OutputStreamWriter(
                         outputStream, Constants.CHARSET)) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                writer.write(processLine(line));
-                writer.write('\n');
-                writer.flush();
-            }
+            while ((line = reader.readLine()) != null)
+                writer.append(processLine(line)).append('\n').flush();
             stats.complete();
 
             List<String> statsOutputLines = StringUtils.splitAtChar(
                     stats.toString(), '\n');
             for (String statsOutputLine : statsOutputLines)
-                writer.write("# " + statsOutputLine + '\n');
+                writer.append("# ").append(statsOutputLine).append('\n');
         }
 
         return stats;
@@ -208,19 +205,14 @@ public enum QueryRunner {
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
                 Constants.CHARSET)) {
-            for (String line : resultingLines) {
-                writer.write(line);
-                writer.write('\n');
-            }
+            for (String line : resultingLines)
+                writer.append(line).append('\n');
             resultingLines = null; // Free memory
 
             List<String> statsOutputLines = StringUtils.splitAtChar(
                     stats.toString(), '\n');
-            for (String statsOutputLine : statsOutputLines) {
-                writer.append("# ");
-                writer.append(statsOutputLine);
-                writer.append('\n');
-            }
+            for (String statsOutputLine : statsOutputLines)
+                writer.append("# ").append(statsOutputLine).append('\n');
         }
     }
 
