@@ -10,7 +10,6 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,9 +53,6 @@ public class CountCache {
     private Map<Pattern, Map<String, Counter>> continuation;
     private Map<Pattern, long[]> nGramTimes;
     private List<Double> lengthFrequencies;
-    private int lineNo;
-    private String line;
-    private Path file;
 
     public CountCache(Set<Pattern> patterns,
                       GlmtkPaths paths) throws IOException {
@@ -167,10 +163,11 @@ public class CountCache {
                 continuation.put(pattern, continuationCounts);
             }
 
-            file = inputDir.resolve(pattern.toString());
+            Path file = inputDir.resolve(pattern.toString());
             try (BufferedReader reader = Files.newBufferedReader(file,
                     Constants.CHARSET)) {
-                lineNo = 0;
+                String line;
+                int lineNo = 0;
                 while ((line = reader.readLine()) != null) {
                     ++lineNo;
                     Counter counter = new Counter();
@@ -180,9 +177,9 @@ public class CountCache {
                     } catch (IllegalArgumentException e) {
                         String type = isPatternAbsolute
                                 ? "absolute"
-                                : "continuation";
-                        throw newFileFormatException(type + " counts",
-                                e.getMessage());
+                                        : "continuation";
+                        throw new FileFormatException(line, lineNo, file, type
+                                + " counts", null, e.getMessage());
                     }
                     if (isPatternAbsolute)
                         absoluteCounts.put(sequence, counter.getOnePlusCount());
@@ -198,24 +195,29 @@ public class CountCache {
     private void loadNGramTimes(Path file) throws IOException {
         LOGGER.debug("Loading NGram times counts...");
         nGramTimes = new HashMap<>();
-        this.file = file;
         try (BufferedReader reader = Files.newBufferedReader(file,
                 Constants.CHARSET)) {
-            lineNo = 0;
+            String line;
+            int lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
                 List<String> split = StringUtils.splitAtChar(line, '\t');
 
                 if (split.size() != 5)
-                    throw newFileFormatException(
+                    throw new FileFormatException(
+                            line,
+                            lineNo,
+                            file,
                             "ngram times",
+                            null,
                             "Expected line to have format '<pattern>\\t<count>\\t<count>\\t<count>\\t<count>'.");
 
                 Pattern pattern = null;
                 try {
                     pattern = Patterns.get(split.get(0));
                 } catch (RuntimeException e) {
-                    throw newFileFormatException("ngram times",
+                    throw new FileFormatException(line, lineNo, file,
+                            "ngram times", "pattern",
                             "Unable to parse '%s' as a pattern.", split.get(0));
                 }
                 long[] counts = new long[4];
@@ -223,9 +225,10 @@ public class CountCache {
                     try {
                         counts[i] = Long.parseLong(split.get(i + 1));
                     } catch (NumberFormatException e) {
-                        throw newFileFormatException("ngram times",
+                        throw new FileFormatException(line, lineNo, file,
+                                "ngram times", "count",
                                 "Unable to parse '%d' as an intger.",
-                                                     split.get(i + 1));
+                                split.get(i + 1));
                     }
                 nGramTimes.put(pattern, counts);
             }
@@ -236,23 +239,25 @@ public class CountCache {
     private void loadLengthDistribution(Path file) throws IOException {
         LOGGER.debug("Loading Sequence Length Distribution...");
         lengthFrequencies = new ArrayList<>();
-        this.file = file;
         try (BufferedReader reader = Files.newBufferedReader(file,
                 Constants.CHARSET)) {
-            lineNo = 0;
+            String line;
+            int lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
                 List<String> split = StringUtils.splitAtChar(line, '\t');
 
                 if (split.size() != 2)
-                    throw newFileFormatException("length distribution",
+                    throw new FileFormatException(line, lineNo, file,
+                            "length distribution", null,
                             "Expected line to have format '<sequence-length>\\t<frequency>'.");
 
                 int length = 0;
                 try {
                     length = Integer.parseInt(split.get(0));
                 } catch (NumberFormatException e) {
-                    throw newFileFormatException("length distribution",
+                    throw new FileFormatException(line, lineNo, file,
+                            "length distribution", "sequence length",
                             "Unable to parse '%s' as an integer.", split.get(0));
                 }
 
@@ -260,9 +265,10 @@ public class CountCache {
                 try {
                     frequency = Double.parseDouble(split.get(1));
                 } catch (NumberFormatException e) {
-                    throw newFileFormatException("length distribution",
+                    throw new FileFormatException(line, lineNo, file,
+                            "length distribution", "frequency",
                             "Unable to parse '%s' as a floating point number.",
-                                                 split.get(1));
+                            split.get(1));
                 }
 
                 CollectionUtils.ensureListSize(lengthFrequencies, length, 0.0);
@@ -270,17 +276,5 @@ public class CountCache {
             }
         }
         progress.increase(1);
-    }
-
-    private FileFormatException newFileFormatException(String fileType,
-                                                       String message,
-                                                       Object... params) {
-        try (Formatter f = new Formatter()) {
-            f.format("Illegal line '%d' in %s file '%s'.%n", lineNo, fileType,
-                    file);
-            f.format(message, params);
-            f.format("%nLine was: '%s'.", line);
-            return new FileFormatException(f.toString());
-        }
     }
 }

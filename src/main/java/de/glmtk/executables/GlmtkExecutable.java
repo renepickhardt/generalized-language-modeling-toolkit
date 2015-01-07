@@ -476,8 +476,8 @@ public class GlmtkExecutable extends Executable {
     }
 
     private void logFields() {
-        LOGGER.debug("GlmtkExecutable Fields %s", StringUtils.repeat("-",
-                80 - "GlmtkExecutable Fields ".length()));
+        LOGGER.debug("GlmtkExecutable %s", StringUtils.repeat("-",
+                80 - "GlmtkExecutable ".length()));
         LOGGER.debug("Corpus:        %s", corpus);
         LOGGER.debug("WorkingDir:    %s", workingDir);
         LOGGER.debug("TrainingOrder: %s", trainingOrder);

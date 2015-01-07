@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -350,9 +349,9 @@ public class Status {
         String section = readNextSection();
 
         if (!section.equals(expectedSection))
-            throw newFileFormatException("format",
-                                         "Expected section '%s', but was '%s' instead.%n",
-                                         expectedSection, section);
+            throw new FileFormatException(line, lineNo, file, "status", null,
+                    "Expected section '%s', but was '%s' instead.%n",
+                    expectedSection, section);
     }
 
     private String readNextSection() {
@@ -367,7 +366,7 @@ public class Status {
                 return section;
         }
 
-        throw newFileFormatException("format",
+        throw new FileFormatException(line, lineNo, file, "status", null,
                 "Expected line to have format: '<sectionname>:'.");
     }
 
@@ -379,9 +378,9 @@ public class Status {
         String value = entry.getValue();
 
         if (!key.equals(expectedKey))
-            throw newFileFormatException("key",
-                                         "Expected key '%s', but was '%s' instead.%n", expectedKey,
-                                         key);
+            throw new FileFormatException(line, lineNo, file, "status", "key",
+                    "Expected key '%s', but was '%s' instead.%n", expectedKey,
+                    key);
 
         return value;
     }
@@ -393,7 +392,7 @@ public class Status {
 
         List<String> split = StringUtils.splitAtChar(line, '=');
         if (split.size() != 2)
-            throw newFileFormatException("format",
+            throw new FileFormatException(line, lineNo, file, "status", null,
                     "Expected line to have format: '<key> = <value>'.");
 
         String key = split.get(0).trim();
@@ -430,8 +429,8 @@ public class Status {
                     line = null;
                     break;
                 }
-                throw new FileFormatException(String.format(
-                        "Unexcpected End of File in file '%s'.", file));
+                throw new FileFormatException(file, "status",
+                        "Unexcpected End of File.");
             }
         } while (line.trim().isEmpty());
         return numReadLines;
@@ -465,9 +464,10 @@ public class Status {
         } catch (IllegalArgumentException e) {
             String possibleValues = "'"
                     + StringUtils.join(Training.values(), "', '") + "'";
-            throw newFileFormatException("training value",
-                                         "Possible values are: %s.%nFound value '%s' instead.",
-                                         possibleValues, value);
+            throw new FileFormatException(line, lineNo, file, "status",
+                    "training value",
+                    "Possible values are: %s.%nFound value '%s' instead.",
+                    possibleValues, value);
         }
     }
 
@@ -498,10 +498,14 @@ public class Status {
 
             Pattern pattern = readPattern(key);
             if (result.containsKey(pattern))
-                throw newFileFormatException(
-                                             "key",
-                                             "Key '%s' was already found previously for section '%s'.",
-                                             key, section);
+                throw new FileFormatException(
+                        line,
+                        lineNo,
+                        file,
+                        "status",
+                        "key",
+                        "Key '%s' was already found previously for section '%s'.",
+                        key, section);
             result.put(pattern, chunks);
         }
         return result;
@@ -528,10 +532,14 @@ public class Status {
                 patterns.add(readPattern(patternStr));
 
             if (result.containsKey(key))
-                throw newFileFormatException(
-                                             "key",
-                                             "Key '%s' was already found previously for section '%s'.",
-                                             key, section);
+                throw new FileFormatException(
+                        line,
+                        lineNo,
+                        file,
+                        "status",
+                        "key",
+                        "Key '%s' was already found previously for section '%s'.",
+                        key, section);
             result.put(key, patterns);
         }
         return result;
@@ -541,20 +549,9 @@ public class Status {
         try {
             return Patterns.get(patternStr);
         } catch (IllegalArgumentException e) {
-            throw newFileFormatException("pattern",
-                                         "Could not parse '%s' as a valid pattern.", patternStr);
-        }
-    }
-
-    private FileFormatException newFileFormatException(String type,
-                                                       String message,
-                                                       Object... params) {
-        try (Formatter f = new Formatter()) {
-            f.format("Illegal %s on line '%d' in file '%s'.%n", type, lineNo,
-                    file);
-            f.format(message, params);
-            f.format("%nLine was: '%s'.", line);
-            return new FileFormatException(f.toString());
+            throw new FileFormatException(line, lineNo, file, "status",
+                    "pattern", "Could not parse '%s' as a valid pattern.",
+                    patternStr);
         }
     }
 

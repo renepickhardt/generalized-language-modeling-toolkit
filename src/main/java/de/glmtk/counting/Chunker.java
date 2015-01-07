@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -278,14 +277,8 @@ public enum Chunker {
                 else
                     throw new RuntimeException();
             } catch (RuntimeException e) {
-                try (Formatter f = new Formatter()) {
-                    f.format("Illegal input line '%d' in file '%s'.%n", lineNo,
-                            file);
-                    f.format("Needs to be of format '<sequence>(<tab><count>){1,4}'.%n");
-                    f.format("Where <count> needs to be a valid integer.%n");
-                    f.format("Line was: '%s'.", line);
-                    throw new FileFormatException(f.toString());
-                }
+                throw new FileFormatException(line, lineNo, file, null, null,
+                        "Needs to be of format '<sequence>(<tab><count>){1,4}'.");
             }
 
             String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(

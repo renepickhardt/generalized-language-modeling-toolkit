@@ -12,7 +12,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -59,17 +58,17 @@ public enum Merger {
             }
         };
 
-        private Path path;
+        private Path file;
         private BufferedReader reader;
         private int lineNo;
         private String sequence;
         private Counter counter;
 
-        public SequenceCountReader(Path path,
+        public SequenceCountReader(Path file,
                                    Charset charset,
                                    int sz) throws IOException {
-            this.path = path;
-            reader = NioUtils.newBufferedReader(path, charset, sz);
+            this.file = file;
+            reader = NioUtils.newBufferedReader(file, charset, sz);
             lineNo = -1;
             nextLine();
         }
@@ -85,13 +84,8 @@ public enum Merger {
                 try {
                     sequence = Counter.getSequenceAndCounter(line, counter);
                 } catch (IllegalArgumentException e) {
-                    try (Formatter f = new Formatter()) {
-                        f.format("Illegal line '%d' in file '%s'.%n", lineNo,
-                                path);
-                        f.format(e.getMessage());
-                        f.format("%nLine was: '%s'.", line);
-                        throw new FileFormatException(f.toString());
-                    }
+                    throw new FileFormatException(line, lineNo, file, "chunk",
+                            null, e.getMessage());
                 }
             }
         }

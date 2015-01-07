@@ -65,10 +65,9 @@ import de.glmtk.util.StringUtils;
             if (e.getMessage() != null)
                 System.err.println(e.getMessage());
         } catch (Throwable e) {
+            OUTPUT.printError(e.getMessage());
             LOGGER.error(String.format("Exception %s",
                     ExceptionUtils.getStackTrace(e)));
-            OUTPUT.printError(e.getMessage());
-            System.out.println(ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -137,17 +136,10 @@ import de.glmtk.util.StringUtils;
             LOGGER.info("Git Commit: %s", gitCommit);
         }
 
-        // log user dir
-        LOGGER.info("User Dir: %s", CONFIG.getUserDir());
-
-        // log glmtk dir
-        LOGGER.info("Glmtk Dir: %s", CONFIG.getGlmtkDir());
-
         // log arguments
         LOGGER.info("Arguments: %s", StringUtils.join(args, " "));
 
-        // log config
-        LOGGER.info("Config: %s", CONFIG);
+        CONFIG.logConfig();
 
         LOGGER.info(StringUtils.repeat("-", 80));
     }
