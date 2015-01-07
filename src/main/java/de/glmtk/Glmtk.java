@@ -275,22 +275,6 @@ public class Glmtk {
         return new CountCache(patterns, queryCachePaths);
     }
 
-    private void validateExpectedResults(String operation,
-                                         Set<Pattern> expected,
-                                         Set<Pattern> computed) {
-        if (!computed.containsAll(expected)) {
-            Set<Pattern> missing = new HashSet<>();
-            missing.addAll(expected);
-            missing.removeAll(computed);
-
-            LOGGER.error("%s did not yield expected result.%n", operation);
-            LOGGER.error("Expected patterns = %s.%n", expected);
-            LOGGER.error("Computed patterns = %s.%n", computed);
-            LOGGER.error("Missing  patterns = %s.", missing);
-            throw new RuntimeException("%s failed.");
-        }
-    }
-
     public QueryStats runQueriesOnInputStream(QueryMode queryMode,
                                               InputStream inputStream,
                                               OutputStream outputStream,
@@ -308,5 +292,24 @@ public class Glmtk {
                                        CountCache countCache) throws Exception {
         return QUERY_RUNNER.runQueriesOnFile(queryMode, inputFile,
                 paths.getQueriesDir(), estimator, probMode, countCache);
+    }
+
+    /**
+     * Only used internally.
+     */
+    public static void validateExpectedResults(String operation,
+                                               Set<Pattern> expected,
+                                               Set<Pattern> computed) {
+        if (!computed.containsAll(expected)) {
+            Set<Pattern> missing = new HashSet<>();
+            missing.addAll(expected);
+            missing.removeAll(computed);
+
+            LOGGER.error("%s did not yield expected result.%n", operation);
+            LOGGER.error("Expected patterns = %s.%n", expected);
+            LOGGER.error("Computed patterns = %s.%n", computed);
+            LOGGER.error("Missing  patterns = %s.", missing);
+            throw new RuntimeException("%s failed.");
+        }
     }
 }
