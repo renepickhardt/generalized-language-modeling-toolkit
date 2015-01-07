@@ -16,6 +16,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -189,7 +190,11 @@ public class GlmtkExecutable extends Executable {
                     "Input file/dir '%s' does not exist or is not readable.",
                     inputArg));
 
-        for (Option option : line.getOptions())
+        @SuppressWarnings("unchecked")
+        Iterator<Option> iter = line.iterator();
+        while (iter.hasNext()) {
+            Option option = iter.next();
+
             if (option.equals(OPTION_WORKINGDIR)) {
                 optionFirstTimeOrFail(workingDir, option);
                 workingDir = Paths.get(option.getValue());
@@ -265,6 +270,7 @@ public class GlmtkExecutable extends Executable {
             else
                 throw new CliArgumentException(String.format(
                         "Unexpected option: '%s'.", option));
+        }
 
         if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
             if (workingDir != null)
