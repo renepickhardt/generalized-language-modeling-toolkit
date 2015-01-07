@@ -3,14 +3,17 @@ package de.glmtk.common;
 import static de.glmtk.Config.CONFIG;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.Formatter;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.Ansi;
@@ -328,7 +331,7 @@ public enum Output {
     }
 
     public void printMessage(String message) {
-        LOGGER.info(message);
+        logWithoutAnsi(Level.INFO, message);
         System.err.println(message);
 
         lastPrintBeginPhases = false;
@@ -350,7 +353,7 @@ public enum Output {
             message = "A critical error has occured, program execution had to be stopped.";
         List<String> lines = StringUtils.splitAtChar(message, '\n');
         for (String line : lines) {
-            LOGGER.error(line);
+            logWithoutAnsi(Level.ERROR, line);
             System.err.println("Error: " + line);
         }
 
@@ -370,11 +373,27 @@ public enum Output {
 
         List<String> lines = StringUtils.splitAtChar(message, '\n');
         for (String line : lines) {
-            LOGGER.warn(line);
+            logWithoutAnsi(Level.WARN, line);
             System.err.println("Warning: " + line);
         }
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
+    }
+
+    private void logWithoutAnsi(Level level,
+                                String message) {
+        String filteredMessage = null;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                OutputStreamWriter ansiFilter = new OutputStreamWriter(
+                        new AnsiOutputStream(baos), Constants.CHARSET)) {
+            ansiFilter.append(message);
+            ansiFilter.flush();
+            filteredMessage = baos.toString(Constants.CHARSET.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        LOGGER.log(level, filteredMessage);
     }
 }
