@@ -24,6 +24,7 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.FileFormatException;
+import de.glmtk.exceptions.StatusNotAccurateException;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
@@ -52,10 +53,10 @@ public class Status {
     private Set<Pattern> counted;
     private Set<Pattern> absoluteCounted;
     private Set<Pattern> continuationCounted;
-    private boolean nGramTimesCounted = true;
-    private boolean lengthDistributionCalculated = true;
     private Map<Pattern, Set<String>> absoluteChunked;
     private Map<Pattern, Set<String>> continuationChunked;
+    private boolean nGramTimesCounted;
+    private boolean lengthDistributionCalculated;
     private Map<String, Set<Pattern>> queryCacheCounted;
     private List<String> lines;
     private String line;
@@ -71,31 +72,8 @@ public class Status {
         setVoidSettings();
         if (Files.exists(file))
             readStatusFromFile();
+
         writeStatusToFile();
-    }
-
-    private void setVoidSettings() {
-        training = Training.NONE;
-        counted = new HashSet<>();
-        nGramTimesCounted = true;
-        lengthDistributionCalculated = true;
-        absoluteCounted = new HashSet<>();
-        continuationCounted = new HashSet<>();
-        absoluteChunked = new HashMap<>();
-        continuationChunked = new HashMap<>();
-        queryCacheCounted = new HashMap<>();
-    }
-
-    public void logStatus() {
-        LOGGER.debug("Status %s", StringUtils.repeat("-",
-                80 - "Status ".length()));
-        LOGGER.debug("hash                = %s", hash);
-        LOGGER.debug("taggedHash          = %s", taggedHash);
-        LOGGER.debug("training            = %s", training);
-        LOGGER.debug("absoluteCounted     = %s", absoluteCounted);
-        LOGGER.debug("continuationCounted = %s", continuationCounted);
-        LOGGER.debug("absoluteChunked     = %s", absoluteChunked);
-        LOGGER.debug("continuationChunked = %s", continuationChunked);
     }
 
     public boolean isCorpusTagged() {
@@ -166,7 +144,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-                                           Pattern pattern) {
+            Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -247,6 +225,96 @@ public class Status {
             writeStatusToFile();
         }
     }
+
+    public void logStatus() {
+        LOGGER.debug("Status %s", StringUtils.repeat("-",
+                80 - "Status ".length()));
+        LOGGER.debug("hash                         = %s", hash);
+        LOGGER.debug("taggedHash                   = %s", taggedHash);
+        LOGGER.debug("training                     = %s", training);
+        LOGGER.debug("counted                      = %s", counted);
+        LOGGER.debug("absoluteCounted              = %s", absoluteCounted);
+        LOGGER.debug("continuationCounted          = %s", continuationCounted);
+        LOGGER.debug("absoluteChunked              = %s", absoluteChunked);
+        LOGGER.debug("continuationChunked          = %s", continuationChunked);
+        LOGGER.debug("nGramTimesCounted            = %b", nGramTimesCounted);
+        LOGGER.debug("lengthDistributionCalculated = %s",
+                lengthDistributionCalculated);
+        LOGGER.debug("queryCacheCounted            = %s", queryCacheCounted);
+    }
+
+    private void setVoidSettings() {
+        training = Training.NONE;
+        counted = new HashSet<>();
+        nGramTimesCounted = false;
+        lengthDistributionCalculated = false;
+        absoluteCounted = new HashSet<>();
+        continuationCounted = new HashSet<>();
+        absoluteChunked = new HashMap<>();
+        continuationChunked = new HashMap<>();
+        queryCacheCounted = new HashMap<>();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Checking
+    ////////////////////////////////////////////////////////////////////////////
+
+    private void checkWithFileSystem() {
+        checkCounted("counted", counted, paths.getAbsoluteDir(),
+                paths.getContinuationDir());
+        checkChunked("absolute chunked", absoluteChunked,
+                paths.getAbsoluteChunkedDir());
+        checkChunked("continuation chunked", continuationChunked,
+                paths.getContinuationChunkedDir());
+        if (nGramTimesCounted && !Files.exists(paths.getNGramTimesFile()))
+            throw new StatusNotAccurateException();
+        if (lengthDistributionCalculated
+                && !Files.exists(paths.getLengthDistributionFile()))
+            throw new StatusNotAccurateException();
+        for (Entry<String, Set<Pattern>> queryCache : queryCacheCounted.entrySet()) {
+            String name = queryCache.getKey();
+            Set<Pattern> patterns = queryCache.getValue();
+            GlmtkPaths queryCachePaths = paths.newQueryCache(name);
+
+            checkCounted("queryCache " + name, patterns,
+                    queryCachePaths.getAbsoluteDir(),
+                    queryCachePaths.getContinuationDir());
+        }
+    }
+
+    private void checkCounted(String name,
+                              Set<Pattern> counted,
+                              Path absoluteDir,
+                              Path continuationDir) {
+        for (Pattern pattern : counted) {
+            Path countedDir = pattern.isAbsolute()
+                    ? absoluteDir
+                            : continuationDir;
+            Path patternFile = countedDir.resolve(pattern.toString());
+            if (!Files.exists(patternFile))
+                throw new StatusNotAccurateException();
+        }
+    }
+
+    private void checkChunked(String name,
+                              Map<Pattern, Set<String>> chunked,
+                              Path chunkedDir) {
+        for (Entry<Pattern, Set<String>> entry : chunked.entrySet()) {
+            Pattern pattern = entry.getKey();
+            Set<String> chunks = entry.getValue();
+
+            Path patternDir = chunkedDir.resolve(pattern.toString());
+            for (String chunk : chunks) {
+                Path chunkFile = patternDir.resolve(chunk);
+                if (!Files.exists(chunkFile))
+                    throw new StatusNotAccurateException();
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Reading
+    ////////////////////////////////////////////////////////////////////////////
 
     private void readStatusFromFile() throws IOException {
         LOGGER.debug("Reading status from file '%s'.", file);
@@ -431,9 +499,9 @@ public class Status {
             Pattern pattern = readPattern(key);
             if (result.containsKey(pattern))
                 throw newFileFormatException(
-                        "key",
-                        "Key '%s' was already found previously for section '%s'.",
-                        key, section);
+                                             "key",
+                                             "Key '%s' was already found previously for section '%s'.",
+                                             key, section);
             result.put(pattern, chunks);
         }
         return result;
@@ -474,7 +542,7 @@ public class Status {
             return Patterns.get(patternStr);
         } catch (IllegalArgumentException e) {
             throw newFileFormatException("pattern",
-                    "Could not parse '%s' as a valid pattern.", patternStr);
+                                         "Could not parse '%s' as a valid pattern.", patternStr);
         }
     }
 
@@ -490,7 +558,13 @@ public class Status {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Writing
+    ////////////////////////////////////////////////////////////////////////////
+
     private void writeStatusToFile() throws IOException {
+        checkWithFileSystem();
+
         Path tmpFile = Paths.get(file + ".tmp");
         Files.deleteIfExists(tmpFile);
         try (BufferedWriter writer = Files.newBufferedWriter(tmpFile,

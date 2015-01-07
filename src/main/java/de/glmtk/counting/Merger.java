@@ -158,30 +158,37 @@ public enum Merger {
                 LOGGER.debug("Merging pattern %s:\t%s -> %s.", pattern,
                         chunksToMerge, mergeFile.getFileName());
                 mergeChunksToFile(patternDir, chunksToMerge, mergeFile);
-                try {
-                    status.performMergeForChunks(continuation, pattern,
-                            chunksToMerge, mergeFile.getFileName().toString());
-                } catch (IOException e) {
-                    // Updating status did not work, we continue in the hope
-                    // it works next time.
-                    LOGGER.warn("Unable to write status, continuing: "
-                            + ExceptionUtils.getStackTrace(e));
-                }
 
-                for (String chunk : chunksToMerge)
-                    Files.deleteIfExists(patternDir.resolve(chunk));
+                synchronized (status) {
+                    try {
+                        status.performMergeForChunks(continuation, pattern,
+                                chunksToMerge,
+                                mergeFile.getFileName().toString());
+                    } catch (IOException e) {
+                        // Updating status did not work, we continue in the hope
+                        // it works next time.
+                        LOGGER.warn("Unable to write status, continuing: "
+                                + ExceptionUtils.getStackTrace(e));
+                    }
+
+                    for (String chunk : chunksToMerge)
+                        Files.deleteIfExists(patternDir.resolve(chunk));
+                }
             }
 
             Path src = patternDir.resolve(chunksForPattern.iterator().next());
             Path dest = countedDir.resolve(pattern.toString());
-            LOGGER.debug("Finishing pattern %s:\t%s\t -> %s.", pattern, src,
-                    dest);
-            Files.deleteIfExists(dest);
-            Files.move(src, dest);
-            status.finishMerge(continuation, pattern);
 
-            if (NioUtils.isDirEmpty(patternDir))
-                Files.deleteIfExists(patternDir);
+            synchronized (status) {
+                LOGGER.debug("Finishing pattern %s:\t%s\t -> %s.", pattern,
+                        src, dest);
+                Files.deleteIfExists(dest);
+                Files.move(src, dest);
+                status.finishMerge(continuation, pattern);
+
+                if (NioUtils.isDirEmpty(patternDir))
+                    Files.deleteIfExists(patternDir);
+            }
         }
 
         private int getMergeCounter(Set<String> chunksForPattern) {
