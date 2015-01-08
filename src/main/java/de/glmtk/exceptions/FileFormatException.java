@@ -43,6 +43,10 @@ public class FileFormatException extends RuntimeException {
         }
     }
 
+    public FileFormatException(String message) {
+        super(message);
+    }
+
     public FileFormatException(Path file,
                                String fileType,
                                String message,

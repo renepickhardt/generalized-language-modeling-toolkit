@@ -1,29 +1,44 @@
 package de.glmtk.common;
 
+import java.beans.IntrospectionException;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.DumperOptions.FlowStyle;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.events.Event;
+import org.yaml.snakeyaml.events.Event.ID;
+import org.yaml.snakeyaml.events.ScalarEvent;
+import org.yaml.snakeyaml.introspector.BeanAccess;
+import org.yaml.snakeyaml.introspector.Property;
+import org.yaml.snakeyaml.introspector.PropertyUtils;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Represent;
+import org.yaml.snakeyaml.representer.Representer;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.exceptions.StatusNotAccurateException;
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
@@ -36,10 +51,198 @@ public class Status {
         TAGGED;
     }
 
-    private static enum NextLine {
-        EOF,
-        SECTION,
-        KEYVALUE;
+    private static class QueryCache {
+        private Set<Pattern> counted = new TreeSet<>();
+
+        public Set<Pattern> getCounted() {
+            return counted;
+        }
+
+        public void setCounted(Set<Pattern> counted) {
+            this.counted = counted;
+        }
+
+        public void addCounted(Pattern pattern) {
+            counted.add(pattern);
+        }
+
+        @Override
+        public String toString() {
+            return "{counted=" + counted.toString() + "}";
+        }
+    }
+
+    private static class StatusRepresenter extends Representer {
+        private class OrderedPropertyUtils extends PropertyUtils {
+            @Override
+            protected Set<Property> createPropertySet(Class<?> type,
+                    BeanAccess beanAccess) throws IntrospectionException {
+                Set<Property> result = new LinkedHashSet<>();
+                result.add(getProperty(type, "hash", BeanAccess.FIELD));
+                result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
+                result.add(getProperty(type, "training", BeanAccess.FIELD));
+                result.add(getProperty(type, "counted", BeanAccess.FIELD));
+                result.add(getProperty(type, "chunked", BeanAccess.FIELD));
+                result.add(getProperty(type, "nGramTimesCounted",
+                        BeanAccess.FIELD));
+                result.add(getProperty(type, "lengthDistribution",
+                        BeanAccess.FIELD));
+                result.add(getProperty(type, "queryCaches", BeanAccess.FIELD));
+                return result;
+            }
+        }
+
+        private class RepresentSet implements Represent {
+            @Override
+            public Node representData(Object data) {
+                return representSequence(Tag.SEQ, ((Set<?>) data), true);
+            }
+        }
+
+        private class RepresentPattern implements Represent {
+            @Override
+            public Node representData(Object data) {
+                Pattern pattern = (Pattern) data;
+                for (char c : pattern.toString().toCharArray())
+                    if (!Character.isDigit(c))
+                        return representScalar(Tag.STR, data.toString());
+                return representScalar(Tag.INT, data.toString());
+            }
+        }
+
+        private class RepresentQueryCache implements Represent {
+            @Override
+            public Node representData(Object data) {
+                QueryCache queryCache = (QueryCache) data;
+                Map<String, Set<Pattern>> represent = new TreeMap<>();
+                represent.put("counted", queryCache.getCounted());
+                return representMapping(Tag.MAP, represent, false);
+            }
+        }
+
+        public StatusRepresenter() {
+            super();
+            setPropertyUtils(new OrderedPropertyUtils());
+            addClassTag(Status.class, new Tag("!status"));
+            representers.put(TreeSet.class, new RepresentSet());
+            representers.put(Pattern.class, new RepresentPattern());
+            representers.put(QueryCache.class, new RepresentQueryCache());
+        }
+    }
+
+    private class StatusParser extends AbstractYamlParser {
+        public void parseStatus(Event event,
+                                Iterator<Event> iter) {
+            Map<String, Boolean> keys = createValidKeysMap("hash",
+                    "taggedHash", "training", "counted", "chunked",
+                    "nGramTimesCounted", "lengthDistribution", "queryCaches");
+
+            parseBegining(event, iter, "!status");
+            event = iter.next();
+            while (!event.is(ID.MappingEnd)) {
+                if (!event.is(ID.Scalar))
+                    throw new FileFormatException("Expected SclarEvent.");
+
+                String key = ((ScalarEvent) event).getValue();
+                failOnDuplicate(keys, key);
+
+                event = iter.next();
+                switch (key) {
+                    case "hash":
+                        hash = parseScalar(event, iter);
+                        break;
+
+                    case "taggedHash":
+                        taggedHash = parseScalar(event, iter);
+                        break;
+
+                    case "training":
+                        try {
+                            training = Training.valueOf(parseScalar(event, iter));
+                        } catch (IllegalArgumentException e) {
+                            throw new FileFormatException(
+                                    "Illegal training value. Possible values: TODO.");
+                        }
+                        break;
+
+                    case "counted":
+                        counted = parseSetPattern(event, iter);
+                        break;
+
+                    case "chunked":
+                        chunked = parseMapPatternSetScalar(event, iter);
+                        break;
+
+                    case "nGramTimesCounted":
+                        nGramTimesCounted = parseBoolean(event, iter);
+                        break;
+
+                    case "lengthDistribution":
+                        lengthDistribution = parseBoolean(event, iter);
+                        break;
+
+                    case "queryCaches":
+                        parseQueryCaches(event, iter);
+                        break;
+
+                    default:
+                        throw new SwitchCaseNotImplementedException();
+                }
+
+                event = iter.next();
+            }
+            parseEnding(event, iter);
+        }
+
+        private void parseQueryCaches(Event event,
+                                      Iterator<Event> iter) {
+            if (!event.is(ID.MappingStart))
+                throw new FileFormatException("Expected MappingStart.");
+
+            event = iter.next();
+            while (!event.is(ID.MappingEnd)) {
+                String name = parseScalar(event, iter);
+                if (queryCaches.containsKey(name))
+                    throw new IllegalArgumentException("Duplicate key.");
+                event = iter.next();
+                QueryCache queryCache = parseQueryCache(event, iter);
+                queryCaches.put(name, queryCache);
+                event = iter.next();
+            }
+        }
+
+        private QueryCache parseQueryCache(Event event,
+                                           Iterator<Event> iter) {
+            if (!event.is(ID.MappingStart))
+                throw new FileFormatException("Expected MappingStart.");
+
+            QueryCache result = new QueryCache();
+
+            Map<String, Boolean> keys = createValidKeysMap("counted");
+
+            event = iter.next();
+            while (!event.is(ID.MappingEnd)) {
+                if (!event.is(ID.Scalar))
+                    throw new FileFormatException("Expected ScalarEvent.");
+
+                String key = ((ScalarEvent) event).getValue();
+                failOnDuplicate(keys, key);
+
+                event = iter.next();
+                switch (key) {
+                    case "counted":
+                        Set<Pattern> patterns = parseSetPattern(event, iter);
+                        result.setCounted(patterns);
+                        break;
+
+                    default:
+                        throw new SwitchCaseNotImplementedException();
+                }
+
+                event = iter.next();
+            }
+            return result;
+        }
     }
 
     private GlmtkPaths paths;
@@ -52,14 +255,12 @@ public class Status {
     private Set<Pattern> counted;
     private Set<Pattern> absoluteCounted;
     private Set<Pattern> continuationCounted;
+    private Map<Pattern, Set<String>> chunked;
     private Map<Pattern, Set<String>> absoluteChunked;
     private Map<Pattern, Set<String>> continuationChunked;
     private boolean nGramTimesCounted;
-    private boolean lengthDistributionCalculated;
-    private Map<String, Set<Pattern>> queryCacheCounted;
-    private List<String> lines;
-    private String line;
-    private int lineNo;
+    private boolean lengthDistribution;
+    private Map<String, QueryCache> queryCaches;
 
     public Status(GlmtkPaths paths,
                   Path corpus) throws IOException {
@@ -154,7 +355,8 @@ public class Status {
                                     Pattern pattern,
                                     Collection<String> chunks) throws IOException {
         synchronized (this) {
-            chunked(continuation).put(pattern, new LinkedHashSet<>(chunks));
+            chunked.put(pattern, new TreeSet<>(chunks));
+            chunked(continuation).put(pattern, new TreeSet<>(chunks));
             writeStatusToFile();
         }
     }
@@ -164,7 +366,9 @@ public class Status {
                                       Collection<String> mergedChunks,
                                       String mergeFile) throws IOException {
         synchronized (this) {
-            Set<String> chunks = chunked(continuation).get(pattern);
+            Set<String> chunks = chunked.get(pattern);
+            chunks.removeAll(mergedChunks);
+            chunks = chunked(continuation).get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
             writeStatusToFile();
@@ -175,18 +379,12 @@ public class Status {
                             Pattern pattern) throws IOException {
         synchronized (this) {
             nGramTimesCounted = false;
-            lengthDistributionCalculated = false;
+            lengthDistribution = false;
             counted.add(pattern);
             counted(continuation).add(pattern);
+            chunked.remove(pattern);
             chunked(continuation).remove(pattern);
             writeStatusToFile();
-        }
-    }
-
-    public Set<Pattern> getQueryCacheCounted(String name) {
-        synchronized (this) {
-            Set<Pattern> patterns = queryCacheCounted.get(name);
-            return patterns != null ? patterns : new HashSet<Pattern>();
         }
     }
 
@@ -201,26 +399,36 @@ public class Status {
         }
     }
 
-    public boolean isLengthDistributionCalculated() {
-        return lengthDistributionCalculated;
+    public boolean isLengthDistribution() {
+        return lengthDistribution;
     }
 
-    public void setLengthDistributionCalculated() throws IOException {
+    public void setLengthDistribution() throws IOException {
         synchronized (this) {
-            lengthDistributionCalculated = true;
+            lengthDistribution = true;
             writeStatusToFile();
+        }
+    }
+
+    public Set<Pattern> getQueryCacheCounted(String name) {
+        synchronized (this) {
+            QueryCache queryCache = queryCaches.get(name);
+            if (queryCache == null)
+                return new TreeSet<>();
+            Set<Pattern> patterns = queryCache.getCounted();
+            return patterns != null ? patterns : new TreeSet<Pattern>();
         }
     }
 
     public void addQueryCacheCounted(String name,
                                      Pattern pattern) throws IOException {
         synchronized (this) {
-            Set<Pattern> patterns = queryCacheCounted.get(name);
-            if (patterns == null) {
-                patterns = new HashSet<>();
-                queryCacheCounted.put(name, patterns);
+            QueryCache queryCache = queryCaches.get(name);
+            if (queryCache == null) {
+                queryCache = new QueryCache();
+                queryCaches.put(name, queryCache);
             }
-            patterns.add(pattern);
+            queryCache.addCounted(pattern);
             writeStatusToFile();
         }
     }
@@ -234,29 +442,26 @@ public class Status {
         LOGGER.debug("counted                      = %s", counted);
         LOGGER.debug("absoluteCounted              = %s", absoluteCounted);
         LOGGER.debug("continuationCounted          = %s", continuationCounted);
+        LOGGER.debug("chunked                      = %s", chunked);
         LOGGER.debug("absoluteChunked              = %s", absoluteChunked);
         LOGGER.debug("continuationChunked          = %s", continuationChunked);
         LOGGER.debug("nGramTimesCounted            = %b", nGramTimesCounted);
-        LOGGER.debug("lengthDistributionCalculated = %s",
-                lengthDistributionCalculated);
-        LOGGER.debug("queryCacheCounted            = %s", queryCacheCounted);
+        LOGGER.debug("lengthDistributionCalculated = %s", lengthDistribution);
+        LOGGER.debug("queryCache                   = %s", queryCaches);
     }
 
     private void setVoidSettings() {
         training = Training.NONE;
-        counted = new HashSet<>();
+        counted = new TreeSet<>();
+        absoluteCounted = new TreeSet<>();
+        continuationCounted = new TreeSet<>();
+        chunked = new TreeMap<>();
+        absoluteChunked = new TreeMap<>();
+        continuationChunked = new TreeMap<>();
         nGramTimesCounted = false;
-        lengthDistributionCalculated = false;
-        absoluteCounted = new HashSet<>();
-        continuationCounted = new HashSet<>();
-        absoluteChunked = new HashMap<>();
-        continuationChunked = new HashMap<>();
-        queryCacheCounted = new HashMap<>();
+        lengthDistribution = false;
+        queryCaches = new TreeMap<>();
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Checking
-    ////////////////////////////////////////////////////////////////////////////
 
     private void checkWithFileSystem() {
         checkCounted("counted", counted, paths.getAbsoluteDir(),
@@ -267,15 +472,16 @@ public class Status {
                 paths.getContinuationChunkedDir());
         if (nGramTimesCounted && !Files.exists(paths.getNGramTimesFile()))
             throw new StatusNotAccurateException();
-        if (lengthDistributionCalculated
+        if (lengthDistribution
                 && !Files.exists(paths.getLengthDistributionFile()))
             throw new StatusNotAccurateException();
-        for (Entry<String, Set<Pattern>> queryCache : queryCacheCounted.entrySet()) {
-            String name = queryCache.getKey();
-            Set<Pattern> patterns = queryCache.getValue();
+        for (Entry<String, QueryCache> entry : queryCaches.entrySet()) {
+            String name = entry.getKey();
+            QueryCache queryCache = entry.getValue();
+
             GlmtkPaths queryCachePaths = paths.newQueryCache(name);
 
-            checkCounted("queryCache " + name, patterns,
+            checkCounted("queryCache " + name, queryCache.getCounted(),
                     queryCachePaths.getAbsoluteDir(),
                     queryCachePaths.getContinuationDir());
         }
@@ -311,129 +517,35 @@ public class Status {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Reading
-    ////////////////////////////////////////////////////////////////////////////
-
     private void readStatusFromFile() throws IOException {
         LOGGER.debug("Reading status from file '%s'.", file);
 
-        lines = Files.readAllLines(file, Constants.CHARSET);
-        lineNo = 0;
+        Yaml yaml = new Yaml();
+        try (BufferedReader reader = Files.newBufferedReader(file,
+                Constants.CHARSET)) {
+            Iterator<Event> iter = yaml.parse(reader).iterator();
+            new StatusParser().parseStatus(iter.next(), iter);
+        } catch (FileFormatException | SwitchCaseNotImplementedException e) {
+            e.printStackTrace();
+        }
 
-        hash = readNextValue("hash");
-        taggedHash = readNextValue("taggedHash");
-        if (!validCorpusHash()) {
+        for (Pattern pattern : counted)
+            if (pattern.isAbsolute())
+                absoluteCounted.add(pattern);
+            else
+                continuationCounted.add(pattern);
+
+        for (Entry<Pattern, Set<String>> entry : chunked.entrySet()) {
+            Pattern pattern = entry.getKey();
+            Set<String> chunks = new TreeSet<>(entry.getValue());
+            if (pattern.isAbsolute())
+                absoluteChunked.put(pattern, chunks);
+            else
+                continuationChunked.put(pattern, chunks);
+        }
+
+        if (!validCorpusHash())
             setVoidSettings();
-            return;
-        }
-
-        training = readTraining("training");
-        absoluteCounted = readCounted("absoluteCounted");
-        continuationCounted = readCounted("continuationCounted");
-        nGramTimesCounted = readBoolean("nGramTimesCounted");
-        lengthDistributionCalculated = readBoolean("lengthDistributionCalculated");
-        absoluteChunked = readChunked("absoluteChunked");
-        continuationChunked = readChunked("continuationChunked");
-        queryCacheCounted = readQueryCacheCounted("queryCacheCounted");
-
-        counted = new HashSet<>();
-        counted.addAll(absoluteCounted);
-        counted.addAll(continuationCounted);
-    }
-
-    private void assertNextSection(String expectedSection) {
-        LOGGER.trace("Status.assertNextSection(expectedSection=%s)",
-                expectedSection);
-
-        String section = readNextSection();
-
-        if (!section.equals(expectedSection))
-            throw new FileFormatException(line, lineNo, file, "status", null,
-                    "Expected section '%s', but was '%s' instead.%n",
-                    expectedSection, section);
-    }
-
-    private String readNextSection() {
-        LOGGER.trace("Status.readNextSection()");
-
-        readNextLine(false);
-
-        String trimmed = line.trim();
-        if (trimmed.endsWith(":")) {
-            String section = line.substring(0, line.length() - 1).trim();
-            if (section != null && !section.isEmpty())
-                return section;
-        }
-
-        throw new FileFormatException(line, lineNo, file, "status", null,
-                "Expected line to have format: '<sectionname>:'.");
-    }
-
-    private String readNextValue(String expectedKey) {
-        LOGGER.trace("Status.readNextValue(expectedKey=%s)", expectedKey);
-
-        Entry<String, String> entry = readNextKeyValue();
-        String key = entry.getKey();
-        String value = entry.getValue();
-
-        if (!key.equals(expectedKey))
-            throw new FileFormatException(line, lineNo, file, "status", "key",
-                    "Expected key '%s', but was '%s' instead.%n", expectedKey,
-                    key);
-
-        return value;
-    }
-
-    private Entry<String, String> readNextKeyValue() {
-        LOGGER.trace("Status.readNextKeyValue()");
-
-        readNextLine(false);
-
-        List<String> split = StringUtils.splitAtChar(line, '=');
-        if (split.size() != 2)
-            throw new FileFormatException(line, lineNo, file, "status", null,
-                    "Expected line to have format: '<key> = <value>'.");
-
-        String key = split.get(0).trim();
-        String value = split.get(1).trim();
-        if (value.equals("null") || value.isEmpty())
-            value = null;
-        return new SimpleEntry<>(key, value);
-    }
-
-    private NextLine peekNextLine() {
-        LOGGER.trace("Status.peekNextLine()");
-
-        int numReadLines = readNextLine(true);
-        lineNo -= numReadLines;
-
-        if (line == null)
-            return NextLine.EOF;
-        else if (line.trim().endsWith(":"))
-            return NextLine.SECTION;
-        else
-            return NextLine.KEYVALUE;
-    }
-
-    private int readNextLine(boolean allowEof) {
-        LOGGER.trace("Status.readNextLine(allowEof=%b)", allowEof);
-
-        int numReadLines = 0;
-        do {
-            ++numReadLines;
-            try {
-                line = lines.get(lineNo++);
-            } catch (IndexOutOfBoundsException e) {
-                if (allowEof) {
-                    line = null;
-                    break;
-                }
-                throw new FileFormatException(file, "status",
-                        "Unexcpected End of File.");
-            }
-        } while (line.trim().isEmpty());
-        return numReadLines;
     }
 
     private boolean validCorpusHash() throws IOException {
@@ -457,165 +569,24 @@ public class Status {
         return false;
     }
 
-    private Training readTraining(String key) {
-        String value = readNextValue(key);
-        try {
-            return Training.valueOf(value.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            String possibleValues = "'"
-                    + StringUtils.join(Training.values(), "', '") + "'";
-            throw new FileFormatException(line, lineNo, file, "status",
-                    "training value",
-                    "Possible values are: %s.%nFound value '%s' instead.",
-                    possibleValues, value);
-        }
-    }
-
-    private Set<Pattern> readCounted(String key) {
-        String value = readNextValue(key);
-        Set<Pattern> result = new HashSet<>();
-        if (value == null)
-            return result;
-        for (String patternStr : StringUtils.splitAtChar(value, ','))
-            result.add(readPattern(patternStr));
-        return result;
-    }
-
-    private Map<Pattern, Set<String>> readChunked(String section) {
-        assertNextSection(section);
-
-        Map<Pattern, Set<String>> result = new HashMap<>();
-        while (peekNextLine() == NextLine.KEYVALUE) {
-            Entry<String, String> entry = readNextKeyValue();
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (value == null)
-                continue;
-
-            Set<String> chunks = new HashSet<>();
-            for (String chunkStr : StringUtils.splitAtChar(value, ','))
-                chunks.add(chunkStr);
-
-            Pattern pattern = readPattern(key);
-            if (result.containsKey(pattern))
-                throw new FileFormatException(
-                        line,
-                        lineNo,
-                        file,
-                        "status",
-                        "key",
-                        "Key '%s' was already found previously for section '%s'.",
-                        key, section);
-            result.put(pattern, chunks);
-        }
-        return result;
-    }
-
-    private boolean readBoolean(String key) {
-        String value = readNextValue(key);
-        return Boolean.parseBoolean(value);
-    }
-
-    private Map<String, Set<Pattern>> readQueryCacheCounted(String section) {
-        assertNextSection(section);
-
-        Map<String, Set<Pattern>> result = new HashMap<>();
-        while (peekNextLine() == NextLine.KEYVALUE) {
-            Entry<String, String> entry = readNextKeyValue();
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (value == null)
-                continue;
-
-            Set<Pattern> patterns = new HashSet<>();
-            for (String patternStr : StringUtils.splitAtChar(value, ','))
-                patterns.add(readPattern(patternStr));
-
-            if (result.containsKey(key))
-                throw new FileFormatException(
-                        line,
-                        lineNo,
-                        file,
-                        "status",
-                        "key",
-                        "Key '%s' was already found previously for section '%s'.",
-                        key, section);
-            result.put(key, patterns);
-        }
-        return result;
-    }
-
-    private Pattern readPattern(String patternStr) {
-        try {
-            return Patterns.get(patternStr);
-        } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "status",
-                    "pattern", "Could not parse '%s' as a valid pattern.",
-                    patternStr);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Writing
-    ////////////////////////////////////////////////////////////////////////////
-
     private void writeStatusToFile() throws IOException {
         checkWithFileSystem();
 
         Path tmpFile = Paths.get(file + ".tmp");
         Files.deleteIfExists(tmpFile);
+
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setWidth(80);
+        dumperOptions.setIndent(4);
+        dumperOptions.setDefaultFlowStyle(FlowStyle.BLOCK);
+        Yaml yaml = new Yaml(new StatusRepresenter(), dumperOptions);
+
         try (BufferedWriter writer = Files.newBufferedWriter(tmpFile,
                 Constants.CHARSET)) {
-            writeKeyValue(writer, "hash", hash);
-            writeKeyValue(writer, "taggedHash", taggedHash);
-            writeKeyValue(writer, "training", training.toString());
-            writeSet(writer, "absoluteCounted", absoluteCounted);
-            writeSet(writer, "continuationCounted", continuationCounted);
-            writeBoolean(writer, "nGramTimesCounted", nGramTimesCounted);
-            writeBoolean(writer, "lengthDistributionCalculated",
-                    lengthDistributionCalculated);
-            writeMapSet(writer, "absoluteChunked", absoluteChunked);
-            writeMapSet(writer, "continuationChunked", continuationChunked);
-            writeMapSet(writer, "queryCacheCounted", queryCacheCounted);
+            yaml.dump(this, writer);
         }
 
         Files.deleteIfExists(file);
         Files.move(tmpFile, file);
-    }
-
-    private void writeSection(BufferedWriter writer,
-                              String section) throws IOException {
-        writer.append('\n').append(section).append(":\n");
-    }
-
-    private <T, V> void writeKeyValue(BufferedWriter writer,
-                                      T key,
-                                      V value) throws IOException {
-        String valueStr = value != null ? value.toString() : "null";
-        writer.append(key.toString()).append(" = ").append(valueStr).append(
-                '\n');
-    }
-
-    private <T> void writeBoolean(BufferedWriter writer,
-                                  T key,
-                                  boolean value) throws IOException {
-        writeKeyValue(writer, key, Boolean.toString(value));
-    }
-
-    private <T, V> void writeSet(BufferedWriter writer,
-                                 T key,
-                                 Set<V> set) throws IOException {
-        writeKeyValue(writer, key, StringUtils.join(set, ","));
-    }
-
-    private <T, V> void writeMapSet(BufferedWriter writer,
-                                    String section,
-                                    Map<T, Set<V>> mapSet) throws IOException {
-        writeSection(writer, section);
-        for (Entry<T, Set<V>> entry : mapSet.entrySet()) {
-            T key = entry.getKey();
-            Set<V> set = entry.getValue();
-            writeSet(writer, key, set);
-        }
     }
 }

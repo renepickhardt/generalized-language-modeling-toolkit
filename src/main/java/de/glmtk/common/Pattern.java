@@ -1,6 +1,7 @@
 package de.glmtk.common;
 
 import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.CSKIP_ELEMS;
 import static de.glmtk.common.PatternElem.DEL;
 import static de.glmtk.common.PatternElem.POS;
 import static de.glmtk.common.PatternElem.PSKP;
@@ -18,14 +19,19 @@ import java.util.List;
  *
  * Tests for this class can be found in {@link PatternTest}.
  */
-public class Pattern implements Iterable<PatternElem> {
+public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     private List<PatternElem> elems;
     private String asString;
 
     /* package */Pattern(List<PatternElem> elems,
-                         String asString) {
+            String asString) {
         this.elems = elems;
         this.asString = asString;
+    }
+
+    @Override
+    public int hashCode() {
+        return asString.hashCode();
     }
 
     /**
@@ -42,8 +48,15 @@ public class Pattern implements Iterable<PatternElem> {
     }
 
     @Override
-    public int hashCode() {
-        return asString.hashCode();
+    public int compareTo(Pattern other) {
+        int cmp = Integer.compare(numElems(CSKIP_ELEMS),
+                other.numElems(CSKIP_ELEMS));
+        if (cmp != 0)
+            return cmp;
+        cmp = Integer.compare(asString.length(), other.asString.length());
+        if (cmp != 0)
+            return cmp;
+        return asString.compareTo(other.asString);
     }
 
     @Override
@@ -100,12 +113,12 @@ public class Pattern implements Iterable<PatternElem> {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
         outerLoop:
-            for (PatternElem elem : this.elems) {
-            for (PatternElem e : elems)
-                if (elem.equals(e))
-                    continue outerLoop;
-            return false;
-        }
+        for (PatternElem elem : this.elems) {
+                for (PatternElem e : elems)
+                    if (elem.equals(e))
+                        continue outerLoop;
+                return false;
+            }
         return true;
     }
 
@@ -122,12 +135,12 @@ public class Pattern implements Iterable<PatternElem> {
             throw new IllegalArgumentException("Argument was empty collection.");
         int result = 0;
         outerLoop:
-        for (PatternElem elem : this.elems)
-            for (PatternElem e : elems)
-                if (elem.equals(e)) {
-                    ++result;
-                    continue outerLoop;
-                }
+            for (PatternElem elem : this.elems)
+                for (PatternElem e : elems)
+                    if (elem.equals(e)) {
+                        ++result;
+                        continue outerLoop;
+                    }
         return result;
     }
 

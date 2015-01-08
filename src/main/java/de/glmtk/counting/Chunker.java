@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -37,7 +36,6 @@ import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.PatternElem;
 import de.glmtk.common.Status;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
@@ -51,14 +49,6 @@ public enum Chunker {
     private static final Logger LOGGER = LogManager.getFormatterLogger(Chunker.class);
     private static final int TAB_COUNTER_NL_BYTES = ("\t"
             + new Counter(10, 10, 10, 10).toString() + "\n").getBytes(Constants.CHARSET).length;
-    private static final Comparator<Pattern> PATTERN_COMPARATOR = new Comparator<Pattern>() {
-        @Override
-        public int compare(Pattern lhs,
-                           Pattern rhs) {
-            return Integer.compare(lhs.numElems(PatternElem.CSKIP_ELEMS),
-                    rhs.numElems(PatternElem.CSKIP_ELEMS));
-        }
-    };
 
     private abstract class Thread implements Callable<Object> {
         protected Pattern pattern;
@@ -337,8 +327,7 @@ public enum Chunker {
             return;
 
         this.continuation = continuation;
-        patternQueue = new PriorityBlockingQueue<>(patterns.size(),
-                PATTERN_COMPARATOR);
+        patternQueue = new PriorityBlockingQueue<>(patterns.size());
         patternQueue.addAll(patterns);
         calculateMemory();
 

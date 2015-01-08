@@ -38,7 +38,7 @@ public enum LengthDistributionCalculator {
                           Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.LENGTH_DISTRIBUATION_CALCULATING);
 
-        if (status.isLengthDistributionCalculated()) {
+        if (status.isLengthDistribution()) {
             LOGGER.debug("Status reports length distribution already calculated, returning.");
             return;
         }
@@ -51,7 +51,7 @@ public enum LengthDistributionCalculator {
         List<Double> frequencies = calculateLengthDistribution();
         writeLengthDistributionToFile(frequencies);
 
-        status.setLengthDistributionCalculated();
+        status.setLengthDistribution();
     }
 
     private void calculateMemory() {

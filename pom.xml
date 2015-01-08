@@ -5,7 +5,7 @@
   <groupId>de.glmtk</groupId>
   <artifactId>glmtk</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  
+
   <name>Generalized Language Modeling Toolkit</name>
 
   <properties>
@@ -69,6 +69,11 @@
       <artifactId>jansi</artifactId>
       <version>1.11</version>
     </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.14</version>
+    </dependency>
 
     <!-- Logging -->
     <dependency>
@@ -89,7 +94,7 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>classmexer</groupId>
       <artifactId>classmexer</artifactId>
