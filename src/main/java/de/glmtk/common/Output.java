@@ -1,6 +1,6 @@
 package de.glmtk.common;
 
-import static de.glmtk.Config.CONFIG;
+import static de.glmtk.common.Config.CONFIG;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;

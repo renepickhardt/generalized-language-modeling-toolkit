@@ -1,10 +1,12 @@
-package de.glmtk.common;
+package de.glmtk.util;
 
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.yaml.snakeyaml.events.Event;
@@ -64,18 +66,38 @@ public abstract class AbstractYamlParser {
         return Boolean.valueOf(booleanStr);
     }
 
-    protected Pattern parsePattern(Event event,
-                                   Iterator<Event> iter) {
-        String patternStr = parseScalar(event, iter);
+    protected int parseInt(Event event,
+                           Iterator<Event> iter) {
+        String intStr = parseScalar(event, iter);
         try {
-            return Patterns.get(patternStr);
-        } catch (IllegalArgumentException e) {
-            throw new FileFormatException("Illegal pattern.");
+            return Integer.parseInt(intStr);
+        } catch (NumberFormatException e) {
+            throw new FileFormatException("Illegal int.");
+        }
+    }
+
+    protected long parseLong(Event event,
+                             Iterator<Event> iter) {
+        String longStr = parseScalar(event, iter);
+        try {
+            return Long.parseLong(longStr);
+        } catch (NumberFormatException e) {
+            throw new FileFormatException("Illegal long.");
+        }
+    }
+
+    protected Path parsePath(Event event,
+                             Iterator<Event> iter) {
+        String pathStr = parseScalar(event, iter);
+        try {
+            return Paths.get(pathStr);
+        } catch (InvalidPathException e) {
+            throw new FileFormatException("Illegal path.");
         }
     }
 
     protected Set<String> parseSetScalar(Event event,
-            Iterator<Event> iter) {
+                                         Iterator<Event> iter) {
         if (!event.is(ID.SequenceStart))
             throw new FileFormatException("Expected SequenceStart.");
 
@@ -88,38 +110,6 @@ public abstract class AbstractYamlParser {
         return result;
     }
 
-    protected Set<Pattern> parseSetPattern(Event event,
-            Iterator<Event> iter) {
-        if (!event.is(ID.SequenceStart))
-            throw new FileFormatException("Expected SequenceStart.");
-
-        Set<Pattern> result = new TreeSet<>();
-        event = iter.next();
-        while (!event.is(ID.SequenceEnd)) {
-            result.add(parsePattern(event, iter));
-            event = iter.next();
-        }
-        return result;
-    }
-
-    protected Map<Pattern, Set<String>> parseMapPatternSetScalar(Event event,
-            Iterator<Event> iter) {
-        if (!event.is(ID.MappingStart))
-            throw new FileFormatException("Expected MappingStart.");
-
-        Map<Pattern, Set<String>> result = new TreeMap<>();
-        event = iter.next();
-        while (!event.is(ID.MappingEnd)) {
-            Pattern pattern = parsePattern(event, iter);
-            Set<String> scalars = parseSetScalar(iter.next(), iter);
-            if (result.containsKey(pattern))
-                throw new FileFormatException("Duplicate pattern in map.");
-            result.put(pattern, scalars);
-            event = iter.next();
-        }
-        return result;
-    }
-
     protected Map<String, Boolean> createValidKeysMap(String... keys) {
         Map<String, Boolean> result = new HashMap<>();
         for (String key : keys)
@@ -127,8 +117,8 @@ public abstract class AbstractYamlParser {
         return result;
     }
 
-    protected void failOnDuplicate(Map<String, Boolean> keys,
-                                   String key) {
+    protected void registerKey(Map<String, Boolean> keys,
+                               String key) {
         if (!keys.containsKey(key))
             throw new FileFormatException("Illegal key: " + key);
         if (keys.get(key))

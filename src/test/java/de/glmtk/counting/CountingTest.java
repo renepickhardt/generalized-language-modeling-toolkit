@@ -1,6 +1,6 @@
 package de.glmtk.counting;
 
-import static de.glmtk.Config.CONFIG;
+import static de.glmtk.common.Config.CONFIG;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;

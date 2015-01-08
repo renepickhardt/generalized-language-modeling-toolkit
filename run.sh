@@ -3,16 +3,15 @@
 # get script location
 GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
 
-DEFAULT_MAIN_MEMORY=4096
-
-# Calculate main memory
-MAIN_MEMORY=`grep -oP "^mainMemory\s*=\s*\K\d+" $GLMTK_DIR/glmtk.conf`
-if [[ -z $MAIN_MEMORY ]]; then
-    MAIN_MEMORY=$DEFAULT_MAIN_MEMORY
+# Calculate jvm memory
+DEFAULT_JVM_MEMORY=4096
+JVM_MEMORY=`grep -oP "^\s+jvm:\s+\K\d+" $GLMTK_DIR/glmtk.conf`
+if [[ -z $JVM_MEMORY ]]; then
+    JVM_MEMORY=$DEFAULT_JVM_MEMORY
 fi
 
 # Variable named MAVEN_OPTS, because maven listens to this environmen variable
-MAVEN_OPTS="-Xmx${MAIN_MEMORY}m -javaagent:$GLMTK_DIR/lib/classmexer.jar"
+MAVEN_OPTS="-Xmx${JVM_MEMORY}m -javaagent:$GLMTK_DIR/lib/classmexer.jar"
 
 IS_TTY_STDERR="false"
 if [ -t 2 ] ; then

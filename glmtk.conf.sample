@@ -1,26 +1,36 @@
-# Main memory (RAM) to be assigned to GLMTK in Mebibytes (MiB).
-mainMemory = 4096
+!config
 
-# Number of parallel threads used.
-numberOfThreads = 4
+numberOfThreads: 4
 
-# reader memory per thread in Mebibytes (MiB)
-readerMemory = 50
-# writer memory per thread in Mebibytes (MiB)
-writerMemory = 50
-# max chunk size int Mebibytes (MiB)
-maxChunkSize = 500
+memory:
 
-# Treshold wether training file should be kept in memory completely in Mebibytes (MiB)
-trainingCacheThreshold = 200
+    # Amount of memory assigned to the JVM in mebibytes (MiB).
+    jvm: 4096
 
-# Delay in milliseconds before next percentage update is displayed.
-# 0 disables percentage updates.
-consoleUpdateInterval = 200
-logUpdateInterval = 5000
+    # Buffer size for BufferedReaders in mebibytes (MiB).
+    reader: 50
 
-# Delay in milliseconds before console parameters are updated
-consoleParamsUpdateInterval = 1000
+    # Buffer size for BufferedWriters in mebibytes (MiB).
+    writer: 50
 
-# .tagger file used for tagging.
-model = stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger
+    # Max chunk size in bebibytes (MiB)
+    chunkSize: 500
+
+    # Memory limit for loading files completely in memory in mebibytes (MiB).
+    cacheThreshold: 200
+
+updateInterval:
+
+    # Interval between progress updates for the log in milliseconds (ms).
+    log: 5000
+
+    # Interval between progress updates for the console in milliseconds (ms).
+    console: 200
+
+    # Interval between recheckin console parameters (e.g. width) in milliseconds (ms).
+    consoleParams: 1000
+
+tagging:
+
+    # .tagger file used for tagging.
+    model: stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger

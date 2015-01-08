@@ -1,6 +1,6 @@
 package de.glmtk.counting;
 
-import static de.glmtk.Config.CONFIG;
+import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 

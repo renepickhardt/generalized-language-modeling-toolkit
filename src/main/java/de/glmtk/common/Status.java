@@ -39,6 +39,7 @@ import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.exceptions.StatusNotAccurateException;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
@@ -76,7 +77,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                    BeanAccess beanAccess) throws IntrospectionException {
+                                                      BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -144,7 +145,7 @@ public class Status {
                     throw new FileFormatException("Expected SclarEvent.");
 
                 String key = ((ScalarEvent) event).getValue();
-                failOnDuplicate(keys, key);
+                registerKey(keys, key);
 
                 event = iter.next();
                 switch (key) {
@@ -194,6 +195,48 @@ public class Status {
             parseEnding(event, iter);
         }
 
+        private Pattern parsePattern(Event event,
+                                     Iterator<Event> iter) {
+            String patternStr = parseScalar(event, iter);
+            try {
+                return Patterns.get(patternStr);
+            } catch (IllegalArgumentException e) {
+                throw new FileFormatException("Illegal pattern.");
+            }
+        }
+
+        private Set<Pattern> parseSetPattern(Event event,
+                                             Iterator<Event> iter) {
+            if (!event.is(ID.SequenceStart))
+                throw new FileFormatException("Expected SequenceStart.");
+
+            Set<Pattern> result = new TreeSet<>();
+            event = iter.next();
+            while (!event.is(ID.SequenceEnd)) {
+                result.add(parsePattern(event, iter));
+                event = iter.next();
+            }
+            return result;
+        }
+
+        private Map<Pattern, Set<String>> parseMapPatternSetScalar(Event event,
+                                                                   Iterator<Event> iter) {
+            if (!event.is(ID.MappingStart))
+                throw new FileFormatException("Expected MappingStart.");
+
+            Map<Pattern, Set<String>> result = new TreeMap<>();
+            event = iter.next();
+            while (!event.is(ID.MappingEnd)) {
+                Pattern pattern = parsePattern(event, iter);
+                Set<String> scalars = parseSetScalar(iter.next(), iter);
+                if (result.containsKey(pattern))
+                    throw new FileFormatException("Duplicate pattern in map.");
+                result.put(pattern, scalars);
+                event = iter.next();
+            }
+            return result;
+        }
+
         private void parseQueryCaches(Event event,
                                       Iterator<Event> iter) {
             if (!event.is(ID.MappingStart))
@@ -226,7 +269,7 @@ public class Status {
                     throw new FileFormatException("Expected ScalarEvent.");
 
                 String key = ((ScalarEvent) event).getValue();
-                failOnDuplicate(keys, key);
+                registerKey(keys, key);
 
                 event = iter.next();
                 switch (key) {
@@ -344,7 +387,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-            Pattern pattern) {
+                                           Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -494,7 +537,7 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                            : continuationDir;
+                    : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
                 throw new StatusNotAccurateException();
@@ -525,8 +568,6 @@ public class Status {
                 Constants.CHARSET)) {
             Iterator<Event> iter = yaml.parse(reader).iterator();
             new StatusParser().parseStatus(iter.next(), iter);
-        } catch (FileFormatException | SwitchCaseNotImplementedException e) {
-            e.printStackTrace();
         }
 
         for (Pattern pattern : counted)
