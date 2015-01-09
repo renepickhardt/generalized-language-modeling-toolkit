@@ -443,7 +443,7 @@ public class GlmtkExecutable extends Executable {
     protected void exec() throws Exception {
         logFields();
 
-        Glmtk glmtk = new Glmtk(corpus, workingDir);
+        Glmtk glmtk = new Glmtk(config, corpus, workingDir);
 
         boolean needPos = false;
 

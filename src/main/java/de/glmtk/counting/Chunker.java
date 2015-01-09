@@ -1,6 +1,5 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -37,14 +36,14 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.common.Config;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-public enum Chunker {
-    CHUNKER;
+public class Chunker {
 
     private static final Logger LOGGER = LogManager.getFormatterLogger(Chunker.class);
     private static final int TAB_COUNTER_NL_BYTES = ("\t"
@@ -267,7 +266,8 @@ public enum Chunker {
                 else
                     throw new RuntimeException();
             } catch (RuntimeException e) {
-                throw new FileFormatException(line, lineNo, file, null, "Needs to be of format '<sequence>(<tab><count>){1,4}'.");
+                throw new FileFormatException(line, lineNo, file, null,
+                        "Needs to be of format '<sequence>(<tab><count>){1,4}'.");
             }
 
             String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(
@@ -275,6 +275,8 @@ public enum Chunker {
             countSequence(sequence, count);
         }
     }
+
+    private Config config;
 
     private Progress progress;
     private boolean continuation;
@@ -290,6 +292,10 @@ public enum Chunker {
     private int readerMemory;
     private int writerMemory;
     private long maxChunkSize;
+
+    public Chunker(Config config) {
+        this.config = config;
+    }
 
     public void chunkAbsolute(Status status,
                               Set<Pattern> patterns,
@@ -331,7 +337,7 @@ public enum Chunker {
         calculateMemory();
 
         if (continuation
-                || Files.size(trainingFile) < CONFIG.getTrainingCacheThreshold())
+                || Files.size(trainingFile) < config.getMemoryCacheThreshold())
             trainingCache = null;
         else {
             int memory = (int) Math.min(Files.size(trainingFile), readerMemory);
@@ -345,20 +351,20 @@ public enum Chunker {
         }
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
             if (!continuation)
                 threads.add(new AbsoluteThread());
             else
                 threads.add(new ContinuationThread());
 
-        progress = new Progress(patterns.size());
-        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
+        progress = OUTPUT.newProgress(patterns.size());
+        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
-        writerMemory = CONFIG.getMemoryWriter();
-        maxChunkSize = CONFIG.getMemoryChunkSize();
+        readerMemory = config.getMemoryReader();
+        writerMemory = config.getMemoryWriter();
+        maxChunkSize = config.getMemoryChunkSize();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

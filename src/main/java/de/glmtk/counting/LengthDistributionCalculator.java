@@ -1,6 +1,5 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -19,19 +18,24 @@ import de.glmtk.Constants;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Status;
+import de.glmtk.common.Config;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
-public enum LengthDistributionCalculator {
-    LENGTH_DISTRIBUTION_CALCULATOR;
-
+public class LengthDistributionCalculator {
     private static final Logger LOGGER = LogManager.getFormatterLogger(LengthDistributionCalculator.class);
+
+    private Config config;
 
     private Progress progress;
     private Path inputFile;
     private Path outputFile;
     private int readerMemory;
+
+    public LengthDistributionCalculator(Config config) {
+        this.config = config;
+    }
 
     public void calculate(Status status,
                           Path inputFile,
@@ -43,7 +47,7 @@ public enum LengthDistributionCalculator {
             return;
         }
 
-        progress = new Progress(Files.size(inputFile));
+        progress = OUTPUT.newProgress(Files.size(inputFile));
         this.inputFile = inputFile;
         this.outputFile = outputFile;
         calculateMemory();
@@ -55,7 +59,7 @@ public enum LengthDistributionCalculator {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
+        readerMemory = config.getMemoryReader();
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
     }
 

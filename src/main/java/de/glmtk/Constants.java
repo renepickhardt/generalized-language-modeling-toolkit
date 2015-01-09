@@ -36,7 +36,7 @@ public class Constants {
 
     public static final String LOCAL_LOG_FILE_NAME = "log";
 
-    public static final String CONFIG_LOCATION = "glmtk.conf";
+    public static final String config_FILE = "glmtk.conf";
 
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 

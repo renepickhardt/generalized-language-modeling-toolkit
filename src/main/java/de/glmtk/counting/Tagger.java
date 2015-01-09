@@ -1,6 +1,5 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -18,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.common.Config;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import edu.stanford.nlp.ling.HasWord;
@@ -25,9 +25,7 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public enum Tagger {
-    TAGGER;
-
+public class Tagger {
     private static final Logger LOGGER = LogManager.getFormatterLogger(Tagger.class);
 
     public static boolean detectFileTagged(Path file) throws IOException {
@@ -52,14 +50,21 @@ public enum Tagger {
         return true;
     }
 
-    private MaxentTagger tagger = null;
+    private Config config;
+    private MaxentTagger tagger;
+
     private int readerMemory;
     private int writerMemory;
+
+    public Tagger(Config config) {
+        this.config = config;
+        tagger = null;
+    }
 
     public void tag(Path inputFile,
                     Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.TAGGING);
-        Progress progress = new Progress(Files.size(inputFile));
+        Progress progress = OUTPUT.newProgress(Files.size(inputFile));
 
         if (inputFile.equals(outputFile))
             throw new IllegalArgumentException(String.format(
@@ -68,7 +73,7 @@ public enum Tagger {
         calculateMemory();
 
         if (tagger == null)
-            tagger = new MaxentTagger(CONFIG.getTaggingModel().toString());
+            tagger = new MaxentTagger(config.getTaggingModel().toString());
 
         try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
                 Constants.CHARSET, readerMemory);
@@ -100,8 +105,8 @@ public enum Tagger {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
-        writerMemory = CONFIG.getMemoryWriter();
+        readerMemory = config.getMemoryReader();
+        writerMemory = config.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

@@ -1,7 +1,5 @@
 package de.glmtk.common;
 
-import static de.glmtk.common.Config.CONFIG;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
@@ -87,7 +85,7 @@ public enum Output {
         }
     }
 
-    public static class Progress {
+    public class Progress {
         private long current;
         private long total;
         private long lastConsoleUpdate;
@@ -95,13 +93,13 @@ public enum Output {
         private boolean updateConsole;
         private boolean updateLog;
 
-        public Progress(long total) {
+        private Progress(long total) {
             current = 0;
             this.total = total;
             lastConsoleUpdate = System.currentTimeMillis();
             lastLogUpdate = lastConsoleUpdate;
-            updateConsole = CONFIG.getUpdateIntervalConsole() != 0;
-            updateLog = CONFIG.getUpdateIntervalLog() != 0;
+            updateConsole = config.getUpdateIntervalConsole() != 0;
+            updateLog = config.getUpdateIntervalLog() != 0;
         }
 
         public void increase(long increase) {
@@ -118,12 +116,12 @@ public enum Output {
             if (updateConsole || updateLog) {
                 long time = System.currentTimeMillis();
                 if (updateConsole
-                        && time - lastConsoleUpdate >= CONFIG.getUpdateIntervalConsole()) {
+                        && time - lastConsoleUpdate >= config.getUpdateIntervalConsole()) {
                     OUTPUT.setPercent((double) current / total);
                     lastConsoleUpdate = time;
                 }
                 if (updateLog
-                        && time - lastLogUpdate >= CONFIG.getUpdateIntervalLog()) {
+                        && time - lastLogUpdate >= config.getUpdateIntervalLog()) {
                     LOGGER.info("%6.2f%%", 100.0 * current / total);
                     lastLogUpdate = time;
                 }
@@ -158,12 +156,13 @@ public enum Output {
         };
     }
 
-    private long lastUpdateConsoleParams = 0;
-    private boolean updateConsoleParams = CONFIG.getUpdateIntervalConsoleParams() != 0;
+    public Config config;
+    private long lastUpdateConsoleParams;
+    private boolean updateConsoleParams;
     private int numPercentegebarBlocks;
-    private Boolean ansiEnabled = null;
-    private Phase phase = null;
-    private double percent = 0;
+    private boolean ansiEnabled;
+    private Phase phase;
+    private double percent;
 
     /**
      * {@code true} if the last print was a call to {@link #beginPhases(String)}
@@ -177,23 +176,18 @@ public enum Output {
      */
     private boolean lastPrintPhase = false;
 
-    /**
-     * {@link AnsiConsole#systemInstall()}
-     */
-    private Output() {
+    public void initialize(Config config) {
+        this.config = config;
+        lastUpdateConsoleParams = 0;
+        updateConsoleParams = config.getUpdateIntervalConsoleParams() != 0;
+        ansiEnabled = false;
+        phase = null;
+        percent = 0;
+
         updateConsoleParams();
     }
 
-    public void disableAnsi() {
-        ansiEnabled = false;
-    }
-
-    public void enableAnsi() {
-        if (ansiEnabled != null && !ansiEnabled)
-            return;
-
-        ansiEnabled = false;
-
+    public void tryToEnableAnsi() {
         boolean isttyStderr = Boolean.parseBoolean(System.getProperty("glmtk.isttyStderr"));
         if (!isttyStderr) {
             LOGGER.debug("Ansi Codes will not be enabled because ISTTY_STDERR is 'false'.");
@@ -215,8 +209,12 @@ public enum Output {
         }
     }
 
+    public void disableAnsi() {
+        ansiEnabled = false;
+    }
+
     public boolean isAnsiEnabled() {
-        return ansiEnabled != null && ansiEnabled;
+        return ansiEnabled;
     }
 
     private void updateConsoleParams() {
@@ -224,10 +222,11 @@ public enum Output {
             numPercentegebarBlocks = 80 - 17 - Phase.MAX_NAME_LENGTH;
             return;
         }
+        if (!updateConsoleParams && lastUpdateConsoleParams != 0)
+            return;
 
         long time = System.currentTimeMillis();
-        if (lastUpdateConsoleParams == 0
-                || (updateConsoleParams && time - lastUpdateConsoleParams >= CONFIG.getUpdateIntervalConsoleParams())) {
+        if (time - lastUpdateConsoleParams >= config.getUpdateIntervalConsoleParams()) {
             int width = getTerminalWidth();
             numPercentegebarBlocks = width - 17 - Phase.MAX_NAME_LENGTH;
             lastUpdateConsoleParams = time;
@@ -276,6 +275,10 @@ public enum Output {
         if (!isAnsiEnabled())
             return message;
         return Ansi.ansi().bold() + message + Ansi.ansi().boldOff();
+    }
+
+    public Progress newProgress(long total) {
+        return new Progress(total);
     }
 
     public void beginPhases(String message) {

@@ -1,13 +1,6 @@
 package de.glmtk;
 
 import static de.glmtk.common.Output.OUTPUT;
-import static de.glmtk.counting.Chunker.CHUNKER;
-import static de.glmtk.counting.LengthDistributionCalculator.LENGTH_DISTRIBUTION_CALCULATOR;
-import static de.glmtk.counting.Merger.MERGER;
-import static de.glmtk.counting.NGramTimesCounter.NGRAM_TIMES_COUNTER;
-import static de.glmtk.counting.Tagger.TAGGER;
-import static de.glmtk.querying.QueryCacherCreator.QUERY_CACHE_CREATOR;
-import static de.glmtk.querying.QueryRunner.QUERY_RUNNER;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +20,15 @@ import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.common.Status;
 import de.glmtk.common.Status.Training;
+import de.glmtk.common.Config;
+import de.glmtk.counting.Chunker;
+import de.glmtk.counting.LengthDistributionCalculator;
+import de.glmtk.counting.Merger;
+import de.glmtk.counting.NGramTimesCounter;
 import de.glmtk.counting.Tagger;
+import de.glmtk.querying.QueryCacherCreator;
 import de.glmtk.querying.QueryMode;
+import de.glmtk.querying.QueryRunner;
 import de.glmtk.querying.QueryStats;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
@@ -71,13 +71,25 @@ public class Glmtk {
         }
     }
 
+    private Config config;
     private Path corpus;
     private GlmtkPaths paths;
     private Status status;
+
+    private Tagger tagger;
+    private Chunker chunker;
+    private Merger merger;
+    private NGramTimesCounter nGramTimesCounter;
+    private LengthDistributionCalculator lengthDistributionCalculator;
+    private QueryCacherCreator queryCacherCreator;
+    private QueryRunner queryRunner;
+
     private CountCache countCache = null;
 
-    public Glmtk(Path corpus,
+    public Glmtk(Config config,
+                 Path corpus,
                  Path workingDir) throws Exception {
+        this.config = config;
         this.corpus = corpus;
 
         paths = new GlmtkPaths(workingDir);
@@ -87,6 +99,14 @@ public class Glmtk {
 
         status = new Status(paths, corpus);
         status.logStatus();
+
+        tagger = new Tagger(config);
+        chunker = new Chunker(config);
+        merger = new Merger(config);
+        nGramTimesCounter = new NGramTimesCounter(config);
+        lengthDistributionCalculator = new LengthDistributionCalculator(config);
+        queryCacherCreator = new QueryCacherCreator(config);
+        queryRunner = new QueryRunner(config);
     }
 
     public GlmtkPaths getPaths() {
@@ -102,10 +122,10 @@ public class Glmtk {
 
         countAbsolute(needed.getAbsolute());
         countContinuation(needed.getContinuation());
-        NGRAM_TIMES_COUNTER.count(status, paths.getNGramTimesFile(),
+        nGramTimesCounter.count(status, paths.getNGramTimesFile(),
                 paths.getAbsoluteDir(), paths.getContinuationDir());
-        LENGTH_DISTRIBUTION_CALCULATOR.calculate(status,
-                paths.getTrainingFile(), paths.getLengthDistributionFile());
+        lengthDistributionCalculator.calculate(status, paths.getTrainingFile(),
+                paths.getLengthDistributionFile());
 
         long corpusSize = NioUtils.calcFileSize(paths.getCountsDir());
         OUTPUT.endPhases(String.format("Corpus Analyzation done (uses %s).",
@@ -172,7 +192,7 @@ public class Glmtk {
                 Files.copy(corpus, untaggedTrainingFile);
                 Files.deleteIfExists(trainingFile);
 
-                TAGGER.tag(untaggedTrainingFile, trainingFile);
+                tagger.tag(untaggedTrainingFile, trainingFile);
             }
             status.setTraining(Training.TAGGED);
         }
@@ -192,14 +212,14 @@ public class Glmtk {
         LOGGER.debug("countingPatterns = %s", countingPatterns);
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
-        CHUNKER.chunkAbsolute(status, chunkingPatterns,
+        chunker.chunkAbsolute(status, chunkingPatterns,
                 paths.getTrainingFile(),
                 status.getTraining() == Training.TAGGED,
                 paths.getAbsoluteChunkedDir());
         validateExpectedResults("Absolute chunking", chunkingPatterns,
                 status.getChunkedPatterns(false));
 
-        MERGER.mergeAbsolute(status, countingPatterns,
+        merger.mergeAbsolute(status, countingPatterns,
                 paths.getAbsoluteChunkedDir(), paths.getAbsoluteDir());
         validateExpectedResults("Absolute counting", countingPatterns,
                 status.getCounted(false));
@@ -219,14 +239,14 @@ public class Glmtk {
         LOGGER.debug("countingPatterns = %s", countingPatterns);
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
-        CHUNKER.chunkContinuation(status, chunkingPatterns,
+        chunker.chunkContinuation(status, chunkingPatterns,
                 paths.getAbsoluteDir(), paths.getContinuationDir(),
                 paths.getAbsoluteChunkedDir(),
                 paths.getContinuationChunkedDir());
         validateExpectedResults("Continuation chunking", chunkingPatterns,
                 status.getChunkedPatterns(true));
 
-        MERGER.mergeContinuation(status, countingPatterns,
+        merger.mergeContinuation(status, countingPatterns,
                 paths.getContinuationChunkedDir(), paths.getContinuationDir());
         validateExpectedResults("Continuation counting", countingPatterns,
                 status.getCounted(true));
@@ -258,7 +278,7 @@ public class Glmtk {
         LOGGER.debug("neededPatterns = %s", neededPatterns);
 
         boolean tagged = Tagger.detectFileTagged(queryFile);
-        QUERY_CACHE_CREATOR.createQueryCache(status, neededPatterns, name,
+        queryCacherCreator.createQueryCache(status, neededPatterns, name,
                 queryFile, tagged, paths.getAbsoluteDir(),
                 paths.getContinuationDir(), queryCachePaths.getAbsoluteDir(),
                 queryCachePaths.getContinuationDir());
@@ -281,7 +301,7 @@ public class Glmtk {
                                               Estimator estimator,
                                               ProbMode probMode,
                                               CountCache countCache) throws Exception {
-        return QUERY_RUNNER.runQueriesOnInputStream(queryMode, inputStream,
+        return queryRunner.runQueriesOnInputStream(queryMode, inputStream,
                 outputStream, estimator, probMode, countCache);
     }
 
@@ -290,7 +310,7 @@ public class Glmtk {
                                        Estimator estimator,
                                        ProbMode probMode,
                                        CountCache countCache) throws Exception {
-        return QUERY_RUNNER.runQueriesOnFile(queryMode, inputFile,
+        return queryRunner.runQueriesOnFile(queryMode, inputFile,
                 paths.getQueriesDir(), estimator, probMode, countCache);
     }
 

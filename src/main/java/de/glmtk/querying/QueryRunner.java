@@ -1,6 +1,5 @@
 package de.glmtk.querying;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -28,14 +27,13 @@ import de.glmtk.common.CountCache;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.ProbMode;
+import de.glmtk.common.Config;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-public enum QueryRunner {
-    QUERY_RUNNER;
-
+public class QueryRunner {
     public static final Logger LOGGER = LogManager.getFormatterLogger(QueryRunner.class);
 
     private class Thread implements Callable<Object> {
@@ -64,6 +62,8 @@ public enum QueryRunner {
         }
     }
 
+    private Config config;
+
     private Progress progress;
     private QueryMode queryMode;
     private Path inputFile;
@@ -78,6 +78,10 @@ public enum QueryRunner {
     private String[] resultingLines;
     private int readerMemory;
     private int writerMemory;
+
+    public QueryRunner(Config config) {
+        this.config = config;
+    }
 
     public QueryStats runQueriesOnInputStream(QueryMode queryMode,
                                               InputStream inputStream,
@@ -166,8 +170,8 @@ public enum QueryRunner {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
-        writerMemory = CONFIG.getMemoryWriter();
+        readerMemory = config.getMemoryReader();
+        writerMemory = config.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
@@ -188,11 +192,11 @@ public enum QueryRunner {
         resultingLines = new String[linesQueue.size()];
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
-        progress = new Progress(linesQueue.size());
-        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
+        progress = OUTPUT.newProgress(linesQueue.size());
+        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         stats.complete();
     }

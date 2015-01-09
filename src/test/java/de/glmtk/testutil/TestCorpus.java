@@ -17,6 +17,7 @@ import de.glmtk.Glmtk;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
+import de.glmtk.common.Config;
 
 public enum TestCorpus {
     ABC,
@@ -35,7 +36,7 @@ public enum TestCorpus {
             workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
                     + Constants.WORKING_DIR_SUFFIX);
 
-            glmtk = new Glmtk(corpus, workingDir);
+            glmtk = new Glmtk(new Config(), corpus, workingDir);
 
             Set<Pattern> neededPatterns = Patterns.getCombinations(
                     Constants.ORDER, Arrays.asList(CNT, SKP));

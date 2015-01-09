@@ -1,6 +1,5 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -29,12 +28,11 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.common.Config;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.ThreadUtils;
 
-public enum NGramTimesCounter {
-    NGRAM_TIMES_COUNTER;
-
+public class NGramTimesCounter {
     private static final Logger LOGGER = LogManager.getFormatterLogger(NGramTimesCounter.class);
 
     private class Thread implements Callable<Object> {
@@ -93,6 +91,8 @@ public enum NGramTimesCounter {
         }
     }
 
+    private Config config;
+
     private Progress progress;
     private Path outputFile;
     private Path absoluteDir;
@@ -100,6 +100,10 @@ public enum NGramTimesCounter {
     private BlockingQueue<Pattern> patternQueue;
     private ConcurrentHashMap<Pattern, long[]> nGramTimesForPattern;
     private int readerMemory;
+
+    public NGramTimesCounter(Config config) {
+        this.config = config;
+    }
 
     public void count(Status status,
                       Path outputFile,
@@ -119,14 +123,14 @@ public enum NGramTimesCounter {
         this.continuationDir = continuationDir;
         patternQueue = new LinkedBlockingQueue<>(patterns);
         nGramTimesForPattern = new ConcurrentHashMap<>();
-        progress = new Progress(patternQueue.size());
+        progress = OUTPUT.newProgress(patternQueue.size());
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
-        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
+        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         Glmtk.validateExpectedResults("ngram times couting", patterns,
                 nGramTimesForPattern.keySet());
@@ -136,7 +140,7 @@ public enum NGramTimesCounter {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
+        readerMemory = config.getMemoryReader();
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
     }
 

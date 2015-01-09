@@ -1,6 +1,5 @@
 package de.glmtk.querying;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -28,13 +27,12 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.common.Config;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
-public enum QueryCacherCreator {
-    QUERY_CACHE_CREATOR;
-
+public class QueryCacherCreator {
     private static final Logger LOGGER = LogManager.getFormatterLogger(QueryCacherCreator.class);
 
     private class Thread implements Callable<Object> {
@@ -133,6 +131,8 @@ public enum QueryCacherCreator {
         }
     }
 
+    private Config config;
+
     private Progress progress;
     private Status status;
     private String name;
@@ -145,6 +145,10 @@ public enum QueryCacherCreator {
     private BlockingQueue<Pattern> patternQueue;
     private int readerMemory;
     private int writerMemory;
+
+    public QueryCacherCreator(Config config) {
+        this.config = config;
+    }
 
     public void createQueryCache(Status status,
                                  Set<Pattern> patterns,
@@ -177,16 +181,16 @@ public enum QueryCacherCreator {
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
-        progress = new Progress(patternQueue.size());
-        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
+        progress = OUTPUT.newProgress(patternQueue.size());
+        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
-        writerMemory = CONFIG.getMemoryWriter();
+        readerMemory = config.getMemoryReader();
+        writerMemory = config.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

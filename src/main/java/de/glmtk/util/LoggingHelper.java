@@ -29,29 +29,29 @@ public enum LoggingHelper {
     /**
      * Log4j Configuration.
      */
-    private Configuration configuration;
+    private Configuration Configuration;
 
     /**
      * Serializable Log4j Root Logger Configuration.
      */
-    private LoggerConfig loggerConfig;
+    private LoggerConfig loggerconfig;
 
     private Layout<String> layout;
 
     private LoggingHelper() {
         loggerContext = (LoggerContext) LogManager.getContext(false);
-        configuration = loggerContext.getConfiguration();
-        loggerConfig = configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-        layout = PatternLayout.createLayout(loggingPattern, configuration,
+        Configuration = loggerContext.getConfiguration();
+        loggerconfig = Configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        layout = PatternLayout.createLayout(loggingPattern, Configuration,
                 null, Constants.CHARSET, true, true, null, null);
     }
 
     public Level getLogLevel() {
-        return loggerConfig.getLevel();
+        return loggerconfig.getLevel();
     }
 
     public void setLogLevel(Level level) {
-        loggerConfig.setLevel(level);
+        loggerconfig.setLevel(level);
 
         loggerContext.updateLoggers();
     }
@@ -60,8 +60,8 @@ public enum LoggingHelper {
         Appender consoleApender = ConsoleAppender.createAppender(layout, null,
                 target.toString(), "Output", "true", "false");
         consoleApender.start();
-        configuration.addAppender(consoleApender);
-        loggerConfig.addAppender(consoleApender, null, null);
+        Configuration.addAppender(consoleApender);
+        loggerconfig.addAppender(consoleApender, null, null);
 
         loggerContext.updateLoggers();
     }
@@ -83,10 +83,10 @@ public enum LoggingHelper {
         Appender fileLocalAppender = FileAppender.createAppender(
                 logFile.toString(), Boolean.toString(append), "false", name,
                 "false", "false", "true", "8192", layout, null, "false",
-                "false", configuration);
+                "false", Configuration);
         fileLocalAppender.start();
-        configuration.addAppender(fileLocalAppender);
-        loggerConfig.addAppender(fileLocalAppender, null, null);
+        Configuration.addAppender(fileLocalAppender);
+        loggerconfig.addAppender(fileLocalAppender, null, null);
 
         loggerContext.updateLoggers();
     }

@@ -1,6 +1,5 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -32,6 +31,7 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.common.Config;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
@@ -39,9 +39,7 @@ import de.glmtk.util.ObjectUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.ThreadUtils;
 
-public enum Merger {
-    MERGER;
-
+public class Merger {
     private static class SequenceCountReader implements Closeable, AutoCloseable {
         public static final Comparator<SequenceCountReader> COMPARATOR = new Comparator<Merger.SequenceCountReader>() {
             @Override
@@ -250,6 +248,8 @@ public enum Merger {
         }
     }
 
+    private Config config;
+
     private int numParallelReaders = 10;
     private Progress progress;
     private boolean continuation;
@@ -259,6 +259,10 @@ public enum Merger {
     private BlockingQueue<Pattern> patternQueue;
     private long readerMemory;
     private long writerMemory;
+
+    public Merger(Config config) {
+        this.config = config;
+    }
 
     public void mergeAbsolute(Status status,
                               Set<Pattern> patterns,
@@ -295,19 +299,19 @@ public enum Merger {
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != CONFIG.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
-        progress = new Progress(patterns.size());
-        ThreadUtils.executeThreads(CONFIG.getNumberOfThreads(), threads);
+        progress = OUTPUT.newProgress(patterns.size());
+        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         if (NioUtils.isDirEmpty(chunkedDir))
             Files.deleteIfExists(chunkedDir);
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getMemoryReader();
-        writerMemory = CONFIG.getMemoryWriter();
+        readerMemory = config.getMemoryReader();
+        writerMemory = config.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

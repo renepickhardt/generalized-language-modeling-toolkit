@@ -1,9 +1,9 @@
 package de.glmtk.counting;
 
-import static de.glmtk.common.Config.CONFIG;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -24,6 +24,7 @@ import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.common.Config;
 import de.glmtk.testutil.LoggingTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.StringUtils;
@@ -42,9 +43,11 @@ public class CountingTest extends LoggingTest {
                 {TestCorpus.MOBYDICK}});
     }
 
+    private Config config;
     private TestCorpus testCorpus;
 
-    public CountingTest(TestCorpus testCorpus) {
+    public CountingTest(TestCorpus testCorpus) throws IOException {
+        config = new Config();
         this.testCorpus = testCorpus;
     }
 
@@ -70,14 +73,14 @@ public class CountingTest extends LoggingTest {
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Long>> absolute = (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
-                CONFIG.getUpdateIntervalLog());
+                config.getUpdateIntervalLog());
 
         Field continuationField = CountCache.class.getDeclaredField("continuation");
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Counter>> continuation = (Map<Pattern, Map<String, Counter>>) continuationField.get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
-                CONFIG.getUpdateIntervalLog());
+                config.getUpdateIntervalLog());
     }
 
     private void testAbsoluteCounts(List<String> corpusContents,

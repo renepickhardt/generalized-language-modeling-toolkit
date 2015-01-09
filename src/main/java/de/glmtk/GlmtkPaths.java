@@ -1,6 +1,7 @@
 package de.glmtk;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,41 @@ import de.glmtk.util.StringUtils;
 
 public class GlmtkPaths {
     private static final Logger LOGGER = LogManager.getFormatterLogger(GlmtkPaths.class);
+
+    /**
+     * The directory the user started the program from.
+     */
+    public static final Path USER_DIR;
+
+    /**
+     * The directory where the GLMTK bundle resides (e.g. directory where config
+     * file is).
+     */
+    public static final Path GLMTK_DIR;
+
+    /**
+     * The directory where log files are saved.
+     */
+    public static final Path LOG_DIR;
+
+    public static final Path config_FILE;
+
+    static {
+        USER_DIR = Paths.get(System.getProperty("user.dir"));
+        GLMTK_DIR = Paths.get(System.getProperty("glmtk.dir",
+                USER_DIR.toString()));
+        LOG_DIR = GLMTK_DIR.resolve(Constants.LOG_DIR_NAME);
+        config_FILE = GLMTK_DIR.resolve(Constants.config_FILE);
+    }
+
+    public static void logStaticPaths() {
+        LOGGER.info("GlmtkPath static %s", StringUtils.repeat("-",
+                "GlmtkPath static ".length()));
+        LOGGER.info("USER_DIR:    %s");
+        LOGGER.info("GLMTK_DIR:   %s");
+        LOGGER.info("LOG_DIR:     %s");
+        LOGGER.info("config_FILE: %s");
+    }
 
     private GlmtkPaths root;
 

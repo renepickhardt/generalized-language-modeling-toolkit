@@ -1,6 +1,5 @@
 package de.glmtk.executables;
 
-import static de.glmtk.common.Config.CONFIG;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
@@ -24,6 +23,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
+import de.glmtk.common.Config;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.StringUtils;
@@ -35,7 +36,9 @@ import de.glmtk.util.StringUtils;
     protected static final String OPTION_VERSION_SHORT = "v";
     protected static final String OPTION_VERSION_LONG = "version";
 
+    protected Config config = null;
     protected CommandLine line = null;
+    private boolean outputIntialized = false;
 
     protected abstract List<Option> getOptions();
 
@@ -50,12 +53,13 @@ import de.glmtk.util.StringUtils;
             parseArguments(args);
 
             configureLogging();
-            OUTPUT.enableAnsi();
 
-            // Calling {@link #printLogHeader(String[])} before
-            //  {@link #parseArguments(String[])} because
-            // {@link GlmtkExecutable} can only add Logger for
-            // "<workingdir>/log" after arguments are parsed.
+            config = new Config();
+
+            OUTPUT.initialize(config);
+            OUTPUT.tryToEnableAnsi();
+            outputIntialized = true;
+
             printLogHeader(args);
 
             exec();
@@ -65,20 +69,26 @@ import de.glmtk.util.StringUtils;
             if (e.getMessage() != null)
                 System.err.println(e.getMessage());
         } catch (Throwable e) {
-            OUTPUT.printError(e.getMessage());
+            if (outputIntialized)
+                OUTPUT.printError(e.getMessage());
+            else {
+                e.printStackTrace();
+                System.err.println(e.getMessage());
+            }
             LOGGER.error(String.format("Exception %s",
                     ExceptionUtils.getStackTrace(e)));
         }
     }
 
     protected void configureLogging() {
-        LOGGING_HELPER.addFileAppender(CONFIG.getLogDir().resolve(
-                Constants.ALL_LOG_FILE_NAME), "FileAll", true);
+        LOGGING_HELPER.addFileAppender(
+                GlmtkPaths.LOG_DIR.resolve(Constants.ALL_LOG_FILE_NAME),
+                "FileAll", true);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = format.format(Calendar.getInstance().getTime());
         LOGGING_HELPER.addFileAppender(
-                CONFIG.getLogDir().resolve(time + ".log"), "FileTimestamp",
+                GlmtkPaths.LOG_DIR.resolve(time + ".log"), "FileTimestamp",
                 false);
     }
 
@@ -128,7 +138,7 @@ import de.glmtk.util.StringUtils;
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(
                 new String[] {"git", "log", "-1", "--format=%H: %s"}, null,
-                CONFIG.getGlmtkDir().toFile());
+                GlmtkPaths.GLMTK_DIR.toFile());
         gitLogProc.waitFor();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 gitLogProc.getInputStream(), Constants.CHARSET))) {
@@ -139,7 +149,8 @@ import de.glmtk.util.StringUtils;
         // log arguments
         LOGGER.info("Arguments: %s", StringUtils.join(args, " "));
 
-        CONFIG.logConfig();
+        GlmtkPaths.logStaticPaths();
+        config.logconfig();
 
         LOGGER.info(StringUtils.repeat("-", 80));
     }
