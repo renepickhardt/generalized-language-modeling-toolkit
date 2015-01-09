@@ -51,8 +51,6 @@ public class CountingTest extends TestCorporaTest {
     private CountCache countCache;
     private Map<Pattern, Map<String, Long>> absolute;
     private Map<Pattern, Map<String, Counter>> continuation;
-    private long readSize;
-    private long totalSize;
 
     @SuppressWarnings("unchecked")
     public CountingTest(TestCorpus testCorpus) throws Exception {
@@ -86,10 +84,20 @@ public class CountingTest extends TestCorporaTest {
 
             LOGGER.info("# %s", pattern);
 
-            readSize = 0;
-            totalSize = corpusSize * counts.size();
+            long time = System.currentTimeMillis();
+            long numRead = 0;
+            long total = counts.size();
 
             for (Entry<String, Long> sequenceCounts : counts.entrySet()) {
+                if (config.getUpdateIntervalLog() != 0) {
+                    ++numRead;
+                    long curTime = System.currentTimeMillis();
+                    if (curTime - time >= config.getUpdateIntervalLog()) {
+                        time = curTime;
+                        LOGGER.info("%6.2f%%", 100.0f * numRead / total);
+                    }
+                }
+
                 if (testCorpus != TestCorpus.ABC
                         && testCorpus != TestCorpus.MOBYDICK)
                     if (Math.random() > SELECTION_CHANCE)
@@ -105,23 +113,12 @@ public class CountingTest extends TestCorporaTest {
 
     private void assertSequenceHasAbsoluteCount(String sequence,
                                                 long count) {
-        long time = System.currentTimeMillis();
-
         String regexString = sequenceToRegex(sequence);
         java.util.regex.Pattern regex = java.util.regex.Pattern.compile(regexString);
         LOGGER.trace("  %s (regex='%s')", sequence, regexString);
 
         int numMatches = 0;
         for (String line : corpusLines) {
-            readSize += line.getBytes(Constants.CHARSET).length;
-            if (config.getUpdateIntervalLog() != 0) {
-                long curTime = System.currentTimeMillis();
-                if (curTime - time >= config.getUpdateIntervalLog()) {
-                    time = curTime;
-                    LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
-                }
-            }
-
             Matcher matcher = regex.matcher(line);
 
             int numLineMatches = 0;
@@ -153,10 +150,20 @@ public class CountingTest extends TestCorporaTest {
 
             LOGGER.info("# %s", pattern);
 
-            readSize = 0;
-            totalSize = corpusSize * counts.size();
+            long time = System.currentTimeMillis();
+            long numRead = 0;
+            long total = counts.size();
 
             for (Entry<String, Counter> sequenceCounts : counts.entrySet()) {
+                if (config.getUpdateIntervalLog() != 0) {
+                    ++numRead;
+                    long curTime = System.currentTimeMillis();
+                    if (curTime - time >= config.getUpdateIntervalLog()) {
+                        time = curTime;
+                        LOGGER.info("%6.2f%%", 100.0f * numRead / total);
+                    }
+                }
+
                 if (testCorpus != TestCorpus.ABC
                         && testCorpus != TestCorpus.MOBYDICK)
                     if (Math.random() > SELECTION_CHANCE)
@@ -173,22 +180,13 @@ public class CountingTest extends TestCorporaTest {
     private void assertSequenceHasContinuationCount(Pattern pattern,
                                                     String sequence,
                                                     Counter counter) {
-        long time = System.currentTimeMillis();
-
         String regexString = sequenceToRegex(sequence);
         java.util.regex.Pattern regex = java.util.regex.Pattern.compile(regexString);
         LOGGER.trace("  %s (regex='%s')", sequence, regexString);
 
         Map<String, Long> matches = new HashMap<>();
-        for (String line : corpusLines) {
-            readSize += line.getBytes(Constants.CHARSET).length;
+        for (String line : corpusLines)
             if (config.getUpdateIntervalLog() != 0) {
-                long curTime = System.currentTimeMillis();
-                if (curTime - time >= config.getUpdateIntervalLog()) {
-                    time = curTime;
-                    LOGGER.info("%6.2f%%", 100.0f * readSize / totalSize);
-                }
-
                 Matcher matcher = regex.matcher(line);
 
                 if (matcher.find())
@@ -198,13 +196,12 @@ public class CountingTest extends TestCorporaTest {
                         Long foundCount = matches.get(found);
                         matches.put(found, foundCount == null
                                 ? 1
-                                : foundCount + 1);
+                                        : foundCount + 1);
                         LOGGER.trace(matcher);
                     } while (matcher.find(matcher.start(1)));
 
                 LOGGER.trace("    %s", line);
             }
-        }
 
         Counter foundCounter = new Counter();
         for (Long count : matches.values())
