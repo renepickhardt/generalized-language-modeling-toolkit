@@ -267,8 +267,7 @@ public enum Chunker {
                 else
                     throw new RuntimeException();
             } catch (RuntimeException e) {
-                throw new FileFormatException(line, lineNo, file, null, null,
-                        "Needs to be of format '<sequence>(<tab><count>){1,4}'.");
+                throw new FileFormatException(line, lineNo, file, null, "Needs to be of format '<sequence>(<tab><count>){1,4}'.");
             }
 
             String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(

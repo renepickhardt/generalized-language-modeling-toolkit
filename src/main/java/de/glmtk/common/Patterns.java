@@ -59,10 +59,8 @@ public class Patterns {
             for (char elemAsChar : asString.toCharArray()) {
                 PatternElem elem = PatternElem.fromChar(elemAsChar);
                 if (elem == null)
-                    throw new IllegalArgumentException(
-                            String.format(
-                                    "Illegal 'asString' Argument '%s': unkown PatternElem: '%s'.",
-                                    asString, elemAsChar));
+                    throw new IllegalArgumentException(String.format(
+                            "Unkown PatternElem: '%s'.", elemAsChar));
                 elems.add(elem);
             }
 

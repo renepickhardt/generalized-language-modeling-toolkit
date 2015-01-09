@@ -3,23 +3,17 @@ package de.glmtk.common;
 import static de.glmtk.Constants.MiB;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.events.Event;
 import org.yaml.snakeyaml.events.Event.ID;
 import org.yaml.snakeyaml.events.ScalarEvent;
 
 import de.glmtk.Constants;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.StringUtils;
@@ -33,16 +27,24 @@ public enum Config {
     private static final Logger LOGGER = LogManager.getFormatterLogger(Config.class);
 
     private class ConfigParser extends AbstractYamlParser {
-        public void parseConfig(Event event,
-                                Iterator<Event> iter) {
+        public ConfigParser(Path file) {
+            super(file, "config");
+        }
+
+        @Override
+        protected void parse() {
+            parseBegining("!config");
+            parseConfig();
+            parseEnding();
+        }
+
+        protected void parseConfig() {
             Map<String, Boolean> keys = createValidKeysMap("numberOfThreads",
                     "memory", "updateInterval", "tagging");
 
-            parseBegining(event, iter, "!config");
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
-                if (!event.is(ID.Scalar))
-                    throw new FileFormatException("Expected ScalarEvent.");
+                assertEventIsId(ID.Scalar);
 
                 String key = ((ScalarEvent) event).getValue();
                 registerKey(keys, key);
@@ -50,19 +52,19 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "numberOfThreads":
-                        numberOfThreads = parseInt(event, iter);
+                        numberOfThreads = parseInt();
                         break;
 
                     case "memory":
-                        parseMemory(event, iter);
+                        parseMemory();
                         break;
 
                     case "updateInterval":
-                        parseUpdateInterval(event, iter);
+                        parseUpdateInterval();
                         break;
 
                     case "tagging":
-                        parseTagging(event, iter);
+                        parseTagging();
                         break;
 
                     default:
@@ -71,21 +73,17 @@ public enum Config {
 
                 event = iter.next();
             }
-            parseEnding(event, iter);
         }
 
-        private void parseMemory(Event event,
-                                 Iterator<Event> iter) {
-            if (!event.is(ID.MappingStart))
-                throw new FileFormatException("Expected MappingStart.");
+        private void parseMemory() {
+            assertEventIsId(ID.MappingStart);
 
             Map<String, Boolean> keys = createValidKeysMap("jvm", "reader",
                     "writer", "chunkSize", "cacheThreshold");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
-                if (!event.is(ID.Scalar))
-                    throw new FileFormatException("Expected ScalarEvent.");
+                assertEventIsId(ID.Scalar);
 
                 String key = ((ScalarEvent) event).getValue();
                 registerKey(keys, key);
@@ -93,23 +91,23 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "jvm":
-                        mainMemory = parseLongMiB(event, iter);
+                        mainMemory = parseLongMiB();
                         break;
 
                     case "reader":
-                        readerMemory = parseIntMiB(event, iter);
+                        readerMemory = parseIntMiB();
                         break;
 
                     case "writer":
-                        writerMemory = parseIntMiB(event, iter);
+                        writerMemory = parseIntMiB();
                         break;
 
                     case "chunkSize":
-                        maxChunkSize = parseLongMiB(event, iter);
+                        maxChunkSize = parseLongMiB();
                         break;
 
                     case "cacheThreshold":
-                        trainingCacheThreshold = parseLongMiB(event, iter);
+                        trainingCacheThreshold = parseLongMiB();
                         break;
 
                     default:
@@ -120,31 +118,28 @@ public enum Config {
             }
         }
 
-        private long parseLongMiB(Event event,
-                                  Iterator<Event> iter) {
-            return parseLong(event, iter) * MiB;
+        private long parseLongMiB() {
+            return parseLong() * MiB;
         }
 
-        private int parseIntMiB(Event event,
-                                Iterator<Event> iter) {
-            long result = parseLong(event, iter);
+        private int parseIntMiB() {
+            long result = parseLong();
             if (result >= Integer.MAX_VALUE)
-                throw new FileFormatException("Can't fit into int.");
+                throw newFileFormatException(
+                        "Given memory value is to large for integer: %s resp. %d bytes.",
+                        humanReadableByteCount(result), result);
             return (int) result;
         }
 
-        private void parseUpdateInterval(Event event,
-                                         Iterator<Event> iter) {
-            if (!event.is(ID.MappingStart))
-                throw new FileFormatException("Expected MappingStart.");
+        private void parseUpdateInterval() {
+            assertEventIsId(ID.MappingStart);
 
             Map<String, Boolean> keys = createValidKeysMap("log", "console",
                     "consoleParams");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
-                if (!event.is(ID.Scalar))
-                    throw new FileFormatException("Expected ScalarEvent.");
+                assertEventIsId(ID.Scalar);
 
                 String key = ((ScalarEvent) event).getValue();
                 registerKey(keys, key);
@@ -152,15 +147,15 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "log":
-                        logUpdateInterval = parseInt(event, iter);
+                        logUpdateInterval = parseInt();
                         break;
 
                     case "console":
-                        consoleUpdateInterval = parseInt(event, iter);
+                        consoleUpdateInterval = parseInt();
                         break;
 
                     case "consoleParams":
-                        consoleParamsUpdateInterval = parseInt(event, iter);
+                        consoleParamsUpdateInterval = parseInt();
                         break;
 
                     default:
@@ -171,17 +166,14 @@ public enum Config {
             }
         }
 
-        private void parseTagging(Event event,
-                                  Iterator<Event> iter) {
-            if (!event.is(ID.MappingStart))
-                throw new FileFormatException("Expected MappingStart.");
+        private void parseTagging() {
+            assertEventIsId(ID.MappingStart);
 
             Map<String, Boolean> keys = createValidKeysMap("model");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
-                if (!event.is(ID.Scalar))
-                    throw new FileFormatException("Expected ScalarEvent.");
+                assertEventIsId(ID.Scalar);
 
                 String key = ((ScalarEvent) event).getValue();
                 registerKey(keys, key);
@@ -189,7 +181,7 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "model":
-                        model = parsePath(event, iter);
+                        model = parsePath();
                         break;
 
                     default:
@@ -325,11 +317,6 @@ public enum Config {
     private void readConfigFromFile(Path file) throws IOException {
         //        LOGGER.debug("Reading config from file '%s'.", file);
 
-        Yaml yaml = new Yaml();
-        try (BufferedReader reader = Files.newBufferedReader(file,
-                Constants.CHARSET)) {
-            Iterator<Event> iter = yaml.parse(reader).iterator();
-            new ConfigParser().parseConfig(iter.next(), iter);
-        }
+        new ConfigParser(file).run();
     }
 }

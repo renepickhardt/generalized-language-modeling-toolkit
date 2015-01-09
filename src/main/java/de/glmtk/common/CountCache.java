@@ -179,7 +179,7 @@ public class CountCache {
                                 ? "absolute"
                                         : "continuation";
                         throw new FileFormatException(line, lineNo, file, type
-                                + " counts", null, e.getMessage());
+                                + " counts", e.getMessage());
                     }
                     if (isPatternAbsolute)
                         absoluteCounts.put(sequence, counter.getOnePlusCount());
@@ -209,7 +209,6 @@ public class CountCache {
                             lineNo,
                             file,
                             "ngram times",
-                            null,
                             "Expected line to have format '<pattern>\\t<count>\\t<count>\\t<count>\\t<count>'.");
 
                 Pattern pattern = null;
@@ -217,8 +216,8 @@ public class CountCache {
                     pattern = Patterns.get(split.get(0));
                 } catch (RuntimeException e) {
                     throw new FileFormatException(line, lineNo, file,
-                            "ngram times", "pattern",
-                            "Unable to parse '%s' as a pattern.", split.get(0));
+                            "ngram times", "Unable to parse '%s' as a pattern.",
+                            split.get(0));
                 }
                 long[] counts = new long[4];
                 for (int i = 0; i != 4; ++i)
@@ -226,8 +225,7 @@ public class CountCache {
                         counts[i] = Long.parseLong(split.get(i + 1));
                     } catch (NumberFormatException e) {
                         throw new FileFormatException(line, lineNo, file,
-                                "ngram times", "count",
-                                "Unable to parse '%d' as an intger.",
+                                "ngram times", "Unable to parse '%d' as an intger.",
                                 split.get(i + 1));
                     }
                 nGramTimes.put(pattern, counts);
@@ -249,16 +247,15 @@ public class CountCache {
 
                 if (split.size() != 2)
                     throw new FileFormatException(line, lineNo, file,
-                            "length distribution", null,
-                            "Expected line to have format '<sequence-length>\\t<frequency>'.");
+                            "length distribution", "Expected line to have format '<sequence-length>\\t<frequency>'.");
 
                 int length = 0;
                 try {
                     length = Integer.parseInt(split.get(0));
                 } catch (NumberFormatException e) {
                     throw new FileFormatException(line, lineNo, file,
-                            "length distribution", "sequence length",
-                            "Unable to parse '%s' as an integer.", split.get(0));
+                            "length distribution", "Unable to parse '%s' as an integer.",
+                            split.get(0));
                 }
 
                 double frequency = 0.0;
@@ -266,8 +263,7 @@ public class CountCache {
                     frequency = Double.parseDouble(split.get(1));
                 } catch (NumberFormatException e) {
                     throw new FileFormatException(line, lineNo, file,
-                            "length distribution", "frequency",
-                            "Unable to parse '%s' as a floating point number.",
+                            "length distribution", "Unable to parse '%s' as a floating point number.",
                             split.get(1));
                 }
 

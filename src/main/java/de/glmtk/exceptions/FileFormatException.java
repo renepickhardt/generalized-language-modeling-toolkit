@@ -3,6 +3,8 @@ package de.glmtk.exceptions;
 import java.nio.file.Path;
 import java.util.Formatter;
 
+import org.yaml.snakeyaml.error.Mark;
+
 public class FileFormatException extends RuntimeException {
 
     private static final long serialVersionUID = 7551127644841955051L;
@@ -11,12 +13,14 @@ public class FileFormatException extends RuntimeException {
                                           String fileType,
                                           String message,
                                           Object... params) {
+        if (fileType == null)
+            fileType = "";
+        else
+            fileType += ' ';
+
         try (Formatter f = new Formatter()) {
-            if (fileType == null)
-                f.format("Illegal file '%s'.%n", file);
-            else
-                f.format("Illegal %s file '%s'.%n", fileType, file);
             f.format(message, params);
+            f.format("%n In %s file '%s'.", fileType, file);
             return f.toString();
         }
     }
@@ -25,26 +29,40 @@ public class FileFormatException extends RuntimeException {
                                           Integer lineNo,
                                           Path file,
                                           String fileType,
-                                          String errorType,
                                           String message,
                                           Object... params) {
+        if (fileType == null)
+            fileType = "";
+        else
+            fileType += ' ';
+
         try (Formatter f = new Formatter()) {
-            if (errorType == null)
-                f.format("Illegal line '%d' ", lineNo);
-            else
-                f.format("Illegal %s on line '%d' ", errorType, lineNo);
-            if (fileType == null)
-                f.format(" in file '%s'.%n", file);
-            else
-                f.format(" in %s file '%s'.%n", fileType, file);
             f.format(message, params);
-            f.format("%nLine was: '%s'.", line);
+            f.format("%nIn %s file '%s', line %d:%n", fileType, file, lineNo);
+            f.format("    %s%n", line);
             return f.toString();
         }
     }
 
-    public FileFormatException(String message) {
-        super(message);
+    private static String assembleMessage(Path file,
+                                          String fileType,
+                                          Mark mark,
+                                          String message,
+                                          Object... params) {
+        int line = mark.getLine() + 1;
+        int column = mark.getColumn() + 1;
+        if (fileType == null)
+            fileType = "";
+        else
+            fileType += ' ';
+
+        try (Formatter f = new Formatter()) {
+            f.format(message, params);
+            f.format("%nIn %s file '%s', line %d, column %d:%n", fileType,
+                    file, line, column);
+            f.format(mark.get_snippet());
+            return f.toString();
+        }
     }
 
     public FileFormatException(Path file,
@@ -58,11 +76,16 @@ public class FileFormatException extends RuntimeException {
                                Integer lineNo,
                                Path file,
                                String fileType,
-                               String errorType,
                                String message,
                                Object... params) {
-        super(assembleMessage(line, lineNo, file, fileType, errorType, message,
-                params));
+        super(assembleMessage(line, lineNo, file, fileType, message, params));
     }
 
+    public FileFormatException(Path file,
+                               String fileType,
+                               Mark mark,
+                               String message,
+                               Object... params) {
+        super(assembleMessage(file, fileType, mark, message, params));
+    }
 }

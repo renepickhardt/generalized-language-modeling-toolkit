@@ -1,16 +1,16 @@
 package de.glmtk.common;
 
 import java.beans.IntrospectionException;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.events.Event;
 import org.yaml.snakeyaml.events.Event.ID;
 import org.yaml.snakeyaml.events.ScalarEvent;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -36,7 +35,6 @@ import org.yaml.snakeyaml.representer.Representer;
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.exceptions.StatusNotAccurateException;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.AbstractYamlParser;
@@ -132,149 +130,158 @@ public class Status {
     }
 
     private class StatusParser extends AbstractYamlParser {
-        public void parseStatus(Event event,
-                                Iterator<Event> iter) {
+        public StatusParser(Path file) {
+            super(file, "status");
+        }
+
+        @Override
+        protected void parse() {
+            parseBegining("!status");
+            parseStatus();
+            parseEnding();
+        }
+
+        private void parseStatus() {
             Map<String, Boolean> keys = createValidKeysMap("hash",
                     "taggedHash", "training", "counted", "chunked",
                     "nGramTimesCounted", "lengthDistribution", "queryCaches");
 
-            parseBegining(event, iter, "!status");
-            event = iter.next();
+            nextEvent();
             while (!event.is(ID.MappingEnd)) {
-                if (!event.is(ID.Scalar))
-                    throw new FileFormatException("Expected SclarEvent.");
+                assertEventIsId(ID.Scalar);
 
                 String key = ((ScalarEvent) event).getValue();
                 registerKey(keys, key);
 
-                event = iter.next();
+                nextEvent();
                 switch (key) {
                     case "hash":
-                        hash = parseScalar(event, iter);
+                        hash = parseScalar();
                         break;
 
                     case "taggedHash":
-                        taggedHash = parseScalar(event, iter);
+                        taggedHash = parseScalar();
                         break;
 
                     case "training":
+                        String trainingStr = parseScalar();
                         try {
-                            training = Training.valueOf(parseScalar(event, iter));
+                            training = Training.valueOf(trainingStr);
                         } catch (IllegalArgumentException e) {
-                            throw new FileFormatException(
-                                    "Illegal training value. Possible values: TODO.");
+                            List<String> possible = new ArrayList<>();
+                            for (Training training : Training.values())
+                                possible.add(training.toString());
+                            throw newFileFormatException(
+                                                         "Illegal training value: '%s'. Possible values: '%s'.",
+                                                         trainingStr, StringUtils.join(possible,
+                                                                 "', '"));
                         }
                         break;
 
                     case "counted":
-                        counted = parseSetPattern(event, iter);
+                        counted = parseSetPattern();
                         break;
 
                     case "chunked":
-                        chunked = parseMapPatternSetScalar(event, iter);
+                        chunked = parseMapPatternSetScalar();
                         break;
 
                     case "nGramTimesCounted":
-                        nGramTimesCounted = parseBoolean(event, iter);
+                        nGramTimesCounted = parseBoolean();
                         break;
 
                     case "lengthDistribution":
-                        lengthDistribution = parseBoolean(event, iter);
+                        lengthDistribution = parseBoolean();
                         break;
 
                     case "queryCaches":
-                        parseQueryCaches(event, iter);
+                        parseQueryCaches();
                         break;
 
                     default:
                         throw new SwitchCaseNotImplementedException();
                 }
 
-                event = iter.next();
+                nextEvent();
             }
-            parseEnding(event, iter);
         }
 
-        private Pattern parsePattern(Event event,
-                                     Iterator<Event> iter) {
-            String patternStr = parseScalar(event, iter);
+        private Pattern parsePattern() {
+            String patternStr = parseScalar();
             try {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
-                throw new FileFormatException("Illegal pattern.");
+                throw newFileFormatException("Illegal pattern: '%s'. %s",
+                        patternStr, e.getMessage());
             }
         }
 
-        private Set<Pattern> parseSetPattern(Event event,
-                                             Iterator<Event> iter) {
-            if (!event.is(ID.SequenceStart))
-                throw new FileFormatException("Expected SequenceStart.");
+        private Set<Pattern> parseSetPattern() {
+            assertEventIsId(ID.SequenceStart);
 
             Set<Pattern> result = new TreeSet<>();
-            event = iter.next();
+            nextEvent();
             while (!event.is(ID.SequenceEnd)) {
-                result.add(parsePattern(event, iter));
-                event = iter.next();
+                result.add(parsePattern());
+                nextEvent();
             }
             return result;
         }
 
-        private Map<Pattern, Set<String>> parseMapPatternSetScalar(Event event,
-                                                                   Iterator<Event> iter) {
-            if (!event.is(ID.MappingStart))
-                throw new FileFormatException("Expected MappingStart.");
+        private Map<Pattern, Set<String>> parseMapPatternSetScalar() {
+            assertEventIsId(ID.MappingStart);
 
             Map<Pattern, Set<String>> result = new TreeMap<>();
-            event = iter.next();
+            nextEvent();
             while (!event.is(ID.MappingEnd)) {
-                Pattern pattern = parsePattern(event, iter);
-                Set<String> scalars = parseSetScalar(iter.next(), iter);
+                Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
-                    throw new FileFormatException("Duplicate pattern in map.");
+                    throw newFileFormatException(
+                            "Map contains pattern multiple times as key: '%s'.",
+                            pattern);
+                nextEvent();
+                Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
-                event = iter.next();
+                nextEvent();
             }
             return result;
         }
 
-        private void parseQueryCaches(Event event,
-                                      Iterator<Event> iter) {
-            if (!event.is(ID.MappingStart))
-                throw new FileFormatException("Expected MappingStart.");
+        private void parseQueryCaches() {
+            assertEventIsId(ID.MappingStart);
 
-            event = iter.next();
+            nextEvent();
             while (!event.is(ID.MappingEnd)) {
-                String name = parseScalar(event, iter);
+                String name = parseScalar();
                 if (queryCaches.containsKey(name))
-                    throw new IllegalArgumentException("Duplicate key.");
-                event = iter.next();
-                QueryCache queryCache = parseQueryCache(event, iter);
+                    throw newFileFormatException(
+                                                 "QueryCache name occurs multiple times: '%s'.",
+                                                 name);
+                nextEvent();
+                QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
-                event = iter.next();
+                nextEvent();
             }
         }
 
-        private QueryCache parseQueryCache(Event event,
-                                           Iterator<Event> iter) {
-            if (!event.is(ID.MappingStart))
-                throw new FileFormatException("Expected MappingStart.");
+        private QueryCache parseQueryCache() {
+            assertEventIsId(ID.MappingStart);
 
             QueryCache result = new QueryCache();
 
             Map<String, Boolean> keys = createValidKeysMap("counted");
 
-            event = iter.next();
+            nextEvent();
             while (!event.is(ID.MappingEnd)) {
-                if (!event.is(ID.Scalar))
-                    throw new FileFormatException("Expected ScalarEvent.");
+                assertEventIsId(ID.Scalar);
 
                 String key = ((ScalarEvent) event).getValue();
                 registerKey(keys, key);
 
-                event = iter.next();
+                nextEvent();
                 switch (key) {
                     case "counted":
-                        Set<Pattern> patterns = parseSetPattern(event, iter);
+                        Set<Pattern> patterns = parseSetPattern();
                         result.setCounted(patterns);
                         break;
 
@@ -282,7 +289,7 @@ public class Status {
                         throw new SwitchCaseNotImplementedException();
                 }
 
-                event = iter.next();
+                nextEvent();
             }
             return result;
         }
@@ -563,12 +570,7 @@ public class Status {
     private void readStatusFromFile() throws IOException {
         LOGGER.debug("Reading status from file '%s'.", file);
 
-        Yaml yaml = new Yaml();
-        try (BufferedReader reader = Files.newBufferedReader(file,
-                Constants.CHARSET)) {
-            Iterator<Event> iter = yaml.parse(reader).iterator();
-            new StatusParser().parseStatus(iter.next(), iter);
-        }
+        new StatusParser(file).run();
 
         for (Pattern pattern : counted)
             if (pattern.isAbsolute())

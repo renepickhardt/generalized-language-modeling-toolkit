@@ -85,7 +85,7 @@ public enum Merger {
                     sequence = Counter.getSequenceAndCounter(line, counter);
                 } catch (IllegalArgumentException e) {
                     throw new FileFormatException(line, lineNo, file, "chunk",
-                            null, e.getMessage());
+                            e.getMessage());
                 }
             }
         }

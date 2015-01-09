@@ -18,7 +18,7 @@ public class StringUtils {
      * {@code string.split(' ')} since it is much faster.
      */
     public static List<String> splitAtChar(String string,
-            char split) {
+                                           char split) {
         List<String> result = new ArrayList<>();
 
         int sp1 = 0, sp2;
@@ -107,6 +107,10 @@ public class StringUtils {
         for (int i = 0; i != target.length(); ++i)
             result = result.replace(target.charAt(i), replace.charAt(i));
         return result;
+    }
+
+    public static String capitalize(String string) {
+        return Character.toUpperCase(string.charAt(0)) + string.substring(1);
     }
 
     /**
