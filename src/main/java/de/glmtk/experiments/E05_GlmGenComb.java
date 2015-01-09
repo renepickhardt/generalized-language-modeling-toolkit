@@ -4,46 +4,40 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import de.glmtk.util.StringUtils;
 import de.glmtk.utils.ArrayUtils;
-import de.glmtk.utils.StringUtils;
 
 /**
  * Didn't work.
  */
 public class E05_GlmGenComb {
 
-    private static List<String> getPatternedHistory(
-            List<String> history,
+    private static List<String> getPatternedHistory(List<String> history,
             boolean[] pattern) {
-        List<String> result = new ArrayList<String>(history);
-        for (int i = 0; i != pattern.length; ++i) {
-            if (pattern[i]) {
+        List<String> result = new ArrayList<>(history);
+        for (int i = 0; i != pattern.length; ++i)
+            if (pattern[i])
                 result.set(i, "*");
-            }
-        }
         return result;
     }
 
     private static boolean nextPattern(boolean[] pattern) {
         int first = 0, last = pattern.length;
-        for (int i = last - 2; i != first - 1; --i) {
+        for (int i = last - 2; i != first - 1; --i)
             if (pattern[i] && !pattern[i + 1]) { // pattern[i] > pattern[ii]
                 int j = last - 1;
-                while (!pattern[i] || pattern[j]) { // pattern[i] <= pattern[ii]
+                while (!pattern[i] || pattern[j])
                     --j;
-                }
                 ArrayUtils.swap(pattern, i, j);
                 ArrayUtils.reverse(pattern, i + 1, last);
                 return true;
             }
-        }
         ArrayUtils.reverse(pattern, first, last);
-        for (int i = 0; i != pattern.length; ++i) {
+        for (int i = 0; i != pattern.length; ++i)
             if (!pattern[i]) {
                 pattern[i] = true;
                 return true;
             }
-        }
         return false;
     }
 
@@ -51,7 +45,8 @@ public class E05_GlmGenComb {
         return n <= 1 ? 1 : n * factorial(n - 1);
     }
 
-    private static int numOrder(int n, int order) {
+    private static int numOrder(int n,
+                                int order) {
         return (int) (factorial(n) / (factorial(order) * factorial(n - order)));
     }
 
@@ -59,19 +54,19 @@ public class E05_GlmGenComb {
 
     private static List<List<List<List<String>>>> gammasss;
 
-    private static void genComb(String sequence, List<String> history) {
+    private static void genComb(String sequence,
+                                List<String> history) {
         int numAlphas = (int) Math.pow(2, history.size());
-        alphas = new ArrayList<List<String>>(numAlphas);
-        gammasss = new ArrayList<List<List<List<String>>>>(numAlphas);
+        alphas = new ArrayList<>(numAlphas);
+        gammasss = new ArrayList<>(numAlphas);
         for (int i = 0; i != numAlphas; ++i) {
             alphas.add(null);
             gammasss.add(new ArrayList<List<List<String>>>());
         }
 
         boolean[] pattern = new boolean[history.size()];
-        for (int i = 0; i != pattern.length; ++i) {
+        for (int i = 0; i != pattern.length; ++i)
             pattern[i] = false;
-        }
 
         int order = 0;
         int numOrder = numOrder(history.size(), order);
@@ -95,14 +90,12 @@ public class E05_GlmGenComb {
                 }
                 if (iInOrder == 0) {
                     List<List<List<String>>> gammass = gammasss.get(j);
-                    List<List<List<String>>> newGammass =
-                            new ArrayList<List<List<String>>>(gammass.size()
-                                    * numOrder);
+                    List<List<List<String>>> newGammass = new ArrayList<>(
+                            gammass.size() * numOrder);
                     for (int k = 0; k != gammass.size(); ++k) {
                         List<List<String>> gammas = gammass.get(k);
-                        for (int l = 0; l != numOrder; ++l) {
-                            newGammass.add(new ArrayList<List<String>>(gammas));
-                        }
+                        for (int l = 0; l != numOrder; ++l)
+                            newGammass.add(new ArrayList<>(gammas));
                     }
                     gammasss.set(j, newGammass);
                 }
@@ -119,22 +112,20 @@ public class E05_GlmGenComb {
             List<String> alpha = alphas.get(i);
             List<List<List<String>>> gammass = gammasss.get(i);
 
-            String alphaStr =
-                    alpha == null ? "null" : StringUtils.join(alpha, " ");
+            String alphaStr = alpha == null ? "null" : StringUtils.join(alpha,
+                    " ");
             System.out.println("α(" + alphaStr + ")");
-            if (gammass != null) {
-                for (List<List<String>> gammas : gammass) {
+            if (gammass != null)
+                for (List<List<String>> gammas : gammass)
                     if (gammas != null) {
                         for (List<String> gamma : gammas) {
-                            String gammaStr =
-                                    gamma == null ? "null" : StringUtils.join(
-                                            gamma, " ");
+                            String gammaStr = gamma == null
+                                    ? "null"
+                                            : StringUtils.join(gamma, " ");
                             System.out.print("  γ(" + gammaStr + ")");
                         }
                         System.out.println();
                     }
-                }
-            }
         }
     }
 

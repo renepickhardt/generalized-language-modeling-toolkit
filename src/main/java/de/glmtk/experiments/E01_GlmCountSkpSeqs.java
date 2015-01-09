@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import de.glmtk.utils.StringUtils;
+import de.glmtk.util.StringUtils;
 
 /**
- * 2014-12-21
- * Experiment to get a feel about GLM recursiveness and eventually get a formula
- * to how many unique skipped sequences per order there are.
+ * 2014-12-21 Experiment to get a feel about GLM recursiveness and eventually
+ * get a formula to how many unique skipped sequences per order there are.
  *
  * <p>
  * Result: The number of unique skipped sequences per order is:
@@ -24,7 +23,6 @@ import de.glmtk.utils.StringUtils;
  * AnsiConsole</a>.
  */
 public class E01_GlmCountSkpSeqs {
-
     private static String colorStart(int color) {
         return "\u001b[1;3" + color + "m";
     }
@@ -33,28 +31,27 @@ public class E01_GlmCountSkpSeqs {
         return "\u001b[0m";
     }
 
-    private static List<String> skpSequence(List<String> sequence, int skpPos) {
-        List<String> result = new ArrayList<String>(sequence);
-        for (int i = 0; i != result.size(); ++i) {
-            if (i == skpPos) {
+    private static List<String> skpSequence(List<String> sequence,
+                                            int skpPos) {
+        List<String> result = new ArrayList<>(sequence);
+        for (int i = 0; i != result.size(); ++i)
+            if (i == skpPos)
                 result.set(i, "*");
-            }
-        }
         return result;
     }
 
     public static void main(String args[]) {
         List<String> sequence = Arrays.asList("a", "b", "c", "d", "e");
 
-        List<List<List<String>>> ss = new ArrayList<List<List<String>>>();
+        List<List<List<String>>> ss = new ArrayList<>();
         ss.add(Arrays.asList(sequence));
-        List<List<Integer>> cc = new ArrayList<List<Integer>>();
+        List<List<Integer>> cc = new ArrayList<>();
         cc.add(Arrays.asList(0));
 
         for (int order = 1; order != sequence.size() + 1; ++order) {
-            List<List<String>> s = new ArrayList<List<String>>();
+            List<List<String>> s = new ArrayList<>();
             ss.add(s);
-            List<Integer> c = new ArrayList<Integer>();
+            List<Integer> c = new ArrayList<>();
             cc.add(c);
 
             List<List<String>> seqs = ss.get(order - 1);
@@ -67,14 +64,12 @@ public class E01_GlmCountSkpSeqs {
                     List<String> skpSeq = skpSequence(seq, j);
                     if (!skpSeq.equals(seq)) {
                         if (col == 0) {
-                            if (s.contains(skpSeq)) {
+                            if (s.contains(skpSeq))
                                 c.add(1);
-                            } else {
+                            else
                                 c.add(0);
-                            }
-                        } else {
+                        } else
                             c.add(col + 1);
-                        }
                         s.add(skpSeq);
                     }
                 }
@@ -90,11 +85,9 @@ public class E01_GlmCountSkpSeqs {
             System.out.println("--- count=" + s.size());
             for (int i = 0; i != order; ++i) {
                 int cnt = 0;
-                for (int col : c) {
-                    if (col == i) {
+                for (int col : c)
+                    if (col == i)
                         ++cnt;
-                    }
-                }
                 System.out.println("--- col-" + i + "=" + cnt);
             }
             for (int i = 0; i != s.size(); ++i) {
@@ -114,19 +107,16 @@ public class E01_GlmCountSkpSeqs {
             System.out.println("-----------");
             System.out.println("--- order=" + order);
             int cnt = 0;
-            for (int col : c) {
-                if (col == 0) {
+            for (int col : c)
+                if (col == 0)
                     ++cnt;
-                }
-            }
             System.out.println("--- count=" + cnt);
             for (int i = 0; i != s.size(); ++i) {
                 List<String> seq = s.get(i);
                 int col = c.get(i);
-                if (col == 0) {
+                if (col == 0)
                     System.out.println(colorStart(col)
                             + StringUtils.join(seq, " ") + colorEnd());
-                }
             }
         }
         System.out.println("-----------");

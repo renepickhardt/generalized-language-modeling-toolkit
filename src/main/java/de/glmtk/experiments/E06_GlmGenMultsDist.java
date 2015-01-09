@@ -5,22 +5,21 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.glmtk.util.StringUtils;
 import de.glmtk.utils.ArrayUtils;
-import de.glmtk.utils.StringUtils;
 
 /**
  * 2014-12-27
  */
 public class E06_GlmGenMultsDist {
 
-    private static boolean[] getPattern(int size, int order) {
+    private static boolean[] getPattern(int size,
+                                        int order) {
         boolean[] pattern = new boolean[size];
-        for (int i = 0; i != order; ++i) {
+        for (int i = 0; i != order; ++i)
             pattern[i] = true;
-        }
-        for (int i = order; i != size; ++i) {
+        for (int i = order; i != size; ++i)
             pattern[i] = false;
-        }
         return pattern;
     }
 
@@ -34,77 +33,70 @@ public class E06_GlmGenMultsDist {
         return pattern;
     }
 
-    private static List<String> getPatternedHistory(
-            List<String> history,
+    private static List<String> getPatternedHistory(List<String> history,
             boolean[] pattern) {
-        List<String> skippedHistory = new ArrayList<String>(history);
+        List<String> skippedHistory = new ArrayList<>(history);
         int i = 0;
         for (boolean p : pattern) {
-            if (p) {
+            if (p)
                 skippedHistory.set(i, "*");
-            }
             ++i;
         }
         return skippedHistory;
     }
 
     private static List<List<String>> generateHistories(List<String> history) {
-        List<List<String>> histories = new LinkedList<List<String>>();
+        List<List<String>> histories = new LinkedList<>();
 
         for (int order = 0; order != history.size() + 1; ++order) {
             boolean[] pattern = getPattern(history.size(), order);
             histories.add(getPatternedHistory(history, pattern));
 
             int first = 0, last = history.size();
-            for (int i = last - 2; i != first - 1; --i) {
+            for (int i = last - 2; i != first - 1; --i)
                 if (pattern[i] && !pattern[i + 1]) { // pattern[i] > pattern[ii]
                     int j = last - 1;
-                    while (!pattern[i] || pattern[j]) { // pattern[i] <= pattern[ii]
+                    while (!pattern[i] || pattern[j])
                         --j;
-                    }
                     ArrayUtils.swap(pattern, i, j);
                     ArrayUtils.reverse(pattern, i + 1, last);
                     histories.add(getPatternedHistory(history, pattern));
                     i = last - 1;
                 }
-            }
         }
 
         return histories;
     }
 
-    private static boolean equals(boolean[] lhs, boolean[] rhs) {
-        for (int i = 0; i != lhs.length; ++i) {
-            if (lhs[i] != rhs[i]) {
+    private static boolean equals(boolean[] lhs,
+                                  boolean[] rhs) {
+        for (int i = 0; i != lhs.length; ++i)
+            if (lhs[i] != rhs[i])
                 return false;
-            }
-        }
         return true;
     }
 
-    private static List<Object> generateMults(
-            boolean[] pattern,
+    private static List<Object> generateMults(boolean[] pattern,
             boolean[] hpattern,
             List<String> fullHistory) {
-        if (equals(pattern, hpattern)) {
+        if (equals(pattern, hpattern))
             return null;
-        }
 
-        List<Object> mults = new ArrayList<Object>();
+        List<Object> mults = new ArrayList<>();
         mults.add(getPatternedHistory(fullHistory, pattern));
-        List<List<Object>> subMults = new ArrayList<List<Object>>();
-        for (int i = 0; i != pattern.length; ++i) {
+        List<List<Object>> subMults = new ArrayList<>();
+        for (int i = 0; i != pattern.length; ++i)
             if (hpattern[i] && !pattern[i]) {
                 boolean[] newPattern = Arrays.copyOf(pattern, pattern.length);
                 newPattern[i] = true;
                 subMults.add(generateMults(newPattern, hpattern, fullHistory));
             }
-        }
         mults.add(subMults);
         return mults;
     }
 
-    private static void printMults(List<Object> mults, int indent) {
+    private static void printMults(List<Object> mults,
+                                   int indent) {
         if (mults == null) {
             System.out.print("(1)");
             return;
@@ -117,40 +109,36 @@ public class E06_GlmGenMultsDist {
 
         String out = "(γ(" + StringUtils.join(gamma, " ") + ")";
 
-        if (subMults.isEmpty()) {
+        if (subMults.isEmpty())
             System.out.print(out);
-        } else {
+        else {
 
             boolean first = true;
             for (List<Object> subMult : subMults) {
                 if (first) {
                     first = false;
-                    if (subMult != null) {
+                    if (subMult != null)
                         out += " * ";
-                    }
                     System.out.print(out);
-                } else {
+                } else
                     System.out.print(" + \n"
                             + StringUtils.repeat(" ", indent + out.length()));
-                }
-                if (subMult != null) {
+                if (subMult != null)
                     printMults(subMult, indent + out.length());
-                }
             }
         }
 
         System.out.print(")");
     }
 
-    private static void generateAlphasWithMults(
-            String sequence,
-            List<String> history) {
+    private static void generateAlphasWithMults(String sequence,
+                                                List<String> history) {
         List<List<String>> histories = generateHistories(history);
         for (List<String> h : histories) {
-            List<Object> gammas =
-                    generateMults(getPattern(history), getPattern(h), history);
-            String out =
-                    "α(" + StringUtils.join(h, " ") + " " + sequence + ") * ";
+            List<Object> gammas = generateMults(getPattern(history),
+                    getPattern(h), history);
+            String out = "α(" + StringUtils.join(h, " ") + " " + sequence
+                    + ") * ";
             System.out.print(out);
             printMults(gammas, out.length());
             System.out.println();
