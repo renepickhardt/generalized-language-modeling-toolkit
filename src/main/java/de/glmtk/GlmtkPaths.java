@@ -34,7 +34,7 @@ public class GlmtkPaths {
         GLMTK_DIR = Paths.get(System.getProperty("glmtk.dir",
                 USER_DIR.toString()));
         LOG_DIR = GLMTK_DIR.resolve(Constants.LOG_DIR_NAME);
-        config_FILE = GLMTK_DIR.resolve(Constants.config_FILE);
+        config_FILE = GLMTK_DIR.resolve(Constants.CONFIG_FILE);
     }
 
     public static void logStaticPaths() {

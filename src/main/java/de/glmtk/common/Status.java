@@ -75,7 +75,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                    BeanAccess beanAccess) throws IntrospectionException {
+                                                      BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -172,9 +172,9 @@ public class Status {
                             for (Training training : Training.values())
                                 possible.add(training.toString());
                             throw newFileFormatException(
-                                    "Illegal training value: '%s'. Possible values: '%s'.",
-                                    trainingStr, StringUtils.join(possible,
-                                            "', '"));
+                                                         "Illegal training value: '%s'. Possible values: '%s'.",
+                                                         trainingStr, StringUtils.join(possible,
+                                                                 "', '"));
                         }
                         break;
 
@@ -212,7 +212,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                                             patternStr, e.getMessage());
+                        patternStr, e.getMessage());
             }
         }
 
@@ -237,8 +237,8 @@ public class Status {
                 Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
                     throw newFileFormatException(
-                                                 "Map contains pattern multiple times as key: '%s'.",
-                                                 pattern);
+                            "Map contains pattern multiple times as key: '%s'.",
+                            pattern);
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
@@ -255,8 +255,8 @@ public class Status {
                 String name = parseScalar();
                 if (queryCaches.containsKey(name))
                     throw newFileFormatException(
-                            "QueryCache name occurs multiple times: '%s'.",
-                            name);
+                                                 "QueryCache name occurs multiple times: '%s'.",
+                                                 name);
                 nextEvent();
                 QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
@@ -394,7 +394,7 @@ public class Status {
     }
 
     public Set<String> getChunksForPattern(boolean continuation,
-            Pattern pattern) {
+                                           Pattern pattern) {
         synchronized (this) {
             return Collections.unmodifiableSet(chunked(continuation).get(
                     pattern));
@@ -514,11 +514,11 @@ public class Status {
     }
 
     private void checkWithFileSystem() {
-        checkCounted("counted", counted, paths.getAbsoluteDir(),
+        checkCounted("counting", counted, paths.getAbsoluteDir(),
                 paths.getContinuationDir());
-        checkChunked("absolute chunked", absoluteChunked,
+        checkChunked("absolute chunking", absoluteChunked,
                 paths.getAbsoluteChunkedDir());
-        checkChunked("continuation chunked", continuationChunked,
+        checkChunked("continuation chunking", continuationChunked,
                 paths.getContinuationChunkedDir());
         if (nGramTimesCounted && !Files.exists(paths.getNGramTimesFile()))
             throw new WrongStatusException("ngram times counting",
@@ -533,8 +533,8 @@ public class Status {
 
             GlmtkPaths queryCachePaths = paths.newQueryCache(name);
 
-            checkCounted("queryCache " + name, queryCache.getCounted(),
-                    queryCachePaths.getAbsoluteDir(),
+            checkCounted("queryCache " + name + " counting",
+                    queryCache.getCounted(), queryCachePaths.getAbsoluteDir(),
                     queryCachePaths.getContinuationDir());
         }
     }
@@ -546,10 +546,10 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                            : continuationDir;
+                    : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
-                throw new WrongStatusException("counting pattern " + pattern,
+                throw new WrongStatusException(name + " pattern " + pattern,
                         patternFile);
         }
     }
@@ -565,8 +565,8 @@ public class Status {
             for (String chunk : chunks) {
                 Path chunkFile = patternDir.resolve(chunk);
                 if (!Files.exists(chunkFile))
-                    throw new WrongStatusException("chunking pattern "
-                            + pattern, chunkFile);
+                    throw new WrongStatusException(
+                            name + " pattern " + pattern, chunkFile);
             }
         }
     }

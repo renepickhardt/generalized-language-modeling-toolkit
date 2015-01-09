@@ -57,8 +57,7 @@ public class InterpolEstimator extends Estimator {
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {
-        if (backoffMode == BackoffMode.DEL_FRONT
-                || backoffMode == BackoffMode.SKP_AND_DEL)
+        if (backoffMode != BackoffMode.DEL || backoffMode != BackoffMode.SKP)
             throw new IllegalArgumentException(
                     "Illegal BackoffMode for this class.");
         this.backoffMode = backoffMode;
