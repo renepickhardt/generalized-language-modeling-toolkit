@@ -15,12 +15,12 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.common.Status;
 import de.glmtk.common.Status.Training;
-import de.glmtk.common.Config;
 import de.glmtk.counting.Chunker;
 import de.glmtk.counting.LengthDistributionCalculator;
 import de.glmtk.counting.Merger;
@@ -71,6 +71,7 @@ public class Glmtk {
         }
     }
 
+    @SuppressWarnings("unused")
     private Config config;
     private Path corpus;
     private GlmtkPaths paths;
@@ -300,18 +301,21 @@ public class Glmtk {
                                               OutputStream outputStream,
                                               Estimator estimator,
                                               ProbMode probMode,
-                                              CountCache countCache) throws Exception {
+                                              CountCache countCache,
+                                              int corpusOrder) throws Exception {
         return queryRunner.runQueriesOnInputStream(queryMode, inputStream,
-                outputStream, estimator, probMode, countCache);
+                outputStream, estimator, probMode, countCache, corpusOrder);
     }
 
     public QueryStats runQueriesOnFile(QueryMode queryMode,
                                        Path inputFile,
                                        Estimator estimator,
                                        ProbMode probMode,
-                                       CountCache countCache) throws Exception {
+                                       CountCache countCache,
+                                       int corpusOrder) throws Exception {
         return queryRunner.runQueriesOnFile(queryMode, inputFile,
-                paths.getQueriesDir(), estimator, probMode, countCache);
+                paths.getQueriesDir(), estimator, probMode, countCache,
+                corpusOrder);
     }
 
     /**

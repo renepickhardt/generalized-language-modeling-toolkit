@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.Formatter;
-import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -41,15 +40,15 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6,
                 "Length Distribution Calculating"),
 
-        // CountCache
-        LOADING_COUNTS(1, 1, "Loading Counts"),
+                // CountCache
+                LOADING_COUNTS(1, 1, "Loading Counts"),
 
-        // QueryCache
-        SCANNING_COUNTS(1, 1, "Scanning Counts"),
+                // QueryCache
+                SCANNING_COUNTS(1, 1, "Scanning Counts"),
 
-        // Querying
-        QUERYING(1, 2, "Querying"),
-        ASSEMBLING(1, 2, "Assembling");
+                // Querying
+                QUERYING(1, 2, "Querying"),
+                ASSEMBLING(1, 2, "Assembling");
 
         public static final int MAX_NAME_LENGTH;
         static {
@@ -350,15 +349,21 @@ public enum Output {
     }
 
     public void printError(String message) {
-        if (isAnsiEnabled())
-            System.err.print(Ansi.ansi().fg(Color.RED));
         if (message == null || message.isEmpty())
             message = "A critical error has occured, program execution had to be stopped.";
-        List<String> lines = StringUtils.splitAtChar(message, '\n');
-        for (String line : lines) {
-            logWithoutAnsi(Level.ERROR, line);
-            System.err.println("Error: " + line);
+
+        StringBuilder print = new StringBuilder();
+        for (String line : StringUtils.splitAtChar(message, '\n')) {
+            if (isAnsiEnabled())
+                print.append(Ansi.ansi().fg(Color.RED));
+            print.append("Error: ").append(line);
+            if (isAnsiEnabled())
+                print.append(Ansi.ansi().reset());
+            print.append('\n');
         }
+
+        logWithoutAnsi(Level.ERROR, print.toString());
+        System.err.print(print.toString());
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
@@ -369,16 +374,21 @@ public enum Output {
     }
 
     public void printWarning(String message) {
-        if (isAnsiEnabled())
-            System.err.print(Ansi.ansi().fg(Color.YELLOW));
         if (message == null || message.isEmpty())
             message = "A warning has occured.";
 
-        List<String> lines = StringUtils.splitAtChar(message, '\n');
-        for (String line : lines) {
-            logWithoutAnsi(Level.WARN, line);
-            System.err.println("Warning: " + line);
+        StringBuilder print = new StringBuilder();
+        for (String line : StringUtils.splitAtChar(message, '\n')) {
+            if (isAnsiEnabled())
+                print.append(Ansi.ansi().fg(Color.YELLOW));
+            print.append("Warning: ").append(line);
+            if (isAnsiEnabled())
+                print.append(Ansi.ansi().reset());
+            print.append('\n');
         }
+
+        logWithoutAnsi(Level.WARN, print.toString());
+        System.err.print(print.toString());
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;

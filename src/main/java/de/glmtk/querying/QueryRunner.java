@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -23,11 +24,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.ProbMode;
-import de.glmtk.common.Config;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
@@ -71,6 +72,7 @@ public class QueryRunner {
     private Path outputFile;
     private Estimator estimator;
     private CountCache countCache;
+    private int corpusOrder;
     private Calculator calculator;
     private QueryStats stats;
     private int curLineNo;
@@ -88,10 +90,12 @@ public class QueryRunner {
                                               OutputStream outputStream,
                                               Estimator estimator,
                                               ProbMode probMode,
-                                              CountCache countCache) throws Exception {
+                                              CountCache countCache,
+                                              int corpusOrder) throws Exception {
         this.queryMode = queryMode;
         this.estimator = estimator;
         this.countCache = countCache;
+        this.corpusOrder = corpusOrder;
         calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
         calculateMemory();
@@ -127,12 +131,14 @@ public class QueryRunner {
                                        Path outputDir,
                                        Estimator estimator,
                                        ProbMode probMode,
-                                       CountCache countCache) throws Exception {
+                                       CountCache countCache,
+                                       int corpusOrder) throws Exception {
         this.queryMode = queryMode;
         this.inputFile = inputFile;
         this.outputDir = outputDir;
         this.estimator = estimator;
         this.countCache = countCache;
+        this.corpusOrder = corpusOrder;
         calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
         outputFile = resolveOutputFile();
@@ -226,6 +232,31 @@ public class QueryRunner {
             return line;
 
         List<String> sequence = StringUtils.splitAtChar(line, ' ');
+        int sequenceOrder = sequence.size();
+        Integer modeOrder = queryMode.getOrder();
+        if (modeOrder != null && sequenceOrder != modeOrder) {
+            try (Formatter f = new Formatter()) {
+                f.format(
+                        "Illegal sequence. Can only query sequences with length %d when using mode '%s'.",
+                        queryMode.getOrder(), modeOrder);
+                if (linesQueue != null)
+                    // in file mode
+                    f.format(" Line %d: '%s'.", curLineNo, line);
+                OUTPUT.printWarning(f.toString());
+            }
+            return line;
+        } else if (sequenceOrder > corpusOrder) {
+            try (Formatter f = new Formatter()) {
+                f.format("Illegal sequence. Corpus size was set to '%d'.",
+                        corpusOrder);
+                if (linesQueue != null)
+                    // in file mode
+                    f.format(" Line %d: '%s'.", curLineNo, line);
+                OUTPUT.printWarning(f.toString());
+            }
+            return line;
+        }
+
         double probability = calculator.probability(sequence);
         if (queryMode.isWithLengthFreq() && probability != 0)
             probability *= countCache.getLengthFrequency(sequence.size());

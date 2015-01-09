@@ -469,7 +469,7 @@ public class GlmtkExecutable extends Executable {
 
                 for (Estimator estimator : estimators)
                     glmtk.runQueriesOnFile(queryMode, file, estimator,
-                            probMode, countCache);
+                            probMode, countCache, trainingOrder);
             }
         }
 
@@ -477,7 +477,7 @@ public class GlmtkExecutable extends Executable {
             Estimator estimator = estimators.iterator().next();
             CountCache countCache = glmtk.createCountCache(neededPatterns);
             glmtk.runQueriesOnInputStream(ioQueryMode, System.in, System.out,
-                    estimator, probMode, countCache);
+                    estimator, probMode, countCache, trainingOrder);
         }
 
         StatisticalNumberHelper.print();
