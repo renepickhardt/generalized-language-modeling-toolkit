@@ -37,12 +37,15 @@ import de.glmtk.util.StringUtils;
 public class CountingTest extends TestCorporaTest {
     private static final Logger LOGGER = LogManager.getFormatterLogger(CountingTest.class);
 
+    private static final double SELECTION_CHANCE = 0.001;
+
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][] { {TestCorpus.ABC},
-                {TestCorpus.MOBYDICK}});
+                {TestCorpus.MOBYDICK}, {TestCorpus.EN0008T}});
     }
 
+    private TestCorpus testCorpus;
     private long corpusSize;
     private List<String> corpusLines;
     private CountCache countCache;
@@ -54,6 +57,7 @@ public class CountingTest extends TestCorporaTest {
     @SuppressWarnings("unchecked")
     public CountingTest(TestCorpus testCorpus) throws Exception {
         LOGGER.info("===== %s corpus =====", testCorpus.getCorpusName());
+        this.testCorpus = testCorpus;
 
         LOGGER.info("Loading corpus...");
         corpusSize = Files.size(testCorpus.getCorpus());
@@ -86,6 +90,11 @@ public class CountingTest extends TestCorporaTest {
             totalSize = corpusSize * counts.size();
 
             for (Entry<String, Long> sequenceCounts : counts.entrySet()) {
+                if (testCorpus != TestCorpus.ABC
+                        && testCorpus != TestCorpus.MOBYDICK)
+                    if (Math.random() > SELECTION_CHANCE)
+                        continue;
+
                 String sequence = sequenceCounts.getKey();
                 long count = sequenceCounts.getValue();
 
@@ -148,6 +157,11 @@ public class CountingTest extends TestCorporaTest {
             totalSize = corpusSize * counts.size();
 
             for (Entry<String, Counter> sequenceCounts : counts.entrySet()) {
+                if (testCorpus != TestCorpus.ABC
+                        && testCorpus != TestCorpus.MOBYDICK)
+                    if (Math.random() > SELECTION_CHANCE)
+                        continue;
+
                 String sequence = sequenceCounts.getKey();
                 Counter counter = sequenceCounts.getValue();
 
@@ -184,7 +198,7 @@ public class CountingTest extends TestCorporaTest {
                         Long foundCount = matches.get(found);
                         matches.put(found, foundCount == null
                                 ? 1
-                                        : foundCount + 1);
+                                : foundCount + 1);
                         LOGGER.trace(matcher);
                     } while (matcher.find(matcher.start(1)));
 
