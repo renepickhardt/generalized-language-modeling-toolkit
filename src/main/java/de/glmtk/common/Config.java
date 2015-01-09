@@ -123,11 +123,11 @@ public enum Config {
         }
 
         private int parseIntMiB() {
-            long result = parseLong();
+            long result = parseLongMiB();
             if (result >= Integer.MAX_VALUE)
                 throw newFileFormatException(
-                        "Given memory value is to large for integer: %s resp. %d bytes.",
-                        humanReadableByteCount(result), result);
+                                             "Given memory value is to large for integer: %s resp. %d bytes.",
+                                             humanReadableByteCount(result), result);
             return (int) result;
         }
 
