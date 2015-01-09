@@ -72,11 +72,14 @@ public class Counter {
     public void add(long count) {
         onePlusCount += count;
         if (count == 1)
-            oneCount += count;
+            ++oneCount;
+        //            oneCount += count;
         if (count == 2)
-            twoCount += count;
+            ++twoCount;
+        //            twoCount += count;
         if (count >= 3)
-            threePlusCount += count;
+            ++threePlusCount;
+        //            threePlusCount += count;
     }
 
     public void addOne(long count) {

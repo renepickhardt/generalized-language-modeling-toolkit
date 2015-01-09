@@ -31,12 +31,13 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Config;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
-import de.glmtk.common.Config;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
@@ -110,7 +111,7 @@ public class Chunker {
         protected abstract void sequenceInput(Path inputFile) throws Exception;
 
         protected void countSequence(String sequence,
-                                     long count) throws IOException {
+                                     Counter c) throws IOException {
             Counter counter = chunkCounts.get(sequence);
             if (counter == null) {
                 counter = new Counter();
@@ -118,7 +119,20 @@ public class Chunker {
                 chunkSize += sequence.getBytes(Constants.CHARSET).length
                         + TAB_COUNTER_NL_BYTES;
             }
-            counter.add(count);
+            if (pattern.equals(Patterns.get("xx1"))) {
+                System.out.println(sequence + "=" + counter);
+                System.out.println(counter);
+            }
+            long count = c.getOnePlusCount();
+            if (continuation)
+                if (count < 0)
+                    counter.addOne(-count);
+                else
+                    counter.add(c);
+            else
+                counter.add(count);
+            if (pattern.equals(Patterns.get("xx1")))
+                System.out.println(counter);
 
             if (chunkSize > maxChunkSize) {
                 if (Constants.DEBUG_AVERAGE_MEMORY)
@@ -190,7 +204,7 @@ public class Chunker {
 
             for (int p = 0; p <= split.length - patternSize; ++p) {
                 String sequence = pattern.apply(words, poses, p);
-                countSequence(sequence, 1L);
+                countSequence(sequence, new Counter(1L, 0L, 0L, 0L));
             }
         }
     }
@@ -255,14 +269,14 @@ public class Chunker {
                              Path file) throws IOException {
             List<String> split = StringUtils.splitAtChar(line, '\t');
             String seq = split.get(0);
-            long count;
+            Counter coutner = new Counter();
             try {
                 if (split.size() == 2)
                     // from Absolute
-                    count = 1;
+                    coutner.setOnePlusCount(-Long.parseLong(split.get(1)));
                 else if (split.size() == 5)
                     // from Continuation
-                    count = Long.parseLong(split.get(1));
+                    Counter.getSequenceAndCounter(line, coutner);
                 else
                     throw new RuntimeException();
             } catch (RuntimeException e) {
@@ -272,7 +286,7 @@ public class Chunker {
 
             String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(
                     new String[0]));
-            countSequence(sequence, count);
+            countSequence(sequence, coutner);
         }
     }
 
