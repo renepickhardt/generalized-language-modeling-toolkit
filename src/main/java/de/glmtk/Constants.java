@@ -27,6 +27,8 @@ import java.nio.file.Paths;
 
 //TODO: the semantics of every constant should be explained. Especially we should double check if the constants are still needed
 public class Constants {
+    // Path Constants //////////////////////////////////////////////////////////
+
     public static final String WORKING_DIR_SUFFIX = ".glmtk";
 
     public static final String STATUS_FILE_NAME = "status";
@@ -34,6 +36,18 @@ public class Constants {
     public static final String TRAINING_FILE_NAME = "training";
 
     public static final String UNTAGGED_SUFFIX = ".untagged";
+
+    public static final String CONFIG_FILE = "glmtk.conf";
+
+    // Path Logging Constants
+
+    public static final String LOG_DIR_NAME = "logs";
+
+    public static final String ALL_LOG_FILE_NAME = "all.log";
+
+    public static final String LOCAL_LOG_FILE_NAME = "log";
+
+    // Path Count Constants
 
     public static final String COUNTS_DIR_NAME = "counts";
 
@@ -47,17 +61,19 @@ public class Constants {
 
     public static final String LENGTHDISTRIBUTION_FILE_NAME = "lengthdistribution";
 
+    // Path Language Model Constants
+
+    public static final String LANGUAGE_MODELS_DIR_NAME = "languagemodels";
+
+    public static final String ALPHA_DIR_NAME = "alpha";
+
+    public static final String LAMBDA_DIR_NAME = "lambda";
+
+    // Path Query Constants
+
     public static final String QUERYHACHES_DIR_NAME = "querycaches";
 
     public static final String QUERIES_DIR_NAME = "queries";
-
-    public static final String LOG_DIR_NAME = "logs";
-
-    public static final String ALL_LOG_FILE_NAME = "all.log";
-
-    public static final String LOCAL_LOG_FILE_NAME = "log";
-
-    public static final String CONFIG_FILE = "glmtk.conf";
 
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 

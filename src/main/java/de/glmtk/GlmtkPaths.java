@@ -81,6 +81,11 @@ public class GlmtkPaths {
     private Path nGramTimesFile;
     private Path lengthDistributionFile;
 
+    private Path languageModelsDir;
+    private Path modkneserneyDir;
+    private Path modkneserneyAlphaDir;
+    private Path modkneserneyLambdaDir;
+
     private Path queryCachesDir;
     private Path queriesDir;
 
@@ -99,6 +104,8 @@ public class GlmtkPaths {
         nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         lengthDistributionFile = countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
 
+        fillLanguageModelsDirPaths(this);
+
         queryCachesDir = dir.resolve(Constants.QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(Constants.QUERIES_DIR_NAME);
     }
@@ -113,11 +120,19 @@ public class GlmtkPaths {
                 + Constants.CHUNKED_SUFFIX);
     }
 
+    private void fillLanguageModelsDirPaths(GlmtkPaths paths) {
+        paths.languageModelsDir = paths.dir.resolve(Constants.LANGUAGE_MODELS_DIR_NAME);
+        paths.modkneserneyDir = languageModelsDir.resolve("modkneserney");
+        paths.modkneserneyAlphaDir = modkneserneyDir.resolve(Constants.ALPHA_DIR_NAME);
+        paths.modkneserneyLambdaDir = modkneserneyAlphaDir.resolve(Constants.LAMBDA_DIR_NAME);
+    }
+
     public GlmtkPaths newQueryCache(String name) {
         GlmtkPaths queryCache = new GlmtkPaths(dir);
         queryCache.root = this;
         queryCache.dir = queryCachesDir.resolve(name);
         fillCountsDirPaths(queryCache);
+        fillLanguageModelsDirPaths(queryCache);
         return queryCache;
     }
 
@@ -135,6 +150,10 @@ public class GlmtkPaths {
         LOGGER.debug("continuationChunkedDir = %s", continuationChunkedDir);
         LOGGER.debug("nGramTimesFile         = %s", nGramTimesFile);
         LOGGER.debug("lengthDistributionFile = %s", lengthDistributionFile);
+        LOGGER.debug("languageModelsDir      = %s", languageModelsDir);
+        LOGGER.debug("modkneserneyDir        = %s", modkneserneyDir);
+        LOGGER.debug("modkneserneyAlphaDir   = %s", modkneserneyAlphaDir);
+        LOGGER.debug("modkneserneyLambdaDir  = %s", modkneserneyLambdaDir);
         LOGGER.debug("queryCachesDir         = %s", queryCachesDir);
         LOGGER.debug("queriesDir             = %s", queriesDir);
     }
@@ -185,6 +204,22 @@ public class GlmtkPaths {
 
     public Path getLengthDistributionFile() {
         return lengthDistributionFile;
+    }
+
+    public Path getLanguageModelsDir() {
+        return languageModelsDir;
+    }
+
+    public Path getModkneserneyDir() {
+        return modkneserneyDir;
+    }
+
+    public Path getModkneserneyAlphaDir() {
+        return modkneserneyAlphaDir;
+    }
+
+    public Path getModkneserneyLambdaDir() {
+        return modkneserneyLambdaDir;
     }
 
     public Path getQueryCachesDir() {
