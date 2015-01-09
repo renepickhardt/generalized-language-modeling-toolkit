@@ -173,6 +173,56 @@ public class GlmtkExecutable extends Executable {
     protected void parseArguments(String[] args) throws Exception {
         super.parseArguments(args);
 
+        Path corpusArg = parseCorpusArg();
+        parseFlags();
+
+        if (NioUtils.checkFile(corpusArg, IS_DIRECTORY)) {
+            if (workingDir != null)
+                throw new CliArgumentException(
+                        String.format(
+                                "Can't use --%s (-%s) argument if using existing working directory as input.",
+                                OPTION_WORKINGDIR.getLongOpt(),
+                                OPTION_WORKINGDIR.getOpt()));
+
+            workingDir = corpusArg;
+            corpus = getWorkingDirFile(Constants.TRAINING_FILE_NAME);
+            getWorkingDirFile(Constants.STATUS_FILE_NAME);
+        } else {
+            if (workingDir == null)
+                workingDir = Paths.get(corpusArg + Constants.WORKING_DIR_SUFFIX);
+            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
+                throw new IOException(
+                        String.format(
+                                "Working directory '%s' already exists but is not a directory.",
+                                workingDir));
+
+            corpus = corpusArg;
+        }
+
+        if (estimators.isEmpty())
+            estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
+
+        if (ioQueryMode != null && estimators.size() > 1)
+            throw new CliArgumentException(String.format(
+                    "Can specify at most one estimator if using option %s.",
+                    makeOptionString(OPTION_IO)));
+
+        if (trainingOrder == null)
+            trainingOrder = calculateTrainingOrder();
+        else
+            verifyTrainingOrder();
+
+        // Need to create workingDirectory here in order to create Logger for
+        // "<workingdir>/log" as soon as possible.
+        try {
+            Files.createDirectories(workingDir);
+        } catch (IOException e) {
+            throw new IOException(String.format(
+                    "Could not create working directory '%s'.", workingDir), e);
+        }
+    }
+
+    private Path parseCorpusArg() {
         if (line.getArgList() == null || line.getArgList().size() != 1) {
             String error;
             if (line.getArgList().size() == 0)
@@ -189,7 +239,10 @@ public class GlmtkExecutable extends Executable {
             throw new CliArgumentException(String.format(
                     "Input file/dir '%s' does not exist or is not readable.",
                     inputArg));
+        return inputArg;
+    }
 
+    private void parseFlags() throws IOException {
         @SuppressWarnings("unchecked")
         Iterator<Option> iter = line.iterator();
         while (iter.hasNext()) {
@@ -270,51 +323,6 @@ public class GlmtkExecutable extends Executable {
             else
                 throw new CliArgumentException(String.format(
                         "Unexpected option: '%s'.", option));
-        }
-
-        if (NioUtils.checkFile(inputArg, IS_DIRECTORY)) {
-            if (workingDir != null)
-                throw new CliArgumentException(
-                        String.format(
-                                "Can't use --%s (-%s) argument if using existing working directory as input.",
-                                OPTION_WORKINGDIR.getLongOpt(),
-                                OPTION_WORKINGDIR.getOpt()));
-
-            workingDir = inputArg;
-            corpus = getWorkingDirFile(Constants.TRAINING_FILE_NAME);
-            getWorkingDirFile(Constants.STATUS_FILE_NAME);
-        } else {
-            if (workingDir == null)
-                workingDir = Paths.get(inputArg + Constants.WORKING_DIR_SUFFIX);
-            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
-                throw new IOException(
-                        String.format(
-                                "Working directory '%s' already exists but is not a directory.",
-                                workingDir));
-
-            corpus = inputArg;
-        }
-
-        if (estimators.isEmpty())
-            estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
-
-        if (ioQueryMode != null && estimators.size() > 1)
-            throw new CliArgumentException(String.format(
-                    "Can specify at most one estimator if using option %s.",
-                    makeOptionString(OPTION_IO)));
-
-        if (trainingOrder == null)
-            trainingOrder = calculateTrainingOrder();
-        else
-            verifyTrainingOrder();
-
-        // Need to create workingDirectory here in order to create Logger for
-        // "<workingdir>/log" as soon as possible.
-        try {
-            Files.createDirectories(workingDir);
-        } catch (IOException e) {
-            throw new IOException(String.format(
-                    "Could not create working directory '%s'.", workingDir), e);
         }
     }
 
