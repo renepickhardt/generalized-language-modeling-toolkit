@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -49,6 +49,7 @@ public enum Output {
     OUTPUT;
 
     public static enum Phase {
+        //@formatter:off
         // Tagging
         TAGGING(1, 1, "Tagging Training"),
 
@@ -58,8 +59,11 @@ public enum Output {
         CONTINUATION_CHUNKING(3, 6, "Chunking Continuation"),
         CONTINUATION_MERGING(4, 6, "Merging Continuation"),
         NGRAM_TIMES_COUNTING(5, 6, "NGram Times Counting"),
-        LENGTH_DISTRIBUATION_CALCULATING(6, 6,
-                "Length Distribution Calculating"),
+        LENGTH_DISTRIBUATION_CALCULATING(6, 6, "Length Distribution Calculating"),
+
+        // Learning
+        CALCULATING_ALPHAS(1, 2, "Calculating Alphas"),
+        CALCULATING_LAMBDAS(2, 2, "Calculating Lambdas"),
 
         // CountCache
         LOADING_COUNTS(1, 1, "Loading Counts"),
@@ -70,6 +74,7 @@ public enum Output {
         // Querying
         QUERYING(1, 2, "Querying"),
         ASSEMBLING(1, 2, "Assembling");
+        //@formatter:on
 
         public static final int MAX_NAME_LENGTH;
         static {

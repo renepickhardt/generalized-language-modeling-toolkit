@@ -31,7 +31,7 @@ public class E02_GlmGenSkpSeqs {
         return result;
     }
 
-    private static boolean nextGenerateSkippedSequences(List<String> sequence,
+    private static boolean nextGenerateSkippedSequences(@SuppressWarnings("unused") List<String> sequence,
                                                         boolean[] pattern,
                                                         int first,
                                                         int last) {
