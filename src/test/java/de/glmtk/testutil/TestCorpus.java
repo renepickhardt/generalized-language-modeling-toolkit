@@ -14,15 +14,20 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
+import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
-import de.glmtk.common.Config;
 
 public enum TestCorpus {
     ABC,
     MOBYDICK,
     EN0008T;
+
+    public static void intializeTestCorpora(Config config) throws Exception {
+        for (TestCorpus testCorpus : values())
+            testCorpus.intialize(config);
+    }
 
     private String corpusName;
     private Path corpus;
@@ -30,30 +35,26 @@ public enum TestCorpus {
     private Glmtk glmtk;
 
     private TestCorpus() {
-        try {
-            corpusName = toString();
-            corpus = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
-            workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
-                    + Constants.WORKING_DIR_SUFFIX);
+        corpusName = toString();
+        corpus = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
+        workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
+                + Constants.WORKING_DIR_SUFFIX);
+    }
 
-            glmtk = new Glmtk(new Config(), corpus, workingDir);
+    private void intialize(Config config) throws Exception {
+        glmtk = new Glmtk(config, corpus, workingDir);
 
-            Set<Pattern> neededPatterns = Patterns.getCombinations(
-                    Constants.ORDER, Arrays.asList(CNT, SKP));
-            for (Pattern pattern : new HashSet<>(neededPatterns)) {
-                if (pattern.size() != Constants.ORDER)
-                    neededPatterns.add(pattern.concat(WSKP));
+        Set<Pattern> neededPatterns = Patterns.getCombinations(Constants.ORDER,
+                Arrays.asList(CNT, SKP));
+        for (Pattern pattern : new HashSet<>(neededPatterns)) {
+            if (pattern.size() != Constants.ORDER)
+                neededPatterns.add(pattern.concat(WSKP));
 
-                if (pattern.contains(SKP))
-                    neededPatterns.add(pattern.replace(SKP, WSKP));
-            }
-
-            glmtk.count(neededPatterns);
-        } catch (Exception e) {
-            // Because of enum nature it is necessary to not throw any checked
-            // exceptions during construction.
-            throw new RuntimeException(e);
+            if (pattern.contains(SKP))
+                neededPatterns.add(pattern.replace(SKP, WSKP));
         }
+
+        glmtk.count(neededPatterns);
     }
 
     public String getCorpusName() {

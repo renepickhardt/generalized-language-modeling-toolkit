@@ -42,12 +42,12 @@ import de.glmtk.testutil.EstimatorTestRunner;
 import de.glmtk.testutil.EstimatorTestRunner.EstimatorTestParameters;
 import de.glmtk.testutil.EstimatorTestRunner.EstimatorTestParams;
 import de.glmtk.testutil.EstimatorTestRunner.IgnoreProbMode;
-import de.glmtk.testutil.LoggingTest;
+import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
 @RunWith(EstimatorTestRunner.class)
 @IgnoreProbMode(ProbMode.COND)
-public class EstimatorTest extends LoggingTest {
+public class EstimatorTest extends TestCorporaTest {
     private static final Logger LOGGER = LogManager.getFormatterLogger(EstimatorTest.class);
     private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
             TestCorpus.ABC, TestCorpus.MOBYDICK);
@@ -90,7 +90,7 @@ public class EstimatorTest extends LoggingTest {
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
                 //@formatter:on
-        );
+                );
     }
 
     private Estimator estimator;

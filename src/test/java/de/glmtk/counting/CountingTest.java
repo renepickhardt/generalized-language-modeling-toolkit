@@ -20,12 +20,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
-import de.glmtk.common.Config;
-import de.glmtk.testutil.LoggingTest;
+import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.StringUtils;
 
@@ -34,7 +34,7 @@ import de.glmtk.util.StringUtils;
  * are sequences missing.
  */
 @RunWith(Parameterized.class)
-public class CountingTest extends LoggingTest {
+public class CountingTest extends TestCorporaTest {
     private static final Logger LOGGER = LogManager.getFormatterLogger(CountingTest.class);
 
     @Parameters(name = "{0}")
