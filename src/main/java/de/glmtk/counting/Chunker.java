@@ -356,9 +356,9 @@ public enum Chunker {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getReaderMemory();
-        writerMemory = CONFIG.getWriterMemory();
-        maxChunkSize = CONFIG.getMaxChunkSize();
+        readerMemory = CONFIG.getMemoryReader();
+        writerMemory = CONFIG.getMemoryWriter();
+        maxChunkSize = CONFIG.getMemoryChunkSize();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

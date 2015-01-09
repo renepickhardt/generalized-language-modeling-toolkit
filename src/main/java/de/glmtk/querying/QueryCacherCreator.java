@@ -185,8 +185,8 @@ public enum QueryCacherCreator {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getReaderMemory();
-        writerMemory = CONFIG.getWriterMemory();
+        readerMemory = CONFIG.getMemoryReader();
+        writerMemory = CONFIG.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

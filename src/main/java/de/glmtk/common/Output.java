@@ -100,8 +100,8 @@ public enum Output {
             this.total = total;
             lastConsoleUpdate = System.currentTimeMillis();
             lastLogUpdate = lastConsoleUpdate;
-            updateConsole = CONFIG.getConsoleUpdateInterval() != 0;
-            updateLog = CONFIG.getLogUpdateInterval() != 0;
+            updateConsole = CONFIG.getUpdateIntervalConsole() != 0;
+            updateLog = CONFIG.getUpdateIntervalLog() != 0;
         }
 
         public void increase(long increase) {
@@ -118,12 +118,12 @@ public enum Output {
             if (updateConsole || updateLog) {
                 long time = System.currentTimeMillis();
                 if (updateConsole
-                        && time - lastConsoleUpdate >= CONFIG.getConsoleUpdateInterval()) {
+                        && time - lastConsoleUpdate >= CONFIG.getUpdateIntervalConsole()) {
                     OUTPUT.setPercent((double) current / total);
                     lastConsoleUpdate = time;
                 }
                 if (updateLog
-                        && time - lastLogUpdate >= CONFIG.getLogUpdateInterval()) {
+                        && time - lastLogUpdate >= CONFIG.getUpdateIntervalLog()) {
                     LOGGER.info("%6.2f%%", 100.0 * current / total);
                     lastLogUpdate = time;
                 }
@@ -159,7 +159,7 @@ public enum Output {
     }
 
     private long lastUpdateConsoleParams = 0;
-    private boolean updateConsoleParams = CONFIG.getConsoleParamsUpdateInterval() != 0;
+    private boolean updateConsoleParams = CONFIG.getUpdateIntervalConsoleParams() != 0;
     private int numPercentegebarBlocks;
     private Boolean ansiEnabled = null;
     private Phase phase = null;
@@ -227,7 +227,7 @@ public enum Output {
 
         long time = System.currentTimeMillis();
         if (lastUpdateConsoleParams == 0
-                || (updateConsoleParams && time - lastUpdateConsoleParams >= CONFIG.getConsoleParamsUpdateInterval())) {
+                || (updateConsoleParams && time - lastUpdateConsoleParams >= CONFIG.getUpdateIntervalConsoleParams())) {
             int width = getTerminalWidth();
             numPercentegebarBlocks = width - 17 - Phase.MAX_NAME_LENGTH;
             lastUpdateConsoleParams = time;

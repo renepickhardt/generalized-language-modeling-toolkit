@@ -136,7 +136,7 @@ public enum NGramTimesCounter {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getReaderMemory();
+        readerMemory = CONFIG.getMemoryReader();
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
     }
 

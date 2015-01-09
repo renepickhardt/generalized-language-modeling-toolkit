@@ -68,7 +68,7 @@ public enum Tagger {
         calculateMemory();
 
         if (tagger == null)
-            tagger = new MaxentTagger(CONFIG.getModel().toString());
+            tagger = new MaxentTagger(CONFIG.getTaggingModel().toString());
 
         try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
                 Constants.CHARSET, readerMemory);
@@ -100,8 +100,8 @@ public enum Tagger {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getReaderMemory();
-        writerMemory = CONFIG.getWriterMemory();
+        readerMemory = CONFIG.getMemoryReader();
+        writerMemory = CONFIG.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));

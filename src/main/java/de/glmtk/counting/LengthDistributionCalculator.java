@@ -55,7 +55,7 @@ public enum LengthDistributionCalculator {
     }
 
     private void calculateMemory() {
-        readerMemory = CONFIG.getReaderMemory();
+        readerMemory = CONFIG.getMemoryReader();
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
     }
 

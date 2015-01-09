@@ -91,23 +91,23 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "jvm":
-                        mainMemory = parseLongMiB();
+                        memoryJvm = parseLongMiB();
                         break;
 
                     case "reader":
-                        readerMemory = parseIntMiB();
+                        memoryReader = parseIntMiB();
                         break;
 
                     case "writer":
-                        writerMemory = parseIntMiB();
+                        memoryWriter = parseIntMiB();
                         break;
 
                     case "chunkSize":
-                        maxChunkSize = parseLongMiB();
+                        memoryChunkSize = parseLongMiB();
                         break;
 
                     case "cacheThreshold":
-                        trainingCacheThreshold = parseLongMiB();
+                        memoryCacheThreshold = parseLongMiB();
                         break;
 
                     default:
@@ -147,15 +147,15 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "log":
-                        logUpdateInterval = parseInt();
+                        updateIntervalLog = parseInt();
                         break;
 
                     case "console":
-                        consoleUpdateInterval = parseInt();
+                        updateIntervalConsole = parseInt();
                         break;
 
                     case "consoleParams":
-                        consoleParamsUpdateInterval = parseInt();
+                        updateIntervalConsoleParams = parseInt();
                         break;
 
                     default:
@@ -181,7 +181,7 @@ public enum Config {
                 event = iter.next();
                 switch (key) {
                     case "model":
-                        model = parsePath();
+                        taggingModel = parsePath();
                         break;
 
                     default:
@@ -209,16 +209,16 @@ public enum Config {
      */
     private final Path logDir;
 
-    private long mainMemory;
     private int numberOfThreads;
-    private int readerMemory;
-    private int writerMemory;
-    private long maxChunkSize;
-    private long trainingCacheThreshold;
-    private int consoleUpdateInterval;
-    private int logUpdateInterval;
-    private int consoleParamsUpdateInterval;
-    private Path model;
+    private long memoryJvm;
+    private int memoryReader;
+    private int memoryWriter;
+    private long memoryChunkSize;
+    private long memoryCacheThreshold;
+    private int updateIntervalLog;
+    private int updateIntervalConsole;
+    private int updateIntervalConsoleParams;
+    private Path taggingModel;
 
     private Config() {
         userDir = Paths.get(System.getProperty("user.dir"));
@@ -249,69 +249,65 @@ public enum Config {
         return logDir;
     }
 
-    public long getMainMemory() {
-        return mainMemory;
-    }
-
     public int getNumberOfThreads() {
         return numberOfThreads;
     }
 
-    public int getReaderMemory() {
-        return readerMemory;
+    public long getMemoryJvm() {
+        return memoryJvm;
     }
 
-    public int getWriterMemory() {
-        return writerMemory;
+    public int getMemoryReader() {
+        return memoryReader;
     }
 
-    public long getMaxChunkSize() {
-        return maxChunkSize;
+    public int getMemoryWriter() {
+        return memoryWriter;
+    }
+
+    public long getMemoryChunkSize() {
+        return memoryChunkSize;
     }
 
     public long getTrainingCacheThreshold() {
-        return trainingCacheThreshold;
+        return memoryCacheThreshold;
     }
 
-    public int getConsoleUpdateInterval() {
-        return consoleUpdateInterval;
+    public int getUpdateIntervalLog() {
+        return updateIntervalLog;
     }
 
-    public int getLogUpdateInterval() {
-        return logUpdateInterval;
+    public int getUpdateIntervalConsole() {
+        return updateIntervalConsole;
     }
 
-    public int getConsoleParamsUpdateInterval() {
-        return consoleParamsUpdateInterval;
+    public int getUpdateIntervalConsoleParams() {
+        return updateIntervalConsoleParams;
     }
 
-    public Path getModel() {
-        return model;
+    public Path getTaggingModel() {
+        return taggingModel;
     }
 
     public void logConfig() {
         LOGGER.info("Config %s", StringUtils.repeat("-",
                 80 - "Config ".length()));
-        LOGGER.info("userDir:                     %s", userDir);
-        LOGGER.info("glmtkDir:                    %s", glmtkDir);
-        LOGGER.info("logDir:                      %s", logDir);
+        //@formatter:off
+        LOGGER.info("userDir:                     %s",   userDir);
+        LOGGER.info("glmtkDir:                    %s",   glmtkDir);
+        LOGGER.info("logDir:                      %s",   logDir);
         LOGGER.info(StringUtils.repeat("-", 80));
-        LOGGER.info("mainMemory:                  %s",
-                humanReadableByteCount(mainMemory));
-        LOGGER.info("numberOfThreads:             %d", numberOfThreads);
-        LOGGER.info("readerMemory:                %s",
-                humanReadableByteCount(readerMemory));
-        LOGGER.info("writerMemory:                %s",
-                humanReadableByteCount(writerMemory));
-        LOGGER.info("maxChunkSize:                %s",
-                humanReadableByteCount(maxChunkSize));
-        LOGGER.info("trainingCacheThreshold:      %s",
-                humanReadableByteCount(trainingCacheThreshold));
-        LOGGER.info("consoleUpdateInterval:       %dms", consoleUpdateInterval);
-        LOGGER.info("logUpdateInterval:           %dms", logUpdateInterval);
-        LOGGER.info("consoleParamsUpdateInterval: %dms",
-                consoleParamsUpdateInterval);
-        LOGGER.info("model:                       %s", model);
+        LOGGER.info("numberOfThreads:             %d",   numberOfThreads);
+        LOGGER.info("memoryJvm:                   %s",   humanReadableByteCount(memoryJvm));
+        LOGGER.info("memoryReader:                %s",   humanReadableByteCount(memoryReader));
+        LOGGER.info("memoryWriter:                %s",   humanReadableByteCount(memoryWriter));
+        LOGGER.info("memoryChunkSize:             %s",   humanReadableByteCount(memoryChunkSize));
+        LOGGER.info("memoryCacheThreshold:        %s",   humanReadableByteCount(memoryCacheThreshold));
+        LOGGER.info("updateIntervalConsole:       %dms", updateIntervalConsole);
+        LOGGER.info("updateIntervalLog:           %dms", updateIntervalLog);
+        LOGGER.info("updateIntervalConsoleParams: %dms", updateIntervalConsoleParams);
+        LOGGER.info("taggingModel:                %s",   taggingModel);
+        //@formatter:on
     }
 
     private void readConfigFromFile(Path file) throws IOException {

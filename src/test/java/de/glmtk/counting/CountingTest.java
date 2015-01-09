@@ -70,14 +70,14 @@ public class CountingTest extends LoggingTest {
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Long>> absolute = (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
         testAbsoluteCounts(corpusContents, corpusSize, absolute,
-                CONFIG.getLogUpdateInterval());
+                CONFIG.getUpdateIntervalLog());
 
         Field continuationField = CountCache.class.getDeclaredField("continuation");
         continuationField.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<Pattern, Map<String, Counter>> continuation = (Map<Pattern, Map<String, Counter>>) continuationField.get(countCache);
         testContinuationCounts(corpusContents, corpusSize, continuation,
-                CONFIG.getLogUpdateInterval());
+                CONFIG.getUpdateIntervalLog());
     }
 
     private void testAbsoluteCounts(List<String> corpusContents,
