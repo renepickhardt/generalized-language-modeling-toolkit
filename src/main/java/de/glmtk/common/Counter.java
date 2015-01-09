@@ -62,6 +62,13 @@ public class Counter {
         this.threePlusCount = threePlusCount;
     }
 
+    public void add(Counter counter) {
+        onePlusCount += counter.onePlusCount;
+        oneCount += counter.oneCount;
+        twoCount += counter.twoCount;
+        threePlusCount += counter.threePlusCount;
+    }
+
     public void add(long count) {
         onePlusCount += count;
         if (count == 1)
@@ -72,11 +79,14 @@ public class Counter {
             threePlusCount += count;
     }
 
-    public void add(Counter counter) {
-        onePlusCount += counter.onePlusCount;
-        oneCount += counter.oneCount;
-        twoCount += counter.twoCount;
-        threePlusCount += counter.threePlusCount;
+    public void addOne(long count) {
+        ++onePlusCount;
+        if (count == 1)
+            ++oneCount;
+        else if (count == 2)
+            ++twoCount;
+        else if (count >= 3)
+            ++threePlusCount;
     }
 
     @Override
@@ -119,5 +129,27 @@ public class Counter {
 
     public void setThreePlusCount(long threePlusCount) {
         this.threePlusCount = threePlusCount;
+    }
+
+    /**
+     * Currently only used in testing.
+     */
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+        else if (other == null || getClass() != other.getClass())
+            return false;
+
+        Counter o = (Counter) other;
+        if (onePlusCount != o.onePlusCount)
+            return false;
+        else if (oneCount != o.oneCount)
+            return false;
+        else if (twoCount != o.twoCount)
+            return false;
+        else if (threePlusCount != o.threePlusCount)
+            return false;
+        return true;
     }
 }
