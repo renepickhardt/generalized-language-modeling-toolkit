@@ -36,7 +36,6 @@ import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
@@ -54,8 +53,8 @@ public class Chunker {
         protected Pattern pattern;
         private Path patternDir;
         private Set<String> chunkFiles;
-        private long chunkSize;
-        private Map<String, Counter> chunkCounts;
+        protected long chunkSize;
+        protected Map<String, Counter> chunkCounts;
 
         @Override
         public Object call() throws Exception {
@@ -110,43 +109,7 @@ public class Chunker {
 
         protected abstract void sequenceInput(Path inputFile) throws Exception;
 
-        protected void countSequence(String sequence,
-                                     Counter c) throws IOException {
-            Counter counter = chunkCounts.get(sequence);
-            if (counter == null) {
-                counter = new Counter();
-                chunkCounts.put(sequence, counter);
-                chunkSize += sequence.getBytes(Constants.CHARSET).length
-                        + TAB_COUNTER_NL_BYTES;
-            }
-            if (pattern.equals(Patterns.get("xx1"))) {
-                System.out.println(sequence + "=" + counter);
-                System.out.println(counter);
-            }
-            long count = c.getOnePlusCount();
-            if (continuation)
-                if (count < 0)
-                    counter.addOne(-count);
-                else
-                    counter.add(c);
-            else
-                counter.add(count);
-            if (pattern.equals(Patterns.get("xx1")))
-                System.out.println(counter);
-
-            if (chunkSize > maxChunkSize) {
-                if (Constants.DEBUG_AVERAGE_MEMORY)
-                    StatisticalNumberHelper.average("Chunk Map Memory",
-                            MemoryUtil.deepMemoryUsageOf(chunkCounts,
-                                    VisibilityFilter.ALL));
-
-                writeChunkToFile();
-                chunkSize = 0L;
-                chunkCounts = new HashMap<>();
-            }
-        }
-
-        private void writeChunkToFile() throws IOException {
+        protected void writeChunkToFile() throws IOException {
             Path chunkFile = patternDir.resolve("chunk" + chunkFiles.size());
             Files.deleteIfExists(chunkFile);
 
@@ -204,7 +167,29 @@ public class Chunker {
 
             for (int p = 0; p <= split.length - patternSize; ++p) {
                 String sequence = pattern.apply(words, poses, p);
-                countSequence(sequence, new Counter(1L, 0L, 0L, 0L));
+                countSequence(sequence);
+            }
+        }
+
+        private void countSequence(String sequence) throws IOException {
+            Counter counter = chunkCounts.get(sequence);
+            if (counter == null) {
+                counter = new Counter();
+                chunkCounts.put(sequence, counter);
+                chunkSize += sequence.getBytes(Constants.CHARSET).length
+                        + TAB_COUNTER_NL_BYTES;
+            }
+            counter.add(1L);
+
+            if (chunkSize > maxChunkSize) {
+                if (Constants.DEBUG_AVERAGE_MEMORY)
+                    StatisticalNumberHelper.average("Chunk Map Memory",
+                            MemoryUtil.deepMemoryUsageOf(chunkCounts,
+                                    VisibilityFilter.ALL));
+
+                writeChunkToFile();
+                chunkSize = 0L;
+                chunkCounts = new HashMap<>();
             }
         }
     }
@@ -269,15 +254,18 @@ public class Chunker {
                              Path file) throws IOException {
             List<String> split = StringUtils.splitAtChar(line, '\t');
             String seq = split.get(0);
-            Counter coutner = new Counter();
+            Counter counter = new Counter();
+            boolean fromAbsolute;
             try {
-                if (split.size() == 2)
+                if (split.size() == 2) {
                     // from Absolute
-                    coutner.setOnePlusCount(-Long.parseLong(split.get(1)));
-                else if (split.size() == 5)
+                    counter.setOnePlusCount(Long.parseLong(split.get(1)));
+                    fromAbsolute = true;
+                } else if (split.size() == 5) {
                     // from Continuation
-                    Counter.getSequenceAndCounter(line, coutner);
-                else
+                    Counter.getSequenceAndCounter(line, counter);
+                    fromAbsolute = false;
+                } else
                     throw new RuntimeException();
             } catch (RuntimeException e) {
                 throw new FileFormatException(line, lineNo, file, null,
@@ -286,7 +274,34 @@ public class Chunker {
 
             String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(
                     new String[0]));
-            countSequence(sequence, coutner);
+            countSequence(sequence, counter, fromAbsolute);
+        }
+
+        private void countSequence(String sequence,
+                                   Counter sequenceCounter,
+                                   boolean fromAbsolute) throws IOException {
+            Counter counter = chunkCounts.get(sequence);
+            if (counter == null) {
+                counter = new Counter();
+                chunkCounts.put(sequence, counter);
+                chunkSize += sequence.getBytes(Constants.CHARSET).length
+                        + TAB_COUNTER_NL_BYTES;
+            }
+            if (fromAbsolute)
+                counter.addOne(sequenceCounter.getOnePlusCount());
+            else
+                counter.add(sequenceCounter);
+
+            if (chunkSize > maxChunkSize) {
+                if (Constants.DEBUG_AVERAGE_MEMORY)
+                    StatisticalNumberHelper.average("Chunk Map Memory",
+                            MemoryUtil.deepMemoryUsageOf(chunkCounts,
+                                    VisibilityFilter.ALL));
+
+                writeChunkToFile();
+                chunkSize = 0L;
+                chunkCounts = new HashMap<>();
+            }
         }
     }
 
