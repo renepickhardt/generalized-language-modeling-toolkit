@@ -202,7 +202,7 @@ public class Config {
     private Path taggingModel;
 
     public Config() throws IOException {
-        readconfigFromFile(GlmtkPaths.config_FILE);
+        readconfigFromFile(GlmtkPaths.CONFIG_FILE);
     }
 
     public int getNumberOfThreads() {
@@ -245,7 +245,7 @@ public class Config {
         return taggingModel;
     }
 
-    public void logconfig() {
+    public void logConfig() {
         LOGGER.info("config %s", StringUtils.repeat("-",
                 80 - "config ".length()));
         //@formatter:off

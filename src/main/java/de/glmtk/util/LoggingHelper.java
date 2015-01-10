@@ -19,7 +19,7 @@ import de.glmtk.Constants;
 public enum LoggingHelper {
     LOGGING_HELPER;
 
-    private static final String loggingPattern = "%date{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger - %msg%n";
+    private static final String loggingPattern = "%date{yyyy-MM-dd HH:mm:ss} [%-5level]  %-100msg  [%class{1}#%method:%line] %thread (%logger)%n";
 
     /**
      * Log4j LoggerContext.

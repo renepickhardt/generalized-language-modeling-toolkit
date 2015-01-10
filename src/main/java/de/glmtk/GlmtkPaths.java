@@ -27,23 +27,23 @@ public class GlmtkPaths {
      */
     public static final Path LOG_DIR;
 
-    public static final Path config_FILE;
+    public static final Path CONFIG_FILE;
 
     static {
         USER_DIR = Paths.get(System.getProperty("user.dir"));
         GLMTK_DIR = Paths.get(System.getProperty("glmtk.dir",
                 USER_DIR.toString()));
         LOG_DIR = GLMTK_DIR.resolve(Constants.LOG_DIR_NAME);
-        config_FILE = GLMTK_DIR.resolve(Constants.CONFIG_FILE);
+        CONFIG_FILE = GLMTK_DIR.resolve(Constants.CONFIG_FILE);
     }
 
     public static void logStaticPaths() {
         LOGGER.info("GlmtkPath static %s", StringUtils.repeat("-",
                 "GlmtkPath static ".length()));
-        LOGGER.info("USER_DIR:    %s");
-        LOGGER.info("GLMTK_DIR:   %s");
-        LOGGER.info("LOG_DIR:     %s");
-        LOGGER.info("config_FILE: %s");
+        LOGGER.info("USER_DIR:    %s", USER_DIR);
+        LOGGER.info("GLMTK_DIR:   %s", GLMTK_DIR);
+        LOGGER.info("LOG_DIR:     %s", LOG_DIR);
+        LOGGER.info("CONFIG_FILE: %s", CONFIG_FILE);
     }
 
     private GlmtkPaths root;

@@ -150,7 +150,7 @@ import de.glmtk.util.StringUtils;
         LOGGER.info("Arguments: %s", StringUtils.join(args, " "));
 
         GlmtkPaths.logStaticPaths();
-        config.logconfig();
+        config.logConfig();
 
         LOGGER.info(StringUtils.repeat("-", 80));
     }
