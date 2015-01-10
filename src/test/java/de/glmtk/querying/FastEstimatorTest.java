@@ -17,7 +17,7 @@ import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.fast.FastModifiedKneserNeyAbsEstimator;
+import de.glmtk.querying.estimator.fast.FastModifiedKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
@@ -26,8 +26,8 @@ public class FastEstimatorTest extends TestCorporaTest {
 
     @Test
     public void testFastModifiedKneserEstimator() throws Exception {
-        Estimator estimator = Estimators.MOD_KNESER_NEY_ABS;
-        FastModifiedKneserNeyAbsEstimator fastEstimator = new FastModifiedKneserNeyAbsEstimator();
+        Estimator estimator = Estimators.MOD_KNESER_NEY;
+        FastModifiedKneserNeyEstimator fastEstimator = new FastModifiedKneserNeyEstimator();
         testEstimatorEquals(estimator, fastEstimator);
     }
 
