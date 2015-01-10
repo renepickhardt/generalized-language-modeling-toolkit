@@ -96,6 +96,10 @@ public enum TestCorpus {
         return glmtk.getOrCreateCountCache();
     }
 
+    public CountCache getCountCache(Set<Pattern> patterns) throws Exception {
+        return glmtk.createCountCache(patterns);
+    }
+
     public String[] getWords() throws Exception {
         Set<String> words = getCountCache().getWords();
         return words.toArray(new String[words.size()]);
