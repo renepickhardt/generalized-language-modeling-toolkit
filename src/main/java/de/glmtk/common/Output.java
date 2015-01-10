@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -62,8 +62,9 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6, "Length Distribution Calculating"),
 
         // Learning
-        CALCULATING_ALPHAS(1, 2, "Calculating Alphas"),
-        CALCULATING_LAMBDAS(2, 2, "Calculating Lambdas"),
+        CALCULATING_DISCOUNTS(1, 3, "Calculating Discounts"),
+        CALCULATING_ALPHAS(2, 3, "Calculating Alphas"),
+        CALCULATING_LAMBDAS(3, 3, "Calculating Lambdas"),
 
         // CountCache
         LOADING_COUNTS(1, 1, "Loading Counts"),
@@ -391,8 +392,12 @@ public enum Output {
             print.append('\n');
         }
 
-        logWithoutAnsi(Level.ERROR, print.toString());
-        System.err.print(print.toString());
+        // remove last newline
+        String printStr = print.toString();
+        printStr = printStr.substring(0, printStr.length() - 1);
+
+        logWithoutAnsi(Level.ERROR, printStr);
+        System.err.println(printStr);
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
@@ -416,8 +421,12 @@ public enum Output {
             print.append('\n');
         }
 
-        logWithoutAnsi(Level.WARN, print.toString());
-        System.err.print(print.toString());
+        // remove last newline
+        String printStr = print.toString();
+        printStr = printStr.substring(0, printStr.length() - 1);
+
+        logWithoutAnsi(Level.WARN, printStr);
+        System.err.print(printStr);
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;

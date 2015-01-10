@@ -61,9 +61,11 @@ public class Constants {
 
     public static final String LENGTHDISTRIBUTION_FILE_NAME = "lengthdistribution";
 
-    // Path Language Model Constants
+    // Path Model Constants
 
-    public static final String LANGUAGE_MODELS_DIR_NAME = "languagemodels";
+    public static final String MODELS_DIR_NAME = "models";
+
+    public static final String DISCOUNTS_FILE_NAME = "discounts";
 
     public static final String ALPHA_DIR_NAME = "alpha";
 

@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -44,6 +44,8 @@ import de.glmtk.counting.LengthDistributionCalculator;
 import de.glmtk.counting.Merger;
 import de.glmtk.counting.NGramTimesCounter;
 import de.glmtk.counting.Tagger;
+import de.glmtk.languagemodels.AlphaCalculator;
+import de.glmtk.languagemodels.ModKneserNeyDiscountCalculator;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.QueryCacherCreator;
 import de.glmtk.querying.QueryMode;
@@ -101,6 +103,10 @@ public class Glmtk {
     private Merger merger;
     private NGramTimesCounter nGramTimesCounter;
     private LengthDistributionCalculator lengthDistributionCalculator;
+
+    private ModKneserNeyDiscountCalculator modKneserNeyDiscountCalculator;
+    private AlphaCalculator alphaCalculator;
+
     private QueryCacherCreator queryCacherCreator;
     private QueryRunner queryRunner;
 
@@ -125,6 +131,11 @@ public class Glmtk {
         merger = new Merger(config);
         nGramTimesCounter = new NGramTimesCounter(config);
         lengthDistributionCalculator = new LengthDistributionCalculator(config);
+
+        modKneserNeyDiscountCalculator = new ModKneserNeyDiscountCalculator(
+                config);
+        alphaCalculator = new AlphaCalculator(config);
+
         queryCacherCreator = new QueryCacherCreator(config);
         queryRunner = new QueryRunner(config);
     }
@@ -270,6 +281,20 @@ public class Glmtk {
                 paths.getContinuationChunkedDir(), paths.getContinuationDir());
         validateExpectedResults("Continuation counting", countingPatterns,
                 status.getCounted(false));
+    }
+
+    public void learnModKneserNey() throws IOException {
+        String message = "Learning Language Model 'Modified Kneser Ney'";
+        OUTPUT.beginPhases(message + "...");
+
+        Files.createDirectories(paths.getModKneserNeyDir());
+
+        modKneserNeyDiscountCalculator.calculateDiscounts(status,
+                paths.getNGramTimesFile(), paths.getModKneserNeyDiscountsFile());
+
+        long mknSize = NioUtils.calcFileSize(paths.getModKneserNeyDir());
+        OUTPUT.endPhases(String.format("%s done (uses %s).", message,
+                PrintUtils.humanReadableByteCount(mknSize)));
     }
 
     public CountCache getOrCreateCountCache() throws Exception {

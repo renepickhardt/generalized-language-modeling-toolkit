@@ -42,4 +42,12 @@ public class CollectionUtils {
             for (int i = size; i != neededSize + 1; ++i)
                 list.add(defaultValue);
     }
+
+    public static <T> boolean containsAny(Collection<T> haystack,
+                                          Collection<T> needles) {
+        for (T needle : needles)
+            if (haystack.contains(needle))
+                return true;
+        return false;
+    }
 }

@@ -20,6 +20,10 @@
 
 package de.glmtk.querying.estimator;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import de.glmtk.common.BackoffMode;
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
 import de.glmtk.querying.estimator.combination.CombinationEstimator;
@@ -218,6 +222,15 @@ public class Estimators {
     static {
         GLM_ABS.setName("Generalized-Language-Model (Abs-Lower-Order)");
     }
+
+    // Collections /////////////////////////////////////////////////////////////
+
+    public static final Set<Estimator> MOD_KNESER_NEY_ESTIMATORS = new HashSet<Estimator>(
+            Arrays.asList(MOD_KNESER_NEY, MOD_KNESER_NEY_ABS,
+                    MOD_KNESER_NEY_SKP));
+
+    public static final Set<Estimator> GLM_ESTIMATORS = new HashSet<Estimator>(
+            Arrays.asList(GLM, GLM_ABS, GLM_DEL, GLM_DEL, GLM_SKP_AND_DEL));
 
     private static InterpolEstimator makeMkn(BackoffMode BackoffMode) {
         ModKneserNeyDiscountEstimator alpha = new ModKneserNeyDiscountEstimator(

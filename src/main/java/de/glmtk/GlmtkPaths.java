@@ -81,10 +81,11 @@ public class GlmtkPaths {
     private Path nGramTimesFile;
     private Path lengthDistributionFile;
 
-    private Path languageModelsDir;
-    private Path modkneserneyDir;
-    private Path modkneserneyAlphaDir;
-    private Path modkneserneyLambdaDir;
+    private Path modelsDir;
+    private Path modKneserNeyDir;
+    private Path modKneserNeyDiscountsFile;
+    private Path modKneserNeyAlphaDir;
+    private Path modKneserNeyLambdaDir;
 
     private Path queryCachesDir;
     private Path queriesDir;
@@ -104,7 +105,7 @@ public class GlmtkPaths {
         nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         lengthDistributionFile = countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
 
-        fillLanguageModelsDirPaths(this);
+        fillModelsDirPaths(this);
 
         queryCachesDir = dir.resolve(Constants.QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(Constants.QUERIES_DIR_NAME);
@@ -120,11 +121,12 @@ public class GlmtkPaths {
                 + Constants.CHUNKED_SUFFIX);
     }
 
-    private void fillLanguageModelsDirPaths(GlmtkPaths paths) {
-        paths.languageModelsDir = paths.dir.resolve(Constants.LANGUAGE_MODELS_DIR_NAME);
-        paths.modkneserneyDir = languageModelsDir.resolve("modkneserney");
-        paths.modkneserneyAlphaDir = modkneserneyDir.resolve(Constants.ALPHA_DIR_NAME);
-        paths.modkneserneyLambdaDir = modkneserneyAlphaDir.resolve(Constants.LAMBDA_DIR_NAME);
+    private void fillModelsDirPaths(GlmtkPaths paths) {
+        paths.modelsDir = paths.dir.resolve(Constants.MODELS_DIR_NAME);
+        paths.modKneserNeyDir = modelsDir.resolve("modkneserney");
+        paths.modKneserNeyDiscountsFile = modKneserNeyDir.resolve(Constants.DISCOUNTS_FILE_NAME);
+        paths.modKneserNeyAlphaDir = modKneserNeyDir.resolve(Constants.ALPHA_DIR_NAME);
+        paths.modKneserNeyLambdaDir = modKneserNeyAlphaDir.resolve(Constants.LAMBDA_DIR_NAME);
     }
 
     public GlmtkPaths newQueryCache(String name) {
@@ -132,7 +134,7 @@ public class GlmtkPaths {
         queryCache.root = this;
         queryCache.dir = queryCachesDir.resolve(name);
         fillCountsDirPaths(queryCache);
-        fillLanguageModelsDirPaths(queryCache);
+        fillModelsDirPaths(queryCache);
         return queryCache;
     }
 
@@ -150,10 +152,10 @@ public class GlmtkPaths {
         LOGGER.debug("continuationChunkedDir = %s", continuationChunkedDir);
         LOGGER.debug("nGramTimesFile         = %s", nGramTimesFile);
         LOGGER.debug("lengthDistributionFile = %s", lengthDistributionFile);
-        LOGGER.debug("languageModelsDir      = %s", languageModelsDir);
-        LOGGER.debug("modkneserneyDir        = %s", modkneserneyDir);
-        LOGGER.debug("modkneserneyAlphaDir   = %s", modkneserneyAlphaDir);
-        LOGGER.debug("modkneserneyLambdaDir  = %s", modkneserneyLambdaDir);
+        LOGGER.debug("modelsDir              = %s", modelsDir);
+        LOGGER.debug("modkneserneyDir        = %s", modKneserNeyDir);
+        LOGGER.debug("modkneserneyAlphaDir   = %s", modKneserNeyAlphaDir);
+        LOGGER.debug("modkneserneyLambdaDir  = %s", modKneserNeyLambdaDir);
         LOGGER.debug("queryCachesDir         = %s", queryCachesDir);
         LOGGER.debug("queriesDir             = %s", queriesDir);
     }
@@ -206,20 +208,24 @@ public class GlmtkPaths {
         return lengthDistributionFile;
     }
 
-    public Path getLanguageModelsDir() {
-        return languageModelsDir;
+    public Path getModelsDir() {
+        return modelsDir;
     }
 
-    public Path getModkneserneyDir() {
-        return modkneserneyDir;
+    public Path getModKneserNeyDir() {
+        return modKneserNeyDir;
     }
 
-    public Path getModkneserneyAlphaDir() {
-        return modkneserneyAlphaDir;
+    public Path getModKneserNeyDiscountsFile() {
+        return modKneserNeyDiscountsFile;
     }
 
-    public Path getModkneserneyLambdaDir() {
-        return modkneserneyLambdaDir;
+    public Path getModKneserNeyAlphaDir() {
+        return modKneserNeyAlphaDir;
+    }
+
+    public Path getModKneserNeyLambdaDir() {
+        return modKneserNeyLambdaDir;
     }
 
     public Path getQueryCachesDir() {
