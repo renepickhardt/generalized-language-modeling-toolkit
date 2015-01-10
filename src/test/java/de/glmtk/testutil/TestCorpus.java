@@ -89,6 +89,10 @@ public enum TestCorpus {
         return workingDir;
     }
 
+    public Glmtk getGlmtk() {
+        return glmtk;
+    }
+
     /**
      * Lazily loaded.
      */
@@ -106,7 +110,7 @@ public enum TestCorpus {
     }
 
     public List<String> getSequenceList(int n,
-                                        int length) throws Exception {
+            int length) throws Exception {
         List<String> result = new LinkedList<>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);
