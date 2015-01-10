@@ -46,7 +46,6 @@ public class CountingTest extends TestCorporaTest {
     }
 
     private TestCorpus testCorpus;
-    private long corpusSize;
     private List<String> corpusLines;
     private CountCache countCache;
     private Map<Pattern, Map<String, Long>> absolute;
@@ -58,7 +57,6 @@ public class CountingTest extends TestCorporaTest {
         this.testCorpus = testCorpus;
 
         LOGGER.info("Loading corpus...");
-        corpusSize = Files.size(testCorpus.getCorpus());
         corpusLines = Files.readAllLines(testCorpus.getCorpus(),
                 Constants.CHARSET);
 
