@@ -26,14 +26,20 @@ import de.glmtk.Constants;
 import de.glmtk.exceptions.FileFormatException;
 
 public abstract class AbstractYamlParser {
+
     protected Path file;
+
     protected String fileType;
+
     protected Event event;
+
     protected Iterator<Event> iter;
+
     protected Mark mark;
 
-    public AbstractYamlParser(Path file,
-                              String fileType) {
+    public AbstractYamlParser(
+            Path file,
+            String fileType) {
         this.file = file;
         this.fileType = fileType;
         event = null;
@@ -42,15 +48,19 @@ public abstract class AbstractYamlParser {
 
     protected abstract void parse();
 
-    public final void run() throws IOException {
+    public final void run() {
         Yaml yaml = new Yaml();
-        try (BufferedReader reader = Files.newBufferedReader(file,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+                Files.newBufferedReader(file, Constants.CHARSET)) {
             event = null;
             iter = yaml.parse(reader).iterator();
             parse();
         } catch (FileFormatException e) {
             System.out.println(e.getMessage());
+            System.exit(0);
+        } catch (IOException e) {
+            System.out
+                    .println("Could not open glmtk.conf. Did you copy glmtk.conf.sample in your installation directory to glmtk.conf?");
             System.exit(0);
         }
     }
@@ -70,9 +80,10 @@ public abstract class AbstractYamlParser {
         nextEvent();
         assertEventIsId(ID.MappingStart);
         String tag = ((MappingStartEvent) event).getTag();
-        if (tag == null || !tag.equals(expectedTag))
+        if (tag == null || !tag.equals(expectedTag)) {
             throw newFileFormatException("%s file needs to start with a '%s'.",
-                                         StringUtils.capitalize(fileType), expectedTag);
+                    StringUtils.capitalize(fileType), expectedTag);
+        }
     }
 
     protected void parseEnding() {
@@ -89,20 +100,22 @@ public abstract class AbstractYamlParser {
         assertEventIsId(ID.Scalar);
         ScalarEvent scalarEvent = (ScalarEvent) event;
         String result = scalarEvent.getValue();
-        if (result.equals("null"))
+        if (result.equals("null")) {
             result = null;
+        }
         return result;
     }
 
     protected boolean parseBoolean() {
         String booleanStr = parseScalar();
-        if (booleanStr.equals("true"))
+        if (booleanStr.equals("true")) {
             return true;
-        else if (booleanStr.equals("false"))
+        } else if (booleanStr.equals("false")) {
             return false;
+        }
         throw newFileFormatException(
-                                     "Illegal boolean value: '%s'. Valid are only 'true' or 'false'.",
-                                     booleanStr);
+                "Illegal boolean value: '%s'. Valid are only 'true' or 'false'.",
+                booleanStr);
     }
 
     protected int parseInt() {
@@ -140,9 +153,10 @@ public abstract class AbstractYamlParser {
         nextEvent();
         while (!event.is(ID.SequenceEnd)) {
             String scalar = parseScalar();
-            if (result.contains(scalar))
+            if (result.contains(scalar)) {
                 throw newFileFormatException(
                         "Set contains value multiple times: '%s'.", scalar);
+            }
             result.add(scalar);
             nextEvent();
         }
@@ -151,38 +165,43 @@ public abstract class AbstractYamlParser {
 
     protected Map<String, Boolean> createValidKeysMap(String... keys) {
         Map<String, Boolean> result = new LinkedHashMap<>();
-        for (String key : keys)
+        for (String key : keys) {
             result.put(key, false);
+        }
         return result;
     }
 
-    protected void registerKey(Map<String, Boolean> keys,
-                               String key) {
+    protected void registerKey(Map<String, Boolean> keys, String key) {
         if (!keys.containsKey(key)) {
             List<String> possible = new ArrayList<>();
-            for (Entry<String, Boolean> entry : keys.entrySet())
-                if (!entry.getValue())
+            for (Entry<String, Boolean> entry : keys.entrySet()) {
+                if (!entry.getValue()) {
                     possible.add(entry.getKey());
+                }
+            }
             throw newFileFormatException(
-                                         "Illegal key '%s'. Possibles keys for this position are: '%s'.",
-                                         key, StringUtils.join(possible, "', '"));
+                    "Illegal key '%s'. Possibles keys for this position are: '%s'.",
+                    key, StringUtils.join(possible, "', '"));
         }
-        if (keys.get(key))
+        if (keys.get(key)) {
             throw newFileFormatException("Duplicate key '%s'.", key);
+        }
         keys.put(key, true);
     }
 
     protected final void assertEventIsId(ID expected) {
         if (!event.is(expected)) {
             ID actual = null;
-            for (ID id : ID.values())
+            for (ID id : ID.values()) {
                 if (event.is(id)) {
                     actual = id;
                     break;
                 }
+            }
 
-            if (actual == ID.Alias)
+            if (actual == ID.Alias) {
                 throw newFileFormatException("Aliasing is not supported yet.");
+            }
 
             throw newFileFormatException(
                     "Illegal '%s', expected '%s' instead.", idString(actual),
@@ -192,20 +211,24 @@ public abstract class AbstractYamlParser {
 
     private String idString(ID id) {
         StringBuilder result = new StringBuilder();
-        for (char c : id.toString().toCharArray())
-            if (Character.isUpperCase(c))
+        for (char c : id.toString().toCharArray()) {
+            if (Character.isUpperCase(c)) {
                 result.append(' ').append(Character.toLowerCase(c));
-            else
+            } else {
                 result.append(c);
+            }
+        }
         return result.toString().substring(1);
     }
 
-    protected final FileFormatException newFileFormatException(String message,
-                                                               Object... params) {
+    protected final FileFormatException newFileFormatException(
+            String message,
+            Object... params) {
         // If in first line, use end mark instead because of the tag at
         // beginning of file
-        if (mark.getLine() == 0)
+        if (mark.getLine() == 0) {
             mark = event.getEndMark();
+        }
         return new FileFormatException(file, fileType, mark, message, params);
     }
 }
