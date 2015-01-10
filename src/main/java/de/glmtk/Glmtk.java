@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -313,9 +315,15 @@ public class Glmtk {
                                        ProbMode probMode,
                                        CountCache countCache,
                                        int corpusOrder) throws Exception {
-        return queryRunner.runQueriesOnFile(queryMode, inputFile,
-                paths.getQueriesDir(), estimator, probMode, countCache,
-                corpusOrder);
+        Files.createDirectories(paths.getQueriesDir());
+
+        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+        Path outputFile = paths.getQueriesDir().resolve(
+                String.format("%s %s %s %s", inputFile.getFileName(),
+                        estimator.getName(), queryMode, date));
+
+        return queryRunner.runQueriesOnFile(queryMode, inputFile, outputFile,
+                estimator, probMode, countCache, corpusOrder);
     }
 
     /**

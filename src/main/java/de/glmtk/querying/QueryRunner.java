@@ -12,8 +12,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Formatter;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,9 +66,7 @@ public class QueryRunner {
     private Progress progress;
     private QueryMode queryMode;
     private Path inputFile;
-    private Path outputDir;
     private Path outputFile;
-    private Estimator estimator;
     private CountCache countCache;
     private int corpusOrder;
     private Calculator calculator;
@@ -93,7 +89,6 @@ public class QueryRunner {
                                               CountCache countCache,
                                               int corpusOrder) throws Exception {
         this.queryMode = queryMode;
-        this.estimator = estimator;
         this.countCache = countCache;
         this.corpusOrder = corpusOrder;
         calculator = Calculator.forQueryMode(queryMode);
@@ -128,20 +123,18 @@ public class QueryRunner {
 
     public QueryStats runQueriesOnFile(QueryMode queryMode,
                                        Path inputFile,
-                                       Path outputDir,
+                                       Path outputFile,
                                        Estimator estimator,
                                        ProbMode probMode,
                                        CountCache countCache,
                                        int corpusOrder) throws Exception {
         this.queryMode = queryMode;
         this.inputFile = inputFile;
-        this.outputDir = outputDir;
-        this.estimator = estimator;
+        this.outputFile = outputFile;
         this.countCache = countCache;
         this.corpusOrder = corpusOrder;
         calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
-        outputFile = resolveOutputFile();
         calculateMemory();
 
         estimator.setCountCache(countCache);
@@ -167,12 +160,6 @@ public class QueryRunner {
             OUTPUT.printMessage("    " + statsOutputLine);
 
         return stats;
-    }
-
-    private Path resolveOutputFile() {
-        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
-        return outputDir.resolve(String.format("%s %s %s %s",
-                inputFile.getFileName(), estimator.getName(), queryMode, date));
     }
 
     private void calculateMemory() {
@@ -210,7 +197,6 @@ public class QueryRunner {
     private void assembleFile() throws IOException {
         OUTPUT.setPhase(Phase.ASSEMBLING);
 
-        Files.createDirectories(outputDir);
         Files.deleteIfExists(outputFile);
 
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
