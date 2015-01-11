@@ -155,4 +155,25 @@ public class Counter {
             return false;
         return true;
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * Implementation guided by: <a href=
+     * "http://www.angelikalanger.com/Articles/EffectiveJava/03.HashCode/03.HashCode.html"
+     * >Angelika Langer: Implementing the hashCode() Method</a>
+     */
+    @Override
+    public int hashCode() {
+        int hash = 23984;
+        int mult = 457;
+
+        hash += mult * onePlusCount;
+        hash += mult * oneCount;
+        hash += mult * twoCount;
+        hash += mult * threePlusCount;
+
+        return hash;
+    }
 }
