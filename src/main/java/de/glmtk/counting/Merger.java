@@ -3,14 +3,10 @@ package de.glmtk.counting;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -26,86 +22,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Config;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
-import de.glmtk.common.Config;
-import de.glmtk.exceptions.FileFormatException;
+import de.glmtk.files.CountsReader;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
-import de.glmtk.util.ObjectUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.ThreadUtils;
 
 public class Merger {
-    private static class SequenceCountReader implements Closeable, AutoCloseable {
-        public static final Comparator<SequenceCountReader> COMPARATOR = new Comparator<Merger.SequenceCountReader>() {
-            @Override
-            public int compare(SequenceCountReader lhs,
-                               SequenceCountReader rhs) {
-                if (lhs == rhs)
-                    return 0;
-                else if (lhs == null)
-                    return 1;
-                else if (rhs == null)
-                    return -1;
-                else
-                    return ObjectUtils.compare(lhs.sequence, rhs.sequence);
-            }
-        };
-
-        private Path file;
-        private BufferedReader reader;
-        private int lineNo;
-        private String sequence;
-        private Counter counter;
-
-        public SequenceCountReader(Path file,
-                                   Charset charset,
-                                   int sz) throws IOException {
-            this.file = file;
-            reader = NioUtils.newBufferedReader(file, charset, sz);
-            lineNo = -1;
-            nextLine();
-        }
-
-        public void nextLine() throws IOException {
-            String line = reader.readLine();
-            ++lineNo;
-            if (line == null) {
-                sequence = null;
-                counter = null;
-            } else {
-                counter = new Counter();
-                try {
-                    sequence = Counter.getSequenceAndCounter(line, counter);
-                } catch (IllegalArgumentException e) {
-                    throw new FileFormatException(line, lineNo, file, "chunk",
-                            e.getMessage());
-                }
-            }
-        }
-
-        public String getSequence() {
-            return sequence;
-        }
-
-        public Counter getCounter() {
-            return counter;
-        }
-
-        public boolean isEmpty() {
-            return sequence == null;
-        }
-
-        @Override
-        public void close() throws IOException {
-            reader.close();
-        }
-    }
-
     private static final Logger LOGGER = LogManager.getFormatterLogger(Merger.class);
 
     private class Thread implements Callable<Object> {
@@ -199,27 +128,34 @@ public class Merger {
                                        Path mergeFile) throws IOException {
             Files.deleteIfExists(mergeFile);
 
+            PriorityQueue<CountsReader> readerQueue = new PriorityQueue<>(
+                    chunksToMerge.size(), CountsReader.SEQUENCE_COMPARATOR);
+
+            int memoryPerReader = (int) (readerMemory / chunksToMerge.size());
+            for (String chunk : chunksToMerge) {
+                Path chunkFile = patternDir.resolve(chunk);
+                int memory = (int) Math.min(Files.size(chunkFile),
+                        memoryPerReader);
+
+                // Reader is closed later manually so we supress the warning.
+                @SuppressWarnings("resource")
+                CountsReader reader = new CountsReader(chunkFile,
+                        Constants.CHARSET, memory);
+
+                reader.readLine();
+                readerQueue.add(reader);
+            }
+
             try (BufferedWriter writer = NioUtils.newBufferedWriter(mergeFile,
                     Constants.CHARSET, (int) writerMemory)) {
-                PriorityQueue<SequenceCountReader> readerQueue = new PriorityQueue<>(
-                        chunksToMerge.size(), SequenceCountReader.COMPARATOR);
-                int memoryPerReader = (int) (readerMemory / chunksToMerge.size());
-                for (String chunk : chunksToMerge) {
-                    Path chunkFile = patternDir.resolve(chunk);
-                    int memory = (int) Math.min(Files.size(chunkFile),
-                            memoryPerReader);
-                    @SuppressWarnings("resource")
-                    SequenceCountReader sequenceCountReader = new SequenceCountReader(
-                            chunkFile, Constants.CHARSET, memory);
-                    readerQueue.add(sequenceCountReader);
-                }
-
                 String lastSequence = null;
                 Counter aggregationCounter = null;
                 while (!readerQueue.isEmpty()) {
                     @SuppressWarnings("resource")
-                    SequenceCountReader reader = readerQueue.poll();
-                    if (reader.isEmpty()) {
+                    CountsReader reader = readerQueue.poll();
+                    if (reader == null)
+                        continue;
+                    if (reader.isEof()) {
                         reader.close();
                         continue;
                     }
@@ -241,9 +177,12 @@ public class Merger {
                         lastSequence = sequence;
                         aggregationCounter = counter;
                     }
-                    reader.nextLine();
+                    reader.readLine();
                     readerQueue.add(reader);
                 }
+            } finally {
+                for (CountsReader reader : readerQueue)
+                    reader.close();
             }
         }
     }

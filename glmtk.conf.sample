@@ -14,7 +14,7 @@ memory:
     writer: 50
 
     # Max chunk size in bebibytes (MiB)
-    chunkSize: 500
+    chunkSize: 1
 
     # Memory limit for loading files completely in memory in mebibytes (MiB).
     cacheThreshold: 200
