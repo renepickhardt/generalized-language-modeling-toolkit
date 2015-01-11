@@ -4,6 +4,7 @@ import static de.glmtk.Constants.MiB;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.events.Event.ID;
 import org.yaml.snakeyaml.events.ScalarEvent;
 
+import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.AbstractYamlParser;
@@ -21,28 +23,23 @@ import de.glmtk.util.StringUtils;
  * All field values (except those declared final) are read from config file.
  */
 public class Config {
+    private static final Logger LOGGER = LogManager.getFormatterLogger(Config.class);
 
-    private static final Logger LOGGER = LogManager
-            .getFormatterLogger(Config.class);
-
-    private class configParser extends AbstractYamlParser {
-
-        public configParser(
-                Path file) {
+    private class ConfigParser extends AbstractYamlParser {
+        public ConfigParser(Path file) {
             super(file, "config");
         }
 
         @Override
         protected void parse() {
             parseBegining("!config");
-            parseconfig();
+            parseConfig();
             parseEnding();
         }
 
-        protected void parseconfig() {
-            Map<String, Boolean> keys =
-                    createValidKeysMap("numberOfThreads", "memory",
-                            "updateInterval", "tagging");
+        protected void parseConfig() {
+            Map<String, Boolean> keys = createValidKeysMap("numberOfThreads",
+                    "memory", "updateInterval", "tagging");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
@@ -80,9 +77,8 @@ public class Config {
         private void parseMemory() {
             assertEventIsId(ID.MappingStart);
 
-            Map<String, Boolean> keys =
-                    createValidKeysMap("jvm", "reader", "writer", "chunkSize",
-                            "cacheThreshold");
+            Map<String, Boolean> keys = createValidKeysMap("jvm", "reader",
+                    "writer", "chunkSize", "cacheThreshold");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
@@ -127,19 +123,18 @@ public class Config {
 
         private int parseIntMiB() {
             long result = parseLongMiB();
-            if (result >= Integer.MAX_VALUE) {
+            if (result >= Integer.MAX_VALUE)
                 throw newFileFormatException(
                         "Given memory value is to large for integer: %s resp. %d bytes.",
                         humanReadableByteCount(result), result);
-            }
             return (int) result;
         }
 
         private void parseUpdateInterval() {
             assertEventIsId(ID.MappingStart);
 
-            Map<String, Boolean> keys =
-                    createValidKeysMap("log", "console", "consoleParams");
+            Map<String, Boolean> keys = createValidKeysMap("log", "console",
+                    "consoleParams");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
@@ -198,27 +193,18 @@ public class Config {
     }
 
     private int numberOfThreads;
-
     private long memoryJvm;
-
     private int memoryReader;
-
     private int memoryWriter;
-
     private long memoryChunkSize;
-
     private long memoryCacheThreshold;
-
     private int updateIntervalLog;
-
     private int updateIntervalConsole;
-
     private int updateIntervalConsoleParams;
-
     private Path taggingModel;
 
     public Config() throws IOException {
-        readconfigFromFile(GlmtkPaths.CONFIG_FILE);
+        readConfigFromFile(GlmtkPaths.CONFIG_FILE);
     }
 
     public int getNumberOfThreads() {
@@ -262,8 +248,8 @@ public class Config {
     }
 
     public void logConfig() {
-        LOGGER.info("config %s",
-                StringUtils.repeat("-", 80 - "config ".length()));
+        LOGGER.info("config %s", StringUtils.repeat("-",
+                80 - "config ".length()));
         //@formatter:off
         LOGGER.info("numberOfThreads:             %d",   numberOfThreads);
         LOGGER.info("memoryJvm:                   %s",   humanReadableByteCount(memoryJvm));
@@ -278,9 +264,17 @@ public class Config {
         //@formatter:on
     }
 
-    private void readconfigFromFile(Path file) {
+    private void readConfigFromFile(Path file) throws IOException {
         LOGGER.debug("Reading config from file '%s'.", file);
 
-        new configParser(file).run();
+        try {
+            new ConfigParser(file).run();
+        } catch (NoSuchFileException e) {
+            throw new NoSuchFileException(
+                    String.format(
+                            "Config file missing: Could not open '%s'.%n"
+                                    + "Did you copy '%s.sample' in your installation directory to '%s'?",
+                            file, Constants.CONFIG_FILE, Constants.CONFIG_FILE));
+        }
     }
 }

@@ -71,10 +71,8 @@ import de.glmtk.util.StringUtils;
         } catch (Throwable e) {
             if (outputIntialized)
                 OUTPUT.printError(e.getMessage());
-            else {
-                e.printStackTrace();
+            else
                 System.err.println(e.getMessage());
-            }
             LOGGER.error(String.format("Exception %s",
                     ExceptionUtils.getStackTrace(e)));
         }
