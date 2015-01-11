@@ -12,6 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,12 +25,12 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
+import de.glmtk.common.Config;
 import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
-import de.glmtk.common.Config;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.ThreadUtils;
 
@@ -147,7 +149,9 @@ public class NGramTimesCounter {
     private void writeToFile() throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
                 Constants.CHARSET)) {
-            for (Entry<Pattern, long[]> entry : nGramTimesForPattern.entrySet()) {
+            SortedMap<Pattern, long[]> sortedNGramTimesForPattern = new TreeMap<>(
+                    nGramTimesForPattern);
+            for (Entry<Pattern, long[]> entry : sortedNGramTimesForPattern.entrySet()) {
                 Pattern pattern = entry.getKey();
                 long[] nGramTimes = entry.getValue();
 
