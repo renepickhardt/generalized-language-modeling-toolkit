@@ -1,17 +1,12 @@
 package de.glmtk.files;
 
-import java.io.BufferedWriter;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import de.glmtk.counts.Counts;
-import de.glmtk.util.NioUtils;
 
-public class CountsWriter implements Closeable, AutoCloseable {
-    private BufferedWriter writer;
-
+public class CountsWriter extends AbstractFileWriter {
     public CountsWriter(Path file,
                         Charset charset) throws IOException {
         this(file, charset, 8192);
@@ -20,7 +15,7 @@ public class CountsWriter implements Closeable, AutoCloseable {
     public CountsWriter(Path file,
                         Charset charset,
                         int sz) throws IOException {
-        writer = NioUtils.newBufferedWriter(file, charset, sz);
+        super(file, charset, sz);
     }
 
     public void append(String sequence,
@@ -37,10 +32,5 @@ public class CountsWriter implements Closeable, AutoCloseable {
         writer.append('\t').append(Long.toString(counts.getTwoCount()));
         writer.append('\t').append(Long.toString(counts.getThreePlusCount()));
         writer.append('\n');
-    }
-
-    @Override
-    public void close() throws IOException {
-        writer.close();
     }
 }

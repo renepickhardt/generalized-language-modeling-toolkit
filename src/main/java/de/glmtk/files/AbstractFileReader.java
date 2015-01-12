@@ -21,7 +21,7 @@ public abstract class AbstractFileReader implements Closeable, AutoCloseable {
     protected Path file;
     protected int lineNo;
     protected String line;
-    private BufferedReader reader;
+    protected BufferedReader reader;
 
     public AbstractFileReader(Path file,
                               Charset charset) throws IOException {
