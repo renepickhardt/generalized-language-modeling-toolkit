@@ -22,7 +22,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Counter;
+import de.glmtk.common.Counts;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.testutil.TestCorporaTest;
@@ -49,7 +49,7 @@ public class CountingTest extends TestCorporaTest {
     private List<String> corpusLines;
     private CountCache countCache;
     private Map<Pattern, Map<String, Long>> absolute;
-    private Map<Pattern, Map<String, Counter>> continuation;
+    private Map<Pattern, Map<String, Counts>> continuation;
 
     @SuppressWarnings("unchecked")
     public CountingTest(TestCorpus testCorpus) throws Exception {
@@ -69,7 +69,7 @@ public class CountingTest extends TestCorporaTest {
 
         Field continuationField = CountCache.class.getDeclaredField("continuation");
         continuationField.setAccessible(true);
-        continuation = (Map<Pattern, Map<String, Counter>>) continuationField.get(countCache);
+        continuation = (Map<Pattern, Map<String, Counts>>) continuationField.get(countCache);
     }
 
     @Test
@@ -78,15 +78,15 @@ public class CountingTest extends TestCorporaTest {
 
         for (Entry<Pattern, Map<String, Long>> patternCounts : absolute.entrySet()) {
             Pattern pattern = patternCounts.getKey();
-            Map<String, Long> counts = patternCounts.getValue();
+            Map<String, Long> countsWithPattern = patternCounts.getValue();
 
             LOGGER.info("# %s", pattern);
 
             long time = System.currentTimeMillis();
             long numRead = 0;
-            long total = counts.size();
+            long total = countsWithPattern.size();
 
-            for (Entry<String, Long> sequenceCounts : counts.entrySet()) {
+            for (Entry<String, Long> sequenceCounts : countsWithPattern.entrySet()) {
                 if (config.getUpdateIntervalLog() != 0) {
                     ++numRead;
                     long curTime = System.currentTimeMillis();
@@ -142,17 +142,17 @@ public class CountingTest extends TestCorporaTest {
     public void testContinuationCounts() {
         LOGGER.info("=== Continuation");
 
-        for (Entry<Pattern, Map<String, Counter>> patternCounts : continuation.entrySet()) {
+        for (Entry<Pattern, Map<String, Counts>> patternCounts : continuation.entrySet()) {
             Pattern pattern = patternCounts.getKey();
-            Map<String, Counter> counts = patternCounts.getValue();
+            Map<String, Counts> countsWthPattern = patternCounts.getValue();
 
             LOGGER.info("# %s", pattern);
 
             long time = System.currentTimeMillis();
             long numRead = 0;
-            long total = counts.size();
+            long total = countsWthPattern.size();
 
-            for (Entry<String, Counter> sequenceCounts : counts.entrySet()) {
+            for (Entry<String, Counts> sequenceCounts : countsWthPattern.entrySet()) {
                 if (config.getUpdateIntervalLog() != 0) {
                     ++numRead;
                     long curTime = System.currentTimeMillis();
@@ -168,16 +168,16 @@ public class CountingTest extends TestCorporaTest {
                         continue;
 
                 String sequence = sequenceCounts.getKey();
-                Counter counter = sequenceCounts.getValue();
+                Counts counts = sequenceCounts.getValue();
 
-                assertSequenceHasContinuationCount(pattern, sequence, counter);
+                assertSequenceHasContinuationCount(pattern, sequence, counts);
             }
         }
     }
 
     private void assertSequenceHasContinuationCount(Pattern pattern,
                                                     String sequence,
-                                                    Counter counter) {
+                                                    Counts counts) {
         String regexString = sequenceToRegex(sequence);
         java.util.regex.Pattern regex = java.util.regex.Pattern.compile(regexString);
         LOGGER.trace("  %s (regex='%s')", sequence, regexString);
@@ -194,20 +194,20 @@ public class CountingTest extends TestCorporaTest {
                         Long foundCount = matches.get(found);
                         matches.put(found, foundCount == null
                                 ? 1
-                                        : foundCount + 1);
+                                : foundCount + 1);
                         LOGGER.trace(matcher);
                     } while (matcher.find(matcher.start(1)));
 
                 LOGGER.trace("    %s", line);
             }
 
-        Counter foundCounter = new Counter();
+        Counts foundCounts = new Counts();
         for (Long count : matches.values())
-            foundCounter.addOne(count);
+            foundCounts.addOne(count);
 
-        if (!counter.equals(foundCounter)) {
-            LOGGER.info("%s (counter=%s, foundCounter=%s)", sequence, counter,
-                    foundCounter);
+        if (!counts.equals(foundCounts)) {
+            LOGGER.info("%s (counts=%s, foundCounts=%s)", sequence, counts,
+                    foundCounts);
             fail();
         }
     }

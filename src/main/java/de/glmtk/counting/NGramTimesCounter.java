@@ -3,7 +3,6 @@ package de.glmtk.counting;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,12 +25,11 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.common.Config;
-import de.glmtk.common.Counter;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
-import de.glmtk.util.NioUtils;
+import de.glmtk.files.CountsReader;
 import de.glmtk.util.ThreadUtils;
 
 public class NGramTimesCounter {
@@ -71,20 +69,16 @@ public class NGramTimesCounter {
             nGramTimes[1] = 0L;
             nGramTimes[2] = 0L;
             nGramTimes[3] = 0L;
-            Counter counter = new Counter();
 
             Path inputDir = pattern.isAbsolute()
                     ? absoluteDir
                             : continuationDir;
             Path inputFile = inputDir.resolve(pattern.toString());
             int memory = (int) Math.min(Files.size(inputFile), readerMemory);
-            try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
+            try (CountsReader reader = new CountsReader(inputFile,
                     Constants.CHARSET, memory)) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    Counter.getSequenceAndCounter(line, counter);
-
-                    long count = counter.getOnePlusCount();
+                while (reader.readLine() != null) {
+                    long count = reader.getCount();
                     if (count == 0 || count > 4)
                         continue;
                     ++nGramTimes[(int) (count - 1)];

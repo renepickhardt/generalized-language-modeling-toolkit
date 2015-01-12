@@ -4,7 +4,6 @@ import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -32,12 +31,13 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Counter;
+import de.glmtk.common.Counts;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
-import de.glmtk.exceptions.FileFormatException;
+import de.glmtk.files.CountsReader;
+import de.glmtk.files.CountsWriter;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
@@ -46,15 +46,15 @@ import de.glmtk.util.ThreadUtils;
 public class Chunker {
 
     private static final Logger LOGGER = LogManager.getFormatterLogger(Chunker.class);
-    private static final int TAB_COUNTER_NL_BYTES = ("\t"
-            + new Counter(10, 10, 10, 10).toString() + "\n").getBytes(Constants.CHARSET).length;
+    private static final int TAB_COUNTS_NL_BYTES = ("\t"
+            + new Counts(10, 10, 10, 10).toString() + "\n").getBytes(Constants.CHARSET).length;
 
     private abstract class Thread implements Callable<Object> {
         protected Pattern pattern;
         private Path patternDir;
         private Set<String> chunkFiles;
         protected long chunkSize;
-        protected Map<String, Counter> chunkCounts;
+        protected Map<String, Counts> chunkCounts;
 
         @Override
         public Object call() throws Exception {
@@ -113,16 +113,16 @@ public class Chunker {
             Path chunkFile = patternDir.resolve("chunk" + chunkFiles.size());
             Files.deleteIfExists(chunkFile);
 
-            try (BufferedWriter writer = NioUtils.newBufferedWriter(chunkFile,
+            Map<String, Counts> sortedCounts = new TreeMap<>(chunkCounts);
+            try (CountsWriter writer = new CountsWriter(chunkFile,
                     Constants.CHARSET, writerMemory)) {
-                Map<String, Counter> sortedCounts = new TreeMap<>(chunkCounts);
-                for (Entry<String, Counter> entry : sortedCounts.entrySet()) {
-                    writer.append(entry.getKey()).append('\t');
+                for (Entry<String, Counts> entry : sortedCounts.entrySet()) {
+                    String sequence = entry.getKey();
+                    Counts counts = entry.getValue();
                     if (!continuation)
-                        writer.append(Long.toString(entry.getValue().getOnePlusCount()));
+                        writer.append(sequence, counts.getOnePlusCount());
                     else
-                        writer.append(entry.getValue().toString());
-                    writer.append('\n');
+                        writer.append(sequence, counts);
                 }
             }
 
@@ -172,14 +172,14 @@ public class Chunker {
         }
 
         private void countSequence(String sequence) throws IOException {
-            Counter counter = chunkCounts.get(sequence);
-            if (counter == null) {
-                counter = new Counter();
-                chunkCounts.put(sequence, counter);
+            Counts counts = chunkCounts.get(sequence);
+            if (counts == null) {
+                counts = new Counts();
+                chunkCounts.put(sequence, counts);
                 chunkSize += sequence.getBytes(Constants.CHARSET).length
-                        + TAB_COUNTER_NL_BYTES;
+                        + TAB_COUNTS_NL_BYTES;
             }
-            counter.add(1L);
+            counts.add(1L);
 
             if (chunkSize > maxChunkSize) {
                 if (Constants.DEBUG_AVERAGE_MEMORY)
@@ -238,59 +238,34 @@ public class Chunker {
         protected void sequenceInput(Path inputFile) throws Exception {
             LOGGER.debug("Sequencing '%s' from '%s'.", pattern, inputFile);
             int memory = (int) Math.min(Files.size(inputFile), readerMemory);
-            try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
+            try (CountsReader reader = new CountsReader(inputFile,
                     Constants.CHARSET, memory)) {
-                String line;
-                int lineNo = -1;
-                while ((line = reader.readLine()) != null) {
-                    ++lineNo;
-                    perLine(line, lineNo, inputFile);
+                while (reader.readLine() != null) {
+                    String sequence = reader.getSequence();
+                    Counts counts = reader.getCounts();
+                    boolean fromAbsolute = reader.isFromAbsolute();
+
+                    String appliedSequence = pattern.apply(StringUtils.splitAtChar(
+                            sequence, ' ').toArray(new String[0]));
+                    countSequence(appliedSequence, counts, fromAbsolute);
                 }
             }
         }
 
-        private void perLine(String line,
-                             int lineNo,
-                             Path file) throws IOException {
-            List<String> split = StringUtils.splitAtChar(line, '\t');
-            String seq = split.get(0);
-            Counter counter = new Counter();
-            boolean fromAbsolute;
-            try {
-                if (split.size() == 2) {
-                    // from Absolute
-                    counter.setOnePlusCount(Long.parseLong(split.get(1)));
-                    fromAbsolute = true;
-                } else if (split.size() == 5) {
-                    // from Continuation
-                    Counter.getSequenceAndCounter(line, counter);
-                    fromAbsolute = false;
-                } else
-                    throw new RuntimeException();
-            } catch (RuntimeException e) {
-                throw new FileFormatException(line, lineNo, file, null,
-                        "Needs to be of format '<sequence>(<tab><count>){1,4}'.");
-            }
-
-            String sequence = pattern.apply(StringUtils.splitAtChar(seq, ' ').toArray(
-                    new String[0]));
-            countSequence(sequence, counter, fromAbsolute);
-        }
-
         private void countSequence(String sequence,
-                                   Counter sequenceCounter,
+                                   Counts sequenceCounts,
                                    boolean fromAbsolute) throws IOException {
-            Counter counter = chunkCounts.get(sequence);
-            if (counter == null) {
-                counter = new Counter();
-                chunkCounts.put(sequence, counter);
+            Counts counts = chunkCounts.get(sequence);
+            if (counts == null) {
+                counts = new Counts();
+                chunkCounts.put(sequence, counts);
                 chunkSize += sequence.getBytes(Constants.CHARSET).length
-                        + TAB_COUNTER_NL_BYTES;
+                        + TAB_COUNTS_NL_BYTES;
             }
             if (fromAbsolute)
-                counter.addOne(sequenceCounter.getOnePlusCount());
+                counts.addOne(sequenceCounts.getOnePlusCount());
             else
-                counter.add(sequenceCounter);
+                counts.add(sequenceCounts);
 
             if (chunkSize > maxChunkSize) {
                 if (Constants.DEBUG_AVERAGE_MEMORY)

@@ -27,6 +27,7 @@ import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.exceptions.FileFormatException;
+import de.glmtk.files.CountsReader;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.StringUtils;
 
@@ -51,7 +52,7 @@ public class CountCache {
 
     private Progress progress;
     private Map<Pattern, Map<String, Long>> absolute;
-    private Map<Pattern, Map<String, Counter>> continuation;
+    private Map<Pattern, Map<String, Counts>> continuation;
     private Map<Pattern, long[]> nGramTimes;
     private List<Double> lengthFrequencies;
 
@@ -84,23 +85,23 @@ public class CountCache {
     }
 
     public long getAbsolute(NGram sequence) {
-        Map<String, Long> counts = absolute.get(sequence.getPattern());
-        if (counts == null)
+        Map<String, Long> countsWithPattern = absolute.get(sequence.getPattern());
+        if (countsWithPattern == null)
             throw new IllegalStateException(String.format(
                     "No absolute counts learned for pattern: '%s'.",
                     sequence.getPattern()));
-        Long count = counts.get(sequence.toString());
+        Long count = countsWithPattern.get(sequence.toString());
         return count == null ? 0 : count;
     }
 
-    public Counter getContinuation(NGram sequence) {
-        Map<String, Counter> counts = continuation.get(sequence.getPattern());
-        if (counts == null)
+    public Counts getContinuation(NGram sequence) {
+        Map<String, Counts> countsWithPattern = continuation.get(sequence.getPattern());
+        if (countsWithPattern == null)
             throw new IllegalStateException(String.format(
                     "No continuation counts learned for pattern: '%s'.",
                     sequence.getPattern()));
-        Counter counter = counts.get(sequence.toString());
-        return counter == null ? new Counter() : counter;
+        Counts counts = countsWithPattern.get(sequence.toString());
+        return counts == null ? new Counts() : counts;
     }
 
     public long[] getNGramTimes(Pattern pattern) {
@@ -151,7 +152,7 @@ public class CountCache {
             boolean isPatternAbsolute;
             Path inputDir;
             Map<String, Long> absoluteCounts = null;
-            Map<String, Counter> continuationCounts = null;
+            Map<String, Counts> continuationCounts = null;
             if (pattern.isAbsolute()) {
                 isPatternAbsolute = true;
                 inputDir = absoluteDir;
@@ -165,27 +166,14 @@ public class CountCache {
             }
 
             Path file = inputDir.resolve(pattern.toString());
-            try (BufferedReader reader = Files.newBufferedReader(file,
-                    Constants.CHARSET)) {
-                String line;
-                int lineNo = 0;
-                while ((line = reader.readLine()) != null) {
-                    ++lineNo;
-                    Counter counter = new Counter();
-                    String sequence = null;
-                    try {
-                        sequence = Counter.getSequenceAndCounter(line, counter);
-                    } catch (IllegalArgumentException e) {
-                        String type = isPatternAbsolute
-                                ? "absolute"
-                                : "continuation";
-                        throw new FileFormatException(line, lineNo, file, type
-                                + " counts", e.getMessage());
-                    }
+            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
+                while (reader.readLine() != null) {
+                    String sequence = reader.getSequence();
+                    Counts counts = reader.getCounts();
                     if (isPatternAbsolute)
-                        absoluteCounts.put(sequence, counter.getOnePlusCount());
+                        absoluteCounts.put(sequence, counts.getOnePlusCount());
                     else
-                        continuationCounts.put(sequence, counter);
+                        continuationCounts.put(sequence, counts);
                 }
             }
 

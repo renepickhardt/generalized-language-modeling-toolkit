@@ -3,7 +3,7 @@ package de.glmtk.querying.estimator.interpol;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Counter;
+import de.glmtk.common.Counts;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
@@ -113,7 +113,7 @@ public class InterpolEstimator extends Estimator {
             double d2 = d[1];
             double d3p = d[2];
 
-            Counter continuation = countCache.getContinuation(historyPlusWskp);
+            Counts continuation = countCache.getContinuation(historyPlusWskp);
             double n1 = continuation.getOneCount();
             double n2 = continuation.getTwoCount();
             double n3p = continuation.getThreePlusCount();

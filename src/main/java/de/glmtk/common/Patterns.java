@@ -100,16 +100,16 @@ public class Patterns {
         }
 
         @Override
-        public Counter getContinuation(NGram sequence) {
+        public Counts getContinuation(NGram sequence) {
             usedPatterns.add(sequence.getPattern());
 
             // is it possible that sequence is unseen?
             if (sequence.isEmptyOrOnlySkips())
-                return new Counter(random.nextInt(10) + 1,
+                return new Counts(random.nextInt(10) + 1,
                         random.nextInt(10) + 1, random.nextInt(10) + 1,
                         random.nextInt(10) + 1);
 
-            return new Counter(random.nextInt(11), random.nextInt(11),
+            return new Counts(random.nextInt(11), random.nextInt(11),
                     random.nextInt(11), random.nextInt(11));
         }
 

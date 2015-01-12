@@ -23,11 +23,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
-import de.glmtk.common.Config;
+import de.glmtk.files.CountsReader;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
@@ -105,8 +106,8 @@ public class QueryCacherCreator {
         }
 
         private void filterAndWriteSequenceCounts() throws IOException {
-            try (BufferedReader reader = NioUtils.newBufferedReader(
-                    patternFile, Constants.CHARSET, readerMemory);
+            try (CountsReader reader = new CountsReader(patternFile,
+                    Constants.CHARSET, readerMemory);
                     BufferedWriter writer = NioUtils.newBufferedWriter(
                             targetPatternFile, Constants.CHARSET, writerMemory)) {
                 String nextSequence = neededSequences.poll();
@@ -115,8 +116,7 @@ public class QueryCacherCreator {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    int p = line.indexOf('\t');
-                    String sequence = p == -1 ? line : line.substring(0, p);
+                    String sequence = reader.getSequence();
 
                     int cmp;
                     while (nextSequence != null

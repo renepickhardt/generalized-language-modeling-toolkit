@@ -3,7 +3,6 @@ package de.glmtk.counting;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,12 +22,13 @@ import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Counter;
+import de.glmtk.common.Counts;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
 import de.glmtk.files.CountsReader;
+import de.glmtk.files.CountsWriter;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
@@ -146,10 +146,10 @@ public class Merger {
                 readerQueue.add(reader);
             }
 
-            try (BufferedWriter writer = NioUtils.newBufferedWriter(mergeFile,
+            try (CountsWriter writer = new CountsWriter(mergeFile,
                     Constants.CHARSET, (int) writerMemory)) {
                 String lastSequence = null;
-                Counter aggregationCounter = null;
+                Counts aggregationCounts = null;
                 while (!readerQueue.isEmpty()) {
                     @SuppressWarnings("resource")
                     CountsReader reader = readerQueue.poll();
@@ -161,34 +161,31 @@ public class Merger {
                     }
 
                     String sequence = reader.getSequence();
-                    Counter counter = reader.getCounter();
+                    Counts counts = reader.getCounts();
 
                     if (sequence.equals(lastSequence))
-                        aggregationCounter.add(counter);
+                        aggregationCounts.add(counts);
                     else {
-                        if (lastSequence != null) {
-                            writer.append(lastSequence).append('\t');
-                            if (continuation)
-                                writer.append(aggregationCounter.toString());
+                        if (lastSequence != null)
+                            if (!continuation)
+                                writer.append(lastSequence,
+                                        aggregationCounts.getOnePlusCount());
                             else
-                                writer.append(Long.toString(aggregationCounter.getOnePlusCount()));
-                            writer.append('\n');
-                        }
+                                writer.append(lastSequence, aggregationCounts);
                         lastSequence = sequence;
-                        aggregationCounter = counter;
+                        aggregationCounts = counts;
                     }
 
                     reader.readLine();
                     readerQueue.add(reader);
                 }
-                if (lastSequence != null) {
-                    writer.append(lastSequence).append('\t');
-                    if (continuation)
-                        writer.append(aggregationCounter.toString());
+
+                if (lastSequence != null)
+                    if (!continuation)
+                        writer.append(lastSequence,
+                                aggregationCounts.getOnePlusCount());
                     else
-                        writer.append(Long.toString(aggregationCounter.getOnePlusCount()));
-                }
-                writer.append('\n');
+                        writer.append(lastSequence, aggregationCounts);
             } finally {
                 for (CountsReader reader : readerQueue)
                     reader.close();
