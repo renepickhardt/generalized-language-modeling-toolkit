@@ -10,10 +10,10 @@ import de.glmtk.counts.Discount;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 
-public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
+public class ModKneserNeyDiscountEstimator extends DiscountEstimator {
     private Map<Pattern, Discount> discounts = null;
 
-    public ModifiedKneserNeyDiscountEstimator(FractionEstimator fractionEstimator) {
+    public ModKneserNeyDiscountEstimator(FractionEstimator fractionEstimator) {
         super(fractionEstimator);
     }
 

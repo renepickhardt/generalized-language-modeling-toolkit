@@ -10,7 +10,7 @@ import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
-import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 
 public class InterpolEstimator extends Estimator {
     protected DiscountEstimator alpha;
@@ -106,8 +106,8 @@ public class InterpolEstimator extends Estimator {
         }
 
         NGram historyPlusWskp = history.concat(WSKP_WORD);
-        if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
-            ModifiedKneserNeyDiscountEstimator a = (ModifiedKneserNeyDiscountEstimator) alpha;
+        if (alpha.getClass() == ModKneserNeyDiscountEstimator.class) {
+            ModKneserNeyDiscountEstimator a = (ModKneserNeyDiscountEstimator) alpha;
             Pattern pattern = history.getPattern();
             Discount discount = a.getDiscounts(pattern);
             double d1 = discount.getOne();

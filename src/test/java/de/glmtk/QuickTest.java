@@ -9,7 +9,7 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.interpol.DiffInterpolEstimator;
@@ -123,55 +123,55 @@ public class QuickTest extends LoggingTest {
 
         ns[0] = "MKN_DEL";
         es[0] = new InterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new MaximumLikelihoodEstimator()),
                 new InterpolEstimator(
-                        new ModifiedKneserNeyDiscountEstimator(
+                        new ModKneserNeyDiscountEstimator(
                                 new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode.DEL), BackoffMode.DEL);
 
         ns[1] = "MKN_SKP";
         es[1] = new InterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new MaximumLikelihoodEstimator()),
                 new InterpolEstimator(
-                        new ModifiedKneserNeyDiscountEstimator(
+                        new ModKneserNeyDiscountEstimator(
                                 new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode.SKP), BackoffMode.SKP);
 
         ns[2] = "GLM_SKP";
         es[2] = new DiffInterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new MaximumLikelihoodEstimator()),
                 new DiffInterpolEstimator(
-                        new ModifiedKneserNeyDiscountEstimator(
+                        new ModKneserNeyDiscountEstimator(
                                 new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode.SKP), BackoffMode.SKP);
 
         ns[3] = "GLM_DEL";
         es[3] = new DiffInterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new MaximumLikelihoodEstimator()),
                 new DiffInterpolEstimator(
-                        new ModifiedKneserNeyDiscountEstimator(
+                        new ModKneserNeyDiscountEstimator(
                                 new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode.DEL), BackoffMode.DEL);
 
         ns[4] = "GLM_DEL_FRONT";
         es[4] = new DiffInterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new MaximumLikelihoodEstimator()),
                 new DiffInterpolEstimator(
-                        new ModifiedKneserNeyDiscountEstimator(
+                        new ModKneserNeyDiscountEstimator(
                                 new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode.DEL_FRONT), BackoffMode.DEL_FRONT);
 
         ns[5] = "GLM_SKP_AND_DEL";
         es[5] = new DiffInterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new MaximumLikelihoodEstimator()),
                 new DiffInterpolEstimator(
-                        new ModifiedKneserNeyDiscountEstimator(
+                        new ModKneserNeyDiscountEstimator(
                                 new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode.SKP_AND_DEL), BackoffMode.SKP_AND_DEL);
 
