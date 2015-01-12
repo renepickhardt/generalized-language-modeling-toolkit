@@ -34,3 +34,5 @@ tagging:
 
     # .tagger file used for tagging.
     model: stanford-postagger-full-2014-01-04/models/english-left3words-distsim.tagger
+
+# vim: filetype=yaml:
