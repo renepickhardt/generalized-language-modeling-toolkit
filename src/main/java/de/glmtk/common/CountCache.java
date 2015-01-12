@@ -27,8 +27,10 @@ import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.counts.Counts;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.files.CountsReader;
+import de.glmtk.files.NGramTimesReader;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.StringUtils;
 
@@ -54,7 +56,7 @@ public class CountCache {
     private Progress progress;
     private Map<Pattern, Map<String, Long>> absolute;
     private Map<Pattern, Map<String, Counts>> continuation;
-    private Map<Pattern, long[]> nGramTimes;
+    private Map<Pattern, NGramTimes> nGramTimes;
     private List<Double> lengthFrequencies;
 
     public CountCache(Set<Pattern> patterns,
@@ -105,8 +107,8 @@ public class CountCache {
         return counts == null ? new Counts() : counts;
     }
 
-    public long[] getNGramTimes(Pattern pattern) {
-        long[] counts = nGramTimes.get(pattern);
+    public NGramTimes getNGramTimes(Pattern pattern) {
+        NGramTimes counts = nGramTimes.get(pattern);
         if (counts == null)
             throw new IllegalStateException(
                     String.format(
@@ -185,42 +187,10 @@ public class CountCache {
     private void loadNGramTimes(Path file) throws IOException {
         LOGGER.debug("Loading NGram times counts...");
         nGramTimes = new HashMap<>();
-        try (BufferedReader reader = Files.newBufferedReader(file,
+        try (NGramTimesReader reader = new NGramTimesReader(file,
                 Constants.CHARSET)) {
-            String line;
-            int lineNo = 0;
-            while ((line = reader.readLine()) != null) {
-                ++lineNo;
-                List<String> split = StringUtils.splitAtChar(line, '\t');
-
-                if (split.size() != 5)
-                    throw new FileFormatException(
-                            line,
-                            lineNo,
-                            file,
-                            "ngram times",
-                            "Expected line to have format '<pattern>\\t<count>\\t<count>\\t<count>\\t<count>'.");
-
-                Pattern pattern = null;
-                try {
-                    pattern = Patterns.get(split.get(0));
-                } catch (RuntimeException e) {
-                    throw new FileFormatException(line, lineNo, file,
-                            "ngram times",
-                            "Unable to parse '%s' as a pattern.", split.get(0));
-                }
-                long[] counts = new long[4];
-                for (int i = 0; i != 4; ++i)
-                    try {
-                        counts[i] = Long.parseLong(split.get(i + 1));
-                    } catch (NumberFormatException e) {
-                        throw new FileFormatException(line, lineNo, file,
-                                "ngram times",
-                                "Unable to parse '%d' as an intger.",
-                                split.get(i + 1));
-                    }
-                nGramTimes.put(pattern, counts);
-            }
+            while (reader.readLine() != null)
+                nGramTimes.put(reader.getPattern(), reader.getNGramTimes());
         }
         progress.increase(1);
     }

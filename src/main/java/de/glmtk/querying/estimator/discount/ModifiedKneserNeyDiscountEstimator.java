@@ -6,6 +6,7 @@ import java.util.Map;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 
 public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
@@ -44,10 +45,13 @@ public class ModifiedKneserNeyDiscountEstimator extends DiscountEstimator {
         if (result != null)
             return result;
 
-        long[] n = countCache.getNGramTimes(pattern);
-        double y = (double) n[0] / (n[0] + n[1]);
-        result = new double[] {1.0f - 2.0f * y * n[1] / n[0],
-                2.0f - 3.0f * y * n[2] / n[1], 3.0f - 4.0f * y * n[3] / n[2]};
+        NGramTimes n = countCache.getNGramTimes(pattern);
+        double y = (double) n.getOneCount()
+                / (n.getOneCount() + n.getTwoCount());
+        result = new double[] {
+                1.0f - 2.0f * y * n.getTwoCount() / n.getOneCount(),
+                2.0f - 3.0f * y * n.getThreeCount() / n.getTwoCount(),
+                3.0f - 4.0f * y * n.getFourCount() / n.getThreeCount()};
         discounts.put(pattern, result);
         return result;
     }

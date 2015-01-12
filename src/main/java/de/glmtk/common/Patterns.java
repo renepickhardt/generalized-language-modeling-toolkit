@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Level;
 
 import de.glmtk.counts.Counts;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 
@@ -115,16 +116,17 @@ public class Patterns {
         }
 
         @Override
-        public long[] getNGramTimes(Pattern pattern) {
+        public NGramTimes getNGramTimes(Pattern pattern) {
             usedPatterns.add(pattern);
-            return new long[] {random.nextInt(10) + 1, random.nextInt(10) + 1,
-                    random.nextInt(10) + 1, random.nextInt(10) + 1};
+            return new NGramTimes(random.nextInt(10) + 1,
+                    random.nextInt(10) + 1, random.nextInt(10) + 1,
+                    random.nextInt(10) + 1);
         }
     }
 
     public static Set<Pattern> getUsedPatterns(int modelSize,
-                                               Estimator estimator,
-                                               ProbMode probMode) throws Exception {
+            Estimator estimator,
+            ProbMode probMode) throws Exception {
         PatternTrackingCountCache tracker = new PatternTrackingCountCache();
 
         estimator.setCountCache(tracker);
@@ -168,7 +170,7 @@ public class Patterns {
     }
 
     public static Set<Pattern> getCombinations(int modelSize,
-                                               List<PatternElem> elems) {
+            List<PatternElem> elems) {
         Set<Pattern> result = new HashSet<>();
 
         for (int i = 1; i != modelSize + 1; ++i)
