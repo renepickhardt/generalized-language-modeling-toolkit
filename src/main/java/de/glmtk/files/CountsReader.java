@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 
-import de.glmtk.common.Counts;
+import de.glmtk.counts.Counts;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.ObjectUtils;

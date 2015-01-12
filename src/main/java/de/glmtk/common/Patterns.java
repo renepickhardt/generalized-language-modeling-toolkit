@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 
+import de.glmtk.counts.Counts;
 import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
 

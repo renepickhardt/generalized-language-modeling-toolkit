@@ -26,6 +26,7 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.counts.Counts;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.files.CountsReader;
 import de.glmtk.util.CollectionUtils;

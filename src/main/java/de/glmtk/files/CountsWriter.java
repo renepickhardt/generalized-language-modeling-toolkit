@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
-import de.glmtk.common.Counts;
+import de.glmtk.counts.Counts;
 import de.glmtk.util.NioUtils;
 
 public class CountsWriter implements Closeable, AutoCloseable {

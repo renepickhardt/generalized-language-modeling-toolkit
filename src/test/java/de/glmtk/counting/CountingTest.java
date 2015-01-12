@@ -22,9 +22,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Counts;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.counts.Counts;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.StringUtils;

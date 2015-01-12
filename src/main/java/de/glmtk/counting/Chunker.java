@@ -31,11 +31,11 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Counts;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.counts.Counts;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.CountsWriter;
 import de.glmtk.util.NioUtils;
