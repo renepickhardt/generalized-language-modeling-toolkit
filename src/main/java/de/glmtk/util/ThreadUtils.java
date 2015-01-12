@@ -12,7 +12,7 @@ import java.util.concurrent.TimeoutException;
 
 public class ThreadUtils {
     public static <T> List<T> executeThreads(int nThreads,
-            List<Callable<T>> threads) throws Exception {
+                                             List<Callable<T>> threads) throws Exception {
         CancellingThreadPoolExecutor threadPool = new CancellingThreadPoolExecutor(
                 nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>());
@@ -47,14 +47,12 @@ public class ThreadUtils {
 
         try {
             int exitValue = future.get(timeout, unit);
-            System.out.println("exitValue=" + exitValue);
             return exitValue;
         } catch (ExecutionException e) {
             // Should not happen
             throw new RuntimeException(e.getCause());
         } catch (TimeoutException e) {
             p.destroy();
-            System.out.println("throw=1");
             return 1;
         }
     }
