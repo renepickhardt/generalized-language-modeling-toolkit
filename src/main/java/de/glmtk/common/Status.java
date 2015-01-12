@@ -367,12 +367,12 @@ public class Status {
         }
     }
 
-    private Set<Pattern> counted(boolean continuation) {
-        return !continuation ? absoluteCounted : continuationCounted;
+    private Set<Pattern> counted(boolean absolute) {
+        return absolute ? absoluteCounted : continuationCounted;
     }
 
-    private Map<Pattern, Set<String>> chunked(boolean continuation) {
-        return !continuation ? absoluteChunked : continuationChunked;
+    private Map<Pattern, Set<String>> chunked(boolean absolute) {
+        return absolute ? absoluteChunked : continuationChunked;
     }
 
     public Set<Pattern> getCounted() {
@@ -381,60 +381,59 @@ public class Status {
         }
     }
 
-    public Set<Pattern> getCounted(boolean continuation) {
+    public Set<Pattern> getCounted(boolean absolute) {
         synchronized (this) {
-            return Collections.unmodifiableSet(counted(continuation));
+            return Collections.unmodifiableSet(counted(absolute));
         }
     }
 
-    public Set<Pattern> getChunkedPatterns(boolean continuation) {
+    public Set<Pattern> getChunkedPatterns(boolean absolute) {
         synchronized (this) {
-            return Collections.unmodifiableSet(chunked(continuation).keySet());
+            return Collections.unmodifiableSet(chunked(absolute).keySet());
         }
     }
 
-    public Set<String> getChunksForPattern(boolean continuation,
-                                           Pattern pattern) {
+    public Set<String> getChunksForPattern(Pattern pattern) {
         synchronized (this) {
-            return Collections.unmodifiableSet(chunked(continuation).get(
-                    pattern));
+            boolean isAbsolute = pattern.isAbsolute();
+            return Collections.unmodifiableSet(chunked(isAbsolute).get(pattern));
         }
     }
 
-    public void setChunksForPattern(boolean continuation,
-                                    Pattern pattern,
+    public void setChunksForPattern(Pattern pattern,
                                     Collection<String> chunks) throws IOException {
         synchronized (this) {
+            boolean isAbsolute = pattern.isAbsolute();
             chunked.put(pattern, new TreeSet<>(chunks));
-            chunked(continuation).put(pattern, new TreeSet<>(chunks));
+            chunked(isAbsolute).put(pattern, new TreeSet<>(chunks));
             writeStatusToFile();
         }
     }
 
-    public void performMergeForChunks(boolean continuation,
-                                      Pattern pattern,
+    public void performMergeForChunks(Pattern pattern,
                                       Collection<String> mergedChunks,
                                       String mergeFile) throws IOException {
         synchronized (this) {
+            boolean isAbsolute = pattern.isAbsolute();
             Set<String> chunks = chunked.get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
-            chunks = chunked(continuation).get(pattern);
+            chunks = chunked(isAbsolute).get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
             writeStatusToFile();
         }
     }
 
-    public void finishMerge(boolean continuation,
-                            Pattern pattern) throws IOException {
+    public void finishMerge(Pattern pattern) throws IOException {
         synchronized (this) {
+            boolean isAbsolute = pattern.isAbsolute();
             nGramTimesCounted = false;
             lengthDistribution = false;
             counted.add(pattern);
-            counted(continuation).add(pattern);
+            counted(isAbsolute).add(pattern);
             chunked.remove(pattern);
-            chunked(continuation).remove(pattern);
+            chunked(isAbsolute).remove(pattern);
             writeStatusToFile();
         }
     }

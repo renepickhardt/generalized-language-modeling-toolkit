@@ -64,8 +64,7 @@ public class Merger {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             Set<String> chunksForPattern;
-            while ((chunksForPattern = status.getChunksForPattern(continuation,
-                    pattern)).size() != 1) {
+            while ((chunksForPattern = status.getChunksForPattern(pattern)).size() != 1) {
                 int numParallelChunks = Math.min(numParallelReaders,
                         chunksForPattern.size());
 
@@ -82,8 +81,7 @@ public class Merger {
 
                 synchronized (status) {
                     try {
-                        status.performMergeForChunks(continuation, pattern,
-                                chunksToMerge,
+                        status.performMergeForChunks(pattern, chunksToMerge,
                                 mergeFile.getFileName().toString());
                     } catch (IOException e) {
                         // Updating status did not work, we continue in the hope
@@ -105,7 +103,7 @@ public class Merger {
                         src, dest);
                 Files.deleteIfExists(dest);
                 Files.move(src, dest);
-                status.finishMerge(continuation, pattern);
+                status.finishMerge(pattern);
 
                 if (NioUtils.isDirEmpty(patternDir))
                     Files.deleteIfExists(patternDir);
@@ -167,7 +165,7 @@ public class Merger {
                         countsAgg.add(counts);
                     else {
                         if (lastSequence != null)
-                            if (!continuation)
+                            if (absolute)
                                 writer.append(lastSequence,
                                         countsAgg.getOnePlusCount());
                             else
@@ -181,7 +179,7 @@ public class Merger {
                 }
 
                 if (lastSequence != null)
-                    if (!continuation)
+                    if (absolute)
                         writer.append(lastSequence, countsAgg.getOnePlusCount());
                     else
                         writer.append(lastSequence, countsAgg);
@@ -196,7 +194,7 @@ public class Merger {
 
     private int numParallelReaders = 10;
     private Progress progress;
-    private boolean continuation;
+    private boolean absolute;
     private Status status;
     private Path chunkedDir;
     private Path countedDir;
@@ -213,7 +211,7 @@ public class Merger {
                               Path chunkedDir,
                               Path countedDir) throws Exception {
         OUTPUT.setPhase(Phase.ABSOLUTE_MERGING);
-        merge(false, status, patterns, chunkedDir, countedDir);
+        merge(true, status, patterns, chunkedDir, countedDir);
     }
 
     public void mergeContinuation(Status status,
@@ -221,10 +219,10 @@ public class Merger {
                                   Path chunkedDir,
                                   Path countedDir) throws Exception {
         OUTPUT.setPhase(Phase.CONTINUATION_MERGING);
-        merge(true, status, patterns, chunkedDir, countedDir);
+        merge(false, status, patterns, chunkedDir, countedDir);
     }
 
-    private void merge(boolean continuation,
+    private void merge(boolean absolute,
                        Status status,
                        Set<Pattern> patterns,
                        Path chunkedDir,
@@ -235,7 +233,7 @@ public class Merger {
 
         Files.createDirectories(countedDir);
 
-        this.continuation = continuation;
+        this.absolute = absolute;
         this.status = status;
         this.chunkedDir = chunkedDir;
         this.countedDir = countedDir;
