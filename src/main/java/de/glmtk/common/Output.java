@@ -160,6 +160,7 @@ public enum Output {
     public Config config;
     private long lastUpdateConsoleParams;
     private boolean updateConsoleParams;
+    private int terminalWidth;
     private int numPercentegebarBlocks;
     private boolean ansiEnabled;
     private Phase phase;
@@ -181,6 +182,7 @@ public enum Output {
         this.config = config;
         lastUpdateConsoleParams = 0;
         updateConsoleParams = config.getUpdateIntervalConsoleParams() != 0;
+        terminalWidth = 80;
         ansiEnabled = false;
         phase = null;
         percent = 0;
@@ -228,8 +230,8 @@ public enum Output {
 
         long time = System.currentTimeMillis();
         if (time - lastUpdateConsoleParams >= config.getUpdateIntervalConsoleParams()) {
-            int width = getTerminalWidth();
-            numPercentegebarBlocks = width - 17 - Phase.MAX_NAME_LENGTH;
+            updateTerminalWidth();
+            numPercentegebarBlocks = terminalWidth - 17 - Phase.MAX_NAME_LENGTH;
             lastUpdateConsoleParams = time;
         }
     }
@@ -238,8 +240,7 @@ public enum Output {
      * See <a href="http://stackoverflow.com/a/18883172/211404">Stack Overflow:
      * Can I find the console width with Java?</a>.
      */
-    private int getTerminalWidth() {
-        int width = 80;
+    private void updateTerminalWidth() {
         try {
             Process tputColsProc = Runtime.getRuntime().exec(
                     new String[] {"bash", "-c", "tput cols 2> /dev/tty"});
@@ -248,11 +249,10 @@ public enum Output {
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(tputColsProc.getInputStream(),
                             Constants.CHARSET))) {
-                width = Integer.parseInt(reader.readLine());
+                terminalWidth = Integer.parseInt(reader.readLine());
             }
         } catch (Throwable e) {
         }
-        return width;
     }
 
     public void setPhase(Phase phase) {
