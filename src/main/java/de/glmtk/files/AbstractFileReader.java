@@ -9,6 +9,15 @@ import java.nio.file.Path;
 import de.glmtk.util.NioUtils;
 
 public abstract class AbstractFileReader implements Closeable, AutoCloseable {
+    protected static long parseNumber(String value) throws NumberFormatException {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException(String.format(
+                    "Unable to parse '%s' as a number.", value));
+        }
+    }
+
     protected Path file;
     protected int lineNo;
     protected String line;

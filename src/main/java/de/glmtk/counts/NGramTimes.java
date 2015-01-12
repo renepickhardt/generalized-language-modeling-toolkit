@@ -1,16 +1,16 @@
 package de.glmtk.counts;
 
-public class NGramTimesCounts {
+public class NGramTimes {
     private long oneCount;
     private long twoCount;
     private long threeCount;
     private long fourCount;
 
-    public NGramTimesCounts() {
+    public NGramTimes() {
         this(0L, 0L, 0L, 0L);
     }
 
-    public NGramTimesCounts(long oneCount,
+    public NGramTimes(long oneCount,
                             long twoCount,
                             long threeCount,
                             long fourCount) {

@@ -27,15 +27,6 @@ public class CountsReader extends AbstractFileReader {
         }
     };
 
-    private static long parseLong(String value) throws NumberFormatException {
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            throw new NumberFormatException(String.format(
-                    "Unable to parse '%s' as a floating point.", value));
-        }
-    }
-
     private String sequence;
     private Counts counts;
     private boolean fromAbsolute;
@@ -59,24 +50,25 @@ public class CountsReader extends AbstractFileReader {
         if (line == null) {
             sequence = null;
             counts = null;
+            return;
         }
 
         try {
             List<String> split = StringUtils.splitAtChar(line, '\t');
             sequence = split.get(0);
-            counts = new Counts();
             if (split.size() == 2) {
                 fromAbsolute = true;
-                counts.set(parseLong(split.get(1)), 0L, 0L, 0L);
+                counts = new Counts(parseNumber(split.get(1)), 0L, 0L, 0L);
             } else if (split.size() == 5) {
                 fromAbsolute = false;
-                counts.set(parseLong(split.get(1)), parseLong(split.get(2)),
-                        parseLong(split.get(3)), parseLong(split.get(4)));
+                counts = new Counts(parseNumber(split.get(1)),
+                        parseNumber(split.get(2)), parseNumber(split.get(3)),
+                        parseNumber(split.get(4)));
             } else
                 throw new IllegalArgumentException(
                         "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "chunk",
+            throw new FileFormatException(line, lineNo, file, "counts",
                     e.getMessage());
         }
     }
