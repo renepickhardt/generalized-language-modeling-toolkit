@@ -7,6 +7,7 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.counts.Counts;
+import de.glmtk.counts.Discount;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
@@ -108,10 +109,10 @@ public class InterpolEstimator extends Estimator {
         if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
             ModifiedKneserNeyDiscountEstimator a = (ModifiedKneserNeyDiscountEstimator) alpha;
             Pattern pattern = history.getPattern();
-            double[] d = a.getDiscounts(pattern);
-            double d1 = d[0];
-            double d2 = d[1];
-            double d3p = d[2];
+            Discount discount = a.getDiscounts(pattern);
+            double d1 = discount.getOne();
+            double d2 = discount.getTwo();
+            double d3p = discount.getThree();
 
             Counts continuation = countCache.getContinuation(historyPlusWskp);
             double n1 = continuation.getOneCount();
