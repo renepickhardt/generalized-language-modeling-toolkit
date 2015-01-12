@@ -263,8 +263,12 @@ public class GlmtkExecutable extends Executable {
                     if (estimator == null)
                         throw new CliArgumentException(
                                 String.format(
-                                        "Illegal %s argument. Unkown estimators option '%s'.",
-                                        makeOptionString(option), opt));
+                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
+                                        makeOptionString(option),
+                                        opt,
+                                        StringUtils.join(
+                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
+                                                "', '")));
                     estimators.add(estimator);
                 }
 
