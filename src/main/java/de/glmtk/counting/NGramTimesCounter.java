@@ -43,7 +43,7 @@ public class NGramTimesCounter {
         @Override
         public Object call() throws InterruptedException, IOException {
             while (!patternQueue.isEmpty()) {
-                pattern = patternQueue.poll(Constants.QUEUE_TIMEOUT,
+                pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
                         TimeUnit.MILLISECONDS);
                 if (pattern == null)
                     continue;

@@ -86,7 +86,10 @@ public class Constants {
      */
     public static final long GiB = 1024 * MiB;
 
-    public static final long QUEUE_TIMEOUT = 10;
+    /**
+     * In milliseconds (ms).
+     */
+    public static final long MAX_IDLE_TIME = 10;
 
     public static final String UNKOWN_POS = "UNKP";
 

@@ -41,7 +41,7 @@ public class Merger {
         @Override
         public Object call() throws InterruptedException, IOException {
             while (!patternQueue.isEmpty()) {
-                Pattern pattern = patternQueue.poll(Constants.QUEUE_TIMEOUT,
+                Pattern pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
                         TimeUnit.MILLISECONDS);
                 if (pattern == null) {
                     LOGGER.trace("Thread Idle.");

@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.Formatter;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +24,7 @@ import de.glmtk.Constants;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.ReflectionUtils;
 import de.glmtk.util.StringUtils;
+import de.glmtk.util.ThreadUtils;
 
 public enum Output {
     OUTPUT;
@@ -40,15 +42,15 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6,
                 "Length Distribution Calculating"),
 
-                // CountCache
-                LOADING_COUNTS(1, 1, "Loading Counts"),
+        // CountCache
+        LOADING_COUNTS(1, 1, "Loading Counts"),
 
-                // QueryCache
-                SCANNING_COUNTS(1, 1, "Scanning Counts"),
+        // QueryCache
+        SCANNING_COUNTS(1, 1, "Scanning Counts"),
 
-                // Querying
-                QUERYING(1, 2, "Querying"),
-                ASSEMBLING(1, 2, "Assembling");
+        // Querying
+        QUERYING(1, 2, "Querying"),
+        ASSEMBLING(1, 2, "Assembling");
 
         public static final int MAX_NAME_LENGTH;
         static {
@@ -241,13 +243,14 @@ public enum Output {
         try {
             Process tputColsProc = Runtime.getRuntime().exec(
                     new String[] {"bash", "-c", "tput cols 2> /dev/tty"});
-            tputColsProc.waitFor();
+            ThreadUtils.executeProcess(tputColsProc, Constants.MAX_IDLE_TIME,
+                    TimeUnit.MILLISECONDS);
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(tputColsProc.getInputStream(),
                             Constants.CHARSET))) {
                 width = Integer.parseInt(reader.readLine());
             }
-        } catch (IOException | InterruptedException | NumberFormatException e) {
+        } catch (Throwable e) {
         }
         return width;
     }
