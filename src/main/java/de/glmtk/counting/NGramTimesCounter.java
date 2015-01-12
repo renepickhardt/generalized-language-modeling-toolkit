@@ -3,7 +3,6 @@ package de.glmtk.counting;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +28,9 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
+import de.glmtk.files.NGramTimesWriter;
 import de.glmtk.util.ThreadUtils;
 
 public class NGramTimesCounter {
@@ -37,7 +38,7 @@ public class NGramTimesCounter {
 
     private class Thread implements Callable<Object> {
         private Pattern pattern;
-        private long[] nGramTimes;
+        private NGramTimes nGramTimes;
 
         @Override
         public Object call() throws InterruptedException, IOException {
@@ -64,11 +65,7 @@ public class NGramTimesCounter {
         }
 
         private void countNGramTimes() throws IOException {
-            nGramTimes = new long[4];
-            nGramTimes[0] = 0L;
-            nGramTimes[1] = 0L;
-            nGramTimes[2] = 0L;
-            nGramTimes[3] = 0L;
+            nGramTimes = new NGramTimes();
 
             Path inputDir = pattern.isAbsolute()
                     ? absoluteDir
@@ -77,12 +74,8 @@ public class NGramTimesCounter {
             int memory = (int) Math.min(Files.size(inputFile), readerMemory);
             try (CountsReader reader = new CountsReader(inputFile,
                     Constants.CHARSET, memory)) {
-                while (reader.readLine() != null) {
-                    long count = reader.getCount();
-                    if (count == 0 || count > 4)
-                        continue;
-                    ++nGramTimes[(int) (count - 1)];
-                }
+                while (reader.readLine() != null)
+                    nGramTimes.add(reader.getCount());
             }
         }
     }
@@ -94,7 +87,7 @@ public class NGramTimesCounter {
     private Path absoluteDir;
     private Path continuationDir;
     private BlockingQueue<Pattern> patternQueue;
-    private ConcurrentHashMap<Pattern, long[]> nGramTimesForPattern;
+    private ConcurrentHashMap<Pattern, NGramTimes> nGramTimesForPattern;
     private int readerMemory;
 
     public NGramTimesCounter(Config config) {
@@ -141,20 +134,12 @@ public class NGramTimesCounter {
     }
 
     private void writeToFile() throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
+        SortedMap<Pattern, NGramTimes> sortedNGramTimesForPattern = new TreeMap<>(
+                nGramTimesForPattern);
+        try (NGramTimesWriter writer = new NGramTimesWriter(outputFile,
                 Constants.CHARSET)) {
-            SortedMap<Pattern, long[]> sortedNGramTimesForPattern = new TreeMap<>(
-                    nGramTimesForPattern);
-            for (Entry<Pattern, long[]> entry : sortedNGramTimesForPattern.entrySet()) {
-                Pattern pattern = entry.getKey();
-                long[] nGramTimes = entry.getValue();
-
-                writer.append(pattern.toString()).append('\t');
-                writer.append(Long.toString(nGramTimes[0])).append('\t');
-                writer.append(Long.toString(nGramTimes[1])).append('\t');
-                writer.append(Long.toString(nGramTimes[2])).append('\t');
-                writer.append(Long.toString(nGramTimes[3])).append('\n');
-            }
+            for (Entry<Pattern, NGramTimes> entry : sortedNGramTimesForPattern.entrySet())
+                writer.append(entry.getKey(), entry.getValue());
         }
     }
 }

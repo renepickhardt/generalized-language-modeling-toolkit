@@ -11,9 +11,9 @@ public class NGramTimes {
     }
 
     public NGramTimes(long oneCount,
-                            long twoCount,
-                            long threeCount,
-                            long fourCount) {
+                      long twoCount,
+                      long threeCount,
+                      long fourCount) {
         set(oneCount, twoCount, threeCount, fourCount);
     }
 
@@ -57,5 +57,16 @@ public class NGramTimes {
         this.twoCount = twoCount;
         this.threeCount = threeCount;
         this.fourCount = fourCount;
+    }
+
+    public void add(long count) {
+        if (count == 1)
+            ++oneCount;
+        else if (count == 2)
+            ++twoCount;
+        else if (count == 3)
+            ++threeCount;
+        else if (count == 4)
+            ++fourCount;
     }
 }
