@@ -149,7 +149,7 @@ public class Merger {
             try (CountsWriter writer = new CountsWriter(mergeFile,
                     Constants.CHARSET, (int) writerMemory)) {
                 String lastSequence = null;
-                Counts aggregationCounts = null;
+                Counts countsAgg = null;
                 while (!readerQueue.isEmpty()) {
                     @SuppressWarnings("resource")
                     CountsReader reader = readerQueue.poll();
@@ -164,16 +164,16 @@ public class Merger {
                     Counts counts = reader.getCounts();
 
                     if (sequence.equals(lastSequence))
-                        aggregationCounts.add(counts);
+                        countsAgg.add(counts);
                     else {
                         if (lastSequence != null)
                             if (!continuation)
                                 writer.append(lastSequence,
-                                        aggregationCounts.getOnePlusCount());
+                                        countsAgg.getOnePlusCount());
                             else
-                                writer.append(lastSequence, aggregationCounts);
+                                writer.append(lastSequence, countsAgg);
                         lastSequence = sequence;
-                        aggregationCounts = counts;
+                        countsAgg = counts;
                     }
 
                     reader.readLine();
@@ -182,10 +182,9 @@ public class Merger {
 
                 if (lastSequence != null)
                     if (!continuation)
-                        writer.append(lastSequence,
-                                aggregationCounts.getOnePlusCount());
+                        writer.append(lastSequence, countsAgg.getOnePlusCount());
                     else
-                        writer.append(lastSequence, aggregationCounts);
+                        writer.append(lastSequence, countsAgg);
             } finally {
                 for (CountsReader reader : readerQueue)
                     reader.close();
