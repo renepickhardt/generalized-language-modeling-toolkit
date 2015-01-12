@@ -35,9 +35,12 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
+import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.CliArgumentException;
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -198,6 +201,8 @@ public class GlmtkExecutable extends Executable {
 
             corpus = corpusArg;
         }
+
+        checkCorpusForReservedSymbols();
 
         if (estimators.isEmpty())
             estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
@@ -364,7 +369,7 @@ public class GlmtkExecutable extends Executable {
         Path file = Paths.get(filename);
         if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
             throw new IOException(String.format(
-                    "File %s does not exist or is not readable.", filename));
+                    "File '%s' does not exist or is not readable.", filename));
         return file;
     }
 
@@ -375,6 +380,29 @@ public class GlmtkExecutable extends Executable {
                     "%s file '%s' does not exist or is not readable.",
                     filename, file));
         return file;
+    }
+
+    private void checkCorpusForReservedSymbols() throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(corpus,
+                Constants.CHARSET)) {
+            String line;
+            int lineNo = 0;
+            while ((line = reader.readLine()) != null) {
+                ++lineNo;
+                checkLineForReservedSymbol(line, lineNo, PatternElem.SKP_WORD);
+                checkLineForReservedSymbol(line, lineNo, PatternElem.WSKP_WORD);
+                checkLineForReservedSymbol(line, lineNo,
+                        Character.toString(Tagger.POS_SEPARATOR));
+            }
+        }
+    }
+
+    private void checkLineForReservedSymbol(String line,
+                                            int lineNo,
+                                            String symbol) {
+        if (line.contains(symbol))
+            throw new FileFormatException(line, lineNo, corpus, "training",
+                    "Training file contains reserved symbol '%s'.", symbol);
     }
 
     private int calculateTrainingOrder() throws IOException {

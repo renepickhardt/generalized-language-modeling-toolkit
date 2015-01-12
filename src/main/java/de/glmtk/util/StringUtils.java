@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.glmtk.Constants;
+import de.glmtk.counting.Tagger;
 
 /**
  * Util class containing various static helper methods related to strings.
@@ -18,7 +19,7 @@ public class StringUtils {
      * {@code string.split(' ')} since it is much faster.
      */
     public static List<String> splitAtChar(String string,
-                                           char split) {
+            char split) {
         List<String> result = new ArrayList<>();
 
         int sp1 = 0, sp2;
@@ -152,7 +153,7 @@ public class StringUtils {
         for (int i = 0; i != split.length; ++i) {
             String word = split[i];
             if (hasPos) {
-                int lastSlash = word.lastIndexOf('/');
+                int lastSlash = word.lastIndexOf(Tagger.POS_SEPARATOR);
                 if (lastSlash == -1) {
                     words[i] = word;
                     poses[i] = Constants.UNKOWN_POS;

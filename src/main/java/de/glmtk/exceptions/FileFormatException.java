@@ -39,7 +39,7 @@ public class FileFormatException extends RuntimeException {
         try (Formatter f = new Formatter()) {
             f.format(message, params);
             f.format("%nIn %s file '%s', line %d:%n", fileType, file, lineNo);
-            f.format("    %s%n", line);
+            f.format("    " + line);
             return f.toString();
         }
     }
