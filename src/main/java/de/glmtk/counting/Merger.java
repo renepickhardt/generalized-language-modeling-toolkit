@@ -177,9 +177,18 @@ public class Merger {
                         lastSequence = sequence;
                         aggregationCounter = counter;
                     }
+
                     reader.readLine();
                     readerQueue.add(reader);
                 }
+                if (lastSequence != null) {
+                    writer.append(lastSequence).append('\t');
+                    if (continuation)
+                        writer.append(aggregationCounter.toString());
+                    else
+                        writer.append(Long.toString(aggregationCounter.getOnePlusCount()));
+                }
+                writer.append('\n');
             } finally {
                 for (CountsReader reader : readerQueue)
                     reader.close();

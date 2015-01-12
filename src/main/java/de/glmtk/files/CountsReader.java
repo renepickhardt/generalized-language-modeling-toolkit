@@ -44,7 +44,6 @@ public class CountsReader implements Closeable, AutoCloseable {
         line = null;
         sequence = null;
         counter = null;
-        readLine();
     }
 
     public String readLine() throws IOException {

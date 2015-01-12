@@ -39,7 +39,7 @@ public class GlmtkPaths {
 
     public static void logStaticPaths() {
         LOGGER.info("GlmtkPath static %s", StringUtils.repeat("-",
-                "GlmtkPath static ".length()));
+                80 - "GlmtkPath static ".length()));
         LOGGER.info("USER_DIR:    %s", USER_DIR);
         LOGGER.info("GLMTK_DIR:   %s", GLMTK_DIR);
         LOGGER.info("LOG_DIR:     %s", LOG_DIR);

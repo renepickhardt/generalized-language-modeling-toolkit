@@ -125,8 +125,8 @@ public class Config {
             long result = parseLongMiB();
             if (result >= Integer.MAX_VALUE)
                 throw newFileFormatException(
-                        "Given memory value is to large for integer: %s resp. %d bytes.",
-                        humanReadableByteCount(result), result);
+                                             "Given memory value is to large for integer: %s resp. %d bytes.",
+                                             humanReadableByteCount(result), result);
             return (int) result;
         }
 
@@ -274,7 +274,7 @@ public class Config {
                     String.format(
                             "Config file missing: Could not open '%s'.%n"
                                     + "Did you copy '%s.sample' in your installation directory to '%s'?",
-                            file, Constants.CONFIG_FILE, Constants.CONFIG_FILE));
+                                    file, Constants.CONFIG_FILE, Constants.CONFIG_FILE));
         }
     }
 }
