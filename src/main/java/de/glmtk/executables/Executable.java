@@ -57,13 +57,15 @@ import de.glmtk.util.StringUtils;
             config = new Config();
 
             OUTPUT.initialize(config);
+            //TODO: what is happening here?
             OUTPUT.tryToEnableAnsi();
             outputIntialized = true;
 
             printLogHeader(args);
 
             exec();
-
+            
+            //TODO:move footer outside of try catch block? 
             printLogFooter();
         } catch (Termination e) {
             if (e.getMessage() != null)
@@ -99,7 +101,9 @@ import de.glmtk.util.StringUtils;
         line = parser.parse(options, args);
 
         if (line.hasOption(OPTION_VERSION_LONG)) {
+            // TODO: other version?  especially the version should not be hardcoded here but rather being pulled from maven pom?
             System.out.println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+            // TODO: why do we have situations where we call System.exit(0) and this situation here? What is the difference?
             throw new Termination();
         }
 
@@ -133,6 +137,7 @@ import de.glmtk.util.StringUtils;
 
         LOGGER.info(StringUtils.repeat("-", 80));
 
+        // TODO: what happens if git is not installed? Distributing a standalone jar makes this situation likely
         // log git commit
         Process gitLogProc = Runtime.getRuntime().exec(
                 new String[] {"git", "log", "-1", "--format=%H: %s"}, null,

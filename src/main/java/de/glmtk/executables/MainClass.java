@@ -15,6 +15,7 @@ public class MainClass {
                 break;
 
             default:
+                // TODO: when can this happen? if it happens is the error message helpful?
                 throw new IllegalArgumentException(String.format(
                         "Unkown main class specified: '%s'.", mainClass));
         }

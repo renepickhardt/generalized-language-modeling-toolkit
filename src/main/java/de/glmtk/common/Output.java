@@ -186,6 +186,7 @@ public enum Output {
         updateConsoleParams();
     }
 
+    // TODO: funcation name! we try to do something but we don't get a return value?
     public void tryToEnableAnsi() {
         boolean isttyStderr = Boolean.parseBoolean(System.getProperty("glmtk.isttyStderr"));
         if (!isttyStderr) {
@@ -216,6 +217,7 @@ public enum Output {
         return ansiEnabled;
     }
 
+    //TODO: what is 17?
     private void updateConsoleParams() {
         if (!isAnsiEnabled()) {
             numPercentegebarBlocks = 80 - 17 - Phase.MAX_NAME_LENGTH;

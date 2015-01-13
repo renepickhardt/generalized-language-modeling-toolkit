@@ -44,10 +44,10 @@ public enum TestCorpus {
     private void intialize(Config config) throws Exception {
         glmtk = new Glmtk(config, corpus, workingDir);
 
-        Set<Pattern> neededPatterns = Patterns.getCombinations(Constants.ORDER,
+        Set<Pattern> neededPatterns = Patterns.getCombinations(Constants.TEST_ORDER,
                 Arrays.asList(CNT, SKP));
         for (Pattern pattern : new HashSet<>(neededPatterns)) {
-            if (pattern.size() != Constants.ORDER)
+            if (pattern.size() != Constants.TEST_ORDER)
                 neededPatterns.add(pattern.concat(WSKP));
 
             if (pattern.contains(SKP))

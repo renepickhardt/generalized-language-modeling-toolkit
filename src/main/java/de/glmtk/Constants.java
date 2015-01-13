@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+//TODO: the semantics of every constant should be explained. Especially we should double check if the constants are still needed
 public class Constants {
     public static final String WORKING_DIR_SUFFIX = ".glmtk";
 
@@ -40,7 +41,8 @@ public class Constants {
 
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 
-    public static final int ORDER = 5;
+    //TODO: for example this constant was called ORDER and only used in tests
+    public static final int TEST_ORDER = 5;
 
     /**
      * Size of one byte.
@@ -74,17 +76,6 @@ public class Constants {
      * @see #GiB
      */
     public static final long MiB = 1024 * KiB;
-
-    /**
-     * Size of one gibibyte.
-     *
-     * Used as a unit for memory.
-     *
-     * @see #B
-     * @see #KiB
-     * @see #MiB
-     */
-    public static final long GiB = 1024 * MiB;
 
     public static final long QUEUE_TIMEOUT = 10;
 

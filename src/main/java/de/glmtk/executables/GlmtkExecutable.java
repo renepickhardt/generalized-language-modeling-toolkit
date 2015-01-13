@@ -443,6 +443,9 @@ public class GlmtkExecutable extends Executable {
             LOGGING_HELPER.setLogLevel(Level.DEBUG);
     }
 
+    /**
+     * the real entry point to the toolkit.
+     */
     @Override
     protected void exec() throws Exception {
         logFields();
@@ -451,6 +454,7 @@ public class GlmtkExecutable extends Executable {
 
         boolean needPos = false;
 
+        //TODO: shouldn't probability modus be configureable?
         ProbMode probMode = ProbMode.MARG;
 
         Set<Pattern> neededPatterns = new HashSet<>();
