@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ * 
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ * 
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.common;
 
 import static de.glmtk.common.PatternElem.CNT;
@@ -125,8 +145,8 @@ public class Patterns {
     }
 
     public static Set<Pattern> getUsedPatterns(int modelSize,
-            Estimator estimator,
-            ProbMode probMode) throws Exception {
+                                               Estimator estimator,
+                                               ProbMode probMode) throws Exception {
         PatternTrackingCountCache tracker = new PatternTrackingCountCache();
 
         estimator.setCountCache(tracker);
@@ -170,7 +190,7 @@ public class Patterns {
     }
 
     public static Set<Pattern> getCombinations(int modelSize,
-            List<PatternElem> elems) {
+                                               List<PatternElem> elems) {
         Set<Pattern> result = new HashSet<>();
 
         for (int i = 1; i != modelSize + 1; ++i)
