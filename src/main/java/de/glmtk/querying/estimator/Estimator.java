@@ -63,10 +63,20 @@ public abstract class Estimator {
         LOGGER.trace(StringUtils.repeat("  ", recDepth) + format, params);
     }
 
-    protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR = new AbsoluteUnigramEstimator();
-    private String name = "Unnamed";
-    protected CountCache countCache = null;
-    protected ProbMode probMode = null;
+    protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR;
+    private String name;
+    protected CountCache countCache;
+    protected ProbMode probMode;
+
+    public Estimator() {
+        if (this instanceof SubstituteEstimator)
+            SUBSTITUTE_ESTIMATOR = null;
+        else
+            SUBSTITUTE_ESTIMATOR = new AbsoluteUnigramEstimator();
+        name = "Unnamed";
+        countCache = null;
+        probMode = null;
+    }
 
     @Override
     public String toString() {
