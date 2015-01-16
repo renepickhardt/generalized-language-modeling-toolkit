@@ -61,20 +61,12 @@ public class LengthDistributionReader extends AbstractFileReader {
                     "Expected line to have format '<length>\\t<frequency>'.");
 
         try {
+            length = (int) parseNumber(split.get(0));
+            frequency = parseFloatingPoint(split.get(1));
             length = Integer.parseInt(split.get(0));
-        } catch (NumberFormatException e) {
+        } catch (IllegalArgumentException e) {
             throw new FileFormatException(line, lineNo, file,
-                    "length distribution",
-                    "Unable to parse '%s' as an integer.", split.get(0));
-        }
-
-        try {
-            frequency = Double.parseDouble(split.get(1));
-        } catch (NumberFormatException e) {
-            throw new FileFormatException(line, lineNo, file,
-                    "length distribution",
-                    "Unable to parse '%s' as a floating point number.",
-                    split.get(1));
+                    "length distribution", e.getMessage());
         }
     }
 
