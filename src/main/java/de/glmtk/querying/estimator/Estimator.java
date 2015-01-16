@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
+import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
 import de.glmtk.util.StringUtils;
 
@@ -62,7 +63,7 @@ public abstract class Estimator {
         LOGGER.trace(StringUtils.repeat("  ", recDepth) + format, params);
     }
 
-    protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR = Estimators.ABS_UNIGRAM;
+    protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR = new AbsoluteUnigramEstimator();
     private String name = "Unnamed";
     protected CountCache countCache = null;
     protected ProbMode probMode = null;
