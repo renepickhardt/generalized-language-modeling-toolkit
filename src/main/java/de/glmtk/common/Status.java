@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +151,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                                                      BeanAccess beanAccess) throws IntrospectionException {
+                    BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -189,7 +190,7 @@ public class Status {
             @Override
             public Node representData(Object data) {
                 Model model = (Model) data;
-                Map<String, Object> represent = new TreeMap<>();
+                Map<String, Object> represent = new LinkedHashMap<>();
                 represent.put("discounts", model.getDiscounts());
                 represent.put("alphas", model.getAlphas());
                 represent.put("lambdas", model.getLambdas());
@@ -201,7 +202,7 @@ public class Status {
             @Override
             public Node representData(Object data) {
                 QueryCache queryCache = (QueryCache) data;
-                Map<String, Set<Pattern>> represent = new TreeMap<>();
+                Map<String, Set<Pattern>> represent = new LinkedHashMap<>();
                 represent.put("counted", queryCache.getCounted());
                 return representMapping(Tag.MAP, represent, false);
             }
@@ -260,9 +261,9 @@ public class Status {
                             for (Training training : Training.values())
                                 possible.add(training.toString());
                             throw newFileFormatException(
-                                    "Illegal training value: '%s'. Possible values: '%s'.",
-                                    trainingStr, StringUtils.join(possible,
-                                            "', '"));
+                                                         "Illegal training value: '%s'. Possible values: '%s'.",
+                                                         trainingStr, StringUtils.join(possible,
+                                                                 "', '"));
                         }
                         break;
 
@@ -304,7 +305,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                        patternStr, e.getMessage());
+                                             patternStr, e.getMessage());
             }
         }
 
@@ -329,8 +330,8 @@ public class Status {
                 Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
                     throw newFileFormatException(
-                            "Map contains pattern multiple times as key: '%s'.",
-                            pattern);
+                                                 "Map contains pattern multiple times as key: '%s'.",
+                                                 pattern);
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
@@ -347,7 +348,7 @@ public class Status {
                 String name = parseScalar();
                 if (models.containsKey(name))
                     throw newFileFormatException(
-                            "Model name occurs multiple time: '%s'.", name);
+                                                 "Model name occurs multiple time: '%s'.", name);
                 nextEvent();
                 Model model = parseModel();
                 models.put(name, model);
@@ -399,8 +400,8 @@ public class Status {
                 String name = parseScalar();
                 if (queryCaches.containsKey(name))
                     throw newFileFormatException(
-                            "QueryCache name occurs multiple times: '%s'.",
-                            name);
+                                                 "QueryCache name occurs multiple times: '%s'.",
+                                                 name);
                 nextEvent();
                 QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
@@ -593,13 +594,14 @@ public class Status {
         return model.getDiscounts();
     }
 
-    public synchronized void setModelDiscountsCalculated(String name) {
+    public synchronized void setModelDiscountsCalculated(String name) throws IOException {
         Model model = models.get(name);
         if (model == null) {
             model = new Model();
             models.put(name, model);
         }
         model.setDiscounts(true);
+        writeStatusToFile();
     }
 
     public synchronized Set<Pattern> getModelAlphas(String name) {
@@ -610,13 +612,14 @@ public class Status {
     }
 
     public synchronized void addModelAlpha(String name,
-                                           Pattern pattern) {
+                                           Pattern pattern) throws IOException {
         Model model = models.get(name);
         if (model == null) {
             model = new Model();
             models.put(name, model);
         }
         model.addAlpha(pattern);
+        writeStatusToFile();
     }
 
     public synchronized Set<Pattern> getModelLambdas(String name) {
@@ -627,13 +630,14 @@ public class Status {
     }
 
     public synchronized void addModelLambda(String name,
-                                            Pattern pattern) {
+                                            Pattern pattern) throws IOException {
         Model model = models.get(name);
         if (model == null) {
             model = new Model();
             models.put(name, model);
         }
         model.addLambda(pattern);
+        writeStatusToFile();
     }
 
     public synchronized Set<Pattern> getQueryCacheCounted(String name) {
@@ -720,7 +724,7 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                    : continuationDir;
+                            : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
                 throw new WrongStatusException(name + " pattern " + pattern,
