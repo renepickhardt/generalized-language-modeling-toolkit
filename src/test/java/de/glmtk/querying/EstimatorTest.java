@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -46,8 +46,6 @@ import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,6 +53,7 @@ import org.junit.runner.RunWith;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+import de.glmtk.logging.Logger;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.Estimator;
@@ -68,7 +67,7 @@ import de.glmtk.testutil.TestCorpus;
 @RunWith(EstimatorTestRunner.class)
 @IgnoreProbMode(ProbMode.COND)
 public class EstimatorTest extends TestCorporaTest {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(EstimatorTest.class);
+    private static final Logger LOGGER = Logger.get(EstimatorTest.class);
     private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
             TestCorpus.ABC, TestCorpus.MOBYDICK);
     private static final int HIGHEST_ORDER = 5;
@@ -110,7 +109,7 @@ public class EstimatorTest extends TestCorporaTest {
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
                 //@formatter:on
-        );
+                );
     }
 
     private Estimator estimator;

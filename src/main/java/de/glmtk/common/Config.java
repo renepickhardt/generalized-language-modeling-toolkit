@@ -28,14 +28,13 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.events.Event.ID;
 import org.yaml.snakeyaml.events.ScalarEvent;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.StringUtils;
 
@@ -43,7 +42,7 @@ import de.glmtk.util.StringUtils;
  * All field values (except those declared final) are read from config file.
  */
 public class Config {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Config.class);
+    private static final Logger LOGGER = Logger.get(Config.class);
 
     private class ConfigParser extends AbstractYamlParser {
         public ConfigParser(Path file) {

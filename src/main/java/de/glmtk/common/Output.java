@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -31,9 +31,6 @@ import java.io.PrintStream;
 import java.util.Formatter;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
@@ -41,6 +38,8 @@ import org.fusesource.jansi.AnsiOutputStream;
 import org.fusesource.jansi.WindowsAnsiOutputStream;
 
 import de.glmtk.Constants;
+import de.glmtk.logging.Logger;
+import de.glmtk.logging.Logger.Level;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.ReflectionUtils;
 import de.glmtk.util.StringUtils;
@@ -62,15 +61,15 @@ public enum Output {
         LENGTH_DISTRIBUATION_CALCULATING(6, 6,
                 "Length Distribution Calculating"),
 
-                // CountCache
-                LOADING_COUNTS(1, 1, "Loading Counts"),
+        // CountCache
+        LOADING_COUNTS(1, 1, "Loading Counts"),
 
-                // QueryCache
-                SCANNING_COUNTS(1, 1, "Scanning Counts"),
+        // QueryCache
+        SCANNING_COUNTS(1, 1, "Scanning Counts"),
 
-                // Querying
-                QUERYING(1, 2, "Querying"),
-                ASSEMBLING(1, 2, "Assembling");
+        // Querying
+        QUERYING(1, 2, "Querying"),
+        ASSEMBLING(1, 2, "Assembling");
 
         public static final int MAX_NAME_LENGTH;
         static {
@@ -104,6 +103,33 @@ public enum Output {
         public String getName() {
             return name;
         }
+    }
+
+    private static final Logger LOGGER = Logger.get(Output.class);
+    private static final double DISABLE_PERCENT = -1.0;
+
+    /**
+     * We use this function to replace
+     * {@link AnsiConsole#wrapOutputStream(OutputStream)}, because we want do do
+     * our own checking if we wan't ansi codes.
+     */
+    private static OutputStream wrapStderrStream(OutputStream stream) {
+        String os = System.getProperty("os.name");
+        if (os.startsWith("Windows"))
+            try {
+                return new WindowsAnsiOutputStream(stream);
+            } catch (Throwable ignore) {
+                return new AnsiOutputStream(stream);
+            }
+
+        return new FilterOutputStream(stream) {
+            @Override
+            public void close() throws IOException {
+                write(AnsiOutputStream.REST_CODE);
+                flush();
+                super.close();
+            }
+        };
     }
 
     public class Progress {
@@ -148,33 +174,6 @@ public enum Output {
                 }
             }
         }
-    }
-
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Output.class);
-    private static final double DISABLE_PERCENT = -1.0;
-
-    /**
-     * We use this function to replace
-     * {@link AnsiConsole#wrapOutputStream(OutputStream)}, because we want do do
-     * our own checking if we wan't ansi codes.
-     */
-    private static OutputStream wrapStderrStream(OutputStream stream) {
-        String os = System.getProperty("os.name");
-        if (os.startsWith("Windows"))
-            try {
-                return new WindowsAnsiOutputStream(stream);
-            } catch (Throwable ignore) {
-                return new AnsiOutputStream(stream);
-            }
-
-        return new FilterOutputStream(stream) {
-            @Override
-            public void close() throws IOException {
-                write(AnsiOutputStream.REST_CODE);
-                flush();
-                super.close();
-            }
-        };
     }
 
     public Config config;

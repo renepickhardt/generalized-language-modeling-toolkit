@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -34,9 +34,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
@@ -48,6 +45,7 @@ import de.glmtk.counting.LengthDistributionCalculator;
 import de.glmtk.counting.Merger;
 import de.glmtk.counting.NGramTimesCounter;
 import de.glmtk.counting.Tagger;
+import de.glmtk.logging.Logger;
 import de.glmtk.querying.QueryCacherCreator;
 import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.QueryRunner;
@@ -65,7 +63,7 @@ import de.glmtk.util.PrintUtils;
  * method
  */
 public class Glmtk {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Glmtk.class);
+    private static final Logger LOGGER = Logger.get(Glmtk.class);
 
     private static class NeededComputations {
         private boolean tagging;

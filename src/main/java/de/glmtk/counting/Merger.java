@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -37,9 +37,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
@@ -49,13 +46,14 @@ import de.glmtk.common.Status;
 import de.glmtk.counts.Counts;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.CountsWriter;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.ThreadUtils;
 
 public class Merger {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Merger.class);
+    private static final Logger LOGGER = Logger.get(Merger.class);
 
     private class Thread implements Callable<Object> {
         @Override

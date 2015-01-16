@@ -37,8 +37,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
@@ -57,12 +55,13 @@ import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.exceptions.WrongStatusException;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
 public class Status {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Status.class);
+    private static final Logger LOGGER = Logger.get(Status.class);
 
     public static enum Training {
         NONE,

@@ -38,9 +38,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
@@ -50,13 +47,14 @@ import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.LengthDistributionReader;
 import de.glmtk.files.NGramTimesReader;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
 
 /**
  * Tests for this class can be found in {@link de.glmtk.counting.CountingTest}.
  */
 public class CountCache {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(CountCache.class);
+    private static final Logger LOGGER = Logger.get(CountCache.class);
 
     private static Set<Pattern> getAvailablePatternsFromFilesystem(GlmtkPaths paths) throws IOException {
         Set<Pattern> patterns = new HashSet<>();

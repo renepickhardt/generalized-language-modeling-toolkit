@@ -24,7 +24,6 @@ import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.POS;
 import static de.glmtk.common.PatternElem.PSKP;
 import static de.glmtk.common.PatternElem.WSKP;
-import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import org.apache.logging.log4j.Level;
 
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.NGramTimes;
@@ -157,9 +154,9 @@ public class Patterns {
 
         // Raise logging level for this section since we should never really
         // care about this and it takes a lot of space.
-        Level oldLevel = LOGGING_HELPER.getLogLevel();
-        if (oldLevel.isLessSpecificThan(Level.INFO))
-            LOGGING_HELPER.setLogLevel(Level.INFO);
+        //        Level oldLevel = LOGGING_HELPER.getLogLevel();
+        //        if (oldLevel.isLessSpecificThan(Level.INFO))
+        //            LOGGING_HELPER.setLogLevel(Level.INFO);
 
         for (int n = 0; n != modelSize; ++n) {
             List<String> sequence = new ArrayList<>(n);
@@ -169,7 +166,7 @@ public class Patterns {
                 calculator.probability(sequence);
         }
 
-        LOGGING_HELPER.setLogLevel(oldLevel);
+        //        LOGGING_HELPER.setLogLevel(oldLevel);
 
         return tracker.getUsedPatterns();
     }

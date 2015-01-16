@@ -31,20 +31,18 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Status;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
 public class LengthDistributionCalculator {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(LengthDistributionCalculator.class);
+    private static final Logger LOGGER = Logger.get(LengthDistributionCalculator.class);
 
     private Config config;
 
