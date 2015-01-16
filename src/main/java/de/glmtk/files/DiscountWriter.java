@@ -3,8 +3,8 @@ package de.glmtk.files;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.regex.Pattern;
 
+import de.glmtk.common.Pattern;
 import de.glmtk.counts.Discount;
 
 public class DiscountWriter extends AbstractFileWriter {
