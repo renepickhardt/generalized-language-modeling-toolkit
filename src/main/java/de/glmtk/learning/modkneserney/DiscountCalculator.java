@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.languagemodels;
+package de.glmtk.learning.modkneserney;
 
 import static de.glmtk.common.Output.OUTPUT;
 
@@ -37,11 +37,11 @@ import de.glmtk.files.DiscountWriter;
 import de.glmtk.files.NGramTimesReader;
 import de.glmtk.util.NioUtils;
 
-public class ModKneserNeyDiscountCalculator {
+public class DiscountCalculator {
     @SuppressWarnings("unused")
     private Config config;
 
-    public ModKneserNeyDiscountCalculator(Config config) {
+    public DiscountCalculator(Config config) {
         this.config = config;
     }
 
