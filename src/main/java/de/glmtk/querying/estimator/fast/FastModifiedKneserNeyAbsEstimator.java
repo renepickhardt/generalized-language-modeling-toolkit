@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ *
+ * Copyright (C) 2015 Lukas Schmelzeisen
+ *
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.querying.estimator.fast;
 
 import java.util.HashMap;
@@ -5,14 +25,16 @@ import java.util.Map;
 
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Counter;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
+import de.glmtk.counts.Counts;
+import de.glmtk.counts.Discount;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.Estimator;
 
 public class FastModifiedKneserNeyAbsEstimator extends Estimator {
     protected BackoffMode backoffMode;
-    private Map<Pattern, double[]> discounts;
+    private Map<Pattern, Discount> discounts;
 
     public FastModifiedKneserNeyAbsEstimator() {
         setBackoffMode(BackoffMode.DEL);
@@ -49,20 +71,21 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
         double discount;
         double gamma = 0.0;
         {
-            double d[] = getDiscounts(history.getPattern(), recDepth);
+            Discount d = getDiscounts(history.getPattern(), recDepth);
             long abs = countCache.getAbsolute(history);
             if (abs == 0)
                 discount = 0.0;
             else if (abs == 1)
-                discount = d[0];
+                discount = d.getOne();
             else if (abs == 2)
-                discount = d[1];
+                discount = d.getTwo();
             else
-                discount = d[2];
+                discount = d.getThree();
 
             if (denominator != 0) {
-                Counter c = countCache.getContinuation(history.concat(NGram.WSKP_NGRAM));
-                gamma = (d[0] * c.getOneCount() + d[1] * c.getTwoCount() + d[2]
+                Counts c = countCache.getContinuation(history.concat(NGram.WSKP_NGRAM));
+                gamma = (d.getOne() * c.getOneCount() + d.getTwo()
+                        * c.getTwoCount() + d.getThree()
                         * c.getThreePlusCount())
                         / denominator;
             }
@@ -88,22 +111,22 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
         return alpha + gamma * beta;
     }
 
-    protected double[] getDiscounts(Pattern pattern,
+    protected Discount getDiscounts(Pattern pattern,
                                     int recDepth) {
-        double[] d = discounts.get(pattern);
-        if (d != null)
-            return d;
+        Discount result = discounts.get(pattern);
+        if (result != null)
+            return result;
 
-        long[] n = countCache.getNGramTimes(pattern);
-        double y = (double) n[0] / (n[0] + n[1]);
+        NGramTimes n = countCache.getNGramTimes(pattern);
+        double y = (double) n.getOneCount()
+                / (n.getOneCount() + n.getTwoCount());
+        result = new Discount(1.0f - 2.0f * y * n.getTwoCount()
+                / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
+                / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
+                / n.getThreeCount());
 
-        d = new double[3];
-        d[0] = 1.0 - 2.0 * y * n[1] / n[0];
-        d[1] = 2.0 - 3.0 * y * n[2] / n[1];
-        d[2] = 3.0 - 4.0 * y * n[3] / n[2];
-
-        discounts.put(pattern, d);
-        return d;
+        discounts.put(pattern, result);
+        return result;
     }
 
 }

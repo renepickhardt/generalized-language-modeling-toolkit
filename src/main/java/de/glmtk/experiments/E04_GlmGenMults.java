@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ *
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ *
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.experiments;
 
 import java.util.ArrayList;
@@ -37,7 +57,7 @@ public class E04_GlmGenMults {
     }
 
     private static List<String> getPatternedHistory(List<String> history,
-            boolean[] pattern) {
+                                                    boolean[] pattern) {
         List<String> skippedHistory = new ArrayList<>(history);
         int i = 0;
         for (boolean p : pattern) {
@@ -107,7 +127,7 @@ public class E04_GlmGenMults {
     }
 
     public static List<List<boolean[]>> generateMultPattern2Hat(boolean[] pattern,
-            List<boolean[]> prev) {
+                                                                List<boolean[]> prev) {
         List<boolean[]> newPrev = ArrayUtils.unionWithSingleton(prev, pattern);
 
         List<List<boolean[]>> result = new LinkedList<>();
@@ -124,7 +144,7 @@ public class E04_GlmGenMults {
     }
 
     private static List<List<List<String>>> generateMults(List<String> history,
-            List<String> fullHistory) {
+                                                          List<String> fullHistory) {
         //        List<List<boolean[]>> multsPattern = new LinkedList<List<boolean[]>>();
         //        generateMultPatterns(getPattern(history), new LinkedList<boolean[]>(),
         //                multsPattern);
