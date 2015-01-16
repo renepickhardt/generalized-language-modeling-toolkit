@@ -41,7 +41,6 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.events.Event.ID;
-import org.yaml.snakeyaml.events.ScalarEvent;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.introspector.PropertyUtils;
@@ -69,6 +68,57 @@ public class Status {
         TAGGED;
     }
 
+    private static class Model {
+        private boolean discounts = false;
+        private Set<Pattern> alphas = new TreeSet<>();
+        private Set<Pattern> lambdas = new TreeSet<>();
+
+        public boolean getDiscounts() {
+            return discounts;
+        }
+
+        public void setDiscounts(boolean discounts) {
+            this.discounts = discounts;
+        }
+
+        public Set<Pattern> getAlphas() {
+            return alphas;
+        }
+
+        public void setAlphas(Set<Pattern> alphas) {
+            this.alphas = alphas;
+        }
+
+        public void addAlpha(Pattern pattern) {
+            alphas.add(pattern);
+        }
+
+        public Set<Pattern> getLambdas() {
+            return lambdas;
+        }
+
+        public void setLambdas(Set<Pattern> lambdas) {
+            this.lambdas = lambdas;
+        }
+
+        public void addLambda(Pattern pattern) {
+            lambdas.add(pattern);
+        }
+
+        /**
+         * For logging and debugging.
+         *
+         * <p>
+         * {@inheritDoc}
+         */
+        @Override
+        public String toString() {
+            return "{discounts=" + Boolean.toString(discounts) + ", alphas"
+                    + alphas.toString() + ", lambdas=" + lambdas.toString()
+                    + "}";
+        }
+    }
+
     private static class QueryCache {
         private Set<Pattern> counted = new TreeSet<>();
 
@@ -84,6 +134,12 @@ public class Status {
             counted.add(pattern);
         }
 
+        /**
+         * For logging and debugging.
+         *
+         * <p>
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             return "{counted=" + counted.toString() + "}";
@@ -94,7 +150,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                    BeanAccess beanAccess) throws IntrospectionException {
+                                                      BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -105,6 +161,7 @@ public class Status {
                         BeanAccess.FIELD));
                 result.add(getProperty(type, "lengthDistribution",
                         BeanAccess.FIELD));
+                result.add(getProperty(type, "models", BeanAccess.FIELD));
                 result.add(getProperty(type, "queryCaches", BeanAccess.FIELD));
                 return result;
             }
@@ -128,6 +185,18 @@ public class Status {
             }
         }
 
+        private class RepresentModel implements Represent {
+            @Override
+            public Node representData(Object data) {
+                Model model = (Model) data;
+                Map<String, Object> represent = new TreeMap<>();
+                represent.put("discounts", model.getDiscounts());
+                represent.put("alphas", model.getAlphas());
+                represent.put("lambdas", model.getLambdas());
+                return representMapping(Tag.MAP, represent, false);
+            }
+        }
+
         private class RepresentQueryCache implements Represent {
             @Override
             public Node representData(Object data) {
@@ -144,6 +213,7 @@ public class Status {
             addClassTag(Status.class, new Tag("!status"));
             representers.put(TreeSet.class, new RepresentSet());
             representers.put(Pattern.class, new RepresentPattern());
+            representers.put(Model.class, new RepresentModel());
             representers.put(QueryCache.class, new RepresentQueryCache());
         }
     }
@@ -163,13 +233,12 @@ public class Status {
         private void parseStatus() {
             Map<String, Boolean> keys = createValidKeysMap("hash",
                     "taggedHash", "training", "counted", "chunked",
-                    "nGramTimesCounted", "lengthDistribution", "queryCaches");
+                    "nGramTimesCounted", "lengthDistribution", "models",
+                    "queryCaches");
 
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
-                assertEventIsId(ID.Scalar);
-
-                String key = ((ScalarEvent) event).getValue();
+                String key = parseScalar();
                 registerKey(keys, key);
 
                 nextEvent();
@@ -213,6 +282,10 @@ public class Status {
                         lengthDistribution = parseBoolean();
                         break;
 
+                    case "models":
+                        parseModels();
+                        break;
+
                     case "queryCaches":
                         parseQueryCaches();
                         break;
@@ -231,7 +304,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                                             patternStr, e.getMessage());
+                        patternStr, e.getMessage());
             }
         }
 
@@ -256,11 +329,63 @@ public class Status {
                 Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
                     throw newFileFormatException(
-                                                 "Map contains pattern multiple times as key: '%s'.",
-                                                 pattern);
+                            "Map contains pattern multiple times as key: '%s'.",
+                            pattern);
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
+                nextEvent();
+            }
+            return result;
+        }
+
+        private void parseModels() {
+            assertEventIsId(ID.MappingStart);
+
+            nextEvent();
+            while (!event.is(ID.MappingEnd)) {
+                String name = parseScalar();
+                if (models.containsKey(name))
+                    throw newFileFormatException(
+                            "Model name occurs multiple time: '%s'.", name);
+                nextEvent();
+                Model model = parseModel();
+                models.put(name, model);
+                nextEvent();
+            }
+        }
+
+        private Model parseModel() {
+            assertEventIsId(ID.MappingStart);
+
+            Model result = new Model();
+
+            Map<String, Boolean> keys = createValidKeysMap("discounts",
+                    "alphas", "lambdas");
+
+            nextEvent();
+            while (!event.is(ID.MappingEnd)) {
+                String key = parseScalar();
+                registerKey(keys, key);
+
+                nextEvent();
+                switch (key) {
+                    case "discounts":
+                        result.setDiscounts(parseBoolean());
+                        break;
+
+                    case "alphas":
+                        result.setAlphas(parseSetPattern());
+                        break;
+
+                    case "lambdas":
+                        result.setLambdas(parseSetPattern());
+                        break;
+
+                    default:
+                        throw new SwitchCaseNotImplementedException();
+                }
+
                 nextEvent();
             }
             return result;
@@ -292,16 +417,13 @@ public class Status {
 
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
-                assertEventIsId(ID.Scalar);
-
-                String key = ((ScalarEvent) event).getValue();
+                String key = parseScalar();
                 registerKey(keys, key);
 
                 nextEvent();
                 switch (key) {
                     case "counted":
-                        Set<Pattern> patterns = parseSetPattern();
-                        result.setCounted(patterns);
+                        result.setCounted(parseSetPattern());
                         break;
 
                     default:
@@ -329,6 +451,7 @@ public class Status {
     private Map<Pattern, Set<String>> continuationChunked;
     private boolean nGramTimesCounted;
     private boolean lengthDistribution;
+    private Map<String, Model> models;
     private Map<String, QueryCache> queryCaches;
 
     public Status(GlmtkPaths paths,
@@ -384,14 +507,6 @@ public class Status {
         writeStatusToFile();
     }
 
-    private Set<Pattern> counted(boolean absolute) {
-        return absolute ? absoluteCounted : continuationCounted;
-    }
-
-    private Map<Pattern, Set<String>> chunked(boolean absolute) {
-        return absolute ? absoluteChunked : continuationChunked;
-    }
-
     public synchronized Set<Pattern> getCounted() {
         return Collections.unmodifiableSet(counted);
     }
@@ -441,6 +556,14 @@ public class Status {
         writeStatusToFile();
     }
 
+    private Set<Pattern> counted(boolean absolute) {
+        return absolute ? absoluteCounted : continuationCounted;
+    }
+
+    private Map<Pattern, Set<String>> chunked(boolean absolute) {
+        return absolute ? absoluteChunked : continuationChunked;
+    }
+
     public synchronized boolean isNGramTimesCounted() {
         return nGramTimesCounted;
     }
@@ -457,6 +580,60 @@ public class Status {
     public synchronized void setLengthDistribution() throws IOException {
         lengthDistribution = true;
         writeStatusToFile();
+    }
+
+    public synchronized boolean isModel(String name) {
+        return models.containsKey(name);
+    }
+
+    public synchronized boolean areModelDiscountsCalculated(String name) {
+        Model model = models.get(name);
+        if (model == null)
+            return false;
+        return model.getDiscounts();
+    }
+
+    public synchronized void setModelDiscountsCalculated(String name) {
+        Model model = models.get(name);
+        if (model == null) {
+            model = new Model();
+            models.put(name, model);
+        }
+        model.setDiscounts(true);
+    }
+
+    public synchronized Set<Pattern> getModelAlphas(String name) {
+        Model model = models.get(name);
+        if (model == null)
+            return new TreeSet<>();
+        return model.getAlphas();
+    }
+
+    public synchronized void addModelAlpha(String name,
+                                           Pattern pattern) {
+        Model model = models.get(name);
+        if (model == null) {
+            model = new Model();
+            models.put(name, model);
+        }
+        model.addAlpha(pattern);
+    }
+
+    public synchronized Set<Pattern> getModelLambdas(String name) {
+        Model model = models.get(name);
+        if (model == null)
+            return new TreeSet<>();
+        return model.getLambdas();
+    }
+
+    public synchronized void addModelLambda(String name,
+                                            Pattern pattern) {
+        Model model = models.get(name);
+        if (model == null) {
+            model = new Model();
+            models.put(name, model);
+        }
+        model.addLambda(pattern);
     }
 
     public synchronized Set<Pattern> getQueryCacheCounted(String name) {
@@ -492,6 +669,7 @@ public class Status {
         LOGGER.debug("continuationChunked          = %s", continuationChunked);
         LOGGER.debug("nGramTimesCounted            = %b", nGramTimesCounted);
         LOGGER.debug("lengthDistributionCalculated = %s", lengthDistribution);
+        LOGGER.debug("models                       = %s", models);
         LOGGER.debug("queryCache                   = %s", queryCaches);
     }
 
@@ -505,6 +683,7 @@ public class Status {
         continuationChunked = new TreeMap<>();
         nGramTimesCounted = false;
         lengthDistribution = false;
+        models = new TreeMap<>();
         queryCaches = new TreeMap<>();
     }
 
@@ -541,7 +720,7 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                            : continuationDir;
+                    : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
                 throw new WrongStatusException(name + " pattern " + pattern,

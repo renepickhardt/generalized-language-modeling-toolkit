@@ -223,6 +223,6 @@ public abstract class AbstractYamlParser {
         // beginning of file
         if (mark.getLine() == 0)
             mark = event.getEndMark();
-        return new FileFormatException(file, fileType, mark, message, params);
+        throw new FileFormatException(file, fileType, mark, message, params);
     }
 }
