@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -23,13 +23,20 @@ package de.glmtk.querying.estimator;
 import static de.glmtk.common.PatternElem.SKP_WORD;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
 import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;
+import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
+import de.glmtk.counts.Counts;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.logging.Logger;
+import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
 import de.glmtk.util.StringUtils;
@@ -140,4 +147,106 @@ public abstract class Estimator {
     protected abstract double calcProbability(NGram sequence,
                                               NGram history,
                                               int recDepth);
+
+    public static class PatternTrackingCountCache extends CountCache {
+        private Set<Pattern> usedPatterns = new HashSet<>();
+        private Random random = new Random();
+
+        public PatternTrackingCountCache() throws Exception {
+            super(null, null);
+        }
+
+        public Set<Pattern> getUsedPatterns() {
+            return usedPatterns;
+        }
+
+        @Override
+        public long getAbsolute(NGram sequence) {
+            usedPatterns.add(sequence.getPattern());
+
+            // is it possible that sequence is unseen?
+            if (sequence.isEmptyOrOnlySkips())
+                return random.nextInt(10) + 1;
+            return random.nextInt(11);
+        }
+
+        @Override
+        public Counts getContinuation(NGram sequence) {
+            usedPatterns.add(sequence.getPattern());
+
+            // is it possible that sequence is unseen?
+            if (sequence.isEmptyOrOnlySkips())
+                return new Counts(random.nextInt(10) + 1,
+                        random.nextInt(10) + 1, random.nextInt(10) + 1,
+                        random.nextInt(10) + 1);
+
+            return new Counts(random.nextInt(11), random.nextInt(11),
+                    random.nextInt(11), random.nextInt(11));
+        }
+
+        @Override
+        public NGramTimes getNGramTimes(Pattern pattern) {
+            usedPatterns.add(pattern);
+            return new NGramTimes(random.nextInt(10) + 1,
+                    random.nextInt(10) + 1, random.nextInt(10) + 1,
+                    random.nextInt(10) + 1);
+        }
+    }
+
+    public Set<Pattern> getUsedPatterns(int modelSize,
+            ProbMode probMode) throws Exception {
+        final Set<Pattern> usedPatterns = new HashSet<>();
+
+        CountCache trackingCountCache = new CountCache(null, null) {
+            private Random random = new Random();
+
+            @Override
+            public long getAbsolute(NGram sequence) {
+                usedPatterns.add(sequence.getPattern());
+
+                // is it possible that sequence is unseen?
+                if (sequence.isEmptyOrOnlySkips())
+                    return random.nextInt(10) + 1;
+                return random.nextInt(11);
+            }
+
+            @Override
+            public Counts getContinuation(NGram sequence) {
+                usedPatterns.add(sequence.getPattern());
+
+                // is it possible that sequence is unseen?
+                if (sequence.isEmptyOrOnlySkips())
+                    return new Counts(random.nextInt(10) + 1,
+                            random.nextInt(10) + 1, random.nextInt(10) + 1,
+                            random.nextInt(10) + 1);
+
+                return new Counts(random.nextInt(11), random.nextInt(11),
+                        random.nextInt(11), random.nextInt(11));
+            }
+
+            @Override
+            public NGramTimes getNGramTimes(Pattern pattern) {
+                usedPatterns.add(pattern);
+                return new NGramTimes(random.nextInt(10) + 1,
+                        random.nextInt(10) + 1, random.nextInt(10) + 1,
+                        random.nextInt(10) + 1);
+            }
+        };
+
+        setCountCache(trackingCountCache);
+
+        SequenceCalculator calculator = new SequenceCalculator();
+        calculator.setEstimator(this);
+        calculator.setProbMode(probMode);
+
+        for (int n = 0; n != modelSize; ++n) {
+            List<String> sequence = new ArrayList<>(n);
+            for (int i = 0; i != n + 1; ++i)
+                sequence.add("a");
+            for (int i = 0; i != 10; ++i)
+                calculator.probability(sequence);
+        }
+
+        return usedPatterns;
+    }
 }
