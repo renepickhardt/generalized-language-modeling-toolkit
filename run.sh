@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+set -u # trap uses of unset variables
+set -e # exit on unchecked failure
+
 # get script location
 GLMTK_DIR=`readlink -f $BASH_SOURCE | xargs dirname`
 
