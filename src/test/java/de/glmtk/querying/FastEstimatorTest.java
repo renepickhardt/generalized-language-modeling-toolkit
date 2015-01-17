@@ -32,7 +32,6 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -49,9 +48,9 @@ public class FastEstimatorTest extends TestCorporaTest {
         FastModifiedKneserNeyEstimator fastEstimator = new FastModifiedKneserNeyEstimator();
         fastEstimator.setName("Fast-Modified-Kneser-Ney");
 
-        Set<Pattern> patternsSlow = Patterns.getUsedPatterns(5, slowEstimator,
+        Set<Pattern> patternsSlow = slowEstimator.getUsedPatterns(5,
                 ProbMode.MARG);
-        Set<Pattern> patternsFast = Patterns.getUsedPatterns(5, fastEstimator,
+        Set<Pattern> patternsFast = fastEstimator.getUsedPatterns(5,
                 ProbMode.MARG);
         Set<Pattern> patterns = new HashSet<>();
         patterns.addAll(patternsSlow);
