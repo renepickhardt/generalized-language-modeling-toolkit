@@ -73,6 +73,25 @@ public class StringUtils {
      * {@code conjunction} in between.
      */
     public static String join(Collection<?> objects,
+                              char conjuction) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (Object object : objects) {
+            if (first)
+                first = false;
+            else
+                result.append(conjuction);
+            result.append(object.toString());
+        }
+        return result.toString();
+    }
+
+    /**
+     * Takes a collection of {@code objects} and concatenates their string
+     * representation ({@code Object#toString()}) to one, putting
+     * {@code conjunction} in between.
+     */
+    public static String join(Collection<?> objects,
                               String conjunction) {
         StringBuilder result = new StringBuilder();
         boolean first = true;

@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -72,15 +72,7 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
         double gamma = 0.0;
         {
             Discount d = getDiscounts(history.getPattern(), recDepth);
-            long abs = countCache.getAbsolute(history);
-            if (abs == 0)
-                discount = 0.0;
-            else if (abs == 1)
-                discount = d.getOne();
-            else if (abs == 2)
-                discount = d.getTwo();
-            else
-                discount = d.getThree();
+            discount = d.getForCount(countCache.getAbsolute(history));
 
             if (denominator != 0) {
                 Counts c = countCache.getContinuation(history.concat(NGram.WSKP_NGRAM));
@@ -94,13 +86,10 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
         double alpha;
         if (denominator == 0.0)
             alpha = (double) countCache.getAbsolute(sequence.get(0))
-                    / countCache.getNumWords();
+            / countCache.getNumWords();
         else {
             double numerator = countCache.getAbsolute(history.concat(sequence));
-            if (numerator > discount)
-                numerator -= discount;
-            else
-                numerator = 0.0;
+            numerator = Math.max(numerator - discount, 0.0);
 
             alpha = numerator / denominator;
         }

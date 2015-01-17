@@ -47,6 +47,17 @@ public class Discount {
         return threePlus;
     }
 
+    public double getForCount(long count) {
+        if (count == 0)
+            return 0.0;
+        else if (count == 1)
+            return one;
+        else if (count == 2)
+            return two;
+        else
+            return threePlus;
+    }
+
     public void setOne(double one) {
         this.one = one;
     }

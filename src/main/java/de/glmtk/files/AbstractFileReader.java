@@ -94,4 +94,16 @@ public abstract class AbstractFileReader implements Closeable, AutoCloseable {
     public void close() throws IOException {
         reader.close();
     }
+
+    public Path getFile() {
+        return file;
+    }
+
+    public int getLineNo() {
+        return lineNo;
+    }
+
+    public String getLine() {
+        return line;
+    }
 }

@@ -21,6 +21,11 @@
 package de.glmtk.learning.modkneserney;
 
 import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.SKP;
+import static de.glmtk.common.PatternElem.SKP_WORD;
+import static de.glmtk.common.PatternElem.WSKP;
+import static de.glmtk.common.PatternElem.WSKP_WORD;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.IOException;
@@ -59,41 +64,65 @@ import de.glmtk.util.ThreadUtils;
 public class AlphaCalculator {
     private static final Logger LOGGER = LogManager.getFormatterLogger(AlphaCalculator.class);
 
+    private static class AlphaPatterns {
+        private Pattern histPattern;
+        private Pattern numPattern;
+        private Pattern denPattern;
+
+        public AlphaPatterns(Pattern histPattern,
+                             Pattern numPattern,
+                             Pattern denPattern) {
+            super();
+            this.histPattern = histPattern;
+            this.numPattern = numPattern;
+            this.denPattern = denPattern;
+        }
+
+        public Pattern getHistPattern() {
+            return histPattern;
+        }
+
+        public Pattern getNumPattern() {
+            return numPattern;
+        }
+
+        public Pattern getDenPattern() {
+            return denPattern;
+        }
+    }
+
     private class Thread implements Callable<Object> {
-        private Pattern pattern;
-        private Pattern denomPattern;
-        private Path countFile;
-        private Path denomCountFile;
+        private AlphaPatterns patterns;
+        private Path histCountFile;
+        private Path numCountFile;
+        private Path denCountFile;
         private Path alphaFile;
 
         @Override
         public Object call() throws Exception {
             while (!patternQueue.isEmpty()) {
-                pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
+                patterns = patternQueue.poll(Constants.MAX_IDLE_TIME,
                         TimeUnit.MILLISECONDS);
-                if (pattern == null)
+                if (patterns == null)
                     continue;
 
-                LOGGER.debug("Calculating pattern '%s'.", pattern);
+                LOGGER.debug("Calculating pattern '%s'.", patterns);
 
-                denomPattern = pattern.set(pattern.size() - 1,
-                        pattern.isAbsolute()
-                                ? PatternElem.SKP
-                                : PatternElem.WSKP);
-                if (pattern.isAbsolute()) {
-                    countFile = absoluteDir.resolve(pattern.toString());
-                    denomCountFile = absoluteDir.resolve(denomPattern.toString());
-                } else {
-                    countFile = continuationDir.resolve(pattern.toString());
-                    denomCountFile = continuationDir.resolve(denomPattern.toString());
-                }
-                alphaFile = alphaDir.resolve(pattern.toString());
+                if (patterns.getNumPattern().isAbsolute())
+                    histCountFile = numCountFile = denCountFile = absoluteDir;
+                else
+                    histCountFile = numCountFile = denCountFile = continuationDir;
+                histCountFile = histCountFile.resolve(patterns.getHistPattern().toString());
+                numCountFile = numCountFile.resolve(patterns.getNumPattern().toString());
+                denCountFile = denCountFile.resolve(patterns.getDenPattern().toString());
+                alphaFile = alphaDir.resolve(patterns.getNumPattern().toString());
 
                 calculateAlphasForPattern();
 
-                status.addModelAlpha(Constants.MODEL_MODKNESERNEY_NAME, pattern);
+                status.addModelAlpha(Constants.MODEL_MODKNESERNEY_NAME,
+                        patterns.getNumPattern());
 
-                LOGGER.debug("Finished pattern '%s'.", pattern);
+                LOGGER.debug("Finished pattern '%s'.", patterns);
 
                 synchronized (progress) {
                     progress.increase(1);
@@ -105,46 +134,59 @@ public class AlphaCalculator {
         }
 
         private void calculateAlphasForPattern() throws Exception {
-            try (CountsReader reader = new CountsReader(countFile,
-                    Constants.CHARSET, readerMemory / 2);
-                    CountsReader denomReader = new CountsReader(denomCountFile,
-                            Constants.CHARSET, readerMemory / 2);
+            Discount discount = discounts.get(patterns.getHistPattern());
+
+            try (CountsReader histReader = new CountsReader(histCountFile,
+                    Constants.CHARSET, readerMemory / 3);
+                    CountsReader numReader = new CountsReader(numCountFile,
+                            Constants.CHARSET, readerMemory / 3);
+                    CountsReader denReader = new CountsReader(denCountFile,
+                            Constants.CHARSET, readerMemory / 3);
                     AlphaCountWriter writer = new AlphaCountWriter(alphaFile,
                             Constants.CHARSET, writerMemory)) {
-                while (true) {
-                    if (reader.readLine() == null)
-                        break;
+                while (numReader.readLine() != null) {
+                    String numSequence = numReader.getSequence();
+                    List<String> split = StringUtils.splitAtChar(numSequence,
+                            ' ');
+                    split.remove(split.size() - 1);
+                    String histSequence = StringUtils.join(split, ' ');
+                    String denSequence = histSequence
+                            + " "
+                            + (patterns.getNumPattern().isAbsolute()
+                                    ? SKP_WORD
+                                            : WSKP_WORD);
 
-                    String sequence = reader.getSequence();
-                    List<String> split = StringUtils.splitAtChar(sequence, ' ');
-                    if (pattern.isAbsolute())
-                        split.set(split.size() - 1, PatternElem.SKP_WORD);
-                    else
-                        split.set(split.size() - 1, PatternElem.WSKP_WORD);
-                    String denomSequence = StringUtils.join(split, " ");
+                    findSequenceInReader(histReader, histSequence);
+                    findSequenceInReader(denReader, denSequence);
 
-                    String denomReaderSeq = denomReader.getSequence();
-                    while (denomReaderSeq == null
-                            || !denomReaderSeq.equals(denomSequence)) {
-                        if (denomReader.isEof()
-                                || (denomReaderSeq != null && denomReaderSeq.compareTo(denomSequence) > 0))
-                            throw new Exception(
-                                    String.format(
-                                            "Could not find denominator Sequence '%s'.",
-                                            denomSequence));
+                    long histSequenceCount = histReader.getCount();
+                    long numSequenceCount = numReader.getCount();
+                    long denSequenceCount = denReader.getCount();
 
-                        denomReader.readLine();
-                        denomReaderSeq = denomReader.getSequence();
-                    }
+                    double d = discount.getForCount(histSequenceCount);
 
-                    long sequenceCount = reader.getCount();
-                    long denomSequenceCount = denomReader.getCount();
+                    double den = denSequenceCount;
+                    double num = numSequenceCount;
+                    double numDiscoutned = Math.max(num - d, 0.0);
 
-                    double normal = (double) sequenceCount / denomSequenceCount;
-                    double discounted = 0.0;
-
-                    writer.append(sequence, new AlphaCount(normal, discounted));
+                    writer.append(numSequence, new AlphaCount(num / den,
+                            numDiscoutned / den));
                 }
+            }
+        }
+
+        private void findSequenceInReader(CountsReader reader,
+                                          String sequence) throws Exception {
+            String seq = reader.getSequence();
+            while (seq == null || !seq.equals(sequence)) {
+                if (reader.isEof()
+                        || (seq != null && seq.compareTo(sequence) > 0))
+                    throw new Exception(String.format(
+                            "Could not find sequence '%s' in '%s'.", sequence,
+                            reader.getFile()));
+
+                reader.readLine();
+                seq = reader.getSequence();
             }
         }
     }
@@ -157,7 +199,7 @@ public class AlphaCalculator {
     private Path continuationDir;
     private Path alphaDir;
     private Path discountsFile;
-    private BlockingQueue<Pattern> patternQueue;
+    private BlockingQueue<AlphaPatterns> patternQueue;
     private int readerMemory;
     private int writerMemory;
     private Map<Pattern, Discount> discounts;
@@ -177,19 +219,7 @@ public class AlphaCalculator {
         LOGGER.debug("patterns = %s", patterns);
 
         LOGGER.debug("Filtering patterns.");
-        Set<Pattern> remaining = new HashSet<>();
-        for (Pattern pattern : patterns) {
-            if (pattern.containsAll(Arrays.asList(PatternElem.SKP,
-                    PatternElem.WSKP)))
-                continue;
-            Pattern denomPattern = pattern.set(pattern.size() - 1,
-                    pattern.isAbsolute() ? PatternElem.SKP : PatternElem.WSKP);
-            if (!status.getCounted().contains(denomPattern))
-                continue;
-            if (pattern.get(pattern.size() - 1) == PatternElem.CNT)
-                remaining.add(pattern);
-        }
-        patterns = remaining;
+        Set<AlphaPatterns> alphaPatterns = calcAlphaPatterns(status, patterns);
         LOGGER.debug("Remaining patterns = %s", patterns);
 
         if (patterns.isEmpty())
@@ -202,7 +232,7 @@ public class AlphaCalculator {
         this.continuationDir = continuationDir;
         this.alphaDir = alphaDir;
         this.discountsFile = discountsFile;
-        patternQueue = new LinkedBlockingQueue<>(patterns);
+        patternQueue = new LinkedBlockingQueue<>(alphaPatterns);
         calculateMemory();
         loadDiscounts();
 
@@ -212,6 +242,29 @@ public class AlphaCalculator {
 
         progress = OUTPUT.newProgress(patterns.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
+    }
+
+    private static Set<AlphaPatterns> calcAlphaPatterns(Status status,
+            Set<Pattern> patterns) {
+        Set<AlphaPatterns> result = new HashSet<>();
+        for (Pattern numPattern : patterns) {
+            if (numPattern.size() == 1
+                    || numPattern.get(numPattern.size() - 1) != CNT
+                    || numPattern.containsAll(Arrays.asList(PatternElem.SKP,
+                            PatternElem.WSKP)))
+                continue;
+
+            Pattern histPattern = numPattern.range(0, numPattern.size() - 1);
+            Pattern denPattern = histPattern.concat(numPattern.isAbsolute()
+                    ? SKP
+                            : WSKP);
+            if (!status.getCounted().containsAll(
+                    Arrays.asList(histPattern, numPattern, denPattern)))
+                continue;
+
+            result.add(new AlphaPatterns(histPattern, numPattern, denPattern));
+        }
+        return result;
     }
 
     private void calculateMemory() {
