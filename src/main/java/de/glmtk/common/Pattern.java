@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -44,7 +44,7 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     private String asString;
 
     /* package */Pattern(List<PatternElem> elems,
-            String asString) {
+                         String asString) {
         this.elems = elems;
         this.asString = asString;
     }
@@ -98,10 +98,21 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     }
 
     public PatternElem get(int index) {
-        if (index < 0 || index > size())
+        if (index < 0 || index >= size())
             throw new IllegalArgumentException(String.format(
                     "Illegal index: %d. Size: %d.", index, size()));
         return elems.get(index);
+    }
+
+    // TODO: untested
+    public Pattern set(int index,
+                       PatternElem elem) {
+        if (index < 0 || index >= size())
+            throw new IllegalArgumentException(String.format(
+                    "Illegal index: %d. Size: %d.", index, size()));
+        List<PatternElem> elems = new ArrayList<>(this.elems);
+        elems.set(index, elem);
+        return Patterns.get(elems);
     }
 
     public PatternElem getFirstNonSkp() {
@@ -135,12 +146,26 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
         outerLoop:
-        for (PatternElem e : this.elems) {
-            for (PatternElem elem : elems)
-                if (e.equals(elem))
-                    continue outerLoop;
+            for (PatternElem e : this.elems) {
+                for (PatternElem elem : elems)
+                    if (e.equals(elem))
+                        continue outerLoop;
+            return false;
+            }
+        return true;
+    }
+
+    // TODO: untested
+    public boolean containsAll(Collection<PatternElem> elems) {
+        if (elems.isEmpty())
+            throw new IllegalArgumentException("Argument was empty collection.");
+        outerLoop:
+            for (PatternElem e : elems) {
+                for (PatternElem elem : this.elems)
+                    if (elem.equals(e))
+                        continue outerLoop;
                 return false;
-        }
+            }
         return true;
     }
 
@@ -157,12 +182,12 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
             throw new IllegalArgumentException("Argument was empty collection.");
         int result = 0;
         outerLoop:
-            for (PatternElem elem : this.elems)
-                for (PatternElem e : elems)
-                    if (elem.equals(e)) {
-                        ++result;
-                        continue outerLoop;
-                    }
+        for (PatternElem elem : this.elems)
+            for (PatternElem e : elems)
+                if (elem.equals(e)) {
+                    ++result;
+                    continue outerLoop;
+                }
         return result;
     }
 

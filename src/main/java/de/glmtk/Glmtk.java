@@ -44,8 +44,6 @@ import de.glmtk.counting.LengthDistributionCalculator;
 import de.glmtk.counting.Merger;
 import de.glmtk.counting.NGramTimesCounter;
 import de.glmtk.counting.Tagger;
-import de.glmtk.learning.modkneserney.AlphaCalculator;
-import de.glmtk.learning.modkneserney.DiscountCalculator;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.QueryCacherCreator;
 import de.glmtk.querying.QueryMode;
@@ -104,8 +102,8 @@ public class Glmtk {
     private NGramTimesCounter nGramTimesCounter;
     private LengthDistributionCalculator lengthDistributionCalculator;
 
-    private DiscountCalculator modKneserNeyDiscountCalculator;
-    private AlphaCalculator alphaCalculator;
+    private de.glmtk.learning.modkneserney.DiscountCalculator modKneserNeyDiscountCalculator;
+    private de.glmtk.learning.modkneserney.AlphaCalculator modKneserNeyAlphaCalculator;
 
     private QueryCacherCreator queryCacherCreator;
     private QueryRunner queryRunner;
@@ -132,8 +130,10 @@ public class Glmtk {
         nGramTimesCounter = new NGramTimesCounter(config);
         lengthDistributionCalculator = new LengthDistributionCalculator(config);
 
-        modKneserNeyDiscountCalculator = new DiscountCalculator(config);
-        alphaCalculator = new AlphaCalculator(config);
+        modKneserNeyDiscountCalculator = new de.glmtk.learning.modkneserney.DiscountCalculator(
+                config);
+        modKneserNeyAlphaCalculator = new de.glmtk.learning.modkneserney.AlphaCalculator(
+                config);
 
         queryCacherCreator = new QueryCacherCreator(config);
         queryRunner = new QueryRunner(config);
@@ -282,7 +282,7 @@ public class Glmtk {
                 status.getCounted(false));
     }
 
-    public void learnModKneserNey() throws IOException {
+    public void learnModKneserNey() throws Exception {
         String message = "Learning Language Model 'Modified Kneser Ney'";
         OUTPUT.beginPhases(message + "...");
 
@@ -290,6 +290,10 @@ public class Glmtk {
 
         modKneserNeyDiscountCalculator.calculateDiscounts(status,
                 paths.getNGramTimesFile(), paths.getModKneserNeyDiscountsFile());
+        modKneserNeyAlphaCalculator.calculateAlphas(status,
+                status.getCounted(), paths.getAbsoluteDir(),
+                paths.getContinuationDir(), paths.getModKneserNeyAlphaDir(),
+                paths.getModKneserNeyDiscountsFile());
 
         long mknSize = NioUtils.calcFileSize(paths.getModKneserNeyDir());
         OUTPUT.endPhases(String.format("%s done (uses %s).", message,
