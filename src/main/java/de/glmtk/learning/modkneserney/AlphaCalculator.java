@@ -262,7 +262,7 @@ public class AlphaCalculator {
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
-        progress = OUTPUT.newProgress(patterns.size());
+        progress = OUTPUT.newProgress(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
     }
 
