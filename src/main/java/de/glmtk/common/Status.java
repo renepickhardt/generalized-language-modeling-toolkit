@@ -75,7 +75,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                    BeanAccess beanAccess) throws IntrospectionException {
+                                                      BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -172,9 +172,9 @@ public class Status {
                             for (Training training : Training.values())
                                 possible.add(training.toString());
                             throw newFileFormatException(
-                                    "Illegal training value: '%s'. Possible values: '%s'.",
-                                    trainingStr, StringUtils.join(possible,
-                                            "', '"));
+                                                         "Illegal training value: '%s'. Possible values: '%s'.",
+                                                         trainingStr, StringUtils.join(possible,
+                                                                 "', '"));
                         }
                         break;
 
@@ -212,7 +212,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                                             patternStr, e.getMessage());
+                        patternStr, e.getMessage());
             }
         }
 
@@ -237,8 +237,8 @@ public class Status {
                 Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
                     throw newFileFormatException(
-                                                 "Map contains pattern multiple times as key: '%s'.",
-                                                 pattern);
+                            "Map contains pattern multiple times as key: '%s'.",
+                            pattern);
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
@@ -255,8 +255,8 @@ public class Status {
                 String name = parseScalar();
                 if (queryCaches.containsKey(name))
                     throw newFileFormatException(
-                            "QueryCache name occurs multiple times: '%s'.",
-                            name);
+                                                 "QueryCache name occurs multiple times: '%s'.",
+                                                 name);
                 nextEvent();
                 QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
@@ -367,12 +367,12 @@ public class Status {
         }
     }
 
-    private Set<Pattern> counted(boolean continuation) {
-        return !continuation ? absoluteCounted : continuationCounted;
+    private Set<Pattern> counted(boolean absolute) {
+        return absolute ? absoluteCounted : continuationCounted;
     }
 
-    private Map<Pattern, Set<String>> chunked(boolean continuation) {
-        return !continuation ? absoluteChunked : continuationChunked;
+    private Map<Pattern, Set<String>> chunked(boolean absolute) {
+        return absolute ? absoluteChunked : continuationChunked;
     }
 
     public Set<Pattern> getCounted() {
@@ -381,60 +381,59 @@ public class Status {
         }
     }
 
-    public Set<Pattern> getCounted(boolean continuation) {
+    public Set<Pattern> getCounted(boolean absolute) {
         synchronized (this) {
-            return Collections.unmodifiableSet(counted(continuation));
+            return Collections.unmodifiableSet(counted(absolute));
         }
     }
 
-    public Set<Pattern> getChunkedPatterns(boolean continuation) {
+    public Set<Pattern> getChunkedPatterns(boolean absolute) {
         synchronized (this) {
-            return Collections.unmodifiableSet(chunked(continuation).keySet());
+            return Collections.unmodifiableSet(chunked(absolute).keySet());
         }
     }
 
-    public Set<String> getChunksForPattern(boolean continuation,
-            Pattern pattern) {
+    public Set<String> getChunksForPattern(Pattern pattern) {
         synchronized (this) {
-            return Collections.unmodifiableSet(chunked(continuation).get(
-                    pattern));
+            boolean isAbsolute = pattern.isAbsolute();
+            return Collections.unmodifiableSet(chunked(isAbsolute).get(pattern));
         }
     }
 
-    public void setChunksForPattern(boolean continuation,
-                                    Pattern pattern,
+    public void setChunksForPattern(Pattern pattern,
                                     Collection<String> chunks) throws IOException {
         synchronized (this) {
+            boolean isAbsolute = pattern.isAbsolute();
             chunked.put(pattern, new TreeSet<>(chunks));
-            chunked(continuation).put(pattern, new TreeSet<>(chunks));
+            chunked(isAbsolute).put(pattern, new TreeSet<>(chunks));
             writeStatusToFile();
         }
     }
 
-    public void performMergeForChunks(boolean continuation,
-                                      Pattern pattern,
+    public void performMergeForChunks(Pattern pattern,
                                       Collection<String> mergedChunks,
                                       String mergeFile) throws IOException {
         synchronized (this) {
+            boolean isAbsolute = pattern.isAbsolute();
             Set<String> chunks = chunked.get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
-            chunks = chunked(continuation).get(pattern);
+            chunks = chunked(isAbsolute).get(pattern);
             chunks.removeAll(mergedChunks);
             chunks.add(mergeFile);
             writeStatusToFile();
         }
     }
 
-    public void finishMerge(boolean continuation,
-                            Pattern pattern) throws IOException {
+    public void finishMerge(Pattern pattern) throws IOException {
         synchronized (this) {
+            boolean isAbsolute = pattern.isAbsolute();
             nGramTimesCounted = false;
             lengthDistribution = false;
             counted.add(pattern);
-            counted(continuation).add(pattern);
+            counted(isAbsolute).add(pattern);
             chunked.remove(pattern);
-            chunked(continuation).remove(pattern);
+            chunked(isAbsolute).remove(pattern);
             writeStatusToFile();
         }
     }
@@ -547,7 +546,7 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                            : continuationDir;
+                    : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
                 throw new WrongStatusException(name + " pattern " + pattern,

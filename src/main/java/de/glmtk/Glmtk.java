@@ -206,10 +206,10 @@ public class Glmtk {
                 paths.getAbsoluteDir());
 
         Set<Pattern> countingPatterns = new HashSet<>(neededPatterns);
-        countingPatterns.removeAll(status.getCounted(false));
+        countingPatterns.removeAll(status.getCounted(true));
 
         Set<Pattern> chunkingPatterns = new HashSet<>(countingPatterns);
-        chunkingPatterns.removeAll(status.getChunkedPatterns(false));
+        chunkingPatterns.removeAll(status.getChunkedPatterns(true));
 
         LOGGER.debug("neededPatterns   = %s", neededPatterns);
         LOGGER.debug("countingPatterns = %s", countingPatterns);
@@ -220,12 +220,12 @@ public class Glmtk {
                 status.getTraining() == Training.TAGGED,
                 paths.getAbsoluteChunkedDir());
         validateExpectedResults("Absolute chunking", chunkingPatterns,
-                status.getChunkedPatterns(false));
+                status.getChunkedPatterns(true));
 
         merger.mergeAbsolute(status, countingPatterns,
                 paths.getAbsoluteChunkedDir(), paths.getAbsoluteDir());
         validateExpectedResults("Absolute counting", countingPatterns,
-                status.getCounted(false));
+                status.getCounted(true));
     }
 
     private void countContinuation(Set<Pattern> neededPatterns) throws Exception {
@@ -233,10 +233,10 @@ public class Glmtk {
                 paths.getAbsoluteDir(), paths.getContinuationDir());
 
         Set<Pattern> countingPatterns = new HashSet<>(neededPatterns);
-        countingPatterns.removeAll(status.getCounted(true));
+        countingPatterns.removeAll(status.getCounted(false));
 
         Set<Pattern> chunkingPatterns = new HashSet<>(countingPatterns);
-        chunkingPatterns.removeAll(status.getChunkedPatterns(true));
+        chunkingPatterns.removeAll(status.getChunkedPatterns(false));
 
         LOGGER.debug("neededPatterns   = %s", neededPatterns);
         LOGGER.debug("countingPatterns = %s", countingPatterns);
@@ -247,12 +247,12 @@ public class Glmtk {
                 paths.getAbsoluteChunkedDir(),
                 paths.getContinuationChunkedDir());
         validateExpectedResults("Continuation chunking", chunkingPatterns,
-                status.getChunkedPatterns(true));
+                status.getChunkedPatterns(false));
 
         merger.mergeContinuation(status, countingPatterns,
                 paths.getContinuationChunkedDir(), paths.getContinuationDir());
         validateExpectedResults("Continuation counting", countingPatterns,
-                status.getCounted(true));
+                status.getCounted(false));
     }
 
     public CountCache getOrCreateCountCache() throws Exception {

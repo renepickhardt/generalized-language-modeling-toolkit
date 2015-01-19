@@ -15,9 +15,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
-import de.glmtk.common.Config;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import edu.stanford.nlp.ling.HasWord;
@@ -26,6 +26,8 @@ import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 public class Tagger {
+    public static final char POS_SEPARATOR = '/';
+
     private static final Logger LOGGER = LogManager.getFormatterLogger(Tagger.class);
 
     public static boolean detectFileTagged(Path file) throws IOException {

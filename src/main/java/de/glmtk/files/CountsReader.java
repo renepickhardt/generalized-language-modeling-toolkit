@@ -1,20 +1,17 @@
 package de.glmtk.files;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 
-import de.glmtk.common.Counts;
+import de.glmtk.counts.Counts;
 import de.glmtk.exceptions.FileFormatException;
-import de.glmtk.util.NioUtils;
 import de.glmtk.util.ObjectUtils;
 import de.glmtk.util.StringUtils;
 
-public class CountsReader implements Closeable, AutoCloseable {
+public class CountsReader extends AbstractFileReader {
     public static final Comparator<CountsReader> SEQUENCE_COMPARATOR = new Comparator<CountsReader>() {
         @Override
         public int compare(CountsReader lhs,
@@ -30,19 +27,6 @@ public class CountsReader implements Closeable, AutoCloseable {
         }
     };
 
-    private static long parseLong(String value) throws NumberFormatException {
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            throw new NumberFormatException(String.format(
-                    "Unable to parse '%s' as a floating point.", value));
-        }
-    }
-
-    private Path file;
-    private BufferedReader reader;
-    private int lineNo;
-    private String line;
     private String sequence;
     private Counts counts;
     private boolean fromAbsolute;
@@ -55,42 +39,36 @@ public class CountsReader implements Closeable, AutoCloseable {
     public CountsReader(Path file,
                         Charset charset,
                         int sz) throws IOException {
-        this.file = file;
-        reader = NioUtils.newBufferedReader(file, charset, sz);
-        lineNo = -1;
-        line = "undefined"; // so isEof() is not true if nothing has been read.
+        super(file, charset, sz);
         sequence = null;
         counts = null;
         fromAbsolute = true;
     }
 
-    public String readLine() throws IOException {
-        line = reader.readLine();
-        ++lineNo;
+    @Override
+    protected void parseLine() {
         if (line == null) {
             sequence = null;
             counts = null;
-            return null;
+            return;
         }
 
         try {
             List<String> split = StringUtils.splitAtChar(line, '\t');
             sequence = split.get(0);
-            counts = new Counts();
             if (split.size() == 2) {
                 fromAbsolute = true;
-                counts.set(parseLong(split.get(1)), 0L, 0L, 0L);
+                counts = new Counts(parseNumber(split.get(1)), 0L, 0L, 0L);
             } else if (split.size() == 5) {
                 fromAbsolute = false;
-                counts.set(parseLong(split.get(1)), parseLong(split.get(2)),
-                        parseLong(split.get(3)), parseLong(split.get(4)));
+                counts = new Counts(parseNumber(split.get(1)),
+                        parseNumber(split.get(2)), parseNumber(split.get(3)),
+                        parseNumber(split.get(4)));
             } else
                 throw new IllegalArgumentException(
                         "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
-
-            return line;
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "chunk",
+            throw new FileFormatException(line, lineNo, file, "counts",
                     e.getMessage());
         }
     }
@@ -109,14 +87,5 @@ public class CountsReader implements Closeable, AutoCloseable {
 
     public boolean isFromAbsolute() {
         return fromAbsolute;
-    }
-
-    public boolean isEof() {
-        return line == null;
-    }
-
-    @Override
-    public void close() throws IOException {
-        reader.close();
     }
 }

@@ -1,4 +1,4 @@
-package de.glmtk.common;
+package de.glmtk.counts;
 
 /**
  * This class is used for counting continuation counts It is also a wrapper
@@ -12,10 +12,7 @@ public class Counts {
     private long threePlusCount;
 
     public Counts() {
-        onePlusCount = 0;
-        oneCount = 0;
-        twoCount = 0;
-        threePlusCount = 0;
+        this(0L, 0L, 0L, 0L);
     }
 
     public Counts(long onePlusCount,

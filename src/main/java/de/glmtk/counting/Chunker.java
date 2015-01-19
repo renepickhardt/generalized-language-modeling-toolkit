@@ -31,11 +31,11 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Counts;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.counts.Counts;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.CountsWriter;
 import de.glmtk.util.NioUtils;
@@ -59,7 +59,7 @@ public class Chunker {
         @Override
         public Object call() throws Exception {
             while (!patternQueue.isEmpty()) {
-                pattern = patternQueue.poll(Constants.QUEUE_TIMEOUT,
+                pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
                         TimeUnit.MILLISECONDS);
                 if (pattern == null)
                     continue;
@@ -76,7 +76,7 @@ public class Chunker {
 
                 LOGGER.debug("Chunking pattern '%s'.", pattern);
 
-                if (!continuation)
+                if (absolute)
                     patternDir = absoluteChunkedDir.resolve(pattern.toString());
                 else
                     patternDir = continuationChunkedDir.resolve(pattern.toString());
@@ -92,7 +92,7 @@ public class Chunker {
                 writeChunkToFile(); // Write remaining partial chunk.
                 chunkCounts = null; // Free memory of map.
 
-                status.setChunksForPattern(continuation, pattern, chunkFiles);
+                status.setChunksForPattern(pattern, chunkFiles);
 
                 LOGGER.debug("Finished pattern '%s'.", pattern);
 
@@ -119,7 +119,7 @@ public class Chunker {
                 for (Entry<String, Counts> entry : sortedCounts.entrySet()) {
                     String sequence = entry.getKey();
                     Counts counts = entry.getValue();
-                    if (!continuation)
+                    if (absolute)
                         writer.append(sequence, counts.getOnePlusCount());
                     else
                         writer.append(sequence, counts);
@@ -203,19 +203,19 @@ public class Chunker {
             boolean fromChunked;
 
             boolean isAbsolute = inputPattern.isAbsolute();
-            if (isAbsolute && status.getCounted(false).contains(inputPattern)) {
+            if (isAbsolute && status.getCounted(true).contains(inputPattern)) {
                 inputDir = absoluteDir;
                 fromChunked = false;
             } else if (isAbsolute
-                    && status.getChunkedPatterns(false).contains(inputPattern)) {
+                    && status.getChunkedPatterns(true).contains(inputPattern)) {
                 inputDir = absoluteChunkedDir;
                 fromChunked = true;
             } else if (!isAbsolute
-                    && status.getCounted(true).contains(inputPattern)) {
+                    && status.getCounted(false).contains(inputPattern)) {
                 inputDir = continuationDir;
                 fromChunked = false;
             } else if (!isAbsolute
-                    && status.getChunkedPatterns(true).contains(inputPattern)) {
+                    && status.getChunkedPatterns(false).contains(inputPattern)) {
                 inputDir = continuationChunkedDir;
                 fromChunked = true;
             } else
@@ -283,7 +283,7 @@ public class Chunker {
     private Config config;
 
     private Progress progress;
-    private boolean continuation;
+    private boolean absolute;
     private Status status;
     private Path trainingFile;
     private boolean trainingFileTagged;
@@ -311,7 +311,7 @@ public class Chunker {
         this.trainingFile = trainingFile;
         this.trainingFileTagged = trainingFileTagged;
         this.absoluteChunkedDir = absoluteChunkedDir;
-        chunk(false, patterns);
+        chunk(true, patterns);
     }
 
     public void chunkContinuation(Status status,
@@ -326,21 +326,21 @@ public class Chunker {
         this.absoluteChunkedDir = absoluteChunkedDir;
         this.continuationDir = continuationDir;
         this.continuationChunkedDir = continuationChunkedDir;
-        chunk(true, patterns);
+        chunk(false, patterns);
     }
 
-    private void chunk(boolean continuation,
+    private void chunk(boolean absolute,
                        Set<Pattern> patterns) throws Exception {
         LOGGER.debug("patterns = '%s'", patterns);
         if (patterns.isEmpty())
             return;
 
-        this.continuation = continuation;
+        this.absolute = absolute;
         patternQueue = new PriorityBlockingQueue<>(patterns.size());
         patternQueue.addAll(patterns);
         calculateMemory();
 
-        if (continuation
+        if (absolute
                 || Files.size(trainingFile) < config.getMemoryCacheThreshold())
             trainingCache = null;
         else {
@@ -356,7 +356,7 @@ public class Chunker {
 
         List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
-            if (!continuation)
+            if (absolute)
                 threads.add(new AbsoluteThread());
             else
                 threads.add(new ContinuationThread());

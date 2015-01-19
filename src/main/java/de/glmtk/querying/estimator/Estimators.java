@@ -4,7 +4,7 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
 import de.glmtk.querying.estimator.combination.CombinationEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteDiscountEstimator;
-import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.FalseMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
@@ -166,7 +166,7 @@ public class Estimators {
     }
 
     public static final InterpolEstimator MOD_KNESER_NEY_ABS = new InterpolEstimator(
-            new ModifiedKneserNeyDiscountEstimator(
+            new ModKneserNeyDiscountEstimator(
                     new MaximumLikelihoodEstimator()), BackoffMode.DEL);
     static {
         MOD_KNESER_NEY_ABS.setName("Modified-Kneser-Ney (Abs-Lower-Order)");
@@ -193,27 +193,27 @@ public class Estimators {
     }
 
     public static final DiffInterpolEstimator GLM_ABS = new DiffInterpolEstimator(
-            new ModifiedKneserNeyDiscountEstimator(
+            new ModKneserNeyDiscountEstimator(
                     new MaximumLikelihoodEstimator()), BackoffMode.SKP);
     static {
         GLM_ABS.setName("Generalized-Language-Model (Abs-Lower-Order)");
     }
 
     private static InterpolEstimator makeMkn(BackoffMode BackoffMode) {
-        ModifiedKneserNeyDiscountEstimator alpha = new ModifiedKneserNeyDiscountEstimator(
+        ModKneserNeyDiscountEstimator alpha = new ModKneserNeyDiscountEstimator(
                 new MaximumLikelihoodEstimator());
         InterpolEstimator beta = new InterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
                         BackoffMode);
         return new InterpolEstimator(alpha, beta, BackoffMode);
     }
 
     private static DiffInterpolEstimator makeGlm(BackoffMode BackoffMode) {
-        ModifiedKneserNeyDiscountEstimator alpha = new ModifiedKneserNeyDiscountEstimator(
+        ModKneserNeyDiscountEstimator alpha = new ModKneserNeyDiscountEstimator(
                 new MaximumLikelihoodEstimator());
         DiffInterpolEstimator beta = new DiffInterpolEstimator(
-                new ModifiedKneserNeyDiscountEstimator(
+                new ModKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
                 BackoffMode);
         return new DiffInterpolEstimator(alpha, beta, BackoffMode);

@@ -125,8 +125,8 @@ public class Config {
             long result = parseLongMiB();
             if (result >= Integer.MAX_VALUE)
                 throw newFileFormatException(
-                                             "Given memory value is to large for integer: %s resp. %d bytes.",
-                                             humanReadableByteCount(result), result);
+                        "Given memory value is to large for integer: %s resp. %d bytes.",
+                        humanReadableByteCount(result), result);
             return (int) result;
         }
 
@@ -273,8 +273,9 @@ public class Config {
             throw new NoSuchFileException(
                     String.format(
                             "Config file missing: Could not open '%s'.%n"
-                                    + "Did you copy '%s.sample' in your installation directory to '%s'?",
-                                    file, Constants.CONFIG_FILE, Constants.CONFIG_FILE));
+                                    + "Did you copy '%s.sample' to '%s' in the installation directory '%s'?",
+                            file, Constants.CONFIG_FILE, Constants.CONFIG_FILE,
+                            GlmtkPaths.GLMTK_DIR));
         }
     }
 }

@@ -3,13 +3,14 @@ package de.glmtk.querying.estimator.interpol;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.CountCache;
-import de.glmtk.common.Counts;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
+import de.glmtk.counts.Counts;
+import de.glmtk.counts.Discount;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
-import de.glmtk.querying.estimator.discount.ModifiedKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 
 public class InterpolEstimator extends Estimator {
     protected DiscountEstimator alpha;
@@ -105,13 +106,13 @@ public class InterpolEstimator extends Estimator {
         }
 
         NGram historyPlusWskp = history.concat(WSKP_WORD);
-        if (alpha.getClass() == ModifiedKneserNeyDiscountEstimator.class) {
-            ModifiedKneserNeyDiscountEstimator a = (ModifiedKneserNeyDiscountEstimator) alpha;
+        if (alpha.getClass() == ModKneserNeyDiscountEstimator.class) {
+            ModKneserNeyDiscountEstimator a = (ModKneserNeyDiscountEstimator) alpha;
             Pattern pattern = history.getPattern();
-            double[] d = a.getDiscounts(pattern);
-            double d1 = d[0];
-            double d2 = d[1];
-            double d3p = d[2];
+            Discount discount = a.getDiscounts(pattern);
+            double d1 = discount.getOne();
+            double d2 = discount.getTwo();
+            double d3p = discount.getThree();
 
             Counts continuation = countCache.getContinuation(historyPlusWskp);
             double n1 = continuation.getOneCount();

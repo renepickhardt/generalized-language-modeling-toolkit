@@ -4,7 +4,6 @@ import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -12,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -28,6 +28,7 @@ import de.glmtk.common.Config;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.StringUtils;
+import de.glmtk.util.ThreadUtils;
 
 /* package */abstract class Executable {
     private static Logger LOGGER = LogManager.getFormatterLogger(Executable.class);
@@ -131,7 +132,7 @@ import de.glmtk.util.StringUtils;
         }
     }
 
-    private void printLogHeader(String[] args) throws IOException, InterruptedException {
+    private void printLogHeader(String[] args) {
         LOGGER.info(StringUtils.repeat("=", 80));
         LOGGER.info(getClass().getSimpleName());
 
@@ -139,15 +140,21 @@ import de.glmtk.util.StringUtils;
 
         // TODO: what happens if git is not installed? Distributing a standalone jar makes this situation likely
         // log git commit
-        Process gitLogProc = Runtime.getRuntime().exec(
-                new String[] {"git", "log", "-1", "--format=%H: %s"}, null,
-                GlmtkPaths.GLMTK_DIR.toFile());
-        gitLogProc.waitFor();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                gitLogProc.getInputStream(), Constants.CHARSET))) {
-            String gitCommit = reader.readLine();
-            LOGGER.info("Git Commit: %s", gitCommit);
+        String gitCommit = "unavailable";
+        try {
+            Process gitLogProc = Runtime.getRuntime().exec(
+                    new String[] {"git", "log", "-1", "--format=%H: %s"}, null,
+                    GlmtkPaths.GLMTK_DIR.toFile());
+            ThreadUtils.executeProcess(gitLogProc, Constants.MAX_IDLE_TIME,
+                    TimeUnit.MILLISECONDS);
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(gitLogProc.getInputStream(),
+                            Constants.CHARSET))) {
+                gitCommit = reader.readLine();
+            }
+        } catch (Throwable e) {
         }
+        LOGGER.info("Git Commit: %s", gitCommit);
 
         // log arguments
         LOGGER.info("Arguments: %s", StringUtils.join(args, " "));

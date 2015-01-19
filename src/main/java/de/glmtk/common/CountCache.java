@@ -5,7 +5,6 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.common.PatternElem.CNT;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -26,10 +25,12 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
-import de.glmtk.exceptions.FileFormatException;
+import de.glmtk.counts.Counts;
+import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
+import de.glmtk.files.LengthDistributionReader;
+import de.glmtk.files.NGramTimesReader;
 import de.glmtk.util.CollectionUtils;
-import de.glmtk.util.StringUtils;
 
 /**
  * Tests for this class can be found in {@link de.glmtk.counting.CountingTest}.
@@ -53,7 +54,7 @@ public class CountCache {
     private Progress progress;
     private Map<Pattern, Map<String, Long>> absolute;
     private Map<Pattern, Map<String, Counts>> continuation;
-    private Map<Pattern, long[]> nGramTimes;
+    private Map<Pattern, NGramTimes> nGramTimes;
     private List<Double> lengthFrequencies;
 
     public CountCache(Set<Pattern> patterns,
@@ -104,8 +105,8 @@ public class CountCache {
         return counts == null ? new Counts() : counts;
     }
 
-    public long[] getNGramTimes(Pattern pattern) {
-        long[] counts = nGramTimes.get(pattern);
+    public NGramTimes getNGramTimes(Pattern pattern) {
+        NGramTimes counts = nGramTimes.get(pattern);
         if (counts == null)
             throw new IllegalStateException(
                     String.format(
@@ -118,7 +119,7 @@ public class CountCache {
         if (length < 1)
             throw new IllegalArgumentException(
                     String.format(
-                            "Illegal sequence length: '%d'. Must be a positive integer.",
+                            "Illegal sequence length requested: '%d'. Must be a positive integer.",
                             length));
         if (length >= lengthFrequencies.size())
             return 0.0;
@@ -184,42 +185,10 @@ public class CountCache {
     private void loadNGramTimes(Path file) throws IOException {
         LOGGER.debug("Loading NGram times counts...");
         nGramTimes = new HashMap<>();
-        try (BufferedReader reader = Files.newBufferedReader(file,
+        try (NGramTimesReader reader = new NGramTimesReader(file,
                 Constants.CHARSET)) {
-            String line;
-            int lineNo = 0;
-            while ((line = reader.readLine()) != null) {
-                ++lineNo;
-                List<String> split = StringUtils.splitAtChar(line, '\t');
-
-                if (split.size() != 5)
-                    throw new FileFormatException(
-                            line,
-                            lineNo,
-                            file,
-                            "ngram times",
-                            "Expected line to have format '<pattern>\\t<count>\\t<count>\\t<count>\\t<count>'.");
-
-                Pattern pattern = null;
-                try {
-                    pattern = Patterns.get(split.get(0));
-                } catch (RuntimeException e) {
-                    throw new FileFormatException(line, lineNo, file,
-                            "ngram times",
-                            "Unable to parse '%s' as a pattern.", split.get(0));
-                }
-                long[] counts = new long[4];
-                for (int i = 0; i != 4; ++i)
-                    try {
-                        counts[i] = Long.parseLong(split.get(i + 1));
-                    } catch (NumberFormatException e) {
-                        throw new FileFormatException(line, lineNo, file,
-                                "ngram times",
-                                "Unable to parse '%d' as an intger.",
-                                split.get(i + 1));
-                    }
-                nGramTimes.put(pattern, counts);
-            }
+            while (reader.readLine() != null)
+                nGramTimes.put(reader.getPattern(), reader.getNGramTimes());
         }
         progress.increase(1);
     }
@@ -227,37 +196,11 @@ public class CountCache {
     private void loadLengthDistribution(Path file) throws IOException {
         LOGGER.debug("Loading Sequence Length Distribution...");
         lengthFrequencies = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(file,
-                Constants.CHARSET)) {
-            String line;
-            int lineNo = 0;
-            while ((line = reader.readLine()) != null) {
-                ++lineNo;
-                List<String> split = StringUtils.splitAtChar(line, '\t');
-
-                if (split.size() != 2)
-                    throw new FileFormatException(line, lineNo, file,
-                            "length distribution",
-                            "Expected line to have format '<sequence-length>\\t<frequency>'.");
-
-                int length = 0;
-                try {
-                    length = Integer.parseInt(split.get(0));
-                } catch (NumberFormatException e) {
-                    throw new FileFormatException(line, lineNo, file,
-                            "length distribution",
-                            "Unable to parse '%s' as an integer.", split.get(0));
-                }
-
-                double frequency = 0.0;
-                try {
-                    frequency = Double.parseDouble(split.get(1));
-                } catch (NumberFormatException e) {
-                    throw new FileFormatException(line, lineNo, file,
-                            "length distribution",
-                            "Unable to parse '%s' as a floating point number.",
-                            split.get(1));
-                }
+        try (LengthDistributionReader reader = new LengthDistributionReader(
+                file, Constants.CHARSET)) {
+            while (reader.readLine() != null) {
+                int length = reader.getLength();
+                double frequency = reader.getFrequency();
 
                 CollectionUtils.ensureListSize(lengthFrequencies, length, 0.0);
                 lengthFrequencies.set(length, frequency);
