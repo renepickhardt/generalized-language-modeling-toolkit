@@ -64,6 +64,34 @@ import de.glmtk.util.ThreadUtils;
 public class AlphaCalculator {
     private static final Logger LOGGER = LogManager.getFormatterLogger(AlphaCalculator.class);
 
+    private static Set<Pattern> filterPatterns(Status status,
+                                               Set<Pattern> patterns) {
+        Set<Pattern> counted = status.getCounted();
+
+        Set<Pattern> result = new HashSet<>();
+        for (Pattern numPattern : patterns) {
+            if (numPattern.get(numPattern.size() - 1) != CNT)
+                continue;
+
+            if (numPattern.containsAll(Arrays.asList(PatternElem.SKP,
+                    PatternElem.WSKP)))
+                continue;
+
+            if (!counted.contains(numPattern))
+                continue;
+
+            if (!counted.contains(getDenPattern(numPattern)))
+                continue;
+
+            if (numPattern.size() != 1
+                    && !counted.contains(getHistPattern(numPattern)))
+                continue;
+
+            result.add(numPattern);
+        }
+        return result;
+    }
+
     private static Pattern getDenPattern(Pattern numPattern) {
         PatternElem last = numPattern.isAbsolute() ? SKP : WSKP;
         return numPattern.set(numPattern.size() - 1, last);
@@ -81,6 +109,7 @@ public class AlphaCalculator {
         private Path numCountFile;
         private Path denCountFile;
         private Path alphaFile;
+        private boolean checkHistory;
 
         @Override
         public Object call() throws Exception {
@@ -104,6 +133,8 @@ public class AlphaCalculator {
                 histCountFile = histCountFile.resolve(histPattern.toString());
                 alphaFile = alphaDir.resolve(numPattern.toString());
 
+                checkHistory = numPattern.size() != 1;
+
                 calculateAlphasForPattern();
 
                 status.addModelAlpha(Constants.MODEL_MODKNESERNEY_NAME,
@@ -121,40 +152,48 @@ public class AlphaCalculator {
         }
 
         private void calculateAlphasForPattern() throws Exception {
-            Discount discount = discounts.get(histPattern);
+            Discount discount = null;
+            if (checkHistory)
+                discount = discounts.get(histPattern);
 
             try (CountsReader numReader = new CountsReader(numCountFile,
                     Constants.CHARSET, readerMemory / 3);
                     CountsReader denReader = new CountsReader(denCountFile,
                             Constants.CHARSET, readerMemory / 3);
-                    CountsReader histReader = new CountsReader(histCountFile,
-                            Constants.CHARSET, readerMemory / 3);
+                    CountsReader histReader = !checkHistory
+                            ? null
+                                    : new CountsReader(histCountFile,
+                                            Constants.CHARSET, readerMemory / 3);
                     AlphaCountWriter writer = new AlphaCountWriter(alphaFile,
                             Constants.CHARSET, writerMemory)) {
                 while (numReader.readLine() != null) {
                     String numSequence = numReader.getSequence();
                     List<String> split = StringUtils.splitAtChar(numSequence,
                             ' ');
+
                     split.remove(split.size() - 1);
                     String histSequence = StringUtils.join(split, ' ');
-                    String denSequence = histSequence + " "
-                            + (numPattern.isAbsolute() ? SKP_WORD : WSKP_WORD);
 
-                    findSequenceInReader(histReader, histSequence);
+                    split.add(numPattern.isAbsolute() ? SKP_WORD : WSKP_WORD);
+                    String denSequence = StringUtils.join(split, ' ');
+
                     findSequenceInReader(denReader, denSequence);
 
-                    long histSequenceCount = histReader.getCount();
-                    long numSequenceCount = numReader.getCount();
-                    long denSequenceCount = denReader.getCount();
+                    double num = numReader.getCount();
+                    double den = denReader.getCount();
 
-                    double d = discount.getForCount(histSequenceCount);
+                    double normal = num / den;
+                    double discounted = Double.NaN;
 
-                    double den = denSequenceCount;
-                    double num = numSequenceCount;
-                    double numDiscounted = Math.max(num - d, 0.0);
+                    if (checkHistory) {
+                        findSequenceInReader(histReader, histSequence);
 
-                    writer.append(numSequence, new AlphaCount(num / den,
-                            numDiscounted / den));
+                        double d = discount.getForCount(histReader.getCount());
+                        discounted = Math.max(num - d, 0.0) / den;
+                    }
+
+                    writer.append(numSequence, new AlphaCount(normal,
+                            discounted));
                 }
             }
         }
@@ -227,28 +266,6 @@ public class AlphaCalculator {
 
         progress = OUTPUT.newProgress(patterns.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
-    }
-
-    private static Set<Pattern> filterPatterns(Status status,
-                                               Set<Pattern> patterns) {
-        Set<Pattern> result = new HashSet<>();
-        for (Pattern numPattern : patterns) {
-            if (numPattern.size() == 1
-                    || numPattern.get(numPattern.size() - 1) != CNT
-                    || numPattern.containsAll(Arrays.asList(PatternElem.SKP,
-                            PatternElem.WSKP)))
-                continue;
-
-            Pattern denPattern = getDenPattern(numPattern);
-            Pattern histPattern = getHistPattern(numPattern);
-
-            if (!status.getCounted().containsAll(
-                    Arrays.asList(numPattern, denPattern, histPattern)))
-                continue;
-
-            result.add(numPattern);
-        }
-        return result;
     }
 
     private void calculateMemory() {

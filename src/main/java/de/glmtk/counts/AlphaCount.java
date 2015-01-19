@@ -29,7 +29,7 @@ public class AlphaCount {
     }
 
     public AlphaCount(double normal,
-                       double discounted) {
+                      double discounted) {
         set(normal, discounted);
     }
 
