@@ -112,11 +112,16 @@ public class PatternTest {
         Pattern a = Patterns.get("101x");
         assertTrue(a.contains(CNT));
         assertFalse(a.contains(POS));
-        assertTrue(a.contains(Arrays.asList(CNT, SKP)));
-        assertFalse(a.contains(Arrays.asList(POS, PSKP)));
+    }
+
+    @Test
+    public void testContainsAny() {
+        Pattern a = Patterns.get("101x");
+        assertTrue(a.containsAny(Arrays.asList(CNT, SKP)));
+        assertFalse(a.containsAny(Arrays.asList(POS, PSKP)));
 
         try {
-            a.contains(new ArrayList<PatternElem>());
+            a.containsAny(new ArrayList<PatternElem>());
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
         }
@@ -145,7 +150,7 @@ public class PatternTest {
         Pattern c = Patterns.get();
         assertFalse(c.contains(CNT));
         assertTrue(c.containsOnly(CNT));
-        assertFalse(c.contains(Arrays.asList(CNT, SKP)));
+        assertFalse(c.containsAny(Arrays.asList(CNT, SKP)));
         assertTrue(c.containsOnly(Arrays.asList(CNT, SKP)));
     }
 
