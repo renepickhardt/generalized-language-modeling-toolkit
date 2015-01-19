@@ -38,6 +38,12 @@ import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 public class Logger implements org.slf4j.Logger {
     private static String FCQN = Logger.class.getName();
 
+    private static boolean traceEnabled = true;
+    private static boolean debugEnabled = true;
+    private static boolean infoEnabled = true;
+    private static boolean warnEnabled = true;
+    private static boolean errorEnabled = true;
+
     public static enum Level {
         TRACE,
         DEBUG,
@@ -67,6 +73,49 @@ public class Logger implements org.slf4j.Logger {
         return new Logger(clazz);
     }
 
+    public static void setTraceEnabled(boolean traceEnabled) {
+        Logger.traceEnabled = traceEnabled;
+    }
+
+    public static void setDebugEnabled(boolean debugEnabled) {
+        Logger.debugEnabled = debugEnabled;
+    }
+
+    public static void setInfoEnabled(boolean infoEnabled) {
+        Logger.infoEnabled = infoEnabled;
+    }
+
+    public static void setWarnEnabled(boolean warnEnabled) {
+        Logger.warnEnabled = warnEnabled;
+    }
+
+    public static void setErrorEnabled(boolean errorEnabled) {
+        Logger.errorEnabled = errorEnabled;
+    }
+
+    public static void setLoggingEnabled(Level level,
+                                         boolean levelEnabled) {
+        switch (level) {
+            case TRACE:
+                setTraceEnabled(levelEnabled);
+                break;
+            case DEBUG:
+                setDebugEnabled(levelEnabled);
+                break;
+            case INFO:
+                setInfoEnabled(levelEnabled);
+                break;
+            case WARN:
+                setWarnEnabled(levelEnabled);
+                break;
+            case ERROR:
+                setErrorEnabled(levelEnabled);
+                break;
+            default:
+                throw new SwitchCaseNotImplementedException();
+        }
+    }
+
     private org.slf4j.Logger logger;
     private LocationAwareLogger locationAwareLogger;
     private StringBuilder stringBuilder;
@@ -79,6 +128,12 @@ public class Logger implements org.slf4j.Logger {
             locationAwareLogger = (LocationAwareLogger) logger;
         stringBuilder = new StringBuilder();
         formatter = new Formatter(stringBuilder);
+
+        traceEnabled = true;
+        debugEnabled = true;
+        infoEnabled = true;
+        warnEnabled = true;
+        errorEnabled = true;
     }
 
     @Override
@@ -88,52 +143,52 @@ public class Logger implements org.slf4j.Logger {
 
     @Override
     public boolean isTraceEnabled() {
-        return logger.isTraceEnabled();
+        return traceEnabled && logger.isTraceEnabled();
     }
 
     @Override
     public boolean isTraceEnabled(Marker marker) {
-        return logger.isTraceEnabled(marker);
+        return traceEnabled && logger.isTraceEnabled(marker);
     }
 
     @Override
     public boolean isDebugEnabled() {
-        return logger.isDebugEnabled();
+        return debugEnabled && logger.isDebugEnabled();
     }
 
     @Override
     public boolean isDebugEnabled(Marker marker) {
-        return logger.isDebugEnabled(marker);
+        return debugEnabled && logger.isDebugEnabled(marker);
     }
 
     @Override
     public boolean isInfoEnabled() {
-        return logger.isInfoEnabled();
+        return infoEnabled && logger.isInfoEnabled();
     }
 
     @Override
     public boolean isInfoEnabled(Marker marker) {
-        return logger.isInfoEnabled(marker);
+        return infoEnabled && logger.isInfoEnabled(marker);
     }
 
     @Override
     public boolean isWarnEnabled() {
-        return logger.isWarnEnabled();
+        return warnEnabled && logger.isWarnEnabled();
     }
 
     @Override
     public boolean isWarnEnabled(Marker marker) {
-        return logger.isWarnEnabled(marker);
+        return warnEnabled && logger.isWarnEnabled(marker);
     }
 
     @Override
     public boolean isErrorEnabled() {
-        return logger.isErrorEnabled();
+        return errorEnabled && logger.isErrorEnabled();
     }
 
     @Override
     public boolean isErrorEnabled(Marker marker) {
-        return logger.isErrorEnabled(marker);
+        return errorEnabled && logger.isErrorEnabled(marker);
     }
 
     public boolean isLoggingEnabled(Level level) {
