@@ -130,13 +130,13 @@ public class NGramTimesCounter {
         this.continuationDir = continuationDir;
         patternQueue = new LinkedBlockingQueue<>(patterns);
         nGramTimesForPattern = new ConcurrentHashMap<>();
-        progress = OUTPUT.newProgress(patternQueue.size());
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
+        progress = OUTPUT.newProgress(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         Glmtk.validateExpectedResults("ngram times couting", patterns,

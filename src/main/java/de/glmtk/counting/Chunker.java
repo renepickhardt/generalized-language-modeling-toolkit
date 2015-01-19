@@ -378,7 +378,7 @@ public class Chunker {
             else
                 threads.add(new ContinuationThread());
 
-        progress = OUTPUT.newProgress(patterns.size());
+        progress = OUTPUT.newProgress(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
     }
 
