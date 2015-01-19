@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ * 
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ * 
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.common;
 
 import static de.glmtk.common.NGram.SKP_NGRAM;
@@ -18,9 +38,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
@@ -30,13 +47,14 @@ import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.LengthDistributionReader;
 import de.glmtk.files.NGramTimesReader;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
 
 /**
  * Tests for this class can be found in {@link de.glmtk.counting.CountingTest}.
  */
 public class CountCache {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(CountCache.class);
+    private static final Logger LOGGER = Logger.get(CountCache.class);
 
     private static Set<Pattern> getAvailablePatternsFromFilesystem(GlmtkPaths paths) throws IOException {
         Set<Pattern> patterns = new HashSet<>();

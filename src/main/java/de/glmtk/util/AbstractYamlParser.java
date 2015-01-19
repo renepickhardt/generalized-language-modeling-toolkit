@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ * 
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ * 
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.util;
 
 import java.io.BufferedReader;
@@ -69,7 +89,7 @@ public abstract class AbstractYamlParser {
         String tag = ((MappingStartEvent) event).getTag();
         if (tag == null || !tag.equals(expectedTag))
             throw newFileFormatException("%s file needs to start with a '%s'.",
-                    StringUtils.capitalize(fileType), expectedTag);
+                                         StringUtils.capitalize(fileType), expectedTag);
     }
 
     protected void parseEnding() {
@@ -98,8 +118,8 @@ public abstract class AbstractYamlParser {
         else if (booleanStr.equals("false"))
             return false;
         throw newFileFormatException(
-                "Illegal boolean value: '%s'. Valid are only 'true' or 'false'.",
-                booleanStr);
+                                     "Illegal boolean value: '%s'. Valid are only 'true' or 'false'.",
+                                     booleanStr);
     }
 
     protected int parseInt() {
@@ -108,7 +128,7 @@ public abstract class AbstractYamlParser {
             return Integer.parseInt(intStr);
         } catch (NumberFormatException e) {
             throw newFileFormatException("Illegal integer number: '%s'.",
-                    intStr);
+                                         intStr);
         }
     }
 
@@ -139,7 +159,7 @@ public abstract class AbstractYamlParser {
             String scalar = parseScalar();
             if (result.contains(scalar))
                 throw newFileFormatException(
-                        "Set contains value multiple times: '%s'.", scalar);
+                                             "Set contains value multiple times: '%s'.", scalar);
             result.add(scalar);
             nextEvent();
         }
@@ -161,8 +181,8 @@ public abstract class AbstractYamlParser {
                 if (!entry.getValue())
                     possible.add(entry.getKey());
             throw newFileFormatException(
-                    "Illegal key '%s'. Possibles keys for this position are: '%s'.",
-                    key, StringUtils.join(possible, "', '"));
+                                         "Illegal key '%s'. Possibles keys for this position are: '%s'.",
+                                         key, StringUtils.join(possible, "', '"));
         }
         if (keys.get(key))
             throw newFileFormatException("Duplicate key '%s'.", key);
@@ -182,8 +202,8 @@ public abstract class AbstractYamlParser {
                 throw newFileFormatException("Aliasing is not supported yet.");
 
             throw newFileFormatException(
-                    "Illegal '%s', expected '%s' instead.", idString(actual),
-                    idString(expected));
+                                         "Illegal '%s', expected '%s' instead.", idString(actual),
+                                         idString(expected));
         }
     }
 

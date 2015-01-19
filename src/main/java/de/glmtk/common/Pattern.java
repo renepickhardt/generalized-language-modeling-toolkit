@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ *
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ *
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.common;
 
 import static de.glmtk.common.PatternElem.CNT;
@@ -92,33 +112,35 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     }
 
     public boolean contains(PatternElem elem) {
-        return contains(Arrays.asList(elem));
+        return elems.contains(elem);
     }
 
-    public boolean contains(Collection<PatternElem> elems) {
+    public boolean containsAny(Collection<PatternElem> elems) {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
-        for (PatternElem elem : this.elems)
-            for (PatternElem e : elems)
-                if (elem.equals(e))
-                    return true;
+        for (PatternElem elem : elems)
+            if (this.elems.contains(elem))
+                return true;
         return false;
     }
 
     public boolean containsOnly(PatternElem elem) {
-        return containsOnly(Arrays.asList(elem));
+        for (PatternElem e : elems)
+            if (!e.equals(elem))
+                return false;
+        return true;
     }
 
     public boolean containsOnly(Collection<PatternElem> elems) {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
         outerLoop:
-        for (PatternElem elem : this.elems) {
-                for (PatternElem e : elems)
-                    if (elem.equals(e))
-                        continue outerLoop;
+        for (PatternElem e : this.elems) {
+            for (PatternElem elem : elems)
+                if (e.equals(elem))
+                    continue outerLoop;
                 return false;
-            }
+        }
         return true;
     }
 
@@ -127,7 +149,7 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     }
 
     public boolean isPos() {
-        return contains(Arrays.asList(POS, PSKP));
+        return containsAny(Arrays.asList(POS, PSKP));
     }
 
     public int numElems(Collection<PatternElem> elems) {

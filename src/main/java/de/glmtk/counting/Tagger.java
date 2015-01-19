@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ *
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ *
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.counting;
 
 import static de.glmtk.common.Output.OUTPUT;
@@ -11,13 +31,11 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import edu.stanford.nlp.ling.HasWord;
@@ -28,7 +46,7 @@ import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 public class Tagger {
     public static final char POS_SEPARATOR = '/';
 
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Tagger.class);
+    private static final Logger LOGGER = Logger.get(Tagger.class);
 
     public static boolean detectFileTagged(Path file) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(file,

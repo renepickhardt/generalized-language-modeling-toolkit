@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ *
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ *
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.counting;
 
 import static de.glmtk.common.Output.OUTPUT;
@@ -18,9 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.common.Config;
@@ -31,10 +48,11 @@ import de.glmtk.common.Status;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.NGramTimesWriter;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.ThreadUtils;
 
 public class NGramTimesCounter {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(NGramTimesCounter.class);
+    private static final Logger LOGGER = Logger.get(NGramTimesCounter.class);
 
     private class Thread implements Callable<Object> {
         private Pattern pattern;
@@ -112,13 +130,13 @@ public class NGramTimesCounter {
         this.continuationDir = continuationDir;
         patternQueue = new LinkedBlockingQueue<>(patterns);
         nGramTimesForPattern = new ConcurrentHashMap<>();
-        progress = OUTPUT.newProgress(patternQueue.size());
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
+        progress = OUTPUT.newProgress(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         Glmtk.validateExpectedResults("ngram times couting", patterns,

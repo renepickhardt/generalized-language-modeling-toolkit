@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ * 
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ * 
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.common;
 
 import static de.glmtk.common.PatternElem.CNT;
@@ -92,11 +112,16 @@ public class PatternTest {
         Pattern a = Patterns.get("101x");
         assertTrue(a.contains(CNT));
         assertFalse(a.contains(POS));
-        assertTrue(a.contains(Arrays.asList(CNT, SKP)));
-        assertFalse(a.contains(Arrays.asList(POS, PSKP)));
+    }
+
+    @Test
+    public void testContainsAny() {
+        Pattern a = Patterns.get("101x");
+        assertTrue(a.containsAny(Arrays.asList(CNT, SKP)));
+        assertFalse(a.containsAny(Arrays.asList(POS, PSKP)));
 
         try {
-            a.contains(new ArrayList<PatternElem>());
+            a.containsAny(new ArrayList<PatternElem>());
             fail("Expected IllegalArgumentException.");
         } catch (IllegalArgumentException e) {
         }
@@ -125,7 +150,7 @@ public class PatternTest {
         Pattern c = Patterns.get();
         assertFalse(c.contains(CNT));
         assertTrue(c.containsOnly(CNT));
-        assertFalse(c.contains(Arrays.asList(CNT, SKP)));
+        assertFalse(c.containsAny(Arrays.asList(CNT, SKP)));
         assertTrue(c.containsOnly(Arrays.asList(CNT, SKP)));
     }
 

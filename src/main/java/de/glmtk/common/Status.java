@@ -1,3 +1,23 @@
+/*
+ * Generalized Language Modeling Toolkit (GLMTK)
+ * 
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
+ * 
+ * GLMTK is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ * 
+ * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * GLMTK. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * See the AUTHORS file for contributors.
+ */
+
 package de.glmtk.common;
 
 import java.beans.IntrospectionException;
@@ -17,8 +37,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
@@ -37,12 +55,13 @@ import de.glmtk.GlmtkPaths;
 import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.exceptions.WrongStatusException;
+import de.glmtk.logging.Logger;
 import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
 public class Status {
-    private static final Logger LOGGER = LogManager.getFormatterLogger(Status.class);
+    private static final Logger LOGGER = Logger.get(Status.class);
 
     public static enum Training {
         NONE,
@@ -75,7 +94,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                                                      BeanAccess beanAccess) throws IntrospectionException {
+                    BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -172,9 +191,9 @@ public class Status {
                             for (Training training : Training.values())
                                 possible.add(training.toString());
                             throw newFileFormatException(
-                                                         "Illegal training value: '%s'. Possible values: '%s'.",
-                                                         trainingStr, StringUtils.join(possible,
-                                                                 "', '"));
+                                    "Illegal training value: '%s'. Possible values: '%s'.",
+                                    trainingStr, StringUtils.join(possible,
+                                            "', '"));
                         }
                         break;
 
@@ -212,7 +231,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                        patternStr, e.getMessage());
+                                             patternStr, e.getMessage());
             }
         }
 
@@ -237,8 +256,8 @@ public class Status {
                 Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
                     throw newFileFormatException(
-                            "Map contains pattern multiple times as key: '%s'.",
-                            pattern);
+                                                 "Map contains pattern multiple times as key: '%s'.",
+                                                 pattern);
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
@@ -255,8 +274,8 @@ public class Status {
                 String name = parseScalar();
                 if (queryCaches.containsKey(name))
                     throw newFileFormatException(
-                                                 "QueryCache name occurs multiple times: '%s'.",
-                                                 name);
+                            "QueryCache name occurs multiple times: '%s'.",
+                            name);
                 nextEvent();
                 QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
@@ -546,7 +565,7 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                    : continuationDir;
+                            : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
                 throw new WrongStatusException(name + " pattern " + pattern,
