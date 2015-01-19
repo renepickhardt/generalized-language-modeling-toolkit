@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
+import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
@@ -56,14 +57,19 @@ public class LambdaCountsReader extends AbstractFileReader {
 
         try {
             List<String> split = StringUtils.splitAtChar(line, '\t');
-            if (split.size() < 2)
+            if (split.size() == 1)
                 throw new IllegalArgumentException(
-                        "Expected line to have format '<sequence>\\t<lambda>+'.");
+                        "Expected line to have format '<sequence>\\t(<lambdaHigh>,<lambdaLow>)+'.");
 
             sequence = split.get(0);
             lambdaCounts = new LambdaCounts();
-            for (int i = 1; i != split.size(); ++i)
-                lambdaCounts.add(parseFloatingPoint(split.get(i)));
+            for (int i = 1; i != split.size(); ++i) {
+                String s = split.get(i);
+                int p = s.indexOf(',');
+                lambdaCounts.append(new LambdaCount(
+                        parseFloatingPoint(s.substring(0, p)),
+                        parseFloatingPoint(s.substring(p + 1))));
+            }
         } catch (IllegalArgumentException e) {
             throw new FileFormatException(line, lineNo, file, "lambda counts",
                     e.getMessage());
@@ -76,5 +82,16 @@ public class LambdaCountsReader extends AbstractFileReader {
 
     public LambdaCounts getLambdaCounts() {
         return lambdaCounts;
+    }
+
+    public void forwardToSequence(String target) throws Exception {
+        while (sequence == null || !sequence.equals(target)) {
+            if (isEof() || (sequence != null && sequence.compareTo(target) > 0))
+                throw new Exception(String.format(
+                        "Could not forward to sequence '%s' in '%s'.", target,
+                        getFile()));
+
+            readLine();
+        }
     }
 }

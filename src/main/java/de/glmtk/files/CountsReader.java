@@ -108,4 +108,15 @@ public class CountsReader extends AbstractFileReader {
     public boolean isFromAbsolute() {
         return fromAbsolute;
     }
+
+    public void forwardToSequence(String target) throws Exception {
+        while (sequence == null || !sequence.equals(target)) {
+            if (isEof() || (sequence != null && sequence.compareTo(target) > 0))
+                throw new Exception(String.format(
+                        "Could not forward to sequence '%s' in '%s'.", target,
+                        getFile()));
+
+            readLine();
+        }
+    }
 }

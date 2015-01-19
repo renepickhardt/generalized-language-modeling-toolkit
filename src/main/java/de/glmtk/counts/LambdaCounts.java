@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -25,31 +25,31 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class LambdaCounts implements Iterable<Double> {
-    public List<Double> lambdas;
+public class LambdaCounts implements Iterable<LambdaCount> {
+    public List<LambdaCount> lambdas;
 
     public LambdaCounts() {
         lambdas = new ArrayList<>();
     }
 
-    public LambdaCounts(Collection<Double> lambdas) {
+    public LambdaCounts(Collection<LambdaCount> lambdas) {
         set(lambdas);
     }
 
-    public double get(int index) {
+    public LambdaCount get(int index) {
         return lambdas.get(index);
     }
 
     public void set(int index,
-                    double lambda) {
+                    LambdaCount lambda) {
         lambdas.set(index, lambda);
     }
 
-    public void set(Collection<Double> lambdas) {
+    public void set(Collection<LambdaCount> lambdas) {
         this.lambdas = new ArrayList<>(lambdas);
     }
 
-    public void add(double lambda) {
+    public void append(LambdaCount lambda) {
         lambdas.add(lambda);
     }
 
@@ -58,7 +58,7 @@ public class LambdaCounts implements Iterable<Double> {
     }
 
     @Override
-    public Iterator<Double> iterator() {
+    public Iterator<LambdaCount> iterator() {
         return lambdas.iterator();
     }
 }

@@ -86,6 +86,13 @@ public class Patterns {
         return pattern;
     }
 
+    public static List<Pattern> getMany(String... patterns) {
+        List<Pattern> result = new ArrayList<>(patterns.length);
+        for (String pattern : patterns)
+            result.add(Patterns.get(pattern));
+        return result;
+    }
+
     private static void cachePattern(Pattern pattern) {
         AS_STRING_TO_PATTERN.put(pattern.toString(), pattern);
     }
