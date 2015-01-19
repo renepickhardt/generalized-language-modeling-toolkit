@@ -30,8 +30,7 @@ import de.glmtk.counts.LambdaCounts;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
-public class LambdaCountsReader extends AbstractFileReader {
-    private String sequence;
+public class LambdaCountsReader extends AbstractSequenceReader {
     private LambdaCounts lambdaCounts;
 
     public LambdaCountsReader(Path file,
@@ -43,14 +42,13 @@ public class LambdaCountsReader extends AbstractFileReader {
                               Charset charset,
                               int sz) throws IOException {
         super(file, charset, sz);
-        sequence = null;
         lambdaCounts = null;
     }
 
     @Override
     protected void parseLine() {
+        super.parseLine();
         if (line == null) {
-            sequence = null;
             lambdaCounts = null;
             return;
         }
@@ -76,22 +74,7 @@ public class LambdaCountsReader extends AbstractFileReader {
         }
     }
 
-    public String getSequence() {
-        return sequence;
-    }
-
     public LambdaCounts getLambdaCounts() {
         return lambdaCounts;
-    }
-
-    public void forwardToSequence(String target) throws Exception {
-        while (sequence == null || !sequence.equals(target)) {
-            if (isEof() || (sequence != null && sequence.compareTo(target) > 0))
-                throw new Exception(String.format(
-                        "Could not forward to sequence '%s' in '%s'.", target,
-                        getFile()));
-
-            readLine();
-        }
     }
 }
