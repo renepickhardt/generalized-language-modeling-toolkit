@@ -426,7 +426,7 @@ public enum Output {
         printStr = printStr.substring(0, printStr.length() - 1);
 
         logWithoutAnsi(Level.WARN, printStr);
-        System.err.print(printStr);
+        System.err.println(printStr);
 
         lastPrintBeginPhases = false;
         lastPrintPhase = false;
