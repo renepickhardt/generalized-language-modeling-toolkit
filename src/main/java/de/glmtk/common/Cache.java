@@ -1,7 +1,7 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
  * 
- * Copyright (C) 2015 Lukas Schmelzeisen
+ * Copyright (C) 2014-2015 Lukas Schmelzeisen
  * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -94,20 +94,24 @@ public class Cache {
     public void loadCounts(Set<Pattern> patterns) throws IOException {
         LOGGER.debug("Loading counts...");
 
-        counts = new HashMap<>();
+        if (counts == null)
+            counts = new HashMap<>();
+
         for (Pattern pattern : patterns) {
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
                             : paths.getContinuationDir());
 
+            Map<String, Object> countsForPattern = new HashMap<>();
+            counts.put(pattern, countsForPattern);
+
             Path file = inputDir.resolve(pattern.toString());
             try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
                 while (reader.readLine() != null) {
                     Counts c = reader.getCounts();
                     Object value = isPatternAbsolute ? c.getOnePlusCount() : c;
-                    CollectionUtils.putIntoNestedMap(counts, pattern,
-                            reader.getSequence(), value);
+                    countsForPattern.put(reader.getSequence(), value);
                 }
             }
 
@@ -159,11 +163,15 @@ public class Cache {
             throw new IllegalArgumentException(String.format(
                     "Illegal model '%s'.", model));
 
-        discounts = new HashMap<>();
+        if (discounts == null)
+            discounts = new HashMap<>();
+
+        Map<Pattern, Discount> discountsForModel = new HashMap<>();
+        discounts.put(model, discountsForModel);
+
         try (DiscountReader reader = new DiscountReader(file, Constants.CHARSET)) {
             while (reader.readLine() != null)
-                CollectionUtils.putIntoNestedMap(discounts, model,
-                        reader.getPattern(), reader.getDiscount());
+                discountsForModel.put(reader.getPattern(), reader.getDiscount());
         }
 
         if (progress != null)
@@ -181,14 +189,22 @@ public class Cache {
             throw new IllegalArgumentException(String.format(String.format(
                     "Illegal model '%s'.", model)));
 
-        alphas = new HashMap<>();
+        if (alphas == null)
+            alphas = new HashMap<>();
+
+        Map<Pattern, Map<String, AlphaCount>> alphasForModel = new HashMap<>();
+        alphas.put(model, alphasForModel);
+
         for (Pattern pattern : patterns) {
+            Map<String, AlphaCount> alphasForPattern = new HashMap<>();
+            alphasForModel.put(pattern, alphasForPattern);
+
             Path file = inputDir.resolve(pattern.toString());
             try (AlphaCountReader reader = new AlphaCountReader(file,
                     Constants.CHARSET)) {
                 while (reader.readLine() != null)
-                    CollectionUtils.putIntoNestedMap(alphas, model, pattern,
-                            reader.getSequence(), reader.getAlphaCounts());
+                    alphasForPattern.put(reader.getSequence(),
+                            reader.getAlphaCounts());
             }
 
             if (progress != null)
@@ -207,14 +223,22 @@ public class Cache {
             throw new IllegalArgumentException(String.format(String.format(
                     "Illegal model '%s'.", model)));
 
-        lambdas = new HashMap<>();
+        if (lambdas == null)
+            lambdas = new HashMap<>();
+
+        Map<Pattern, Map<String, LambdaCounts>> lambdasForModel = new HashMap<>();
+        lambdas.put(model, lambdasForModel);
+
         for (Pattern pattern : patterns) {
+            Map<String, LambdaCounts> lambdasForPattern = new HashMap<>();
+            lambdasForModel.put(pattern, lambdasForPattern);
+
             Path file = inputDir.resolve(pattern.toString());
             try (LambdaCountsReader reader = new LambdaCountsReader(file,
                     Constants.CHARSET)) {
                 while (reader.readLine() != null)
-                    CollectionUtils.putIntoNestedMap(lambdas, model, pattern,
-                            reader.getSequence(), reader.getLambdaCounts());
+                    lambdasForPattern.put(reader.getSequence(),
+                            reader.getLambdaCounts());
             }
 
             if (progress != null)
