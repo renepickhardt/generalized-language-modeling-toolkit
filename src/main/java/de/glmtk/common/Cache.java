@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
@@ -45,6 +47,9 @@ import de.glmtk.files.NGramTimesReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
 
+/**
+ * Use {@link CacheBuilder} for creation.
+ */
 public class Cache {
     private static final Logger LOGGER = Logger.get(Cache.class);
 
@@ -62,6 +67,10 @@ public class Cache {
     private Map<String, Map<Pattern, Map<String, AlphaCount>>> alphas;
     private Map<String, Map<Pattern, Map<String, LambdaCounts>>> lambdas;
 
+    private long numWords;
+    private long vocabSize;
+    private SortedSet<String> words;
+
     public Cache(GlmtkPaths paths) {
         this.paths = paths;
         progress = null;
@@ -72,6 +81,10 @@ public class Cache {
         discounts = null;
         alphas = null;
         lambdas = null;
+
+        numWords = -1L;
+        vocabSize = -1L;
+        words = null;
     }
 
     public void setProgress(Progress progress) {
@@ -97,7 +110,7 @@ public class Cache {
                     Counts c = reader.getCounts();
                     countsForPattern.put(s, isPatternAbsolute
                             ? c.getOnePlusCount()
-                                    : c);
+                            : c);
                 }
             }
 
@@ -223,5 +236,153 @@ public class Cache {
 
             progress.increase(1);
         }
+    }
+
+    public long getAbsolute(NGram ngram) {
+        if (counts == null)
+            throw new IllegalStateException("Counts not loaded.");
+
+        Pattern pattern = ngram.getPattern();
+        if (!pattern.isAbsolute())
+            throw new IllegalArgumentException(String.format(
+                    "Pattern '%s' is is not absolute pattern.", pattern));
+
+        Map<String, Object> countsWithPattern = counts.get(pattern);
+        if (countsWithPattern == null)
+            throw new IllegalStateException(String.format(
+                    "Counts with pattern '%s' not loaded.", pattern));
+
+        Long result = (Long) countsWithPattern.get(ngram.toString());
+        return result == null ? 0L : result;
+    }
+
+    public Counts getContinuation(NGram ngram) {
+        if (counts == null)
+            throw new IllegalStateException("Counts not loaded.");
+
+        Pattern pattern = ngram.getPattern();
+        if (pattern.isAbsolute())
+            throw new IllegalArgumentException(String.format(
+                    "Pattern '%s' is no continuation pattern.", pattern));
+
+        Map<String, Object> countsWithPattern = counts.get(pattern);
+        if (countsWithPattern == null)
+            throw new IllegalStateException(String.format(
+                    "Counts with pattern '%s' not loaded.", pattern));
+
+        Counts result = (Counts) countsWithPattern.get(ngram.toString());
+        return result == null ? new Counts() : result;
+    }
+
+    public long getNumWords() {
+        if (numWords == -1)
+            numWords = getAbsolute(NGram.SKP_NGRAM);
+        return numWords;
+    }
+
+    public long getVocabSize() {
+        if (vocabSize == -1)
+            vocabSize = getContinuation(NGram.WSKP_NGRAM).getOnePlusCount();
+        return vocabSize;
+    }
+
+    public SortedSet<String> getWords() {
+        if (words == null)
+            words = new TreeSet<>(
+                    counts.get(Patterns.get(PatternElem.CNT)).keySet());
+        return words;
+    }
+
+    public NGramTimes getNGramTimes(Pattern pattern) {
+        if (nGramTimes == null)
+            throw new IllegalStateException("NGram times not loaded.");
+
+        NGramTimes result = nGramTimes.get(pattern);
+        if (result == null)
+            throw new IllegalStateException(String.format(
+                    "No NGramTimes learned for pattern '%s'.", pattern));
+
+        return result;
+    }
+
+    public double getLengthFrequency(int length) {
+        if (lengthFrequencies == null)
+            throw new IllegalStateException("Length distribution not loaded.");
+
+        if (length < 1)
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Illegal length requested: '%d'. Must be an integer greater zero.",
+                            length));
+
+        if (length >= lengthFrequencies.size())
+            return 0.0;
+
+        return lengthFrequencies.get(length);
+    }
+
+    public int getMaxSequenceLength() {
+        if (lengthFrequencies == null)
+            throw new IllegalStateException("Length distribution not loaded.");
+
+        return lengthFrequencies.size();
+    }
+
+    public Discount getDiscount(String model,
+                                Pattern pattern) {
+        if (discounts == null)
+            throw new IllegalStateException("No discounts loaded.");
+
+        Map<Pattern, Discount> discountsForModel = discounts.get(model);
+        if (discountsForModel == null)
+            throw new IllegalStateException(String.format(
+                    "Discounts for model '%s' not loaded.", model));
+
+        Discount result = discountsForModel.get(pattern);
+        if (result == null)
+            throw new IllegalStateException(String.format(
+                    "No Discouts learned for pattern '%s'.", pattern));
+
+        return result;
+    }
+
+    public AlphaCount getAlpha(String model,
+                               NGram ngram) {
+        if (alphas == null)
+            throw new IllegalStateException("No alphas loaded.");
+
+        Map<Pattern, Map<String, AlphaCount>> alphasForModel = alphas.get(model);
+        if (alphasForModel == null)
+            throw new IllegalStateException(String.format(
+                    "Alphas for model '%s' not loaded.", model));
+
+        Pattern pattern = ngram.getPattern();
+        Map<String, AlphaCount> alphasForPattern = alphasForModel.get(pattern);
+        if (alphasForPattern == null)
+            throw new IllegalStateException(String.format(
+                    "Alphas with pattern '%s' for model '%s' not loaded.",
+                    pattern, model));
+
+        return alphasForPattern.get(ngram.toString());
+    }
+
+    public LambdaCounts getLambda(String model,
+                                  NGram ngram) {
+        if (lambdas == null)
+            throw new IllegalStateException("No lambdas loaded.");
+
+        Map<Pattern, Map<String, LambdaCounts>> lambdasForModel = lambdas.get(model);
+        if (lambdasForModel == null)
+            throw new IllegalStateException(String.format(
+                    "Lambdas for model '%s' not loaded.", model));
+
+        Pattern pattern = ngram.getPattern();
+        Map<String, LambdaCounts> lambdasForPattern = lambdasForModel.get(pattern);
+        if (lambdasForPattern == null)
+            throw new IllegalStateException(String.format(
+                    "Lambdas with pattern '%s' for model '%s' not loaded.",
+                    pattern, model));
+
+        return lambdasForPattern.get(ngram.toString());
     }
 }
