@@ -139,9 +139,9 @@ public class NGram {
     /**
      * Returns {@code true} if is either empty or has count greater zero.
      */
-    // TODO: move method into class CountCache?
-    public boolean seen(CountCache countCache) {
-        return isEmpty() || countCache.getAbsolute(this) != 0;
+    // TODO: move method into class Cache?
+    public boolean seen(Cache cache) {
+        return isEmpty() || cache.getAbsolute(this) != 0;
     }
 
     public NGram concat(String word) {
@@ -234,9 +234,9 @@ public class NGram {
      * be empty.
      */
     public NGram backoffUntilSeen(BackoffMode backoffMode,
-                                  CountCache countCache) {
+                                  Cache cache) {
         NGram result = backoff(backoffMode);
-        while (!result.seen(countCache))
+        while (!result.seen(cache))
             result = result.backoff(backoffMode);
         return result;
     }

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.glmtk.common.BackoffMode;
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
@@ -48,11 +48,11 @@ public class BackoffEstimator extends AbstractEstimator {
     }
 
     @Override
-    public void setCountCache(CountCache countCache) {
-        super.setCountCache(countCache);
-        alpha.setCountCache(countCache);
+    public void setCache(Cache cache) {
+        super.setCache(cache);
+        alpha.setCache(cache);
         if (beta != this)
-            beta.setCountCache(countCache);
+            beta.setCache(cache);
 
         gammaCache = new HashMap<>();
     }
@@ -81,7 +81,7 @@ public class BackoffEstimator extends AbstractEstimator {
                 default:
                     throw new SwitchCaseNotImplementedException();
             }
-        else if (countCache.getAbsolute(getFullSequence(sequence, history)) == 0) {
+        else if (cache.getAbsolute(getFullSequence(sequence, history)) == 0) {
             NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
 
             double betaVal = beta.probability(sequence, backoffHistory,
@@ -128,9 +128,9 @@ public class BackoffEstimator extends AbstractEstimator {
 
         NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
 
-        for (String word : countCache.getWords()) {
+        for (String word : cache.getWords()) {
             NGram s = history.concat(word);
-            if (countCache.getAbsolute(s) == 0)
+            if (cache.getAbsolute(s) == 0)
                 sumBeta += beta.probability(new NGram(word), backoffHistory,
                         recDepth);
             else

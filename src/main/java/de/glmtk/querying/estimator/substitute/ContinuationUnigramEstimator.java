@@ -30,8 +30,8 @@ public class ContinuationUnigramEstimator extends SubstituteEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        return (double) countCache.getContinuation(
+        return (double) cache.getContinuation(
                 WSKP_NGRAM.concat(sequence.get(0).convertSkpToWskp())).getOnePlusCount()
-                / countCache.getContinuation(WSKP_WSKP_NGRAM).getOnePlusCount();
+                / cache.getContinuation(WSKP_WSKP_NGRAM).getOnePlusCount();
     }
 }

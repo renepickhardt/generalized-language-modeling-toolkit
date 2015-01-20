@@ -23,7 +23,7 @@ package de.glmtk.querying.estimator.discount;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Discount;
@@ -38,8 +38,8 @@ public class ModKneserNeyDiscountEstimator extends DiscountEstimator {
     }
 
     @Override
-    public void setCountCache(CountCache countCache) {
-        super.setCountCache(countCache);
+    public void setCache(Cache cache) {
+        super.setCache(cache);
 
         discounts = new HashMap<>();
     }
@@ -49,7 +49,7 @@ public class ModKneserNeyDiscountEstimator extends DiscountEstimator {
                                   NGram history,
                                   int recDepth) {
         Discount discounts = getDiscounts(history.getPattern());
-        switch ((int) countCache.getAbsolute(history)) {
+        switch ((int) cache.getAbsolute(history)) {
             case 0:
                 return 0;
             case 1:
@@ -66,7 +66,7 @@ public class ModKneserNeyDiscountEstimator extends DiscountEstimator {
         if (result != null)
             return result;
 
-        NGramTimes n = countCache.getNGramTimes(pattern);
+        NGramTimes n = cache.getNGramTimes(pattern);
         double y = (double) n.getOneCount()
                 / (n.getOneCount() + n.getTwoCount());
         result = new Discount(1.0f - 2.0f * y * n.getTwoCount()

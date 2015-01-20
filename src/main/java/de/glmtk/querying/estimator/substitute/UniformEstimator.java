@@ -27,7 +27,7 @@ public class UniformEstimator extends SubstituteEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        long vocabSize = countCache.getVocabSize();
+        long vocabSize = cache.getVocabSize();
         logTrace(recDepth, "vocabSize = %d", vocabSize);
         return 1.0 / vocabSize;
     }

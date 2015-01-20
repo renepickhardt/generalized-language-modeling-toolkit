@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.glmtk.common.BackoffMode;
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Counts;
@@ -48,8 +48,8 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
     }
 
     @Override
-    public void setCountCache(CountCache countCache) {
-        super.setCountCache(countCache);
+    public void setCache(Cache cache) {
+        super.setCache(cache);
         discounts = new HashMap<>();
     }
 
@@ -57,14 +57,14 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        double denominator = countCache.getAbsolute(history.concat(NGram.SKP_NGRAM));
+        double denominator = cache.getAbsolute(history.concat(NGram.SKP_NGRAM));
 
         if (history.isEmptyOrOnlySkips()) {
             if (denominator == 0.0)
-                return (double) countCache.getAbsolute(sequence.get(0))
-                        / countCache.getNumWords();
+                return (double) cache.getAbsolute(sequence.get(0))
+                        / cache.getNumWords();
 
-            double numerator = countCache.getAbsolute(history.concat(sequence));
+            double numerator = cache.getAbsolute(history.concat(sequence));
             return numerator / denominator;
         }
 
@@ -72,10 +72,10 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
         double gamma = 0.0;
         {
             Discount d = getDiscounts(history.getPattern(), recDepth);
-            discount = d.getForCount(countCache.getAbsolute(history));
+            discount = d.getForCount(cache.getAbsolute(history));
 
             if (denominator != 0) {
-                Counts c = countCache.getContinuation(history.concat(NGram.WSKP_NGRAM));
+                Counts c = cache.getContinuation(history.concat(NGram.WSKP_NGRAM));
                 gamma = (d.getOne() * c.getOneCount() + d.getTwo()
                         * c.getTwoCount() + d.getThree()
                         * c.getThreePlusCount())
@@ -85,16 +85,16 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
 
         double alpha;
         if (denominator == 0.0)
-            alpha = (double) countCache.getAbsolute(sequence.get(0))
-            / countCache.getNumWords();
+            alpha = (double) cache.getAbsolute(sequence.get(0))
+            / cache.getNumWords();
         else {
-            double numerator = countCache.getAbsolute(history.concat(sequence));
+            double numerator = cache.getAbsolute(history.concat(sequence));
             numerator = Math.max(numerator - discount, 0.0);
 
             alpha = numerator / denominator;
         }
 
-        NGram backoffHistory = history.backoffUntilSeen(backoffMode, countCache);
+        NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double beta = probability(sequence, backoffHistory, recDepth);
 
         return alpha + gamma * beta;
@@ -106,7 +106,7 @@ public class FastModifiedKneserNeyAbsEstimator extends Estimator {
         if (result != null)
             return result;
 
-        NGramTimes n = countCache.getNGramTimes(pattern);
+        NGramTimes n = cache.getNGramTimes(pattern);
         double y = (double) n.getOneCount()
                 / (n.getOneCount() + n.getTwoCount());
         result = new Discount(1.0f - 2.0f * y * n.getTwoCount()

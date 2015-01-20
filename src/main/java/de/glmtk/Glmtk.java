@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -34,8 +34,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
+import de.glmtk.common.Cache;
 import de.glmtk.common.Config;
-import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
 import de.glmtk.common.Status.Training;
@@ -109,8 +109,6 @@ public class Glmtk {
     private QueryCacherCreator queryCacherCreator;
     private QueryRunner queryRunner;
 
-    private CountCache countCache = null;
-
     public Glmtk(Config config,
                  Path corpus,
                  Path workingDir) throws Exception {
@@ -144,6 +142,10 @@ public class Glmtk {
 
     public GlmtkPaths getPaths() {
         return paths;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     public void count(Set<Pattern> neededPatterns) throws Exception {
@@ -307,17 +309,7 @@ public class Glmtk {
                 PrintUtils.humanReadableByteCount(mknSize)));
     }
 
-    public CountCache getOrCreateCountCache() throws Exception {
-        if (countCache == null)
-            countCache = new CountCache(status.getCounted(), paths);
-        return countCache;
-    }
-
-    public CountCache createCountCache(Set<Pattern> patterns) throws Exception {
-        return new CountCache(patterns, paths);
-    }
-
-    public CountCache provideQueryCache(Path queryFile,
+    public GlmtkPaths provideQueryCache(Path queryFile,
                                         Set<Pattern> patterns) throws Exception {
 
         String name = HashUtils.generateMd5Hash(queryFile);
@@ -347,23 +339,23 @@ public class Glmtk {
                 "    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
                 dir.getParent(), PrintUtils.humanReadableByteCount(size)));
 
-        return new CountCache(patterns, queryCachePaths);
+        return queryCachePaths;
     }
 
     public QueryStats runQueriesOnInputStream(QueryMode queryMode,
                                               InputStream inputStream,
                                               OutputStream outputStream,
                                               Estimator estimator,
-                                              CountCache countCache,
+                                              Cache cache,
                                               int corpusOrder) throws Exception {
         return queryRunner.runQueriesOnInputStream(queryMode, inputStream,
-                outputStream, estimator, countCache, corpusOrder);
+                outputStream, estimator, cache, corpusOrder);
     }
 
     public QueryStats runQueriesOnFile(QueryMode queryMode,
                                        Path inputFile,
                                        Estimator estimator,
-                                       CountCache countCache,
+                                       Cache cache,
                                        int corpusOrder) throws Exception {
         Files.createDirectories(paths.getQueriesDir());
 
@@ -373,7 +365,7 @@ public class Glmtk {
                         estimator.getName(), queryMode, date));
 
         return queryRunner.runQueriesOnFile(queryMode, inputFile, outputFile,
-                estimator, countCache, corpusOrder);
+                estimator, cache, corpusOrder);
     }
 
     /**

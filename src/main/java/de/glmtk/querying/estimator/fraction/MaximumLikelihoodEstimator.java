@@ -28,7 +28,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
                                    NGram history,
                                    int recDepth) {
         NGram fullSequence = getFullSequence(sequence, history);
-        long fullSequenceCount = countCache.getAbsolute(fullSequence);
+        long fullSequenceCount = cache.getAbsolute(fullSequence);
         logTrace(recDepth, "fullSequence = %s (%d)", fullSequence,
                 fullSequenceCount);
         return fullSequenceCount;
@@ -39,7 +39,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
                                      NGram history,
                                      int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
-        long fullHistoryCount = countCache.getAbsolute(fullHistory);
+        long fullHistoryCount = cache.getAbsolute(fullHistory);
         logTrace(recDepth, "fullHistory = %s (%d)", fullHistory,
                 fullHistoryCount);
         return fullHistoryCount;

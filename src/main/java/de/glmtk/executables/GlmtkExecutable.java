@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -51,7 +51,9 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.common.CountCache;
+import de.glmtk.GlmtkPaths;
+import de.glmtk.common.Cache;
+import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
@@ -509,11 +511,10 @@ public class GlmtkExecutable extends Executable {
             estimator.setProbMode(probMode);
 
         Set<Pattern> neededPatterns = new HashSet<>();
-        for (Estimator estimator : estimators) {
+        for (Estimator estimator : estimators)
             neededPatterns.addAll(estimator.getUsedPatterns(trainingOrder));
-            if (needPos)
-                neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
-        }
+        if (needPos)
+            neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
 
         glmtk.count(neededPatterns);
 
@@ -526,20 +527,23 @@ public class GlmtkExecutable extends Executable {
             Set<Path> files = entry.getValue();
 
             for (Path file : files) {
-                CountCache countCache = glmtk.provideQueryCache(file,
+                GlmtkPaths queryCache = glmtk.provideQueryCache(file,
                         neededPatterns);
+                Cache cache = new CacheBuilder(queryCache).withCounts(
+                        neededPatterns).withNGramTimes().withLengthDistribution().build();
 
                 for (Estimator estimator : estimators)
-                    glmtk.runQueriesOnFile(queryMode, file, estimator,
-                            countCache, trainingOrder);
+                    glmtk.runQueriesOnFile(queryMode, file, estimator, cache,
+                            trainingOrder);
             }
         }
 
         if (ioQueryMode != null) {
             Estimator estimator = estimators.iterator().next();
-            CountCache countCache = glmtk.createCountCache(neededPatterns);
+            Cache cache = new CacheBuilder(glmtk.getPaths()).withCounts(
+                    neededPatterns).withNGramTimes().withLengthDistribution().withProgress().build();
             glmtk.runQueriesOnInputStream(ioQueryMode, System.in, System.out,
-                    estimator, countCache, trainingOrder);
+                    estimator, cache, trainingOrder);
         }
 
         StatisticalNumberHelper.print();

@@ -29,7 +29,7 @@ public abstract class FractionEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        if (history.seen(countCache)) {
+        if (history.seen(cache)) {
             double numeratorVal = numerator(sequence, history, recDepth);
             double denominatorVal = denominator(sequence, history, recDepth);
             if (denominatorVal != 0)

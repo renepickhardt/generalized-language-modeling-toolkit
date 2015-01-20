@@ -39,7 +39,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Counts;
@@ -66,7 +66,7 @@ public class CountingTest extends TestCorporaTest {
 
     private TestCorpus testCorpus;
     private List<String> corpusLines;
-    private CountCache countCache;
+    private Cache cache;
     private Map<Pattern, Map<String, Long>> absolute;
     private Map<Pattern, Map<String, Counts>> continuation;
 
@@ -80,15 +80,15 @@ public class CountingTest extends TestCorporaTest {
                 Constants.CHARSET);
 
         LOGGER.info("Loading counts...");
-        countCache = testCorpus.getCountCache();
+        cache = testCorpus.getCache();
 
-        Field absoluteField = CountCache.class.getDeclaredField("absolute");
+        Field absoluteField = Cache.class.getDeclaredField("absolute");
         absoluteField.setAccessible(true);
-        absolute = (Map<Pattern, Map<String, Long>>) absoluteField.get(countCache);
+        absolute = (Map<Pattern, Map<String, Long>>) absoluteField.get(cache);
 
-        Field continuationField = CountCache.class.getDeclaredField("continuation");
+        Field continuationField = Cache.class.getDeclaredField("continuation");
         continuationField.setAccessible(true);
-        continuation = (Map<Pattern, Map<String, Counts>>) continuationField.get(countCache);
+        continuation = (Map<Pattern, Map<String, Counts>>) continuationField.get(cache);
     }
 
     @Test

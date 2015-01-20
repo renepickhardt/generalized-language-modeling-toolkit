@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
@@ -71,7 +71,7 @@ public abstract class AbstractEstimator implements Estimator {
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR;
     private String name;
-    protected CountCache countCache;
+    protected Cache cache;
     protected ProbMode probMode;
 
     public AbstractEstimator() {
@@ -100,11 +100,11 @@ public abstract class AbstractEstimator implements Estimator {
     }
 
     @Override
-    public void setCountCache(CountCache countCache) {
-        this.countCache = countCache;
+    public void setCache(Cache cache) {
+        this.cache = cache;
 
         if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)
-            SUBSTITUTE_ESTIMATOR.setCountCache(countCache);
+            SUBSTITUTE_ESTIMATOR.setCache(cache);
     }
 
     @Override
@@ -123,8 +123,8 @@ public abstract class AbstractEstimator implements Estimator {
     @Override
     public final double probability(NGram sequence,
                                     NGram history) {
-        Objects.requireNonNull(countCache,
-                "You have to set a countCache that is not null before using this method");
+        Objects.requireNonNull(cache,
+                "You have to set a cache that is not null before using this method");
 
         return probability(sequence, history, 1);
     }
@@ -143,6 +143,7 @@ public abstract class AbstractEstimator implements Estimator {
         return result;
     }
 
+    @Override
     protected abstract double calcProbability(NGram sequence,
                                               NGram history,
                                               int recDepth);
@@ -151,9 +152,9 @@ public abstract class AbstractEstimator implements Estimator {
     public Set<Pattern> getUsedPatterns(int modelSize) {
         final Set<Pattern> usedPatterns = new HashSet<>();
 
-        CountCache trackingCountCache;
+        Cache trackingCache;
         try {
-            trackingCountCache = new CountCache(null, null) {
+            trackingCache = new Cache(null) {
                 private Random random = new Random();
 
                 @Override
@@ -193,7 +194,8 @@ public abstract class AbstractEstimator implements Estimator {
             throw new RuntimeException(e);
         }
 
-        setCountCache(trackingCountCache);
+        Cache oldCache = cache;
+        setCache(trackingCache);
 
         SequenceCalculator calculator = new SequenceCalculator();
         calculator.setEstimator(this);
@@ -209,6 +211,8 @@ public abstract class AbstractEstimator implements Estimator {
         }
 
         Logger.setTraceEnabled(true);
+
+        setCache(oldCache);
 
         return usedPatterns;
     }

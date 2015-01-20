@@ -20,7 +20,7 @@
 
 package de.glmtk.querying.estimator.combination;
 
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.AbstractEstimator;
@@ -40,10 +40,10 @@ public class CombinationEstimator extends AbstractEstimator {
     }
 
     @Override
-    public void setCountCache(CountCache countCache) {
-        super.setCountCache(countCache);
-        alpha.setCountCache(countCache);
-        beta.setCountCache(countCache);
+    public void setCache(Cache cache) {
+        super.setCache(cache);
+        alpha.setCache(cache);
+        beta.setCache(cache);
     }
 
     @Override

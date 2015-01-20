@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -39,8 +39,8 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 
 import de.glmtk.Constants;
+import de.glmtk.common.Cache;
 import de.glmtk.common.Config;
-import de.glmtk.common.CountCache;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
@@ -84,7 +84,7 @@ public class QueryRunner {
     private QueryMode queryMode;
     private Path inputFile;
     private Path outputFile;
-    private CountCache countCache;
+    private Cache cache;
     private int corpusOrder;
     private Calculator calculator;
     private QueryStats stats;
@@ -102,16 +102,16 @@ public class QueryRunner {
                                               InputStream inputStream,
                                               OutputStream outputStream,
                                               Estimator estimator,
-                                              CountCache countCache,
+                                              Cache cache,
                                               int corpusOrder) throws Exception {
         this.queryMode = queryMode;
-        this.countCache = countCache;
+        this.cache = cache;
         this.corpusOrder = corpusOrder;
         calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
         calculateMemory();
 
-        estimator.setCountCache(countCache);
+        estimator.setCache(cache);
         calculator.setEstimator(estimator);
 
         OUTPUT.printMessage(String.format(
@@ -140,18 +140,18 @@ public class QueryRunner {
                                        Path inputFile,
                                        Path outputFile,
                                        Estimator estimator,
-                                       CountCache countCache,
+                                       Cache cache,
                                        int corpusOrder) throws Exception {
         this.queryMode = queryMode;
         this.inputFile = inputFile;
         this.outputFile = outputFile;
-        this.countCache = countCache;
+        this.cache = cache;
         this.corpusOrder = corpusOrder;
         calculator = Calculator.forQueryMode(queryMode);
         stats = new QueryStats();
         calculateMemory();
 
-        estimator.setCountCache(countCache);
+        estimator.setCache(cache);
         calculator.setEstimator(estimator);
 
         String message = String.format(
@@ -258,7 +258,7 @@ public class QueryRunner {
 
         double probability = calculator.probability(sequence);
         if (queryMode.isWithLengthFreq() && probability != 0)
-            probability *= countCache.getLengthFrequency(sequence.size());
+            probability *= cache.getLengthFrequency(sequence.size());
 
         synchronized (stats) {
             stats.addProbability(probability);

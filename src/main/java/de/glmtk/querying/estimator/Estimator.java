@@ -3,10 +3,9 @@
  *
  * Copyright (C) 2015 Lukas Schmelzeisen, Rene Pickhardt
  *
- * GLMTK is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
+ * redistribute it and/or modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -22,13 +21,12 @@ package de.glmtk.querying.estimator;
 
 import java.util.Set;
 
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 
 public interface Estimator {
-
     @Override
     public String toString();
 
@@ -36,7 +34,7 @@ public interface Estimator {
 
     public void setName(String name);
 
-    public void setCountCache(CountCache countCache);
+    public void setCache(Cache cache);
 
     public ProbMode getProbMode();
 

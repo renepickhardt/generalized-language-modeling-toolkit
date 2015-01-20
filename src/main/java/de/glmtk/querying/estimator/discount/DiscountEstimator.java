@@ -20,7 +20,7 @@
 
 package de.glmtk.querying.estimator.discount;
 
-import de.glmtk.common.CountCache;
+import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
@@ -37,9 +37,9 @@ public abstract class DiscountEstimator extends FractionEstimator {
     }
 
     @Override
-    public void setCountCache(CountCache countCache) {
-        super.setCountCache(countCache);
-        fractionEstimator.setCountCache(countCache);
+    public void setCache(Cache cache) {
+        super.setCache(cache);
+        fractionEstimator.setCache(cache);
     }
 
     @Override

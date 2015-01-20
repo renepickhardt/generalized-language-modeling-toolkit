@@ -137,7 +137,7 @@ public class EstimatorTest extends TestCorporaTest {
         for (TestCorpus testCorpus : TEST_CORPORA) {
             LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
-            estimator.setCountCache(testCorpus.getCountCache());
+            estimator.setCache(testCorpus.getCache());
 
             for (int order = 1; order != maxOrder + 1; ++order) {
                 double sum = 0;
@@ -164,7 +164,7 @@ public class EstimatorTest extends TestCorporaTest {
         for (TestCorpus testCorpus : TEST_CORPORA) {
             LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
-            estimator.setCountCache(testCorpus.getCountCache());
+            estimator.setCache(testCorpus.getCache());
 
             for (int order = 1; order != maxOrder + 1; ++order) {
                 LOGGER.info("n=%s", order);
@@ -186,7 +186,7 @@ public class EstimatorTest extends TestCorporaTest {
                                 NGram checkHistory = history.concat(SKP_NGRAM);
                                 if (continuationEstimator)
                                     checkHistory = SKP_NGRAM.concat(checkHistory);
-                                if (checkHistory.seen(testCorpus.getCountCache()))
+                                if (checkHistory.seen(testCorpus.getCache()))
                                     Assert.assertEquals(1.0, sum, 0.01);
                                 else
                                     Assert.assertEquals(0.0, sum, 0.01);
