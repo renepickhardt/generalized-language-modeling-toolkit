@@ -84,7 +84,7 @@ public class CountCache {
 
         String message = "Loading counts into memory";
         OUTPUT.beginPhases(message + "...");
-        OUTPUT.setPhase(Phase.LOADING_COUNTS);
+        OUTPUT.setPhase(Phase.LOADING_CACHE);
 
         progress = OUTPUT.newProgress(patterns.size() + 2);
 

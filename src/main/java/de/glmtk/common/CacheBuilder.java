@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import de.glmtk.GlmtkPaths;
+import de.glmtk.common.Output.Phase;
 
 /**
  * Convenience class to construct a {@link Cache} that supports chaining.
@@ -105,8 +106,10 @@ public class CacheBuilder {
 
     public Cache build() throws IOException {
         String message = "Loading data into cache";
-        if (progress)
+        if (progress) {
             OUTPUT.beginPhases(message + "...");
+            OUTPUT.setPhase(Phase.LOADING_CACHE);
+        }
 
         Cache cache = new Cache(paths);
         if (progress) {

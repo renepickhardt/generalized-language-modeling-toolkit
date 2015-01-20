@@ -99,22 +99,20 @@ public class Cache {
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
-                    : paths.getContinuationDir());
-            Map<String, Object> countsForPattern = new HashMap<>();
-            counts.put(pattern, countsForPattern);
+                            : paths.getContinuationDir());
 
             Path file = inputDir.resolve(pattern.toString());
             try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
                 while (reader.readLine() != null) {
-                    String s = reader.getSequence();
                     Counts c = reader.getCounts();
-                    countsForPattern.put(s, isPatternAbsolute
-                            ? c.getOnePlusCount()
-                            : c);
+                    Object value = isPatternAbsolute ? c.getOnePlusCount() : c;
+                    CollectionUtils.putIntoNestedMap(counts, pattern,
+                            reader.getSequence(), value);
                 }
             }
 
-            progress.increase(1);
+            if (progress != null)
+                progress.increase(1);
         }
     }
 
@@ -124,14 +122,12 @@ public class Cache {
         nGramTimes = new HashMap<>();
         try (NGramTimesReader reader = new NGramTimesReader(
                 paths.getNGramTimesFile(), Constants.CHARSET)) {
-            while (reader.readLine() != null) {
-                Pattern p = reader.getPattern();
-                NGramTimes n = reader.getNGramTimes();
-                nGramTimes.put(p, n);
-            }
+            while (reader.readLine() != null)
+                nGramTimes.put(reader.getPattern(), reader.getNGramTimes());
         }
 
-        progress.increase(1);
+        if (progress != null)
+            progress.increase(1);
     }
 
     public void loadLengthDistribution() throws IOException {
@@ -149,7 +145,8 @@ public class Cache {
             }
         }
 
-        progress.increase(1);
+        if (progress != null)
+            progress.increase(1);
     }
 
     public void loadDiscounts(String model) throws IOException {
@@ -162,16 +159,15 @@ public class Cache {
             throw new IllegalArgumentException(String.format(
                     "Illegal model '%s'.", model));
 
-        Map<Pattern, Discount> discounts = new HashMap<>();
-        this.discounts.put(model, discounts);
-
+        discounts = new HashMap<>();
         try (DiscountReader reader = new DiscountReader(file, Constants.CHARSET)) {
-            while (reader.readLine() != null) {
-                Pattern p = reader.getPattern();
-                Discount d = reader.getDiscount();
-                discounts.put(p, d);
-            }
+            while (reader.readLine() != null)
+                CollectionUtils.putIntoNestedMap(discounts, model,
+                        reader.getPattern(), reader.getDiscount());
         }
+
+        if (progress != null)
+            progress.increase(1);
     }
 
     public void loadAlphas(String model,
@@ -185,24 +181,18 @@ public class Cache {
             throw new IllegalArgumentException(String.format(String.format(
                     "Illegal model '%s'.", model)));
 
-        Map<Pattern, Map<String, AlphaCount>> alphasForModel = new HashMap<>();
-        alphas.put(model, alphasForModel);
-
+        alphas = new HashMap<>();
         for (Pattern pattern : patterns) {
-            Map<String, AlphaCount> alphasForPattern = new HashMap<>();
-            alphasForModel.put(pattern, alphasForPattern);
-
             Path file = inputDir.resolve(pattern.toString());
             try (AlphaCountReader reader = new AlphaCountReader(file,
                     Constants.CHARSET)) {
-                while (reader.readLine() != null) {
-                    String s = reader.getSequence();
-                    AlphaCount a = reader.getAlphaCounts();
-                    alphasForPattern.put(s, a);
-                }
+                while (reader.readLine() != null)
+                    CollectionUtils.putIntoNestedMap(alphas, model, pattern,
+                            reader.getSequence(), reader.getAlphaCounts());
             }
 
-            progress.increase(1);
+            if (progress != null)
+                progress.increase(1);
         }
     }
 
@@ -217,60 +207,44 @@ public class Cache {
             throw new IllegalArgumentException(String.format(String.format(
                     "Illegal model '%s'.", model)));
 
-        Map<Pattern, Map<String, LambdaCounts>> lambdasForModel = new HashMap<>();
-        lambdas.put(model, lambdasForModel);
-
+        lambdas = new HashMap<>();
         for (Pattern pattern : patterns) {
-            Map<String, LambdaCounts> lambdasForPattern = new HashMap<>();
-            lambdasForModel.put(pattern, lambdasForPattern);
-
             Path file = inputDir.resolve(pattern.toString());
             try (LambdaCountsReader reader = new LambdaCountsReader(file,
                     Constants.CHARSET)) {
-                while (reader.readLine() != null) {
-                    String s = reader.getSequence();
-                    LambdaCounts l = reader.getLambdaCounts();
-                    lambdasForPattern.put(s, l);
-                }
+                while (reader.readLine() != null)
+                    CollectionUtils.putIntoNestedMap(lambdas, model, pattern,
+                            reader.getSequence(), reader.getLambdaCounts());
             }
 
-            progress.increase(1);
+            if (progress != null)
+                progress.increase(1);
         }
     }
 
     public long getAbsolute(NGram ngram) {
-        if (counts == null)
-            throw new IllegalStateException("Counts not loaded.");
-
         Pattern pattern = ngram.getPattern();
         if (!pattern.isAbsolute())
             throw new IllegalArgumentException(String.format(
                     "Pattern '%s' is is not absolute pattern.", pattern));
 
-        Map<String, Object> countsWithPattern = counts.get(pattern);
-        if (countsWithPattern == null)
-            throw new IllegalStateException(String.format(
-                    "Counts with pattern '%s' not loaded.", pattern));
+        Long result = (Long) CollectionUtils.getFromNestedMap(counts, pattern,
+                ngram.toString(), "Counts not loaded",
+                "Counts with pattern '%s' not loaded.", null);
 
-        Long result = (Long) countsWithPattern.get(ngram.toString());
         return result == null ? 0L : result;
     }
 
     public Counts getContinuation(NGram ngram) {
-        if (counts == null)
-            throw new IllegalStateException("Counts not loaded.");
-
         Pattern pattern = ngram.getPattern();
         if (pattern.isAbsolute())
             throw new IllegalArgumentException(String.format(
                     "Pattern '%s' is no continuation pattern.", pattern));
 
-        Map<String, Object> countsWithPattern = counts.get(pattern);
-        if (countsWithPattern == null)
-            throw new IllegalStateException(String.format(
-                    "Counts with pattern '%s' not loaded.", pattern));
+        Counts result = (Counts) CollectionUtils.getFromNestedMap(counts,
+                pattern, ngram.toString(), "Counts not loaded",
+                "Counts with pattern '%s' not loaded.", null);
 
-        Counts result = (Counts) countsWithPattern.get(ngram.toString());
         return result == null ? new Counts() : result;
     }
 
@@ -297,12 +271,9 @@ public class Cache {
         if (nGramTimes == null)
             throw new IllegalStateException("NGram times not loaded.");
 
-        NGramTimes result = nGramTimes.get(pattern);
-        if (result == null)
-            throw new IllegalStateException(String.format(
-                    "No NGramTimes learned for pattern '%s'.", pattern));
-
-        return result;
+        return CollectionUtils.getFromNestedMap(nGramTimes, pattern,
+                "NGram times not loaded.",
+                "No NGramTimes learned for pattern '%s'.");
     }
 
     public double getLengthFrequency(int length) {
@@ -330,59 +301,25 @@ public class Cache {
 
     public Discount getDiscount(String model,
                                 Pattern pattern) {
-        if (discounts == null)
-            throw new IllegalStateException("No discounts loaded.");
-
-        Map<Pattern, Discount> discountsForModel = discounts.get(model);
-        if (discountsForModel == null)
-            throw new IllegalStateException(String.format(
-                    "Discounts for model '%s' not loaded.", model));
-
-        Discount result = discountsForModel.get(pattern);
-        if (result == null)
-            throw new IllegalStateException(String.format(
-                    "No Discouts learned for pattern '%s'.", pattern));
-
-        return result;
+        return CollectionUtils.getFromNestedMap(discounts, model, pattern,
+                "No Discounts loaded.", "Discounts for model '%s' not loaded.",
+                "No Discounts learned for pattern '%2$s' for model '%1$s'.");
     }
 
     public AlphaCount getAlpha(String model,
                                NGram ngram) {
-        if (alphas == null)
-            throw new IllegalStateException("No alphas loaded.");
-
-        Map<Pattern, Map<String, AlphaCount>> alphasForModel = alphas.get(model);
-        if (alphasForModel == null)
-            throw new IllegalStateException(String.format(
-                    "Alphas for model '%s' not loaded.", model));
-
-        Pattern pattern = ngram.getPattern();
-        Map<String, AlphaCount> alphasForPattern = alphasForModel.get(pattern);
-        if (alphasForPattern == null)
-            throw new IllegalStateException(String.format(
-                    "Alphas with pattern '%s' for model '%s' not loaded.",
-                    pattern, model));
-
-        return alphasForPattern.get(ngram.toString());
+        return CollectionUtils.getFromNestedMap(alphas, model,
+                ngram.getPattern(), ngram.toString(), "No alphas loaded.",
+                "Alphas for model '%s' not loaded.",
+                "Alphas with pattern '%2$s' for model '%1$s' not loaded.", null);
     }
 
     public LambdaCounts getLambda(String model,
                                   NGram ngram) {
-        if (lambdas == null)
-            throw new IllegalStateException("No lambdas loaded.");
-
-        Map<Pattern, Map<String, LambdaCounts>> lambdasForModel = lambdas.get(model);
-        if (lambdasForModel == null)
-            throw new IllegalStateException(String.format(
-                    "Lambdas for model '%s' not loaded.", model));
-
-        Pattern pattern = ngram.getPattern();
-        Map<String, LambdaCounts> lambdasForPattern = lambdasForModel.get(pattern);
-        if (lambdasForPattern == null)
-            throw new IllegalStateException(String.format(
-                    "Lambdas with pattern '%s' for model '%s' not loaded.",
-                    pattern, model));
-
-        return lambdasForPattern.get(ngram.toString());
+        return CollectionUtils.getFromNestedMap(lambdas, model,
+                ngram.getPattern(), ngram.toString(), "No lambdas loaded",
+                "Lambdas for model '%s' not loaded.",
+                "Lambdas with pattern '%2$s' for model '%1$s' not loaded.",
+                null);
     }
 }

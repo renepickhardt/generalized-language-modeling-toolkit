@@ -67,7 +67,7 @@ public enum Output {
         CALCULATING_LAMBDAS(3, 3, "Calculating Lambdas"),
 
         // Cache
-        LOADING_COUNTS(1, 1, "Loading Counts"),
+        LOADING_CACHE(1, 1, "Loading Counts"),
 
         // QueryCache
         SCANNING_COUNTS(1, 1, "Scanning Counts"),
