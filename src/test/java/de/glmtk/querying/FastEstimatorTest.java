@@ -30,7 +30,6 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.common.Cache;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.ProbMode;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -47,10 +46,8 @@ public class FastEstimatorTest extends TestCorporaTest {
         FastModifiedKneserNeyEstimator fastEstimator = new FastModifiedKneserNeyEstimator();
         fastEstimator.setName("Fast-Modified-Kneser-Ney");
 
-        Set<Pattern> patternsSlow = slowEstimator.getUsedPatterns(5,
-                ProbMode.MARG);
-        Set<Pattern> patternsFast = fastEstimator.getUsedPatterns(5,
-                ProbMode.MARG);
+        Set<Pattern> patternsSlow = slowEstimator.getUsedPatterns(5);
+        Set<Pattern> patternsFast = fastEstimator.getUsedPatterns(5);
         Set<Pattern> patterns = new HashSet<>();
         patterns.addAll(patternsSlow);
         patterns.addAll(patternsFast);
@@ -70,13 +67,12 @@ public class FastEstimatorTest extends TestCorporaTest {
         QueryMode queryMode = QueryMode.newSequence();
         Path inputFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
         Cache cache = testCorpus.getCache(patterns);
-        ProbMode probMode = ProbMode.MARG;
         int corpusOrder = 5;
 
         long t = System.currentTimeMillis();
         Glmtk glmtk = testCorpus.getGlmtk();
-        glmtk.runQueriesOnFile(queryMode, inputFile, estimator, probMode,
-                cache, corpusOrder);
+        glmtk.runQueriesOnFile(queryMode, inputFile, estimator, cache,
+                corpusOrder);
         long tt = System.currentTimeMillis();
         System.out.println((tt - t) + "ms");
     }

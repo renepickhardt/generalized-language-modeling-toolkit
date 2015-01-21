@@ -22,7 +22,6 @@ package de.glmtk.querying.estimator;
 
 import static de.glmtk.common.PatternElem.SKP_WORD;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -80,7 +79,7 @@ public abstract class AbstractEstimator implements Estimator {
         else
             SUBSTITUTE_ESTIMATOR = new AbsoluteUnigramEstimator();
         name = "Unnamed";
-        countCache = null;
+        cache = null;
         probMode = ProbMode.MARG;
     }
 
@@ -143,7 +142,6 @@ public abstract class AbstractEstimator implements Estimator {
         return result;
     }
 
-    @Override
     protected abstract double calcProbability(NGram sequence,
                                               NGram history,
                                               int recDepth);
@@ -152,47 +150,41 @@ public abstract class AbstractEstimator implements Estimator {
     public Set<Pattern> getUsedPatterns(int modelSize) {
         final Set<Pattern> usedPatterns = new HashSet<>();
 
-        Cache trackingCache;
-        try {
-            trackingCache = new Cache(null) {
-                private Random random = new Random();
+        Cache trackingCache = new Cache(null) {
+            private Random random = new Random();
 
-                @Override
-                public long getAbsolute(NGram sequence) {
-                    usedPatterns.add(sequence.getPattern());
+            @Override
+            public long getAbsolute(NGram sequence) {
+                usedPatterns.add(sequence.getPattern());
 
-                    // is it possible that sequence is unseen?
-                    if (sequence.isEmptyOrOnlySkips())
-                        return random.nextInt(10) + 1;
-                    return random.nextInt(11);
-                }
+                // is it possible that sequence is unseen?
+                if (sequence.isEmptyOrOnlySkips())
+                    return random.nextInt(10) + 1;
+                return random.nextInt(11);
+            }
 
-                @Override
-                public Counts getContinuation(NGram sequence) {
-                    usedPatterns.add(sequence.getPattern());
+            @Override
+            public Counts getContinuation(NGram sequence) {
+                usedPatterns.add(sequence.getPattern());
 
-                    // is it possible that sequence is unseen?
-                    if (sequence.isEmptyOrOnlySkips())
-                        return new Counts(random.nextInt(10) + 1,
-                                random.nextInt(10) + 1, random.nextInt(10) + 1,
-                                random.nextInt(10) + 1);
-
-                    return new Counts(random.nextInt(11), random.nextInt(11),
-                            random.nextInt(11), random.nextInt(11));
-                }
-
-                @Override
-                public NGramTimes getNGramTimes(Pattern pattern) {
-                    usedPatterns.add(pattern);
-                    return new NGramTimes(random.nextInt(10) + 1,
+                // is it possible that sequence is unseen?
+                if (sequence.isEmptyOrOnlySkips())
+                    return new Counts(random.nextInt(10) + 1,
                             random.nextInt(10) + 1, random.nextInt(10) + 1,
                             random.nextInt(10) + 1);
-                }
-            };
-        } catch (IOException e) {
-            // We don't perfom IO in our subclass, so this should not occur.
-            throw new RuntimeException(e);
-        }
+
+                return new Counts(random.nextInt(11), random.nextInt(11),
+                        random.nextInt(11), random.nextInt(11));
+            }
+
+            @Override
+            public NGramTimes getNGramTimes(Pattern pattern) {
+                usedPatterns.add(pattern);
+                return new NGramTimes(random.nextInt(10) + 1,
+                        random.nextInt(10) + 1, random.nextInt(10) + 1,
+                        random.nextInt(10) + 1);
+            }
+        };
 
         Cache oldCache = cache;
         setCache(trackingCache);
