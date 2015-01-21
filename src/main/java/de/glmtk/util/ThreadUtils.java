@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 
 public class ThreadUtils {
     public static <T> List<T> executeThreads(int nThreads,
-            List<Callable<T>> threads) throws Exception {
+                                             List<Callable<T>> threads) throws Exception {
         CancellingThreadPoolExecutor threadPool = new CancellingThreadPoolExecutor(
                 nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>());
@@ -62,18 +63,20 @@ public class ThreadUtils {
             }
         };
 
-        Future<Integer> future = Executors.newSingleThreadExecutor().submit(
-                callable);
-
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
+            Future<Integer> future = executorService.submit(callable);
+
             int exitValue = future.get(timeout, unit);
             return exitValue;
-        } catch (ExecutionException e) {
-            // Should not happen
-            throw new RuntimeException(e.getCause());
         } catch (TimeoutException e) {
             p.destroy();
             return 1;
+        } catch (ExecutionException e) {
+            // Should not happen
+            throw new RuntimeException(e.getCause());
+        } finally {
+            executorService.shutdown();
         }
     }
 }
