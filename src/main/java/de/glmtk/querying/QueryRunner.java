@@ -43,7 +43,6 @@ import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
-import de.glmtk.common.ProbMode;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
@@ -103,7 +102,6 @@ public class QueryRunner {
                                               InputStream inputStream,
                                               OutputStream outputStream,
                                               Estimator estimator,
-                                              ProbMode probMode,
                                               CountCache countCache,
                                               int corpusOrder) throws Exception {
         this.queryMode = queryMode;
@@ -114,7 +112,6 @@ public class QueryRunner {
         calculateMemory();
 
         estimator.setCountCache(countCache);
-        calculator.setProbMode(probMode);
         calculator.setEstimator(estimator);
 
         OUTPUT.printMessage(String.format(
@@ -143,7 +140,6 @@ public class QueryRunner {
                                        Path inputFile,
                                        Path outputFile,
                                        Estimator estimator,
-                                       ProbMode probMode,
                                        CountCache countCache,
                                        int corpusOrder) throws Exception {
         this.queryMode = queryMode;
@@ -156,7 +152,6 @@ public class QueryRunner {
         calculateMemory();
 
         estimator.setCountCache(countCache);
-        calculator.setProbMode(probMode);
         calculator.setEstimator(estimator);
 
         String message = String.format(

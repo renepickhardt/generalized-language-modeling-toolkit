@@ -38,6 +38,8 @@ public interface Estimator {
 
     public void setCountCache(CountCache countCache);
 
+    public ProbMode getProbMode();
+
     public void setProbMode(ProbMode probMode);
 
     /**
@@ -60,6 +62,5 @@ public interface Estimator {
                               NGram history,
                               int recDepth);
 
-    public Set<Pattern> getUsedPatterns(int modelSize,
-            ProbMode probMode);
+    public Set<Pattern> getUsedPatterns(int modelSize);
 }

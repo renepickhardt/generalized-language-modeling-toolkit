@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -81,7 +81,7 @@ public abstract class AbstractEstimator implements Estimator {
             SUBSTITUTE_ESTIMATOR = new AbsoluteUnigramEstimator();
         name = "Unnamed";
         countCache = null;
-        probMode = null;
+        probMode = ProbMode.MARG;
     }
 
     @Override
@@ -108,6 +108,11 @@ public abstract class AbstractEstimator implements Estimator {
     }
 
     @Override
+    public ProbMode getProbMode() {
+        return probMode;
+    }
+
+    @Override
     public void setProbMode(ProbMode probMode) {
         this.probMode = probMode;
 
@@ -120,8 +125,6 @@ public abstract class AbstractEstimator implements Estimator {
                                     NGram history) {
         Objects.requireNonNull(countCache,
                 "You have to set a countCache that is not null before using this method");
-        Objects.requireNonNull(probMode,
-                "You have to set a probability mode that is not null before using this method.");
 
         return probability(sequence, history, 1);
     }
@@ -145,8 +148,7 @@ public abstract class AbstractEstimator implements Estimator {
                                               int recDepth);
 
     @Override
-    public Set<Pattern> getUsedPatterns(int modelSize,
-            ProbMode probMode) {
+    public Set<Pattern> getUsedPatterns(int modelSize) {
         final Set<Pattern> usedPatterns = new HashSet<>();
 
         CountCache trackingCountCache;
@@ -195,7 +197,6 @@ public abstract class AbstractEstimator implements Estimator {
 
         SequenceCalculator calculator = new SequenceCalculator();
         calculator.setEstimator(this);
-        calculator.setProbMode(probMode);
 
         Logger.setTraceEnabled(false);
 

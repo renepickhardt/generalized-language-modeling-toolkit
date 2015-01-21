@@ -37,7 +37,6 @@ import java.util.Set;
 import de.glmtk.common.Config;
 import de.glmtk.common.CountCache;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.ProbMode;
 import de.glmtk.common.Status;
 import de.glmtk.common.Status.Training;
 import de.glmtk.counting.Chunker;
@@ -320,17 +319,15 @@ public class Glmtk {
                                               InputStream inputStream,
                                               OutputStream outputStream,
                                               Estimator estimator,
-                                              ProbMode probMode,
                                               CountCache countCache,
                                               int corpusOrder) throws Exception {
         return queryRunner.runQueriesOnInputStream(queryMode, inputStream,
-                outputStream, estimator, probMode, countCache, corpusOrder);
+                outputStream, estimator, countCache, corpusOrder);
     }
 
     public QueryStats runQueriesOnFile(QueryMode queryMode,
                                        Path inputFile,
                                        Estimator estimator,
-                                       ProbMode probMode,
                                        CountCache countCache,
                                        int corpusOrder) throws Exception {
         Files.createDirectories(paths.getQueriesDir());
@@ -341,7 +338,7 @@ public class Glmtk {
                         estimator.getName(), queryMode, date));
 
         return queryRunner.runQueriesOnFile(queryMode, inputFile, outputFile,
-                estimator, probMode, countCache, corpusOrder);
+                estimator, countCache, corpusOrder);
     }
 
     /**
