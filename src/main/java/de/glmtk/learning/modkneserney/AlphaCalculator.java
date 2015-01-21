@@ -175,5 +175,4 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
             workers.add(new Worker());
         return workers;
     }
-
 }

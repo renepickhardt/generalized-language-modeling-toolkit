@@ -1,53 +1,26 @@
-/*
- * Generalized Language Modeling Toolkit (GLMTK)
- * 
- * Copyright (C) 2015 Lukas Schmelzeisen
- * 
- * GLMTK is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
- * See the AUTHORS file for contributors.
- */
-
 package de.glmtk.learning.modkneserney;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.Constants.MODEL_MODKNESERNEY;
 import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.SKP_WORD;
 import static de.glmtk.common.PatternElem.WSKP;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
-import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
-import de.glmtk.GlmtkPaths;
+import de.glmtk.common.AbstractWorkerPriorityExecutor;
 import de.glmtk.common.Cache;
 import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.Status;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
 import de.glmtk.counts.LambdaCount;
@@ -58,11 +31,11 @@ import de.glmtk.files.LambdaCountsWriter;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.StringUtils;
 
-public class LambdaCalculator {
+public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
     private static final Logger LOGGER = Logger.get(LambdaCalculator.class);
 
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-                                               Set<Pattern> patterns) {
+                                               Collection<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern contPattern : patterns) {
             if (contPattern.get(contPattern.size() - 1) != WSKP
@@ -90,35 +63,9 @@ public class LambdaCalculator {
         return contPattern.range(0, contPattern.size() - 2).concat(WSKP);
     }
 
-    private class Thread implements Callable<Object> {
-        private Pattern contPattern;
-
+    private class Worker extends AbstractWorkerPriorityExecutor<Pattern>.Worker {
         @Override
-        public Object call() throws Exception {
-            while (!patternQueue.isEmpty()) {
-                contPattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
-                        TimeUnit.MILLISECONDS);
-                if (contPattern == null)
-                    continue;
-
-                LOGGER.debug("Calculating pattern '%s'.", contPattern);
-
-                calculateLambdasForPattern();
-
-                status.addLambda(Constants.MODEL_MODKNESERNEY, contPattern);
-
-                LOGGER.debug("Finished pattern '%s'.", contPattern);
-
-                synchronized (progress) {
-                    progress.increase(1);
-                }
-            }
-
-            LOGGER.debug("Thread finished.");
-            return null;
-        }
-
-        private void calculateLambdasForPattern() throws Exception {
+        protected void work(Pattern contPattern) throws Exception {
             Pattern absPattern = getAbsPattern(contPattern);
             Pattern histPattern = getHistPattern(contPattern);
             Pattern histLambdaPattern = getHistLambdaPattern(contPattern);
@@ -137,8 +84,8 @@ public class LambdaCalculator {
 
             boolean checkHistLambda = histLambdaPattern.size() > 1;
 
-            Discount discount = cache.getDiscount(
-                    Constants.MODEL_MODKNESERNEY, histPattern);
+            Discount discount = cache.getDiscount(Constants.MODEL_MODKNESERNEY,
+                    histPattern);
 
             try (CountsReader contReader = new CountsReader(contCountFile,
                     Constants.CHARSET, readerMemory / 4);
@@ -203,54 +150,38 @@ public class LambdaCalculator {
                     writer.append(contSequence, lambdas);
                 }
             }
+
+            status.addLambda(MODEL_MODKNESERNEY, contPattern);
         }
     }
-
-    @SuppressWarnings("unused")
-    private Config config;
-    private int readerMemory;
-    private int writerMemory;
 
     private Path absoluteDir;
     private Path continuationDir;
     private Path lambdaDir;
-    private Status status;
-    private BlockingQueue<Pattern> patternQueue;
     private Cache cache;
-    private Progress progress;
 
     public LambdaCalculator(Config config) {
-        this.config = config;
-
-        readerMemory = config.getMemoryReader();
-        writerMemory = config.getMemoryWriter();
-
-        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
-        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
+        super(config);
     }
 
-    public void calculateLambdas(GlmtkPaths paths,
-                                 Status status,
-                                 Set<Pattern> patterns) throws Exception {
-        OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
-
-        patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getLambdas(Constants.MODEL_MODKNESERNEY));
-        if (patterns.isEmpty())
-            return;
-
+    @Override
+    protected Collection<Pattern> prepare(Collection<Pattern> patterns) throws Exception {
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         lambdaDir = paths.getModKneserNeyLambdaDir();
-        this.status = status;
-        patternQueue = new PriorityBlockingQueue<>(patterns);
-        cache = new CacheBuilder(paths).withDiscounts(
-                Constants.MODEL_MODKNESERNEY).build();
+
+        patterns = filterPatterns(status.getCounted(), patterns);
+
+        cache = new CacheBuilder(paths).withDiscounts(MODEL_MODKNESERNEY).build();
 
         Files.createDirectories(lambdaDir);
 
-        progress = OUTPUT.newProgress(patternQueue.size());
+        return patterns;
+    }
+
+    @Override
+    protected Collection<Worker> createWorkers() {
         // Can't really parallelize MKN lambda calculation.
-        new Thread().call();
+        return Arrays.asList(new Worker());
     }
 }
