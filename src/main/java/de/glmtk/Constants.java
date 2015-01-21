@@ -127,5 +127,5 @@ public class Constants {
 
     // Models //////////////////////////////////////////////////////////////////
 
-    public static final String MODEL_MODKNESERNEY_NAME = "modkneserney";
+    public static final String MODEL_MODKNESERNEY = "modkneserney";
 }

@@ -105,7 +105,7 @@ public class LambdaCalculator {
 
                 calculateLambdasForPattern();
 
-                status.addLambda(Constants.MODEL_MODKNESERNEY_NAME, contPattern);
+                status.addLambda(Constants.MODEL_MODKNESERNEY, contPattern);
 
                 LOGGER.debug("Finished pattern '%s'.", contPattern);
 
@@ -138,7 +138,7 @@ public class LambdaCalculator {
             boolean checkHistLambda = histLambdaPattern.size() > 1;
 
             Discount discount = cache.getDiscount(
-                    Constants.MODEL_MODKNESERNEY_NAME, histPattern);
+                    Constants.MODEL_MODKNESERNEY, histPattern);
 
             try (CountsReader contReader = new CountsReader(contCountFile,
                     Constants.CHARSET, readerMemory / 4);
@@ -235,7 +235,7 @@ public class LambdaCalculator {
         OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
 
         patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getLambdas(Constants.MODEL_MODKNESERNEY_NAME));
+        patterns.removeAll(status.getLambdas(Constants.MODEL_MODKNESERNEY));
         if (patterns.isEmpty())
             return;
 
@@ -245,7 +245,7 @@ public class LambdaCalculator {
         this.status = status;
         patternQueue = new PriorityBlockingQueue<>(patterns);
         cache = new CacheBuilder(paths).withDiscounts(
-                Constants.MODEL_MODKNESERNEY_NAME).build();
+                Constants.MODEL_MODKNESERNEY).build();
 
         Files.createDirectories(lambdaDir);
 

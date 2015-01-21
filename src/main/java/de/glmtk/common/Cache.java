@@ -157,7 +157,7 @@ public class Cache {
         LOGGER.debug("Loading %s discounts...", model);
 
         Path file = null;
-        if (model.equals(Constants.MODEL_MODKNESERNEY_NAME))
+        if (model.equals(Constants.MODEL_MODKNESERNEY))
             file = paths.getModKneserNeyDiscountsFile();
         else
             throw new IllegalArgumentException(String.format(
@@ -183,7 +183,7 @@ public class Cache {
         LOGGER.debug("Loading %s alphas...", model);
 
         Path inputDir = null;
-        if (model.equals(Constants.MODEL_MODKNESERNEY_NAME))
+        if (model.equals(Constants.MODEL_MODKNESERNEY))
             inputDir = paths.getModKneserNeyAlphaDir();
         else
             throw new IllegalArgumentException(String.format(String.format(
@@ -217,7 +217,7 @@ public class Cache {
         LOGGER.debug("Loading %s lambdas...", model);
 
         Path inputDir = null;
-        if (model.equals(Constants.MODEL_MODKNESERNEY_NAME))
+        if (model.equals(Constants.MODEL_MODKNESERNEY))
             inputDir = paths.getModKneserNeyLambdaDir();
         else
             throw new IllegalArgumentException(String.format(String.format(

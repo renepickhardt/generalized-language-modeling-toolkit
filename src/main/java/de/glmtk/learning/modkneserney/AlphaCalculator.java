@@ -1,69 +1,57 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.learning.modkneserney;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.Constants.MODEL_MODKNESERNEY;
 import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.SKP_WORD;
 import static de.glmtk.common.PatternElem.WSKP;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
-import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
-import de.glmtk.GlmtkPaths;
+import de.glmtk.common.AbstractWorkerExecutor;
 import de.glmtk.common.Cache;
 import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
-import de.glmtk.common.Status;
 import de.glmtk.counts.AlphaCount;
 import de.glmtk.counts.Discount;
 import de.glmtk.files.AlphaCountWriter;
 import de.glmtk.files.CountsReader;
-import de.glmtk.logging.Logger;
 import de.glmtk.util.StringUtils;
-import de.glmtk.util.ThreadUtils;
 
-public class AlphaCalculator {
-    private static final Logger LOGGER = Logger.get(AlphaCalculator.class);
-
+public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-                                               Set<Pattern> patterns) {
+                                               Collection<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern numPattern : patterns) {
             if (numPattern.get(numPattern.size() - 1) != CNT
@@ -87,35 +75,9 @@ public class AlphaCalculator {
         return numPattern.range(0, numPattern.size() - 1);
     }
 
-    private class Thread implements Callable<Object> {
-        private Pattern numPattern;
-
+    private class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
         @Override
-        public Object call() throws Exception {
-            while (!patternQueue.isEmpty()) {
-                numPattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
-                        TimeUnit.MILLISECONDS);
-                if (numPattern == null)
-                    continue;
-
-                LOGGER.debug("Calculating pattern '%s'.", numPattern);
-
-                calculateAlphasForPattern();
-
-                status.addAlpha(Constants.MODEL_MODKNESERNEY_NAME, numPattern);
-
-                LOGGER.debug("Finished pattern '%s'.", numPattern);
-
-                synchronized (progress) {
-                    progress.increase(1);
-                }
-            }
-
-            LOGGER.debug("Thread finished.");
-            return null;
-        }
-
-        private void calculateAlphasForPattern() throws Exception {
+        protected void work(Pattern numPattern) throws Exception {
             Pattern denPattern = getDenPattern(numPattern);
             Pattern histPattern = getHistPattern(numPattern);
 
@@ -134,8 +96,7 @@ public class AlphaCalculator {
 
             Discount discount = null;
             if (checkHistory)
-                discount = cache.getDiscount(Constants.MODEL_MODKNESERNEY_NAME,
-                        histPattern);
+                discount = cache.getDiscount(MODEL_MODKNESERNEY, histPattern);
 
             try (CountsReader numReader = new CountsReader(numCountFile,
                     Constants.CHARSET, readerMemory / 3);
@@ -177,56 +138,42 @@ public class AlphaCalculator {
                             discounted));
                 }
             }
+
+            status.addAlpha(MODEL_MODKNESERNEY, numPattern);
         }
     }
-
-    private Config config;
-    private int readerMemory;
-    private int writerMemory;
 
     private Path absoluteDir;
     private Path continuationDir;
     private Path alphaDir;
-    private Status status;
-    private BlockingQueue<Pattern> patternQueue;
     private Cache cache;
-    private Progress progress;
 
     public AlphaCalculator(Config config) {
-        this.config = config;
-
-        readerMemory = config.getMemoryReader();
-        writerMemory = config.getMemoryWriter();
-
-        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
-        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
+        super(config);
     }
 
-    public void calculateAlphas(GlmtkPaths paths,
-                                Status status,
-                                Set<Pattern> patterns) throws Exception {
-        OUTPUT.setPhase(Phase.CALCULATING_ALPHAS);
-
-        patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getAlphas(Constants.MODEL_MODKNESERNEY_NAME));
-        if (patterns.isEmpty())
-            return;
-
+    @Override
+    protected Collection<Pattern> prepare(Collection<Pattern> patterns) throws Exception {
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         alphaDir = paths.getModKneserNeyAlphaDir();
-        this.status = status;
-        patternQueue = new LinkedBlockingQueue<>(patterns);
-        cache = new CacheBuilder(paths).withDiscounts(
-                Constants.MODEL_MODKNESERNEY_NAME).build();
+
+        patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getAlphas(MODEL_MODKNESERNEY));
+
+        cache = new CacheBuilder(paths).withDiscounts(MODEL_MODKNESERNEY).build();
 
         Files.createDirectories(alphaDir);
 
-        List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != config.getNumberOfThreads(); ++i)
-            threads.add(new Thread());
-
-        progress = OUTPUT.newProgress(patternQueue.size());
-        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
+        return patterns;
     }
+
+    @Override
+    protected Collection<Worker> createWorkers() {
+        List<Worker> workers = new ArrayList<>();
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
+            workers.add(new Worker());
+        return workers;
+    }
+
 }

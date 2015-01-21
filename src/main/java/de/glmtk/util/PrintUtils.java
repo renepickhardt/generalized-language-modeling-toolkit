@@ -84,4 +84,8 @@ public class PrintUtils {
                 + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
+
+    public static String logHeader(String title) {
+        return title + StringUtils.repeat("-", 80 - title.length());
+    }
 }
