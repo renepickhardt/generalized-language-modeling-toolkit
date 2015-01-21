@@ -28,15 +28,12 @@ import static de.glmtk.common.PatternElem.WSKP;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -44,6 +41,9 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
+import de.glmtk.common.Cache;
+import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -54,7 +54,6 @@ import de.glmtk.counts.Discount;
 import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.files.CountsReader;
-import de.glmtk.files.DiscountReader;
 import de.glmtk.files.LambdaCountsReader;
 import de.glmtk.files.LambdaCountsWriter;
 import de.glmtk.logging.Logger;
@@ -108,8 +107,7 @@ public class LambdaCalculator {
 
                 calculateLambdasForPattern();
 
-                status.addLambda(Constants.MODEL_MODKNESERNEY_NAME,
-                        contPattern);
+                status.addLambda(Constants.MODEL_MODKNESERNEY_NAME, contPattern);
 
                 LOGGER.debug("Finished pattern '%s'.", contPattern);
 
@@ -141,7 +139,8 @@ public class LambdaCalculator {
 
             boolean checkHistLambda = histLambdaPattern.size() > 1;
 
-            Discount discount = discounts.get(histPattern);
+            Discount discount = cache.getDiscount(
+                    Constants.MODEL_MODKNESERNEY_NAME, histPattern);
 
             try (CountsReader contReader = new CountsReader(contCountFile,
                     Constants.CHARSET, readerMemory / 4);
@@ -216,11 +215,10 @@ public class LambdaCalculator {
     private Path absoluteDir;
     private Path continuationDir;
     private Path lambdaDir;
-    private Path discountsFile;
     private BlockingQueue<Pattern> patternQueue;
     private int readerMemory;
     private int writerMemory;
-    private Map<Pattern, Discount> discounts;
+    private Cache cache;
 
     public LambdaCalculator(Config config) {
         this.config = config;
@@ -228,10 +226,7 @@ public class LambdaCalculator {
 
     public void calculateLambdas(Status status,
                                  Set<Pattern> patterns,
-                                 Path absoluteDir,
-                                 Path continuationDir,
-                                 Path lambdaDir,
-                                 Path discountsFile) throws Exception {
+                                 GlmtkPaths paths) throws Exception {
         OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
 
         LOGGER.debug("patterns = %s", patterns);
@@ -244,16 +239,16 @@ public class LambdaCalculator {
         if (patterns.isEmpty())
             return;
 
-        Files.createDirectories(lambdaDir);
-
         this.status = status;
-        this.absoluteDir = absoluteDir;
-        this.continuationDir = continuationDir;
-        this.lambdaDir = lambdaDir;
-        this.discountsFile = discountsFile;
+        absoluteDir = paths.getAbsoluteDir();
+        continuationDir = paths.getContinuationDir();
+        lambdaDir = paths.getModKneserNeyLambdaDir();
         patternQueue = new PriorityBlockingQueue<>(patterns);
+        cache = new CacheBuilder(paths).withDiscounts(
+                Constants.MODEL_MODKNESERNEY_NAME).build();
         calculateMemory();
-        loadDiscounts();
+
+        Files.createDirectories(lambdaDir);
 
         progress = OUTPUT.newProgress(patternQueue.size());
         // Can't really parallelize MKN lambda calculation.
@@ -266,17 +261,5 @@ public class LambdaCalculator {
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
-    }
-
-    private void loadDiscounts() throws IOException {
-        discounts = new HashMap<>();
-        try (DiscountReader reader = new DiscountReader(discountsFile,
-                Constants.CHARSET)) {
-            while (reader.readLine() != null) {
-                Pattern pattern = reader.getPattern();
-                Discount discount = reader.getDiscount();
-                discounts.put(pattern, discount);
-            }
-        }
     }
 }

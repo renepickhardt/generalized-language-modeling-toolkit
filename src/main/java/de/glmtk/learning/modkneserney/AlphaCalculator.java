@@ -28,16 +28,13 @@ import static de.glmtk.common.PatternElem.WSKP;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -45,6 +42,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
+import de.glmtk.common.Cache;
+import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -55,7 +55,6 @@ import de.glmtk.counts.AlphaCount;
 import de.glmtk.counts.Discount;
 import de.glmtk.files.AlphaCountWriter;
 import de.glmtk.files.CountsReader;
-import de.glmtk.files.DiscountReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
@@ -103,8 +102,7 @@ public class AlphaCalculator {
 
                 calculateAlphasForPattern();
 
-                status.addAlpha(Constants.MODEL_MODKNESERNEY_NAME,
-                        numPattern);
+                status.addAlpha(Constants.MODEL_MODKNESERNEY_NAME, numPattern);
 
                 LOGGER.debug("Finished pattern '%s'.", numPattern);
 
@@ -136,7 +134,8 @@ public class AlphaCalculator {
 
             Discount discount = null;
             if (checkHistory)
-                discount = discounts.get(histPattern);
+                discount = cache.getDiscount(Constants.MODEL_MODKNESERNEY_NAME,
+                        histPattern);
 
             try (CountsReader numReader = new CountsReader(numCountFile,
                     Constants.CHARSET, readerMemory / 3);
@@ -188,11 +187,10 @@ public class AlphaCalculator {
     private Path absoluteDir;
     private Path continuationDir;
     private Path alphaDir;
-    private Path discountsFile;
     private BlockingQueue<Pattern> patternQueue;
     private int readerMemory;
     private int writerMemory;
-    private Map<Pattern, Discount> discounts;
+    private Cache cache;
 
     public AlphaCalculator(Config config) {
         this.config = config;
@@ -200,10 +198,7 @@ public class AlphaCalculator {
 
     public void calculateAlphas(Status status,
                                 Set<Pattern> patterns,
-                                Path absoluteDir,
-                                Path continuationDir,
-                                Path alphaDir,
-                                Path discountsFile) throws Exception {
+                                GlmtkPaths paths) throws Exception {
         OUTPUT.setPhase(Phase.CALCULATING_ALPHAS);
 
         LOGGER.debug("patterns = %s", patterns);
@@ -216,16 +211,16 @@ public class AlphaCalculator {
         if (patterns.isEmpty())
             return;
 
-        Files.createDirectories(alphaDir);
-
         this.status = status;
-        this.absoluteDir = absoluteDir;
-        this.continuationDir = continuationDir;
-        this.alphaDir = alphaDir;
-        this.discountsFile = discountsFile;
+        absoluteDir = paths.getAbsoluteDir();
+        continuationDir = paths.getContinuationDir();
+        alphaDir = paths.getModKneserNeyAlphaDir();
         patternQueue = new LinkedBlockingQueue<>(patterns);
+        cache = new CacheBuilder(paths).withDiscounts(
+                Constants.MODEL_MODKNESERNEY_NAME).build();
         calculateMemory();
-        loadDiscounts();
+
+        Files.createDirectories(alphaDir);
 
         List<Callable<Object>> threads = new LinkedList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
@@ -241,17 +236,5 @@ public class AlphaCalculator {
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
-    }
-
-    private void loadDiscounts() throws IOException {
-        discounts = new HashMap<>();
-        try (DiscountReader reader = new DiscountReader(discountsFile,
-                Constants.CHARSET)) {
-            while (reader.readLine() != null) {
-                Pattern pattern = reader.getPattern();
-                Discount discount = reader.getDiscount();
-                discounts.put(pattern, discount);
-            }
-        }
     }
 }
