@@ -21,6 +21,7 @@
 package de.glmtk.learning.modkneserney;
 
 import static de.glmtk.Constants.MODEL_MODKNESERNEY;
+import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.SKP_WORD;
@@ -41,6 +42,7 @@ import de.glmtk.common.AbstractWorkerExecutor;
 import de.glmtk.common.Cache;
 import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
+import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counts.AlphaCount;
@@ -154,6 +156,8 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
 
     @Override
     protected Collection<Pattern> prepare(Collection<Pattern> patterns) throws Exception {
+        OUTPUT.setPhase(Phase.CALCULATING_ALPHAS);
+
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         alphaDir = paths.getModKneserNeyAlphaDir();

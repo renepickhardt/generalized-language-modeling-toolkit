@@ -293,7 +293,7 @@ public class Glmtk {
 
         Files.createDirectories(paths.getModKneserNeyDir());
 
-        modKneserNeyDiscountCalculator.calculateDiscounts(status,
+        modKneserNeyDiscountCalculator.run(status,
                 paths.getNGramTimesFile(), paths.getModKneserNeyDiscountsFile());
         modKneserNeyAlphaCalculator.run(status.getCounted(), paths, status);
         modKneserNeyLambdaCalculator.run(status.getCounted(), paths, status);

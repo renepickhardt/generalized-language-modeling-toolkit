@@ -1,6 +1,7 @@
 package de.glmtk.learning.modkneserney;
 
 import static de.glmtk.Constants.MODEL_MODKNESERNEY;
+import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.SKP_WORD;
@@ -20,6 +21,7 @@ import de.glmtk.common.AbstractWorkerPriorityExecutor;
 import de.glmtk.common.Cache;
 import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
+import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
@@ -166,11 +168,14 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
 
     @Override
     protected Collection<Pattern> prepare(Collection<Pattern> patterns) throws Exception {
+        OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
+
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         lambdaDir = paths.getModKneserNeyLambdaDir();
 
         patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));
 
         cache = new CacheBuilder(paths).withDiscounts(MODEL_MODKNESERNEY).build();
 

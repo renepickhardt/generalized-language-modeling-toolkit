@@ -48,9 +48,9 @@ public class DiscountCalculator {
         this.config = config;
     }
 
-    public void calculateDiscounts(Status status,
-                                   Path nGramTimesFile,
-                                   Path outputFile) throws IOException {
+    public void run(Status status,
+                    Path nGramTimesFile,
+                    Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.CALCULATING_DISCOUNTS);
 
         if (status.areDiscountsCalculated(Constants.MODEL_MODKNESERNEY)) {
