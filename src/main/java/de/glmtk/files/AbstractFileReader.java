@@ -73,8 +73,7 @@ public abstract class AbstractFileReader implements Closeable, AutoCloseable {
                               int sz) throws IOException {
         this.file = file;
         line = "undefined"; // so isEof() is not true if readLine() hasn't been called yet.
-        reader = new LineNumberReader(NioUtils.newBufferedReader(file, charset,
-                sz));
+        reader = NioUtils.newLineNumberReader(file, charset, sz);
     }
 
     public String readLine() throws IOException {
