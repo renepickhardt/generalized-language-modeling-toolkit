@@ -17,12 +17,14 @@ import java.util.List;
 import java.util.Set;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
 import de.glmtk.common.AbstractWorkerPriorityExecutor;
 import de.glmtk.common.Cache;
 import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.Status;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
 import de.glmtk.counts.LambdaCount;
@@ -37,7 +39,7 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
     private static final Logger LOGGER = Logger.get(LambdaCalculator.class);
 
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-                                               Collection<Pattern> patterns) {
+            Collection<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern contPattern : patterns) {
             if (contPattern.get(contPattern.size() - 1) != WSKP
@@ -67,7 +69,8 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
 
     private class Worker extends AbstractWorkerPriorityExecutor<Pattern>.Worker {
         @Override
-        protected void work(Pattern contPattern) throws Exception {
+        protected void work(Pattern contPattern,
+                            int patternNo) throws Exception {
             Pattern absPattern = getAbsPattern(contPattern);
             Pattern histPattern = getHistPattern(contPattern);
             Pattern histLambdaPattern = getHistLambdaPattern(contPattern);
@@ -97,8 +100,8 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
                             Constants.CHARSET, readerMemory / 4);
                     LambdaCountsReader histLambdaReader = !checkHistLambda
                             ? null
-                            : new LambdaCountsReader(histLambdaFile,
-                                    Constants.CHARSET, readerMemory / 4);
+                                    : new LambdaCountsReader(histLambdaFile,
+                                            Constants.CHARSET, readerMemory / 4);
                     LambdaCountsWriter writer = new LambdaCountsWriter(
                             lambdaFile, Constants.CHARSET, writerMemory)) {
                 while (contReader.readLine() != null) {
@@ -160,28 +163,32 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
     private Path absoluteDir;
     private Path continuationDir;
     private Path lambdaDir;
+    private Status status;
     private Cache cache;
 
     public LambdaCalculator(Config config) {
         super(config);
     }
 
-    @Override
-    protected Collection<Pattern> prepare(Collection<Pattern> patterns) throws Exception {
+    public void run(Collection<Pattern> patterns,
+                    GlmtkPaths paths,
+                    Status status) throws Exception {
         OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
 
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         lambdaDir = paths.getModKneserNeyLambdaDir();
 
-        patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));
+        this.status = status;
 
         cache = new CacheBuilder(paths).withDiscounts(MODEL_MODKNESERNEY).build();
 
+        patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));
+
         Files.createDirectories(lambdaDir);
 
-        return patterns;
+        work(patterns);
     }
 
     @Override

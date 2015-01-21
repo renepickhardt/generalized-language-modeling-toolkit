@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
 import de.glmtk.common.AbstractWorkerExecutor;
 import de.glmtk.common.Cache;
 import de.glmtk.common.CacheBuilder;
@@ -45,6 +46,7 @@ import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.common.Status;
 import de.glmtk.counts.AlphaCount;
 import de.glmtk.counts.Discount;
 import de.glmtk.files.AlphaCountWriter;
@@ -53,7 +55,7 @@ import de.glmtk.util.StringUtils;
 
 public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-                                               Collection<Pattern> patterns) {
+            Collection<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern numPattern : patterns) {
             if (numPattern.get(numPattern.size() - 1) != CNT
@@ -79,7 +81,8 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
 
     private class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
         @Override
-        protected void work(Pattern numPattern) throws Exception {
+        protected void work(Pattern numPattern,
+                            int patternNo) throws Exception {
             Pattern denPattern = getDenPattern(numPattern);
             Pattern histPattern = getHistPattern(numPattern);
 
@@ -106,8 +109,8 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
                             Constants.CHARSET, readerMemory / 3);
                     CountsReader histReader = !checkHistory
                             ? null
-                            : new CountsReader(histCountFile,
-                                    Constants.CHARSET, readerMemory / 3);
+                                    : new CountsReader(histCountFile,
+                                            Constants.CHARSET, readerMemory / 3);
                     AlphaCountWriter writer = new AlphaCountWriter(alphaFile,
                             Constants.CHARSET, writerMemory)) {
                 while (numReader.readLine() != null) {
@@ -148,28 +151,32 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
     private Path absoluteDir;
     private Path continuationDir;
     private Path alphaDir;
+    private Status status;
     private Cache cache;
 
     public AlphaCalculator(Config config) {
         super(config);
     }
 
-    @Override
-    protected Collection<Pattern> prepare(Collection<Pattern> patterns) throws Exception {
+    public void run(Collection<Pattern> patterns,
+                    GlmtkPaths paths,
+                    Status status) throws Exception {
         OUTPUT.setPhase(Phase.CALCULATING_ALPHAS);
 
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         alphaDir = paths.getModKneserNeyAlphaDir();
 
-        patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getAlphas(MODEL_MODKNESERNEY));
+        this.status = status;
 
         cache = new CacheBuilder(paths).withDiscounts(MODEL_MODKNESERNEY).build();
 
+        patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getAlphas(MODEL_MODKNESERNEY));
+
         Files.createDirectories(alphaDir);
 
-        return patterns;
+        work(patterns);
     }
 
     @Override

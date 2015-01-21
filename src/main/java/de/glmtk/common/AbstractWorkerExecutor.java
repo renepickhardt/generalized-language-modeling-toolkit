@@ -31,7 +31,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
-import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.ThreadUtils;
@@ -47,12 +46,16 @@ public abstract class AbstractWorkerExecutor<T> {
                     getClass().getSimpleName());
 
             while (!queue.isEmpty()) {
-                T object = queue.poll(Constants.MAX_IDLE_TIME,
-                        TimeUnit.MILLISECONDS);
-                if (object == null)
-                    continue;
+                T obj;
+                int objNo;
+                synchronized (queue) {
+                    if ((obj = queue.poll(Constants.MAX_IDLE_TIME,
+                            TimeUnit.MILLISECONDS)) == null)
+                        continue;
+                    objNo = objectNo++;
+                }
 
-                work(object);
+                work(obj, objNo);
 
                 synchronized (progress) {
                     progress.increase(1);
@@ -65,7 +68,8 @@ public abstract class AbstractWorkerExecutor<T> {
             return null;
         }
 
-        protected abstract void work(T object) throws Exception;
+        protected abstract void work(T object,
+                                     int objectNo) throws Exception;
     }
 
     protected Config config;
@@ -74,9 +78,7 @@ public abstract class AbstractWorkerExecutor<T> {
     protected int readerMemory;
     protected int writerMemory;
 
-    protected GlmtkPaths paths;
-    protected Status status;
-
+    private int objectNo;
     private BlockingQueue<T> queue;
     private Progress progress;
 
@@ -85,7 +87,7 @@ public abstract class AbstractWorkerExecutor<T> {
         calculateMemory();
     }
 
-    private void calculateMemory() {
+    protected void calculateMemory() {
         readerMemory = config.getMemoryReader();
         writerMemory = config.getMemoryWriter();
 
@@ -94,27 +96,19 @@ public abstract class AbstractWorkerExecutor<T> {
         LOGGER.debug("writerMemory : %s", humanReadableByteCount(writerMemory));
     }
 
-    public final void run(Collection<T> objects,
-                          GlmtkPaths paths,
-                          Status status) throws Exception {
-        this.paths = paths;
-        this.status = status;
-
-        objects = prepare(objects);
-
+    protected void work(Collection<T> objects) throws Exception {
         if (objects == null || objects.isEmpty()) {
             LOGGER.debug("No objects given, no work to do.");
             return;
         }
 
+        objectNo = 0;
         queue = createQueue(objects);
         progress = OUTPUT.newProgress(queue.size());
 
         Collection<? extends Worker> workers = createWorkers();
         ThreadUtils.executeThreads(workers.size(), workers);
     }
-
-    protected abstract Collection<T> prepare(Collection<T> objects) throws Exception;
 
     protected BlockingQueue<T> createQueue(Collection<T> objects) {
         return new LinkedBlockingQueue<>(objects);

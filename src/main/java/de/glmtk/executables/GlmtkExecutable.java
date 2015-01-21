@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -530,20 +530,22 @@ public class GlmtkExecutable extends Executable {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(file,
                         neededPatterns);
                 Cache cache = new CacheBuilder(queryCache).withCounts(
-                        neededPatterns).withNGramTimes().withLengthDistribution().build();
+                        neededPatterns).withNGramTimes().build();
 
-                for (Estimator estimator : estimators)
-                    glmtk.runQueriesOnFile(queryMode, file, estimator, cache,
-                            trainingOrder);
+                for (Estimator estimator : estimators) {
+                    estimator.setCache(cache);
+                    glmtk.queryFile(queryMode, estimator, trainingOrder, file);
+                }
             }
         }
 
         if (ioQueryMode != null) {
-            Estimator estimator = estimators.iterator().next();
             Cache cache = new CacheBuilder(glmtk.getPaths()).withCounts(
                     neededPatterns).withNGramTimes().withLengthDistribution().withProgress().build();
-            glmtk.runQueriesOnInputStream(ioQueryMode, System.in, System.out,
-                    estimator, cache, trainingOrder);
+            Estimator estimator = estimators.iterator().next();
+            estimator.setCache(cache);
+            glmtk.queryStream(ioQueryMode, estimator, trainingOrder, System.in,
+                    System.out);
         }
 
         StatisticalNumberHelper.print();

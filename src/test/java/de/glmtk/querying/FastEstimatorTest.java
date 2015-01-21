@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.common.Cache;
 import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
@@ -66,13 +65,12 @@ public class FastEstimatorTest extends TestCorporaTest {
 
         QueryMode queryMode = QueryMode.newSequence();
         Path inputFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
-        Cache cache = testCorpus.getCache(patterns);
+        estimator.setCache(testCorpus.getCache(patterns));
         int corpusOrder = 5;
 
         long t = System.currentTimeMillis();
         Glmtk glmtk = testCorpus.getGlmtk();
-        glmtk.runQueriesOnFile(queryMode, inputFile, estimator, cache,
-                corpusOrder);
+        glmtk.queryFile(queryMode, estimator, corpusOrder, inputFile);
         long tt = System.currentTimeMillis();
         System.out.println((tt - t) + "ms");
     }

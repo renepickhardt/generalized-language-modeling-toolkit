@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -34,7 +34,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import de.glmtk.common.Cache;
 import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
@@ -45,10 +44,11 @@ import de.glmtk.counting.Merger;
 import de.glmtk.counting.NGramTimesCounter;
 import de.glmtk.counting.Tagger;
 import de.glmtk.logging.Logger;
+import de.glmtk.querying.FileQueryRunner;
 import de.glmtk.querying.QueryCacherCreator;
 import de.glmtk.querying.QueryMode;
-import de.glmtk.querying.QueryRunner;
 import de.glmtk.querying.QueryStats;
+import de.glmtk.querying.StreamQueryRunner;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;
@@ -107,7 +107,8 @@ public class Glmtk {
     private de.glmtk.learning.modkneserney.LambdaCalculator modKneserNeyLambdaCalculator;
 
     private QueryCacherCreator queryCacherCreator;
-    private QueryRunner queryRunner;
+    private StreamQueryRunner streamQueryRunner;
+    private FileQueryRunner fileQueryRunner;
 
     public Glmtk(Config config,
                  Path corpus,
@@ -137,7 +138,8 @@ public class Glmtk {
                 config);
 
         queryCacherCreator = new QueryCacherCreator(config);
-        queryRunner = new QueryRunner(config);
+        streamQueryRunner = new StreamQueryRunner(config);
+        fileQueryRunner = new FileQueryRunner(config);
     }
 
     public GlmtkPaths getPaths() {
@@ -293,8 +295,8 @@ public class Glmtk {
 
         Files.createDirectories(paths.getModKneserNeyDir());
 
-        modKneserNeyDiscountCalculator.run(status,
-                paths.getNGramTimesFile(), paths.getModKneserNeyDiscountsFile());
+        modKneserNeyDiscountCalculator.run(status, paths.getNGramTimesFile(),
+                paths.getModKneserNeyDiscountsFile());
         modKneserNeyAlphaCalculator.run(status.getCounted(), paths, status);
         modKneserNeyLambdaCalculator.run(status.getCounted(), paths, status);
 
@@ -336,30 +338,28 @@ public class Glmtk {
         return queryCachePaths;
     }
 
-    public QueryStats runQueriesOnInputStream(QueryMode queryMode,
-                                              InputStream inputStream,
-                                              OutputStream outputStream,
-                                              Estimator estimator,
-                                              Cache cache,
-                                              int corpusOrder) throws Exception {
-        return queryRunner.runQueriesOnInputStream(queryMode, inputStream,
-                outputStream, estimator, cache, corpusOrder);
+    public QueryStats queryStream(QueryMode mode,
+                                  Estimator estimator,
+                                  int corpusOrder,
+                                  InputStream inputStream,
+                                  OutputStream outputStream) throws IOException {
+        return streamQueryRunner.queryStream(paths, mode, estimator,
+                corpusOrder, inputStream, outputStream);
     }
 
-    public QueryStats runQueriesOnFile(QueryMode queryMode,
-                                       Path inputFile,
-                                       Estimator estimator,
-                                       Cache cache,
-                                       int corpusOrder) throws Exception {
+    public QueryStats queryFile(QueryMode mode,
+                                Estimator estimator,
+                                int corpusOrder,
+                                Path inputFile) throws Exception {
         Files.createDirectories(paths.getQueriesDir());
 
         String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
         Path outputFile = paths.getQueriesDir().resolve(
                 String.format("%s %s %s %s", inputFile.getFileName(),
-                        estimator.getName(), queryMode, date));
+                        estimator, mode, date));
 
-        return queryRunner.runQueriesOnFile(queryMode, inputFile, outputFile,
-                estimator, cache, corpusOrder);
+        return fileQueryRunner.queryFile(paths, mode, estimator, corpusOrder,
+                inputFile, outputFile);
     }
 
     /**
