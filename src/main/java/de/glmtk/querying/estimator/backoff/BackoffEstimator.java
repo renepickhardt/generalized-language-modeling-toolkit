@@ -28,9 +28,10 @@ import de.glmtk.common.CountCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+import de.glmtk.querying.estimator.AbstractEstimator;
 import de.glmtk.querying.estimator.Estimator;
 
-public class BackoffEstimator extends Estimator {
+public class BackoffEstimator extends AbstractEstimator {
     private Map<NGram, Double> gammaCache;
     private Estimator alpha;
     private Estimator beta;
