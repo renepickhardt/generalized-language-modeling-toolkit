@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -63,7 +63,7 @@ public class AlphaCalculator {
     private static final Logger LOGGER = Logger.get(AlphaCalculator.class);
 
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-            Set<Pattern> patterns) {
+                                               Set<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern numPattern : patterns) {
             if (numPattern.get(numPattern.size() - 1) != CNT
@@ -143,8 +143,8 @@ public class AlphaCalculator {
                             Constants.CHARSET, readerMemory / 3);
                     CountsReader histReader = !checkHistory
                             ? null
-                                    : new CountsReader(histCountFile,
-                                            Constants.CHARSET, readerMemory / 3);
+                            : new CountsReader(histCountFile,
+                                    Constants.CHARSET, readerMemory / 3);
                     AlphaCountWriter writer = new AlphaCountWriter(alphaFile,
                             Constants.CHARSET, writerMemory)) {
                 while (numReader.readLine() != null) {
@@ -181,44 +181,44 @@ public class AlphaCalculator {
     }
 
     private Config config;
+    private int readerMemory;
+    private int writerMemory;
 
-    private Progress progress;
-    private Status status;
     private Path absoluteDir;
     private Path continuationDir;
     private Path alphaDir;
+    private Status status;
     private BlockingQueue<Pattern> patternQueue;
-    private int readerMemory;
-    private int writerMemory;
     private Cache cache;
+    private Progress progress;
 
     public AlphaCalculator(Config config) {
         this.config = config;
+
+        readerMemory = config.getMemoryReader();
+        writerMemory = config.getMemoryWriter();
+
+        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
+        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
 
-    public void calculateAlphas(Status status,
-                                Set<Pattern> patterns,
-                                GlmtkPaths paths) throws Exception {
+    public void calculateAlphas(GlmtkPaths paths,
+                                Status status,
+                                Set<Pattern> patterns) throws Exception {
         OUTPUT.setPhase(Phase.CALCULATING_ALPHAS);
 
-        LOGGER.debug("patterns = %s", patterns);
-
-        LOGGER.debug("Filtering patterns.");
         patterns = filterPatterns(status.getCounted(), patterns);
         patterns.removeAll(status.getAlphas(Constants.MODEL_MODKNESERNEY_NAME));
-        LOGGER.debug("Remaining patterns = %s", patterns);
-
         if (patterns.isEmpty())
             return;
 
-        this.status = status;
         absoluteDir = paths.getAbsoluteDir();
         continuationDir = paths.getContinuationDir();
         alphaDir = paths.getModKneserNeyAlphaDir();
+        this.status = status;
         patternQueue = new LinkedBlockingQueue<>(patterns);
         cache = new CacheBuilder(paths).withDiscounts(
                 Constants.MODEL_MODKNESERNEY_NAME).build();
-        calculateMemory();
 
         Files.createDirectories(alphaDir);
 
@@ -228,13 +228,5 @@ public class AlphaCalculator {
 
         progress = OUTPUT.newProgress(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
-    }
-
-    private void calculateMemory() {
-        readerMemory = config.getMemoryReader();
-        writerMemory = config.getMemoryWriter();
-
-        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
-        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
     }
 }

@@ -295,10 +295,10 @@ public class Glmtk {
 
         modKneserNeyDiscountCalculator.calculateDiscounts(status,
                 paths.getNGramTimesFile(), paths.getModKneserNeyDiscountsFile());
-        modKneserNeyAlphaCalculator.calculateAlphas(status,
-                status.getCounted(), paths);
-        modKneserNeyLambdaCalculator.calculateLambdas(status,
-                status.getCounted(), paths);
+        modKneserNeyAlphaCalculator.calculateAlphas(paths,
+                status, status.getCounted());
+        modKneserNeyLambdaCalculator.calculateLambdas(paths,
+                status, status.getCounted());
 
         long mknSize = NioUtils.calcFileSize(paths.getModKneserNeyDir());
         OUTPUT.endPhases(String.format("%s done (uses %s).", message,

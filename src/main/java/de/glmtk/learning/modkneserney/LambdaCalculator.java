@@ -30,7 +30,6 @@ import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -58,7 +57,6 @@ import de.glmtk.files.LambdaCountsReader;
 import de.glmtk.files.LambdaCountsWriter;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.StringUtils;
-import de.glmtk.util.ThreadUtils;
 
 public class LambdaCalculator {
     private static final Logger LOGGER = Logger.get(LambdaCalculator.class);
@@ -208,58 +206,51 @@ public class LambdaCalculator {
         }
     }
 
+    @SuppressWarnings("unused")
     private Config config;
+    private int readerMemory;
+    private int writerMemory;
 
-    private Progress progress;
-    private Status status;
     private Path absoluteDir;
     private Path continuationDir;
     private Path lambdaDir;
+    private Status status;
     private BlockingQueue<Pattern> patternQueue;
-    private int readerMemory;
-    private int writerMemory;
     private Cache cache;
+    private Progress progress;
 
     public LambdaCalculator(Config config) {
         this.config = config;
-    }
 
-    public void calculateLambdas(Status status,
-                                 Set<Pattern> patterns,
-                                 GlmtkPaths paths) throws Exception {
-        OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
-
-        LOGGER.debug("patterns = %s", patterns);
-
-        LOGGER.debug("Filtering patterns.");
-        patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getLambdas(Constants.MODEL_MODKNESERNEY_NAME));
-        LOGGER.debug("Remaining patterns = %s", patterns);
-
-        if (patterns.isEmpty())
-            return;
-
-        this.status = status;
-        absoluteDir = paths.getAbsoluteDir();
-        continuationDir = paths.getContinuationDir();
-        lambdaDir = paths.getModKneserNeyLambdaDir();
-        patternQueue = new PriorityBlockingQueue<>(patterns);
-        cache = new CacheBuilder(paths).withDiscounts(
-                Constants.MODEL_MODKNESERNEY_NAME).build();
-        calculateMemory();
-
-        Files.createDirectories(lambdaDir);
-
-        progress = OUTPUT.newProgress(patternQueue.size());
-        // Can't really parallelize MKN lambda calculation.
-        ThreadUtils.executeThreads(1, Arrays.asList(new Thread()));
-    }
-
-    private void calculateMemory() {
         readerMemory = config.getMemoryReader();
         writerMemory = config.getMemoryWriter();
 
         LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
         LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
+    }
+
+    public void calculateLambdas(GlmtkPaths paths,
+                                 Status status,
+                                 Set<Pattern> patterns) throws Exception {
+        OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
+
+        patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getLambdas(Constants.MODEL_MODKNESERNEY_NAME));
+        if (patterns.isEmpty())
+            return;
+
+        absoluteDir = paths.getAbsoluteDir();
+        continuationDir = paths.getContinuationDir();
+        lambdaDir = paths.getModKneserNeyLambdaDir();
+        this.status = status;
+        patternQueue = new PriorityBlockingQueue<>(patterns);
+        cache = new CacheBuilder(paths).withDiscounts(
+                Constants.MODEL_MODKNESERNEY_NAME).build();
+
+        Files.createDirectories(lambdaDir);
+
+        progress = OUTPUT.newProgress(patternQueue.size());
+        // Can't really parallelize MKN lambda calculation.
+        new Thread().call();
     }
 }
