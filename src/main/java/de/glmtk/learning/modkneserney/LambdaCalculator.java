@@ -238,6 +238,7 @@ public class LambdaCalculator {
 
         LOGGER.debug("Filtering patterns.");
         patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getModelLambdas(Constants.MODEL_MODKNESERNEY_NAME));
         LOGGER.debug("Remaining patterns = %s", patterns);
 
         if (patterns.isEmpty())

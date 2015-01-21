@@ -64,7 +64,7 @@ public class AlphaCalculator {
     private static final Logger LOGGER = Logger.get(AlphaCalculator.class);
 
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-                                               Set<Pattern> patterns) {
+            Set<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern numPattern : patterns) {
             if (numPattern.get(numPattern.size() - 1) != CNT
@@ -210,6 +210,7 @@ public class AlphaCalculator {
 
         LOGGER.debug("Filtering patterns.");
         patterns = filterPatterns(status.getCounted(), patterns);
+        patterns.removeAll(status.getModelAlphas(Constants.MODEL_MODKNESERNEY_NAME));
         LOGGER.debug("Remaining patterns = %s", patterns);
 
         if (patterns.isEmpty())
