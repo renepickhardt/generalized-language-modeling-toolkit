@@ -349,41 +349,39 @@ public class Status {
         return corpusTagged;
     }
 
-    public Training getTraining() {
+    public synchronized Training getTraining() {
         return training;
     }
 
-    public void setTraining(Training training) throws IOException {
-        synchronized (this) {
-            if (training == Training.NONE) {
-                hash = null;
-                taggedHash = null;
-                this.training = Training.NONE;
-            }
-
-            String hash = HashUtils.generateMd5Hash(paths.getTrainingFile());
-            if (training == Training.UNTAGGED) {
-                if (this.hash == null)
-                    this.hash = hash;
-                if (this.hash.equals(hash)) {
-                    writeStatusToFile();
-                    return;
-                }
-                this.hash = hash;
-            } else {
-                if (taggedHash == null)
-                    taggedHash = hash;
-                if (taggedHash.equals(hash)) {
-                    writeStatusToFile();
-                    return;
-                }
-                taggedHash = hash;
-            }
-
-            LOGGER.info("Setting training with different hash than last execution. Can't continue with state of last execution.");
-            setVoidSettings();
-            writeStatusToFile();
+    public synchronized void setTraining(Training training) throws IOException {
+        if (training == Training.NONE) {
+            hash = null;
+            taggedHash = null;
+            this.training = Training.NONE;
         }
+
+        String hash = HashUtils.generateMd5Hash(paths.getTrainingFile());
+        if (training == Training.UNTAGGED) {
+            if (this.hash == null)
+                this.hash = hash;
+            if (this.hash.equals(hash)) {
+                writeStatusToFile();
+                return;
+            }
+            this.hash = hash;
+        } else {
+            if (taggedHash == null)
+                taggedHash = hash;
+            if (taggedHash.equals(hash)) {
+                writeStatusToFile();
+                return;
+            }
+            taggedHash = hash;
+        }
+
+        LOGGER.info("Setting training with different hash than last execution. Can't continue with state of last execution.");
+        setVoidSettings();
+        writeStatusToFile();
     }
 
     private Set<Pattern> counted(boolean absolute) {
@@ -394,115 +392,93 @@ public class Status {
         return absolute ? absoluteChunked : continuationChunked;
     }
 
-    public Set<Pattern> getCounted() {
-        synchronized (this) {
-            return Collections.unmodifiableSet(counted);
-        }
+    public synchronized Set<Pattern> getCounted() {
+        return Collections.unmodifiableSet(counted);
     }
 
-    public Set<Pattern> getCounted(boolean absolute) {
-        synchronized (this) {
-            return Collections.unmodifiableSet(counted(absolute));
-        }
+    public synchronized Set<Pattern> getCounted(boolean absolute) {
+        return Collections.unmodifiableSet(counted(absolute));
     }
 
-    public Set<Pattern> getChunkedPatterns(boolean absolute) {
-        synchronized (this) {
-            return Collections.unmodifiableSet(chunked(absolute).keySet());
-        }
+    public synchronized Set<Pattern> getChunkedPatterns(boolean absolute) {
+        return Collections.unmodifiableSet(chunked(absolute).keySet());
     }
 
-    public Set<String> getChunksForPattern(Pattern pattern) {
-        synchronized (this) {
-            boolean isAbsolute = pattern.isAbsolute();
-            return Collections.unmodifiableSet(chunked(isAbsolute).get(pattern));
-        }
+    public synchronized Set<String> getChunksForPattern(Pattern pattern) {
+        boolean isAbsolute = pattern.isAbsolute();
+        return Collections.unmodifiableSet(chunked(isAbsolute).get(pattern));
     }
 
-    public void setChunksForPattern(Pattern pattern,
-                                    Collection<String> chunks) throws IOException {
-        synchronized (this) {
-            boolean isAbsolute = pattern.isAbsolute();
-            chunked.put(pattern, new TreeSet<>(chunks));
-            chunked(isAbsolute).put(pattern, new TreeSet<>(chunks));
-            writeStatusToFile();
-        }
+    public synchronized void setChunksForPattern(Pattern pattern,
+                                                 Collection<String> chunks) throws IOException {
+        boolean isAbsolute = pattern.isAbsolute();
+        chunked.put(pattern, new TreeSet<>(chunks));
+        chunked(isAbsolute).put(pattern, new TreeSet<>(chunks));
+        writeStatusToFile();
     }
 
-    public void performMergeForChunks(Pattern pattern,
-                                      Collection<String> mergedChunks,
-                                      String mergeFile) throws IOException {
-        synchronized (this) {
-            boolean isAbsolute = pattern.isAbsolute();
-            Set<String> chunks = chunked.get(pattern);
-            chunks.removeAll(mergedChunks);
-            chunks.add(mergeFile);
-            chunks = chunked(isAbsolute).get(pattern);
-            chunks.removeAll(mergedChunks);
-            chunks.add(mergeFile);
-            writeStatusToFile();
-        }
+    public synchronized void performMergeForChunks(Pattern pattern,
+                                                   Collection<String> mergedChunks,
+                                                   String mergeFile) throws IOException {
+        boolean isAbsolute = pattern.isAbsolute();
+        Set<String> chunks = chunked.get(pattern);
+        chunks.removeAll(mergedChunks);
+        chunks.add(mergeFile);
+        chunks = chunked(isAbsolute).get(pattern);
+        chunks.removeAll(mergedChunks);
+        chunks.add(mergeFile);
+        writeStatusToFile();
     }
 
-    public void finishMerge(Pattern pattern) throws IOException {
-        synchronized (this) {
-            boolean isAbsolute = pattern.isAbsolute();
-            nGramTimesCounted = false;
-            lengthDistribution = false;
-            counted.add(pattern);
-            counted(isAbsolute).add(pattern);
-            chunked.remove(pattern);
-            chunked(isAbsolute).remove(pattern);
-            writeStatusToFile();
-        }
+    public synchronized void finishMerge(Pattern pattern) throws IOException {
+        boolean isAbsolute = pattern.isAbsolute();
+        nGramTimesCounted = false;
+        lengthDistribution = false;
+        counted.add(pattern);
+        counted(isAbsolute).add(pattern);
+        chunked.remove(pattern);
+        chunked(isAbsolute).remove(pattern);
+        writeStatusToFile();
     }
 
-    public boolean isNGramTimesCounted() {
+    public synchronized boolean isNGramTimesCounted() {
         return nGramTimesCounted;
     }
 
-    public void setNGramTimesCounted() throws IOException {
-        synchronized (this) {
-            nGramTimesCounted = true;
-            writeStatusToFile();
-        }
+    public synchronized void setNGramTimesCounted() throws IOException {
+        nGramTimesCounted = true;
+        writeStatusToFile();
     }
 
-    public boolean isLengthDistribution() {
+    public synchronized boolean isLengthDistribution() {
         return lengthDistribution;
     }
 
-    public void setLengthDistribution() throws IOException {
-        synchronized (this) {
-            lengthDistribution = true;
-            writeStatusToFile();
-        }
+    public synchronized void setLengthDistribution() throws IOException {
+        lengthDistribution = true;
+        writeStatusToFile();
     }
 
-    public Set<Pattern> getQueryCacheCounted(String name) {
-        synchronized (this) {
-            QueryCache queryCache = queryCaches.get(name);
-            if (queryCache == null)
-                return new TreeSet<>();
-            Set<Pattern> patterns = queryCache.getCounted();
-            return patterns != null ? patterns : new TreeSet<Pattern>();
-        }
+    public synchronized Set<Pattern> getQueryCacheCounted(String name) {
+        QueryCache queryCache = queryCaches.get(name);
+        if (queryCache == null)
+            return new TreeSet<>();
+        Set<Pattern> patterns = queryCache.getCounted();
+        return patterns != null ? patterns : new TreeSet<Pattern>();
     }
 
-    public void addQueryCacheCounted(String name,
-                                     Pattern pattern) throws IOException {
-        synchronized (this) {
-            QueryCache queryCache = queryCaches.get(name);
-            if (queryCache == null) {
-                queryCache = new QueryCache();
-                queryCaches.put(name, queryCache);
-            }
-            queryCache.addCounted(pattern);
-            writeStatusToFile();
+    public synchronized void addQueryCacheCounted(String name,
+                                                  Pattern pattern) throws IOException {
+        QueryCache queryCache = queryCaches.get(name);
+        if (queryCache == null) {
+            queryCache = new QueryCache();
+            queryCaches.put(name, queryCache);
         }
+        queryCache.addCounted(pattern);
+        writeStatusToFile();
     }
 
-    public void logStatus() {
+    public synchronized void logStatus() {
         LOGGER.debug("Status %s", StringUtils.repeat("-",
                 80 - "Status ".length()));
         LOGGER.debug("hash                         = %s", hash);
