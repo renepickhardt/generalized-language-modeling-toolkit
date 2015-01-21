@@ -1,33 +1,34 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.files;
 
-import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
+import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.NioUtils;
 
 public abstract class AbstractFileReader implements Closeable, AutoCloseable {
@@ -59,9 +60,8 @@ public abstract class AbstractFileReader implements Closeable, AutoCloseable {
     }
 
     protected Path file;
-    protected int lineNo;
     protected String line;
-    protected BufferedReader reader;
+    protected LineNumberReader reader;
 
     public AbstractFileReader(Path file,
                               Charset charset) throws IOException {
@@ -72,14 +72,13 @@ public abstract class AbstractFileReader implements Closeable, AutoCloseable {
                               Charset charset,
                               int sz) throws IOException {
         this.file = file;
-        lineNo = -1;
         line = "undefined"; // so isEof() is not true if readLine() hasn't been called yet.
-        reader = NioUtils.newBufferedReader(file, charset, sz);
+        reader = new LineNumberReader(NioUtils.newBufferedReader(file, charset,
+                sz));
     }
 
     public String readLine() throws IOException {
         line = reader.readLine();
-        ++lineNo;
         parseLine();
         return line;
     }
@@ -100,10 +99,17 @@ public abstract class AbstractFileReader implements Closeable, AutoCloseable {
     }
 
     public int getLineNo() {
-        return lineNo;
+        return reader.getLineNumber();
     }
 
     public String getLine() {
         return line;
+    }
+
+    protected FileFormatException newFileFormatException(String fileType,
+                                                         String message,
+                                                         Object... params) {
+        throw new FileFormatException(line, getLineNo(), file, fileType,
+                message, params);
     }
 }

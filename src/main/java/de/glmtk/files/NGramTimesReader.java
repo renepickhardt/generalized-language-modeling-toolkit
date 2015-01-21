@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -27,7 +27,6 @@ import java.util.List;
 
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.NGramTimes;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
 public class NGramTimesReader extends AbstractFileReader {
@@ -55,7 +54,7 @@ public class NGramTimesReader extends AbstractFileReader {
 
         List<String> split = StringUtils.splitAtChar(line, '\t');
         if (split.size() != 5)
-            throw new FileFormatException(line, lineNo, file, "ngram times",
+            throw newFileFormatException("ngram times",
                     "Expected line to have format '<pattern>(\\t<count>){4}'.");
 
         try {
@@ -64,8 +63,7 @@ public class NGramTimesReader extends AbstractFileReader {
                     parseNumber(split.get(2)), parseNumber(split.get(3)),
                     parseNumber(split.get(4)));
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "ngram times",
-                    e.getMessage());
+            throw newFileFormatException("ngram times", e.getMessage());
         }
     }
 

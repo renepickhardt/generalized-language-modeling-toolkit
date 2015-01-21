@@ -27,7 +27,6 @@ import java.util.List;
 
 import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
 public class LambdaCountsReader extends AbstractSequenceReader {
@@ -69,8 +68,7 @@ public class LambdaCountsReader extends AbstractSequenceReader {
                         parseFloatingPoint(s.substring(p + 1))));
             }
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "lambda counts",
-                    e.getMessage());
+            throw newFileFormatException("lambda counts", e.getMessage());
         }
     }
 

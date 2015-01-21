@@ -7,7 +7,6 @@ import java.util.List;
 
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Discount;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
 public class DiscountReader extends AbstractFileReader {
@@ -35,7 +34,7 @@ public class DiscountReader extends AbstractFileReader {
 
         List<String> split = StringUtils.splitAtChar(line, '\t');
         if (split.size() != 4)
-            throw new FileFormatException(line, lineNo, file, "discount",
+            throw newFileFormatException("discount",
                     "Expected line to have format '<pattern>(\\t<discount>}{3}'.");
 
         try {
@@ -44,8 +43,7 @@ public class DiscountReader extends AbstractFileReader {
                     parseFloatingPoint(split.get(2)),
                     parseFloatingPoint(split.get(3)));
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "discount",
-                    e.getMessage());
+            throw newFileFormatException("discount", e.getMessage());
         }
     }
 

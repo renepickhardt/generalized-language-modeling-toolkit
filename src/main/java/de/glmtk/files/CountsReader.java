@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import de.glmtk.counts.Counts;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
 public class CountsReader extends AbstractSequenceReader {
@@ -70,8 +69,7 @@ public class CountsReader extends AbstractSequenceReader {
                 throw new IllegalArgumentException(
                         "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "counts",
-                    e.getMessage());
+            throw newFileFormatException("counts", e.getMessage());
         }
     }
 

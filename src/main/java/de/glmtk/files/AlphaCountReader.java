@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import de.glmtk.counts.AlphaCount;
-import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.util.StringUtils;
 
 public class AlphaCountReader extends AbstractSequenceReader {
@@ -62,8 +61,7 @@ public class AlphaCountReader extends AbstractSequenceReader {
             alphaCount = new AlphaCount(parseFloatingPoint(split.get(1)),
                     parseFloatingPoint(split.get(2)));
         } catch (IllegalArgumentException e) {
-            throw new FileFormatException(line, lineNo, file, "alpha counts",
-                    e.getMessage());
+            throw newFileFormatException("alpha counts", e.getMessage());
         }
     }
 
