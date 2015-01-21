@@ -108,7 +108,7 @@ public class LambdaCalculator {
 
                 calculateLambdasForPattern();
 
-                status.addModelLambda(Constants.MODEL_MODKNESERNEY_NAME,
+                status.addLambda(Constants.MODEL_MODKNESERNEY_NAME,
                         contPattern);
 
                 LOGGER.debug("Finished pattern '%s'.", contPattern);
@@ -238,7 +238,7 @@ public class LambdaCalculator {
 
         LOGGER.debug("Filtering patterns.");
         patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getModelLambdas(Constants.MODEL_MODKNESERNEY_NAME));
+        patterns.removeAll(status.getLambdas(Constants.MODEL_MODKNESERNEY_NAME));
         LOGGER.debug("Remaining patterns = %s", patterns);
 
         if (patterns.isEmpty())

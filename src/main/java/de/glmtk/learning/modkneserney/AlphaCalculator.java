@@ -103,7 +103,7 @@ public class AlphaCalculator {
 
                 calculateAlphasForPattern();
 
-                status.addModelAlpha(Constants.MODEL_MODKNESERNEY_NAME,
+                status.addAlpha(Constants.MODEL_MODKNESERNEY_NAME,
                         numPattern);
 
                 LOGGER.debug("Finished pattern '%s'.", numPattern);
@@ -210,7 +210,7 @@ public class AlphaCalculator {
 
         LOGGER.debug("Filtering patterns.");
         patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getModelAlphas(Constants.MODEL_MODKNESERNEY_NAME));
+        patterns.removeAll(status.getAlphas(Constants.MODEL_MODKNESERNEY_NAME));
         LOGGER.debug("Remaining patterns = %s", patterns);
 
         if (patterns.isEmpty())

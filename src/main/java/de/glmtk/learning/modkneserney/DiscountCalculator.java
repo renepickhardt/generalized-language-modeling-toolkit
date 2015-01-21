@@ -53,7 +53,7 @@ public class DiscountCalculator {
                                    Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.CALCULATING_DISCOUNTS);
 
-        if (status.areModelDiscountsCalculated(Constants.MODEL_MODKNESERNEY_NAME)) {
+        if (status.areDiscountsCalculated(Constants.MODEL_MODKNESERNEY_NAME)) {
             LOGGER.debug("Status reports discouts calculated, returning.");
             return;
         }
@@ -75,7 +75,7 @@ public class DiscountCalculator {
             }
         }
 
-        status.setModelDiscountsCalculated(Constants.MODEL_MODKNESERNEY_NAME);
+        status.setDiscountsCalculated(Constants.MODEL_MODKNESERNEY_NAME);
     }
 
     private Discount calcDiscounts(NGramTimes n) {

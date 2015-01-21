@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -151,7 +151,7 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                    BeanAccess beanAccess) throws IntrospectionException {
+                                                      BeanAccess beanAccess) throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
@@ -261,9 +261,9 @@ public class Status {
                             for (Training training : Training.values())
                                 possible.add(training.toString());
                             throw newFileFormatException(
-                                                         "Illegal training value: '%s'. Possible values: '%s'.",
-                                                         trainingStr, StringUtils.join(possible,
-                                                                 "', '"));
+                                    "Illegal training value: '%s'. Possible values: '%s'.",
+                                    trainingStr, StringUtils.join(possible,
+                                            "', '"));
                         }
                         break;
 
@@ -305,7 +305,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                                             patternStr, e.getMessage());
+                        patternStr, e.getMessage());
             }
         }
 
@@ -330,8 +330,8 @@ public class Status {
                 Pattern pattern = parsePattern();
                 if (result.containsKey(pattern))
                     throw newFileFormatException(
-                                                 "Map contains pattern multiple times as key: '%s'.",
-                                                 pattern);
+                            "Map contains pattern multiple times as key: '%s'.",
+                            pattern);
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
@@ -348,7 +348,7 @@ public class Status {
                 String name = parseScalar();
                 if (models.containsKey(name))
                     throw newFileFormatException(
-                                                 "Model name occurs multiple time: '%s'.", name);
+                            "Model name occurs multiple time: '%s'.", name);
                 nextEvent();
                 Model model = parseModel();
                 models.put(name, model);
@@ -400,8 +400,8 @@ public class Status {
                 String name = parseScalar();
                 if (queryCaches.containsKey(name))
                     throw newFileFormatException(
-                                                 "QueryCache name occurs multiple times: '%s'.",
-                                                 name);
+                            "QueryCache name occurs multiple times: '%s'.",
+                            name);
                 nextEvent();
                 QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
@@ -587,75 +587,75 @@ public class Status {
         return models.containsKey(name);
     }
 
-    public synchronized boolean areModelDiscountsCalculated(String name) {
-        Model model = models.get(name);
-        if (model == null)
+    public synchronized boolean areDiscountsCalculated(String model) {
+        Model m = models.get(model);
+        if (m == null)
             return false;
-        return model.getDiscounts();
+        return m.getDiscounts();
     }
 
-    public synchronized void setModelDiscountsCalculated(String name) throws IOException {
-        Model model = models.get(name);
-        if (model == null) {
-            model = new Model();
-            models.put(name, model);
+    public synchronized void setDiscountsCalculated(String model) throws IOException {
+        Model m = models.get(model);
+        if (m == null) {
+            m = new Model();
+            models.put(model, m);
         }
-        model.setDiscounts(true);
+        m.setDiscounts(true);
         writeStatusToFile();
     }
 
-    public synchronized Set<Pattern> getModelAlphas(String name) {
-        Model model = models.get(name);
-        if (model == null)
+    public synchronized Set<Pattern> getAlphas(String model) {
+        Model m = models.get(model);
+        if (m == null)
             return new TreeSet<>();
-        return model.getAlphas();
+        return m.getAlphas();
     }
 
-    public synchronized void addModelAlpha(String name,
-                                           Pattern pattern) throws IOException {
-        Model model = models.get(name);
-        if (model == null) {
-            model = new Model();
-            models.put(name, model);
+    public synchronized void addAlpha(String model,
+                                      Pattern pattern) throws IOException {
+        Model m = models.get(model);
+        if (m == null) {
+            m = new Model();
+            models.put(model, m);
         }
-        model.addAlpha(pattern);
+        m.addAlpha(pattern);
         writeStatusToFile();
     }
 
-    public synchronized Set<Pattern> getModelLambdas(String name) {
-        Model model = models.get(name);
-        if (model == null)
+    public synchronized Set<Pattern> getLambdas(String model) {
+        Model m = models.get(model);
+        if (m == null)
             return new TreeSet<>();
-        return model.getLambdas();
+        return m.getLambdas();
     }
 
-    public synchronized void addModelLambda(String name,
-                                            Pattern pattern) throws IOException {
-        Model model = models.get(name);
-        if (model == null) {
-            model = new Model();
-            models.put(name, model);
+    public synchronized void addLambda(String model,
+                                       Pattern pattern) throws IOException {
+        Model m = models.get(model);
+        if (m == null) {
+            m = new Model();
+            models.put(model, m);
         }
-        model.addLambda(pattern);
+        m.addLambda(pattern);
         writeStatusToFile();
     }
 
-    public synchronized Set<Pattern> getQueryCacheCounted(String name) {
-        QueryCache queryCache = queryCaches.get(name);
-        if (queryCache == null)
+    public synchronized Set<Pattern> getQueryCacheCounted(String queryCache) {
+        QueryCache qc = queryCaches.get(queryCache);
+        if (qc == null)
             return new TreeSet<>();
-        Set<Pattern> patterns = queryCache.getCounted();
+        Set<Pattern> patterns = qc.getCounted();
         return patterns != null ? patterns : new TreeSet<Pattern>();
     }
 
-    public synchronized void addQueryCacheCounted(String name,
+    public synchronized void addQueryCacheCounted(String model,
                                                   Pattern pattern) throws IOException {
-        QueryCache queryCache = queryCaches.get(name);
-        if (queryCache == null) {
-            queryCache = new QueryCache();
-            queryCaches.put(name, queryCache);
+        QueryCache qc = queryCaches.get(model);
+        if (qc == null) {
+            qc = new QueryCache();
+            queryCaches.put(model, qc);
         }
-        queryCache.addCounted(pattern);
+        qc.addCounted(pattern);
         writeStatusToFile();
     }
 
@@ -724,7 +724,7 @@ public class Status {
         for (Pattern pattern : counted) {
             Path countedDir = pattern.isAbsolute()
                     ? absoluteDir
-                            : continuationDir;
+                    : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
             if (!Files.exists(patternFile))
                 throw new WrongStatusException(name + " pattern " + pattern,
