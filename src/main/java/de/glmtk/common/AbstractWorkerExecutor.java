@@ -42,7 +42,9 @@ public abstract class AbstractWorkerExecutor<T> {
     protected abstract class Worker implements Callable<Object> {
         @Override
         public Object call() throws Exception {
-            LOGGER.debug("%s started.", getClass().getName());
+            LOGGER.debug("%s$%s started.",
+                    AbstractWorkerExecutor.this.getClass().getSimpleName(),
+                    getClass().getSimpleName());
 
             while (!queue.isEmpty()) {
                 T object = queue.poll(Constants.MAX_IDLE_TIME,
@@ -57,7 +59,9 @@ public abstract class AbstractWorkerExecutor<T> {
                 }
             }
 
-            LOGGER.debug("%s finished.", getClass().getName());
+            LOGGER.debug("%s$%s finished.",
+                    AbstractWorkerExecutor.this.getClass().getSimpleName(),
+                    getClass().getSimpleName());
             return null;
         }
 
