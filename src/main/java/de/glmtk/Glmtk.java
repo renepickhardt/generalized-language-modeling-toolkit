@@ -44,11 +44,11 @@ import de.glmtk.counting.Merger;
 import de.glmtk.counting.NGramTimesCounter;
 import de.glmtk.counting.Tagger;
 import de.glmtk.logging.Logger;
-import de.glmtk.querying.FileQueryRunner;
+import de.glmtk.querying.FileQueryExecutor;
 import de.glmtk.querying.QueryCacherCreator;
 import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.QueryStats;
-import de.glmtk.querying.StreamQueryRunner;
+import de.glmtk.querying.StreamQueryExecutor;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;
@@ -107,8 +107,8 @@ public class Glmtk {
     private de.glmtk.learning.modkneserney.LambdaCalculator modKneserNeyLambdaCalculator;
 
     private QueryCacherCreator queryCacherCreator;
-    private StreamQueryRunner streamQueryRunner;
-    private FileQueryRunner fileQueryRunner;
+    private StreamQueryExecutor streamQueryExecutor;
+    private FileQueryExecutor fileQueryExecutor;
 
     public Glmtk(Config config,
                  Path corpus,
@@ -138,8 +138,8 @@ public class Glmtk {
                 config);
 
         queryCacherCreator = new QueryCacherCreator(config);
-        streamQueryRunner = new StreamQueryRunner(config);
-        fileQueryRunner = new FileQueryRunner(config);
+        streamQueryExecutor = new StreamQueryExecutor(config);
+        fileQueryExecutor = new FileQueryExecutor(config);
     }
 
     public GlmtkPaths getPaths() {
@@ -343,7 +343,7 @@ public class Glmtk {
                                   int corpusOrder,
                                   InputStream inputStream,
                                   OutputStream outputStream) throws IOException {
-        return streamQueryRunner.queryStream(paths, mode, estimator,
+        return streamQueryExecutor.queryStream(paths, mode, estimator,
                 corpusOrder, inputStream, outputStream);
     }
 
@@ -358,7 +358,7 @@ public class Glmtk {
                 String.format("%s %s %s %s", inputFile.getFileName(),
                         estimator, mode, date));
 
-        return fileQueryRunner.queryFile(paths, mode, estimator, corpusOrder,
+        return fileQueryExecutor.queryFile(paths, mode, estimator, corpusOrder,
                 inputFile, outputFile);
     }
 

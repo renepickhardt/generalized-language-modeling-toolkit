@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.glmtk.Constants;
@@ -38,6 +39,12 @@ import de.glmtk.testutil.TestCorpus;
 
 public class FastEstimatorTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(FastEstimatorTest.class);
+
+    private static FileQueryExecutor fileQueryExecutor;
+
+    @BeforeClass
+    public static void setUpFileQueryExecutor() {
+    }
 
     @Test
     public void testFastModifiedKneserEstimator() throws Exception {
@@ -68,10 +75,10 @@ public class FastEstimatorTest extends TestCorporaTest {
         estimator.setCache(testCorpus.getCache(patterns));
         int corpusOrder = 5;
 
-        long t = System.currentTimeMillis();
+        long t1 = System.currentTimeMillis();
         Glmtk glmtk = testCorpus.getGlmtk();
         glmtk.queryFile(queryMode, estimator, corpusOrder, inputFile);
-        long tt = System.currentTimeMillis();
-        System.out.println((tt - t) + "ms");
+        long t2 = System.currentTimeMillis();
+        LOGGER.info("Estimator %s took %dms.", estimator, t2 - t1);
     }
 }

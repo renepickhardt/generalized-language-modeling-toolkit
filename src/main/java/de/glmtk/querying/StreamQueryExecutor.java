@@ -17,11 +17,11 @@ import de.glmtk.common.Config;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
 
-public class StreamQueryRunner {
+public class StreamQueryExecutor {
     @SuppressWarnings("unused")
     private Config config;
 
-    public StreamQueryRunner(Config config) {
+    public StreamQueryExecutor(Config config) {
         this.config = config;
     }
 

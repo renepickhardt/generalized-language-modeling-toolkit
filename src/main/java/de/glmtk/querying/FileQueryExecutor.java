@@ -19,7 +19,7 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
 
 // TODO: optimize for test files that do not completely fit into memory, by quering chunks at a time.
-public class FileQueryRunner extends AbstractWorkerExecutor<String> {
+public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
     private class Worker extends AbstractWorkerExecutor<String>.Worker {
         @Override
         protected void work(String line,
@@ -31,7 +31,7 @@ public class FileQueryRunner extends AbstractWorkerExecutor<String> {
     private QueryExecutor executor;
     private String[] resultingLines;
 
-    public FileQueryRunner(Config config) {
+    public FileQueryExecutor(Config config) {
         super(config);
     }
 
