@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class CollectionUtils {
     public static <T> boolean equal(Collection<T> lhs,
@@ -137,5 +139,19 @@ public class CollectionUtils {
             map.put(key1, nestedMap);
         }
         putIntoNestedMap(nestedMap, key2, key3, value);
+    }
+
+    public static <T, U> void mapAddAll(Map<T, Set<U>> lhs,
+                                        Map<T, Set<U>> rhs) {
+        for (Entry<T, Set<U>> entry : rhs.entrySet()) {
+            T key = entry.getKey();
+            Set<U> rhsSet = entry.getValue();
+
+            Set<U> lhsSet = lhs.get(key);
+            if (lhsSet == null)
+                lhs.put(key, rhsSet);
+            else
+                lhsSet.addAll(rhsSet);
+        }
     }
 }

@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,8 +37,6 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
-import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -51,7 +48,7 @@ import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.HashUtils;
 
 /**
- * Test optimized estimator implementation using the slower ones.
+ * Test optimized estimator implementations using the slower ones.
  */
 @RunWith(Parameterized.class)
 public class OptimizedEstimatorTest extends TestCorporaTest {
@@ -93,9 +90,7 @@ public class OptimizedEstimatorTest extends TestCorporaTest {
         Glmtk glmtk = testCorpus.getGlmtk();
         GlmtkPaths paths = glmtk.getPaths();
 
-        Collection<Pattern> patterns = estimator.getUsedPatterns(5);
-        Cache cache = new CacheBuilder().withCounts(patterns).withNGramTimes().build(
-                paths);
+        Cache cache = estimator.getRequiredCache(5).build(paths);
         estimator.setCache(cache);
 
         Path outputFile = paths.getQueriesDir().resolve(
