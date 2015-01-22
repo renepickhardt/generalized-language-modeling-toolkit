@@ -1,35 +1,33 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.querying;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeNotNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +36,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
+import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Cache;
+import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
@@ -59,115 +59,60 @@ public class OptimizedEstimatorTest extends TestCorporaTest {
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        Estimator slowMknAbs = Estimators.MOD_KNESER_NEY_ABS;
         Estimator fastMknAbs = new FastModifiedKneserNeyAbsEstimator();
         fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
-        Estimator learnedMknAbs = null;
-
-        Estimator slowMkn = Estimators.MOD_KNESER_NEY;
         Estimator fastMkn = new FastModifiedKneserNeyEstimator();
         fastMkn.setName("Fast-Modified-Kneser-Ney");
         Estimator learnedMkn = new LearnedModKneserNeyEstimator();
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
 
-        Estimator slowGlmAbs = Estimators.GLM_ABS;
-        Estimator fastGlmAbs = null;
-        Estimator learnedGlmAbs = null;
-
-        Estimator slowGlm = Estimators.GLM;
-        Estimator fastGlm = null;
-        Estimator learnedGlm = null;
-
         return Arrays.asList(new Object[][] {
-                //@formatter:off
-                {"ModKneserNey",        slowMkn,    fastMkn,    learnedMkn},
-                {"ModKneserNey (Abs)",  slowMknAbs, fastMknAbs, learnedMknAbs},
-                {"GeneralizedLM",       slowGlm,    fastGlm,    learnedGlm},
-                {"GeneralizedLM (Abs)", slowGlmAbs, fastGlmAbs, learnedGlmAbs}
-                //@formatter:on
-        });
+                {fastMknAbs, Estimators.MOD_KNESER_NEY_ABS},
+                {fastMkn, Estimators.MOD_KNESER_NEY},
+                {learnedMkn, Estimators.MOD_KNESER_NEY}});
     }
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
     private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
-    /*
-     * We have to use static data for what would otherwise be put into member
-     * vaiables, because Junit ParameterizedRunner will instantiate the class
-     * for every test method newly.
-     */
-    private static Set<String> initliazed = new HashSet<>();
-    private static Map<String, String> hashSlow = new HashMap<>();
-    private static Map<String, String> hashFast = new HashMap<>();
-    private static Map<String, String> hashLearned = new HashMap<>();
+    private static Map<Estimator, String> hashes = new HashMap<>();
 
-    private String name;
-    private Estimator fastEstimator;
-    private Estimator learnedEstimator;
+    public Estimator optimized;
+    public Estimator slow;
 
-    /**
-     * @param fastEstimator
-     *            May be {@code null}.
-     * @param learnedEstimator
-     *            May be {@code null}.
-     */
-    public OptimizedEstimatorTest(String name,
-                                  Estimator slowEstimator,
-                                  Estimator fastEstimator,
-                                  Estimator learnedEstimator) throws Exception {
-        this.name = name;
-        this.fastEstimator = fastEstimator;
-        this.learnedEstimator = learnedEstimator;
+    public OptimizedEstimatorTest(Estimator optimized,
+                                  Estimator slow) throws Exception {
+        this.optimized = optimized;
+        this.slow = slow;
 
-        if (initliazed.contains(name))
-            return;
-
-        Set<Pattern> patterns = slowEstimator.getUsedPatterns(5);
-        if (fastEstimator != null)
-            patterns.addAll(fastEstimator.getUsedPatterns(5));
-        if (learnedEstimator != null)
-            patterns.addAll(learnedEstimator.getUsedPatterns(5));
-
-        Cache cache = testCorpus.getCache(patterns);
-
-        hashSlow.put(name, runEstimatorOnFile(slowEstimator, cache));
-        if (fastEstimator != null)
-            hashFast.put(name, runEstimatorOnFile(fastEstimator, cache));
-        if (learnedEstimator != null)
-            hashLearned.put(name, runEstimatorOnFile(learnedEstimator, cache));
-
-        initliazed.add(name);
+        hashes.put(optimized, getHashForEstimatedTestFile(optimized));
+        hashes.put(slow, getHashForEstimatedTestFile(slow));
     }
 
-    private String runEstimatorOnFile(Estimator estimator,
-                                      Cache cache) throws Exception {
+    private String getHashForEstimatedTestFile(Estimator estimator) throws Exception {
         Glmtk glmtk = testCorpus.getGlmtk();
+        GlmtkPaths paths = glmtk.getPaths();
 
-        QueryMode queryMode = QueryMode.newSequence();
-        int corpusOrder = 5;
-        Path outputFile = glmtk.getPaths().getQueriesDir().resolve(
-                testFile.getFileName() + " " + estimator.toString());
-
+        Collection<Pattern> patterns = estimator.getUsedPatterns(5);
+        Cache cache = new CacheBuilder(paths).withCounts(patterns).withNGramTimes().build();
         estimator.setCache(cache);
+
+        Path outputFile = paths.getQueriesDir().resolve(
+                testFile.getFileName() + " " + estimator.toString());
         Files.createDirectories(outputFile.getParent());
 
-        long t1 = System.currentTimeMillis();
-        glmtk.queryFile(queryMode, estimator, corpusOrder, testFile, outputFile);
-        long t2 = System.currentTimeMillis();
-        LOGGER.info("Estimator %s took %dms.", estimator, t2 - t1);
+        long timeBefore = System.currentTimeMillis();
+        glmtk.queryFile(QueryMode.newSequence(), estimator, 5, testFile,
+                outputFile);
+        long timeAfter = System.currentTimeMillis();
+        LOGGER.info("Estimator %s took %dms.", estimator, timeAfter
+                - timeBefore);
 
         return HashUtils.generateMd5Hash(outputFile);
     }
 
     @Test
-    public void testFast() {
-        assumeNotNull(fastEstimator);
-        assertEquals(hashSlow.get(name), hashFast.get(name));
-    }
-
-    @Test
-    public void testLearned() {
-        assumeNotNull(learnedEstimator);
-        assertEquals(hashSlow.get(name), hashLearned.get(name));
+    public void testHashes() {
+        assertEquals(hashes.get(optimized), hashes.get(slow));
     }
 }
