@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.common;
+package de.glmtk.cache;
 
 import static de.glmtk.common.Output.OUTPUT;
 
@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import de.glmtk.GlmtkPaths;
+import de.glmtk.common.Pattern;
 import de.glmtk.common.Output.Phase;
 
 /**

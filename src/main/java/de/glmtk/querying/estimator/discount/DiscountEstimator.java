@@ -20,7 +20,7 @@
 
 package de.glmtk.querying.estimator.discount;
 
-import de.glmtk.common.Cache;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;

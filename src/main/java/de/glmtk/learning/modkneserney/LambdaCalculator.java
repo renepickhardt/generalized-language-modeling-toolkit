@@ -18,9 +18,9 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
+import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.AbstractWorkerPriorityExecutor;
-import de.glmtk.common.Cache;
-import de.glmtk.common.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;

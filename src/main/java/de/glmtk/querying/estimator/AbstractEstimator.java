@@ -30,7 +30,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.SortedSet;
 
-import de.glmtk.common.Cache;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;

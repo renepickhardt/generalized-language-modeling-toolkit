@@ -23,7 +23,7 @@ package de.glmtk.querying.estimator.discount;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.common.Cache;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Discount;

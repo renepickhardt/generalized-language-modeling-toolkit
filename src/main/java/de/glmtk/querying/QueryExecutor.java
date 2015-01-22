@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.List;
 
 import de.glmtk.GlmtkPaths;
-import de.glmtk.common.Cache;
-import de.glmtk.common.CacheBuilder;
+import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;

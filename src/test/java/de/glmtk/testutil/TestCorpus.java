@@ -34,8 +34,8 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.common.Cache;
-import de.glmtk.common.CacheBuilder;
+import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;

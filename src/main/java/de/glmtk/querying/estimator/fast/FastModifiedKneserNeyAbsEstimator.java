@@ -23,8 +23,8 @@ package de.glmtk.querying.estimator.fast;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
-import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Counts;

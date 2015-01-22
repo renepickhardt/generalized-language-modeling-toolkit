@@ -39,7 +39,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
-import de.glmtk.common.Cache;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Counts;

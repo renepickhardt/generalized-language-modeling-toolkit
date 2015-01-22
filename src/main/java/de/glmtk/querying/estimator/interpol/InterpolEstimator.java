@@ -21,8 +21,8 @@
 package de.glmtk.querying.estimator.interpol;
 
 import static de.glmtk.common.PatternElem.WSKP_WORD;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
-import de.glmtk.common.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;

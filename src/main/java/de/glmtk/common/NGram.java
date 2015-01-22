@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import de.glmtk.cache.Cache;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.StringUtils;
 

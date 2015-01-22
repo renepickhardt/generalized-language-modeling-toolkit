@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.common;
+package de.glmtk.cache;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,6 +32,11 @@ import java.util.TreeSet;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
+import de.glmtk.common.NGram;
+import de.glmtk.common.Output;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
+import de.glmtk.common.Patterns;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.counts.AlphaCount;
 import de.glmtk.counts.Counts;
