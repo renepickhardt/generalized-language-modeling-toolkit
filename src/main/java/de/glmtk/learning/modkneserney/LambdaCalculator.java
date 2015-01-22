@@ -39,7 +39,7 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
     private static final Logger LOGGER = Logger.get(LambdaCalculator.class);
 
     private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-            Collection<Pattern> patterns) {
+                                               Collection<Pattern> patterns) {
         Set<Pattern> result = new HashSet<>();
         for (Pattern contPattern : patterns) {
             if (contPattern.get(contPattern.size() - 1) != WSKP
@@ -100,8 +100,8 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
                             Constants.CHARSET, readerMemory / 4);
                     LambdaCountsReader histLambdaReader = !checkHistLambda
                             ? null
-                                    : new LambdaCountsReader(histLambdaFile,
-                                            Constants.CHARSET, readerMemory / 4);
+                            : new LambdaCountsReader(histLambdaFile,
+                                    Constants.CHARSET, readerMemory / 4);
                     LambdaCountsWriter writer = new LambdaCountsWriter(
                             lambdaFile, Constants.CHARSET, writerMemory)) {
                 while (contReader.readLine() != null) {
@@ -181,7 +181,8 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
 
         this.status = status;
 
-        cache = new CacheBuilder(paths).withDiscounts(MODEL_MODKNESERNEY).build();
+        cache = new CacheBuilder().withDiscounts(MODEL_MODKNESERNEY).build(
+                paths);
 
         patterns = filterPatterns(status.getCounted(), patterns);
         patterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));

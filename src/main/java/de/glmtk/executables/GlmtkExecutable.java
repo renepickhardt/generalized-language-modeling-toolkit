@@ -529,8 +529,8 @@ public class GlmtkExecutable extends Executable {
             for (Path file : files) {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(file,
                         neededPatterns);
-                Cache cache = new CacheBuilder(queryCache).withCounts(
-                        neededPatterns).withNGramTimes().build();
+                Cache cache = new CacheBuilder().withCounts(neededPatterns).withNGramTimes().build(
+                        queryCache);
 
                 for (Estimator estimator : estimators) {
                     estimator.setCache(cache);
@@ -540,8 +540,8 @@ public class GlmtkExecutable extends Executable {
         }
 
         if (ioQueryMode != null) {
-            Cache cache = new CacheBuilder(glmtk.getPaths()).withCounts(
-                    neededPatterns).withNGramTimes().withLengthDistribution().withProgress().build();
+            Cache cache = new CacheBuilder().withCounts(neededPatterns).withNGramTimes().withLengthDistribution().withProgress().build(
+                    glmtk.getPaths());
             Estimator estimator = estimators.iterator().next();
             estimator.setCache(cache);
             glmtk.queryStream(ioQueryMode, estimator, trainingOrder, System.in,

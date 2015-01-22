@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -72,8 +72,8 @@ public enum TestCorpus {
     private void intialize(Config config) throws Exception {
         glmtk = new Glmtk(config, corpus, workingDir);
 
-        Set<Pattern> neededPatterns = Patterns.getCombinations(Constants.TEST_ORDER,
-                Arrays.asList(CNT, SKP));
+        Set<Pattern> neededPatterns = Patterns.getCombinations(
+                Constants.TEST_ORDER, Arrays.asList(CNT, SKP));
         for (Pattern pattern : new HashSet<>(neededPatterns)) {
             if (pattern.size() != Constants.TEST_ORDER)
                 neededPatterns.add(pattern.concat(WSKP));
@@ -103,14 +103,16 @@ public enum TestCorpus {
 
     public Cache getCache() throws Exception {
         if (cache == null)
-            cache = new CacheBuilder(glmtk.getPaths()).withCounts(
-                    glmtk.getStatus().getCounted()).withNGramTimes().withLengthDistribution().build();
+            cache = new CacheBuilder().withCounts(
+                    glmtk.getStatus().getCounted()).withNGramTimes().withLengthDistribution().build(
+                    glmtk.getPaths());
 
         return cache;
     }
 
     public Cache getCache(Set<Pattern> patterns) throws Exception {
-        return new CacheBuilder(glmtk.getPaths()).withCounts(patterns).withNGramTimes().withLengthDistribution().build();
+        return new CacheBuilder().withCounts(patterns).withNGramTimes().withLengthDistribution().build(
+                glmtk.getPaths());
     }
 
     public String[] getWords() throws Exception {
@@ -119,7 +121,7 @@ public enum TestCorpus {
     }
 
     public List<String> getSequenceList(int n,
-                                        int length) throws Exception {
+            int length) throws Exception {
         List<String> result = new LinkedList<>();
         for (int k = 0; k != length; ++k) {
             result.add(getWords()[n % getWords().length]);
