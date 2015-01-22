@@ -78,7 +78,7 @@ public class GlmtkPaths {
     private Path absoluteChunkedDir;
     private Path continuationDir;
     private Path continuationChunkedDir;
-    private Path nGramTimesFile;
+    private Path ngramTimesFile;
     private Path lengthDistributionFile;
 
     private Path modelsDir;
@@ -102,7 +102,7 @@ public class GlmtkPaths {
                 + Constants.UNTAGGED_SUFFIX);
 
         fillCountsDirPaths(this);
-        nGramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
+        ngramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
         lengthDistributionFile = countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
 
         fillModelsDirPaths(this);
@@ -150,7 +150,7 @@ public class GlmtkPaths {
         LOGGER.debug("absoluteChunkedDir     = %s", absoluteChunkedDir);
         LOGGER.debug("continuationDir        = %s", continuationDir);
         LOGGER.debug("continuationChunkedDir = %s", continuationChunkedDir);
-        LOGGER.debug("nGramTimesFile         = %s", nGramTimesFile);
+        LOGGER.debug("ngramTimesFile         = %s", ngramTimesFile);
         LOGGER.debug("lengthDistributionFile = %s", lengthDistributionFile);
         LOGGER.debug("modelsDir              = %s", modelsDir);
         LOGGER.debug("modkneserneyDir        = %s", modKneserNeyDir);
@@ -201,7 +201,7 @@ public class GlmtkPaths {
     }
 
     public Path getNGramTimesFile() {
-        return nGramTimesFile;
+        return ngramTimesFile;
     }
 
     public Path getLengthDistributionFile() {

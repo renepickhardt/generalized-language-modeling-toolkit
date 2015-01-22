@@ -31,7 +31,7 @@ import de.glmtk.util.StringUtils;
 
 public class NGramTimesReader extends AbstractFileReader {
     private Pattern pattern;
-    private NGramTimes nGramTimes;
+    private NGramTimes ngramTimes;
 
     public NGramTimesReader(Path file,
                             Charset charset) throws IOException {
@@ -48,7 +48,7 @@ public class NGramTimesReader extends AbstractFileReader {
     protected void parseLine() {
         if (line == null) {
             pattern = null;
-            nGramTimes = null;
+            ngramTimes = null;
             return;
         }
 
@@ -59,7 +59,7 @@ public class NGramTimesReader extends AbstractFileReader {
 
         try {
             pattern = parsePattern(split.get(0));
-            nGramTimes = new NGramTimes(parseNumber(split.get(1)),
+            ngramTimes = new NGramTimes(parseNumber(split.get(1)),
                     parseNumber(split.get(2)), parseNumber(split.get(3)),
                     parseNumber(split.get(4)));
         } catch (IllegalArgumentException e) {
@@ -72,6 +72,6 @@ public class NGramTimesReader extends AbstractFileReader {
     }
 
     public NGramTimes getNGramTimes() {
-        return nGramTimes;
+        return ngramTimes;
     }
 }

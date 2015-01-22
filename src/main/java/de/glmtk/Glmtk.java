@@ -99,7 +99,7 @@ public class Glmtk {
     private Tagger tagger;
     private Chunker chunker;
     private Merger merger;
-    private NGramTimesCounter nGramTimesCounter;
+    private NGramTimesCounter ngramTimesCounter;
     private LengthDistributionCalculator lengthDistributionCalculator;
 
     private de.glmtk.learning.modkneserney.DiscountCalculator modKneserNeyDiscountCalculator;
@@ -127,7 +127,7 @@ public class Glmtk {
         tagger = new Tagger(config);
         chunker = new Chunker(config);
         merger = new Merger(config);
-        nGramTimesCounter = new NGramTimesCounter(config);
+        ngramTimesCounter = new NGramTimesCounter(config);
         lengthDistributionCalculator = new LengthDistributionCalculator(config);
 
         modKneserNeyDiscountCalculator = new de.glmtk.learning.modkneserney.DiscountCalculator(
@@ -159,7 +159,7 @@ public class Glmtk {
 
         countAbsolute(needed.getAbsolute());
         countContinuation(needed.getContinuation());
-        nGramTimesCounter.count(status, paths.getNGramTimesFile(),
+        ngramTimesCounter.count(status, paths.getNGramTimesFile(),
                 paths.getAbsoluteDir(), paths.getContinuationDir());
         lengthDistributionCalculator.calculate(status, paths.getTrainingFile(),
                 paths.getLengthDistributionFile());

@@ -61,7 +61,7 @@ public class Cache {
      * continuation patterns;
      */
     private Map<Pattern, Map<String, Object>> counts;
-    private Map<Pattern, NGramTimes> nGramTimes;
+    private Map<Pattern, NGramTimes> ngramTimes;
     private List<Double> lengthFrequencies;
     private Map<String, Map<Pattern, Discount>> discounts;
     private Map<String, Map<Pattern, Map<String, AlphaCount>>> alphas;
@@ -76,7 +76,7 @@ public class Cache {
         progress = null;
 
         counts = null;
-        nGramTimes = null;
+        ngramTimes = null;
         lengthFrequencies = null;
         discounts = null;
         alphas = null;
@@ -123,11 +123,11 @@ public class Cache {
     public void loadNGramTimes() throws IOException {
         LOGGER.debug("Loading NGram times counts...");
 
-        nGramTimes = new HashMap<>();
+        ngramTimes = new HashMap<>();
         try (NGramTimesReader reader = new NGramTimesReader(
                 paths.getNGramTimesFile(), Constants.CHARSET)) {
             while (reader.readLine() != null)
-                nGramTimes.put(reader.getPattern(), reader.getNGramTimes());
+                ngramTimes.put(reader.getPattern(), reader.getNGramTimes());
         }
 
         if (progress != null)
@@ -292,10 +292,10 @@ public class Cache {
     }
 
     public NGramTimes getNGramTimes(Pattern pattern) {
-        if (nGramTimes == null)
+        if (ngramTimes == null)
             throw new IllegalStateException("NGram times not loaded.");
 
-        return CollectionUtils.getFromNestedMap(nGramTimes, pattern,
+        return CollectionUtils.getFromNestedMap(ngramTimes, pattern,
                 "NGram times not loaded.",
                 "No NGramTimes learned for pattern '%s'.");
     }

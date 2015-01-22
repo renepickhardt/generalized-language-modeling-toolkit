@@ -158,7 +158,7 @@ public class Status {
                 result.add(getProperty(type, "training", BeanAccess.FIELD));
                 result.add(getProperty(type, "counted", BeanAccess.FIELD));
                 result.add(getProperty(type, "chunked", BeanAccess.FIELD));
-                result.add(getProperty(type, "nGramTimesCounted",
+                result.add(getProperty(type, "ngramTimesCounted",
                         BeanAccess.FIELD));
                 result.add(getProperty(type, "lengthDistribution",
                         BeanAccess.FIELD));
@@ -234,7 +234,7 @@ public class Status {
         private void parseStatus() {
             Map<String, Boolean> keys = createValidKeysMap("hash",
                     "taggedHash", "training", "counted", "chunked",
-                    "nGramTimesCounted", "lengthDistribution", "models",
+                    "ngramTimesCounted", "lengthDistribution", "models",
                     "queryCaches");
 
             nextEvent();
@@ -275,8 +275,8 @@ public class Status {
                         chunked = parseMapPatternSetScalar();
                         break;
 
-                    case "nGramTimesCounted":
-                        nGramTimesCounted = parseBoolean();
+                    case "ngramTimesCounted":
+                        ngramTimesCounted = parseBoolean();
                         break;
 
                     case "lengthDistribution":
@@ -450,7 +450,7 @@ public class Status {
     private Map<Pattern, Set<String>> chunked;
     private Map<Pattern, Set<String>> absoluteChunked;
     private Map<Pattern, Set<String>> continuationChunked;
-    private boolean nGramTimesCounted;
+    private boolean ngramTimesCounted;
     private boolean lengthDistribution;
     private Map<String, Model> models;
     private Map<String, QueryCache> queryCaches;
@@ -548,7 +548,7 @@ public class Status {
 
     public synchronized void finishMerge(Pattern pattern) throws IOException {
         boolean isAbsolute = pattern.isAbsolute();
-        nGramTimesCounted = false;
+        ngramTimesCounted = false;
         lengthDistribution = false;
         counted.add(pattern);
         counted(isAbsolute).add(pattern);
@@ -566,11 +566,11 @@ public class Status {
     }
 
     public synchronized boolean isNGramTimesCounted() {
-        return nGramTimesCounted;
+        return ngramTimesCounted;
     }
 
     public synchronized void setNGramTimesCounted() throws IOException {
-        nGramTimesCounted = true;
+        ngramTimesCounted = true;
         writeStatusToFile();
     }
 
@@ -671,7 +671,7 @@ public class Status {
         LOGGER.debug("chunked                      = %s", chunked);
         LOGGER.debug("absoluteChunked              = %s", absoluteChunked);
         LOGGER.debug("continuationChunked          = %s", continuationChunked);
-        LOGGER.debug("nGramTimesCounted            = %b", nGramTimesCounted);
+        LOGGER.debug("ngramTimesCounted            = %b", ngramTimesCounted);
         LOGGER.debug("lengthDistributionCalculated = %s", lengthDistribution);
         LOGGER.debug("models                       = %s", models);
         LOGGER.debug("queryCache                   = %s", queryCaches);
@@ -685,7 +685,7 @@ public class Status {
         chunked = new TreeMap<>();
         absoluteChunked = new TreeMap<>();
         continuationChunked = new TreeMap<>();
-        nGramTimesCounted = false;
+        ngramTimesCounted = false;
         lengthDistribution = false;
         models = new TreeMap<>();
         queryCaches = new TreeMap<>();
@@ -698,7 +698,7 @@ public class Status {
                 paths.getAbsoluteChunkedDir());
         checkChunked("continuation chunking", continuationChunked,
                 paths.getContinuationChunkedDir());
-        if (nGramTimesCounted && !Files.exists(paths.getNGramTimesFile()))
+        if (ngramTimesCounted && !Files.exists(paths.getNGramTimesFile()))
             throw new WrongStatusException("ngram times counting",
                     paths.getNGramTimesFile());
         if (lengthDistribution

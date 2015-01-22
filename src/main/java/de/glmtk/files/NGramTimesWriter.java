@@ -40,12 +40,12 @@ public class NGramTimesWriter extends AbstractFileWriter {
     }
 
     public void append(Pattern pattern,
-                       NGramTimes nGramTimes) throws IOException {
+                       NGramTimes ngramTimes) throws IOException {
         writer.append(pattern.toString());
-        writer.append('\t').append(Long.toString(nGramTimes.getOneCount()));
-        writer.append('\t').append(Long.toString(nGramTimes.getTwoCount()));
-        writer.append('\t').append(Long.toString(nGramTimes.getThreeCount()));
-        writer.append('\t').append(Long.toString(nGramTimes.getFourCount()));
+        writer.append('\t').append(Long.toString(ngramTimes.getOneCount()));
+        writer.append('\t').append(Long.toString(ngramTimes.getTwoCount()));
+        writer.append('\t').append(Long.toString(ngramTimes.getThreeCount()));
+        writer.append('\t').append(Long.toString(ngramTimes.getFourCount()));
         writer.append('\n');
     }
 }

@@ -39,7 +39,7 @@ import de.glmtk.common.Output.Phase;
 public class CacheBuilder {
     private GlmtkPaths paths;
     private Set<Pattern> counts;
-    private boolean nGramTimes;
+    private boolean ngramTimes;
     private boolean lengthDistribution;
     private Set<String> discounts;
     private Map<String, Set<Pattern>> alphas;
@@ -49,7 +49,7 @@ public class CacheBuilder {
     public CacheBuilder(GlmtkPaths paths) {
         this.paths = paths;
         counts = new HashSet<>();
-        nGramTimes = false;
+        ngramTimes = false;
         lengthDistribution = false;
         discounts = new HashSet<>();
         alphas = new HashMap<>();
@@ -63,7 +63,7 @@ public class CacheBuilder {
     }
 
     public CacheBuilder withNGramTimes() {
-        nGramTimes = true;
+        ngramTimes = true;
         return this;
     }
 
@@ -115,7 +115,7 @@ public class CacheBuilder {
         if (progress) {
             int total = 0;
             total += counts.size();
-            total += nGramTimes ? 1 : 0;
+            total += ngramTimes ? 1 : 0;
             total += lengthDistribution ? 1 : 0;
             total += discounts.size();
             for (Set<Pattern> alphas : this.alphas.values())
@@ -127,7 +127,7 @@ public class CacheBuilder {
 
         if (!counts.isEmpty())
             cache.loadCounts(counts);
-        if (nGramTimes)
+        if (ngramTimes)
             cache.loadNGramTimes();
         if (lengthDistribution)
             cache.loadLengthDistribution();

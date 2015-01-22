@@ -56,7 +56,7 @@ public class NGramTimesCounter {
 
     private class Thread implements Callable<Object> {
         private Pattern pattern;
-        private NGramTimes nGramTimes;
+        private NGramTimes ngramTimes;
 
         @Override
         public Object call() throws InterruptedException, IOException {
@@ -69,7 +69,7 @@ public class NGramTimesCounter {
                 LOGGER.debug("Counting pattern '%s'.", pattern);
 
                 countNGramTimes();
-                nGramTimesForPattern.put(pattern, nGramTimes);
+                ngramTimesForPattern.put(pattern, ngramTimes);
 
                 LOGGER.debug("Finished pattern '%s'.", pattern);
 
@@ -83,7 +83,7 @@ public class NGramTimesCounter {
         }
 
         private void countNGramTimes() throws IOException {
-            nGramTimes = new NGramTimes();
+            ngramTimes = new NGramTimes();
 
             Path inputDir = pattern.isAbsolute()
                     ? absoluteDir
@@ -93,7 +93,7 @@ public class NGramTimesCounter {
             try (CountsReader reader = new CountsReader(inputFile,
                     Constants.CHARSET, memory)) {
                 while (reader.readLine() != null)
-                    nGramTimes.add(reader.getCount());
+                    ngramTimes.add(reader.getCount());
             }
         }
     }
@@ -105,7 +105,7 @@ public class NGramTimesCounter {
     private Path absoluteDir;
     private Path continuationDir;
     private BlockingQueue<Pattern> patternQueue;
-    private ConcurrentHashMap<Pattern, NGramTimes> nGramTimesForPattern;
+    private ConcurrentHashMap<Pattern, NGramTimes> ngramTimesForPattern;
     private int readerMemory;
 
     public NGramTimesCounter(Config config) {
@@ -129,7 +129,7 @@ public class NGramTimesCounter {
         this.absoluteDir = absoluteDir;
         this.continuationDir = continuationDir;
         patternQueue = new LinkedBlockingQueue<>(patterns);
-        nGramTimesForPattern = new ConcurrentHashMap<>();
+        ngramTimesForPattern = new ConcurrentHashMap<>();
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
@@ -140,7 +140,7 @@ public class NGramTimesCounter {
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         Glmtk.validateExpectedResults("ngram times couting", patterns,
-                nGramTimesForPattern.keySet());
+                ngramTimesForPattern.keySet());
 
         writeToFile();
         status.setNGramTimesCounted();
@@ -153,7 +153,7 @@ public class NGramTimesCounter {
 
     private void writeToFile() throws IOException {
         SortedMap<Pattern, NGramTimes> sortedNGramTimesForPattern = new TreeMap<>(
-                nGramTimesForPattern);
+                ngramTimesForPattern);
         try (NGramTimesWriter writer = new NGramTimesWriter(outputFile,
                 Constants.CHARSET)) {
             for (Entry<Pattern, NGramTimes> entry : sortedNGramTimesForPattern.entrySet())

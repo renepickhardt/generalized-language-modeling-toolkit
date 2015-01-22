@@ -49,7 +49,7 @@ public class DiscountCalculator {
     }
 
     public void run(Status status,
-                    Path nGramTimesFile,
+                    Path ngramTimesFile,
                     Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.CALCULATING_DISCOUNTS);
 
@@ -58,17 +58,17 @@ public class DiscountCalculator {
             return;
         }
 
-        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(nGramTimesFile));
+        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(ngramTimesFile));
 
-        try (NGramTimesReader reader = new NGramTimesReader(nGramTimesFile,
+        try (NGramTimesReader reader = new NGramTimesReader(ngramTimesFile,
                 Constants.CHARSET);
                 DiscountWriter writer = new DiscountWriter(outputFile,
                         Constants.CHARSET)) {
             while (reader.readLine() != null) {
                 Pattern pattern = reader.getPattern();
-                NGramTimes nGramTimes = reader.getNGramTimes();
+                NGramTimes ngramTimes = reader.getNGramTimes();
 
-                Discount discount = calcDiscounts(nGramTimes);
+                Discount discount = calcDiscounts(ngramTimes);
                 writer.append(pattern, discount);
 
                 progress.increase(1);
