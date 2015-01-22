@@ -50,6 +50,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import de.glmtk.Glmtk;
+import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
@@ -137,12 +140,13 @@ public class EstimatorTest extends TestCorporaTest {
         for (TestCorpus testCorpus : TEST_CORPORA) {
             LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
-            estimator.setCache(testCorpus.getCache());
+            Cache cache = createCache(testCorpus);
+            estimator.setCache(cache);
 
             for (int order = 1; order != maxOrder + 1; ++order) {
                 double sum = 0;
                 for (int i = 0; i != (int) Math.pow(
-                        testCorpus.getWords().length, order); ++i) {
+                        testCorpus.getTokens().length, order); ++i) {
                     List<String> sequence = testCorpus.getSequenceList(i, order);
                     sum += calculator.probability(sequence);
                 }
@@ -164,19 +168,20 @@ public class EstimatorTest extends TestCorporaTest {
         for (TestCorpus testCorpus : TEST_CORPORA) {
             LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
-            estimator.setCache(testCorpus.getCache());
+            Cache cache = createCache(testCorpus);
+            estimator.setCache(cache);
 
             for (int order = 1; order != maxOrder + 1; ++order) {
                 LOGGER.info("n=%s", order);
                 for (int i = 0; i != (int) Math.pow(
-                        testCorpus.getWords().length, order - 1); ++i) {
+                        testCorpus.getTokens().length, order - 1); ++i) {
                     NGram history = new NGram(testCorpus.getSequenceList(i,
                             order - 1));
 
                     double sum = 0;
-                    for (int j = 0; j != testCorpus.getWords().length; ++j) {
+                    for (int j = 0; j != testCorpus.getTokens().length; ++j) {
                         NGram sequence = new NGram(
-                                Arrays.asList(testCorpus.getWords()[j]));
+                                Arrays.asList(testCorpus.getTokens()[j]));
                         sum += estimator.probability(sequence, history);
                     }
 
@@ -186,7 +191,7 @@ public class EstimatorTest extends TestCorporaTest {
                                 NGram checkHistory = history.concat(SKP_NGRAM);
                                 if (continuationEstimator)
                                     checkHistory = SKP_NGRAM.concat(checkHistory);
-                                if (checkHistory.seen(testCorpus.getCache()))
+                                if (checkHistory.seen(cache))
                                     Assert.assertEquals(1.0, sum, 0.01);
                                 else
                                     Assert.assertEquals(0.0, sum, 0.01);
@@ -208,4 +213,11 @@ public class EstimatorTest extends TestCorporaTest {
         }
     }
 
+    private Cache createCache(TestCorpus testCorpus) throws Exception {
+        Glmtk glmtk = testCorpus.getGlmtk();
+
+        CacheBuilder requiredCache = estimator.getRequiredCache(5);
+        glmtk.count(requiredCache.getNeededPatterns());
+        return requiredCache.build(glmtk.getPaths());
+    }
 }

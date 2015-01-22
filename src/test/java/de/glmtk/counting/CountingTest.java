@@ -1,25 +1,28 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.counting;
 
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.SKP;
+import static de.glmtk.common.PatternElem.WSKP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -27,10 +30,12 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.junit.Test;
@@ -39,9 +44,12 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
+import de.glmtk.Glmtk;
 import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.common.Patterns;
 import de.glmtk.counts.Counts;
 import de.glmtk.logging.Logger;
 import de.glmtk.testutil.TestCorporaTest;
@@ -57,6 +65,19 @@ public class CountingTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(CountingTest.class);
 
     private static final double SELECTION_CHANCE = 0.001;
+
+    private static final Set<Pattern> TEST_PATTERNS;
+    static {
+        TEST_PATTERNS = Patterns.getCombinations(Constants.TEST_ORDER,
+                Arrays.asList(CNT, SKP));
+        for (Pattern pattern : new HashSet<>(TEST_PATTERNS)) {
+            if (pattern.size() != Constants.TEST_ORDER)
+                TEST_PATTERNS.add(pattern.concat(WSKP));
+
+            if (pattern.contains(SKP))
+                TEST_PATTERNS.add(pattern.replace(SKP, WSKP));
+        }
+    }
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -80,15 +101,25 @@ public class CountingTest extends TestCorporaTest {
                 Constants.CHARSET);
 
         LOGGER.info("Loading counts...");
-        cache = testCorpus.getCache();
+        Glmtk glmtk = testCorpus.getGlmtk();
+        glmtk.count(TEST_PATTERNS);
+        cache = new CacheBuilder().withCounts(TEST_PATTERNS).withProgress().build(
+                glmtk.getPaths());
 
-        Field absoluteField = Cache.class.getDeclaredField("absolute");
-        absoluteField.setAccessible(true);
-        absolute = (Map<Pattern, Map<String, Long>>) absoluteField.get(cache);
-
-        Field continuationField = Cache.class.getDeclaredField("continuation");
-        continuationField.setAccessible(true);
-        continuation = (Map<Pattern, Map<String, Counts>>) continuationField.get(cache);
+        absolute = new HashMap<>();
+        continuation = new HashMap<>();
+        Field countsField = Cache.class.getDeclaredField("counts");
+        countsField.setAccessible(true);
+        Map<Pattern, Map<String, Object>> counts = (Map<Pattern, Map<String, Object>>) countsField.get(cache);
+        for (Entry<Pattern, Map<String, Object>> entry : counts.entrySet()) {
+            Pattern pattern = entry.getKey();
+            @SuppressWarnings("rawtypes")
+            Map countsForPattern = entry.getValue();
+            if (pattern.isAbsolute())
+                absolute.put(pattern, countsForPattern);
+            else
+                continuation.put(pattern, countsForPattern);
+        }
     }
 
     @Test
@@ -213,7 +244,7 @@ public class CountingTest extends TestCorporaTest {
                         Long foundCount = matches.get(found);
                         matches.put(found, foundCount == null
                                 ? 1
-                                        : foundCount + 1);
+                                : foundCount + 1);
                         LOGGER.trace(matcher.toString());
                     } while (matcher.find(matcher.start(1)));
 

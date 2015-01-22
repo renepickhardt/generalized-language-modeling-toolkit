@@ -1,33 +1,27 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.testutil;
 
-import static de.glmtk.common.PatternElem.CNT;
-import static de.glmtk.common.PatternElem.SKP;
-import static de.glmtk.common.PatternElem.WSKP;
-
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -52,37 +46,21 @@ public enum TestCorpus {
 
     private String corpusName;
     private Path corpus;
-    private Path workingDir;
     private Glmtk glmtk;
+    private String[] tokens;
 
     /**
-     * Lazily loaded.
+     * Needed initialization method, because we can't add parameters to a enums
+     * constructor.
      */
-    private Cache cache;
-
-    private TestCorpus() {
+    private void intialize(Config config) throws Exception {
         corpusName = toString();
         corpus = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
-        workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
+
+        Path workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
                 + Constants.WORKING_DIR_SUFFIX);
-
-        cache = null;
-    }
-
-    private void intialize(Config config) throws Exception {
         glmtk = new Glmtk(config, corpus, workingDir);
-
-        Set<Pattern> neededPatterns = Patterns.getCombinations(
-                Constants.TEST_ORDER, Arrays.asList(CNT, SKP));
-        for (Pattern pattern : new HashSet<>(neededPatterns)) {
-            if (pattern.size() != Constants.TEST_ORDER)
-                neededPatterns.add(pattern.concat(WSKP));
-
-            if (pattern.contains(SKP))
-                neededPatterns.add(pattern.replace(SKP, WSKP));
-        }
-
-        glmtk.count(neededPatterns);
+        tokens = null;
     }
 
     public String getCorpusName() {
@@ -93,39 +71,31 @@ public enum TestCorpus {
         return corpus;
     }
 
-    public Path getWorkingDir() {
-        return workingDir;
-    }
-
     public Glmtk getGlmtk() {
         return glmtk;
     }
 
-    public Cache getCache() throws Exception {
-        if (cache == null)
-            cache = new CacheBuilder().withCounts(
-                    glmtk.getStatus().getCounted()).withNGramTimes().withLengthDistribution().build(
+    /**
+     * Lazily loaded, then cached.
+     */
+    public String[] getTokens() throws Exception {
+        if (tokens == null) {
+            Set<Pattern> neededPatterns = Patterns.getMany("1");
+            glmtk.count(neededPatterns);
+            Cache cache = new CacheBuilder().withCounts(neededPatterns).build(
                     glmtk.getPaths());
-
-        return cache;
-    }
-
-    public Cache getCache(Set<Pattern> patterns) throws Exception {
-        return new CacheBuilder().withCounts(patterns).withNGramTimes().withLengthDistribution().build(
-                glmtk.getPaths());
-    }
-
-    public String[] getWords() throws Exception {
-        Set<String> words = getCache().getWords();
-        return words.toArray(new String[words.size()]);
+            Set<String> tokens = cache.getWords();
+            this.tokens = tokens.toArray(new String[tokens.size()]);
+        }
+        return tokens;
     }
 
     public List<String> getSequenceList(int n,
-            int length) throws Exception {
+                                        int length) throws Exception {
         List<String> result = new LinkedList<>();
         for (int k = 0; k != length; ++k) {
-            result.add(getWords()[n % getWords().length]);
-            n /= getWords().length;
+            result.add(getTokens()[n % getTokens().length]);
+            n /= getTokens().length;
         }
         Collections.reverse(result);
         return result;

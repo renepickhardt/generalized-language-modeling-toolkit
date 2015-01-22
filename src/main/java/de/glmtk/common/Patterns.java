@@ -86,8 +86,8 @@ public class Patterns {
         return pattern;
     }
 
-    public static List<Pattern> getMany(String... patterns) {
-        List<Pattern> result = new ArrayList<>(patterns.length);
+    public static Set<Pattern> getMany(String... patterns) {
+        Set<Pattern> result = new HashSet<>();
         for (String pattern : patterns)
             result.add(Patterns.get(pattern));
         return result;
