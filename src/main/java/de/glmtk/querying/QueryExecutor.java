@@ -106,7 +106,7 @@ public class QueryExecutor {
         if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
             return line;
 
-        double prob = Double.NaN;
+        Double prob = null;
         try {
             prob = querySequence(line);
         } catch (Exception e) {
@@ -116,9 +116,8 @@ public class QueryExecutor {
             OUTPUT.printWarning(warning);
         }
 
-        if (prob == Double.NaN)
+        if (prob == null)
             return line;
-
-        return line + '\t' + Double.toString(prob);
+        return line + '\t' + prob.toString();
     }
 }

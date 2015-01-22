@@ -358,6 +358,14 @@ public class Glmtk {
                 String.format("%s %s %s %s", inputFile.getFileName(),
                         estimator, mode, date));
 
+        return queryFile(mode, estimator, corpusOrder, inputFile, outputFile);
+    }
+
+    public QueryStats queryFile(QueryMode mode,
+                                Estimator estimator,
+                                int corpusOrder,
+                                Path inputFile,
+                                Path outputFile) throws Exception {
         return fileQueryExecutor.queryFile(paths, mode, estimator, corpusOrder,
                 inputFile, outputFile);
     }

@@ -213,7 +213,7 @@ public class CountingTest extends TestCorporaTest {
                         Long foundCount = matches.get(found);
                         matches.put(found, foundCount == null
                                 ? 1
-                                : foundCount + 1);
+                                        : foundCount + 1);
                         LOGGER.trace(matcher.toString());
                     } while (matcher.find(matcher.start(1)));
 
