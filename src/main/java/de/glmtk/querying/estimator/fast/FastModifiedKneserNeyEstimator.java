@@ -20,7 +20,6 @@
 
 package de.glmtk.querying.estimator.fast;
 
-import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.common.NGram.WSKP_NGRAM;
 import de.glmtk.common.NGram;
 import de.glmtk.counts.Counts;
@@ -31,14 +30,15 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        double denominator = cache.getAbsolute(history.concat(SKP_NGRAM));
+        double denominator = cache.getAbsolute(getFullHistory(sequence, history));
 
         if (history.isEmptyOrOnlySkips()) {
             if (denominator == 0.0)
                 return (double) cache.getAbsolute(sequence.get(0))
                         / cache.getNumWords();
 
-            double numerator = cache.getAbsolute(history.concat(sequence));
+            double numerator = cache.getAbsolute(getFullSequence(sequence,
+                    history));
             return numerator / denominator;
         }
 
@@ -62,7 +62,8 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
             alpha = (double) cache.getAbsolute(sequence.get(0))
                     / cache.getNumWords();
         else {
-            double numerator = cache.getAbsolute(history.concat(sequence));
+            double numerator = cache.getAbsolute(getFullSequence(sequence,
+                    history));
             numerator = Math.max(numerator - discount, 0.0);
 
             alpha = numerator / denominator;
@@ -91,7 +92,7 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
                                           NGram history,
                                           int recDepth) {
         double denominator = cache.getContinuation(
-                WSKP_NGRAM.concat(history.convertSkpToWskp().concat(WSKP_NGRAM))).getOnePlusCount();
+                WSKP_NGRAM.concat(getFullHistory(sequence, history).convertSkpToWskp())).getOnePlusCount();
 
         if (history.isEmptyOrOnlySkips()) {
             if (denominator == 0.0)
@@ -99,7 +100,7 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
                         / cache.getNumWords();
 
             double numerator = cache.getContinuation(
-                    WSKP_NGRAM.concat(history.concat(sequence)).convertSkpToWskp()).getOnePlusCount();
+                    WSKP_NGRAM.concat(getFullSequence(sequence, history).convertSkpToWskp())).getOnePlusCount();
             return numerator / denominator;
         }
 
@@ -124,7 +125,7 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
                     / cache.getNumWords();
         else {
             double numerator = cache.getContinuation(
-                    WSKP_NGRAM.concat(history.concat(sequence).convertSkpToWskp())).getOnePlusCount();
+                    WSKP_NGRAM.concat(getFullSequence(sequence, history).convertSkpToWskp())).getOnePlusCount();
             numerator = Math.max(numerator - discount, 0.0);
             alpha = numerator / denominator;
         }

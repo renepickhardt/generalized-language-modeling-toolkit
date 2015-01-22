@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -57,14 +57,15 @@ public class FastModifiedKneserNeyAbsEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        double denominator = cache.getAbsolute(history.concat(NGram.SKP_NGRAM));
+        double denominator = cache.getAbsolute(getFullHistory(sequence, history));
 
         if (history.isEmptyOrOnlySkips()) {
             if (denominator == 0.0)
                 return (double) cache.getAbsolute(sequence.get(0))
                         / cache.getNumWords();
 
-            double numerator = cache.getAbsolute(history.concat(sequence));
+            double numerator = cache.getAbsolute(getFullSequence(sequence,
+                    history));
             return numerator / denominator;
         }
 
@@ -86,9 +87,10 @@ public class FastModifiedKneserNeyAbsEstimator extends AbstractEstimator {
         double alpha;
         if (denominator == 0.0)
             alpha = (double) cache.getAbsolute(sequence.get(0))
-                    / cache.getNumWords();
+            / cache.getNumWords();
         else {
-            double numerator = cache.getAbsolute(history.concat(sequence));
+            double numerator = cache.getAbsolute(getFullSequence(sequence,
+                    history));
             numerator = Math.max(numerator - discount, 0.0);
 
             alpha = numerator / denominator;
