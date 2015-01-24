@@ -20,7 +20,11 @@
 
 package de.glmtk.querying.estimator.learned;
 
+import static de.glmtk.Constants.MODEL_MODKNESERNEY;
+import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
+import de.glmtk.counts.AlphaCount;
+import de.glmtk.counts.LambdaCounts;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
 public class LearnedModKneserNeyEstimator extends AbstractEstimator {
@@ -28,6 +32,28 @@ public class LearnedModKneserNeyEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        return Double.NaN;
+        AlphaCount alphaCount = cache.getAlpha(MODEL_MODKNESERNEY,
+                getFullSequence(sequence, history));
+        if (alphaCount == null) {
+            alphaCount = cache.getAlpha(MODEL_MODKNESERNEY, sequence);
+            return alphaCount == null ? 0.0 : alphaCount.getNormal();
+        }
+
+        if (history.isEmptyOrOnlySkips())
+            return alphaCount.getNormal();
+
+        NGram lambdaNGram = history.concat(NGram.WSKP_NGRAM);
+
+        LambdaCounts lambdaCounts = cache.getLambda(MODEL_MODKNESERNEY,
+                lambdaNGram);
+        double lambda = 0.0;
+        if (lambdaCounts == null)
+            return 0.0;
+        lambda = lambdaCounts.get(0).getHigh();
+
+        NGram backoffHistory = history.backoffUntilSeen(BackoffMode.DEL, cache);
+        double beta = probability(sequence, backoffHistory, recDepth);
+
+        return alphaCount.getDiscounted() + lambda * beta;
     }
 }

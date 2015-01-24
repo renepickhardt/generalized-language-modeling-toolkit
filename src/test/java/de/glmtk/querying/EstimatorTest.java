@@ -79,6 +79,7 @@ public class EstimatorTest extends TestCorporaTest {
     public static Iterable<EstimatorTestParams> data() {
         return Arrays.asList(
                 //@formatter:off
+                // Substitute Estimators
                 new EstimatorTestParams(UNIFORM, false, 0, HIGHEST_ORDER),
                 new EstimatorTestParams(ABS_UNIGRAM, false, 0, HIGHEST_ORDER),
                 new EstimatorTestParams(CONT_UNIGRAM, false, 0, HIGHEST_ORDER - 1),
