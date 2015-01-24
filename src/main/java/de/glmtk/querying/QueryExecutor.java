@@ -67,7 +67,7 @@ public class QueryExecutor {
         return result;
     }
 
-    public double querySequence(String sequence) throws Exception {
+    public double querySequence(String sequence) {
         List<String> tokens = StringUtils.splitAtChar(sequence, ' ');
         int order = tokens.size();
         Integer modeOrder = mode.getOrder();
@@ -75,12 +75,12 @@ public class QueryExecutor {
         if (order == 0)
             return Double.NaN;
         else if (modeOrder != null && order != modeOrder)
-            throw new Exception(
+            throw new IllegalStateException(
                     String.format(
                             "Illegal sequence. Can only query sequences with length %d when using mode '%s'.",
                             modeOrder, mode));
         else if (order > corpusOrder)
-            throw new Exception(
+            throw new IllegalStateException(
                     String.format(
                             "Illegal sequence. Can only query sequences with max length learned on corpus %d.",
                             corpusOrder));
@@ -109,7 +109,7 @@ public class QueryExecutor {
         Double prob = null;
         try {
             prob = querySequence(line);
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
             String warning = e.getMessage();
             if (lineNo != null)
                 warning += String.format(" Line %d: '%s'.", lineNo, line);
