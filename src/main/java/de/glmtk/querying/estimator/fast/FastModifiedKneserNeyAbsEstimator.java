@@ -58,45 +58,23 @@ public class FastModifiedKneserNeyAbsEstimator extends AbstractEstimator {
                                      NGram history,
                                      int recDepth) {
         double denominator = cache.getAbsolute(getFullHistory(sequence, history));
-
-        if (history.isEmptyOrOnlySkips()) {
-            if (denominator == 0.0)
-                return (double) cache.getAbsolute(sequence.get(0))
-                        / cache.getNumWords();
-
-            double numerator = cache.getAbsolute(getFullSequence(sequence,
-                    history));
-            return numerator / denominator;
-        }
-
-        double discount;
-        double gamma = 0.0;
-        {
-            Discount d = getDiscounts(history.getPattern(), recDepth);
-            discount = d.getForCount(cache.getAbsolute(history));
-
-            if (denominator != 0) {
-                Counts c = cache.getContinuation(history.concat(NGram.WSKP_NGRAM));
-                gamma = (d.getOne() * c.getOneCount() + d.getTwo()
-                        * c.getTwoCount() + d.getThree()
-                        * c.getThreePlusCount())
-                        / denominator;
-            }
-        }
-
-        double alpha;
         if (denominator == 0.0)
-            alpha = (double) cache.getAbsolute(sequence.get(0))
-            / cache.getNumWords();
-        else {
-            double numerator = cache.getAbsolute(getFullSequence(sequence,
-                    history));
-            numerator = Math.max(numerator - discount, 0.0);
+            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
 
-            alpha = numerator / denominator;
-        }
+        double numerator = cache.getAbsolute(getFullSequence(sequence, history));
+        if (history.isEmptyOrOnlySkips())
+            return numerator / denominator;
+
+        Discount d = getDiscounts(history.getPattern(), recDepth);
+        double discount = d.getForCount(cache.getAbsolute(history));
+
+        Counts c = cache.getContinuation(history.concat(NGram.WSKP_NGRAM));
+        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
+                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
+                / denominator;
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
+        double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = probability(sequence, backoffHistory, recDepth);
 
         return alpha + gamma * beta;
