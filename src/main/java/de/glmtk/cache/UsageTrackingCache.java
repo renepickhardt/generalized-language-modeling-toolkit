@@ -149,7 +149,7 @@ public class UsageTrackingCache extends Cache {
         cacheBuilder.withLambdas(model, Arrays.asList(ngram.getPattern()));
 
         LambdaCounts result = new LambdaCounts();
-        for (int i = 0; i != ngram.getPattern().size(); ++i)
+        for (int i = 0; i != ngram.size(); ++i)
             result.append(new LambdaCount(random.nextDouble(),
                     random.nextDouble()));
         return result;
