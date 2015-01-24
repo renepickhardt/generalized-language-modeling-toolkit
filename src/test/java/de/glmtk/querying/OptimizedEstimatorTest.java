@@ -40,8 +40,8 @@ import de.glmtk.cache.Cache;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.fast.FastModifiedKneserNeyAbsEstimator;
-import de.glmtk.querying.estimator.fast.FastModifiedKneserNeyEstimator;
+import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
+import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
@@ -49,6 +49,9 @@ import de.glmtk.util.HashUtils;
 
 /**
  * Test optimized estimator implementations using the slower ones.
+ *
+ * Typically we can not test these with {@link EstimatorTest} because
+ * Modified-Kneser-Ney discounting is not defined on small corpora.
  */
 @RunWith(Parameterized.class)
 public class OptimizedEstimatorTest extends TestCorporaTest {
@@ -56,9 +59,9 @@ public class OptimizedEstimatorTest extends TestCorporaTest {
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        Estimator fastMknAbs = new FastModifiedKneserNeyAbsEstimator();
+        Estimator fastMknAbs = new FastModKneserNeyAbsEstimator();
         fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
-        Estimator fastMkn = new FastModifiedKneserNeyEstimator();
+        Estimator fastMkn = new FastModKneserNeyEstimator();
         fastMkn.setName("Fast-Modified-Kneser-Ney");
         Estimator learnedMkn = new LearnedModKneserNeyEstimator();
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
