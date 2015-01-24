@@ -1,6 +1,6 @@
 !config
 
-numberOfThreads: 4
+numberOfThreads: 1
 
 memory:
 

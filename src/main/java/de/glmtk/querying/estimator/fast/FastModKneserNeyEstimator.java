@@ -41,7 +41,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         Discount d = getDiscounts(history.getPattern(), recDepth);
         double discount = d.getForCount(cache.getAbsolute(history));
 
-        Counts c = cache.getContinuation(history.concat(NGram.WSKP_NGRAM));
+        Counts c = cache.getContinuation(getFullHistory(sequence, history).convertSkpToWskp());
         double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
                 * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
                 / denominator;
@@ -82,7 +82,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         Discount d = getDiscounts(history.getPattern(), recDepth);
         double discount = d.getForCount(cache.getAbsolute(history));
 
-        Counts c = cache.getContinuation(history.concat(NGram.WSKP_NGRAM));
+        Counts c = cache.getContinuation(getFullHistory(sequence, history).convertSkpToWskp());
         double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
                 * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
                 / denominator;
