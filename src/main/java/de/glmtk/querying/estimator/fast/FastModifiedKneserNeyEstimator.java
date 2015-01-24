@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -60,7 +60,7 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
         double alpha;
         if (denominator == 0.0)
             alpha = (double) cache.getAbsolute(sequence.get(0))
-                    / cache.getNumWords();
+            / cache.getNumWords();
         else {
             double numerator = cache.getAbsolute(getFullSequence(sequence,
                     history));
@@ -94,10 +94,10 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
         double denominator = cache.getContinuation(
                 WSKP_NGRAM.concat(getFullHistory(sequence, history).convertSkpToWskp())).getOnePlusCount();
 
+        if (denominator == 0.0)
+            return (double) cache.getAbsolute(sequence.get(0))
+                    / cache.getNumWords();
         if (history.isEmptyOrOnlySkips()) {
-            if (denominator == 0.0)
-                return (double) cache.getAbsolute(sequence.get(0))
-                        / cache.getNumWords();
 
             double numerator = cache.getContinuation(
                     WSKP_NGRAM.concat(getFullSequence(sequence, history).convertSkpToWskp())).getOnePlusCount();
@@ -119,18 +119,12 @@ public class FastModifiedKneserNeyEstimator extends FastModifiedKneserNeyAbsEsti
             }
         }
 
-        double alpha;
-        if (denominator == 0.0)
-            alpha = (double) cache.getAbsolute(sequence.get(0))
-                    / cache.getNumWords();
-        else {
-            double numerator = cache.getContinuation(
-                    WSKP_NGRAM.concat(getFullSequence(sequence, history).convertSkpToWskp())).getOnePlusCount();
-            numerator = Math.max(numerator - discount, 0.0);
-            alpha = numerator / denominator;
-        }
+        double numerator = cache.getContinuation(
+                WSKP_NGRAM.concat(getFullSequence(sequence, history).convertSkpToWskp())).getOnePlusCount();
+        numerator = Math.max(numerator - discount, 0.0);
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
+        double alpha = numerator / denominator;
         double beta = probabilityLower(sequence, backoffHistory, recDepth);
 
         return alpha + gamma * beta;
