@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -96,6 +97,12 @@ public class Cache {
     }
 
     public void loadCounts(Set<Pattern> patterns) throws IOException {
+        Objects.requireNonNull(patterns);
+        for (Pattern pattern : patterns)
+            if (pattern.isEmpty())
+                throw new IllegalArgumentException(
+                        "patterns contains empty pattern.");
+
         LOGGER.debug("Loading counts...");
 
         if (counts == null)
@@ -158,6 +165,8 @@ public class Cache {
     }
 
     public void loadDiscounts(String model) throws IOException {
+        Objects.requireNonNull(model);
+
         LOGGER.debug("Loading %s discounts...", model);
 
         Path file = null;
@@ -184,6 +193,13 @@ public class Cache {
 
     public void loadAlphas(String model,
                            Set<Pattern> patterns) throws IOException {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(patterns);
+        for (Pattern pattern : patterns)
+            if (pattern.isEmpty())
+                throw new IllegalArgumentException(
+                        "patterns contains empty pattern.");
+
         LOGGER.debug("Loading %s alphas...", model);
 
         Path inputDir = null;
@@ -218,6 +234,13 @@ public class Cache {
 
     public void loadLambdas(String model,
                             Set<Pattern> patterns) throws IOException {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(patterns);
+        for (Pattern pattern : patterns)
+            if (pattern.isEmpty())
+                throw new IllegalArgumentException(
+                        "patterns contains empty pattern.");
+
         LOGGER.debug("Loading %s lambdas...", model);
 
         Path inputDir = null;
@@ -251,6 +274,9 @@ public class Cache {
     }
 
     public long getAbsolute(NGram ngram) {
+        Objects.requireNonNull(ngram);
+        if (ngram.isEmpty())
+            throw new IllegalArgumentException("Empty ngram.");
         Pattern pattern = ngram.getPattern();
         if (!pattern.isAbsolute())
             throw new IllegalArgumentException(String.format(
@@ -264,6 +290,9 @@ public class Cache {
     }
 
     public Counts getContinuation(NGram ngram) {
+        Objects.requireNonNull(ngram);
+        if (ngram.isEmpty())
+            throw new IllegalArgumentException("Empty ngram.");
         Pattern pattern = ngram.getPattern();
         if (pattern.isAbsolute())
             throw new IllegalArgumentException(String.format(
@@ -296,9 +325,9 @@ public class Cache {
     }
 
     public NGramTimes getNGramTimes(Pattern pattern) {
-        if (ngramTimes == null)
-            throw new IllegalStateException("NGram times not loaded.");
-
+        Objects.requireNonNull(pattern);
+        if (pattern.isEmpty())
+            throw new IllegalArgumentException("Empty pattern.");
         return CollectionUtils.getFromNestedMap(ngramTimes, pattern,
                 "NGram times not loaded.",
                 "No NGramTimes learned for pattern '%s'.");
@@ -329,6 +358,10 @@ public class Cache {
 
     public Discount getDiscount(String model,
                                 Pattern pattern) {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(pattern);
+        if (pattern.isEmpty())
+            throw new IllegalArgumentException("Empty pattern.");
         return CollectionUtils.getFromNestedMap(discounts, model, pattern,
                 "No Discounts loaded.", "Discounts for model '%s' not loaded.",
                 "No Discounts learned for pattern '%2$s' for model '%1$s'.");
@@ -336,6 +369,10 @@ public class Cache {
 
     public AlphaCount getAlpha(String model,
                                NGram ngram) {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(ngram);
+        if (ngram.isEmpty())
+            throw new IllegalArgumentException("Empty ngram.");
         return CollectionUtils.getFromNestedMap(alphas, model,
                 ngram.getPattern(), ngram.toString(), "No alphas loaded.",
                 "Alphas for model '%s' not loaded.",
@@ -344,6 +381,10 @@ public class Cache {
 
     public LambdaCounts getLambda(String model,
                                   NGram ngram) {
+        Objects.requireNonNull(model);
+        Objects.requireNonNull(ngram);
+        if (ngram.isEmpty())
+            throw new IllegalArgumentException("Empty ngram.");
         return CollectionUtils.getFromNestedMap(lambdas, model,
                 ngram.getPattern(), ngram.toString(), "No lambdas loaded",
                 "Lambdas for model '%s' not loaded.",
