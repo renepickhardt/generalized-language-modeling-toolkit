@@ -1,8 +1,8 @@
 package de.glmtk.counts;
 
 public class LambdaCount {
-    public double high;
-    public double low;
+    private double high;
+    private double low;
 
     public LambdaCount() {
         this(0.0, 0.0);
