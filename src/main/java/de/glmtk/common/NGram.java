@@ -116,6 +116,15 @@ public class NGram {
         return pattern;
     }
 
+    /**
+     * Returns the order of the ngram. Namely the {@code n}.
+     *
+     * <p>
+     * Does not return number of characters in the ngram.
+     *
+     * <p>
+     * TODO: Should this method thus be renamed?
+     */
     public int size() {
         return words.size();
     }
@@ -126,6 +135,17 @@ public class NGram {
 
     public NGram get(int index) {
         return new NGram(words.get(index));
+    }
+
+    public NGram set(int index,
+                     String word) {
+        if (index < 0 || index >= size())
+            throw new IllegalArgumentException(String.format(
+                    "Illegal index: %d. Size: %d.", index, size()));
+        List<String> words = new ArrayList<>(this.words);
+        words.set(index, word);
+        Pattern pattern = this.pattern.set(index, PatternElem.fromWord(word));
+        return new NGram(words, pattern);
     }
 
     public boolean isEmptyOrOnlySkips() {
