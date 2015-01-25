@@ -20,13 +20,13 @@
 
 package de.glmtk.querying;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,14 +48,18 @@ import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.HashUtils;
 
 /**
- * Test optimized estimator implementations using the slower ones.
+ * Test optimized estimator implementations using the slower ones. Test whether
+ * to estimators return identical probabilities for all sequences from a test
+ * file.
  *
- * Typically we can not test these with {@link EstimatorTest} because
- * Modified-Kneser-Ney discounting is not defined on small corpora.
+ * <p>
+ * Typically we use this test to verify Estimators we can not test with
+ * {@link EstimatorTest} because their definitions require larger corpora, for
+ * which we can not test of all possibles sequences.
  */
 @RunWith(Parameterized.class)
-public class OptimizedEstimatorTest extends TestCorporaTest {
-    private static final Logger LOGGER = Logger.get(OptimizedEstimatorTest.class);
+public class EstimatorEqualsTest extends TestCorporaTest {
+    private static final Logger LOGGER = Logger.get(EstimatorEqualsTest.class);
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -67,30 +71,24 @@ public class OptimizedEstimatorTest extends TestCorporaTest {
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
 
         return Arrays.asList(new Object[][] {
-                {fastMknAbs, Estimators.MOD_KNESER_NEY_ABS},
-                {fastMkn, Estimators.MOD_KNESER_NEY},
-                {learnedMkn, Estimators.MOD_KNESER_NEY}});
+                {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
+                {Estimators.MOD_KNESER_NEY, fastMkn},
+                {Estimators.MOD_KNESER_NEY, learnedMkn}});
     }
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
     private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
-    private static Map<Estimator, String> hashes = new HashMap<>();
+    public Estimator expected;
+    public Estimator actual;
 
-    public Estimator optimized;
-    public Estimator slow;
-
-    public OptimizedEstimatorTest(Estimator optimized,
-                                  Estimator slow) throws Exception {
-        this.optimized = optimized;
-        this.slow = slow;
-
-        if (!hashes.containsKey(optimized))
-            hashes.put(optimized, getHashForEstimatedTestFile(optimized));
-        if (!hashes.containsKey(slow))
-            hashes.put(slow, getHashForEstimatedTestFile(slow));
+    public EstimatorEqualsTest(Estimator expected,
+                               Estimator actual) {
+        this.expected = expected;
+        this.actual = actual;
     }
 
+    @SuppressWarnings("unused")
     private String getHashForEstimatedTestFile(Estimator estimator) throws Exception {
         Glmtk glmtk = testCorpus.getGlmtk();
         GlmtkPaths paths = glmtk.getPaths();
@@ -113,7 +111,40 @@ public class OptimizedEstimatorTest extends TestCorporaTest {
     }
 
     @Test
-    public void testHashes() {
-        assertEquals(hashes.get(optimized), hashes.get(slow));
+    public void testEstimatorEquals() throws IOException {
+        LOGGER.info("=== Testing if %s equals %s", actual, expected);
+
+        Glmtk glmtk = testCorpus.getGlmtk();
+        GlmtkPaths paths = glmtk.getPaths();
+
+        Cache cacheExpected = expected.getRequiredCache(5).build(paths);
+        Cache cacheActual = actual.getRequiredCache(5).build(paths);
+        expected.setCache(cacheExpected);
+        actual.setCache(cacheActual);
+
+        QueryMode queryMode = QueryMode.newCond(5);
+        QueryExecutor executorExpected = new QueryExecutor(paths, queryMode,
+                expected, 5);
+        QueryExecutor executorActual = new QueryExecutor(paths, queryMode,
+                actual, 5);
+
+        Logger.setTraceEnabled(false);
+        try (BufferedReader reader = Files.newBufferedReader(testFile,
+                Constants.CHARSET)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                double probExpected = executorExpected.querySequence(line);
+                double probActual = executorActual.querySequence(line);
+                if (Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e3) {
+                    Logger.setTraceEnabled(true);
+                    executorExpected.querySequence(line);
+                    executorActual.querySequence(line);
+                    Logger.setTraceEnabled(false);
+                    fail(String.format("Expected <%e> but was <%e>.",
+                            probExpected, probActual));
+                }
+            }
+        }
+        Logger.setTraceEnabled(true);
     }
 }
