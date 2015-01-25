@@ -111,6 +111,12 @@ public class Counts {
             ++threePlusCount;
     }
 
+    @Override
+    public String toString() {
+        return String.format("1+=%d, 1=%d, 2=%d, 3+=%d", onePlusCount,
+                oneCount, twoCount, threePlusCount);
+    }
+
     /**
      * Currently only used in testing.
      *

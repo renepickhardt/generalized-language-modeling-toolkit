@@ -54,4 +54,9 @@ public class AlphaCount {
         this.normal = normal;
         this.discounted = discounted;
     }
+
+    @Override
+    public String toString() {
+        return String.format("normal=%e, discounted=%e", normal, discounted);
+    }
 }

@@ -34,4 +34,9 @@ public class LambdaCount {
         this.high = high;
         this.low = low;
     }
+
+    @Override
+    public String toString() {
+        return String.format("high=%e, low=%e", high, low);
+    }
 }

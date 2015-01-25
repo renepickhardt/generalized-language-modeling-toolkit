@@ -89,4 +89,10 @@ public class NGramTimes {
         else if (count == 4)
             ++fourCount;
     }
+
+    @Override
+    public String toString() {
+        return String.format("1=%d, 2=%d, 3=%d, 4=%d", oneCount, twoCount,
+                threeCount, fourCount);
+    }
 }
