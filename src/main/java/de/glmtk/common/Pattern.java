@@ -40,6 +40,8 @@ import java.util.List;
  * Tests for this class can be found in {@link PatternTest}.
  */
 public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
+    public static final Pattern WSKP_PATTERN = Patterns.get(WSKP);
+
     private List<PatternElem> elems;
     private String asString;
 
@@ -191,6 +193,9 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         return result;
     }
 
+    /**
+     * TODO: rename to add?
+     */
     public Pattern concat(PatternElem elem) {
         return Patterns.get(asString + elem.toChar());
     }

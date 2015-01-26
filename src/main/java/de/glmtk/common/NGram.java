@@ -241,6 +241,7 @@ public class NGram {
                 return new NGram(resultWords);
 
             case DEL:
+                // TODO: optimize with range?
                 return new NGram(words.subList(1, words.size()));
 
             case DEL_FRONT:
