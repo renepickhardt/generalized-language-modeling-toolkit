@@ -51,7 +51,7 @@ public class EstimatorSpeedTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(EstimatorSpeedTest.class);
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
-    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
+    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5.100");
 
     private static Map<Estimator, EstimatorSpeed> results = new LinkedHashMap<>();
 
