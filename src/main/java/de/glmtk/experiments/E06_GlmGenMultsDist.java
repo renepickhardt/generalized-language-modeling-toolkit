@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import de.glmtk.util.ArrayUtils;
 import de.glmtk.util.StringUtils;
-import de.glmtk.utils.ArrayUtils;
 
 /**
  * 2014-12-27

@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.utils;
+package de.glmtk.util;
 
 import java.util.ArrayList;
 import java.util.List;

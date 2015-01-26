@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import de.glmtk.util.ArrayUtils;
 import de.glmtk.util.StringUtils;
-import de.glmtk.utils.ArrayUtils;
 
 /**
  * 2014-12-22 Trying to efficiently generate unique skipped sequences per order
