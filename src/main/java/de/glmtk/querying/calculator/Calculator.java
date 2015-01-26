@@ -96,7 +96,7 @@ public abstract class Calculator {
         for (SequenceAndHistory query : queries)
             result *= estimator.probability(query.sequence, query.history);
 
-        LOGGER.trace("  result = %f", result);
+        LOGGER.trace("  result = %e", result);
         return result;
     }
 
