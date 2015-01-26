@@ -25,47 +25,48 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
-import de.glmtk.counts.AlphaCount;
+import de.glmtk.counts.AlphaCounts;
 import de.glmtk.util.StringUtils;
 
-public class AlphaCountReader extends AbstractSequenceReader {
-    private AlphaCount alphaCount;
+public class AlphaCountsReader extends SequenceReader {
+    private AlphaCounts alphaCounts;
 
-    public AlphaCountReader(Path file,
-                            Charset charset) throws IOException {
+    public AlphaCountsReader(Path file,
+                             Charset charset) throws IOException {
         this(file, charset, 8192);
     }
 
-    public AlphaCountReader(Path file,
-                            Charset charset,
-                            int sz) throws IOException {
+    public AlphaCountsReader(Path file,
+                             Charset charset,
+                             int sz) throws IOException {
         super(file, charset, sz);
-        alphaCount = null;
+        alphaCounts = null;
     }
 
     @Override
     protected void parseLine() {
         super.parseLine();
         if (line == null) {
-            alphaCount = null;
+            alphaCounts = null;
             return;
         }
 
         try {
             List<String> split = StringUtils.splitAtChar(line, '\t');
-            if (split.size() != 3)
+            if (split.size() == 1)
                 throw new IllegalArgumentException(
-                        "Expected line to have format '<sequence>\\t<normal>\\t<discounted>'.");
+                        "Expected line to have format '<sequence>\\t<alpha>+'.");
 
             sequence = split.get(0);
-            alphaCount = new AlphaCount(parseFloatingPoint(split.get(1)),
-                    parseFloatingPoint(split.get(2)));
+            alphaCounts = new AlphaCounts();
+            for (int i = 1; i != split.size(); ++i)
+                alphaCounts.append(parseFloatingPoint(split.get(i)));
         } catch (IllegalArgumentException e) {
             throw newFileFormatException("alpha counts", e.getMessage());
         }
     }
 
-    public AlphaCount getAlphaCounts() {
-        return alphaCount;
+    public AlphaCounts getAlphaCounts() {
+        return alphaCounts;
     }
 }

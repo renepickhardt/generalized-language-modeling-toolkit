@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
-import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
 
 public class LambdaCountsWriter extends AbstractFileWriter {
@@ -40,11 +39,10 @@ public class LambdaCountsWriter extends AbstractFileWriter {
     }
 
     public void append(String sequence,
-                       LambdaCounts lambdaCounts) throws IOException {
+                       LambdaCounts lambdas) throws IOException {
         writer.append(sequence);
-        for (LambdaCount lambdaCount : lambdaCounts)
-            writer.append('\t').append(Double.toString(lambdaCount.getHigh())).append(
-                    ',').append(Double.toString(lambdaCount.getLow()));
+        for (double lambda : lambdas)
+            writer.append('\t').append(Double.toString(lambda));
         writer.append('\n');
     }
 }

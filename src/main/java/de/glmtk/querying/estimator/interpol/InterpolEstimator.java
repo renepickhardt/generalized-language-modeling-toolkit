@@ -102,6 +102,10 @@ public class InterpolEstimator extends AbstractEstimator {
         double betaVal = beta.probability(sequence, backoffHistory, recDepth);
         double gammaVal = gamma(sequence, history, recDepth);
 
+        logTrace(recDepth, "alpha = %e", alphaVal);
+        logTrace(recDepth, "beta  = %e", betaVal);
+        logTrace(recDepth, "gamma = %e", gammaVal);
+
         return alphaVal + gammaVal * betaVal;
     }
 
@@ -140,13 +144,10 @@ public class InterpolEstimator extends AbstractEstimator {
             double n2 = continuation.getTwoCount();
             double n3p = continuation.getThreePlusCount();
 
-            logTrace(recDepth, "pattern = %s", pattern);
-            logTrace(recDepth, "d1      = %f", d1);
-            logTrace(recDepth, "d2      = %f", d2);
-            logTrace(recDepth, "d3p     = %f", d3p);
-            logTrace(recDepth, "n1      = %f", n1);
-            logTrace(recDepth, "n2      = %f", n2);
-            logTrace(recDepth, "n3p     = %f", n3p);
+            logTrace(recDepth, "pattern     = %s", pattern);
+            logTrace(recDepth, "discount    = %s", discount);
+            logTrace(recDepth, "contcounts  = %s", continuation);
+            logTrace(recDepth, "denominator = %e", denominator);
 
             return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
         }

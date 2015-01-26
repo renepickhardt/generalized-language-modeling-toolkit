@@ -38,12 +38,12 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
-import de.glmtk.counts.AlphaCount;
+import de.glmtk.counts.AlphaCounts;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.counts.NGramTimes;
-import de.glmtk.files.AlphaCountReader;
+import de.glmtk.files.AlphaCountsReader;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.DiscountReader;
 import de.glmtk.files.LambdaCountsReader;
@@ -69,7 +69,7 @@ public class Cache {
     private Map<Pattern, NGramTimes> ngramTimes;
     private List<Double> lengthFrequencies;
     private Map<String, Map<Pattern, Discount>> discounts;
-    private Map<String, Map<Pattern, Map<String, AlphaCount>>> alphas;
+    private Map<String, Map<Pattern, Map<String, AlphaCounts>>> alphas;
     private Map<String, Map<Pattern, Map<String, LambdaCounts>>> lambdas;
 
     private long numWords;
@@ -212,15 +212,15 @@ public class Cache {
         if (alphas == null)
             alphas = new HashMap<>();
 
-        Map<Pattern, Map<String, AlphaCount>> alphasForModel = new HashMap<>();
+        Map<Pattern, Map<String, AlphaCounts>> alphasForModel = new HashMap<>();
         alphas.put(model, alphasForModel);
 
         for (Pattern pattern : patterns) {
-            Map<String, AlphaCount> alphasForPattern = new HashMap<>();
+            Map<String, AlphaCounts> alphasForPattern = new HashMap<>();
             alphasForModel.put(pattern, alphasForPattern);
 
             Path file = inputDir.resolve(pattern.toString());
-            try (AlphaCountReader reader = new AlphaCountReader(file,
+            try (AlphaCountsReader reader = new AlphaCountsReader(file,
                     Constants.CHARSET)) {
                 while (reader.readLine() != null)
                     alphasForPattern.put(reader.getSequence(),
@@ -367,7 +367,7 @@ public class Cache {
                 "No Discounts learned for pattern '%2$s' for model '%1$s'.");
     }
 
-    public AlphaCount getAlpha(String model,
+    public AlphaCounts getAlpha(String model,
                                NGram ngram) {
         Objects.requireNonNull(model);
         Objects.requireNonNull(ngram);

@@ -25,31 +25,31 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class LambdaCounts implements Iterable<LambdaCount> {
-    public List<LambdaCount> lambdas;
+public class LambdaCounts implements Iterable<Double> {
+    public List<Double> lambdas;
 
     public LambdaCounts() {
         lambdas = new ArrayList<>();
     }
 
-    public LambdaCounts(Collection<LambdaCount> lambdas) {
+    public LambdaCounts(Collection<Double> lambdas) {
         set(lambdas);
     }
 
-    public LambdaCount get(int index) {
+    public double get(int index) {
         return lambdas.get(index);
     }
 
     public void set(int index,
-                    LambdaCount lambda) {
+                    double lambda) {
         lambdas.set(index, lambda);
     }
 
-    public void set(Collection<LambdaCount> lambdas) {
+    public void set(Collection<Double> lambdas) {
         this.lambdas = new ArrayList<>(lambdas);
     }
 
-    public void append(LambdaCount lambda) {
+    public void append(double lambda) {
         lambdas.add(lambda);
     }
 
@@ -58,7 +58,7 @@ public class LambdaCounts implements Iterable<LambdaCount> {
     }
 
     @Override
-    public Iterator<LambdaCount> iterator() {
+    public Iterator<Double> iterator() {
         return lambdas.iterator();
     }
 

@@ -27,10 +27,9 @@ import java.util.SortedSet;
 
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
-import de.glmtk.counts.AlphaCount;
+import de.glmtk.counts.AlphaCounts;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
-import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.counts.NGramTimes;
 
@@ -137,10 +136,13 @@ public class UsageTrackingCache extends Cache {
     }
 
     @Override
-    public AlphaCount getAlpha(String model,
-                               NGram ngram) {
+    public AlphaCounts getAlpha(String model,
+                                NGram ngram) {
         cacheBuilder.withAlphas(model, Arrays.asList(ngram.getPattern()));
-        return new AlphaCount(random.nextDouble(), random.nextDouble());
+        AlphaCounts result = new AlphaCounts();
+        for (int i = 0; i != ngram.size() + 1; ++i)
+            result.append(random.nextDouble());
+        return result;
     }
 
     @Override
@@ -150,8 +152,7 @@ public class UsageTrackingCache extends Cache {
 
         LambdaCounts result = new LambdaCounts();
         for (int i = 0; i != ngram.size(); ++i)
-            result.append(new LambdaCount(random.nextDouble(),
-                    random.nextDouble()));
+            result.append(random.nextDouble());
         return result;
     }
 }

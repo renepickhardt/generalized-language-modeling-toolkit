@@ -28,7 +28,7 @@ import java.util.List;
 import de.glmtk.counts.Counts;
 import de.glmtk.util.StringUtils;
 
-public class CountsReader extends AbstractSequenceReader {
+public class CountsReader extends SequenceReader {
     public static final SequenceComparator<CountsReader> SEQUENCE_COMPARATOR = new SequenceComparator<>();
 
     private Counts counts;

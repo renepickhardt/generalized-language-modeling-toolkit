@@ -1,16 +1,18 @@
 package de.glmtk.learning.modkneserney;
 
 import static de.glmtk.Constants.MODEL_MODKNESERNEY;
+import static de.glmtk.common.NGram.SKP_NGRAM;
+import static de.glmtk.common.NGram.WSKP_NGRAM;
 import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.common.Pattern.WSKP_PATTERN;
 import static de.glmtk.common.PatternElem.CNT;
 import static de.glmtk.common.PatternElem.SKP;
-import static de.glmtk.common.PatternElem.SKP_WORD;
 import static de.glmtk.common.PatternElem.WSKP;
-import static de.glmtk.common.PatternElem.WSKP_WORD;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -20,148 +22,81 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
-import de.glmtk.common.AbstractWorkerPriorityExecutor;
+import de.glmtk.common.AbstractWorkerExecutor;
+import de.glmtk.common.BackoffMode;
 import de.glmtk.common.Config;
+import de.glmtk.common.NGram;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
+import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
-import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
-import de.glmtk.files.CountsReader;
-import de.glmtk.files.LambdaCountsReader;
 import de.glmtk.files.LambdaCountsWriter;
-import de.glmtk.logging.Logger;
+import de.glmtk.files.SequenceReader;
 import de.glmtk.util.StringUtils;
 
-public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
-    private static final Logger LOGGER = Logger.get(LambdaCalculator.class);
-
-    private static Set<Pattern> filterPatterns(Collection<Pattern> counted,
-                                               Collection<Pattern> patterns) {
-        Set<Pattern> result = new HashSet<>();
-        for (Pattern contPattern : patterns) {
-            if (contPattern.get(contPattern.size() - 1) != WSKP
-                    || contPattern.size() == 1
-                    || !getHistPattern(contPattern).containsOnly(CNT)
-                    || !counted.contains(contPattern)
-                    || !counted.contains(getAbsPattern(contPattern))
-                    || (contPattern.size() != 2 && !counted.contains(getHistLambdaPattern(contPattern))))
-                continue;
-
-            result.add(contPattern);
-        }
-        return result;
-    }
-
-    private static Pattern getAbsPattern(Pattern contPattern) {
-        return contPattern.set(contPattern.size() - 1, SKP);
-    }
-
-    private static Pattern getHistPattern(Pattern contPattern) {
-        return contPattern.range(0, contPattern.size() - 1);
-    }
-
-    private static Pattern getHistLambdaPattern(Pattern contPattern) {
-        return contPattern.range(0, contPattern.size() - 2).concat(WSKP);
-    }
-
-    private class Worker extends AbstractWorkerPriorityExecutor<Pattern>.Worker {
+public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
+    private class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
         @Override
-        protected void work(Pattern contPattern,
-                            int patternNo) throws Exception {
-            Pattern absPattern = getAbsPattern(contPattern);
-            Pattern histPattern = getHistPattern(contPattern);
-            Pattern histLambdaPattern = getHistLambdaPattern(contPattern);
+        protected void work(Pattern pattern,
+                            int patternNo) throws IOException {
+            int trailingSkpLength = (" " + PatternElem.SKP_WORD).length();
 
-            LOGGER.trace("contPattern       : %s", contPattern);
-            LOGGER.trace("absPattern        : %s", absPattern);
-            LOGGER.trace("histPattern       : %s", histPattern);
-            LOGGER.trace("histLambdaPattern : %s", histLambdaPattern);
-
-            Path contCountFile = continuationDir.resolve(contPattern.toString());
-            Path absCountFile = absoluteDir.resolve(absPattern.toString());
-            Path histCountFile = absoluteDir.resolve(histPattern.toString());
-            Path histLambdaFile = lambdaDir.resolve(histLambdaPattern.toString());
-
-            Path lambdaFile = lambdaDir.resolve(contPattern.toString());
-
-            boolean checkHistLambda = histLambdaPattern.size() > 1;
-
-            Discount discount = cache.getDiscount(Constants.MODEL_MODKNESERNEY,
-                    histPattern);
-
-            try (CountsReader contReader = new CountsReader(contCountFile,
-                    Constants.CHARSET, readerMemory / 4);
-                    CountsReader absReader = new CountsReader(absCountFile,
-                            Constants.CHARSET, readerMemory / 4);
-                    CountsReader histReader = new CountsReader(histCountFile,
-                            Constants.CHARSET, readerMemory / 4);
-                    LambdaCountsReader histLambdaReader = !checkHistLambda
-                            ? null
-                            : new LambdaCountsReader(histLambdaFile,
-                                    Constants.CHARSET, readerMemory / 4);
+            Path sequenceFile = absoluteDir.resolve(pattern.concat(SKP).toString());
+            Path lambdaFile = lambdaDir.resolve(pattern.toString());
+            try (SequenceReader reader = new SequenceReader(sequenceFile,
+                    Constants.CHARSET);
                     LambdaCountsWriter writer = new LambdaCountsWriter(
-                            lambdaFile, Constants.CHARSET, writerMemory)) {
-                while (contReader.readLine() != null) {
-                    String contSequence = contReader.getSequence();
-                    List<String> split = StringUtils.splitAtChar(contSequence,
-                            ' ');
+                            lambdaFile, Constants.CHARSET)) {
+                while (reader.readLine() != null) {
+                    String sequenceString = reader.getSequence();
+                    sequenceString = sequenceString.substring(0,
+                            sequenceString.length() - trailingSkpLength);
 
-                    String histSequence = StringUtils.join(split.subList(0,
-                            split.size() - 1), ' ');
-                    String absSequence = histSequence + " " + SKP_WORD;
+                    NGram sequence = new NGram(StringUtils.splitAtChar(
+                            sequenceString, ' '));
+                    int sequenceOrder = sequence.size();
 
-                    absReader.forwardToSequence(absSequence);
-                    histReader.forwardToSequence(histSequence);
-
-                    Counts cont = contReader.getCounts();
-
-                    long absDen = absReader.getCount();
-                    long contDen = contReader.getCount();
-
-                    double gammaNum = discount.getOne() * cont.getOneCount()
-                            + discount.getTwo() * cont.getTwoCount()
-                            + discount.getThree() * cont.getThreePlusCount();
-                    double gammaHigh = gammaNum / absDen;
-                    double gammaLow = gammaNum / contDen;
-
-                    LOGGER.trace("contSequence : %s", contSequence);
-                    LOGGER.trace("absSequence  : %s", absSequence);
-                    LOGGER.trace("histSequence : %s", histSequence);
-
-                    LambdaCounts histLambdas = new LambdaCounts();
-                    LambdaCount histLambda = new LambdaCount(1.0, 1.0);
-                    if (checkHistLambda) {
-                        String histLambdaSequence = StringUtils.join(
-                                split.subList(0, split.size() - 2), ' ')
-                                + " " + WSKP_WORD;
-                        LOGGER.trace("histLambdaSequence : %s",
-                                histLambdaSequence);
-                        histLambdaReader.forwardToSequence(histLambdaSequence);
-                        histLambdas = histLambdaReader.getLambdaCounts();
-                        histLambda = histLambdas.get(0);
+                    LambdaCounts lambdas = new LambdaCounts();
+                    lambdas.append(calcGamma(sequence, true));
+                    for (int i = 1; i != sequenceOrder; ++i) {
+                        sequence = sequence.backoff(BackoffMode.DEL);
+                        double gamma = calcGamma(sequence, false);
+                        double lambda = gamma * lambdas.get(i - 1);
+                        lambdas.append(lambda);
                     }
 
-                    LambdaCount lambda = new LambdaCount(gammaHigh
-                            * histLambda.getLow(), gammaLow
-                            * histLambda.getLow());
-                    LambdaCounts lambdas = new LambdaCounts();
-                    lambdas.append(lambda);
-                    for (LambdaCount l : histLambdas)
-                        lambdas.append(l);
-
-                    writer.append(contSequence, lambdas);
+                    writer.append(sequenceString, lambdas);
                 }
             }
 
-            status.addLambda(MODEL_MODKNESERNEY, contPattern);
+            status.addLambda(MODEL_MODKNESERNEY, pattern);
+        }
+
+        private double calcGamma(NGram sequence,
+                                 boolean highestOrder) {
+            Discount discount = cache.getDiscount(MODEL_MODKNESERNEY,
+                    sequence.getPattern());
+            Counts contCount = cache.getContinuation(sequence.concat(WSKP_NGRAM));
+
+            long denominator;
+            if (highestOrder)
+                denominator = cache.getAbsolute(sequence.concat(SKP_NGRAM));
+            else
+                denominator = cache.getContinuation(
+                        WSKP_NGRAM.concat(sequence).concat(WSKP_NGRAM)).getOnePlusCount();
+
+            return (discount.getOne() * contCount.getOneCount()
+                    + discount.getTwo() * contCount.getTwoCount() + discount.getThree()
+                    * contCount.getThreePlusCount())
+                    / denominator;
         }
     }
 
     private Path absoluteDir;
-    private Path continuationDir;
     private Path lambdaDir;
     private Status status;
     private Cache cache;
@@ -170,31 +105,48 @@ public class LambdaCalculator extends AbstractWorkerPriorityExecutor<Pattern> {
         super(config);
     }
 
-    public void run(Collection<Pattern> patterns,
+    public void run(int order,
                     GlmtkPaths paths,
                     Status status) throws Exception {
         OUTPUT.setPhase(Phase.CALCULATING_LAMBDAS);
 
         absoluteDir = paths.getAbsoluteDir();
-        continuationDir = paths.getContinuationDir();
         lambdaDir = paths.getModKneserNeyLambdaDir();
 
         this.status = status;
 
-        cache = new CacheBuilder().withDiscounts(MODEL_MODKNESERNEY).build(
-                paths);
+        Set<Pattern> countsPatterns = new HashSet<>();
+        Set<Pattern> lambdaPatterns = new HashSet<>();
+        Pattern pattern = Patterns.get();
+        for (int i = 0; i != order - 1; ++i) {
+            pattern = pattern.concat(CNT);
 
-        patterns = filterPatterns(status.getCounted(), patterns);
-        patterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));
+            // pattern to calculate lambdas for
+            lambdaPatterns.add(pattern);
+
+            // pattern to get continuation count
+            countsPatterns.add(pattern.concat(WSKP));
+            // pattern to get highest order denominator
+            countsPatterns.add(pattern.concat(SKP));
+            if (i != order - 2)
+                // pattern to get lower orders denominator
+                countsPatterns.add(WSKP_PATTERN.concat(pattern).concat(WSKP));
+        }
+        lambdaPatterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));
+
+        cache = new CacheBuilder().withCounts(countsPatterns).withDiscounts(
+                MODEL_MODKNESERNEY).build(paths);
 
         Files.createDirectories(lambdaDir);
 
-        work(patterns);
+        work(lambdaPatterns);
     }
 
     @Override
     protected Collection<Worker> createWorkers() {
-        // Can't really parallelize MKN lambda calculation.
-        return Arrays.asList(new Worker());
+        List<Worker> workers = new ArrayList<>();
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
+            workers.add(new Worker());
+        return workers;
     }
 }

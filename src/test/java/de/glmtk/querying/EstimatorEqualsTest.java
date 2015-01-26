@@ -23,7 +23,6 @@ package de.glmtk.querying;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -61,7 +60,7 @@ import de.glmtk.util.HashUtils;
 public class EstimatorEqualsTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(EstimatorEqualsTest.class);
 
-    @Parameters(name = "{0}")
+    @Parameters(name = "{1}")
     public static Iterable<Object[]> data() {
         Estimator fastMknAbs = new FastModKneserNeyAbsEstimator();
         fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
@@ -71,9 +70,9 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
 
         return Arrays.asList(new Object[][] {
-                {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
-                {Estimators.MOD_KNESER_NEY, fastMkn},
-                {Estimators.MOD_KNESER_NEY, learnedMkn}});
+        //                {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
+        //                {Estimators.MOD_KNESER_NEY, fastMkn},
+        {Estimators.MOD_KNESER_NEY, learnedMkn}});
     }
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
@@ -111,7 +110,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
     }
 
     @Test
-    public void testEstimatorEquals() throws IOException {
+    public void testEstimatorEquals() throws Throwable {
         LOGGER.info("=== Testing if %s equals %s", actual, expected);
 
         Glmtk glmtk = testCorpus.getGlmtk();
@@ -133,18 +132,28 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                 Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                double probExpected = executorExpected.querySequence(line);
-                double probActual = executorActual.querySequence(line);
-                if (Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e3) {
+                double probExpected = Double.NaN, probActual = Double.NaN;
+                try {
+                    probExpected = executorExpected.querySequence(line);
+                    probActual = executorActual.querySequence(line);
+                    if (Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e6)
+                        throw new Exception("failAssert");
+                } catch (Throwable t) {
                     Logger.setTraceEnabled(true);
                     executorExpected.querySequence(line);
                     executorActual.querySequence(line);
                     Logger.setTraceEnabled(false);
-                    fail(String.format("Expected <%e> but was <%e>.",
-                            probExpected, probActual));
+
+                    if (t.getMessage().equals("failAssert"))
+                        fail(String.format("Expected <%e> but was <%e>.",
+                                probExpected, probActual));
+
+                    throw t;
                 }
             }
         }
         Logger.setTraceEnabled(true);
+
+        LOGGER.info("passed");
     }
 }

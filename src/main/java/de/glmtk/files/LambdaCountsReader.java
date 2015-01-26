@@ -25,11 +25,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
-import de.glmtk.counts.LambdaCount;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.util.StringUtils;
 
-public class LambdaCountsReader extends AbstractSequenceReader {
+public class LambdaCountsReader extends SequenceReader {
     private LambdaCounts lambdaCounts;
 
     public LambdaCountsReader(Path file,
@@ -56,17 +55,12 @@ public class LambdaCountsReader extends AbstractSequenceReader {
             List<String> split = StringUtils.splitAtChar(line, '\t');
             if (split.size() == 1)
                 throw new IllegalArgumentException(
-                        "Expected line to have format '<sequence>\\t(<lambdaHigh>,<lambdaLow>)+'.");
+                        "Expected line to have format '<sequence>\\t<lambda>+'.");
 
             sequence = split.get(0);
             lambdaCounts = new LambdaCounts();
-            for (int i = 1; i != split.size(); ++i) {
-                String s = split.get(i);
-                int p = s.indexOf(',');
-                lambdaCounts.append(new LambdaCount(
-                        parseFloatingPoint(s.substring(0, p)),
-                        parseFloatingPoint(s.substring(p + 1))));
-            }
+            for (int i = 1; i != split.size(); ++i)
+                lambdaCounts.append(parseFloatingPoint(split.get(i)));
         } catch (IllegalArgumentException e) {
             throw newFileFormatException("lambda counts", e.getMessage());
         }

@@ -21,11 +21,14 @@
 package de.glmtk.querying.estimator.learned;
 
 import static de.glmtk.Constants.MODEL_MODKNESERNEY;
+import static de.glmtk.common.NGram.WSKP_NGRAM;
+
+import java.util.Arrays;
+
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.counts.AlphaCount;
-import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.AlphaCounts;
+import de.glmtk.counts.LambdaCounts;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
 public class LearnedModKneserNeyEstimator extends AbstractEstimator {
@@ -33,35 +36,77 @@ public class LearnedModKneserNeyEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        AlphaCount alphaCount = cache.getAlpha(MODEL_MODKNESERNEY,
-                getFullSequence(sequence, history));
-        if (alphaCount == null) {
-            alphaCount = cache.getAlpha(MODEL_MODKNESERNEY, sequence);
-            return alphaCount == null ? 0.0 : alphaCount.getNormal();
+        cache.getAbsolute(new NGram(Arrays.asList("a", "a", "a", "a", "a")));
+        cache.getAbsolute(new NGram(Arrays.asList("a", "a", "a", "a", "_")));
+        cache.getContinuation(new NGram(Arrays.asList("%", "a")));
+        cache.getContinuation(new NGram(Arrays.asList("%", "%")));
+        boolean fullHistorySeen = getFullHistory(sequence, history).seen(cache);
+
+        NGram alphaNGram = !fullHistorySeen ? sequence : getFullSequence(
+                sequence, history);
+        AlphaCounts alphas = cache.getAlpha(MODEL_MODKNESERNEY, alphaNGram);
+        if (alphas == null) {
+            logTrace(recDepth, "no alpha");
+            logTrace(recDepth, "what to do?");
         }
 
-        if (history.isEmptyOrOnlySkips())
-            return alphaCount.getNormal();
+        if (history.isEmptyOrOnlySkips() || !fullHistorySeen)
+            return (double) cache.getAbsolute(getFullSequence(sequence, history))
+                    / cache.getAbsolute(getFullHistory(sequence, history));
 
-        double denominator = cache.getAbsolute(getFullHistory(sequence, history));
-        Discount d = cache.getDiscount(MODEL_MODKNESERNEY, history.getPattern());
-        Counts c = cache.getContinuation(getFullHistory(sequence, history).convertSkpToWskp());
-        double lambda = (d.getOne() * c.getOneCount() + d.getTwo()
-                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
-                / denominator;
+        LambdaCounts lambdas = cache.getLambda(MODEL_MODKNESERNEY, history);
+        if (lambdas == null) {
+            logTrace(recDepth, "no lambda");
+            return 0.0;
+        }
 
-        //        NGram lambdaNGram = history.concat(NGram.WSKP_NGRAM);
-        //        LambdaCounts lambdaCounts = cache.getLambda(MODEL_MODKNESERNEY,
-        //                lambdaNGram);
-        //        if (lambdaCounts == null)
-        //            return 0.0;
-        //        double lambda = lambdaCounts.get(0).getHigh();
+        double prob = 0.0;
 
-        NGram backoffHistory = history.backoffUntilSeen(BackoffMode.DEL, cache);
-        double beta = probability(sequence, backoffHistory, recDepth);
-        if (Double.isNaN(beta))
-            throw new UnsupportedOperationException();
+        NGram h = history;
+        int i = 0;
+        int alphaShift = 0;
+        boolean done;
+        while (true) {
+            double lambda = i == 0 ? 1.0 : lambdas.get(i - 1);
+            double alpha = alphas == null ? 0.0 : alphas.get(i + alphaShift);
 
-        return alphaCount.getDiscounted() + lambda * beta;
+            if (i == 0)
+                ++alphaShift;
+
+            logTrace(recDepth, "lambda = %e  alpha = %e", lambda, alpha);
+
+            prob += lambda * alpha;
+
+            if (h.isEmptyOrOnlySkips())
+                break;
+
+            h = h.backoffUntilSeen(BackoffMode.DEL, cache);
+
+            if (alphas == null) {
+                fullHistorySeen = getFullHistory(sequence, h).seen(cache);
+
+                if (h.isEmptyOrOnlySkips()) {
+                    alphas = new AlphaCounts();
+                    alphas.append(0.0);
+                    alphas.append((double) cache.getContinuation(
+                            WSKP_NGRAM.concat(getFullSequence(sequence, h).convertSkpToWskp())).getOnePlusCount()
+                            / cache.getContinuation(
+                                    WSKP_NGRAM.concat(getFullHistory(sequence,
+                                            h).convertSkpToWskp())).getOnePlusCount());
+                    logTrace(recDepth, "created alpha by hand");
+                } else {
+                    alphaNGram = !fullHistorySeen ? sequence : getFullSequence(
+                            sequence, h);
+                    alphas = cache.getAlpha(MODEL_MODKNESERNEY, alphaNGram);
+                    logTrace(recDepth, "loaded alpha %s: %s", alphaNGram,
+                            alphas);
+                }
+                --alphaShift;
+            }
+
+            ++i;
+        }
+
+        return prob;
     }
 }
