@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -44,11 +44,10 @@ import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
-import de.glmtk.util.HashUtils;
 
 /**
  * Test optimized estimator implementations using the slower ones. Test whether
- * to estimators return identical probabilities for all sequences from a test
+ * two estimators return identical probabilities for all sequences from a test
  * file.
  *
  * <p>
@@ -85,28 +84,6 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                                Estimator actual) {
         this.expected = expected;
         this.actual = actual;
-    }
-
-    @SuppressWarnings("unused")
-    private String getHashForEstimatedTestFile(Estimator estimator) throws Exception {
-        Glmtk glmtk = testCorpus.getGlmtk();
-        GlmtkPaths paths = glmtk.getPaths();
-
-        Cache cache = estimator.getRequiredCache(5).build(paths);
-        estimator.setCache(cache);
-
-        Path outputFile = paths.getQueriesDir().resolve(
-                testFile.getFileName() + " " + estimator.toString());
-        Files.createDirectories(outputFile.getParent());
-
-        long timeBefore = System.currentTimeMillis();
-        glmtk.queryFile(QueryMode.newSequence(), estimator, 5, testFile,
-                outputFile);
-        long timeAfter = System.currentTimeMillis();
-        LOGGER.info("Estimator %s took %dms.", estimator, timeAfter
-                - timeBefore);
-
-        return HashUtils.generateMd5Hash(outputFile);
     }
 
     @Test
