@@ -25,11 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-//TODO: the semantics of every constant should be explained. Especially we should double check if the constants are still needed
 public class Constants {
     public static final Charset CHARSET = StandardCharsets.UTF_8;
 
-    //TODO: for example this constant was called ORDER and only used in tests
     public static final int TEST_ORDER = 5;
 
     /**

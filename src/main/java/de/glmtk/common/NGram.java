@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -239,23 +239,14 @@ public class NGram {
         // TODO: Rene, is this really correct?
         switch (backoffMode) {
             case SKP:
-                List<String> resultWords = new ArrayList<>(words.size());
-
-                boolean replaced = false;
-                for (String word : words)
-                    if (!replaced && !word.equals(SKP_WORD)) {
-                        resultWords.add(SKP_WORD);
-                        replaced = true;
-                    } else
-                        resultWords.add(word);
-                if (!replaced)
-                    throw new IllegalStateException(
-                            "Can't backoff ngrams containing only skips.");
-                return new NGram(resultWords);
+                for (int i = 0; i != words.size(); ++i)
+                    if (!words.get(i).equals(SKP_WORD))
+                        return set(i, SKP_WORD);
+                throw new IllegalStateException(
+                        "Can't backoff ngrams containing only skips.");
 
             case DEL:
-                // TODO: optimize with range?
-                return new NGram(words.subList(1, words.size()));
+                return range(1, size());
 
             case DEL_FRONT:
             case SKP_AND_DEL:
