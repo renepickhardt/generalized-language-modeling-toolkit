@@ -56,7 +56,7 @@ public class CountsReader extends SequenceReader {
         }
 
         try {
-            List<String> split = StringUtils.splitAtChar(line, '\t');
+            List<String> split = StringUtils.split(line, '\t');
             if (split.size() == 2) {
                 fromAbsolute = true;
                 counts = new Counts(parseNumber(split.get(1)), 0L, 0L, 0L);

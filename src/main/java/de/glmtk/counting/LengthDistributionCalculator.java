@@ -94,7 +94,7 @@ public class LengthDistributionCalculator {
                 progress.increase(line.getBytes(Constants.CHARSET).length);
 
                 // This is a slow method to get sequence length, better would be to count number of spaces.
-                int length = StringUtils.splitAtChar(line, ' ').size();
+                int length = StringUtils.split(line, ' ').size();
 
                 ++sum;
                 CollectionUtils.ensureListSize(frequencies, length, 0.0);

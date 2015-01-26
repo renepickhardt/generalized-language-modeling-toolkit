@@ -95,7 +95,7 @@ public class QueryCacherCreator {
                     Constants.CHARSET, readerMemory)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] split = StringUtils.splitAtChar(line, ' ').toArray(
+                    String[] split = StringUtils.split(line, ' ').toArray(
                             new String[0]);
                     String[] words = new String[split.length];
                     String[] poses = new String[split.length];

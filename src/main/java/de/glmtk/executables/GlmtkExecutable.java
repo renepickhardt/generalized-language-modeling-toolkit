@@ -445,7 +445,7 @@ public class GlmtkExecutable extends Executable {
                         if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
                             continue;
 
-                        List<String> split = StringUtils.splitAtChar(trimmed,
+                        List<String> split = StringUtils.split(trimmed,
                                 ' ');
                         int lineOrder = split.size();
                         if (maxOrder < lineOrder)

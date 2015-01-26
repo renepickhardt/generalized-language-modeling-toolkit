@@ -55,7 +55,7 @@ public class Tagger {
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
-                for (String tokenAndTag : StringUtils.splitAtChar(line, ' ')) {
+                for (String tokenAndTag : StringUtils.split(line, ' ')) {
                     int lastSlash = tokenAndTag.lastIndexOf('/');
                     if (lastSlash <= 0 || lastSlash == tokenAndTag.length() - 1) {
                         LOGGER.debug(
@@ -105,7 +105,7 @@ public class Tagger {
 
                 // Tag
                 List<HasWord> sequence = new LinkedList<>();
-                for (String token : StringUtils.splitAtChar(line, ' '))
+                for (String token : StringUtils.split(line, ' '))
                     sequence.add(new Word(token));
                 List<TaggedWord> taggedSequence = tagger.tagSentence(sequence);
 

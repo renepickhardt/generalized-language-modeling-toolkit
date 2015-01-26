@@ -52,7 +52,7 @@ public class NGramTimesReader extends AbstractFileReader {
             return;
         }
 
-        List<String> split = StringUtils.splitAtChar(line, '\t');
+        List<String> split = StringUtils.split(line, '\t');
         if (split.size() != 5)
             throw newFileFormatException("ngram times",
                     "Expected line to have format '<pattern>(\\t<count>){4}'.");

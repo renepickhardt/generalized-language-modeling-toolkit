@@ -54,7 +54,7 @@ public class FilterForVocab {
             String line;
             readLoop:
             while ((line = reader.readLine()) != null) {
-                List<String> tokens = StringUtils.splitAtChar(line, ' ');
+                List<String> tokens = StringUtils.split(line, ' ');
                 for (String token : tokens)
                     if (!vocab.contains(token))
                         continue readLoop;

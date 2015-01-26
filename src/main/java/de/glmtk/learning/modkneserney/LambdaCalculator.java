@@ -56,7 +56,7 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
                     sequenceString = sequenceString.substring(0,
                             sequenceString.length() - trailingSkpLength);
 
-                    NGram sequence = new NGram(StringUtils.splitAtChar(
+                    NGram sequence = new NGram(StringUtils.split(
                             sequenceString, ' '));
                     int sequenceOrder = sequence.size();
 

@@ -71,7 +71,7 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
                 while (reader.readLine() != null) {
                     String sequenceString = reader.getSequence();
 
-                    NGram sequence = new NGram(StringUtils.splitAtChar(
+                    NGram sequence = new NGram(StringUtils.split(
                             sequenceString, ' '));
                     int sequenceOrder = sequence.size();
 

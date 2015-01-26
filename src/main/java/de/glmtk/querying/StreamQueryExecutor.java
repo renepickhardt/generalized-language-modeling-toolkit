@@ -50,7 +50,7 @@ public class StreamQueryExecutor {
             }
 
             stats = executor.getResultingStats();
-            List<String> statsLines = StringUtils.splitAtChar(
+            List<String> statsLines = StringUtils.split(
                     stats.toString(), '\n');
             for (String statsLine : statsLines)
                 writer.append("# ").append(statsLine).append('\n');

@@ -68,7 +68,7 @@ public class QueryExecutor {
     }
 
     public double querySequence(String sequence) {
-        List<String> tokens = StringUtils.splitAtChar(sequence, ' ');
+        List<String> tokens = StringUtils.split(sequence, ' ');
         int order = tokens.size();
         Integer modeOrder = mode.getOrder();
 

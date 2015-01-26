@@ -175,7 +175,7 @@ public class Chunker {
 
         private void perLine(String line,
                              int patternSize) throws IOException {
-            String[] split = StringUtils.splitAtChar(line, ' ').toArray(
+            String[] split = StringUtils.split(line, ' ').toArray(
                     new String[0]);
             String[] words = new String[split.length];
             String[] poses = new String[split.length];
@@ -262,7 +262,7 @@ public class Chunker {
                     Counts counts = reader.getCounts();
                     boolean fromAbsolute = reader.isFromAbsolute();
 
-                    String appliedSequence = pattern.apply(StringUtils.splitAtChar(
+                    String appliedSequence = pattern.apply(StringUtils.split(
                             sequence, ' ').toArray(new String[0]));
                     countSequence(appliedSequence, counts, fromAbsolute);
                 }

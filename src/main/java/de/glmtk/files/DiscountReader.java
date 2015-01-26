@@ -32,7 +32,7 @@ public class DiscountReader extends AbstractFileReader {
             return;
         }
 
-        List<String> split = StringUtils.splitAtChar(line, '\t');
+        List<String> split = StringUtils.split(line, '\t');
         if (split.size() != 4)
             throw newFileFormatException("discount",
                     "Expected line to have format '<pattern>(\\t<discount>}{3}'.");

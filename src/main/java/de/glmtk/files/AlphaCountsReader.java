@@ -52,7 +52,7 @@ public class AlphaCountsReader extends SequenceReader {
         }
 
         try {
-            List<String> split = StringUtils.splitAtChar(line, '\t');
+            List<String> split = StringUtils.split(line, '\t');
             if (split.size() == 1)
                 throw new IllegalArgumentException(
                         "Expected line to have format '<sequence>\\t<alpha>+'.");

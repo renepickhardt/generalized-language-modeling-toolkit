@@ -383,7 +383,7 @@ public enum Output {
             message = "A critical error has occured, program execution had to be stopped.";
 
         StringBuilder print = new StringBuilder();
-        for (String line : StringUtils.splitAtChar(message, '\n')) {
+        for (String line : StringUtils.split(message, '\n')) {
             if (isAnsiEnabled())
                 print.append(Ansi.ansi().fg(Color.RED));
             print.append("Error: ").append(line);
@@ -412,7 +412,7 @@ public enum Output {
             message = "A warning has occured.";
 
         StringBuilder print = new StringBuilder();
-        for (String line : StringUtils.splitAtChar(message, '\n')) {
+        for (String line : StringUtils.split(message, '\n')) {
             if (isAnsiEnabled())
                 print.append(Ansi.ansi().fg(Color.YELLOW));
             print.append("Warning: ").append(line);

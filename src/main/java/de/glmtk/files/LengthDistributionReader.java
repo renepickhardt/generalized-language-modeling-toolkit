@@ -52,7 +52,7 @@ public class LengthDistributionReader extends AbstractFileReader {
             return;
         }
 
-        List<String> split = StringUtils.splitAtChar(line, '\t');
+        List<String> split = StringUtils.split(line, '\t');
 
         if (split.size() != 2)
             throw newFileFormatException("length distribution",

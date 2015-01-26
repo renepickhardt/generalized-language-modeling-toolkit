@@ -264,7 +264,7 @@ public class CountingTest extends TestCorporaTest {
 
     private String keyFromGroup(Pattern pattern,
                                 String group) {
-        List<String> split = StringUtils.splitAtChar(group, ' ');
+        List<String> split = StringUtils.split(group, ' ');
         List<String> result = new LinkedList<>();
         int i = 0;
         for (PatternElem elem : pattern) {
@@ -282,7 +282,7 @@ public class CountingTest extends TestCorporaTest {
         regex.append("(?:^| )");
 
         boolean first = true;
-        for (String word : StringUtils.splitAtChar(sequence, ' ')) {
+        for (String word : StringUtils.split(sequence, ' ')) {
             if (!first)
                 regex.append(' ');
 
