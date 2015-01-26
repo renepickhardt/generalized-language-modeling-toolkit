@@ -42,11 +42,11 @@ import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_S
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -152,7 +152,7 @@ public class EstimatorTest extends TestCorporaTest {
                     sum += calculator.probability(sequence);
                 }
                 try {
-                    Assert.assertEquals(1.0, sum, 0.01);
+                    assertEquals(1.0, sum, 1e6);
                 } catch (AssertionError e) {
                     LOGGER.error("n=%s: sum = %s fail", order, sum);
                     throw e;
@@ -193,12 +193,12 @@ public class EstimatorTest extends TestCorporaTest {
                                 if (continuationEstimator)
                                     checkHistory = SKP_NGRAM.concat(checkHistory);
                                 if (checkHistory.seen(cache))
-                                    Assert.assertEquals(1.0, sum, 0.01);
+                                    assertEquals(1.0, sum, 1e6);
                                 else
-                                    Assert.assertEquals(0.0, sum, 0.01);
+                                    assertEquals(0.0, sum, 1e6);
                                 break;
                             case MARG:
-                                Assert.assertEquals(1.0, sum, 0.01);
+                                assertEquals(1.0, sum, 1e6);
                                 break;
                             default:
                                 throw new SwitchCaseNotImplementedException();
