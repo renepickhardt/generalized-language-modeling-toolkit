@@ -165,6 +165,19 @@ public class NGram {
         return isEmpty() || cache.getAbsolute(this) != 0;
     }
 
+    /**
+     * Same as {@link #seen(Cache)} but instead of querying absolute counts,
+     * queries alpha counts.
+     *
+     * <p>
+     * This is used in cases were we can't afford to load absolute counts into
+     * cache, but have alpha counts present.
+     */
+    public boolean seenUsingAlphas(Cache cache,
+                                   String model) {
+        return isEmpty() || cache.getAlpha(model, this) != null;
+    }
+
     public NGram concat(String word) {
         List<String> resultWords = new ArrayList<>(words);
         resultWords.add(word);
@@ -260,6 +273,23 @@ public class NGram {
                                   Cache cache) {
         NGram result = backoff(backoffMode);
         while (!result.seen(cache))
+            result = result.backoff(backoffMode);
+        return result;
+    }
+
+    /**
+     * Same as {@link #backoff(BackoffMode)} but instead of querying absolute
+     * counts, queries alpha counts.
+     *
+     * <p>
+     * This is used in cases were we can't afford to load absolute counts into
+     * cache, but have alpha counts present.
+     */
+    public NGram backoffUntilSeenUsingAlphas(BackoffMode backoffMode,
+                                             Cache cache,
+                                             String model) {
+        NGram result = backoff(backoffMode);
+        while (!result.seenUsingAlphas(cache, model))
             result = result.backoff(backoffMode);
         return result;
     }
