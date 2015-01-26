@@ -1,6 +1,6 @@
 !config
 
-numberOfThreads: 1
+numberOfThreads: 4
 
 memory:
 
@@ -13,7 +13,7 @@ memory:
     # Buffer size for BufferedWriters in mebibytes (MiB).
     writer: 50
 
-    # Max chunk size in bebibytes (MiB)
+    # Max chunk size in mebibytes (MiB)
     chunkSize: 500
 
     # Memory limit for loading files completely in memory in mebibytes (MiB).
