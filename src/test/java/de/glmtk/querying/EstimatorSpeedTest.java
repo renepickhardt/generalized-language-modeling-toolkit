@@ -25,8 +25,8 @@ import de.glmtk.cache.CacheBuilder;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.fast.FastGeneralizedLanguageModelAbsEstimator;
-import de.glmtk.querying.estimator.fast.FastGeneralizedLanguageModelEstimator;
+import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
+import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
@@ -49,9 +49,9 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         Estimator learnedMkn = new LearnedModKneserNeyEstimator();
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
 
-        Estimator fastGlmAbs = new FastGeneralizedLanguageModelAbsEstimator();
+        Estimator fastGlmAbs = new FastGenLangModelAbsEstimator();
         fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
-        Estimator fastGlm = new FastGeneralizedLanguageModelEstimator();
+        Estimator fastGlm = new FastGenLangModelEstimator();
         fastGlm.setName("Fast-Generalized-Language-Model");
 
         //@formatter:off

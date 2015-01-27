@@ -22,37 +22,13 @@ package de.glmtk.querying.estimator.fast;
 
 import static de.glmtk.common.NGram.WSKP_NGRAM;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import de.glmtk.cache.Cache;
-import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.common.Pattern;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
-import de.glmtk.counts.NGramTimes;
-import de.glmtk.querying.estimator.AbstractEstimator;
 
-public class FastGeneralizedLanguageModelAbsEstimator extends AbstractEstimator {
-    protected BackoffMode backoffMode;
-    private Map<Pattern, Discount> discounts;
-
-    public FastGeneralizedLanguageModelAbsEstimator() {
-        setBackoffMode(BackoffMode.SKP);
-    }
-
-    public void setBackoffMode(BackoffMode backoffMode) {
-        this.backoffMode = backoffMode;
-    }
-
-    @Override
-    public void setCache(Cache cache) {
-        super.setCache(cache);
-        discounts = new HashMap<>();
-    }
-
+public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
     @Override
     protected double calcProbability(NGram sequence,
                                      NGram history,
@@ -77,27 +53,53 @@ public class FastGeneralizedLanguageModelAbsEstimator extends AbstractEstimator 
         double beta = 0;
         Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
         for (NGram differentiatedHistory : differentiatedHistories)
-            beta += probability(sequence, differentiatedHistory, recDepth);
+            beta += probabilityLower(sequence, differentiatedHistory, recDepth);
         beta /= differentiatedHistories.size();
 
         return alpha + gamma * beta;
     }
 
-    protected Discount getDiscounts(Pattern pattern,
-                                    @SuppressWarnings("unused") int recDepth) {
-        Discount result = discounts.get(pattern);
-        if (result != null)
-            return result;
+    public final double probabilityLower(NGram sequence,
+                                         NGram history,
+                                         int recDepth) {
+        logTrace(recDepth, "%s#probabilityLower(%s,%s)",
+                getClass().getSimpleName(), sequence, history);
+        ++recDepth;
 
-        NGramTimes n = cache.getNGramTimes(pattern);
-        double y = (double) n.getOneCount()
-                / (n.getOneCount() + n.getTwoCount());
-        result = new Discount(1.0f - 2.0f * y * n.getTwoCount()
-                / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
-                / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
-                / n.getThreeCount());
+        double result = calcProbabilityLower(sequence, history, recDepth);
+        logTrace(recDepth, "result = %f", result);
 
-        discounts.put(pattern, result);
         return result;
+    }
+
+    protected double calcProbabilityLower(NGram sequence,
+                                          NGram history,
+                                          int recDepth) {
+        double denominator = cache.getContinuation(
+                WSKP_NGRAM.concat(getFullHistory(sequence, history).convertSkpToWskp())).getOnePlusCount();
+        if (denominator == 0.0)
+            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
+
+        double numerator = cache.getContinuation(
+                WSKP_NGRAM.concat(getFullSequence(sequence, history).convertSkpToWskp())).getOnePlusCount();
+        if (history.isEmptyOrOnlySkips())
+            return numerator / denominator;
+
+        Discount d = getDiscounts(history.getPattern(), recDepth);
+        double discount = d.getForCount(cache.getAbsolute(history));
+
+        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
+        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
+                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
+                / denominator;
+
+        double alpha = Math.max(numerator - discount, 0.0) / denominator;
+        double beta = 0;
+        Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
+        for (NGram differentiatedHistory : differentiatedHistories)
+            beta += probabilityLower(sequence, differentiatedHistory, recDepth);
+        beta /= differentiatedHistories.size();
+
+        return alpha + gamma * beta;
     }
 }
