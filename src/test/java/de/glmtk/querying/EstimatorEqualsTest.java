@@ -43,6 +43,7 @@ import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.fast.FastGeneralizedLanguageModelAbsEstimator;
+import de.glmtk.querying.estimator.fast.FastGeneralizedLanguageModelEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
@@ -75,15 +76,18 @@ public class EstimatorEqualsTest extends TestCorporaTest {
 
         Estimator fastGlmAbs = new FastGeneralizedLanguageModelAbsEstimator();
         fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
+        Estimator fastGlm = new FastGeneralizedLanguageModelEstimator();
+        fastGlm.setName("Fast-Generalized-Language-Model");
 
+        //@formatter:off
         return Arrays.asList(new Object[][] {
-                //@formatter:off
                 {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
                 {Estimators.MOD_KNESER_NEY, fastMkn},
-                {Estimators.MOD_KNESER_NEY, learnedMkn},
-                {Estimators.GLM_ABS, fastGlmAbs}
-                //@formatter:on
+                {fastMkn, learnedMkn},
+                {Estimators.GLM_ABS, fastGlmAbs},
+                {Estimators.GLM, fastGlm}
         });
+        //@formatter:on
     }
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;

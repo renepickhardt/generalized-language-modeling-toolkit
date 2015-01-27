@@ -21,11 +21,14 @@
 package de.glmtk.querying.estimator.fast;
 
 import static de.glmtk.common.NGram.WSKP_NGRAM;
+
+import java.util.Set;
+
 import de.glmtk.common.NGram;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discount;
 
-public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
+public class FastGeneralizedLanguageModelEstimator extends FastGeneralizedLanguageModelAbsEstimator {
     @Override
     protected double calcProbability(NGram sequence,
                                      NGram history,
@@ -46,9 +49,12 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
                 * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
                 / denominator;
 
-        NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
-        double beta = probabilityLower(sequence, backoffHistory, recDepth);
+        double beta = 0;
+        Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
+        for (NGram differentiatedHistory : differentiatedHistories)
+            beta += probabilityLower(sequence, differentiatedHistory, recDepth);
+        beta /= differentiatedHistories.size();
 
         return alpha + gamma * beta;
     }
@@ -87,9 +93,12 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
                 * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
                 / denominator;
 
-        NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
-        double beta = probabilityLower(sequence, backoffHistory, recDepth);
+        double beta = 0;
+        Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(backoffMode);
+        for (NGram differentiatedHistory : differentiatedHistories)
+            beta += probabilityLower(sequence, differentiatedHistory, recDepth);
+        beta /= differentiatedHistories.size();
 
         return alpha + gamma * beta;
     }

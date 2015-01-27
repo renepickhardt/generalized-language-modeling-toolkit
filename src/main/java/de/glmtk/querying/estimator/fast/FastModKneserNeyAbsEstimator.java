@@ -20,6 +20,8 @@
 
 package de.glmtk.querying.estimator.fast;
 
+import static de.glmtk.common.NGram.WSKP_NGRAM;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,7 +70,7 @@ public class FastModKneserNeyAbsEstimator extends AbstractEstimator {
         Discount d = getDiscounts(history.getPattern(), recDepth);
         double discount = d.getForCount(cache.getAbsolute(history));
 
-        Counts c = cache.getContinuation(getFullHistory(sequence, history).convertSkpToWskp());
+        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
         double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
                 * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
                 / denominator;

@@ -100,19 +100,4 @@ public class FastGeneralizedLanguageModelAbsEstimator extends AbstractEstimator 
         discounts.put(pattern, result);
         return result;
     }
-
-    //    @Override
-    //    public CacheBuilder getRequiredCache(int modelSize) {
-    //        try {
-    //            CacheBuilder requiredCache = super.getRequiredCache(modelSize);
-    //            Field countsField = CacheBuilder.class.getDeclaredField("counts");
-    //            countsField.setAccessible(true);
-    //            @SuppressWarnings("unchecked")
-    //            Set<Pattern> countsPatterns = (Set<Pattern>) countsField.get(requiredCache);
-    //            //            countsPatterns.removeAll(Patterns.getMany("1xx", "11xx", "11xxx"));
-    //            return requiredCache;
-    //        } catch (Throwable t) {
-    //            throw new RuntimeException(t);
-    //        }
-    //    }
 }
