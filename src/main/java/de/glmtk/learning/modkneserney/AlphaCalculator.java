@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -90,7 +90,7 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
                 }
             }
 
-            status.addAlpha(MODEL_MODKNESERNEY, pattern);
+            status.addAlpha(model, pattern);
         }
 
         /**
@@ -119,7 +119,7 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
                 NGram history = sequence.range(0, sequence.size() - 1);
                 long historyCount = cache.getAbsolute(history);
 
-                Discount discount = cache.getDiscount(MODEL_MODKNESERNEY,
+                Discount discount = cache.getDiscount(model,
                         history.getPattern());
                 double d = discount.getForCount(historyCount);
 
@@ -130,6 +130,8 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
         }
     }
 
+    private String model;
+
     private Path absoluteDir;
     private Path alphaDir;
     private Status status;
@@ -137,6 +139,7 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
 
     public AlphaCalculator(Config config) {
         super(config);
+        model = MODEL_MODKNESERNEY;
     }
 
     public void run(int order,
@@ -168,10 +171,10 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
             countsPatterns.add(WSKP_PATTERN.concat(pattern.set(
                     pattern.size() - 1, WSKP)));
         }
-        alphaPatterns.removeAll(status.getAlphas(MODEL_MODKNESERNEY));
+        alphaPatterns.removeAll(status.getAlphas(model));
 
         cache = new CacheBuilder().withCounts(countsPatterns).withDiscounts(
-                MODEL_MODKNESERNEY).build(paths);
+                model).build(paths);
 
         Files.createDirectories(alphaDir);
 

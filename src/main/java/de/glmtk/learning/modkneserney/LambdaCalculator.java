@@ -73,13 +73,12 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
                 }
             }
 
-            status.addLambda(MODEL_MODKNESERNEY, pattern);
+            status.addLambda(model, pattern);
         }
 
         private double calcGamma(NGram sequence,
                                  boolean highestOrder) {
-            Discount discount = cache.getDiscount(MODEL_MODKNESERNEY,
-                    sequence.getPattern());
+            Discount discount = cache.getDiscount(model, sequence.getPattern());
             Counts contCount = cache.getContinuation(sequence.concat(WSKP_NGRAM));
 
             long denominator;
@@ -96,6 +95,8 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
         }
     }
 
+    private String model;
+
     private Path absoluteDir;
     private Path lambdaDir;
     private Status status;
@@ -103,6 +104,7 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
 
     public LambdaCalculator(Config config) {
         super(config);
+        model = MODEL_MODKNESERNEY;
     }
 
     public void run(int order,
@@ -132,10 +134,10 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
                 // pattern to get lower orders denominator
                 countsPatterns.add(WSKP_PATTERN.concat(pattern).concat(WSKP));
         }
-        lambdaPatterns.removeAll(status.getLambdas(MODEL_MODKNESERNEY));
+        lambdaPatterns.removeAll(status.getLambdas(model));
 
         cache = new CacheBuilder().withCounts(countsPatterns).withDiscounts(
-                MODEL_MODKNESERNEY).build(paths);
+                model).build(paths);
 
         Files.createDirectories(lambdaDir);
 

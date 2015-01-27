@@ -20,13 +20,13 @@
 
 package de.glmtk.learning.genlangmodel;
 
-import de.glmtk.Constants;
+import static de.glmtk.Constants.MODEL_GENLANGMODEL;
 import de.glmtk.common.Config;
 
 public class DiscountCalculator extends de.glmtk.learning.modkneserney.DiscountCalculator {
 
     public DiscountCalculator(Config config) {
         super(config);
-        model = Constants.MODEL_GENLANGMODEL;
+        model = MODEL_GENLANGMODEL;
     }
 }
