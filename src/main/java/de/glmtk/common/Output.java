@@ -246,10 +246,11 @@ public enum Output {
         return ansiEnabled;
     }
 
-    //TODO: what is 17?
     private void updateConsoleParams() {
+        int lengthWithoutBlocks = getPhaseStringLengthWithoutBlocks();
+
         if (!isAnsiEnabled()) {
-            numPercentegebarBlocks = 80 - 17 - Phase.MAX_NAME_LENGTH;
+            numPercentegebarBlocks = 80 - lengthWithoutBlocks;
             return;
         }
         if (!updateConsoleParams && lastUpdateConsoleParams != 0)
@@ -258,7 +259,7 @@ public enum Output {
         long time = System.currentTimeMillis();
         if (time - lastUpdateConsoleParams >= config.getUpdateIntervalConsoleParams()) {
             updateTerminalWidth();
-            numPercentegebarBlocks = terminalWidth - 17 - Phase.MAX_NAME_LENGTH;
+            numPercentegebarBlocks = terminalWidth - lengthWithoutBlocks;
             lastUpdateConsoleParams = time;
         }
     }
@@ -336,7 +337,14 @@ public enum Output {
         if (isAnsiEnabled() && lastPrintPhase)
             System.err.print(Ansi.ansi().cursorUp(1).eraseLine());
 
-        String message;
+        String message = getPhaseString();
+
+        System.err.println(message);
+
+        lastPrintPhase = true;
+    }
+
+    private String getPhaseString() {
         try (Formatter f = new Formatter()) {
             f.format("(%d/%d) ", phase.getNumber(), phase.getMaxNumber());
             if (percent == DISABLE_PERCENT)
@@ -350,12 +358,26 @@ public enum Output {
                                 - numBlocks), 100.0 * percent);
             }
 
-            message = f.toString();
+            return f.toString();
         }
+    }
 
-        System.err.println(message);
+    private int getPhaseStringLengthWithoutBlocks() {
+        Phase oldPhase = phase;
+        double oldPercent = percent;
+        int oldNumPercentegebarBlocks = numPercentegebarBlocks;
 
-        lastPrintPhase = true;
+        phase = Phase.ABSOLUTE_CHUNKING; // just set to something thats not null
+        percent = 0.0;                   // make sure is != DISABLE_PERCENT
+        numPercentegebarBlocks = 0;
+
+        int result = getPhaseString().length();
+
+        phase = oldPhase;
+        percent = oldPercent;
+        numPercentegebarBlocks = oldNumPercentegebarBlocks;
+
+        return result;
     }
 
     public void printMessage(Object message) {
