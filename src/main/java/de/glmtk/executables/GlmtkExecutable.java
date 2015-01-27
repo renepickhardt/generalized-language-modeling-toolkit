@@ -445,8 +445,7 @@ public class GlmtkExecutable extends Executable {
                         if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
                             continue;
 
-                        List<String> split = StringUtils.split(trimmed,
-                                ' ');
+                        List<String> split = StringUtils.split(trimmed, ' ');
                         int lineOrder = split.size();
                         if (maxOrder < lineOrder)
                             maxOrder = lineOrder;
@@ -526,6 +525,8 @@ public class GlmtkExecutable extends Executable {
         if (CollectionUtils.containsAny(estimators,
                 Estimators.MOD_KNESER_NEY_ESTIMATORS))
             glmtk.learnModKneserNey();
+        if (CollectionUtils.containsAny(estimators, Estimators.GLM_ESTIMATORS))
+            glmtk.learnGenLangModel();
 
         for (Entry<QueryMode, Set<Path>> entry : queries) {
             QueryMode queryMode = entry.getKey();

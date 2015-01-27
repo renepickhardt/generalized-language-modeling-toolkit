@@ -1,27 +1,51 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk;
 
+import static de.glmtk.Constants.ABSOLUTE_DIR_NAME;
+import static de.glmtk.Constants.ALPHA_DIR_NAME;
+import static de.glmtk.Constants.CHUNKED_SUFFIX;
+import static de.glmtk.Constants.CONTINUATION_DIR_NAME;
+import static de.glmtk.Constants.COUNTS_DIR_NAME;
+import static de.glmtk.Constants.DISCOUNTS_FILE_NAME;
+import static de.glmtk.Constants.LAMBDA_DIR_NAME;
+import static de.glmtk.Constants.LENGTHDISTRIBUTION_FILE_NAME;
+import static de.glmtk.Constants.LOG_DIR_NAME;
+import static de.glmtk.Constants.MODELS_DIR_NAME;
+import static de.glmtk.Constants.MODEL_GENLANGMODEL;
+import static de.glmtk.Constants.MODEL_MODKNESERNEY;
+import static de.glmtk.Constants.NGRAMTIMES_FILE_NAME;
+import static de.glmtk.Constants.QUERIES_DIR_NAME;
+import static de.glmtk.Constants.QUERYHACHES_DIR_NAME;
+import static de.glmtk.Constants.STATUS_FILE_NAME;
+import static de.glmtk.Constants.TRAINING_FILE_NAME;
+import static de.glmtk.Constants.UNTAGGED_SUFFIX;
+
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
 
 import de.glmtk.logging.Logger;
 import de.glmtk.util.StringUtils;
@@ -51,7 +75,7 @@ public class GlmtkPaths {
         USER_DIR = Paths.get(System.getProperty("user.dir"));
         GLMTK_DIR = Paths.get(System.getProperty("glmtk.dir",
                 USER_DIR.toString()));
-        LOG_DIR = GLMTK_DIR.resolve(Constants.LOG_DIR_NAME);
+        LOG_DIR = GLMTK_DIR.resolve(LOG_DIR_NAME);
         CONFIG_FILE = GLMTK_DIR.resolve(Constants.CONFIG_FILE);
     }
 
@@ -86,6 +110,10 @@ public class GlmtkPaths {
     private Path modKneserNeyDiscountsFile;
     private Path modKneserNeyAlphaDir;
     private Path modKneserNeyLambdaDir;
+    private Path genLangModelDir;
+    private Path genLangModelDiscountsFile;
+    private Path genLangModelAlphaDir;
+    private Path genLangModelLambdaDir;
 
     private Path queryCachesDir;
     private Path queriesDir;
@@ -95,38 +123,43 @@ public class GlmtkPaths {
 
         dir = workingDir;
 
-        statusFile = dir.resolve(Constants.STATUS_FILE_NAME);
+        statusFile = dir.resolve(STATUS_FILE_NAME);
 
-        trainingFile = dir.resolve(Constants.TRAINING_FILE_NAME);
-        untaggedTrainingFile = dir.resolve(Constants.TRAINING_FILE_NAME
-                + Constants.UNTAGGED_SUFFIX);
+        trainingFile = dir.resolve(TRAINING_FILE_NAME);
+        untaggedTrainingFile = dir.resolve(TRAINING_FILE_NAME + UNTAGGED_SUFFIX);
 
         fillCountsDirPaths(this);
-        ngramTimesFile = countsDir.resolve(Constants.NGRAMTIMES_FILE_NAME);
-        lengthDistributionFile = countsDir.resolve(Constants.LENGTHDISTRIBUTION_FILE_NAME);
+        ngramTimesFile = countsDir.resolve(NGRAMTIMES_FILE_NAME);
+        lengthDistributionFile = countsDir.resolve(LENGTHDISTRIBUTION_FILE_NAME);
 
         fillModelsDirPaths(this);
 
-        queryCachesDir = dir.resolve(Constants.QUERYHACHES_DIR_NAME);
-        queriesDir = dir.resolve(Constants.QUERIES_DIR_NAME);
+        queryCachesDir = dir.resolve(QUERYHACHES_DIR_NAME);
+        queriesDir = dir.resolve(QUERIES_DIR_NAME);
     }
 
     private void fillCountsDirPaths(GlmtkPaths paths) {
-        paths.countsDir = paths.dir.resolve(Constants.COUNTS_DIR_NAME);
-        paths.absoluteDir = paths.countsDir.resolve(Constants.ABSOLUTE_DIR_NAME);
-        paths.absoluteChunkedDir = paths.countsDir.resolve(Constants.ABSOLUTE_DIR_NAME
-                + Constants.CHUNKED_SUFFIX);
-        paths.continuationDir = paths.countsDir.resolve(Constants.CONTINUATION_DIR_NAME);
-        paths.continuationChunkedDir = paths.countsDir.resolve(Constants.CONTINUATION_DIR_NAME
-                + Constants.CHUNKED_SUFFIX);
+        paths.countsDir = paths.dir.resolve(COUNTS_DIR_NAME);
+        paths.absoluteDir = paths.countsDir.resolve(ABSOLUTE_DIR_NAME);
+        paths.absoluteChunkedDir = paths.countsDir.resolve(ABSOLUTE_DIR_NAME
+                + CHUNKED_SUFFIX);
+        paths.continuationDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME);
+        paths.continuationChunkedDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME
+                + CHUNKED_SUFFIX);
     }
 
     private void fillModelsDirPaths(GlmtkPaths paths) {
-        paths.modelsDir = paths.dir.resolve(Constants.MODELS_DIR_NAME);
-        paths.modKneserNeyDir = modelsDir.resolve("modkneserney");
-        paths.modKneserNeyDiscountsFile = modKneserNeyDir.resolve(Constants.DISCOUNTS_FILE_NAME);
-        paths.modKneserNeyAlphaDir = modKneserNeyDir.resolve(Constants.ALPHA_DIR_NAME);
-        paths.modKneserNeyLambdaDir = modKneserNeyDir.resolve(Constants.LAMBDA_DIR_NAME);
+        paths.modelsDir = paths.dir.resolve(MODELS_DIR_NAME);
+
+        paths.modKneserNeyDir = paths.modelsDir.resolve(MODEL_MODKNESERNEY);
+        paths.modKneserNeyDiscountsFile = paths.modKneserNeyDir.resolve(DISCOUNTS_FILE_NAME);
+        paths.modKneserNeyAlphaDir = paths.modKneserNeyDir.resolve(ALPHA_DIR_NAME);
+        paths.modKneserNeyLambdaDir = paths.modKneserNeyDir.resolve(LAMBDA_DIR_NAME);
+
+        paths.genLangModelDir = paths.modelsDir.resolve(MODEL_GENLANGMODEL);
+        paths.genLangModelDiscountsFile = paths.genLangModelDir.resolve(DISCOUNTS_FILE_NAME);
+        paths.genLangModelAlphaDir = paths.genLangModelDir.resolve(ALPHA_DIR_NAME);
+        paths.genLangModelLambdaDir = paths.genLangModelDir.resolve(LAMBDA_DIR_NAME);
     }
 
     public GlmtkPaths newQueryCache(String name) {
@@ -138,26 +171,39 @@ public class GlmtkPaths {
         return queryCache;
     }
 
+    /**
+     * Logs all fields store a value of type {@link Path}.
+     *
+     * <p>
+     * Uses reflection to iterate those fields.
+     */
     public void logPaths() {
+        List<Entry<String, Path>> paths = new ArrayList<>();
+        for (Field field : GlmtkPaths.class.getDeclaredFields())
+            if (field.getType().equals(Path.class))
+                try {
+                    String name = field.getName();
+                    Path path = (Path) field.get(this);
+                    paths.add(new AbstractMap.SimpleEntry<>(name, path));
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // This is just logging, we don't care for errors
+                    e.printStackTrace();
+                }
+
+        int maxNameLength = 0;
+        for (Entry<String, Path> entry : paths) {
+            String name = entry.getKey();
+            if (maxNameLength < name.length())
+                maxNameLength = name.length();
+        }
+
         LOGGER.debug("Paths %s",
                 StringUtils.repeat("-", 80 - "Paths ".length()));
-        LOGGER.debug("dir                    = %s", dir);
-        LOGGER.debug("statusFile             = %s", statusFile);
-        LOGGER.debug("trainingFile           = %s", trainingFile);
-        LOGGER.debug("untaggedTrainingFile   = %s", untaggedTrainingFile);
-        LOGGER.debug("countsDir              = %s", countsDir);
-        LOGGER.debug("absoluteDir            = %s", absoluteDir);
-        LOGGER.debug("absoluteChunkedDir     = %s", absoluteChunkedDir);
-        LOGGER.debug("continuationDir        = %s", continuationDir);
-        LOGGER.debug("continuationChunkedDir = %s", continuationChunkedDir);
-        LOGGER.debug("ngramTimesFile         = %s", ngramTimesFile);
-        LOGGER.debug("lengthDistributionFile = %s", lengthDistributionFile);
-        LOGGER.debug("modelsDir              = %s", modelsDir);
-        LOGGER.debug("modkneserneyDir        = %s", modKneserNeyDir);
-        LOGGER.debug("modkneserneyAlphaDir   = %s", modKneserNeyAlphaDir);
-        LOGGER.debug("modkneserneyLambdaDir  = %s", modKneserNeyLambdaDir);
-        LOGGER.debug("queryCachesDir         = %s", queryCachesDir);
-        LOGGER.debug("queriesDir             = %s", queriesDir);
+        for (Entry<String, Path> entry : paths) {
+            String name = entry.getKey();
+            Path path = entry.getValue();
+            LOGGER.debug("%-" + maxNameLength + "s = %s", name, path);
+        }
     }
 
     public GlmtkPaths getRoot() {
@@ -226,6 +272,22 @@ public class GlmtkPaths {
 
     public Path getModKneserNeyLambdaDir() {
         return modKneserNeyLambdaDir;
+    }
+
+    public Path getGenLangModelDir() {
+        return genLangModelDir;
+    }
+
+    public Path getGenLangModelDiscountsFile() {
+        return genLangModelDiscountsFile;
+    }
+
+    public Path getGenLangModelAlphaDir() {
+        return genLangModelAlphaDir;
+    }
+
+    public Path getGenLangModelLambdaDir() {
+        return genLangModelLambdaDir;
     }
 
     public Path getQueryCachesDir() {
