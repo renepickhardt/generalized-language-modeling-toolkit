@@ -20,6 +20,7 @@
 
 package de.glmtk.querying;
 
+import static de.glmtk.common.Output.OUTPUT;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -36,14 +37,18 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
+import de.glmtk.querying.estimator.fast.FastGeneralizedLanguageModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
+import de.glmtk.util.NioUtils;
 
 /**
  * Test optimized estimator implementations using the slower ones. Test whether
@@ -68,10 +73,17 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         Estimator learnedMkn = new LearnedModKneserNeyEstimator();
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
 
+        Estimator fastGlmAbs = new FastGeneralizedLanguageModelAbsEstimator();
+        fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
+
         return Arrays.asList(new Object[][] {
+                //@formatter:off
                 {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
                 {Estimators.MOD_KNESER_NEY, fastMkn},
-                {Estimators.MOD_KNESER_NEY, learnedMkn}});
+                {Estimators.MOD_KNESER_NEY, learnedMkn},
+                {Estimators.GLM_ABS, fastGlmAbs}
+                //@formatter:on
+        });
     }
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
@@ -104,6 +116,9 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         QueryExecutor executorActual = new QueryExecutor(paths, queryMode,
                 actual, 5);
 
+        OUTPUT.setPhase(Phase.QUERYING);
+        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(testFile));
+
         Logger.setTraceEnabled(false);
         try (BufferedReader reader = Files.newBufferedReader(testFile,
                 Constants.CHARSET)) {
@@ -127,6 +142,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
 
                     throw t;
                 }
+
+                progress.increase(1);
             }
         }
         Logger.setTraceEnabled(true);
