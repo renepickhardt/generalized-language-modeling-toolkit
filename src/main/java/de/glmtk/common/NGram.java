@@ -227,7 +227,7 @@ public class NGram {
         return new NGram(resultWords);
     }
 
-    // TODO: rename to convertToContinuation?
+    // TODO: rename to "convertToContinuation"?
     public NGram convertSkpToWskp() {
         return replace(SKP_WORD, WSKP_WORD);
     }
@@ -236,7 +236,6 @@ public class NGram {
         if (isEmpty())
             throw new IllegalStateException("Can't backoff empty ngrams.");
 
-        // TODO: Rene, is this really correct?
         switch (backoffMode) {
             case SKP:
                 for (int i = 0; i != words.size(); ++i)
