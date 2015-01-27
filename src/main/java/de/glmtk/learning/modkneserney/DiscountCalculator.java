@@ -38,14 +38,18 @@ import de.glmtk.files.NGramTimesReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.NioUtils;
 
+// TODO: Filter patterns, so we only calculate discounts for patterns used in MKN.
 public class DiscountCalculator {
     private static final Logger LOGGER = Logger.get(DiscountCalculator.class);
 
     @SuppressWarnings("unused")
     private Config config;
 
+    protected String model;
+
     public DiscountCalculator(Config config) {
         this.config = config;
+        model = Constants.MODEL_MODKNESERNEY;
     }
 
     public void run(Status status,
@@ -53,7 +57,7 @@ public class DiscountCalculator {
                     Path outputFile) throws IOException {
         OUTPUT.setPhase(Phase.CALCULATING_DISCOUNTS);
 
-        if (status.areDiscountsCalculated(Constants.MODEL_MODKNESERNEY)) {
+        if (status.areDiscountsCalculated(model)) {
             LOGGER.debug("Status reports discouts calculated, returning.");
             return;
         }
@@ -75,7 +79,7 @@ public class DiscountCalculator {
             }
         }
 
-        status.setDiscountsCalculated(Constants.MODEL_MODKNESERNEY);
+        status.setDiscountsCalculated(model);
     }
 
     private Discount calcDiscounts(NGramTimes n) {

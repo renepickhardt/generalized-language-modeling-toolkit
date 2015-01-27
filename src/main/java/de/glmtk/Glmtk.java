@@ -106,6 +106,8 @@ public class Glmtk {
     private de.glmtk.learning.modkneserney.AlphaCalculator modKneserNeyAlphaCalculator;
     private de.glmtk.learning.modkneserney.LambdaCalculator modKneserNeyLambdaCalculator;
 
+    private de.glmtk.learning.genlangmodel.DiscountCalculator genLangModelDiscoutCalculator;
+
     private QueryCacherCreator queryCacherCreator;
     private StreamQueryExecutor streamQueryExecutor;
     private FileQueryExecutor fileQueryExecutor;
@@ -135,6 +137,9 @@ public class Glmtk {
         modKneserNeyAlphaCalculator = new de.glmtk.learning.modkneserney.AlphaCalculator(
                 config);
         modKneserNeyLambdaCalculator = new de.glmtk.learning.modkneserney.LambdaCalculator(
+                config);
+
+        genLangModelDiscoutCalculator = new de.glmtk.learning.genlangmodel.DiscountCalculator(
                 config);
 
         queryCacherCreator = new QueryCacherCreator(config);
@@ -308,9 +313,12 @@ public class Glmtk {
 
     public void learnGenLangModel() throws IOException {
         String message = "Learning Langauge Model 'Generalized-Langauge Model'";
-        OUTPUT.printMessage(message + "...");
+        OUTPUT.beginPhases(message + "...");
 
         Files.createDirectories(paths.getGenLangModelDir());
+
+        genLangModelDiscoutCalculator.run(status, paths.getNGramTimesFile(),
+                paths.getGenLangModelDiscountsFile());
 
         long glmSize = NioUtils.calcFileSize(paths.getGenLangModelDir());
         OUTPUT.endPhases(String.format("%s done (uses %s).", message,
