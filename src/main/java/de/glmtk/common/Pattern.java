@@ -99,6 +99,10 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         return size() == 0;
     }
 
+    public List<PatternElem> getElems() {
+        return new ArrayList<>(elems);
+    }
+
     public PatternElem get(int index) {
         if (index < 0 || index >= size())
             throw new IllegalArgumentException(String.format(
@@ -114,6 +118,15 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
                     "Illegal index: %d. Size: %d.", index, size()));
         List<PatternElem> elems = new ArrayList<>(this.elems);
         elems.set(index, elem);
+        return Patterns.get(elems);
+    }
+
+    public Pattern remove(int index) {
+        if (index < 0 || index >= size())
+            throw new IllegalArgumentException(String.format(
+                    "Illegal index: %d. Size: %d.", index, size()));
+        List<PatternElem> elems = new ArrayList<>(this.elems);
+        elems.remove(index);
         return Patterns.get(elems);
     }
 

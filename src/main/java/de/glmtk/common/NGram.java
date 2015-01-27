@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -30,7 +30,6 @@ import static de.glmtk.common.PatternElem.WSKP_WORD;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -45,44 +44,44 @@ public class NGram {
     public static final NGram SKP_NGRAM = new NGram(SKP_WORD);
     public static final NGram WSKP_NGRAM = new NGram(WSKP_WORD);
 
-    private final List<String> words;
-    private String asString;
+    private final List<String> tokens;
+    private String string;
     private Pattern pattern;
 
     public NGram() {
-        words = new ArrayList<>();
-        asString = "";
+        tokens = new ArrayList<>();
+        string = "";
         pattern = Patterns.get();
     }
 
-    public NGram(String word) {
-        words = Arrays.asList(word);
-        asString = word;
-        pattern = Patterns.get(PatternElem.fromWord(word));
+    public NGram(String token) {
+        tokens = Arrays.asList(token);
+        string = token;
+        pattern = Patterns.get(PatternElem.fromWord(token));
     }
 
-    public NGram(List<String> words) {
-        this.words = words;
-        asString = StringUtils.join(words, " ");
+    public NGram(List<String> tokens) {
+        this.tokens = tokens;
+        string = StringUtils.join(tokens, " ");
 
-        List<PatternElem> patternElems = new ArrayList<>(words.size());
-        for (String word : words)
-            patternElems.add(PatternElem.fromWord(word));
+        List<PatternElem> patternElems = new ArrayList<>(tokens.size());
+        for (String token : tokens)
+            patternElems.add(PatternElem.fromWord(token));
         pattern = Patterns.get(patternElems);
     }
 
-    private NGram(List<String> words,
+    private NGram(List<String> tokens,
                   Pattern pattern) {
-        this.words = words;
-        asString = StringUtils.join(words, " ");
+        this.tokens = tokens;
+        string = StringUtils.join(tokens, " ");
         this.pattern = pattern;
     }
 
-    private NGram(List<String> words,
-                  String asString,
+    private NGram(List<String> tokens,
+                  String string,
                   Pattern pattern) {
-        this.words = words;
-        this.asString = asString;
+        this.tokens = tokens;
+        this.string = string;
         this.pattern = pattern;
     }
 
@@ -94,22 +93,22 @@ public class NGram {
             return false;
 
         NGram o = (NGram) other;
-        return words.equals(o.words);
+        return tokens.equals(o.tokens);
     }
 
     @Override
     public int hashCode() {
-        return asString.hashCode();
+        return string.hashCode();
     }
 
     @Deprecated
     public List<String> toWordList() {
-        return words;
+        return tokens;
     }
 
     @Override
     public String toString() {
-        return asString;
+        return string;
     }
 
     public Pattern getPattern() {
@@ -126,7 +125,7 @@ public class NGram {
      * TODO: Should this method thus be renamed?
      */
     public int size() {
-        return words.size();
+        return tokens.size();
     }
 
     public boolean isEmpty() {
@@ -134,25 +133,35 @@ public class NGram {
     }
 
     public NGram get(int index) {
-        return new NGram(words.get(index));
+        return new NGram(tokens.get(index));
     }
 
     public NGram set(int index,
-                     String word) {
+                     String token) {
         if (index < 0 || index >= size())
             throw new IllegalArgumentException(String.format(
                     "Illegal index: %d. Size: %d.", index, size()));
-        List<String> words = new ArrayList<>(this.words);
-        words.set(index, word);
-        Pattern pattern = this.pattern.set(index, PatternElem.fromWord(word));
-        return new NGram(words, pattern);
+        List<String> newTokens = new ArrayList<>(tokens);
+        newTokens.set(index, token);
+        Pattern newPattern = pattern.set(index, PatternElem.fromWord(token));
+        return new NGram(newTokens, newPattern);
+    }
+
+    public NGram remove(int index) {
+        if (index < 0 || index >= size())
+            throw new IllegalArgumentException(String.format(
+                    "Illegal index: %d. Size: %d.", index, size()));
+        List<String> newTokens = new ArrayList<>(tokens);
+        newTokens.remove(index);
+        Pattern newPattern = pattern.remove(index);
+        return new NGram(newTokens, newPattern);
     }
 
     public boolean isEmptyOrOnlySkips() {
         if (isEmpty())
             return true;
-        for (String word : words)
-            if (!word.equals(SKP_WORD))
+        for (String token : tokens)
+            if (!token.equals(SKP_WORD))
                 return false;
         return true;
     }
@@ -178,17 +187,26 @@ public class NGram {
         return isEmpty() || cache.getAlpha(model, this) != null;
     }
 
-    public NGram concat(String word) {
-        List<String> resultWords = new ArrayList<>(words);
-        resultWords.add(word);
-        return new NGram(resultWords, asString + " " + word,
-                pattern.concat(PatternElem.fromWord(word)));
+    public NGram concat(String token) {
+        if (isEmpty())
+            return new NGram(token);
+        List<String> resultTokens = new ArrayList<>(tokens);
+        resultTokens.add(token);
+        String newString = string + " " + token;
+        Pattern newPattern = pattern.concat(PatternElem.fromWord(token));
+        return new NGram(resultTokens, newString, newPattern);
     }
 
     public NGram concat(NGram other) {
-        List<String> resultWords = new ArrayList<>(words);
-        resultWords.addAll(other.words);
-        return new NGram(resultWords);
+        if (isEmpty())
+            return other;
+        if (other.isEmpty())
+            return this;
+        List<String> newTokens = new ArrayList<>(tokens);
+        newTokens.addAll(other.tokens);
+        String newString = string + " " + other.string;
+        Pattern newPattern = pattern.concat(other.pattern);
+        return new NGram(newTokens, newString, newPattern);
     }
 
     public NGram range(int from,
@@ -203,28 +221,33 @@ public class NGram {
             throw new IllegalArgumentException(String.format(
                     "From index larger than to index: %d > %d", from, to));
 
-        List<String> resultWords = new ArrayList<>(to - from);
-        List<PatternElem> resultPatternElems = new ArrayList<>(to - from);
+        List<String> newTokens = new ArrayList<>(to - from);
+        List<PatternElem> newPattern = new ArrayList<>(to - from);
 
         for (int i = from; i != to; ++i) {
-            resultWords.add(words.get(i));
-            resultPatternElems.add(pattern.get(i));
+            newTokens.add(tokens.get(i));
+            newPattern.add(pattern.get(i));
         }
 
-        return new NGram(resultWords, Patterns.get(resultPatternElems));
+        return new NGram(newTokens, Patterns.get(newPattern));
     }
 
     public NGram replace(String target,
                          String replacement) {
-        List<String> resultWords = new ArrayList<>(size());
+        PatternElem replacementElem = PatternElem.fromWord(replacement);
 
-        for (String word : words)
-            if (word.equals(target))
-                resultWords.add(replacement);
-            else
-                resultWords.add(word);
+        List<String> newTokens = new ArrayList<>(tokens);
+        List<PatternElem> newPattern = pattern.getElems();
 
-        return new NGram(resultWords);
+        for (int i = 0; i != size(); ++i) {
+            String token = newTokens.get(i);
+            if (token.equals(target)) {
+                newTokens.set(i, replacement);
+                newPattern.set(i, replacementElem);
+            }
+        }
+
+        return new NGram(newTokens, Patterns.get(newPattern));
     }
 
     // TODO: rename to "convertToContinuation"?
@@ -238,17 +261,19 @@ public class NGram {
 
         switch (backoffMode) {
             case SKP:
-                for (int i = 0; i != words.size(); ++i)
-                    if (!words.get(i).equals(SKP_WORD))
+                for (int i = 0; i != tokens.size(); ++i)
+                    if (!tokens.get(i).equals(SKP_WORD))
                         return set(i, SKP_WORD);
                 throw new IllegalStateException(
                         "Can't backoff ngrams containing only skips.");
 
             case DEL:
-                return range(1, size());
+                return remove(0);
 
             case DEL_FRONT:
             case SKP_AND_DEL:
+                throw new IllegalArgumentException();
+
             default:
                 throw new SwitchCaseNotImplementedException();
         }
@@ -288,17 +313,11 @@ public class NGram {
         Set<NGram> result = new LinkedHashSet<>();
         for (int i = 0; i != size(); ++i) {
             if (backoffMode == SKP_AND_DEL || backoffMode == DEL
-                    || (backoffMode == DEL_FRONT && i == 0)) {
-                List<String> newWords = new LinkedList<>(words);
-                newWords.remove(i);
-                result.add(new NGram(newWords));
-            }
+                    || (backoffMode == DEL_FRONT && i == 0))
+                result.add(remove(i));
             if ((backoffMode == SKP || backoffMode == SKP_AND_DEL || (backoffMode == DEL_FRONT && i != 0))
-                    && !words.get(i).equals(SKP_WORD)) {
-                List<String> newWords = new LinkedList<>(words);
-                newWords.set(i, SKP_WORD);
-                result.add(new NGram(newWords));
-            }
+                    && !tokens.get(i).equals(SKP_WORD))
+                result.add(set(i, SKP_WORD));
         }
         return result;
     }
