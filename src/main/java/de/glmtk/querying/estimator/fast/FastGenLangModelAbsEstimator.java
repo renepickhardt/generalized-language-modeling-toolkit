@@ -57,16 +57,18 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        double denominator = cache.getAbsolute(getFullHistory(sequence, history));
+        NGram fullHistory = getFullHistory(sequence, history);
+        long denominator = cache.getAbsolute(fullHistory);
         if (denominator == 0.0)
             return (double) cache.getAbsolute(sequence) / cache.getNumWords();
 
-        double numerator = cache.getAbsolute(getFullSequence(sequence, history));
+        NGram fullSequence = getFullSequence(sequence, history);
+        long numerator = cache.getAbsolute(fullSequence);
         if (history.isEmptyOrOnlySkips())
-            return numerator / denominator;
+            return (double) numerator / denominator;
 
-        Discounts d = getDiscounts(history.getPattern(), recDepth);
-        double discount = d.getForCount(cache.getAbsolute(history));
+        Discounts d = getDiscounts(fullSequence.getPattern(), recDepth);
+        double discount = d.getForCount(numerator);
 
         Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
         double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
@@ -84,7 +86,7 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
     }
 
     protected Discounts getDiscounts(Pattern pattern,
-                                    @SuppressWarnings("unused") int recDepth) {
+                                     @SuppressWarnings("unused") int recDepth) {
         Discounts result = discounts.get(pattern);
         if (result != null)
             return result;
