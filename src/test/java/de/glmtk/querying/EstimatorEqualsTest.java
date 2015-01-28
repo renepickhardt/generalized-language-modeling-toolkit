@@ -37,6 +37,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
@@ -109,10 +110,12 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         Glmtk glmtk = testCorpus.getGlmtk();
         GlmtkPaths paths = glmtk.getPaths();
 
-        Cache cacheExpected = expected.getRequiredCache(5).build(paths);
-        Cache cacheActual = actual.getRequiredCache(5).build(paths);
-        expected.setCache(cacheExpected);
-        actual.setCache(cacheActual);
+        CacheBuilder requiredCache = new CacheBuilder();
+        requiredCache.addAll(expected.getRequiredCache(5));
+        requiredCache.addAll(actual.getRequiredCache(5));
+        Cache cache = requiredCache.withProgress().build(paths);
+        expected.setCache(cache);
+        actual.setCache(cache);
 
         QueryMode queryMode = QueryMode.newCond(5);
         QueryExecutor executorExpected = new QueryExecutor(paths, queryMode,
