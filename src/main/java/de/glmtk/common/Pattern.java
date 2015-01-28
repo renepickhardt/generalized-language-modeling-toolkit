@@ -165,12 +165,12 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
         outerLoop:
-            for (PatternElem e : this.elems) {
-                for (PatternElem elem : elems)
-                    if (e.equals(elem))
-                        continue outerLoop;
+        for (PatternElem e : this.elems) {
+            for (PatternElem elem : elems)
+                if (e.equals(elem))
+                    continue outerLoop;
             return false;
-            }
+        }
         return true;
     }
 
@@ -179,12 +179,12 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
         outerLoop:
-            for (PatternElem e : elems) {
-                for (PatternElem elem : this.elems)
-                    if (elem.equals(e))
-                        continue outerLoop;
-                return false;
-            }
+        for (PatternElem e : elems) {
+            for (PatternElem elem : this.elems)
+                if (elem.equals(e))
+                    continue outerLoop;
+            return false;
+        }
         return true;
     }
 
@@ -232,6 +232,9 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         else if (from > to)
             throw new IllegalArgumentException(String.format(
                     "From index larger than to index: %d > %d", from, to));
+
+        if (from == 0 && to == size())
+            return this;
 
         List<PatternElem> resultElems = new ArrayList<>(to - from);
 

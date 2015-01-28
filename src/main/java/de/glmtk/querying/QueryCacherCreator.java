@@ -28,6 +28,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +45,7 @@ import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 import de.glmtk.common.Status;
 import de.glmtk.files.CountsReader;
 import de.glmtk.logging.Logger;
@@ -90,7 +92,57 @@ public class QueryCacherCreator {
         private void extractSequences() throws IOException {
             Set<String> sequences = new HashSet<>();
 
-            int patternSize = pattern.size();
+            LOGGER.trace("Calculating Core Pattern:");
+
+            int cntLeading = 0;
+            StringBuilder stringLeadingBuilder = new StringBuilder();
+            for (int i = 0; i != pattern.size(); ++i)
+                if (pattern.get(i).equals(PatternElem.SKP)) {
+                    ++cntLeading;
+                    stringLeadingBuilder.append(PatternElem.SKP_WORD).append(
+                            ' ');
+                } else if (pattern.get(i).equals(PatternElem.WSKP)) {
+                    ++cntLeading;
+                    stringLeadingBuilder.append(PatternElem.WSKP_WORD).append(
+                            ' ');
+                } else
+                    break;
+
+            StringBuilder stringTrailingBuilder = new StringBuilder();
+            int cntTrailing = 0;
+            for (int i = pattern.size() - 1; i != -1; --i)
+                if (pattern.get(i).equals(PatternElem.SKP)) {
+                    ++cntTrailing;
+                    stringTrailingBuilder.append(PatternElem.SKP_WORD).append(
+                            ' ');
+                } else if (pattern.get(i).equals(PatternElem.WSKP)) {
+                    ++cntTrailing;
+                    stringTrailingBuilder.append(PatternElem.WSKP_WORD).append(
+                            ' ');
+                } else
+                    break;
+
+            String stringLeading = stringLeadingBuilder.toString();
+            String stringTrailing = stringTrailingBuilder.reverse().toString();
+
+            LOGGER.trace("Pattern:        %s", pattern);
+            LOGGER.trace("cntLeading:     %d", cntLeading);
+            LOGGER.trace("cntTrailing:    %d", cntTrailing);
+            LOGGER.trace("stringLeading:  '%s'", stringLeading);
+            LOGGER.trace("stringTrailing: '%s'", stringTrailing);
+
+            if (cntTrailing == pattern.size()) {
+                neededSequences = new ArrayDeque<>();
+                neededSequences.add(stringTrailing.substring(1));
+                return;
+            }
+
+            Pattern corePattern = pattern.range(cntLeading, pattern.size()
+                    - cntTrailing);
+
+            LOGGER.trace("Core Pattern:  %s", corePattern);
+
+            int patternSize = corePattern.size();
             try (BufferedReader reader = NioUtils.newBufferedReader(queryFile,
                     Constants.CHARSET, readerMemory)) {
                 String line;
@@ -103,13 +155,13 @@ public class QueryCacherCreator {
                             words, poses);
 
                     for (int p = 0; p <= split.length - patternSize; ++p) {
-                        String sequence = pattern.apply(words, poses, p);
-                        sequences.add(sequence);
+                        String sequence = corePattern.apply(words, poses, p);
+                        sequences.add(stringLeading + sequence + stringTrailing);
                     }
                 }
             }
 
-            neededSequences = new LinkedList<>();
+            neededSequences = new ArrayDeque<>();
             neededSequences.addAll(new TreeSet<>(sequences));
         }
 
