@@ -132,7 +132,7 @@ public class Merger {
             int maxMergeNr = 0;
             for (String chunk : chunksForPattern)
                 if (chunk.startsWith("merge")) {
-                    int mergeNr = Integer.parseInt(chunk.substring(5));
+                    int mergeNr = Integer.parseInt(chunk.substring("merge".length());
                     if (maxMergeNr < mergeNr)
                         maxMergeNr = mergeNr;
                 }
