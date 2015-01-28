@@ -34,8 +34,9 @@ public abstract class ThreeDiscountEstimator extends DiscountEstimator {
     protected double calcDiscount(NGram sequence,
                                   NGram history,
                                   int recDepth) {
-        Discounts discounts = getDiscounts(history.getPattern());
-        switch ((int) cache.getAbsolute(history)) {
+        NGram fullSequence = getFullSequence(sequence, history);
+        Discounts discounts = getDiscounts(fullSequence.getPattern());
+        switch ((int) cache.getAbsolute(fullSequence)) {
             case 0:
                 return 0;
             case 1:

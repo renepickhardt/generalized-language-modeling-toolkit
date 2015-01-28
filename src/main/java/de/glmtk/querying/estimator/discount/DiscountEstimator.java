@@ -71,9 +71,7 @@ public abstract class DiscountEstimator extends FractionEstimator {
                 recDepth);
         double discountVal = discount(sequence, history, recDepth);
 
-        if (discountVal > numeratorVal)
-            return 0;
-        return numeratorVal - discountVal;
+        return Math.max(numeratorVal - discountVal, 0);
     }
 
     @Override

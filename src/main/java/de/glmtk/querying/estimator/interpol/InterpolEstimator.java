@@ -24,7 +24,6 @@ import static de.glmtk.common.PatternElem.WSKP_WORD;
 import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discounts;
@@ -135,11 +134,11 @@ public class InterpolEstimator extends AbstractEstimator {
         if (alpha instanceof ThreeDiscountEstimator) {
             ThreeDiscountEstimator threeDiscountEstimator = (ThreeDiscountEstimator) alpha;
 
-            Pattern pattern = history.getPattern();
-            Discounts discount = threeDiscountEstimator.getDiscounts(pattern);
+            NGram fullSequence = getFullSequence(sequence, history);
+            Discounts discount = threeDiscountEstimator.getDiscounts(fullSequence.getPattern());
             Counts continuation = cache.getContinuation(historyPlusWskp);
 
-            logTrace(recDepth, "pattern     = %s", pattern);
+            logTrace(recDepth, "pattern     = %s", fullSequence.getPattern());
             logTrace(recDepth, "discount    = %s", discount);
             logTrace(recDepth, "contcounts  = %s", continuation);
             logTrace(recDepth, "denominator = %e", denominator);
