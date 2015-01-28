@@ -5,7 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 
 import de.glmtk.common.Pattern;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 
 public class DiscountWriter extends AbstractFileWriter {
     public DiscountWriter(Path file,
@@ -20,7 +20,7 @@ public class DiscountWriter extends AbstractFileWriter {
     }
 
     public void append(Pattern pattern,
-                       Discount discount) throws IOException {
+                       Discounts discount) throws IOException {
         writer.append(pattern.toString());
         writer.append('\t').append(Double.toString(discount.getOne()));
         writer.append('\t').append(Double.toString(discount.getTwo()));

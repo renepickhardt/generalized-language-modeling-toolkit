@@ -32,7 +32,7 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.DiscountWriter;
 import de.glmtk.files.NGramTimesReader;
@@ -73,7 +73,7 @@ public class DiscountCalculator {
                 Pattern pattern = reader.getPattern();
                 NGramTimes ngramTimes = reader.getNGramTimes();
 
-                Discount discount = calcDiscounts(ngramTimes);
+                Discounts discount = calcDiscounts(ngramTimes);
                 writer.append(pattern, discount);
 
                 progress.increase(1);
@@ -83,10 +83,10 @@ public class DiscountCalculator {
         status.setDiscountsCalculated(model);
     }
 
-    private Discount calcDiscounts(NGramTimes n) {
+    private Discounts calcDiscounts(NGramTimes n) {
         double y = (double) n.getOneCount()
                 / (n.getOneCount() + n.getTwoCount());
-        Discount result = new Discount(1.0f - 2.0f * y * n.getTwoCount()
+        Discounts result = new Discounts(1.0f - 2.0f * y * n.getTwoCount()
                 / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
                 / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
                 / n.getThreeCount());

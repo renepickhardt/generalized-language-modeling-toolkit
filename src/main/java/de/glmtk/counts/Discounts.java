@@ -20,16 +20,16 @@
 
 package de.glmtk.counts;
 
-public class Discount {
+public class Discounts {
     private double one;
     private double two;
     private double threePlus;
 
-    public Discount() {
+    public Discounts() {
         this(0L, 0L, 0L);
     }
 
-    public Discount(double one,
+    public Discounts(double one,
                     double two,
                     double threePlus) {
         set(one, two, threePlus);

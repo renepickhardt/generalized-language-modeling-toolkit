@@ -31,13 +31,13 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
 public class FastGenLangModelAbsEstimator extends AbstractEstimator {
     protected BackoffMode backoffMode;
-    private Map<Pattern, Discount> discounts;
+    private Map<Pattern, Discounts> discounts;
 
     public FastGenLangModelAbsEstimator() {
         setBackoffMode(BackoffMode.SKP);
@@ -65,7 +65,7 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
         if (history.isEmptyOrOnlySkips())
             return numerator / denominator;
 
-        Discount d = getDiscounts(history.getPattern(), recDepth);
+        Discounts d = getDiscounts(history.getPattern(), recDepth);
         double discount = d.getForCount(cache.getAbsolute(history));
 
         Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
@@ -83,16 +83,16 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
         return alpha + gamma * beta;
     }
 
-    protected Discount getDiscounts(Pattern pattern,
+    protected Discounts getDiscounts(Pattern pattern,
                                     @SuppressWarnings("unused") int recDepth) {
-        Discount result = discounts.get(pattern);
+        Discounts result = discounts.get(pattern);
         if (result != null)
             return result;
 
         NGramTimes n = cache.getNGramTimes(pattern);
         double y = (double) n.getOneCount()
                 / (n.getOneCount() + n.getTwoCount());
-        result = new Discount(1.0f - 2.0f * y * n.getTwoCount()
+        result = new Discounts(1.0f - 2.0f * y * n.getTwoCount()
                 / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
                 / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
                 / n.getThreeCount());

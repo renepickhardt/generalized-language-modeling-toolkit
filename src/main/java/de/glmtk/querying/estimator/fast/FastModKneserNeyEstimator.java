@@ -23,7 +23,7 @@ package de.glmtk.querying.estimator.fast;
 import static de.glmtk.common.NGram.WSKP_NGRAM;
 import de.glmtk.common.NGram;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 
 public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
     @Override
@@ -38,7 +38,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         if (history.isEmptyOrOnlySkips())
             return numerator / denominator;
 
-        Discount d = getDiscounts(history.getPattern(), recDepth);
+        Discounts d = getDiscounts(history.getPattern(), recDepth);
         double discount = d.getForCount(cache.getAbsolute(history));
 
         Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
@@ -79,7 +79,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         if (history.isEmptyOrOnlySkips())
             return numerator / denominator;
 
-        Discount d = getDiscounts(history.getPattern(), recDepth);
+        Discounts d = getDiscounts(history.getPattern(), recDepth);
         double discount = d.getForCount(cache.getAbsolute(history));
 
         Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));

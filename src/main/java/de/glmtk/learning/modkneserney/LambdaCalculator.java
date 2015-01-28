@@ -32,7 +32,7 @@ import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.files.LambdaCountsWriter;
 import de.glmtk.files.SequenceReader;
@@ -78,7 +78,7 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
 
         private double calcGamma(NGram sequence,
                                  boolean highestOrder) {
-            Discount discount = cache.getDiscount(model, sequence.getPattern());
+            Discounts discount = cache.getDiscount(model, sequence.getPattern());
             Counts contCount = cache.getContinuation(sequence.concat(WSKP_NGRAM));
 
             long denominator;

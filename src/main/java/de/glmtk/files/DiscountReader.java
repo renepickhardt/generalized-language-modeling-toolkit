@@ -6,12 +6,12 @@ import java.nio.file.Path;
 import java.util.List;
 
 import de.glmtk.common.Pattern;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.util.StringUtils;
 
 public class DiscountReader extends AbstractFileReader {
     private Pattern pattern;
-    private Discount discount;
+    private Discounts discount;
 
     public DiscountReader(Path file,
                           Charset charset) throws IOException {
@@ -39,7 +39,7 @@ public class DiscountReader extends AbstractFileReader {
 
         try {
             pattern = parsePattern(split.get(0));
-            discount = new Discount(parseFloatingPoint(split.get(1)),
+            discount = new Discounts(parseFloatingPoint(split.get(1)),
                     parseFloatingPoint(split.get(2)),
                     parseFloatingPoint(split.get(3)));
         } catch (IllegalArgumentException e) {
@@ -51,7 +51,7 @@ public class DiscountReader extends AbstractFileReader {
         return pattern;
     }
 
-    public Discount getDiscount() {
+    public Discounts getDiscount() {
         return discount;
     }
 }

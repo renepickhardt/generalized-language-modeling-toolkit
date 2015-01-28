@@ -27,11 +27,11 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.querying.estimator.AbstractEstimator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
-import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.discount.ThreeDiscountEstimator;
 
 public class InterpolEstimator extends AbstractEstimator {
     protected DiscountEstimator alpha;
@@ -131,25 +131,23 @@ public class InterpolEstimator extends AbstractEstimator {
         }
 
         NGram historyPlusWskp = history.concat(WSKP_WORD);
-        if (alpha.getClass() == ModKneserNeyDiscountEstimator.class) {
-            ModKneserNeyDiscountEstimator a = (ModKneserNeyDiscountEstimator) alpha;
-            Pattern pattern = history.getPattern();
-            Discount discount = a.getDiscounts(pattern);
-            double d1 = discount.getOne();
-            double d2 = discount.getTwo();
-            double d3p = discount.getThree();
 
+        if (alpha instanceof ThreeDiscountEstimator) {
+            ThreeDiscountEstimator threeDiscountEstimator = (ThreeDiscountEstimator) alpha;
+
+            Pattern pattern = history.getPattern();
+            Discounts discount = threeDiscountEstimator.getDiscounts(pattern);
             Counts continuation = cache.getContinuation(historyPlusWskp);
-            double n1 = continuation.getOneCount();
-            double n2 = continuation.getTwoCount();
-            double n3p = continuation.getThreePlusCount();
 
             logTrace(recDepth, "pattern     = %s", pattern);
             logTrace(recDepth, "discount    = %s", discount);
             logTrace(recDepth, "contcounts  = %s", continuation);
             logTrace(recDepth, "denominator = %e", denominator);
 
-            return (d1 * n1 + d2 * n2 + d3p * n3p) / denominator;
+            return (discount.getOne() * continuation.getOneCount()
+                    + discount.getTwo() * continuation.getTwoCount() + discount.getThree()
+                    * continuation.getThreePlusCount())
+                    / denominator;
         }
 
         double discout = alpha.discount(sequence, history, recDepth);

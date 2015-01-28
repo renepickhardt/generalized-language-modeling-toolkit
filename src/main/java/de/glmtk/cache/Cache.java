@@ -40,7 +40,7 @@ import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
 import de.glmtk.counts.AlphaCounts;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.AlphaCountsReader;
@@ -68,7 +68,7 @@ public class Cache {
     private Map<Pattern, Map<String, Object>> counts;
     private Map<Pattern, NGramTimes> ngramTimes;
     private List<Double> lengthFrequencies;
-    private Map<String, Map<Pattern, Discount>> discounts;
+    private Map<String, Map<Pattern, Discounts>> discounts;
     private Map<String, Map<Pattern, Map<String, AlphaCounts>>> alphas;
     private Map<String, Map<Pattern, Map<String, LambdaCounts>>> lambdas;
 
@@ -174,7 +174,7 @@ public class Cache {
         if (discounts == null)
             discounts = new HashMap<>();
 
-        Map<Pattern, Discount> discountsForModel = new HashMap<>();
+        Map<Pattern, Discounts> discountsForModel = new HashMap<>();
         discounts.put(model, discountsForModel);
 
         try (DiscountReader reader = new DiscountReader(file, Constants.CHARSET)) {
@@ -341,7 +341,7 @@ public class Cache {
         return lengthFrequencies.size();
     }
 
-    public Discount getDiscount(String model,
+    public Discounts getDiscount(String model,
                                 Pattern pattern) {
         Objects.requireNonNull(model);
         Objects.requireNonNull(pattern);

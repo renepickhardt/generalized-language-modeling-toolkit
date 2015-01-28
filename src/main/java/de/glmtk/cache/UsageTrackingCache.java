@@ -29,7 +29,7 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.AlphaCounts;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.counts.LambdaCounts;
 import de.glmtk.counts.NGramTimes;
 
@@ -128,10 +128,10 @@ public class UsageTrackingCache extends Cache {
     }
 
     @Override
-    public Discount getDiscount(String model,
+    public Discounts getDiscount(String model,
                                 Pattern pattern) {
         cacheBuilder.withDiscounts(model);
-        return new Discount(random.nextDouble(), random.nextDouble(),
+        return new Discounts(random.nextDouble(), random.nextDouble(),
                 random.nextDouble());
     }
 

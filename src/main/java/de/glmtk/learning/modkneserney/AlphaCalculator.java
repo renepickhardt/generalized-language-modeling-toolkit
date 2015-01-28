@@ -52,7 +52,7 @@ import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
 import de.glmtk.counts.AlphaCounts;
-import de.glmtk.counts.Discount;
+import de.glmtk.counts.Discounts;
 import de.glmtk.files.AlphaCountsWriter;
 import de.glmtk.files.SequenceReader;
 import de.glmtk.util.StringUtils;
@@ -119,7 +119,7 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
                 NGram history = sequence.range(0, sequence.size() - 1);
                 long historyCount = cache.getAbsolute(history);
 
-                Discount discount = cache.getDiscount(model,
+                Discounts discount = cache.getDiscount(model,
                         history.getPattern());
                 double d = discount.getForCount(historyCount);
 
