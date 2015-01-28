@@ -35,11 +35,13 @@ import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
+import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP;
 import static de.glmtk.querying.estimator.Estimators.FMLE;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
+import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL;
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 import static org.junit.Assert.assertEquals;
@@ -77,8 +79,8 @@ public class EstimatorTest extends TestCorporaTest {
 
     @EstimatorTestParameters
     public static Iterable<EstimatorTestParams> data() {
+        //@formatter:off
         return Arrays.asList(
-                //@formatter:off
                 // Substitute Estimators
                 new EstimatorTestParams(UNIFORM, false, 0, HIGHEST_ORDER),
                 new EstimatorTestParams(ABS_UNIGRAM, false, 0, HIGHEST_ORDER),
@@ -110,10 +112,13 @@ public class EstimatorTest extends TestCorporaTest {
                 // HIGHEST_ORDER should actually also work, but takes far to long to calculate.
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
+                new EstimatorTestParams(INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
+
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
-                //@formatter:on
-        );
+                );
+        //@formatter:on
     }
 
     private Estimator estimator;
@@ -152,7 +157,7 @@ public class EstimatorTest extends TestCorporaTest {
                     sum += calculator.probability(sequence);
                 }
                 try {
-                    assertEquals(1.0, sum, 1e6);
+                    assertEquals(1.0, sum, 1e-6);
                 } catch (AssertionError e) {
                     LOGGER.error("n=%s: sum = %s fail", order, sum);
                     throw e;
@@ -193,12 +198,12 @@ public class EstimatorTest extends TestCorporaTest {
                                 if (continuationEstimator)
                                     checkHistory = SKP_NGRAM.concat(checkHistory);
                                 if (checkHistory.seen(cache))
-                                    assertEquals(1.0, sum, 1e6);
+                                    assertEquals(1.0, sum, 1e-6);
                                 else
-                                    assertEquals(0.0, sum, 1e6);
+                                    assertEquals(0.0, sum, 1e-6);
                                 break;
                             case MARG:
-                                assertEquals(1.0, sum, 1e6);
+                                assertEquals(1.0, sum, 1e-6);
                                 break;
                             default:
                                 throw new SwitchCaseNotImplementedException();

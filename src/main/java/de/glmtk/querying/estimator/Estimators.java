@@ -25,9 +25,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import de.glmtk.common.BackoffMode;
+import de.glmtk.counts.Discounts;
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
 import de.glmtk.querying.estimator.combination.CombinationEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteDiscountEstimator;
+import de.glmtk.querying.estimator.discount.AbsoluteThreeDiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.FalseMaximumLikelihoodEstimator;
@@ -79,6 +81,14 @@ public class Estimators {
             MLE, 0.75);
     static {
         ABS_DISCOUNT_MLE.setName("Absolute-Discount-MaximumLikelihood");
+    }
+
+    // Discount values taken from en0008t MKN discounts for pattern 11111.
+    public static final AbsoluteThreeDiscountEstimator ABS_THREE_DISCOUNT_MLE = new AbsoluteThreeDiscountEstimator(
+            MLE, new Discounts(0.9893775421266705, 1.3470760887379134,
+                    1.7877230602665601));
+    static {
+        ABS_THREE_DISCOUNT_MLE.setName("Absolute-Three-Discount-MaximumLikelihood");
     }
 
     // Backoff Estimators //////////////////////////////////////////////////////
@@ -167,6 +177,20 @@ public class Estimators {
             ABS_DISCOUNT_MLE, BackoffMode.SKP_AND_DEL);
     static {
         DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL.setName("DiffInterpol-MaximumLikelihood (SKP_AND_DEL Backoff)");
+    }
+
+    // Abs Three Interpol Esimators ////////////////////////////////////////////
+
+    public static final InterpolEstimator INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL = new InterpolEstimator(
+            ABS_THREE_DISCOUNT_MLE, BackoffMode.DEL);
+    static {
+        INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL.setName("Interpol-3-Discount-MaximumLikelihood (DEL Backoff)");
+    }
+
+    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP = new DiffInterpolEstimator(
+            ABS_THREE_DISCOUNT_MLE, BackoffMode.SKP);
+    static {
+        DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP.setName("DiffInterpol-3-Discount-MaximumLikelihood (SKP Backoff)");
     }
 
     // Combination Estimators //////////////////////////////////////////////////
