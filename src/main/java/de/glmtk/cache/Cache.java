@@ -169,12 +169,7 @@ public class Cache {
 
         LOGGER.debug("Loading %s discounts...", model);
 
-        Path file = null;
-        if (model.equals(Constants.MODEL_MODKNESERNEY))
-            file = paths.getModKneserNeyDiscountsFile();
-        else
-            throw new IllegalArgumentException(String.format(
-                    "Illegal model '%s'.", model));
+        Path file = paths.getModelDiscountsFile(model);
 
         if (discounts == null)
             discounts = new HashMap<>();
@@ -202,12 +197,7 @@ public class Cache {
 
         LOGGER.debug("Loading %s alphas...", model);
 
-        Path inputDir = null;
-        if (model.equals(Constants.MODEL_MODKNESERNEY))
-            inputDir = paths.getModKneserNeyAlphaDir();
-        else
-            throw new IllegalArgumentException(String.format(String.format(
-                    "Illegal model '%s'.", model)));
+        Path inputDir = paths.getModelAlphaDir(model);
 
         if (alphas == null)
             alphas = new HashMap<>();
@@ -243,12 +233,7 @@ public class Cache {
 
         LOGGER.debug("Loading %s lambdas...", model);
 
-        Path inputDir = null;
-        if (model.equals(Constants.MODEL_MODKNESERNEY))
-            inputDir = paths.getModKneserNeyLambdaDir();
-        else
-            throw new IllegalArgumentException(String.format(String.format(
-                    "Illegal model '%s'.", model)));
+        Path inputDir = paths.getModelLambdaDir(model);
 
         if (lambdas == null)
             lambdas = new HashMap<>();
@@ -368,7 +353,7 @@ public class Cache {
     }
 
     public AlphaCounts getAlpha(String model,
-                               NGram ngram) {
+                                NGram ngram) {
         Objects.requireNonNull(model);
         Objects.requireNonNull(ngram);
         if (ngram.isEmpty())

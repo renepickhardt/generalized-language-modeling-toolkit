@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.glmtk.util.ArrayUtils;
+
 public class Patterns {
     private static final Map<String, Pattern> AS_STRING_TO_PATTERN = new HashMap<>();
 
@@ -126,6 +128,40 @@ public class Patterns {
                 }
                 result.add(Patterns.get(pattern));
             }
+
+        return result;
+    }
+
+    public static List<Pattern> getPermutations(int size,
+                                                PatternElem one,
+                                                PatternElem two) {
+        if (size == 0)
+            throw new IllegalArgumentException(String.format(
+                    "Size was '%d'. Must be greater zero.", size));
+
+        List<Pattern> result = new ArrayList<>();
+
+        for (int order = 0; order != size + 1; ++order) {
+            PatternElem[] pattern = new PatternElem[size];
+            for (int i = 0; i != order; ++i)
+                pattern[i] = one;
+            for (int i = order; i != size; ++i)
+                pattern[i] = two;
+            result.add(Patterns.get(new ArrayList<>(Arrays.asList(pattern))));
+
+            int first = 0, last = size;
+            for (int i = last - 2; i != first - 1; --i)
+                if (pattern[i].equals(one) && pattern[i + 1].equals(two)) {
+                    int j = last - 1;
+                    while (pattern[i].equals(two) || pattern[j].equals(one))
+                        --j;
+                    ArrayUtils.swap(pattern, i, j);
+                    ArrayUtils.reverse(pattern, i + 1, last);
+                    result.add(Patterns.get(new ArrayList<>(
+                            Arrays.asList(pattern))));
+                    i = last - 1;
+                }
+        }
 
         return result;
     }

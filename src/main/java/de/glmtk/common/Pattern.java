@@ -103,6 +103,10 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         return new ArrayList<>(elems);
     }
 
+    public PatternElem[] getElemsArray() {
+        return elems.toArray(new PatternElem[elems.size()]);
+    }
+
     public PatternElem get(int index) {
         if (index < 0 || index >= size())
             throw new IllegalArgumentException(String.format(
@@ -261,6 +265,10 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
             }
 
         return Patterns.get(resultElems);
+    }
+
+    public Pattern convertSkpToWskp() {
+        return replace(SKP, WSKP);
     }
 
     public Pattern getContinuationSource() {

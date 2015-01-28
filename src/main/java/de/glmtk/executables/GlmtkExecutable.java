@@ -65,7 +65,6 @@ import de.glmtk.logging.Logger;
 import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
@@ -522,11 +521,11 @@ public class GlmtkExecutable extends Executable {
 
         glmtk.count(neededPatterns);
 
-        if (CollectionUtils.containsAny(estimators,
-                Estimators.MOD_KNESER_NEY_ESTIMATORS))
-            glmtk.learnModKneserNey();
-        if (CollectionUtils.containsAny(estimators, Estimators.GLM_ESTIMATORS))
-            glmtk.learnGenLangModel();
+        //        if (CollectionUtils.containsAny(estimators,
+        //                Estimators.MOD_KNESER_NEY_ESTIMATORS))
+        //            glmtk.learnModKneserNey();
+        //        if (CollectionUtils.containsAny(estimators, Estimators.GLM_ESTIMATORS))
+        //            glmtk.learnGenLangModel();
 
         for (Entry<QueryMode, Set<Path>> entry : queries) {
             QueryMode queryMode = entry.getKey();

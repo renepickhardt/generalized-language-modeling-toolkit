@@ -95,7 +95,7 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
         }
     }
 
-    private String model;
+    protected String model;
 
     private Path absoluteDir;
     private Path lambdaDir;
@@ -145,7 +145,7 @@ public class LambdaCalculator extends AbstractWorkerExecutor<Pattern> {
     }
 
     @Override
-    protected Collection<Worker> createWorkers() {
+    protected Collection<? extends Worker> createWorkers() {
         List<Worker> workers = new ArrayList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             workers.add(new Worker());

@@ -257,6 +257,33 @@ public class GlmtkPaths {
         return modelsDir;
     }
 
+    public Path getModelDiscountsFile(String model) {
+        if (model.equals(MODEL_MODKNESERNEY))
+            return modKneserNeyDiscountsFile;
+        else if (model.equals(MODEL_GENLANGMODEL))
+            return genLangModelDiscountsFile;
+        throw new IllegalArgumentException(String.format("Unkown model: '%s'.",
+                model));
+    }
+
+    public Path getModelAlphaDir(String model) {
+        if (model.equals(MODEL_MODKNESERNEY))
+            return modKneserNeyAlphaDir;
+        else if (model.equals(MODEL_GENLANGMODEL))
+            return genLangModelAlphaDir;
+        throw new IllegalArgumentException(String.format("Unkown model: '%s'.",
+                model));
+    }
+
+    public Path getModelLambdaDir(String model) {
+        if (model.equals(MODEL_GENLANGMODEL))
+            return modKneserNeyLambdaDir;
+        else if (model.equals(MODEL_GENLANGMODEL))
+            return genLangModelDir;
+        throw new IllegalArgumentException(String.format("Unkown model: '%s'.",
+                model));
+    }
+
     public Path getModKneserNeyDir() {
         return modKneserNeyDir;
     }

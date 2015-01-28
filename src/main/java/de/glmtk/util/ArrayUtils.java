@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayUtils {
-
     public static void swap(boolean[] array,
                             int i,
                             int j) {
@@ -33,9 +32,24 @@ public class ArrayUtils {
         array[j] = tmp;
     }
 
+    public static <T> void swap(T[] array,
+                                int i,
+                                int j) {
+        T tmp = array[i];
+        array[i] = array[j];
+        array[j] = tmp;
+    }
+
     public static void reverse(boolean[] array,
                                int from,
                                int to) {
+        for (int i = from; i != from + (to - from) / 2; ++i)
+            swap(array, i, to + from - i - 1);
+    }
+
+    public static <T> void reverse(T[] array,
+                                   int from,
+                                   int to) {
         for (int i = from; i != from + (to - from) / 2; ++i)
             swap(array, i, to + from - i - 1);
     }
@@ -48,4 +62,11 @@ public class ArrayUtils {
         return union;
     }
 
+    public static <T> List<T> repeat(T elem,
+            int times) {
+        List<T> array = new ArrayList<>(times);
+        for (int i = 0; i != times; ++i)
+            array.add(elem);
+        return array;
+    }
 }

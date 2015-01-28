@@ -58,7 +58,7 @@ import de.glmtk.files.SequenceReader;
 import de.glmtk.util.StringUtils;
 
 public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
-    private class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
+    protected class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
         @Override
         protected void work(Pattern pattern,
                             int patternNo) throws IOException {
@@ -81,7 +81,7 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
                             sequenceOrder - 1 == 0));
                     for (int i = 0; i != sequenceOrder; ++i) {
                         double alpha = calcAlpha(sequence, false,
-                                i == sequenceOrder - 1);
+                                sequenceOrder - 1 == i);
                         alphas.append(alpha);
                         sequence = sequence.backoff(BackoffMode.DEL);
                     }
@@ -100,9 +100,9 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
          * @param lowestOrder
          *            If {@code false} discount alpha if {@code true} do not.
          */
-        private double calcAlpha(NGram sequence,
-                                 boolean highestOrder,
-                                 boolean lowestOrder) {
+        protected double calcAlpha(NGram sequence,
+                                   boolean highestOrder,
+                                   boolean lowestOrder) {
             double numerator, denominator;
             if (highestOrder) {
                 numerator = cache.getAbsolute(sequence);
@@ -130,12 +130,12 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
         }
     }
 
-    private String model;
+    protected String model;
 
-    private Path absoluteDir;
-    private Path alphaDir;
-    private Status status;
-    private Cache cache;
+    protected Path absoluteDir;
+    protected Path alphaDir;
+    protected Status status;
+    protected Cache cache;
 
     public AlphaCalculator(Config config) {
         super(config);
@@ -152,15 +152,29 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
 
         this.status = status;
 
-        Set<Pattern> countsPatterns = new HashSet<>();
-        Set<Pattern> alphaPatterns = new HashSet<>();
+        Set<Pattern> alphaPatterns = calcAlphaPatterns(order);
+        alphaPatterns.removeAll(status.getAlphas(model));
+
+        cache = getRequiredCache(alphaPatterns).build(paths);
+
+        Files.createDirectories(alphaDir);
+
+        work(alphaPatterns);
+    }
+
+    protected Set<Pattern> calcAlphaPatterns(int order) {
+        Set<Pattern> result = new HashSet<>();
         Pattern pattern = Patterns.get();
         for (int i = 0; i != order; ++i) {
             pattern = pattern.concat(CNT);
+            result.add(pattern);
+        }
+        return result;
+    }
 
-            // patterns to calculate alphas for
-            alphaPatterns.add(pattern);
-
+    protected CacheBuilder getRequiredCache(Set<Pattern> alphaPatterns) {
+        Set<Pattern> countsPatterns = new HashSet<>();
+        for (Pattern pattern : alphaPatterns) {
             // pattern to get highest order numerator
             countsPatterns.add(pattern);
             // pattern to get highest order denominator
@@ -171,18 +185,13 @@ public class AlphaCalculator extends AbstractWorkerExecutor<Pattern> {
             countsPatterns.add(WSKP_PATTERN.concat(pattern.set(
                     pattern.size() - 1, WSKP)));
         }
-        alphaPatterns.removeAll(status.getAlphas(model));
 
-        cache = new CacheBuilder().withCounts(countsPatterns).withDiscounts(
-                model).build(paths);
-
-        Files.createDirectories(alphaDir);
-
-        work(alphaPatterns);
+        return new CacheBuilder().withCounts(countsPatterns).withDiscounts(
+                model);
     }
 
     @Override
-    protected Collection<Worker> createWorkers() {
+    protected Collection<? extends Worker> createWorkers() {
         List<Worker> workers = new ArrayList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             workers.add(new Worker());

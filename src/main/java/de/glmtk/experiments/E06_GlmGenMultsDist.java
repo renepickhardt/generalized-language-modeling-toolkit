@@ -167,7 +167,7 @@ public class E06_GlmGenMultsDist {
 
     public static void main(String[] args) {
         //        generateAlphasWithMults("Brucke", Arrays.asList("gehe", "uber", "die"));
-        generateAlphasWithMults("e", Arrays.asList("a", "b", "c", "d"));
+        generateAlphasWithMults("d", Arrays.asList("a", "b", "c"/* , "d" */));
     }
 
 }

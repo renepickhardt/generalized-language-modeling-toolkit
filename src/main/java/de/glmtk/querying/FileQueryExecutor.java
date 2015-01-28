@@ -97,7 +97,7 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
     }
 
     @Override
-    protected Collection<Worker> createWorkers() {
+    protected Collection<? extends Worker> createWorkers() {
         List<Worker> workers = new ArrayList<>();
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             workers.add(new Worker());
