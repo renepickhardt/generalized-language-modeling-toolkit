@@ -1,7 +1,7 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
  * 
- * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
+ * Copyright (C) 2015 Lukas Schmelzeisen, Rene Pickhardt
  * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
