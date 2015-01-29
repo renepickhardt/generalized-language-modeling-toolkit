@@ -139,8 +139,7 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
                 }
             }
 
-            neededSequences = new ArrayDeque<>();
-            neededSequences.addAll(new TreeSet<>(sequences));
+            neededSequences = new ArrayDeque<>(new TreeSet<>(sequences));
         }
 
         private void getPatternFiles(Pattern pattern) {
