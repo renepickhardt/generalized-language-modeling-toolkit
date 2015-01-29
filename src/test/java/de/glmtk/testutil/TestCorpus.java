@@ -81,7 +81,8 @@ public enum TestCorpus {
     public String[] getTokens() throws Exception {
         if (tokens == null) {
             Set<Pattern> neededPatterns = Patterns.getMany("1");
-            glmtk.count(neededPatterns);
+            if (!glmtk.getStatus().getCounted().containsAll(neededPatterns))
+                glmtk.count(neededPatterns);
             Cache cache = new CacheBuilder().withCounts(neededPatterns).build(
                     glmtk.getPaths());
             Set<String> tokens = cache.getWords();

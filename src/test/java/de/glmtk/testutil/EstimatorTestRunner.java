@@ -82,6 +82,22 @@ public class EstimatorTestRunner extends Suite {
             this.condOrder = condOrder;
             this.margOrder = margOrder;
         }
+
+        public Estimator getEstimator() {
+            return estimator;
+        }
+
+        public boolean isContinuationEstimator() {
+            return continuationEstimator;
+        }
+
+        public int getCondOrder() {
+            return condOrder;
+        }
+
+        public int getMargOrder() {
+            return margOrder;
+        }
     }
 
     public class TestRunnerForEstimator extends Suite {
