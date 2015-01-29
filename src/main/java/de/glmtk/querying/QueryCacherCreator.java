@@ -21,7 +21,6 @@
 package de.glmtk.querying;
 
 import static de.glmtk.common.Output.OUTPUT;
-import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,21 +28,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
+import de.glmtk.GlmtkPaths;
+import de.glmtk.common.AbstractWorkerExecutor;
 import de.glmtk.common.Config;
 import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Status;
@@ -51,45 +48,26 @@ import de.glmtk.files.CountsReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
-import de.glmtk.util.ThreadUtils;
 
-public class QueryCacherCreator {
+public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
     private static final Logger LOGGER = Logger.get(QueryCacherCreator.class);
 
-    private class Thread implements Callable<Object> {
-        private Pattern pattern;
+    private class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
         private Path patternFile;
         private Path targetPatternFile;
         private Queue<String> neededSequences;
 
         @Override
-        public Object call() throws Exception {
-            while (!patternQueue.isEmpty()) {
-                pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
-                        TimeUnit.MILLISECONDS);
-                if (pattern == null)
-                    continue;
+        protected void work(Pattern pattern,
+                            int patternNo) throws IOException {
+            extractSequences(pattern);
+            getPatternFiles(pattern);
+            filterAndWriteSequenceCounts();
 
-                LOGGER.debug("Caching pattern '%s'.", pattern);
-
-                extractSequences();
-                getPatternFiles();
-                filterAndWriteSequenceCounts();
-
-                status.addQueryCacheCounted(name, pattern);
-
-                LOGGER.debug("Finished pattern '%s'.", pattern);
-
-                synchronized (progress) {
-                    progress.increase(1);
-                }
-            }
-
-            LOGGER.debug("Thread finished.");
-            return null;
+            status.addQueryCacheCounted(name, pattern);
         }
 
-        private void extractSequences() throws IOException {
+        private void extractSequences(Pattern pattern) throws IOException {
             Set<String> sequences = new HashSet<>();
 
             LOGGER.trace("Calculating Core Pattern:");
@@ -165,7 +143,7 @@ public class QueryCacherCreator {
             neededSequences.addAll(new TreeSet<>(sequences));
         }
 
-        private void getPatternFiles() {
+        private void getPatternFiles(Pattern pattern) {
             if (pattern.isAbsolute()) {
                 patternFile = absoluteDir.resolve(pattern.toString());
                 targetPatternFile = targetAbsoluteDir.resolve(pattern.toString());
@@ -201,68 +179,52 @@ public class QueryCacherCreator {
         }
     }
 
-    private Config config;
-
-    private Progress progress;
-    private Status status;
-    private String name;
-    private Path queryFile;
-    private boolean queryFileTagged;
     private Path absoluteDir;
     private Path continuationDir;
     private Path targetAbsoluteDir;
     private Path targetContinuationDir;
-    private BlockingQueue<Pattern> patternQueue;
-    private int readerMemory;
-    private int writerMemory;
+    private String name;
+    private Path queryFile;
+    private boolean queryFileTagged;
+    private Status status;
 
     public QueryCacherCreator(Config config) {
-        this.config = config;
+        super(config);
     }
 
-    public void createQueryCache(Status status,
-                                 Set<Pattern> patterns,
-                                 String name,
-                                 Path queryFile,
-                                 boolean queryFileTagged,
-                                 Path absoluteDir,
-                                 Path continuationDir,
-                                 Path targetAbsoluteDir,
-                                 Path targetContinuationDir) throws Exception {
+    public GlmtkPaths createQueryCache(String name,
+                                       Path queryFile,
+                                       boolean queryFileTagged,
+                                       Set<Pattern> patterns,
+                                       Status status,
+                                       GlmtkPaths paths) throws Exception {
         OUTPUT.setPhase(Phase.SCANNING_COUNTS);
 
-        LOGGER.debug("patterns = '%s'", patterns);
-        if (patterns.isEmpty())
-            return;
+        GlmtkPaths queryCachePaths = paths.newQueryCache(name);
+        queryCachePaths.logPaths();
+
+        absoluteDir = paths.getAbsoluteDir();
+        continuationDir = paths.getContinuationDir();
+        targetAbsoluteDir = queryCachePaths.getAbsoluteDir();
+        targetContinuationDir = queryCachePaths.getContinuationDir();
+        this.name = name;
+        this.queryFile = queryFile;
+        this.queryFileTagged = queryFileTagged;
+        this.status = status;
 
         Files.createDirectories(targetAbsoluteDir);
         Files.createDirectories(targetContinuationDir);
 
-        this.status = status;
-        this.name = name;
-        this.queryFile = queryFile;
-        this.queryFileTagged = queryFileTagged;
-        this.absoluteDir = absoluteDir;
-        this.continuationDir = continuationDir;
-        this.targetAbsoluteDir = targetAbsoluteDir;
-        this.targetContinuationDir = targetContinuationDir;
-        patternQueue = new LinkedBlockingQueue<>();
-        patternQueue.addAll(patterns);
-        calculateMemory();
+        work(patterns);
 
-        List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != config.getNumberOfThreads(); ++i)
-            threads.add(new Thread());
-
-        progress = OUTPUT.newProgress(patternQueue.size());
-        ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
+        return queryCachePaths;
     }
 
-    private void calculateMemory() {
-        readerMemory = config.getMemoryReader();
-        writerMemory = config.getMemoryWriter();
-
-        LOGGER.debug("readerMemory = %s", humanReadableByteCount(readerMemory));
-        LOGGER.debug("writerMemory = %s", humanReadableByteCount(writerMemory));
+    @Override
+    protected Collection<? extends Worker> createWorkers() {
+        List<Worker> workers = new ArrayList<>();
+        for (int i = 0; i != config.getNumberOfThreads(); ++i)
+            workers.add(new Worker());
+        return workers;
     }
 }

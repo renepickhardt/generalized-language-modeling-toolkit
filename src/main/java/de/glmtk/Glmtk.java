@@ -332,26 +332,19 @@ public class Glmtk {
 
     public GlmtkPaths provideQueryCache(Path queryFile,
                                         Set<Pattern> patterns) throws Exception {
-
-        String name = HashUtils.generateMd5Hash(queryFile);
-        GlmtkPaths queryCachePaths = paths.newQueryCache(name);
-        queryCachePaths.logPaths();
-
         String message = String.format("QueryCache for file '%s'", queryFile);
         OUTPUT.beginPhases(message + "...");
 
-        Set<Pattern> neededPatterns = new HashSet<>(patterns);
-        neededPatterns.removeAll(status.getQueryCacheCounted(name));
+        String hash = HashUtils.generateMd5Hash(queryFile);
 
-        LOGGER.debug("neededPatterns = %s", neededPatterns);
+        Set<Pattern> neededPatterns = new HashSet<>(patterns);
+        neededPatterns.removeAll(status.getQueryCacheCounted(hash));
 
         boolean tagged = Tagger.detectFileTagged(queryFile);
-        queryCacherCreator.createQueryCache(status, neededPatterns, name,
-                queryFile, tagged, paths.getAbsoluteDir(),
-                paths.getContinuationDir(), queryCachePaths.getAbsoluteDir(),
-                queryCachePaths.getContinuationDir());
+        GlmtkPaths queryCachePaths = queryCacherCreator.createQueryCache(hash,
+                queryFile, tagged, neededPatterns, status, paths);
         validateExpectedResults("Caching pattern counts", neededPatterns,
-                status.getQueryCacheCounted(name));
+                status.getQueryCacheCounted(hash));
 
         Path dir = queryCachePaths.getDir();
         long size = NioUtils.calcFileSize(dir);
