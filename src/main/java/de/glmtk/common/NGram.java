@@ -171,7 +171,12 @@ public class NGram {
      */
     // TODO: move method into class Cache?
     public boolean seen(Cache cache) {
-        return isEmpty() || cache.getAbsolute(this) != 0;
+        if (isEmpty())
+            return true;
+
+        if (pattern.isAbsolute())
+            return cache.getAbsolute(this) != 0;
+        return cache.getContinuation(this).getOnePlusCount() != 0;
     }
 
     /**

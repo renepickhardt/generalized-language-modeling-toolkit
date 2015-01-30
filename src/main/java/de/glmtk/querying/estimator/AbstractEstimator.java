@@ -23,16 +23,19 @@ package de.glmtk.querying.estimator;
 import static de.glmtk.common.PatternElem.SKP_WORD;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
-import de.glmtk.cache.UsageTrackingCache;
 import de.glmtk.common.NGram;
+import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
+import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
 import de.glmtk.logging.Logger;
-import de.glmtk.querying.calculator.SequenceCalculator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
 import de.glmtk.util.StringUtils;
@@ -144,27 +147,26 @@ public abstract class AbstractEstimator implements Estimator {
 
     @Override
     public CacheBuilder getRequiredCache(int modelSize) {
-        Cache oldCache = cache;
-        UsageTrackingCache usageTrackingCache = new UsageTrackingCache();
-        setCache(usageTrackingCache);
+        CacheBuilder requiredCache = new CacheBuilder();
 
-        SequenceCalculator calculator = new SequenceCalculator();
-        calculator.setEstimator(this);
+        Set<Pattern> alphaAbsPatterns = new HashSet<>();
+        Set<Pattern> alphaContPatterns = new HashSet<>();
+        alphaContPatterns.add(Pattern.WSKP_PATTERN);
+        Set<Pattern> gammaPatterns = new HashSet<>();
 
-        Logger.setTraceEnabled(false);
-
-        for (int n = 0; n != modelSize; ++n) {
-            List<String> sequence = new ArrayList<>(n);
-            for (int i = 0; i != n + 1; ++i)
-                sequence.add("a");
-            for (int i = 0; i != 10; ++i)
-                calculator.probability(sequence);
+        for (int i = 1; i != modelSize + 1; ++i)
+            alphaAbsPatterns.addAll(Patterns.getPermutations(i,
+                    PatternElem.CNT, PatternElem.SKP));
+        for (Pattern pattern : alphaAbsPatterns) {
+            alphaContPatterns.add(Pattern.WSKP_PATTERN.concat(pattern.convertSkpToWskp()));
+            gammaPatterns.add(pattern.concat(PatternElem.WSKP));
         }
 
-        Logger.setTraceEnabled(true);
+        requiredCache.withCounts(alphaAbsPatterns);
+        requiredCache.withCounts(alphaContPatterns);
+        requiredCache.withCounts(gammaPatterns);
+        requiredCache.withNGramTimes();
 
-        setCache(oldCache);
-
-        return usageTrackingCache.toCacheBuilder();
+        return requiredCache;
     }
 }

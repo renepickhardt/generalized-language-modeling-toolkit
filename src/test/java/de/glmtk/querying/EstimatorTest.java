@@ -22,6 +22,8 @@ package de.glmtk.querying;
 
 import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.querying.estimator.Estimators.ABS_UNIGRAM;
+import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE;
+import static de.glmtk.querying.estimator.Estimators.BACKOFF_CMLE_NOREC;
 import static de.glmtk.querying.estimator.Estimators.CMLE;
 import static de.glmtk.querying.estimator.Estimators.COMB_MLE_CMLE;
 import static de.glmtk.querying.estimator.Estimators.CONT_UNIGRAM;
@@ -90,8 +92,8 @@ public class EstimatorTest extends TestCorporaTest {
                     new EstimatorTestParams(CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                     // Backoff Estimators
-                    //new EstimatorTestParams(BACKOFF_CMLE_NOREC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-                    //new EstimatorTestParams(BACKOFF_CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+                    new EstimatorTestParams(BACKOFF_CMLE_NOREC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+                    new EstimatorTestParams(BACKOFF_CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                     // Interpol Estimators
                     new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
