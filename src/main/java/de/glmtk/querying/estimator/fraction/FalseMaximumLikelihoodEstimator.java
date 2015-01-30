@@ -24,6 +24,13 @@ import de.glmtk.common.NGram;
 
 public class FalseMaximumLikelihoodEstimator extends FractionEstimator {
     @Override
+    public boolean isDefined(NGram sequence,
+                             NGram history,
+                             int recDepth) {
+        return history.seen(cache);
+    }
+
+    @Override
     protected double calcNumerator(NGram sequence,
                                    NGram history,
                                    int recDepth) {

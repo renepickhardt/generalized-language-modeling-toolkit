@@ -24,6 +24,14 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 import de.glmtk.common.NGram;
 
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
+    @Override
+    public boolean isDefined(NGram sequence,
+                             NGram history,
+                             int recDepth) {
+        return WSKP_NGRAM.concat(
+                getFullHistory(sequence, history).convertSkpToWskp()).seen(
+                cache);
+    }
 
     @Override
     protected double calcNumerator(NGram sequence,
@@ -31,8 +39,7 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
                                    int recDepth) {
         NGram contFullSequence = WSKP_NGRAM.concat(getFullSequence(sequence,
                 history).convertSkpToWskp());
-        long contFullSequenceCount = cache.getContinuation(
-                contFullSequence).getOnePlusCount();
+        long contFullSequenceCount = cache.getContinuation(contFullSequence).getOnePlusCount();
         logTrace(recDepth, "contFullSequence = %s (%d)", contFullSequence,
                 contFullSequenceCount);
         return contFullSequenceCount;
