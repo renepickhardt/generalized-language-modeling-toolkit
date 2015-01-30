@@ -78,54 +78,51 @@ public class EstimatorTest extends TestCorporaTest {
             TestCorpus.ABC, TestCorpus.MOBYDICK);
     private static final int HIGHEST_ORDER = 5;
 
-    //@formatter:off
-    private static final List<EstimatorTestParams> ESTIMATORS =
-            Arrays.asList(
-                    // Substitute Estimators
-                    new EstimatorTestParams(UNIFORM, false, 0, HIGHEST_ORDER),
-                    new EstimatorTestParams(ABS_UNIGRAM, false, 0, HIGHEST_ORDER),
-                    new EstimatorTestParams(CONT_UNIGRAM, false, 0, HIGHEST_ORDER - 1),
-
-                    // Fractions Estimators
-                    new EstimatorTestParams(MLE, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(FMLE, false, 0, HIGHEST_ORDER),
-                    new EstimatorTestParams(CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-
-                    // Backoff Estimators
-                    new EstimatorTestParams(BACKOFF_CMLE_NOREC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-                    new EstimatorTestParams(BACKOFF_CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-
-                    // Interpol Estimators
-                    new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
-
-                    // DiffInterpol Estimators
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    // HIGHEST_ORDER should actually also work, but takes far to long to calculate
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    // HIGHEST_ORDER should actually also work, but takes far to long to calculate.
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-
-                    new EstimatorTestParams(INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                    new EstimatorTestParams(DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
-
-                    // Combination Estimators
-                    new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
-                    );
-    //@formatter:on
-
-    public static boolean countsAvailable = false;
+    private static boolean countsAvailable = false;
 
     @EstimatorTestParameters
     public static Iterable<EstimatorTestParams> data() {
-        return ESTIMATORS;
+        //@formatter:off
+        return Arrays.asList(
+                // Substitute Estimators
+                new EstimatorTestParams(UNIFORM, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(ABS_UNIGRAM, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(CONT_UNIGRAM, false, 0, HIGHEST_ORDER - 1),
+
+                // Fractions Estimators
+                new EstimatorTestParams(MLE, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(FMLE, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+
+                // Backoff Estimators
+                new EstimatorTestParams(BACKOFF_CMLE_NOREC, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+                new EstimatorTestParams(BACKOFF_CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+
+                // Interpol Estimators
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+
+                // DiffInterpol Estimators
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT_NOREC, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                // HIGHEST_ORDER should actually also work, but takes far to long to calculate
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                // HIGHEST_ORDER should actually also work, but takes far to long to calculate.
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
+
+                new EstimatorTestParams(INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
+                new EstimatorTestParams(DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
+
+                // Combination Estimators
+                new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)
+                );
+        //@formatter:on
     }
 
     @BeforeClass
@@ -134,10 +131,10 @@ public class EstimatorTest extends TestCorporaTest {
             return;
 
         CacheBuilder requiredCache = new CacheBuilder();
-        for (EstimatorTestParams estimator : ESTIMATORS) {
-            int highestOrder = Math.max(estimator.getCondOrder(),
-                    estimator.getMargOrder());
-            requiredCache.addAll(estimator.getEstimator().getRequiredCache(
+        for (EstimatorTestParams params : data()) {
+            int highestOrder = Math.max(params.getCondOrder(),
+                    params.getMargOrder());
+            requiredCache.addAll(params.getEstimator().getRequiredCache(
                     highestOrder));
         }
 

@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -66,6 +67,11 @@ import de.glmtk.util.NioUtils;
 public class EstimatorEqualsTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(EstimatorEqualsTest.class);
 
+    private static TestCorpus testCorpus = TestCorpus.EN0008T;
+    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
+
+    private static Cache cache = null;
+
     @Parameters(name = "{1}")
     public static Iterable<Object[]> data() {
         Estimator fastMknAbs = new FastModKneserNeyAbsEstimator();
@@ -84,15 +90,32 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         return Arrays.asList(new Object[][] {
                 {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
                 {Estimators.MOD_KNESER_NEY, fastMkn},
-                {fastMkn, learnedMkn},
+                //{fastMkn, learnedMkn},
                 {Estimators.GLM_ABS, fastGlmAbs},
                 {Estimators.GLM, fastGlm}
         });
         //@formatter:on
     }
 
-    private static TestCorpus testCorpus = TestCorpus.EN0008T;
-    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
+    @BeforeClass
+    public static void setUpCache() throws Exception {
+        if (cache != null)
+            return;
+
+        CacheBuilder requiredCache = new CacheBuilder();
+        for (Object[] params : data()) {
+            Estimator estimator = (Estimator) params[0];
+            requiredCache.addAll(estimator.getRequiredCache(5));
+        }
+
+        Glmtk glmtk = testCorpus.getGlmtk();
+        glmtk.count(requiredCache.getNeededPatterns());
+
+        GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
+                requiredCache.getNeededPatterns());
+
+        cache = requiredCache.withProgress().build(queryCache);
+    }
 
     public Estimator expected;
     public Estimator actual;
@@ -110,10 +133,6 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         Glmtk glmtk = testCorpus.getGlmtk();
         GlmtkPaths paths = glmtk.getPaths();
 
-        CacheBuilder requiredCache = new CacheBuilder();
-        requiredCache.addAll(expected.getRequiredCache(5));
-        requiredCache.addAll(actual.getRequiredCache(5));
-        Cache cache = requiredCache.withProgress().build(paths);
         expected.setCache(cache);
         actual.setCache(cache);
 
