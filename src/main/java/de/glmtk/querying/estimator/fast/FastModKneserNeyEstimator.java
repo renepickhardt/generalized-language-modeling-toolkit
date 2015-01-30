@@ -33,7 +33,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         NGram fullHistory = getFullHistory(sequence, history);
         long denominator = cache.getAbsolute(fullHistory);
         if (denominator == 0.0)
-            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
+            return probability(sequence, history.backoff(backoffMode), recDepth);
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getAbsolute(fullSequence);
@@ -75,7 +75,8 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         long denominator = cache.getContinuation(
                 WSKP_NGRAM.concat(fullHistory.convertSkpToWskp())).getOnePlusCount();
         if (denominator == 0.0)
-            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
+            return probabilityLower(sequence, history.backoff(backoffMode),
+                    recDepth);
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getContinuation(

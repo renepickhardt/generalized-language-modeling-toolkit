@@ -61,8 +61,7 @@ public class FastModKneserNeyAbsEstimator extends AbstractEstimator {
                                      int recDepth) {
         long denominator = cache.getAbsolute(getFullHistory(sequence, history));
         if (denominator == 0.0)
-            return probability(sequence, history.backoff(BackoffMode.DEL),
-                    recDepth);
+            return probability(sequence, history.backoff(backoffMode), recDepth);
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getAbsolute(fullSequence);

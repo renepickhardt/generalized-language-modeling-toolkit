@@ -35,8 +35,14 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
                                      int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
         long denominator = cache.getAbsolute(fullHistory);
-        if (denominator == 0.0)
-            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
+        if (denominator == 0.0) {
+            double result = 0;
+            Set<NGram> diffHistories = history.getDifferentiatedNGrams(backoffMode);
+            for (NGram diffHistory : diffHistories)
+                result += probability(sequence, diffHistory, recDepth);
+            result /= diffHistories.size();
+            return result;
+        }
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getAbsolute(fullSequence);
@@ -80,8 +86,14 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
         NGram fullHistory = getFullHistory(sequence, history);
         long denominator = cache.getContinuation(
                 WSKP_NGRAM.concat(fullHistory.convertSkpToWskp())).getOnePlusCount();
-        if (denominator == 0.0)
-            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
+        if (denominator == 0.0) {
+            double result = 0;
+            Set<NGram> diffHistories = history.getDifferentiatedNGrams(backoffMode);
+            for (NGram diffHistory : diffHistories)
+                result += probabilityLower(sequence, diffHistory, recDepth);
+            result /= diffHistories.size();
+            return result;
+        }
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getContinuation(
