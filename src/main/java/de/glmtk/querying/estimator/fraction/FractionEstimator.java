@@ -22,7 +22,6 @@ package de.glmtk.querying.estimator.fraction;
 
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
 public abstract class FractionEstimator extends AbstractEstimator {
@@ -30,21 +29,7 @@ public abstract class FractionEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        if (history.isEmpty())
-            switch (probMode) {
-                case COND:
-                    logTrace(recDepth,
-                            "Probability undefined, returning zero (COND):");
-                    return 0;
-                case MARG:
-                    logTrace(recDepth,
-                            "Probability undefined, returning substitute (MARG):");
-                    return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
-                            recDepth);
-                default:
-                    throw new SwitchCaseNotImplementedException();
-            }
-        else if (!isDefined(sequence, history, recDepth)) {
+        if (!isDefined(sequence, history, recDepth)) {
             logTrace(recDepth, "Fraction undefined, backing off.");
             return probability(sequence, history.backoff(BackoffMode.DEL),
                     recDepth);
