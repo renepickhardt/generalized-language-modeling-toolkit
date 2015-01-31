@@ -41,6 +41,7 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
 
     public FastGenLangModelAbsEstimator() {
         setBackoffMode(BackoffMode.SKP);
+        discounts = new HashMap<>();
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {

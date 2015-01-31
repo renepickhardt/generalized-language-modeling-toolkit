@@ -196,18 +196,26 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
         return containsAny(Arrays.asList(POS, PSKP));
     }
 
+    public int numElems(PatternElem elem) {
+        int num = 0;
+        for (PatternElem e : elems)
+            if (e.equals(elem))
+                ++num;
+        return num;
+    }
+
     public int numElems(Collection<PatternElem> elems) {
         if (elems.isEmpty())
             throw new IllegalArgumentException("Argument was empty collection.");
-        int result = 0;
+        int num = 0;
         outerLoop:
         for (PatternElem elem : this.elems)
             for (PatternElem e : elems)
                 if (elem.equals(e)) {
-                    ++result;
+                    ++num;
                     continue outerLoop;
                 }
-        return result;
+        return num;
     }
 
     /**

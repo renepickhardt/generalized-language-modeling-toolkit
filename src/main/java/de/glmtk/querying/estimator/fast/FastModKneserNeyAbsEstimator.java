@@ -40,6 +40,7 @@ public class FastModKneserNeyAbsEstimator extends AbstractEstimator {
 
     public FastModKneserNeyAbsEstimator() {
         setBackoffMode(BackoffMode.DEL);
+        discounts = new HashMap<>();
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {

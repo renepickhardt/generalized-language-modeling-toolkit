@@ -48,6 +48,7 @@ import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
+import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
@@ -80,6 +81,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         fastMkn.setName("Fast-Modified-Kneser-Ney");
         Estimator learnedMkn = new LearnedModKneserNeyEstimator();
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
+        Estimator iterativeMkn = new IterativeModKneserNeyEstimator();
+        iterativeMkn.setName("Iterative-Modified-Knesery-Ney");
 
         Estimator fastGlmAbs = new FastGenLangModelAbsEstimator();
         fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
@@ -90,6 +93,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         return Arrays.asList(new Object[][] {
                 {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
                 {Estimators.MOD_KNESER_NEY, fastMkn},
+                {Estimators.MOD_KNESER_NEY, iterativeMkn},
                 //{fastMkn, learnedMkn},
                 {Estimators.GLM_ABS, fastGlmAbs},
                 {Estimators.GLM, fastGlm}

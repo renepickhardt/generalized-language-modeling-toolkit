@@ -1,12 +1,9 @@
 package de.glmtk.querying;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -29,6 +26,7 @@ import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
+import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
 import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
@@ -40,14 +38,20 @@ public class EstimatorSpeedTest extends TestCorporaTest {
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
     private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
-    private static List<Estimator> estimators;
-    static {
+    private static Cache cache = null;
+
+    private static Map<Estimator, Long> results = new LinkedHashMap<>();
+
+    @Parameters(name = "{0}")
+    public static Iterable<Object[]> data() {
         Estimator fastMknAbs = new FastModKneserNeyAbsEstimator();
         fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
         Estimator fastMkn = new FastModKneserNeyEstimator();
         fastMkn.setName("Fast-Modified-Kneser-Ney");
         Estimator learnedMkn = new LearnedModKneserNeyEstimator();
         learnedMkn.setName("Learned-Modified-Kneser-Ney");
+        Estimator iterativeMkn = new IterativeModKneserNeyEstimator();
+        iterativeMkn.setName("Iterative-Modified-Knesery-Ney");
 
         Estimator fastGlmAbs = new FastGenLangModelAbsEstimator();
         fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
@@ -55,43 +59,42 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         fastGlm.setName("Fast-Generalized-Language-Model");
 
         //@formatter:off
-        estimators = Arrays.asList(
-                Estimators.MOD_KNESER_NEY_ABS,
-                fastMknAbs,
+        return Arrays.asList(new Object[][]{
+                {Estimators.MOD_KNESER_NEY_ABS},
+                {fastMknAbs},
 
-                Estimators.MOD_KNESER_NEY,
-                fastMkn,
-                learnedMkn,
+                {Estimators.MOD_KNESER_NEY},
+                {fastMkn},
+                {iterativeMkn},
+                //learnedMkn,
 
-                Estimators.GLM_ABS,
-                fastGlmAbs,
+                {Estimators.GLM_ABS},
+                {fastGlmAbs},
 
-                Estimators.GLM,
-                fastGlm
-                );
+                {Estimators.GLM},
+                {fastGlm}
+        });
         //@formatter:on
     }
 
-    private static Map<Estimator, Long> results = new LinkedHashMap<>();
-
-    private static Cache cache = null;
-
-    @Parameters(name = "{0}")
-    public static Iterable<Object[]> data() {
-        List<Object[]> result = new ArrayList<>();
-        for (Estimator estimator : estimators)
-            result.add(new Object[] {estimator});
-        return result;
-    }
-
     @BeforeClass
-    public static void loadCache() throws IOException {
-        GlmtkPaths paths = testCorpus.getGlmtk().getPaths();
+    public static void setUpCache() throws Exception {
+        if (cache != null)
+            return;
 
         CacheBuilder requiredCache = new CacheBuilder().withProgress();
-        for (Estimator estimator : estimators)
+        for (Object[] params : data()) {
+            Estimator estimator = (Estimator) params[0];
             requiredCache.addAll(estimator.getRequiredCache(5));
-        cache = requiredCache.build(paths);
+        }
+
+        Glmtk glmtk = testCorpus.getGlmtk();
+        glmtk.count(requiredCache.getNeededPatterns());
+
+        GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
+                requiredCache.getNeededPatterns());
+
+        cache = requiredCache.withProgress().build(queryCache);
     }
 
     @AfterClass
