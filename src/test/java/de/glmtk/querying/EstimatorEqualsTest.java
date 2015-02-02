@@ -48,8 +48,8 @@ import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
+import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
 import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
-import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.NioUtils;
@@ -79,8 +79,6 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
         Estimator fastMkn = new FastModKneserNeyEstimator();
         fastMkn.setName("Fast-Modified-Kneser-Ney");
-        Estimator learnedMkn = new LearnedModKneserNeyEstimator();
-        learnedMkn.setName("Learned-Modified-Kneser-Ney");
         Estimator iterativeMkn = new IterativeModKneserNeyEstimator();
         iterativeMkn.setName("Iterative-Modified-Knesery-Ney");
 
@@ -88,15 +86,17 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
         Estimator fastGlm = new FastGenLangModelEstimator();
         fastGlm.setName("Fast-Generalized-Language-Model");
+        Estimator iterativeGlm = new IterativeGenLangModelEstimator();
+        iterativeGlm.setName("Iterative-Modified-Kneser-Ney");
 
         //@formatter:off
         return Arrays.asList(new Object[][] {
                 {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
                 {Estimators.MOD_KNESER_NEY, fastMkn},
                 {Estimators.MOD_KNESER_NEY, iterativeMkn},
-                //{fastMkn, learnedMkn},
                 {Estimators.GLM_ABS, fastGlmAbs},
-                {Estimators.GLM, fastGlm}
+                {Estimators.GLM, fastGlm},
+                {Estimators.GLM, iterativeGlm}
         });
         //@formatter:on
     }
@@ -140,7 +140,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         expected.setCache(cache);
         actual.setCache(cache);
 
-        QueryMode queryMode = QueryMode.newCond(5);
+        QueryMode queryMode = QueryMode.newSequence();
         QueryExecutor executorExpected = new QueryExecutor(paths, queryMode,
                 expected, 5);
         QueryExecutor executorActual = new QueryExecutor(paths, queryMode,

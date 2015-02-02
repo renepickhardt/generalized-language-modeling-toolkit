@@ -300,6 +300,19 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
                 "Pattern '%s' is not a continuation pattern.", this));
     }
 
+    public List<String> apply(List<String> tokens) {
+        List<String> result = new ArrayList<>(tokens.size());
+
+        boolean first = true;
+        for (int i = 0; i != size(); ++i) {
+            PatternElem elem = elems.get(i);
+            String token = tokens.get(i);
+            result.add(elem.apply(token));
+        }
+
+        return result;
+    }
+
     // TODO: untested
     public String apply(String[] words) {
         StringBuilder result = new StringBuilder();

@@ -26,8 +26,8 @@ import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
+import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
 import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
-import de.glmtk.querying.estimator.learned.LearnedModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
@@ -48,15 +48,15 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
         Estimator fastMkn = new FastModKneserNeyEstimator();
         fastMkn.setName("Fast-Modified-Kneser-Ney");
-        Estimator learnedMkn = new LearnedModKneserNeyEstimator();
-        learnedMkn.setName("Learned-Modified-Kneser-Ney");
         Estimator iterativeMkn = new IterativeModKneserNeyEstimator();
-        iterativeMkn.setName("Iterative-Modified-Knesery-Ney");
+        iterativeMkn.setName("Iterative-Modified-Kneser-Ney");
 
         Estimator fastGlmAbs = new FastGenLangModelAbsEstimator();
         fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
         Estimator fastGlm = new FastGenLangModelEstimator();
         fastGlm.setName("Fast-Generalized-Language-Model");
+        Estimator iterativeGlm = new IterativeGenLangModelEstimator();
+        iterativeGlm.setName("Iterative-Generalized-Language-Model");
 
         //@formatter:off
         return Arrays.asList(new Object[][]{
@@ -66,13 +66,13 @@ public class EstimatorSpeedTest extends TestCorporaTest {
                 {Estimators.MOD_KNESER_NEY},
                 {fastMkn},
                 {iterativeMkn},
-                //learnedMkn,
 
                 {Estimators.GLM_ABS},
                 {fastGlmAbs},
 
                 {Estimators.GLM},
-                {fastGlm}
+                {fastGlm},
+                {iterativeGlm}
         });
         //@formatter:on
     }

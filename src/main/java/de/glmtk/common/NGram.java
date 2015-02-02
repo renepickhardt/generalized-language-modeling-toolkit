@@ -136,6 +136,10 @@ public class NGram {
         return new NGram(tokens.get(index));
     }
 
+    public String getWord(int index) {
+        return tokens.get(index);
+    }
+
     public NGram set(int index,
                      String token) {
         if (index < 0 || index >= size())
@@ -324,6 +328,28 @@ public class NGram {
                     && !tokens.get(i).equals(SKP_WORD))
                 result.add(set(i, SKP_WORD));
         }
+        return result;
+    }
+
+    // TODO: implemet backoffMode
+    public List<NGram> getAllDifferentiatedNGrams(BackoffMode backoffMode) {
+        int order = size();
+        if (order == 0)
+            return Arrays.asList(this);
+        List<NGram> result = new ArrayList<>(pow(2, order));
+
+        for (Pattern pattern : Patterns.getPermutations(order, PatternElem.SKP,
+                PatternElem.CNT))
+            result.add(new NGram(pattern.apply(tokens), pattern));
+
+        return result;
+    }
+
+    private int pow(int base,
+                    int times) {
+        int result = 1;
+        for (int i = 0; i != times; ++i)
+            result *= base;
         return result;
     }
 }

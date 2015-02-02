@@ -39,7 +39,7 @@ import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
 public class IterativeModKneserNeyEstimator extends AbstractEstimator {
-    private BackoffMode backoffMode;
+    protected BackoffMode backoffMode;
     private Map<Pattern, Discounts> discounts;
 
     public IterativeModKneserNeyEstimator() {
@@ -68,7 +68,7 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
         while (!fullHistory.seen(cache))
             fullHistory = fullHistory.backoff(backoffMode);
 
-        NGram hist = fullHistory.range(0, fullHistory.size() - 1);
+        NGram hist = fullHistory.remove(fullHistory.size() - 1);
         List<Double> lambdas = calcLambdas(hist);
 
         double prob = 0.0;
@@ -95,28 +95,31 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
      * @param discount
      *            If {@code true} discount alpha if {@code false} not.
      */
-    private double calcAlpha(NGram sequence,
-                             boolean absolute,
-                             boolean discount) {
+    protected double calcAlpha(NGram sequence,
+                               boolean absolute,
+                               boolean discount) {
         long absSequenceCount = cache.getAbsolute(sequence);
-        double numerator;
+        double alpha;
         if (absolute)
-            numerator = absSequenceCount;
+            alpha = absSequenceCount;
         else
-            numerator = cache.getContinuation(
+            alpha = cache.getContinuation(
                     WSKP_NGRAM.concat(sequence.convertSkpToWskp())).getOnePlusCount();
 
         if (discount) {
             Discounts disc = calcDiscounts(sequence.getPattern());
             double d = disc.getForCount(absSequenceCount);
 
-            numerator = Math.max(numerator - d, 0.0);
+            alpha = Math.max(alpha - d, 0.0);
         }
 
-        return numerator;
+        logTrace(0, "alpha(%s\t, absolute=%-5b, discount=%-5b) = %f", sequence,
+                absolute, discount, alpha);
+
+        return alpha;
     }
 
-    private List<Double> calcLambdas(NGram history) {
+    protected List<Double> calcLambdas(NGram history) {
         int order = history.getPattern().numElems(PatternElem.CNT);
         List<Double> lambdas = new ArrayList<>(order);
 
@@ -136,8 +139,8 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
         return lambdas;
     }
 
-    private double calcGamma(NGram history,
-                             long denominator) {
+    protected double calcGamma(NGram history,
+                               long denominator) {
         Discounts discount = calcDiscounts(history.getPattern().concat(
                 PatternElem.CNT));
         Counts contCount = cache.getContinuation(history.concat(WSKP_NGRAM));
