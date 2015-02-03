@@ -87,7 +87,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         Estimator fastGlm = new FastGenLangModelEstimator();
         fastGlm.setName("Fast-Generalized-Language-Model");
         Estimator iterativeGlm = new IterativeGenLangModelEstimator();
-        iterativeGlm.setName("Iterative-Modified-Kneser-Ney");
+        iterativeGlm.setName("Iterative-Generalized-Language-Model");
 
         //@formatter:off
         return Arrays.asList(new Object[][] {

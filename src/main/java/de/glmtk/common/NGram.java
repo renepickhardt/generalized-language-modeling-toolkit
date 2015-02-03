@@ -352,4 +352,15 @@ public class NGram {
             result *= base;
         return result;
     }
+
+    public NGram applyIntPattern(int intPattern,
+                                 int order) {
+        List<PatternElem> elems = new ArrayList<>(order);
+        for (int i = 0; i != order; ++i) {
+            elems.add((intPattern & 1) == 1 ? PatternElem.CNT : PatternElem.SKP);
+            intPattern >>= 1;
+        }
+        Pattern pattern = Patterns.get(elems);
+        return new NGram(pattern.apply(tokens), pattern);
+    }
 }

@@ -151,7 +151,7 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
                 / denominator;
     }
 
-    private Discounts calcDiscounts(Pattern pattern) {
+    protected Discounts calcDiscounts(Pattern pattern) {
         Discounts result = discounts.get(pattern);
         if (result != null)
             return result;

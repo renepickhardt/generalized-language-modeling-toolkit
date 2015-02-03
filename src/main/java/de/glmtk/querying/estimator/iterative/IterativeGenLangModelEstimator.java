@@ -22,16 +22,32 @@ package de.glmtk.querying.estimator.iterative;
 
 import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.common.NGram.WSKP_NGRAM;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
+import de.glmtk.counts.Counts;
+import de.glmtk.counts.Discounts;
+import de.glmtk.util.BinomDiamond;
+import de.glmtk.util.BinomDiamondNode;
 
 public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimator {
+    public static class GlmNode extends BinomDiamondNode<GlmNode> {
+        private NGram history = null;
+        private long absoluteCount = 0;
+        private long continuationCount = 0;
+        private double gammaNumerator = 0.0;
+        private double absoluteFactor = 0.0;
+        private double continuationFactor = 0.0;
+
+        @Override
+        public String toString() {
+            return String.format(
+                    "%2d %-9s  abs=%6d  cont=%6d  gamma=%e  absFactor=%e  contFactor=%e",
+                    getIndex(), history, absoluteCount, continuationCount,
+                    gammaNumerator, absoluteFactor, continuationFactor);
+        }
+    }
+
     public IterativeGenLangModelEstimator() {
         super();
         setBackoffMode(BackoffMode.SKP);
@@ -46,97 +62,99 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        if (!getFullHistory(sequence, history).seen(cache))
+        if (history.isEmpty())
+            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
+
+        if (!WSKP_NGRAM.concat(
+                getFullHistory(sequence, history).convertSkpToWskp()).seen(
+                        cache))
             return Double.NaN;
 
-        List<NGram> diffHistories = history.getAllDifferentiatedNGrams(backoffMode);
-        List<Double> lambdas = calcLambdas(history);
+        BinomDiamond<GlmNode> diamond = buildDiamond(history);
 
         double prob = 0.0;
-        int numDiffHistories = diffHistories.size();
-        for (int i = 0; i != numDiffHistories; ++i) {
-            double lambda = lambdas.get(i);
-            if (lambda != 0) {
-                NGram fullSequence = getFullSequence(sequence,
-                        diffHistories.get(i));
-                double alpha = calcAlpha(fullSequence, i == 0,
-                        i != numDiffHistories - 1);
-                prob += alpha * lambdas.get(i);
+        for (GlmNode node : diamond) {
+            NGram fullSequence = getFullSequence(sequence, node.history);
+            if (node.absoluteFactor != 0) {
+                double absAlpha = calcAlpha(fullSequence, true,
+                        !node.isBottom());
+                prob += absAlpha * node.absoluteFactor;
+            }
+            if (node.continuationFactor != 0) {
+                double contAlpha = calcAlpha(fullSequence, false,
+                        !node.isBottom());
+                prob += contAlpha * node.continuationFactor;
             }
         }
 
+        if (Double.isNaN(prob))
+            prob = Double.POSITIVE_INFINITY;
         return prob;
     }
 
-    @Override
-    protected List<Double> calcLambdas(NGram history) {
-        List<NGram> diffHistories = history.getAllDifferentiatedNGrams(backoffMode);
-        int numDiffHistories = diffHistories.size();
-
-        List<Double> lambdas = new ArrayList<>(numDiffHistories);
-
-        for (int i = 0; i != diffHistories.size(); ++i) {
-            NGram diffHistory = diffHistories.get(i);
-
-            double lambdaCoeff = calcLambdaCoefficient(diffHistory.getPattern());
-            double gammaMult = i == 0 ? 1.0 : calcGammaMult(history,
-                    diffHistory);
-
-            long denominator;
-            if (i == 0)
-                denominator = cache.getAbsolute(diffHistory.concat(SKP_NGRAM));
-            else
-                denominator = cache.getContinuation(
-                        WSKP_NGRAM.concat(diffHistory.convertSkpToWskp()).concat(
-                                WSKP_NGRAM)).getOnePlusCount();
-
-            double lambda = lambdaCoeff * gammaMult / denominator;
-            lambdas.add(lambda);
+    private BinomDiamond<GlmNode> buildDiamond(NGram history) {
+        int order = history.size();
+        BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order, GlmNode.class);
+        for (GlmNode node : diamond) {
+            NGram hist = history.applyIntPattern(~node.getIndex(), order);
+            node.history = hist;
+            node.absoluteCount = cache.getAbsolute(hist.concat(SKP_NGRAM));
+            node.continuationCount = cache.getContinuation(
+                    WSKP_NGRAM.concat(hist.convertSkpToWskp()).concat(
+                            WSKP_NGRAM)).getOnePlusCount();
+            if (node.continuationCount != 0)
+                node.gammaNumerator = calcGammaNumerator(hist);
         }
 
-        return lambdas;
-    }
+        for (GlmNode node : diamond.inOrder())
+            if (node.isTop())
+                node.absoluteFactor = 1.0 / node.absoluteCount;
+            else {
+                double lambdaCoefficient = calcLambdaCoefficient(
+                        node.getLevel(), node.getOrder());
+                double gammaMult = calcGammaMult(diamond.getTop(), node);
+                double denominator = node.continuationCount;
 
-    private double calcGammaMult(NGram history,
-                                 NGram diffHistory) {
-        if (history.getPattern().equals(diffHistory.getPattern()))
-            return 0.0;
-
-        int numSkips = history.getPattern().numElems(PatternElem.SKP);
-        double result = calcGamma(history, numSkips == 0);
-        double sum = 0.0;
-        for (int i = 0; i != history.size(); ++i)
-            if (!history.getWord(i).equals(PatternElem.SKP_WORD)
-                    && diffHistory.getWord(i).equals(PatternElem.SKP_WORD)) {
-                NGram recHistory = history.set(i, diffHistory.getWord(i));
-                sum += calcGammaMult(recHistory, diffHistory);
+                node.continuationFactor = lambdaCoefficient * gammaMult
+                        / denominator;
             }
-        if (sum != 0.0)
-            result *= sum;
 
-        return result;
+        return diamond;
     }
 
-    private double calcLambdaCoefficient(Pattern pattern) {
-        int order = pattern.size() + 1;
-        int numSkips = pattern.numElems(PatternElem.SKP);
+    private double calcGammaNumerator(NGram history) {
+        Discounts discount = calcDiscounts(history.getPattern().concat(
+                PatternElem.CNT));
+        Counts contCount = cache.getContinuation(history.concat(WSKP_NGRAM));
 
+        return discount.getOne() * contCount.getOneCount() + discount.getTwo()
+                * contCount.getTwoCount() + discount.getThree()
+                * contCount.getThreePlusCount();
+    }
+
+    private double calcLambdaCoefficient(int level,
+                                         int order) {
         int result = 1;
-        for (int i = 0; i != numSkips; ++i)
-            result *= (order - i - 1);
+        for (int i = 0; i != level; ++i)
+            result *= (order - i);
         return 1.0 / result;
     }
 
-    protected double calcGamma(NGram history,
-                               boolean highestOrder) {
-        long denominator;
-        if (highestOrder)
-            denominator = cache.getAbsolute(history.concat(SKP_NGRAM));
+    private double calcGammaMult(GlmNode ancestor,
+                                 GlmNode node) {
+        double result;
+        if (ancestor.isTop())
+            result = ancestor.gammaNumerator / ancestor.absoluteCount;
         else
-            denominator = cache.getContinuation(
-                    WSKP_NGRAM.concat(history.convertSkpToWskp()).concat(
-                            WSKP_NGRAM)).getOnePlusCount();
-
-        return calcGamma(history, denominator);
+            result = ancestor.gammaNumerator / ancestor.continuationCount;
+        double sum = 0.0;
+        for (int i = 0; i != ancestor.numChilds(); ++i) {
+            GlmNode child = ancestor.getChild(i);
+            if (child != node && child.isAncestorOf(node))
+                sum += calcGammaMult(child, node);
+        }
+        if (sum != 0)
+            result *= sum;
+        return result;
     }
 }
