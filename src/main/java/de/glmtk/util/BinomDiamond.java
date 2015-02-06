@@ -28,10 +28,6 @@ import java.util.ListIterator;
 public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> {
     private T[] diamond;
     private int order;
-    /**
-     * For {@link #inOrder()} resp. {@link GlmDiamondInOrderIterator}.
-     */
-    private int[] widths;
 
     public BinomDiamond(int order,
                         Class<T> clazz) {
@@ -43,14 +39,6 @@ public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> 
         T[] diamond = (T[]) Array.newInstance(clazz, 1 << order);
         this.diamond = diamond;
         this.order = order;
-
-        widths = new int[order + 1];
-        int binomial = 1;
-        for (int i = 0; i != order + 1; ++i) {
-            widths[i] = binomial;
-            binomial *= (order - i);
-            binomial /= (i + 1);
-        }
 
         try {
             Constructor<T> cons = clazz.getDeclaredConstructor();
@@ -160,86 +148,47 @@ public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> 
         }
     }
 
-    private class GlmDiamondInOrderIterator implements ListIterator<T> {
-        private int level = 0;
-        private int position = 0;
-
-        private int getIndex(int level,
-                             int position) {
-            int index = (1 << level) - 1;
-            for (int i = 0; i != position; ++i) {
-                int t = (index | (index - 1)) + 1;
-                index = t | ((((t & -t) / (index & -index)) >> 1) - 1);
-            }
-            return index;
-        }
+    private class GlmDiamondInOrderIterator implements Iterator<T> {
+        private int index = -1;
+        private int nextIndex = 0;
 
         @Override
         public boolean hasNext() {
-            return level <= order;
+            return nextIndex != -1;
         }
 
+        /**
+         * {@inheritDoc}
+         *
+         * <p>
+         * <a href=
+         * "http://stackoverflow.com/questions/28310472/generative-function-that-produces-integers-sorted-by-bits-set-then-value/28310788"
+         * >Stack Overflow: Generative Function that produces integers sorted by
+         * bits set, then value</a>
+         */
         @Override
         public T next() {
-            int index = getIndex(level, position);
-            ++position;
-            if (position == widths[level]) {
-                ++level;
-                position = 0;
+            index = nextIndex;
+            if (nextIndex == 0)
+                nextIndex = 1;
+            else {
+                int x = Integer.bitCount(nextIndex);
+                // next integer with x bits set
+                int t = (nextIndex | (nextIndex - 1)) + 1;
+                nextIndex = t
+                        | ((((t & -t) / (nextIndex & -nextIndex)) >> 1) - 1);
+
+                int m = ((1 << x) - 1) << (order - x);
+                if (nextIndex > m)
+                    nextIndex = (1 << (x + 1)) - 1;
+                if (nextIndex > (1 << order) - 1)
+                    nextIndex = -1;
             }
             return diamond[index];
-        }
-
-        @Override
-        public boolean hasPrevious() {
-            return level >= 0;
-        }
-
-        @Override
-        public T previous() {
-            int index = getIndex(level, position);
-            --position;
-            if (position == -1) {
-                --level;
-                position = widths[level] - 1;
-            }
-            return diamond[index];
-        }
-
-        @Override
-        public int nextIndex() {
-            int l = level;
-            int p = position + 1;
-            if (p == widths[level]) {
-                ++l;
-                p = 0;
-            }
-            return getIndex(l, p);
-        }
-
-        @Override
-        public int previousIndex() {
-            int l = level;
-            int p = position - 1;
-            if (p == -1) {
-                --l;
-                p = widths[l] - 1;
-            }
-            return getIndex(l, p);
         }
 
         @Override
         public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(T e) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void add(T e) {
             throw new UnsupportedOperationException();
         }
     }

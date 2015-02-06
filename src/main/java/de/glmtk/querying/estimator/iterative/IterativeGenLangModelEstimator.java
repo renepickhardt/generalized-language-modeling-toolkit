@@ -38,14 +38,6 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         private double gammaNumerator = 0.0;
         private double absoluteFactor = 0.0;
         private double continuationFactor = 0.0;
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "%2d %-9s  abs=%6d  cont=%6d  gamma=%e  absFactor=%e  contFactor=%e",
-                    getIndex(), history, absoluteCount, continuationCount,
-                    gammaNumerator, absoluteFactor, continuationFactor);
-        }
     }
 
     public IterativeGenLangModelEstimator() {
@@ -65,11 +57,6 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         if (history.isEmpty())
             return (double) cache.getAbsolute(sequence) / cache.getNumWords();
 
-        if (!WSKP_NGRAM.concat(
-                getFullHistory(sequence, history).convertSkpToWskp()).seen(
-                        cache))
-            return Double.NaN;
-
         BinomDiamond<GlmNode> diamond = buildDiamond(history);
 
         double prob = 0.0;
@@ -87,39 +74,102 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
             }
         }
 
-        if (Double.isNaN(prob))
-            prob = Double.POSITIVE_INFINITY;
         return prob;
     }
 
     private BinomDiamond<GlmNode> buildDiamond(NGram history) {
         int order = history.size();
         BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order, GlmNode.class);
-        for (GlmNode node : diamond) {
+
+        for (GlmNode node : diamond.inOrder()) {
             NGram hist = history.applyIntPattern(~node.getIndex(), order);
             node.history = hist;
             node.absoluteCount = cache.getAbsolute(hist.concat(SKP_NGRAM));
             node.continuationCount = cache.getContinuation(
                     WSKP_NGRAM.concat(hist.convertSkpToWskp()).concat(
                             WSKP_NGRAM)).getOnePlusCount();
-            if (node.continuationCount != 0)
-                node.gammaNumerator = calcGammaNumerator(hist);
-        }
+            node.gammaNumerator = calcGammaNumerator(hist);
 
-        for (GlmNode node : diamond.inOrder())
-            if (node.isTop())
-                node.absoluteFactor = 1.0 / node.absoluteCount;
+            double coeff = calcCoefficient(node.getLevel(), diamond.order());
+
+            if (node.absoluteCount == 0)
+                node.absoluteFactor = 0.0;
+            else if (node.isTop())
+                node.absoluteFactor = coeff / node.absoluteCount;
             else {
-                double lambdaCoefficient = calcLambdaCoefficient(
-                        node.getLevel(), node.getOrder());
-                double gammaMult = calcGammaMult(diamond.getTop(), node);
-                double denominator = node.continuationCount;
-
-                node.continuationFactor = lambdaCoefficient * gammaMult
-                        / denominator;
+                node.absoluteFactor = calcAbsoluteFactor(diamond.getTop(), node);
+                node.absoluteFactor *= coeff / node.absoluteCount;
             }
 
+            if (node.continuationCount == 0 || node.isTop())
+                node.continuationFactor = 0;
+            else {
+                node.continuationFactor = calcContinuationFactor(
+                        diamond.getTop(), node, true);
+                node.continuationFactor *= coeff / node.continuationCount;
+            }
+        }
+
         return diamond;
+    }
+
+    private double calcCoefficient(int level,
+                                   int order) {
+        int result = 1;
+        for (int i = 0; i != level; ++i)
+            result *= (order - i);
+        return 1.0 / result;
+    }
+
+    private int calcAbsoluteFactor(GlmNode ancestor,
+                                   GlmNode node) {
+        if (ancestor.absoluteCount != 0)
+            return 0;
+
+        if (ancestor.getLevel() == node.getLevel() - 1)
+            return 1;
+
+        int numUnseenPaths = 0;
+        for (int i = 0; i != ancestor.numChilds(); ++i) {
+            GlmNode child = ancestor.getChild(i);
+            if (child.isAncestorOf(node))
+                numUnseenPaths += calcAbsoluteFactor(child, node);
+        }
+
+        return numUnseenPaths;
+    }
+
+    private double calcContinuationFactor(GlmNode ancestor,
+                                          GlmNode node,
+                                          boolean absolute) {
+        boolean last = ancestor.getLevel() == node.getLevel() - 1;
+        double mult;
+        if (absolute)
+            if (ancestor.absoluteCount == 0)
+                if (last)
+                    mult = node.absoluteFactor == 0 ? 1.0 : 0.0;
+                else
+                    mult = 1.0;
+            else {
+                mult = ancestor.gammaNumerator / ancestor.absoluteCount;
+                absolute = false;
+            }
+        else if (ancestor.continuationCount == 0)
+            mult = 1.0;
+        else
+            mult = ancestor.gammaNumerator / ancestor.continuationCount;
+
+        if (last)
+            return mult;
+
+        double sum = 0;
+        for (int i = 0; i != ancestor.numChilds(); ++i) {
+            GlmNode child = ancestor.getChild(i);
+            if (child.isAncestorOf(node))
+                sum += calcContinuationFactor(child, node, absolute);
+        }
+
+        return mult * sum;
     }
 
     private double calcGammaNumerator(NGram history) {
@@ -130,31 +180,5 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         return discount.getOne() * contCount.getOneCount() + discount.getTwo()
                 * contCount.getTwoCount() + discount.getThree()
                 * contCount.getThreePlusCount();
-    }
-
-    private double calcLambdaCoefficient(int level,
-                                         int order) {
-        int result = 1;
-        for (int i = 0; i != level; ++i)
-            result *= (order - i);
-        return 1.0 / result;
-    }
-
-    private double calcGammaMult(GlmNode ancestor,
-                                 GlmNode node) {
-        double result;
-        if (ancestor.isTop())
-            result = ancestor.gammaNumerator / ancestor.absoluteCount;
-        else
-            result = ancestor.gammaNumerator / ancestor.continuationCount;
-        double sum = 0.0;
-        for (int i = 0; i != ancestor.numChilds(); ++i) {
-            GlmNode child = ancestor.getChild(i);
-            if (child != node && child.isAncestorOf(node))
-                sum += calcGammaMult(child, node);
-        }
-        if (sum != 0)
-            result *= sum;
-        return result;
     }
 }

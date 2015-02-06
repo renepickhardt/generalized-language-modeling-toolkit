@@ -123,7 +123,7 @@ public class BinomDiamondTest {
     }
 
     @Test
-    public void testIsAncestor() {
+    public void testIsAncestorOf() {
         BinomDiamond<TestNode> diamond = new BinomDiamond<>(4, TestNode.class);
 
         TestNode top = diamond.getTop();
@@ -171,7 +171,7 @@ public class BinomDiamondTest {
     }
 
     @Test
-    public void testIterateOf() {
+    public void testIterate() {
         BinomDiamond<TestNode> diamond = new BinomDiamond<>(5, TestNode.class);
 
         Iterator<TestNode> iter = diamond.iterator();
@@ -191,7 +191,6 @@ public class BinomDiamondTest {
         for (TestNode testNode : diamond.inOrder())
             order.add(testNode.getIndex());
 
-        System.out.println(order);
         assertEquals(Arrays.asList(0, 1, 2, 4, 8, 3, 5, 6, 9, 10, 12, 7, 11,
                 13, 14, 15), order);
     }

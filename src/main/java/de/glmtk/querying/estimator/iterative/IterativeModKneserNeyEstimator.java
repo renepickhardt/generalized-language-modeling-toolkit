@@ -113,9 +113,6 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
             alpha = Math.max(alpha - d, 0.0);
         }
 
-        logTrace(0, "alpha(%s\t, absolute=%-5b, discount=%-5b) = %f", sequence,
-                absolute, discount, alpha);
-
         return alpha;
     }
 

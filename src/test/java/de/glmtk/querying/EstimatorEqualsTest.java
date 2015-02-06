@@ -158,7 +158,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                 try {
                     probExpected = executorExpected.querySequence(line);
                     probActual = executorActual.querySequence(line);
-                    if (Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e6)
+                    if (Double.isNaN(probActual)
+                            || Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e6)
                         throw new Exception("failAssert");
                 } catch (Throwable t) {
                     Logger.setTraceEnabled(true);
