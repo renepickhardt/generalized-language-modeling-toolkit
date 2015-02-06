@@ -81,24 +81,21 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
         NGram hist = history;
         double prob = 0.0;
         boolean absolute = true;
-        for (int i = 0; i != lambdas.size(); ++i) {
-            double lambda = lambdas.get(i);
-            if (lambda == 0.0) {
+        boolean last = false;
+        for (int i = 0; !last; ++i) {
+            if (i != 0)
                 hist = hist.backoff(backoffMode);
-                continue;
-            }
+            last = hist.isEmptyOrOnlySkips();
 
-            boolean last = hist.isEmptyOrOnlySkips();
+            double lambda = lambdas.get(i);
+            if (lambda == 0.0)
+                continue;
+
             double alpha = calcAlpha(getFullSequence(sequence, hist), absolute,
                     !last);
             absolute = false;
 
-            prob += alpha * lambdas.get(i);
-
-            if (last)
-                break;
-
-            hist = hist.backoff(backoffMode);
+            prob += alpha * lambda;
         }
 
         return prob;
