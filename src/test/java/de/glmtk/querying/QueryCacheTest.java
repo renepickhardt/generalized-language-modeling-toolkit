@@ -58,7 +58,7 @@ public class QueryCacheTest extends TestCorporaTest {
     public static Iterable<Object[]> data() {
         //@formatter:off
         return Arrays.asList(new Object[][] {
-                {Estimators.MOD_KNESER_NEY},
+                {Estimators.MKN},
                 {Estimators.GLM}
         });
         //@formatter:on

@@ -129,9 +129,9 @@ public class GlmtkExecutable extends Executable {
     static {
         Map<String, Estimator> m = new LinkedHashMap<>();
         m.put("MLE", Estimators.MLE);
-        m.put("MKN", Estimators.MOD_KNESER_NEY);
-        m.put("MKNS", Estimators.MOD_KNESER_NEY_SKP);
-        m.put("MKNA", Estimators.MOD_KNESER_NEY_ABS);
+        m.put("MKN", Estimators.MKN);
+        m.put("MKNS", Estimators.MKN_SKP);
+        m.put("MKNA", Estimators.MKN_ABS);
         m.put("GLM", Estimators.GLM);
         m.put("GLMD", Estimators.GLM_DEL);
         m.put("GLMDF", Estimators.GLM_DEL_FRONT);

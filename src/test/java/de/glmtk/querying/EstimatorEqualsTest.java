@@ -21,6 +21,25 @@
 package de.glmtk.querying;
 
 import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.querying.estimator.Estimators.FAST_GLM;
+import static de.glmtk.querying.estimator.Estimators.FAST_GLM_ABS;
+import static de.glmtk.querying.estimator.Estimators.FAST_GLM_DEL;
+import static de.glmtk.querying.estimator.Estimators.FAST_GLM_DEL_FRONT;
+import static de.glmtk.querying.estimator.Estimators.FAST_GLM_SKP_AND_DEL;
+import static de.glmtk.querying.estimator.Estimators.FAST_MKN;
+import static de.glmtk.querying.estimator.Estimators.FAST_MKN_ABS;
+import static de.glmtk.querying.estimator.Estimators.FAST_MKN_SKP;
+import static de.glmtk.querying.estimator.Estimators.GLM;
+import static de.glmtk.querying.estimator.Estimators.GLM_ABS;
+import static de.glmtk.querying.estimator.Estimators.GLM_DEL;
+import static de.glmtk.querying.estimator.Estimators.GLM_DEL_FRONT;
+import static de.glmtk.querying.estimator.Estimators.GLM_SKP_AND_DEL;
+import static de.glmtk.querying.estimator.Estimators.ITERATIVE_GLM;
+import static de.glmtk.querying.estimator.Estimators.ITERATIVE_MKN;
+import static de.glmtk.querying.estimator.Estimators.ITERATIVE_MKN_SKP;
+import static de.glmtk.querying.estimator.Estimators.MKN;
+import static de.glmtk.querying.estimator.Estimators.MKN_ABS;
+import static de.glmtk.querying.estimator.Estimators.MKN_SKP;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -43,13 +62,6 @@ import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
-import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
-import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
-import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.NioUtils;
@@ -75,28 +87,26 @@ public class EstimatorEqualsTest extends TestCorporaTest {
 
     @Parameters(name = "{1}")
     public static Iterable<Object[]> data() {
-        Estimator fastMknAbs = new FastModKneserNeyAbsEstimator();
-        fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
-        Estimator fastMkn = new FastModKneserNeyEstimator();
-        fastMkn.setName("Fast-Modified-Kneser-Ney");
-        Estimator iterativeMkn = new IterativeModKneserNeyEstimator();
-        iterativeMkn.setName("Iterative-Modified-Knesery-Ney");
-
-        Estimator fastGlmAbs = new FastGenLangModelAbsEstimator();
-        fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
-        Estimator fastGlm = new FastGenLangModelEstimator();
-        fastGlm.setName("Fast-Generalized-Language-Model");
-        Estimator iterativeGlm = new IterativeGenLangModelEstimator();
-        iterativeGlm.setName("Iterative-Generalized-Language-Model");
-
         //@formatter:off
         return Arrays.asList(new Object[][] {
-                {Estimators.MOD_KNESER_NEY_ABS, fastMknAbs},
-                {Estimators.MOD_KNESER_NEY, fastMkn},
-                {Estimators.MOD_KNESER_NEY, iterativeMkn},
-                {Estimators.GLM_ABS, fastGlmAbs},
-                {Estimators.GLM, fastGlm},
-                {Estimators.GLM, iterativeGlm}
+                {MKN_ABS, FAST_MKN_ABS},
+
+                {MKN, FAST_MKN},
+                {MKN, ITERATIVE_MKN},
+
+                {MKN_SKP, FAST_MKN_SKP},
+                {MKN_SKP, ITERATIVE_MKN_SKP},
+
+                {GLM_ABS, FAST_GLM_ABS},
+
+                {GLM, FAST_GLM},
+                {GLM, ITERATIVE_GLM},
+
+                {GLM_DEL, FAST_GLM_DEL},
+
+                {GLM_DEL_FRONT, FAST_GLM_DEL_FRONT},
+
+                {GLM_SKP_AND_DEL, FAST_GLM_SKP_AND_DEL}
         });
         //@formatter:on
     }

@@ -80,10 +80,10 @@ public class EstimatorSpeedTest extends TestCorporaTest {
 
         //@formatter:off
         return Arrays.asList(new Object[][]{
-                {Estimators.MOD_KNESER_NEY_ABS},
+                {Estimators.MKN_ABS},
                 {fastMknAbs},
 
-                {Estimators.MOD_KNESER_NEY},
+                {Estimators.MKN},
                 {fastMkn},
                 {iterativeMkn},
 

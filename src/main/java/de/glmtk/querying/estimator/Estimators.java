@@ -20,10 +20,6 @@
 
 package de.glmtk.querying.estimator;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import de.glmtk.common.BackoffMode;
 import de.glmtk.counts.Discounts;
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
@@ -31,11 +27,17 @@ import de.glmtk.querying.estimator.combination.CombinationEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteDiscountEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteThreeDiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
+import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
+import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
+import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.FalseMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.interpol.DiffInterpolEstimator;
 import de.glmtk.querying.estimator.interpol.InterpolEstimator;
+import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
+import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
@@ -203,21 +205,21 @@ public class Estimators {
 
     // Combined Estimators /////////////////////////////////////////////////////
 
-    public static final InterpolEstimator MOD_KNESER_NEY = makeMkn(BackoffMode.DEL);
+    public static final InterpolEstimator MKN = makeMkn(BackoffMode.DEL);
     static {
-        MOD_KNESER_NEY.setName("Modified-Kneser-Ney");
+        MKN.setName("Modified-Kneser-Ney");
     }
 
-    public static final InterpolEstimator MOD_KNESER_NEY_SKP = makeMkn(BackoffMode.SKP);
+    public static final InterpolEstimator MKN_SKP = makeMkn(BackoffMode.SKP);
     static {
-        MOD_KNESER_NEY_SKP.setName("Modified-Kneser-Ney (SKP-Backoff)");
+        MKN_SKP.setName("Modified-Kneser-Ney (SKP-Backoff)");
     }
 
-    public static final InterpolEstimator MOD_KNESER_NEY_ABS = new InterpolEstimator(
+    public static final InterpolEstimator MKN_ABS = new InterpolEstimator(
             new ModKneserNeyDiscountEstimator(new MaximumLikelihoodEstimator()),
             BackoffMode.DEL);
     static {
-        MOD_KNESER_NEY_ABS.setName("Modified-Kneser-Ney (Abs-Lower-Order)");
+        MKN_ABS.setName("Modified-Kneser-Ney (Abs-Lower-Order)");
     }
 
     public static final DiffInterpolEstimator GLM = makeGlm(BackoffMode.SKP);
@@ -247,14 +249,69 @@ public class Estimators {
         GLM_ABS.setName("Generalized-Language-Model (Abs-Lower-Order)");
     }
 
-    // Collections /////////////////////////////////////////////////////////////
+    // Fast ////////////////////////////////////////////////////////////////////
 
-    public static final Set<Estimator> MOD_KNESER_NEY_ESTIMATORS = new HashSet<Estimator>(
-            Arrays.asList(MOD_KNESER_NEY, MOD_KNESER_NEY_ABS,
-                    MOD_KNESER_NEY_SKP));
+    public static final FastModKneserNeyEstimator FAST_MKN = new FastModKneserNeyEstimator();
+    static {
+        FAST_MKN.setName("Fast-Modified-Kneser-Ney");
+    }
 
-    public static final Set<Estimator> GLM_ESTIMATORS = new HashSet<Estimator>(
-            Arrays.asList(GLM, GLM_ABS, GLM_DEL, GLM_DEL, GLM_SKP_AND_DEL));
+    public static final FastModKneserNeyEstimator FAST_MKN_SKP = new FastModKneserNeyEstimator();
+    static {
+        FAST_MKN_SKP.setBackoffMode(BackoffMode.SKP);
+        FAST_MKN_SKP.setName("Fast-Modified-Kneser-Ney (SKP Backoff)");
+    }
+
+    public static final FastModKneserNeyAbsEstimator FAST_MKN_ABS = new FastModKneserNeyAbsEstimator();
+    static {
+        FAST_MKN_ABS.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
+    }
+
+    public static final FastGenLangModelEstimator FAST_GLM = new FastGenLangModelEstimator();
+    static {
+        FAST_GLM.setName("Fast-Generalized-Language-Model");
+    }
+
+    public static final FastGenLangModelEstimator FAST_GLM_DEL = new FastGenLangModelEstimator();
+    static {
+        FAST_GLM_DEL.setBackoffMode(BackoffMode.DEL);
+        FAST_GLM_DEL.setName("Fast-Generalized-Language-Model (DEL-Backoff)");
+    }
+
+    public static final FastGenLangModelEstimator FAST_GLM_DEL_FRONT = new FastGenLangModelEstimator();
+    static {
+        FAST_GLM_DEL_FRONT.setBackoffMode(BackoffMode.DEL_FRONT);
+        FAST_GLM_DEL_FRONT.setName("Fast-Generalized-Language-Model (DEL-FRONT-Backoff)");
+    }
+
+    public static final FastGenLangModelEstimator FAST_GLM_SKP_AND_DEL = new FastGenLangModelEstimator();
+    static {
+        FAST_GLM_SKP_AND_DEL.setBackoffMode(BackoffMode.SKP_AND_DEL);
+        FAST_GLM_SKP_AND_DEL.setName("Fast-Generalized-Language-Model (SKP-AND-DEL-Backoff)");
+    }
+
+    public static final FastGenLangModelAbsEstimator FAST_GLM_ABS = new FastGenLangModelAbsEstimator();
+    static {
+        FAST_GLM_ABS.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
+    }
+
+    // Iterative ///////////////////////////////////////////////////////////////
+
+    public static final IterativeModKneserNeyEstimator ITERATIVE_MKN = new IterativeModKneserNeyEstimator();
+    static {
+        ITERATIVE_MKN.setName("Iterative-Modified-Kneser-Ney");
+    }
+
+    public static final IterativeModKneserNeyEstimator ITERATIVE_MKN_SKP = new IterativeModKneserNeyEstimator();
+    static {
+        ITERATIVE_MKN_SKP.setBackoffMode(BackoffMode.SKP);
+        ITERATIVE_MKN_SKP.setName("Iterative-Modified-Kneser-Ney (SKP Backoff)");
+    }
+
+    public static final IterativeGenLangModelEstimator ITERATIVE_GLM = new IterativeGenLangModelEstimator();
+    static {
+        ITERATIVE_GLM.setName("Iterative-Generalized-Language-Model");
+    }
 
     private static InterpolEstimator makeMkn(BackoffMode BackoffMode) {
         ModKneserNeyDiscountEstimator alpha = new ModKneserNeyDiscountEstimator(
