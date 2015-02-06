@@ -89,10 +89,10 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         }
 
         Glmtk glmtk = testCorpus.getGlmtk();
-        glmtk.count(requiredCache.getNeededPatterns());
+        glmtk.count(requiredCache.getCountsPatterns());
 
         GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
-                requiredCache.getNeededPatterns());
+                requiredCache.getCountsPatterns());
 
         cache = requiredCache.withProgress().build(queryCache);
     }

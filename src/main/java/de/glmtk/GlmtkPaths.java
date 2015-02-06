@@ -1,37 +1,31 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk;
 
 import static de.glmtk.Constants.ABSOLUTE_DIR_NAME;
-import static de.glmtk.Constants.ALPHA_DIR_NAME;
 import static de.glmtk.Constants.CHUNKED_SUFFIX;
 import static de.glmtk.Constants.CONTINUATION_DIR_NAME;
 import static de.glmtk.Constants.COUNTS_DIR_NAME;
-import static de.glmtk.Constants.DISCOUNTS_FILE_NAME;
-import static de.glmtk.Constants.LAMBDA_DIR_NAME;
 import static de.glmtk.Constants.LENGTHDISTRIBUTION_FILE_NAME;
 import static de.glmtk.Constants.LOG_DIR_NAME;
-import static de.glmtk.Constants.MODELS_DIR_NAME;
-import static de.glmtk.Constants.MODEL_GENLANGMODEL;
-import static de.glmtk.Constants.MODEL_MODKNESERNEY;
 import static de.glmtk.Constants.NGRAMTIMES_FILE_NAME;
 import static de.glmtk.Constants.QUERIES_DIR_NAME;
 import static de.glmtk.Constants.QUERYHACHES_DIR_NAME;
@@ -105,16 +99,6 @@ public class GlmtkPaths {
     private Path ngramTimesFile;
     private Path lengthDistributionFile;
 
-    private Path modelsDir;
-    private Path modKneserNeyDir;
-    private Path modKneserNeyDiscountsFile;
-    private Path modKneserNeyAlphaDir;
-    private Path modKneserNeyLambdaDir;
-    private Path genLangModelDir;
-    private Path genLangModelDiscountsFile;
-    private Path genLangModelAlphaDir;
-    private Path genLangModelLambdaDir;
-
     private Path queryCachesDir;
     private Path queriesDir;
 
@@ -132,8 +116,6 @@ public class GlmtkPaths {
         ngramTimesFile = countsDir.resolve(NGRAMTIMES_FILE_NAME);
         lengthDistributionFile = countsDir.resolve(LENGTHDISTRIBUTION_FILE_NAME);
 
-        fillModelsDirPaths(this);
-
         queryCachesDir = dir.resolve(QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(QUERIES_DIR_NAME);
     }
@@ -148,26 +130,11 @@ public class GlmtkPaths {
                 + CHUNKED_SUFFIX);
     }
 
-    private void fillModelsDirPaths(GlmtkPaths paths) {
-        paths.modelsDir = paths.dir.resolve(MODELS_DIR_NAME);
-
-        paths.modKneserNeyDir = paths.modelsDir.resolve(MODEL_MODKNESERNEY);
-        paths.modKneserNeyDiscountsFile = paths.modKneserNeyDir.resolve(DISCOUNTS_FILE_NAME);
-        paths.modKneserNeyAlphaDir = paths.modKneserNeyDir.resolve(ALPHA_DIR_NAME);
-        paths.modKneserNeyLambdaDir = paths.modKneserNeyDir.resolve(LAMBDA_DIR_NAME);
-
-        paths.genLangModelDir = paths.modelsDir.resolve(MODEL_GENLANGMODEL);
-        paths.genLangModelDiscountsFile = paths.genLangModelDir.resolve(DISCOUNTS_FILE_NAME);
-        paths.genLangModelAlphaDir = paths.genLangModelDir.resolve(ALPHA_DIR_NAME);
-        paths.genLangModelLambdaDir = paths.genLangModelDir.resolve(LAMBDA_DIR_NAME);
-    }
-
     public GlmtkPaths newQueryCache(String name) {
         GlmtkPaths queryCache = new GlmtkPaths(dir);
         queryCache.root = this;
         queryCache.dir = queryCachesDir.resolve(name);
         fillCountsDirPaths(queryCache);
-        fillModelsDirPaths(queryCache);
         return queryCache;
     }
 
@@ -251,69 +218,6 @@ public class GlmtkPaths {
 
     public Path getLengthDistributionFile() {
         return lengthDistributionFile;
-    }
-
-    public Path getModelsDir() {
-        return modelsDir;
-    }
-
-    public Path getModelDiscountsFile(String model) {
-        if (model.equals(MODEL_MODKNESERNEY))
-            return modKneserNeyDiscountsFile;
-        else if (model.equals(MODEL_GENLANGMODEL))
-            return genLangModelDiscountsFile;
-        throw new IllegalArgumentException(String.format("Unkown model: '%s'.",
-                model));
-    }
-
-    public Path getModelAlphaDir(String model) {
-        if (model.equals(MODEL_MODKNESERNEY))
-            return modKneserNeyAlphaDir;
-        else if (model.equals(MODEL_GENLANGMODEL))
-            return genLangModelAlphaDir;
-        throw new IllegalArgumentException(String.format("Unkown model: '%s'.",
-                model));
-    }
-
-    public Path getModelLambdaDir(String model) {
-        if (model.equals(MODEL_GENLANGMODEL))
-            return modKneserNeyLambdaDir;
-        else if (model.equals(MODEL_GENLANGMODEL))
-            return genLangModelDir;
-        throw new IllegalArgumentException(String.format("Unkown model: '%s'.",
-                model));
-    }
-
-    public Path getModKneserNeyDir() {
-        return modKneserNeyDir;
-    }
-
-    public Path getModKneserNeyDiscountsFile() {
-        return modKneserNeyDiscountsFile;
-    }
-
-    public Path getModKneserNeyAlphaDir() {
-        return modKneserNeyAlphaDir;
-    }
-
-    public Path getModKneserNeyLambdaDir() {
-        return modKneserNeyLambdaDir;
-    }
-
-    public Path getGenLangModelDir() {
-        return genLangModelDir;
-    }
-
-    public Path getGenLangModelDiscountsFile() {
-        return genLangModelDiscountsFile;
-    }
-
-    public Path getGenLangModelAlphaDir() {
-        return genLangModelAlphaDir;
-    }
-
-    public Path getGenLangModelLambdaDir() {
-        return genLangModelLambdaDir;
     }
 
     public Path getQueryCachesDir() {

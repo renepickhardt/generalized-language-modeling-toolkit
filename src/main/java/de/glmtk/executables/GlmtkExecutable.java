@@ -513,7 +513,7 @@ public class GlmtkExecutable extends Executable {
             cacheBuilder.addAll(estimator.getRequiredCache(trainingOrder));
         cacheBuilder.withCounts(Patterns.getMany("x"));
 
-        Set<Pattern> neededPatterns = cacheBuilder.getNeededPatterns();
+        Set<Pattern> neededPatterns = cacheBuilder.getCountsPatterns();
         if (needPos)
             neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
         // FIXME: Refactor this!

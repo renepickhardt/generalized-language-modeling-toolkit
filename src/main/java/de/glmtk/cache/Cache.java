@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -38,15 +38,9 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
-import de.glmtk.counts.AlphaCounts;
 import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discounts;
-import de.glmtk.counts.LambdaCounts;
 import de.glmtk.counts.NGramTimes;
-import de.glmtk.files.AlphaCountsReader;
 import de.glmtk.files.CountsReader;
-import de.glmtk.files.DiscountReader;
-import de.glmtk.files.LambdaCountsReader;
 import de.glmtk.files.LengthDistributionReader;
 import de.glmtk.files.NGramTimesReader;
 import de.glmtk.logging.Logger;
@@ -68,9 +62,6 @@ public class Cache {
     private Map<Pattern, Map<String, Object>> counts;
     private Map<Pattern, NGramTimes> ngramTimes;
     private List<Double> lengthFrequencies;
-    private Map<String, Map<Pattern, Discounts>> discounts;
-    private Map<String, Map<Pattern, Map<String, AlphaCounts>>> alphas;
-    private Map<String, Map<Pattern, Map<String, LambdaCounts>>> lambdas;
 
     private long numWords;
     private long vocabSize;
@@ -83,9 +74,6 @@ public class Cache {
         counts = null;
         ngramTimes = null;
         lengthFrequencies = null;
-        discounts = null;
-        alphas = null;
-        lambdas = null;
 
         numWords = -1L;
         vocabSize = -1L;
@@ -112,7 +100,7 @@ public class Cache {
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
-                    : paths.getContinuationDir());
+                            : paths.getContinuationDir());
 
             Map<String, Object> countsForPattern = new HashMap<>();
             counts.put(pattern, countsForPattern);
@@ -162,100 +150,6 @@ public class Cache {
 
         if (progress != null)
             progress.increase(1);
-    }
-
-    public void loadDiscounts(String model) throws IOException {
-        Objects.requireNonNull(model);
-
-        LOGGER.debug("Loading %s discounts...", model);
-
-        Path file = paths.getModelDiscountsFile(model);
-
-        if (discounts == null)
-            discounts = new HashMap<>();
-
-        Map<Pattern, Discounts> discountsForModel = new HashMap<>();
-        discounts.put(model, discountsForModel);
-
-        try (DiscountReader reader = new DiscountReader(file, Constants.CHARSET)) {
-            while (reader.readLine() != null)
-                discountsForModel.put(reader.getPattern(), reader.getDiscount());
-        }
-
-        if (progress != null)
-            progress.increase(1);
-    }
-
-    public void loadAlphas(String model,
-                           Set<Pattern> patterns) throws IOException {
-        Objects.requireNonNull(model);
-        Objects.requireNonNull(patterns);
-        for (Pattern pattern : patterns)
-            if (pattern.isEmpty())
-                throw new IllegalArgumentException(
-                        "patterns contains empty pattern.");
-
-        LOGGER.debug("Loading %s alphas...", model);
-
-        Path inputDir = paths.getModelAlphaDir(model);
-
-        if (alphas == null)
-            alphas = new HashMap<>();
-
-        Map<Pattern, Map<String, AlphaCounts>> alphasForModel = new HashMap<>();
-        alphas.put(model, alphasForModel);
-
-        for (Pattern pattern : patterns) {
-            Map<String, AlphaCounts> alphasForPattern = new HashMap<>();
-            alphasForModel.put(pattern, alphasForPattern);
-
-            Path file = inputDir.resolve(pattern.toString());
-            try (AlphaCountsReader reader = new AlphaCountsReader(file,
-                    Constants.CHARSET)) {
-                while (reader.readLine() != null)
-                    alphasForPattern.put(reader.getSequence(),
-                            reader.getAlphaCounts());
-            }
-
-            if (progress != null)
-                progress.increase(1);
-        }
-    }
-
-    public void loadLambdas(String model,
-                            Set<Pattern> patterns) throws IOException {
-        Objects.requireNonNull(model);
-        Objects.requireNonNull(patterns);
-        for (Pattern pattern : patterns)
-            if (pattern.isEmpty())
-                throw new IllegalArgumentException(
-                        "patterns contains empty pattern.");
-
-        LOGGER.debug("Loading %s lambdas...", model);
-
-        Path inputDir = paths.getModelLambdaDir(model);
-
-        if (lambdas == null)
-            lambdas = new HashMap<>();
-
-        Map<Pattern, Map<String, LambdaCounts>> lambdasForModel = new HashMap<>();
-        lambdas.put(model, lambdasForModel);
-
-        for (Pattern pattern : patterns) {
-            Map<String, LambdaCounts> lambdasForPattern = new HashMap<>();
-            lambdasForModel.put(pattern, lambdasForPattern);
-
-            Path file = inputDir.resolve(pattern.toString());
-            try (LambdaCountsReader reader = new LambdaCountsReader(file,
-                    Constants.CHARSET)) {
-                while (reader.readLine() != null)
-                    lambdasForPattern.put(reader.getSequence(),
-                            reader.getLambdaCounts());
-            }
-
-            if (progress != null)
-                progress.increase(1);
-        }
     }
 
     public long getAbsolute(NGram ngram) {
@@ -339,41 +233,5 @@ public class Cache {
             throw new IllegalStateException("Length distribution not loaded.");
 
         return lengthFrequencies.size();
-    }
-
-    public Discounts getDiscount(String model,
-                                Pattern pattern) {
-        Objects.requireNonNull(model);
-        Objects.requireNonNull(pattern);
-        if (pattern.isEmpty())
-            throw new IllegalArgumentException("Empty pattern.");
-        return CollectionUtils.getFromNestedMap(discounts, model, pattern,
-                "No Discounts loaded.", "Discounts for model '%s' not loaded.",
-                "No Discounts learned for pattern '%2$s' for model '%1$s'.");
-    }
-
-    public AlphaCounts getAlpha(String model,
-                                NGram ngram) {
-        Objects.requireNonNull(model);
-        Objects.requireNonNull(ngram);
-        if (ngram.isEmpty())
-            throw new IllegalArgumentException("Empty ngram.");
-        return CollectionUtils.getFromNestedMap(alphas, model,
-                ngram.getPattern(), ngram.toString(), "No alphas loaded.",
-                "Alphas for model '%s' not loaded.",
-                "Alphas with pattern '%2$s' for model '%1$s' not loaded.", null);
-    }
-
-    public LambdaCounts getLambda(String model,
-                                  NGram ngram) {
-        Objects.requireNonNull(model);
-        Objects.requireNonNull(ngram);
-        if (ngram.isEmpty())
-            throw new IllegalArgumentException("Empty ngram.");
-        return CollectionUtils.getFromNestedMap(lambdas, model,
-                ngram.getPattern(), ngram.toString(), "No lambdas loaded",
-                "Lambdas for model '%s' not loaded.",
-                "Lambdas with pattern '%2$s' for model '%1$s' not loaded.",
-                null);
     }
 }

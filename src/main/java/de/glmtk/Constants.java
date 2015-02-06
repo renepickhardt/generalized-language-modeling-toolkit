@@ -107,25 +107,9 @@ public class Constants {
 
     public static final String LENGTHDISTRIBUTION_FILE_NAME = "lengthdistribution";
 
-    // Model Paths
-
-    public static final String MODELS_DIR_NAME = "models";
-
-    public static final String DISCOUNTS_FILE_NAME = "discounts";
-
-    public static final String ALPHA_DIR_NAME = "alpha";
-
-    public static final String LAMBDA_DIR_NAME = "lambda";
-
     // Query Paths
 
     public static final String QUERYHACHES_DIR_NAME = "querycaches";
 
     public static final String QUERIES_DIR_NAME = "queries";
-
-    // Models //////////////////////////////////////////////////////////////////
-
-    public static final String MODEL_MODKNESERNEY = "modkneserney";
-
-    public static final String MODEL_GENLANGMODEL = "genlangmodel";
 }

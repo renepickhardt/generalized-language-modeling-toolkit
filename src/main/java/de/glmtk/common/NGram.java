@@ -183,19 +183,6 @@ public class NGram {
         return cache.getContinuation(this).getOnePlusCount() != 0;
     }
 
-    /**
-     * Same as {@link #seen(Cache)} but instead of querying absolute counts,
-     * queries alpha counts.
-     *
-     * <p>
-     * This is used in cases were we can't afford to load absolute counts into
-     * cache, but have alpha counts present.
-     */
-    public boolean seenUsingAlphas(Cache cache,
-                                   String model) {
-        return isEmpty() || cache.getAlpha(model, this) != null;
-    }
-
     public NGram concat(String token) {
         if (isEmpty())
             return new NGram(token);
@@ -301,23 +288,6 @@ public class NGram {
         return result;
     }
 
-    /**
-     * Same as {@link #backoff(BackoffMode)} but instead of querying absolute
-     * counts, queries alpha counts.
-     *
-     * <p>
-     * This is used in cases were we can't afford to load absolute counts into
-     * cache, but have alpha counts present.
-     */
-    public NGram backoffUntilSeenUsingAlphas(BackoffMode backoffMode,
-                                             Cache cache,
-                                             String model) {
-        NGram result = backoff(backoffMode);
-        while (!result.seenUsingAlphas(cache, model))
-            result = result.backoff(backoffMode);
-        return result;
-    }
-
     public Set<NGram> getDifferentiatedNGrams(BackoffMode backoffMode) {
         Set<NGram> result = new LinkedHashSet<>();
         for (int i = 0; i != size(); ++i) {
@@ -331,7 +301,7 @@ public class NGram {
         return result;
     }
 
-    // TODO: implemet backoffMode
+    // TODO: implement backoffMode
     public List<NGram> getAllDifferentiatedNGrams(BackoffMode backoffMode) {
         int order = size();
         if (order == 0)
@@ -353,6 +323,7 @@ public class NGram {
         return result;
     }
 
+    // TODO: implement backoffMode
     public NGram applyIntPattern(int intPattern,
                                  int order) {
         List<PatternElem> elems = new ArrayList<>(order);
