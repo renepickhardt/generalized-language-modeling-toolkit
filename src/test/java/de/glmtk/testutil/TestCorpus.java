@@ -34,6 +34,10 @@ import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 
+/**
+ * Make sure you are inherting {@link TestCorporaTest} when writing a test using
+ * that wants to use this class.
+ */
 public enum TestCorpus {
     ABC,
     MOBYDICK,

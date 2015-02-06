@@ -20,12 +20,15 @@
 
 package de.glmtk.util;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 
 public class CollectionUtils {
@@ -53,6 +56,14 @@ public class CollectionUtils {
             if (haystack.contains(needle))
                 return true;
         return false;
+    }
+
+    public static <T> List<T> drainQueueToList(Queue<T> queue) {
+        Deque<T> deque = new ArrayDeque<>(queue.size());
+        T obj;
+        while ((obj = queue.poll()) != null)
+            deque.addFirst(obj);
+        return new ArrayList<>(deque);
     }
 
     public static <T, U> U getFromNestedMap(Map<T, U> map,

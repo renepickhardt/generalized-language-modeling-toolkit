@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="30">
   <Loggers>
-    <Root level="info" />
+    <Root level="trace" />
   </Loggers>
 </Configuration>

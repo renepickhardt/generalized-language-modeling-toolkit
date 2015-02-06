@@ -60,7 +60,7 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        BinomDiamond<GlmNode> glmDiamond = buildDiamond(history);
+        BinomDiamond<GlmNode> glmDiamond = buildGlmDiamond(history);
         return calcProbability(sequence, history, recDepth, glmDiamond);
     }
 
@@ -89,7 +89,7 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         return prob;
     }
 
-    public BinomDiamond<GlmNode> buildDiamond(NGram history) {
+    public BinomDiamond<GlmNode> buildGlmDiamond(NGram history) {
         int order = history.size();
         if (order == 0)
             return null;

@@ -19,13 +19,15 @@ import de.glmtk.util.StringUtils;
 public class QueryTest extends TestCorporaTest {
     @Test
     public void test() throws IOException {
-        TestCorpus testCorpus = TestCorpus.ABC;
-        Estimator estimator = Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC;
+        System.out.println(Runtime.getRuntime().totalMemory() / 1024 / 1024);
+        TestCorpus testCorpus = TestCorpus.EN0008T;
+        Estimator estimator = Estimators.GLM;
         CacheBuilder requiredCache = estimator.getRequiredCache(5);
-        Cache cache = requiredCache.build(testCorpus.getGlmtk().getPaths());
+        Cache cache = requiredCache.withProgress().build(
+                testCorpus.getGlmtk().getPaths());
         estimator.setCache(cache);
 
-        estimator.probability(new NGram("a"), new NGram(StringUtils.split(
-                "a c", ' ')));
+        estimator.probability(new NGram("."), new NGram(StringUtils.split(
+                "It is a", ' ')));
     }
 }
