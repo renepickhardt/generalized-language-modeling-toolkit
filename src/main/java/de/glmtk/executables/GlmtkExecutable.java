@@ -129,14 +129,14 @@ public class GlmtkExecutable extends Executable {
     static {
         Map<String, Estimator> m = new LinkedHashMap<>();
         m.put("MLE", Estimators.MLE);
-        m.put("MKN", Estimators.MKN);
-        m.put("MKNS", Estimators.MKN_SKP);
-        m.put("MKNA", Estimators.MKN_ABS);
-        m.put("GLM", Estimators.GLM);
-        m.put("GLMD", Estimators.GLM_DEL);
-        m.put("GLMDF", Estimators.GLM_DEL_FRONT);
-        m.put("GLMSD", Estimators.GLM_SKP_AND_DEL);
-        m.put("GLMA", Estimators.GLM_ABS);
+        m.put("MKN", Estimators.ITERATIVE_MKN);
+        m.put("MKNS", Estimators.FAST_MKN_SKP);
+        m.put("MKNA", Estimators.FAST_MKN_ABS);
+        m.put("GLM", Estimators.ITERATIVE_GLM);
+        m.put("GLMD", Estimators.FAST_GLM_DEL);
+        m.put("GLMDF", Estimators.FAST_GLM_DEL_FRONT);
+        m.put("GLMSD", Estimators.FAST_GLM_SKP_AND_DEL);
+        m.put("GLMA", Estimators.FAST_GLM_ABS);
         OPTION_ESTIMATOR_ARGUMENTS = m;
     }
 
