@@ -31,7 +31,9 @@ import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
+import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
 import de.glmtk.querying.estimator.Estimators;
+import de.glmtk.querying.probability.QueryCacherCreator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 

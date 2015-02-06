@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.querying;
+package de.glmtk.querying.argmax;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -40,6 +40,7 @@ import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
 import de.glmtk.files.CountsReader;
+import de.glmtk.querying.probability.QueryCacherCreator;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 

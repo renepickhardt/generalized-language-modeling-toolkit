@@ -1,4 +1,4 @@
-package de.glmtk.querying;
+package de.glmtk.querying.probability;
 
 import static de.glmtk.common.Output.OUTPUT;
 

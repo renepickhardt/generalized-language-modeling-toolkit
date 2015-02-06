@@ -48,6 +48,7 @@ import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
 import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
+import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 

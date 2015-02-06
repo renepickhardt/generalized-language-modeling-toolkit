@@ -26,8 +26,8 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.logging.Logger;
-import de.glmtk.querying.QueryMode;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.probability.QueryMode;
 
 public abstract class Calculator {
     protected static class SequenceAndHistory {

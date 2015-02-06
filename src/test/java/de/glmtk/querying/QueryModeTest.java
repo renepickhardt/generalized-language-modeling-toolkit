@@ -20,17 +20,18 @@
 
 package de.glmtk.querying;
 
-import static de.glmtk.querying.QueryMode.QueryType.COND;
-import static de.glmtk.querying.QueryMode.QueryType.FIXED;
-import static de.glmtk.querying.QueryMode.QueryType.MARKOV;
-import static de.glmtk.querying.QueryMode.QueryType.SEQUENCE;
+import static de.glmtk.querying.probability.QueryMode.QueryType.COND;
+import static de.glmtk.querying.probability.QueryMode.QueryType.FIXED;
+import static de.glmtk.querying.probability.QueryMode.QueryType.MARKOV;
+import static de.glmtk.querying.probability.QueryMode.QueryType.SEQUENCE;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Field;
 
 import org.junit.Test;
 
-import de.glmtk.querying.QueryMode.QueryType;
+import de.glmtk.querying.probability.QueryMode;
+import de.glmtk.querying.probability.QueryMode.QueryType;
 import de.glmtk.util.ReflectionUtils;
 
 public class QueryModeTest {

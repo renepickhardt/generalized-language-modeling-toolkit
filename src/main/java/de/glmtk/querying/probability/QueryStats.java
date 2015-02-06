@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.querying;
+package de.glmtk.querying.probability;
 
 import java.text.NumberFormat;
 import java.util.Formatter;

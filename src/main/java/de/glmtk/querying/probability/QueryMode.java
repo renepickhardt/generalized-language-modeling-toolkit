@@ -18,13 +18,12 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.querying;
+package de.glmtk.querying.probability;
 
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.ObjectUtils;
 
 public class QueryMode {
-
     public static enum QueryType {
         SEQUENCE,
         FIXED,
@@ -55,10 +54,6 @@ public class QueryMode {
         }
         throw new RuntimeException(String.format(
                 "Illegal Query Mode string '%s'.", string));
-    }
-
-    public static void main(String[] args) {
-        System.out.println(forString("fmar2"));
     }
 
     private static int posOfFirstNumber(String string) {

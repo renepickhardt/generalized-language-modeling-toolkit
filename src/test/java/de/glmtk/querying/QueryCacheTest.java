@@ -43,6 +43,8 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
+import de.glmtk.querying.probability.QueryExecutor;
+import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.NioUtils;
