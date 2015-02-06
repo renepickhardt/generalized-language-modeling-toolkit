@@ -60,22 +60,38 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
         discounts = new HashMap<>();
     }
 
+    public double probability(NGram sequence,
+                              NGram history,
+                              List<Double> lambdas) {
+        return calcProbability(sequence, history, 1, lambdas);
+    }
+
     @Override
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        NGram fullHistory = getFullHistory(sequence, history);
-        while (!fullHistory.seen(cache))
-            fullHistory = fullHistory.backoff(backoffMode);
+        List<Double> lambdas = calcLambdas(history);
+        return calcProbability(sequence, history, recDepth, lambdas);
+    }
 
-        NGram hist = fullHistory.remove(fullHistory.size() - 1);
-        List<Double> lambdas = calcLambdas(hist);
-
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     @SuppressWarnings("unused") int recDepth,
+                                     List<Double> lambdas) {
+        NGram hist = history;
         double prob = 0.0;
-        for (int i = 0;; ++i) {
+        boolean absolute = true;
+        for (int i = 0; i != lambdas.size(); ++i) {
+            double lambda = lambdas.get(i);
+            if (lambda == 0.0) {
+                hist = hist.backoff(backoffMode);
+                continue;
+            }
+
             boolean last = hist.isEmptyOrOnlySkips();
-            double alpha = calcAlpha(getFullSequence(sequence, hist), i == 0,
+            double alpha = calcAlpha(getFullSequence(sequence, hist), absolute,
                     !last);
+            absolute = false;
 
             prob += alpha * lambdas.get(i);
 
@@ -116,11 +132,16 @@ public class IterativeModKneserNeyEstimator extends AbstractEstimator {
         return alpha;
     }
 
-    protected List<Double> calcLambdas(NGram history) {
-        int order = history.getPattern().numElems(PatternElem.CNT);
-        List<Double> lambdas = new ArrayList<>(order);
+    public List<Double> calcLambdas(NGram history) {
+        List<Double> lambdas = new ArrayList<>(history.size());
+        NGram fullHistory = history.concat(SKP_NGRAM);
+        while (!fullHistory.seen(cache)) {
+            lambdas.add(0.0);
+            fullHistory = fullHistory.backoff(backoffMode);
+        }
 
-        NGram hist = history;
+        NGram hist = fullHistory.remove(fullHistory.size() - 1);
+        int order = fullHistory.getPattern().numElems(PatternElem.CNT);
         double lambda = 1.0;
         long denominator = cache.getAbsolute(hist.concat(SKP_NGRAM));
         lambdas.add(lambda / denominator);

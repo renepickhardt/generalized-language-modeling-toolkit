@@ -50,17 +50,29 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         this.backoffMode = backoffMode;
     }
 
+    public double probability(NGram sequence,
+                              NGram history,
+                              BinomDiamond<GlmNode> glmDiamond) {
+        return calcProbability(sequence, history, 1, glmDiamond);
+    }
+
     @Override
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
+        BinomDiamond<GlmNode> glmDiamond = buildDiamond(history);
+        return calcProbability(sequence, history, recDepth, glmDiamond);
+    }
+
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     @SuppressWarnings("unused") int recDepth,
+                                     BinomDiamond<GlmNode> glmDiamond) {
         if (history.isEmpty())
             return (double) cache.getAbsolute(sequence) / cache.getNumWords();
 
-        BinomDiamond<GlmNode> diamond = buildDiamond(history);
-
         double prob = 0.0;
-        for (GlmNode node : diamond) {
+        for (GlmNode node : glmDiamond) {
             NGram fullSequence = getFullSequence(sequence, node.history);
             if (node.absoluteFactor != 0) {
                 double absAlpha = calcAlpha(fullSequence, true,
@@ -77,8 +89,10 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         return prob;
     }
 
-    private BinomDiamond<GlmNode> buildDiamond(NGram history) {
+    public BinomDiamond<GlmNode> buildDiamond(NGram history) {
         int order = history.size();
+        if (order == 0)
+            return null;
         BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order, GlmNode.class);
 
         for (GlmNode node : diamond.inOrder()) {
