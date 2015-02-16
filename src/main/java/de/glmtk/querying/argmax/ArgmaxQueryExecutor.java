@@ -31,6 +31,7 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Patterns;
+import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
 import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator.GlmNode;
 import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
@@ -75,6 +76,7 @@ public class ArgmaxQueryExecutor {
 
     private IterativeModKneserNeyEstimator iterativeModKneserNeyEstimator;
     private IterativeGenLangModelEstimator iterativeGenLangModelEstimator;
+    private Estimator estimator;
     private Collection<String> vocab;
 
     public ArgmaxQueryExecutor(IterativeModKneserNeyEstimator estimator,
@@ -88,6 +90,14 @@ public class ArgmaxQueryExecutor {
                                GlmtkPaths paths) throws IOException {
         iterativeModKneserNeyEstimator = null;
         iterativeGenLangModelEstimator = estimator;
+        vocab = loadVocabFromCounts(paths);
+    }
+
+    public ArgmaxQueryExecutor(Estimator estimator,
+                               GlmtkPaths paths) throws IOException {
+        iterativeModKneserNeyEstimator = null;
+        iterativeGenLangModelEstimator = null;
+        this.estimator = estimator;
         vocab = loadVocabFromCounts(paths);
     }
 
@@ -113,12 +123,12 @@ public class ArgmaxQueryExecutor {
 
     public List<ArgmaxResult> queryArgmax(String history) {
         NGram hist = new NGram(StringUtils.split(history, ' '));
-        Object historyData;
+        Object historyData = null;
         if (iterativeModKneserNeyEstimator != null)
             historyData = iterativeModKneserNeyEstimator.calcLambdas(hist);
         else if (iterativeGenLangModelEstimator != null)
             historyData = iterativeGenLangModelEstimator.buildGlmDiamond(hist);
-        else
+        else if (estimator == null)
             throw new IllegalStateException("No estimator set.");
 
         PriorityQueue<ArgmaxResult> queue = new PriorityQueue<>(6,
@@ -137,8 +147,10 @@ public class ArgmaxQueryExecutor {
                 BinomDiamond<GlmNode> glmDiamond = (BinomDiamond<GlmNode>) historyData;
                 prob = iterativeGenLangModelEstimator.probability(seq, hist,
                         glmDiamond);
-            } else
+            } else if (estimator == null)
                 throw new IllegalStateException("No estimator set.");
+            else
+                prob = estimator.probability(seq, hist);
 
             queue.add(new ArgmaxResult(sequence, prob));
             if (queue.size() > 5)

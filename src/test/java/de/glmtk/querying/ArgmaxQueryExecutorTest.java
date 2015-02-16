@@ -39,6 +39,7 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
+import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
 import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
@@ -106,6 +107,26 @@ public class ArgmaxQueryExecutorTest extends TestCorporaTest {
     @Test
     public void testGlm() throws IOException {
         IterativeGenLangModelEstimator estimator = Estimators.ITERATIVE_GLM;
+
+        System.out.format("=== %s%n", estimator);
+
+        estimator.setCache(cache);
+        ArgmaxQueryExecutor argmaxQueryExecutor = new ArgmaxQueryExecutor(
+                estimator, TEST_CORPUS.getGlmtk().getPaths());
+
+        for (String query : queries) {
+            System.out.format("# %s:%n", query);
+            long t1 = System.currentTimeMillis();
+            List<ArgmaxResult> results = argmaxQueryExecutor.queryArgmax(query);
+            long t2 = System.currentTimeMillis();
+            printArgmaxResults(results);
+            System.out.format("took %dms%n%n", t2 - t1);
+        }
+    }
+
+    @Test
+    public void testOther() throws IOException {
+        Estimator estimator = Estimators.FAST_GLM;
 
         System.out.format("=== %s%n", estimator);
 
