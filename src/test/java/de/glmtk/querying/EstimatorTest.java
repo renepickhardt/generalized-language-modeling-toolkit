@@ -45,6 +45,7 @@ import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_THREE_DISCOUNT
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -179,7 +180,10 @@ public class EstimatorTest extends TestCorporaTest {
                 for (int i = 0; i != (int) Math.pow(
                         testCorpus.getTokens().length, order); ++i) {
                     List<String> sequence = testCorpus.getSequenceList(i, order);
-                    sum += calculator.probability(sequence);
+                    double prob = calculator.probability(sequence);
+                    if (prob < 0.0 && prob > 1.0)
+                        fail("Illegal probability: " + prob);
+                    sum += prob;
                 }
                 try {
                     assertEquals(1.0, sum, 1e-6);
@@ -213,7 +217,10 @@ public class EstimatorTest extends TestCorporaTest {
                     for (int j = 0; j != testCorpus.getTokens().length; ++j) {
                         NGram sequence = new NGram(
                                 Arrays.asList(testCorpus.getTokens()[j]));
-                        sum += estimator.probability(sequence, history);
+                        double prob = estimator.probability(sequence, history);
+                        if (prob < 0.0 && prob > 1.0)
+                            fail("Illegal probability: " + prob);
+                        sum += prob;
                     }
 
                     try {
