@@ -42,18 +42,25 @@ fi
 # Calculate jvm memory
 DEFAULT_JVM_MEMORY=4096
 JVM_MEMORY=`grep -oP "^\s+jvm:\s+\K\d+" "$CONFIG_FILE"`
-if [[ -z $JVM_MEMORY ]]; then
+if [[ -z "$JVM_MEMORY" ]]; then
     JVM_MEMORY=$DEFAULT_JVM_MEMORY
 fi
 
 # Variable named MAVEN_OPTS, because maven listens to this environmen variable
-MAVEN_OPTS="-Xmx${JVM_MEMORY}m -javaagent:$GLMTK_DIR/lib/classmexer.jar"
+MAVEN_OPTS="-Xmx${JVM_MEMORY}m -javaagent:$GLMTK_DIR/lib/classmexer/classmexer/0.03/classmexer-0.03.jar"
 
 IS_TTY_STDERR="false"
 if [[ -t 2 ]] ; then
     IS_TTY_STDERR="true"
 fi
 
+# Setup java library path
+if [[ -z "${JAVA_HOME:-}" ]] ; then
+    echo "Environment variable JAVA_HOME not set."
+    exit
+fi;
+LIBRARY_PATH="${GLMTK_DIR}/lib"
+
 # TODO: ulimit unlimited?
 ulimit -v 20000000
-nice java $MAVEN_OPTS -Dglmtk.dir="$GLMTK_DIR" -Dglmtk.isttyStderr="$IS_TTY_STDERR" -Dfile.encoding="UTF-8" -jar "$JAR_FILE" "$@"
+nice java $MAVEN_OPTS -Dglmtk.dir="$GLMTK_DIR" -Dglmtk.isttyStderr="$IS_TTY_STDERR" -Dfile.encoding="UTF-8" -jar -Djava.library.path="${LIBRARY_PATH}" "$JAR_FILE" "$@"

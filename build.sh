@@ -25,5 +25,5 @@ if [[ "${1-}" == "clean" ]]
 then
     mvn clean
 else
-     mvn compile assembly:single
+    mvn compile assembly:single
 fi
