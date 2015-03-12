@@ -58,6 +58,21 @@ public class CollectionUtils {
         return false;
     }
 
+    /**
+     * Iterating over a queue is not guaranteed to hit all elements in the order
+     * defined by the queue's comparator. This method prints a queue's content
+     * in the order defined by the queue's comparator.
+     */
+    public static <T> List<T> getQueueAsList(Queue<T> queue) {
+        List<T> list = new ArrayList<>(queue.size());
+        T obj;
+        while ((obj = queue.poll()) != null)
+            list.add(obj);
+        for (T elem : list)
+            queue.add(elem);
+        return list;
+    }
+
     public static <T> List<T> drainQueueToList(Queue<T> queue) {
         Deque<T> deque = new ArrayDeque<>(queue.size());
         T obj;
