@@ -22,13 +22,8 @@ package de.glmtk.executables;
 
 import java.util.Arrays;
 
-import de.jonaskunze.autocompletion.CompletionTrie;
-
 public class MainClass {
     public static void main(String[] args) throws Exception {
-        CompletionTrie t = new CompletionTrie();
-        t.foo();
-
         if (args.length == 0)
             throw new IllegalArgumentException("No main class specified.");
 
