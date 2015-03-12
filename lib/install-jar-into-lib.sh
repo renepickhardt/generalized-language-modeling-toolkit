@@ -12,10 +12,13 @@ if [[ -z "${1:-}" ]] || [[ ! -f "$1" ]] || [[ -z "${2:-}" ]] || [[ -z "${3:-}" ]
     exit
 fi
 
-
 jarFile=$1
 groupId=$2
 artifactId=$3
 version=$4
 
-mvn install:install-file -DlocalRepositoryPath=. -DcreateChecksum=true -Dpackaging=jar -Dfile=$jarFile -DgroupId=$groupId -DartifactId=$artifactId -Dversion=$version
+if [[ $jarFile == *"-sources.jar" ]] ; then
+    mvn install:install-file -DlocalRepositoryPath=. -DcreateChecksum=true -Dpackaging=jar -Dfile=$jarFile -DgroupId=$groupId -DartifactId=$artifactId -Dversion=$version -Dclassifier=sources
+else
+    mvn install:install-file -DlocalRepositoryPath=. -DcreateChecksum=true -Dpackaging=jar -Dfile=$jarFile -DgroupId=$groupId -DartifactId=$artifactId -Dversion=$version
+fi
