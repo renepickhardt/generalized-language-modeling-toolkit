@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.querying.estimator.iterative;
+package de.glmtk.querying.estimator.weightedsum;
 
 import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.common.NGram.WSKP_NGRAM;
@@ -30,7 +30,7 @@ import de.glmtk.counts.Discounts;
 import de.glmtk.util.BinomDiamond;
 import de.glmtk.util.BinomDiamondNode;
 
-public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimator {
+public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEstimator {
     public static class GlmNode extends BinomDiamondNode<GlmNode> {
         private NGram history = null;
         private long absoluteCount = 0;
@@ -40,7 +40,7 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         private double continuationFactor = 0.0;
     }
 
-    public IterativeGenLangModelEstimator() {
+    public WeightedSumGenLangModelEstimator() {
         super();
         setBackoffMode(BackoffMode.SKP);
     }
@@ -50,49 +50,33 @@ public class IterativeGenLangModelEstimator extends IterativeModKneserNeyEstimat
         this.backoffMode = backoffMode;
     }
 
-    public double probability(NGram sequence,
-                              NGram history,
-                              BinomDiamond<GlmNode> glmDiamond) {
-        return calcProbability(sequence, history, 1, glmDiamond);
-    }
-
     @Override
-    protected double calcProbability(NGram sequence,
-                                     NGram history,
-                                     int recDepth) {
-        BinomDiamond<GlmNode> glmDiamond = buildGlmDiamond(history);
-        return calcProbability(sequence, history, recDepth, glmDiamond);
-    }
-
-    protected double calcProbability(NGram sequence,
-                                     NGram history,
-                                     @SuppressWarnings("unused") int recDepth,
-                                     BinomDiamond<GlmNode> glmDiamond) {
-        if (history.isEmpty())
-            return (double) cache.getAbsolute(sequence) / cache.getNumWords();
-
-        double prob = 0.0;
-        for (GlmNode node : glmDiamond) {
-            NGram fullSequence = getFullSequence(sequence, node.history);
-            if (node.absoluteFactor != 0) {
-                double absAlpha = calcAlpha(fullSequence, true,
-                        !node.isBottom());
-                prob += absAlpha * node.absoluteFactor;
-            }
-            if (node.continuationFactor != 0) {
-                double contAlpha = calcAlpha(fullSequence, false,
-                        !node.isBottom());
-                prob += contAlpha * node.continuationFactor;
-            }
+    public WeightedSumFunction calcWeightedSumFunction(NGram history) {
+        if (history.isEmpty()) {
+            WeightedSumFunction weightedSumFunction = new WeightedSumFunction(1);
+            weightedSumFunction.add(1.0 / cache.getNumWords(), history, true,
+                    false);
+            return weightedSumFunction;
         }
 
-        return prob;
+        BinomDiamond<GlmNode> diamond = buildGlmDiamond(history);
+
+        WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
+                diamond.size());
+        for (GlmNode node : diamond) {
+            if (node.absoluteFactor != 0)
+                weightedSumFunction.add(node.absoluteFactor, node.history,
+                        true, !node.isBottom());
+            if (node.continuationFactor != 0)
+                weightedSumFunction.add(node.continuationFactor, node.history,
+                        false, !node.isBottom());
+        }
+
+        return weightedSumFunction;
     }
 
-    public BinomDiamond<GlmNode> buildGlmDiamond(NGram history) {
+    private BinomDiamond<GlmNode> buildGlmDiamond(NGram history) {
         int order = history.size();
-        if (order == 0)
-            return null;
         BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order, GlmNode.class);
 
         for (GlmNode node : diamond.inOrder()) {

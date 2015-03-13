@@ -37,16 +37,16 @@ import org.junit.Test;
 import de.glmtk.Constants;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
-import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
+import de.glmtk.querying.argmax.TrivialArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
-public class ArgmaxQueryExecutorTest extends TestCorporaTest {
+public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
     private static final Path VOCAB_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.vocab");
     private static final Path QUERY_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.query");
@@ -78,20 +78,20 @@ public class ArgmaxQueryExecutorTest extends TestCorporaTest {
     @BeforeClass
     public static void loadCache() throws IOException {
         CacheBuilder requiredCache = new CacheBuilder();
-        requiredCache.addAll(Estimators.ITERATIVE_MKN.getRequiredCache(4));
-        requiredCache.addAll(Estimators.ITERATIVE_GLM.getRequiredCache(4));
+        requiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(4));
+        requiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(4));
         cache = requiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
     }
 
     @Test
     public void testMkn() throws IOException {
-        IterativeModKneserNeyEstimator estimator = Estimators.ITERATIVE_MKN;
+        WeightedSumModKneserNeyEstimator estimator = Estimators.WEIGHTEDSUM_MKN;
 
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        ArgmaxQueryExecutor argmaxQueryExecutor = new ArgmaxQueryExecutor(
+        TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
                 estimator, TEST_CORPUS.getGlmtk().getPaths());
 
         for (String query : queries) {
@@ -106,12 +106,12 @@ public class ArgmaxQueryExecutorTest extends TestCorporaTest {
 
     @Test
     public void testGlm() throws IOException {
-        IterativeGenLangModelEstimator estimator = Estimators.ITERATIVE_GLM;
+        WeightedSumGenLangModelEstimator estimator = Estimators.WEIGHTEDSUM_GLM;
 
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        ArgmaxQueryExecutor argmaxQueryExecutor = new ArgmaxQueryExecutor(
+        TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
                 estimator, TEST_CORPUS.getGlmtk().getPaths());
 
         for (String query : queries) {
@@ -131,7 +131,7 @@ public class ArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        ArgmaxQueryExecutor argmaxQueryExecutor = new ArgmaxQueryExecutor(
+        TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
                 estimator, TEST_CORPUS.getGlmtk().getPaths());
 
         for (String query : queries) {

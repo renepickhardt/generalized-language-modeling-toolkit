@@ -36,11 +36,11 @@ import de.glmtk.querying.estimator.fraction.FalseMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.interpol.DiffInterpolEstimator;
 import de.glmtk.querying.estimator.interpol.InterpolEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 
 public class Estimators {
     // Substitute Estimators ///////////////////////////////////////////////////
@@ -295,22 +295,22 @@ public class Estimators {
         FAST_GLM_ABS.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
     }
 
-    // Iterative ///////////////////////////////////////////////////////////////
+    // WeightedSum /////////////////////////////////////////////////////////////
 
-    public static final IterativeModKneserNeyEstimator ITERATIVE_MKN = new IterativeModKneserNeyEstimator();
+    public static final WeightedSumModKneserNeyEstimator WEIGHTEDSUM_MKN = new WeightedSumModKneserNeyEstimator();
     static {
-        ITERATIVE_MKN.setName("Iterative-Modified-Kneser-Ney");
+        WEIGHTEDSUM_MKN.setName("Weighted-Sum-Modified-Kneser-Ney");
     }
 
-    public static final IterativeModKneserNeyEstimator ITERATIVE_MKN_SKP = new IterativeModKneserNeyEstimator();
+    public static final WeightedSumModKneserNeyEstimator WEIGHTEDSUM_MKN_SKP = new WeightedSumModKneserNeyEstimator();
     static {
-        ITERATIVE_MKN_SKP.setBackoffMode(BackoffMode.SKP);
-        ITERATIVE_MKN_SKP.setName("Iterative-Modified-Kneser-Ney (SKP Backoff)");
+        WEIGHTEDSUM_MKN_SKP.setBackoffMode(BackoffMode.SKP);
+        WEIGHTEDSUM_MKN_SKP.setName("Weighted-Sum-Modified-Kneser-Ney (SKP Backoff)");
     }
 
-    public static final IterativeGenLangModelEstimator ITERATIVE_GLM = new IterativeGenLangModelEstimator();
+    public static final WeightedSumGenLangModelEstimator WEIGHTEDSUM_GLM = new WeightedSumGenLangModelEstimator();
     static {
-        ITERATIVE_GLM.setName("Iterative-Generalized-Language-Model");
+        WEIGHTEDSUM_GLM.setName("Weighted-Sum-Generalized-Language-Model");
     }
 
     private static InterpolEstimator makeMkn(BackoffMode BackoffMode) {

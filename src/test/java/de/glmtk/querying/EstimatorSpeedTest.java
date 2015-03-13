@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -42,12 +42,6 @@ import de.glmtk.cache.CacheBuilder;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
-import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
-import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
-import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeGenLangModelEstimator;
-import de.glmtk.querying.estimator.iterative.IterativeModKneserNeyEstimator;
 import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
@@ -65,35 +59,21 @@ public class EstimatorSpeedTest extends TestCorporaTest {
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
-        Estimator fastMknAbs = new FastModKneserNeyAbsEstimator();
-        fastMknAbs.setName("Fast-Modified-Kneser-Ney (Abs-Lower-Order)");
-        Estimator fastMkn = new FastModKneserNeyEstimator();
-        fastMkn.setName("Fast-Modified-Kneser-Ney");
-        Estimator iterativeMkn = new IterativeModKneserNeyEstimator();
-        iterativeMkn.setName("Iterative-Modified-Kneser-Ney");
-
-        Estimator fastGlmAbs = new FastGenLangModelAbsEstimator();
-        fastGlmAbs.setName("Fast-Generalized-Language-Model (Abs-Lower-Order)");
-        Estimator fastGlm = new FastGenLangModelEstimator();
-        fastGlm.setName("Fast-Generalized-Language-Model");
-        Estimator iterativeGlm = new IterativeGenLangModelEstimator();
-        iterativeGlm.setName("Iterative-Generalized-Language-Model");
-
         //@formatter:off
         return Arrays.asList(new Object[][]{
                 {Estimators.MKN_ABS},
-                {fastMknAbs},
+                {Estimators.FAST_MKN_ABS},
 
                 {Estimators.MKN},
-                {fastMkn},
-                {iterativeMkn},
+                {Estimators.FAST_MKN},
+                {Estimators.WEIGHTEDSUM_MKN},
 
                 {Estimators.GLM_ABS},
-                {fastGlmAbs},
+                {Estimators.FAST_GLM_ABS},
 
                 {Estimators.GLM},
-                {fastGlm},
-                {iterativeGlm}
+                {Estimators.FAST_GLM},
+                {Estimators.WEIGHTEDSUM_GLM}
         });
         //@formatter:on
     }

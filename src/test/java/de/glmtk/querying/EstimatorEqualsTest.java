@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -34,12 +34,12 @@ import static de.glmtk.querying.estimator.Estimators.GLM_ABS;
 import static de.glmtk.querying.estimator.Estimators.GLM_DEL;
 import static de.glmtk.querying.estimator.Estimators.GLM_DEL_FRONT;
 import static de.glmtk.querying.estimator.Estimators.GLM_SKP_AND_DEL;
-import static de.glmtk.querying.estimator.Estimators.ITERATIVE_GLM;
-import static de.glmtk.querying.estimator.Estimators.ITERATIVE_MKN;
-import static de.glmtk.querying.estimator.Estimators.ITERATIVE_MKN_SKP;
 import static de.glmtk.querying.estimator.Estimators.MKN;
 import static de.glmtk.querying.estimator.Estimators.MKN_ABS;
 import static de.glmtk.querying.estimator.Estimators.MKN_SKP;
+import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_GLM;
+import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MKN;
+import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MKN_SKP;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -94,15 +94,15 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                 {MKN_ABS, FAST_MKN_ABS},
 
                 {MKN, FAST_MKN},
-                {MKN, ITERATIVE_MKN},
+                {MKN, WEIGHTEDSUM_MKN},
 
                 {MKN_SKP, FAST_MKN_SKP},
-                {MKN_SKP, ITERATIVE_MKN_SKP},
+                {MKN_SKP, WEIGHTEDSUM_MKN_SKP},
 
                 {GLM_ABS, FAST_GLM_ABS},
 
                 {GLM, FAST_GLM},
-                {GLM, ITERATIVE_GLM},
+                {GLM, WEIGHTEDSUM_GLM},
 
                 {GLM_DEL, FAST_GLM_DEL},
 
@@ -120,8 +120,10 @@ public class EstimatorEqualsTest extends TestCorporaTest {
 
         CacheBuilder requiredCache = new CacheBuilder();
         for (Object[] params : data()) {
-            Estimator estimator = (Estimator) params[0];
-            requiredCache.addAll(estimator.getRequiredCache(5));
+            Estimator exptected = (Estimator) params[0];
+            Estimator actual = (Estimator) params[1];
+            requiredCache.addAll(exptected.getRequiredCache(5));
+            requiredCache.addAll(actual.getRequiredCache(5));
         }
 
         Glmtk glmtk = testCorpus.getGlmtk();
