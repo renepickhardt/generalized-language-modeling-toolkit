@@ -45,6 +45,8 @@ import de.glmtk.files.LengthDistributionReader;
 import de.glmtk.files.NGramTimesReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
+import de.glmtk.util.completiontrie.CompletionTrie;
+import de.glmtk.util.completiontrie.CompletionTrieBuilder;
 
 /**
  * Use {@link CacheBuilder} for creation.
@@ -60,6 +62,7 @@ public class Cache {
      * continuation patterns;
      */
     private Map<Pattern, Map<String, Object>> counts;
+    private Map<Pattern, CompletionTrie> completionCounts;
     private Map<Pattern, NGramTimes> ngramTimes;
     private List<Double> lengthFrequencies;
 
@@ -72,6 +75,7 @@ public class Cache {
         progress = null;
 
         counts = null;
+        completionCounts = null;
         ngramTimes = null;
         lengthFrequencies = null;
 
@@ -119,6 +123,47 @@ public class Cache {
         }
     }
 
+    public void loadCompletionCounts(Set<Pattern> patterns) throws IOException {
+        Objects.requireNonNull(patterns);
+        for (Pattern pattern : patterns)
+            if (pattern.isEmpty())
+                throw new IllegalArgumentException(
+                        "patterns contains empty pattern.");
+
+        LOGGER.debug("Loading completion counts...");
+
+        if (completionCounts == null)
+            completionCounts = new HashMap<>();
+
+        for (Pattern pattern : patterns) {
+            boolean isPatternAbsolute = pattern.isAbsolute();
+            Path inputDir = (isPatternAbsolute
+                    ? paths.getAbsoluteDir()
+                            : paths.getContinuationDir());
+
+            CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
+                    true);
+
+            Path file = inputDir.resolve(pattern.toString());
+            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
+                while (reader.readLine() != null)
+                    completionTrieBuilder.add(reader.getSequence(),
+                            reader.getCount());
+            }
+
+            CompletionTrie completionTrie = completionTrieBuilder.build();
+
+            // Free memory
+            completionTrieBuilder.reset();
+            completionTrieBuilder = null;
+
+            completionCounts.put(pattern, completionTrie);
+
+            if (progress != null)
+                progress.increase(1);
+        }
+    }
+
     public void loadNGramTimes() throws IOException {
         LOGGER.debug("Loading NGram times counts...");
 
@@ -152,6 +197,17 @@ public class Cache {
             progress.increase(1);
     }
 
+    public long getCount(NGram ngram) {
+        Objects.requireNonNull(ngram);
+        if (ngram.isEmpty())
+            throw new IllegalArgumentException("Empty ngram.");
+        Pattern pattern = ngram.getPattern();
+
+        if (pattern.isAbsolute())
+            return getAbsolute(ngram);
+        return getContinuation(ngram).getOnePlusCount();
+    }
+
     public long getAbsolute(NGram ngram) {
         Objects.requireNonNull(ngram);
         if (ngram.isEmpty())
@@ -159,7 +215,7 @@ public class Cache {
         Pattern pattern = ngram.getPattern();
         if (!pattern.isAbsolute())
             throw new IllegalArgumentException(String.format(
-                    "Pattern '%s' is is not absolute pattern.", pattern));
+                    "Pattern '%s' is no absolute pattern.", pattern));
 
         Long result = (Long) CollectionUtils.getFromNestedMap(counts, pattern,
                 ngram.toString(), "Counts not loaded",
@@ -182,6 +238,14 @@ public class Cache {
                 "Counts with pattern '%s' not loaded.", null);
 
         return result == null ? new Counts() : result;
+    }
+
+    public CompletionTrie getCompletionCounts(Pattern pattern) {
+        Objects.requireNonNull(pattern);
+        if (pattern.isEmpty())
+            throw new IllegalArgumentException("Empty pattern.");
+
+        return completionCounts.get(pattern);
     }
 
     public long getNumWords() {

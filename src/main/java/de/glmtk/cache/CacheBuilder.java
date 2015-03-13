@@ -37,12 +37,14 @@ import de.glmtk.common.Pattern;
  */
 public class CacheBuilder {
     private Set<Pattern> counts;
+    private Set<Pattern> completionCounts;
     private boolean ngramTimes;
     private boolean lengthDistribution;
     private boolean progress;
 
     public CacheBuilder() {
         counts = new HashSet<>();
+        completionCounts = new HashSet<>();
         ngramTimes = false;
         lengthDistribution = false;
         progress = false;
@@ -54,6 +56,15 @@ public class CacheBuilder {
 
     public CacheBuilder withCounts(Collection<Pattern> counts) {
         this.counts.addAll(counts);
+        return this;
+    }
+
+    public Set<Pattern> getCompletionCountsPatterns() {
+        return completionCounts;
+    }
+
+    public CacheBuilder withCompletionCounts(Collection<Pattern> completionCounts) {
+        this.completionCounts.addAll(completionCounts);
         return this;
     }
 
@@ -95,6 +106,7 @@ public class CacheBuilder {
         if (progress) {
             int total = 0;
             total += counts.size();
+            total += completionCounts.size();
             total += ngramTimes ? 1 : 0;
             total += lengthDistribution ? 1 : 0;
             cache.setProgress(OUTPUT.newProgress(total));
@@ -102,6 +114,8 @@ public class CacheBuilder {
 
         if (!counts.isEmpty())
             cache.loadCounts(counts);
+        if (!completionCounts.isEmpty())
+            cache.loadCompletionCounts(completionCounts);
         if (ngramTimes)
             cache.loadNGramTimes();
         if (lengthDistribution)
@@ -115,6 +129,7 @@ public class CacheBuilder {
 
     public CacheBuilder addAll(CacheBuilder cacheBuilder) {
         counts.addAll(cacheBuilder.counts);
+        completionCounts.addAll(cacheBuilder.completionCounts);
         ngramTimes = ngramTimes || cacheBuilder.ngramTimes;
         lengthDistribution = lengthDistribution
                 || cacheBuilder.lengthDistribution;
@@ -125,8 +140,10 @@ public class CacheBuilder {
     public String toString() {
         try (Formatter f = new Formatter()) {
             f.format("counts = %s, ", counts);
+            f.format("completionCounts = %s", completionCounts);
             f.format("ngramTimes = %b, ", ngramTimes);
             f.format("lengthDistriubtion = %b, ", lengthDistribution);
+            f.format("progress = %b", progress);
             return f.toString();
         }
     }
