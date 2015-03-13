@@ -164,6 +164,9 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
 
     private Entry findPath(String string,
                            boolean requireLeaf) {
+        if (!caseSensitive)
+            string = string.toLowerCase();
+
         byte[] prefixChars = string.getBytes(CHARSET);
         int curChar = 0;
 
