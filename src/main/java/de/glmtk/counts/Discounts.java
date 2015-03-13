@@ -30,8 +30,8 @@ public class Discounts {
     }
 
     public Discounts(double one,
-                    double two,
-                    double threePlus) {
+                     double two,
+                     double threePlus) {
         set(one, two, threePlus);
     }
 
@@ -80,6 +80,6 @@ public class Discounts {
 
     @Override
     public String toString() {
-        return String.format("1=%e, 2=%e, 3+=%e", one, two, threePlus);
+        return String.format("[1=%e, 2=%e, 3+=%e]", one, two, threePlus);
     }
 }
