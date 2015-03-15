@@ -41,9 +41,9 @@ public class CollectionUtils {
         return lhsElems.size() == 0;
     }
 
-    public static <T> void ensureListSize(List<T> list,
-                                          int neededSize,
-                                          T defaultValue) {
+    public static <T> void fill(List<T> list,
+                                int neededSize,
+                                T defaultValue) {
         int size = list.size();
         if (size <= neededSize)
             for (int i = size; i != neededSize + 1; ++i)

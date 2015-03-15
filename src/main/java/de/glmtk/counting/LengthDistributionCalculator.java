@@ -97,7 +97,7 @@ public class LengthDistributionCalculator {
                 int length = StringUtils.split(line, ' ').size();
 
                 ++sum;
-                CollectionUtils.ensureListSize(frequencies, length, 0.0);
+                CollectionUtils.fill(frequencies, length, 0.0);
                 frequencies.set(length, frequencies.get(length) + 1);
             }
         }

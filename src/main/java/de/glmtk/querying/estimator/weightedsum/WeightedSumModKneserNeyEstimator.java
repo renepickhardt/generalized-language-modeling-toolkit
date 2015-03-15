@@ -56,17 +56,16 @@ public class WeightedSumModKneserNeyEstimator extends AbstractWeightedSumEstimat
         int order = fullHistory.getPattern().numElems(CNT);
         double lambda = 1.0;
         long denominator = cache.getAbsolute(hist.concat(SKP_NGRAM));
-        weightedSumFunction.add(lambda / denominator, hist, true, order != 0);
+        weightedSumFunction.add(lambda / denominator, hist);
         for (int i = 0; i != order; ++i) {
             lambda *= calcGamma(hist, denominator);
             hist = hist.backoff(backoffMode);
 
             denominator = cache.getContinuation(
-                    WSKP_NGRAM.concat(hist.convertWskpToSkp()).concat(
-                            WSKP_NGRAM)).getOnePlusCount();
+                    WSKP_NGRAM.concat(hist).concat(WSKP_NGRAM)).getOnePlusCount();
 
-            weightedSumFunction.add(lambda / denominator, hist, false,
-                    i + 1 != order);
+            weightedSumFunction.add(lambda / denominator,
+                    WSKP_NGRAM.concat(hist.convertSkpToWskp()));
         }
 
         return weightedSumFunction;

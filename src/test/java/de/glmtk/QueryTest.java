@@ -8,9 +8,7 @@ import org.junit.Test;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
-import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimators;
-import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
@@ -20,8 +18,6 @@ import de.glmtk.util.StringUtils;
  * Playground to experiment with quick and dirty code ideas.
  */
 public class QueryTest extends TestCorporaTest {
-    private static final Logger LOGGER = Logger.get(QueryTest.class);
-
     @Test
     public void test() throws Exception {
         TestCorpus testCorpus = TestCorpus.EN0008T;
@@ -35,11 +31,11 @@ public class QueryTest extends TestCorporaTest {
 
         //@formatter:off
         List<String> list = Arrays.asList(
-                ". , New York ,",
-                ". , New York",
-                ". , New",
-                ". ,",
-                "."
+                "4 . 3 speak an",
+                "4 . 3 speak",
+                "4 . 3",
+                "4 .",
+                "4"
                 );
         //@formatter:on
 
@@ -52,11 +48,11 @@ public class QueryTest extends TestCorporaTest {
 
             estimator.probability(sequence, history);
 
-            WeightedSumFunction weightedSumFunction = estimator.calcWeightedSumFunction(history);
+            //            WeightedSumFunction weightedSumFunction = estimator.calcWeightedSumFunction(history);
             //            System.out.println(weightedSumFunction);
 
-            LOGGER.info("    %e ", estimator.probability(sequence,
-                    weightedSumFunction));
+            //            LOGGER.info("    %e ", estimator.probability(sequence,
+            //                    weightedSumFunction));
         }
     }
 }

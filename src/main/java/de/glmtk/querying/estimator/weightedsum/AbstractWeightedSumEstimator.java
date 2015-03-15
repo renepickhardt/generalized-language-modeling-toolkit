@@ -1,13 +1,12 @@
 package de.glmtk.querying.estimator.weightedsum;
 
-import static de.glmtk.common.NGram.WSKP_NGRAM;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import de.glmtk.cache.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Discounts;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.AbstractEstimator;
@@ -43,40 +42,28 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
 
         for (Summand summand : weightedSumFunction) {
             NGram fullSequence = getFullSequence(sequence, summand.getHistory());
-            prob += summand.getWeight()
-                    * calcAlpha(fullSequence, summand.isAbsolute(),
-                            summand.isDiscounted());
+            prob += summand.getWeight() * calcAlpha(fullSequence);
         }
 
         return prob;
     }
 
-    /**
-     * @param absolute
-     *            If {@code true} alpha absolute count, if {@code false} alpha
-     *            continuation count.
-     * @param discount
-     *            If {@code true} discount alpha if {@code false} not.
-     */
-    protected double calcAlpha(NGram sequence,
-                               boolean absolute,
-                               boolean discount) {
-        long absSequenceCount = cache.getAbsolute(sequence);
-        double alpha;
-        if (absolute)
-            alpha = absSequenceCount;
-        else
-            alpha = cache.getContinuation(
-                    WSKP_NGRAM.concat(sequence.convertSkpToWskp())).getOnePlusCount();
+    protected double calcAlpha(NGram sequence) {
+        long count = cache.getCount(sequence), absSequenceCount = count;
 
-        if (discount) {
-            Discounts disc = calcDiscounts(sequence.getPattern());
-            double d = disc.getForCount(absSequenceCount);
-
-            alpha = Math.max(alpha - d, 0.0);
+        if (!sequence.getPattern().isAbsolute()) {
+            sequence = sequence.remove(0).convertWskpToSkp();
+            absSequenceCount = cache.getAbsolute(sequence);
         }
 
-        return alpha;
+        if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
+            // If we are on last order don't discount.
+            return count;
+
+        Discounts disc = calcDiscounts(sequence.getPattern());
+        double d = disc.getForCount(absSequenceCount);
+
+        return Math.max(count - d, 0.0);
     }
 
     protected Discounts calcDiscounts(Pattern pattern) {

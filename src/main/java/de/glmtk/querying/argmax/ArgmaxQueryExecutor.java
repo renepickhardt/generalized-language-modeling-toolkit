@@ -36,5 +36,6 @@ public interface ArgmaxQueryExecutor {
         }
     }
 
-    public List<ArgmaxResult> queryArgmax(String history);
+    public List<ArgmaxResult> queryArgmax(String history,
+                                          int numResults);
 }

@@ -20,6 +20,7 @@ import java.util.NoSuchElementException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.glmtk.util.PeekableIterator;
 import de.glmtk.util.StringUtils;
 
 public class CompletionTrieTest {
@@ -78,9 +79,9 @@ public class CompletionTrieTest {
                     trie.get(entry.getString()));
         }
 
-        Iterator<CompletionTrieEntry> iter = trie.getCompletions("1");
+        PeekableIterator<CompletionTrieEntry> iter = trie.getCompletions("1");
         while (iter.hasNext())
-            System.out.println(iter.next());
+            assertEquals(iter.peek(), iter.next());
     }
 
     @Test

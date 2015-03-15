@@ -89,7 +89,7 @@ public class NGram {
     public boolean equals(Object other) {
         if (other == this)
             return true;
-        else if (other == null || getClass() != other.getClass())
+        if (other == null || getClass() != other.getClass())
             return false;
 
         NGram o = (NGram) other;
@@ -249,6 +249,11 @@ public class NGram {
     // TODO: rename to "convertToContinuation"?
     public NGram convertSkpToWskp() {
         return replace(SKP_WORD, WSKP_WORD);
+    }
+
+    // TODO: rename to "convertToAbsolute"?
+    public NGram convertWskpToSkp() {
+        return replace(WSKP_WORD, SKP_WORD);
     }
 
     public NGram backoff(BackoffMode backoffMode) {

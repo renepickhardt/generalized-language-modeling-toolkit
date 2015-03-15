@@ -54,8 +54,7 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
     public WeightedSumFunction calcWeightedSumFunction(NGram history) {
         if (history.isEmpty()) {
             WeightedSumFunction weightedSumFunction = new WeightedSumFunction(1);
-            weightedSumFunction.add(1.0 / cache.getNumWords(), history, true,
-                    false);
+            weightedSumFunction.add(1.0 / cache.getNumWords(), history);
             return weightedSumFunction;
         }
 
@@ -65,11 +64,10 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
                 diamond.size());
         for (GlmNode node : diamond) {
             if (node.absoluteFactor != 0)
-                weightedSumFunction.add(node.absoluteFactor, node.history,
-                        true, !node.isBottom());
+                weightedSumFunction.add(node.absoluteFactor, node.history);
             if (node.continuationFactor != 0)
-                weightedSumFunction.add(node.continuationFactor, node.history,
-                        false, !node.isBottom());
+                weightedSumFunction.add(node.continuationFactor,
+                        WSKP_NGRAM.concat(node.history.convertSkpToWskp()));
         }
 
         return weightedSumFunction;

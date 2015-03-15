@@ -23,11 +23,11 @@ package de.glmtk.cache;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -88,7 +88,7 @@ public class Cache {
         this.progress = progress;
     }
 
-    public void loadCounts(Set<Pattern> patterns) throws IOException {
+    public void loadCounts(Collection<Pattern> patterns) throws IOException {
         Objects.requireNonNull(patterns);
         for (Pattern pattern : patterns)
             if (pattern.isEmpty())
@@ -101,6 +101,9 @@ public class Cache {
             counts = new HashMap<>();
 
         for (Pattern pattern : patterns) {
+            if (counts.containsKey(pattern))
+                continue;
+
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
@@ -123,7 +126,7 @@ public class Cache {
         }
     }
 
-    public void loadCompletionCounts(Set<Pattern> patterns) throws IOException {
+    public void loadCompletionCounts(Collection<Pattern> patterns) throws IOException {
         Objects.requireNonNull(patterns);
         for (Pattern pattern : patterns)
             if (pattern.isEmpty())
@@ -136,6 +139,9 @@ public class Cache {
             completionCounts = new HashMap<>();
 
         for (Pattern pattern : patterns) {
+            if (completionCounts.containsKey(pattern))
+                continue;
+
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
@@ -188,7 +194,7 @@ public class Cache {
                 int l = reader.getLength();
                 double f = reader.getFrequency();
 
-                CollectionUtils.ensureListSize(lengthFrequencies, l, 0.0);
+                CollectionUtils.fill(lengthFrequencies, l, 0.0);
                 lengthFrequencies.set(l, f);
             }
         }

@@ -5,13 +5,13 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 
+import de.glmtk.util.PeekableIterator;
 import de.glmtk.util.StringUtils;
 
 /**
@@ -97,7 +97,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         }
     }
 
-    private class CompletionTrieIterator implements Iterator<CompletionTrieEntry> {
+    private class CompletionTrieIterator implements PeekableIterator<CompletionTrieEntry> {
         private boolean isFirstNode = true;
         private PriorityQueue<Entry> queue = new PriorityQueue<>(11, // 11 is PriorityQueue.DEFAULT_INITIAL_CAPACITY
                 Entry.BY_SCORE_COMPARATOR);
@@ -115,6 +115,22 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
 
         @Override
         public CompletionTrieEntry next() {
+            return nextEntry().toCompletionTrieEntry();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CompletionTrieEntry peek() {
+            Entry entry = nextEntry();
+            queue.add(entry);
+            return entry.toCompletionTrieEntry();
+        }
+
+        private Entry nextEntry() {
             Entry result = null;
             do {
                 Entry entry = queue.poll();
@@ -140,12 +156,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                 if (sibling != -1)
                     queue.add(makeSiblingEntry(sibling, entry));
             } while (result == null);
-            return result.toCompletionTrieEntry();
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
+            return result;
         }
     }
 
@@ -256,14 +267,15 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         return new CompletionTrieIterator(makeRootEntry());
     }
 
-    public Iterator<CompletionTrieEntry> getCompletions(String prefix) {
+    @SuppressWarnings("unchecked")
+    public PeekableIterator<CompletionTrieEntry> getCompletions(String prefix) {
         if (!caseSensitive)
             prefix = prefix.toLowerCase();
 
         Entry entry = findPath(prefix, false);
 
         if (entry == null)
-            return Collections.emptyIterator();
+            return PeekableIterator.EMPTY_PEEKABLE_ITERATOR;
         return new CompletionTrieIterator(entry);
     }
 

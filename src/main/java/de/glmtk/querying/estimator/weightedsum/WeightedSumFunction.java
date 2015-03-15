@@ -1,9 +1,6 @@
 package de.glmtk.querying.estimator.weightedsum;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
@@ -15,18 +12,12 @@ public class WeightedSumFunction extends ArrayList<Summand> {
 
     public class Summand {
         private NGram history;
-        private boolean absolute;
         private double weight;
-        private boolean discounted;
 
         public Summand(double weight,
-                       NGram history,
-                       boolean absolute,
-                       boolean discounted) {
+                       NGram history) {
             this.history = history;
-            this.absolute = absolute;
             this.weight = weight;
-            this.discounted = discounted;
         }
 
         public double getWeight() {
@@ -37,18 +28,9 @@ public class WeightedSumFunction extends ArrayList<Summand> {
             return history;
         }
 
-        public boolean isAbsolute() {
-            return absolute;
-        }
-
-        public boolean isDiscounted() {
-            return discounted;
-        }
-
         @Override
         public String toString() {
-            return "Summand [history=" + history + ", absolute=" + absolute
-                    + ", weight=" + weight + ", discounted=" + discounted + "]";
+            return "Summand [history=" + history + ", weight=" + weight + "]";
         }
     }
 
@@ -61,17 +43,22 @@ public class WeightedSumFunction extends ArrayList<Summand> {
     }
 
     public void add(double weight,
-                    NGram history,
-                    boolean absolute,
-                    boolean discounted) {
-        add(new Summand(weight, history, absolute, discounted));
+                    NGram history) {
+        add(new Summand(weight, history));
     }
 
-    public Collection<Pattern> getNeededPatterns() {
-        Set<Pattern> patterns = new HashSet<>();
-        for (Summand summand : this)
-            patterns.add(summand.history.getPattern().concat(PatternElem.CNT));
+    public Pattern[] getPatterns() {
+        Pattern[] patterns = new Pattern[size()];
+        for (int i = 0; i != size(); ++i)
+            patterns[i] = get(i).history.getPattern().concat(PatternElem.CNT);
         return patterns;
+    }
+
+    public NGram[] getHistories() {
+        NGram[] histories = new NGram[size()];
+        for (int i = 0; i != size(); ++i)
+            histories[i] = get(i).history;
+        return histories;
     }
 
     @Override
@@ -79,8 +66,8 @@ public class WeightedSumFunction extends ArrayList<Summand> {
         StringBuilder result = new StringBuilder();
         result.append(getClass().getSimpleName()).append(" [\n");
         for (Summand summand : this)
-            result.append(String.format("  %-20s %e %b %b %n", summand.history,
-                    summand.weight, summand.absolute, summand.discounted));
+            result.append(String.format("  %-20s %e%n", summand.history,
+                    summand.weight));
         result.append("]");
         return result.toString();
     }
