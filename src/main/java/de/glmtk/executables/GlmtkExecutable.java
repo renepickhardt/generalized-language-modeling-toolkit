@@ -70,8 +70,9 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExecutable extends Executable {
-    private static final Logger LOGGER = Logger.get(Executable.class);
+    private static final Logger LOGGER = Logger.get(GlmtkExecutable.class);
 
+    // TODO: mode help, version log_console, and log_debug options to Executable class?
     private static final Option OPTION_HELP;
     private static final Option OPTION_VERSION;
     private static final Option OPTION_WORKINGDIR;
@@ -154,6 +155,11 @@ public class GlmtkExecutable extends Executable {
     private boolean logDebug = false;
 
     @Override
+    protected String getExecutableName() {
+        return "glmtk";
+    }
+
+    @Override
     protected List<Option> getOptions() {
         return OPTIONS;
     }
@@ -164,7 +170,7 @@ public class GlmtkExecutable extends Executable {
             f.format("glmtk <INPUT> [<OPTION...>]%n");
             f.format("Invokes the Generalized Language Model Toolkit.%n");
 
-            f.format("\nMandatory arguments to long options are mandatory for short options too.%n");
+            f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
 
             return f.toString();
         }
@@ -197,10 +203,10 @@ public class GlmtkExecutable extends Executable {
     protected void parseArguments(String[] args) throws Exception {
         super.parseArguments(args);
 
-        Path corpusArg = parseCorpusArg();
+        corpus = parseInputArg();
         parseFlags();
 
-        if (NioUtils.checkFile(corpusArg, IS_DIRECTORY)) {
+        if (NioUtils.checkFile(corpus, IS_DIRECTORY)) {
             if (workingDir != null)
                 throw new CliArgumentException(
                         String.format(
@@ -208,19 +214,17 @@ public class GlmtkExecutable extends Executable {
                                 OPTION_WORKINGDIR.getLongOpt(),
                                 OPTION_WORKINGDIR.getOpt()));
 
-            workingDir = corpusArg;
+            workingDir = corpus;
             corpus = getWorkingDirFile(Constants.TRAINING_FILE_NAME);
             getWorkingDirFile(Constants.STATUS_FILE_NAME);
         } else {
             if (workingDir == null)
-                workingDir = Paths.get(corpusArg + Constants.WORKING_DIR_SUFFIX);
+                workingDir = Paths.get(corpus + Constants.WORKING_DIR_SUFFIX);
             if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
                 throw new IOException(
                         String.format(
                                 "Working directory '%s' already exists but is not a directory.",
                                 workingDir));
-
-            corpus = corpusArg;
         }
 
         checkCorpusForReservedSymbols();
@@ -248,26 +252,6 @@ public class GlmtkExecutable extends Executable {
         }
     }
 
-    private Path parseCorpusArg() {
-        if (line.getArgList() == null || line.getArgList().size() != 1) {
-            String error;
-            if (line.getArgList().size() == 0)
-                error = "Missing input.\n";
-            else
-                error = String.format("Incorrect input: %s%n",
-                        StringUtils.join(line.getArgList(), " "));
-            throw new CliArgumentException(error
-                    + "Try 'glmtk --help' for more information.");
-        }
-
-        Path inputArg = Paths.get(line.getArgs()[0]);
-        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
-            throw new CliArgumentException(String.format(
-                    "Input file/dir '%s' does not exist or is not readable.",
-                    inputArg));
-        return inputArg;
-    }
-
     private void parseFlags() throws IOException {
         @SuppressWarnings("unchecked")
         Iterator<Option> iter = line.iterator();
@@ -280,8 +264,8 @@ public class GlmtkExecutable extends Executable {
 
             } else if (option.equals(OPTION_TRAINING_ORDER)) {
                 optionFirstTimeOrFail(trainingOrder, option);
-                trainingOrder = positiveIntOrFail(option.getValue(),
-                        "Illegal %s argument", makeOptionString(option));
+                trainingOrder = optionPositiveIntOrFail(option.getValue(),
+                        false, "Illegal %s argument", makeOptionString(option));
 
             } else if (option.equals(OPTION_ESTIMATOR))
                 for (String opt : option.getValues()) {
@@ -354,36 +338,6 @@ public class GlmtkExecutable extends Executable {
                 throw new CliArgumentException(String.format(
                         "Unexpected option: '%s'.", option));
         }
-    }
-
-    private String makeOptionString(Option option) {
-        return String.format("--%s (-%s)", option.getLongOpt(), option.getOpt());
-    }
-
-    private void optionFirstTimeOrFail(Object value,
-                                       Option option) {
-        if (value != null)
-            throw new CliArgumentException(String.format(
-                    "Option %s must not be specified more than once.",
-                    makeOptionString(option)));
-    }
-
-    private int positiveIntOrFail(String value,
-                                  String message,
-                                  Object... params) {
-        Integer v = null;
-        try {
-            v = Integer.valueOf(value);
-        } catch (NumberFormatException e) {
-        }
-        if (v == null || v <= 0)
-            try (Formatter f = new Formatter()) {
-                f.format(message, params);
-                f.format(" '%s'.%n", value);
-                f.format("Needs to be a positive integer");
-                throw new CliArgumentException(f.toString());
-            }
-        return v;
     }
 
     private Path getAndCheckFile(String filename) throws IOException {
@@ -520,12 +474,6 @@ public class GlmtkExecutable extends Executable {
         neededPatterns.add(Patterns.get("x1111x"));
 
         glmtk.count(neededPatterns);
-
-        //        if (CollectionUtils.containsAny(estimators,
-        //                Estimators.MOD_KNESER_NEY_ESTIMATORS))
-        //            glmtk.learnModKneserNey();
-        //        if (CollectionUtils.containsAny(estimators, Estimators.GLM_ESTIMATORS))
-        //            glmtk.learnGenLangModel();
 
         for (Entry<QueryMode, Set<Path>> entry : queries) {
             QueryMode queryMode = entry.getKey();

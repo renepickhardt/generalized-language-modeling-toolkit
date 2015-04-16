@@ -22,14 +22,19 @@ package de.glmtk.executables;
 
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
+import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
+import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Formatter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,9 +48,11 @@ import org.apache.commons.cli.PosixParser;
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Config;
+import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.ExceptionUtils;
+import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
@@ -59,6 +66,8 @@ import de.glmtk.util.ThreadUtils;
     protected Config config = null;
     protected CommandLine line = null;
     private boolean outputIntialized = false;
+
+    protected abstract String getExecutableName();
 
     protected abstract List<Option> getOptions();
 
@@ -146,6 +155,75 @@ import de.glmtk.util.ThreadUtils;
             System.out.print(getHelpFooter());
             throw new Termination();
         }
+    }
+
+    protected Path parseInputArg() {
+        if (line.getArgList() == null || line.getArgList().size() != 1) {
+            String error;
+            if (line.getArgList().size() == 0)
+                error = "Missing input.\n";
+            else
+                error = String.format("Incorrect input: %s%n",
+                        StringUtils.join(line.getArgList(), " "));
+            throw new CliArgumentException(error + "Try '"
+                    + getExecutableName() + " --help' for more information.");
+        }
+
+        Path inputArg = Paths.get(line.getArgs()[0]);
+        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
+            throw new CliArgumentException(String.format(
+                    "Input file/dir '%s' does not exist or is not readable.",
+                    inputArg));
+        return inputArg;
+    }
+
+    protected String makeOptionString(Option option) {
+        return String.format("--%s (-%s)", option.getLongOpt(), option.getOpt());
+    }
+
+    protected void optionFirstTimeOrFail(Object value,
+                                         Option option) {
+        if (value != null)
+            throw new CliArgumentException(String.format(
+                    "Option %s must not be specified more than once.",
+                    makeOptionString(option)));
+    }
+
+    protected int optionPositiveIntOrFail(String value,
+                                          boolean allowZero,
+                                          String message,
+                                          Object... params) {
+        Integer v = null;
+        try {
+            v = Integer.valueOf(value);
+        } catch (NumberFormatException e) {
+        }
+        if (v == null || v < 0 || (!allowZero && v == 0))
+            try (Formatter f = new Formatter()) {
+                f.format(message, params);
+                f.format(" '%s'.%n", value);
+                f.format("Needs to be a positive integer");
+                throw new CliArgumentException(f.toString());
+            }
+        return v;
+    }
+
+    protected double optionProbabilityOrFail(String value,
+                                             String message,
+                                             Object... params) {
+        Double v = null;
+        try {
+            v = Double.valueOf(value);
+        } catch (NumberFormatException e) {
+        }
+        if (v == null || v < 0.0 || v > 1.0)
+            try (Formatter f = new Formatter()) {
+                f.format(message, params);
+                f.format(" '%s'.%n", value);
+                f.format("Needs to be a floating point probability in the range of 0.0 to 1.0.");
+                throw new CliArgumentException(f.toString());
+            }
+        return v;
     }
 
     private void printLogHeader(String[] args) {
