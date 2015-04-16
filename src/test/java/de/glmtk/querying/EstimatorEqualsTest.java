@@ -135,8 +135,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         cache = requiredCache.withProgress().build(queryCache);
     }
 
-    public Estimator expected;
-    public Estimator actual;
+    private Estimator expected;
+    private Estimator actual;
 
     public EstimatorEqualsTest(Estimator expected,
                                Estimator actual) {

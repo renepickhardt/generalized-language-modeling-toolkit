@@ -25,6 +25,7 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 import static de.glmtk.common.PatternElem.CNT;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
+import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Counts;
 import de.glmtk.counts.Discounts;
 
@@ -54,31 +55,28 @@ public class WeightedSumModKneserNeyEstimator extends AbstractWeightedSumEstimat
 
         NGram hist = fullHistory.remove(fullHistory.size() - 1);
         int order = fullHistory.getPattern().numElems(CNT);
-        double lambda = 1.0;
-        long denominator = cache.getAbsolute(hist.concat(SKP_NGRAM));
-        weightedSumFunction.add(lambda / denominator, hist);
+        double lambda = 1.0 / cache.getAbsolute(hist.concat(SKP_NGRAM));
+        weightedSumFunction.add(lambda, hist);
         for (int i = 0; i != order; ++i) {
-            lambda *= calcGamma(hist, denominator);
+            lambda *= calcGammaNumerator(hist);
             hist = hist.backoff(backoffMode);
-
-            denominator = cache.getContinuation(
+            lambda /= cache.getContinuation(
                     WSKP_NGRAM.concat(hist).concat(WSKP_NGRAM)).getOnePlusCount();
 
-            weightedSumFunction.add(lambda / denominator,
+            weightedSumFunction.add(lambda,
                     WSKP_NGRAM.concat(hist.convertSkpToWskp()));
         }
 
         return weightedSumFunction;
     }
 
-    protected double calcGamma(NGram history,
-                               long denominator) {
-        Discounts discount = calcDiscounts(history.getPattern().concat(CNT));
+    protected double calcGammaNumerator(NGram history) {
+        Discounts discount = calcDiscounts(history.getPattern().concat(
+                PatternElem.CNT));
         Counts contCount = cache.getContinuation(history.concat(WSKP_NGRAM));
 
-        return (discount.getOne() * contCount.getOneCount() + discount.getTwo()
+        return discount.getOne() * contCount.getOneCount() + discount.getTwo()
                 * contCount.getTwoCount() + discount.getThree()
-                * contCount.getThreePlusCount())
-                / denominator;
+                * contCount.getThreePlusCount();
     }
 }

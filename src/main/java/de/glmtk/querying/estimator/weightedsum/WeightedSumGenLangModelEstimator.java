@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -22,11 +22,12 @@ package de.glmtk.querying.estimator.weightedsum;
 
 import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.common.NGram.WSKP_NGRAM;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.common.PatternElem;
-import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discounts;
 import de.glmtk.util.BinomDiamond;
 import de.glmtk.util.BinomDiamondNode;
 
@@ -39,6 +40,8 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         private double absoluteFactor = 0.0;
         private double continuationFactor = 0.0;
     }
+
+    private static List<List<Double>> coefficients = new ArrayList<>();
 
     public WeightedSumGenLangModelEstimator() {
         super();
@@ -86,7 +89,7 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
                             WSKP_NGRAM)).getOnePlusCount();
             node.gammaNumerator = calcGammaNumerator(hist);
 
-            double coeff = calcCoefficient(node.getLevel(), diamond.order());
+            double coeff = getCoefficient(diamond.order(), node.getLevel());
 
             if (node.absoluteCount == 0)
                 node.absoluteFactor = 0.0;
@@ -109,12 +112,25 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         return diamond;
     }
 
-    private double calcCoefficient(int level,
-                                   int order) {
+    private static double calcCoefficient(int order,
+                                          int level) {
         int result = 1;
         for (int i = 0; i != level; ++i)
             result *= (order - i);
         return 1.0 / result;
+    }
+
+    private static double getCoefficient(int order,
+                                         int level) {
+        if (coefficients.size() <= order)
+            for (int o = coefficients.size(); o != order + 1; ++o) {
+                List<Double> coeffs = new ArrayList<>();
+                for (int l = 0; l != o + 1; ++l)
+                    coeffs.add(calcCoefficient(o, l));
+                coefficients.add(coeffs);
+            }
+
+        return coefficients.get(order).get(level);
     }
 
     private int calcAbsoluteFactor(GlmNode ancestor,
@@ -139,20 +155,16 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
                                           GlmNode node,
                                           boolean absolute) {
         boolean last = ancestor.getLevel() == node.getLevel() - 1;
-        double mult;
+        double mult = 1.0;
         if (absolute)
-            if (ancestor.absoluteCount == 0)
-                if (last)
-                    mult = node.absoluteFactor == 0 ? 1.0 : 0.0;
-                else
-                    mult = 1.0;
-            else {
+            if (ancestor.absoluteCount == 0) {
+                if (last && node.absoluteFactor != 0)
+                    return 0;
+            } else {
                 mult = ancestor.gammaNumerator / ancestor.absoluteCount;
                 absolute = false;
             }
-        else if (ancestor.continuationCount == 0)
-            mult = 1.0;
-        else
+        else if (ancestor.continuationCount != 0)
             mult = ancestor.gammaNumerator / ancestor.continuationCount;
 
         if (last)
@@ -166,15 +178,5 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         }
 
         return mult * sum;
-    }
-
-    private double calcGammaNumerator(NGram history) {
-        Discounts discount = calcDiscounts(history.getPattern().concat(
-                PatternElem.CNT));
-        Counts contCount = cache.getContinuation(history.concat(WSKP_NGRAM));
-
-        return discount.getOne() * contCount.getOneCount() + discount.getTwo()
-                * contCount.getTwoCount() + discount.getThree()
-                * contCount.getThreePlusCount();
     }
 }
