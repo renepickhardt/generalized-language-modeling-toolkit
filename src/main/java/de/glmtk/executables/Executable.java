@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -26,6 +26,7 @@ import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -35,7 +36,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Formatter;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
@@ -51,6 +54,8 @@ import de.glmtk.common.Config;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.logging.Logger;
+import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
@@ -66,6 +71,23 @@ import de.glmtk.util.ThreadUtils;
     protected Config config = null;
     protected CommandLine line = null;
     private boolean outputIntialized = false;
+
+    protected static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
+    static {
+        Map<String, Estimator> m = new LinkedHashMap<>();
+        m.put("MLE", Estimators.MLE);
+        m.put("MKN", Estimators.WEIGHTEDSUM_MKN);
+        m.put("FMKN", Estimators.FAST_MKN);
+        m.put("MKNS", Estimators.FAST_MKN_SKP);
+        m.put("MKNA", Estimators.FAST_MKN_ABS);
+        m.put("GLM", Estimators.WEIGHTEDSUM_GLM);
+        m.put("FGLM", Estimators.FAST_GLM);
+        m.put("GLMD", Estimators.FAST_GLM_DEL);
+        m.put("GLMDF", Estimators.FAST_GLM_DEL_FRONT);
+        m.put("GLMSD", Estimators.FAST_GLM_SKP_AND_DEL);
+        m.put("GLMA", Estimators.FAST_GLM_ABS);
+        OPTION_ESTIMATOR_ARGUMENTS = m;
+    }
 
     protected abstract String getExecutableName();
 
@@ -175,6 +197,24 @@ import de.glmtk.util.ThreadUtils;
                     "Input file/dir '%s' does not exist or is not readable.",
                     inputArg));
         return inputArg;
+    }
+
+    protected Path getAndCheckFile(String filename) throws IOException {
+        Path file = Paths.get(filename);
+        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
+            throw new IOException(String.format(
+                    "File '%s' does not exist or is not readable.", filename));
+        return file;
+    }
+
+    protected Path getWorkingDirFile(Path workingDir,
+                                     String filename) throws IOException {
+        Path file = workingDir.resolve(filename);
+        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
+            throw new IOException(String.format(
+                    "%s file '%s' does not exist or is not readable.",
+                    filename, file));
+        return file;
     }
 
     protected String makeOptionString(Option option) {

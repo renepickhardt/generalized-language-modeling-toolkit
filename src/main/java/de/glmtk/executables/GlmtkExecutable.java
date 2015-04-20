@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -25,7 +25,6 @@ import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
 import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
-import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,11 +36,9 @@ import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -63,7 +60,6 @@ import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
@@ -111,7 +107,7 @@ public class GlmtkExecutable extends Executable {
         OPTION_IO.setArgs(1);
 
         OPTION_QUERY = new Option("q", "query", true,
-                "Queries the given files with given mode.");
+                "Query the given files with given mode.");
         OPTION_QUERY.setArgName("MODE> <FILE...");
         OPTION_QUERY.setArgs(Option.UNLIMITED_VALUES);
 
@@ -124,21 +120,6 @@ public class GlmtkExecutable extends Executable {
         OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
                 OPTION_TRAINING_ORDER, OPTION_ESTIMATOR, OPTION_IO,
                 OPTION_QUERY, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
-    }
-
-    public static final Map<String, Estimator> OPTION_ESTIMATOR_ARGUMENTS;
-    static {
-        Map<String, Estimator> m = new LinkedHashMap<>();
-        m.put("MLE", Estimators.MLE);
-        m.put("MKN", Estimators.WEIGHTEDSUM_MKN);
-        m.put("MKNS", Estimators.FAST_MKN_SKP);
-        m.put("MKNA", Estimators.FAST_MKN_ABS);
-        m.put("GLM", Estimators.WEIGHTEDSUM_GLM);
-        m.put("GLMD", Estimators.FAST_GLM_DEL);
-        m.put("GLMDF", Estimators.FAST_GLM_DEL_FRONT);
-        m.put("GLMSD", Estimators.FAST_GLM_SKP_AND_DEL);
-        m.put("GLMA", Estimators.FAST_GLM_ABS);
-        OPTION_ESTIMATOR_ARGUMENTS = m;
     }
 
     public static void main(String[] args) {
@@ -167,7 +148,7 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected String getHelpHeader() {
         try (Formatter f = new Formatter()) {
-            f.format("glmtk <INPUT> [<OPTION...>]%n");
+            f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
             f.format("Invokes the Generalized Language Model Toolkit.%n");
 
             f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
@@ -215,8 +196,8 @@ public class GlmtkExecutable extends Executable {
                                 OPTION_WORKINGDIR.getOpt()));
 
             workingDir = corpus;
-            corpus = getWorkingDirFile(Constants.TRAINING_FILE_NAME);
-            getWorkingDirFile(Constants.STATUS_FILE_NAME);
+            corpus = getWorkingDirFile(workingDir, Constants.TRAINING_FILE_NAME);
+            getWorkingDirFile(workingDir, Constants.STATUS_FILE_NAME);
         } else {
             if (workingDir == null)
                 workingDir = Paths.get(corpus + Constants.WORKING_DIR_SUFFIX);
@@ -340,23 +321,6 @@ public class GlmtkExecutable extends Executable {
         }
     }
 
-    private Path getAndCheckFile(String filename) throws IOException {
-        Path file = Paths.get(filename);
-        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
-            throw new IOException(String.format(
-                    "File '%s' does not exist or is not readable.", filename));
-        return file;
-    }
-
-    private Path getWorkingDirFile(String filename) throws IOException {
-        Path file = workingDir.resolve(filename);
-        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
-            throw new IOException(String.format(
-                    "%s file '%s' does not exist or is not readable.",
-                    filename, file));
-        return file;
-    }
-
     private void checkCorpusForReservedSymbols() throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(corpus,
                 Constants.CHARSET)) {
@@ -465,6 +429,7 @@ public class GlmtkExecutable extends Executable {
         CacheBuilder cacheBuilder = new CacheBuilder();
         for (Estimator estimator : estimators)
             cacheBuilder.addAll(estimator.getRequiredCache(trainingOrder));
+        // FIXME: Refactor this!
         cacheBuilder.withCounts(Patterns.getMany("x"));
 
         Set<Pattern> neededPatterns = cacheBuilder.getCountsPatterns();
@@ -503,8 +468,8 @@ public class GlmtkExecutable extends Executable {
     }
 
     private void logFields() {
-        LOGGER.debug("GlmtkExecutable %s", StringUtils.repeat("-",
-                80 - "GlmtkExecutable ".length()));
+        LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-",
+                80 - getExecutableName().length()));
         LOGGER.debug("Corpus:        %s", corpus);
         LOGGER.debug("WorkingDir:    %s", workingDir);
         LOGGER.debug("TrainingOrder: %s", trainingOrder);

@@ -43,6 +43,7 @@ import org.apache.commons.cli.Option;
 import de.glmtk.Constants;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.PrintUtils;
@@ -105,7 +106,7 @@ public class GlmtkExpSetupExecutable extends Executable {
 
     @Override
     protected String getExecutableName() {
-        return "glmtk-expsetup";
+        return "glmtk-exp-setup";
     }
 
     @Override
@@ -116,7 +117,7 @@ public class GlmtkExpSetupExecutable extends Executable {
     @Override
     protected String getHelpHeader() {
         try (Formatter f = new Formatter()) {
-            f.format("glmtk-expsetup <INPUT> [<OPTION...>]%n");
+            f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
             f.format("Splits the given corpus into training and test files.%n");
 
             f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
@@ -184,7 +185,10 @@ public class GlmtkExpSetupExecutable extends Executable {
                 optionFirstTimeOrFail(numNGrams, option);
                 numNGrams = optionPositiveIntOrFail(option.getValue(), false,
                         "Illegal %s argument", makeOptionString(option));
-            }
+
+            } else
+                throw new CliArgumentException(String.format(
+                        "Unexpected option: '%s'.", option));
         }
     }
 
@@ -213,7 +217,7 @@ public class GlmtkExpSetupExecutable extends Executable {
         String message = "Experimental setup";
         OUTPUT.beginPhases(message + "...");
         OUTPUT.setPhase(Phase.SPLITTING_CORPUS);
-        Progress progress = OUTPUT.newProgress(corpusFileSize);
+        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(corpus));
         try (BufferedReader reader = Files.newBufferedReader(corpus,
                 Constants.CHARSET);
                 BufferedWriter trainingWriter = Files.newBufferedWriter(
@@ -230,7 +234,7 @@ public class GlmtkExpSetupExecutable extends Executable {
                             && StringUtils.split(line, ' ').size() >= ngramLength)
                         ngramCandidates.add(line);
                 }
-                progress.increase(line.getBytes(Constants.CHARSET).length);
+                progress.increase(1);
             }
         }
 
@@ -265,8 +269,12 @@ public class GlmtkExpSetupExecutable extends Executable {
             int candidateIndex = rand.nextInt(ngramCandidates.size());
             String ngram = ngramCandidates.remove(candidateIndex);
             List<String> ngramWords = StringUtils.split(ngram, ' ');
-            for (int j = ngramWords.size(); j != ngramLength; --j)
-                ngramWords.remove(ngramWords.size() - 1);
+            int firstWordIndex = rand.nextInt(ngramWords.size() - ngramLength
+                    + 1);
+            ngramWords = ngramWords.subList(firstWordIndex, firstWordIndex
+                    + ngramLength);
+            //            for (int j = ngramWords.size(); j != ngramLength; --j)
+            //                ngramWords.remove(ngramWords.size() - 1);
 
             for (int j = ngramLength - 1; j != -1; --j) {
                 ngramWriters.get(j).append(StringUtils.join(ngramWords, ' ')).append(
@@ -282,8 +290,8 @@ public class GlmtkExpSetupExecutable extends Executable {
     }
 
     private void logFields() {
-        LOGGER.debug("GlmtkExpSetupExectuable %s", StringUtils.repeat("-",
-                80 - "GlmtkExpSetupExectuable".length()));
+        LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-",
+                80 - getExecutableName().length()));
         LOGGER.debug("Corpus:            %s", corpus);
         LOGGER.debug("WorkingDir:        %s", workingDir);
         LOGGER.debug("ProbTraining:      %f", trainingProb);
