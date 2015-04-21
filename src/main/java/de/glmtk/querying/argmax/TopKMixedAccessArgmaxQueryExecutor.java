@@ -26,7 +26,7 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
-public class TopKArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
     private Cache cache;
     private Map<Pattern, Discounts> discounts = new HashMap<>();
@@ -41,21 +41,21 @@ public class TopKArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         return estimatorRequiredCache.withCompletionCounts(requiredCompletionPatterns);
     }
 
-    public TopKArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                   Collection<String> vocab) {
+    public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                              Collection<String> vocab) {
         this.estimator = estimator;
         cache = estimator.getCache();
         discounts = new HashMap<>();
         this.vocab = vocab;
     }
 
-    public TopKArgmaxQueryExecutor(WeightedSumEstimator estimator) {
+    public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator) {
         this(estimator, null);
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)

@@ -38,7 +38,7 @@ import de.glmtk.Constants;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.TopKArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.TopKMixedAccessArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
@@ -79,7 +79,7 @@ public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
         CacheBuilder requiredCache = new CacheBuilder();
         requiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
         requiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
-        requiredCache = TopKArgmaxQueryExecutor.getRequiredCache(requiredCache);
+        requiredCache = TopKMixedAccessArgmaxQueryExecutor.getRequiredCache(requiredCache);
         System.out.println(requiredCache.getCompletionCountsPatterns());
         cache = requiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
@@ -92,7 +92,7 @@ public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        TopKArgmaxQueryExecutor argmaxQueryExecutor = new TopKArgmaxQueryExecutor(
+        TopKMixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new TopKMixedAccessArgmaxQueryExecutor(
                 estimator);
 
         for (String query : queries) {
@@ -113,7 +113,7 @@ public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        TopKArgmaxQueryExecutor argmaxQueryExecutor = new TopKArgmaxQueryExecutor(
+        TopKMixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new TopKMixedAccessArgmaxQueryExecutor(
                 estimator);
 
         for (String query : queries) {

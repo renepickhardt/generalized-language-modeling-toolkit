@@ -76,6 +76,7 @@ import de.glmtk.util.ThreadUtils;
     static {
         Map<String, Estimator> m = new LinkedHashMap<>();
         m.put("MLE", Estimators.MLE);
+        m.put("FMLE", Estimators.FAST_MLE);
         m.put("MKN", Estimators.WEIGHTEDSUM_MKN);
         m.put("FMKN", Estimators.FAST_MKN);
         m.put("MKNS", Estimators.FAST_MKN_SKP);

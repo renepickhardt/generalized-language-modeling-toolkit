@@ -29,6 +29,7 @@ import static de.glmtk.querying.estimator.Estimators.FAST_GLM_SKP_AND_DEL;
 import static de.glmtk.querying.estimator.Estimators.FAST_MKN;
 import static de.glmtk.querying.estimator.Estimators.FAST_MKN_ABS;
 import static de.glmtk.querying.estimator.Estimators.FAST_MKN_SKP;
+import static de.glmtk.querying.estimator.Estimators.FAST_MLE;
 import static de.glmtk.querying.estimator.Estimators.GLM;
 import static de.glmtk.querying.estimator.Estimators.GLM_ABS;
 import static de.glmtk.querying.estimator.Estimators.GLM_DEL;
@@ -37,6 +38,7 @@ import static de.glmtk.querying.estimator.Estimators.GLM_SKP_AND_DEL;
 import static de.glmtk.querying.estimator.Estimators.MKN;
 import static de.glmtk.querying.estimator.Estimators.MKN_ABS;
 import static de.glmtk.querying.estimator.Estimators.MKN_SKP;
+import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_GLM;
 import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MKN;
 import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MKN_SKP;
@@ -91,6 +93,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
     public static Iterable<Object[]> data() {
         //@formatter:off
         return Arrays.asList(new Object[][] {
+                {MLE, FAST_MLE},
+
                 {MKN_ABS, FAST_MKN_ABS},
 
                 {MKN, FAST_MKN},

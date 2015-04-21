@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -29,6 +29,7 @@ import de.glmtk.querying.estimator.discount.AbsoluteThreeDiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
+import de.glmtk.querying.estimator.fast.FastMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastModKneserNeyEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
@@ -68,9 +69,9 @@ public class Estimators {
         MLE.setName("MaximumLikelihood");
     }
 
-    public static final FalseMaximumLikelihoodEstimator FMLE = new FalseMaximumLikelihoodEstimator();
+    public static final FalseMaximumLikelihoodEstimator FALSE_MLE = new FalseMaximumLikelihoodEstimator();
     static {
-        FMLE.setName("FalseMaximumLikelihood");
+        FALSE_MLE.setName("FalseMaximumLikelihood");
     }
 
     public static final ContinuationMaximumLikelihoodEstimator CMLE = new ContinuationMaximumLikelihoodEstimator();
@@ -252,6 +253,11 @@ public class Estimators {
 
     // Fast ////////////////////////////////////////////////////////////////////
 
+    public static final FastMaximumLikelihoodEstimator FAST_MLE = new FastMaximumLikelihoodEstimator();
+    static {
+        FAST_MLE.setName("Fast-Maximum-Likelihood");
+    }
+
     public static final FastModKneserNeyEstimator FAST_MKN = new FastModKneserNeyEstimator();
     static {
         FAST_MKN.setName("Fast-Modified-Kneser-Ney");
@@ -325,7 +331,7 @@ public class Estimators {
         InterpolEstimator beta = new InterpolEstimator(
                 new ModKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
-                        BackoffMode);
+                BackoffMode);
         return new InterpolEstimator(alpha, beta, BackoffMode);
     }
 
@@ -335,7 +341,7 @@ public class Estimators {
         DiffInterpolEstimator beta = new DiffInterpolEstimator(
                 new ModKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
-                BackoffMode);
+                        BackoffMode);
         return new DiffInterpolEstimator(alpha, beta, BackoffMode);
     }
 }

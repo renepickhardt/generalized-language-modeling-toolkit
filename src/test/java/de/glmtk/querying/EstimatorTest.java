@@ -36,7 +36,7 @@ import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP;
-import static de.glmtk.querying.estimator.Estimators.FMLE;
+import static de.glmtk.querying.estimator.Estimators.FALSE_MLE;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP;
@@ -92,7 +92,7 @@ public class EstimatorTest extends TestCorporaTest {
 
                 // Fractions Estimators
                 new EstimatorTestParams(MLE, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(FMLE, false, 0, HIGHEST_ORDER),
+                new EstimatorTestParams(FALSE_MLE, false, 0, HIGHEST_ORDER),
                 new EstimatorTestParams(CMLE, true, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
 
                 // Backoff Estimators
