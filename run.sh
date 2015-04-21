@@ -1,6 +1,6 @@
 # Generalized Language Modeling Toolkit (GLMTK)
 #
-# Copyright (C) 2014-2015 Lukas Schmelzeisen
+# Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
 #
 # GLMTK is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -56,7 +56,7 @@ fi
 
 # Setup java library path
 if [[ -z "${JAVA_HOME:-}" ]] ; then
-    echo "Environment variable JAVA_HOME not set."
+    echo "Environment variable JAVA_HOME not set. Are you sure you have installed java run time environment and java developer toolkit. Consult a search engine if you are not sure how to set JAVA_HOME"
     exit
 fi;
 LIBRARY_PATH="${GLMTK_DIR}/lib"
