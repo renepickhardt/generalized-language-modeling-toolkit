@@ -32,7 +32,7 @@ import de.glmtk.util.BinomDiamond;
 import de.glmtk.util.BinomDiamondNode;
 
 public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEstimator {
-    public static class GlmNode extends BinomDiamondNode<GlmNode> {
+    private static class GlmNode extends BinomDiamondNode<GlmNode> {
         private NGram history = null;
         private long absoluteCount = 0;
         private long continuationCount = 0;
@@ -64,7 +64,7 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         BinomDiamond<GlmNode> diamond = buildGlmDiamond(history);
 
         WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
-                diamond.size());
+                2 * diamond.size());
         for (GlmNode node : diamond) {
             if (node.absoluteFactor != 0)
                 weightedSumFunction.add(node.absoluteFactor, node.history);
@@ -122,13 +122,15 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
 
     private static double getCoefficient(int order,
                                          int level) {
-        if (coefficients.size() <= order)
-            for (int o = coefficients.size(); o != order + 1; ++o) {
-                List<Double> coeffs = new ArrayList<>();
-                for (int l = 0; l != o + 1; ++l)
-                    coeffs.add(calcCoefficient(o, l));
-                coefficients.add(coeffs);
-            }
+        synchronized (coefficients) {
+            if (coefficients.size() <= order)
+                for (int o = coefficients.size(); o != order + 1; ++o) {
+                    List<Double> coeffs = new ArrayList<>();
+                    for (int l = 0; l != o + 1; ++l)
+                        coeffs.add(calcCoefficient(o, l));
+                    coefficients.add(coeffs);
+                }
+        }
 
         return coefficients.get(order).get(level);
     }

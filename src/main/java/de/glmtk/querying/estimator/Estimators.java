@@ -39,6 +39,7 @@ import de.glmtk.querying.estimator.interpol.InterpolEstimator;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumAverageEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 
@@ -296,6 +297,11 @@ public class Estimators {
     }
 
     // WeightedSum /////////////////////////////////////////////////////////////
+
+    public static final WeightedSumAverageEstimator WEIGHTEDSUM_AVERAGE = new WeightedSumAverageEstimator();
+    static {
+        WEIGHTEDSUM_AVERAGE.setName("Weighted-Sum-Average");
+    }
 
     public static final WeightedSumModKneserNeyEstimator WEIGHTEDSUM_MKN = new WeightedSumModKneserNeyEstimator();
     static {

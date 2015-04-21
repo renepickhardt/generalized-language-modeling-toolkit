@@ -86,6 +86,7 @@ import de.glmtk.util.ThreadUtils;
         m.put("GLMDF", Estimators.FAST_GLM_DEL_FRONT);
         m.put("GLMSD", Estimators.FAST_GLM_SKP_AND_DEL);
         m.put("GLMA", Estimators.FAST_GLM_ABS);
+        m.put("WSA", Estimators.WEIGHTEDSUM_AVERAGE);
         OPTION_ESTIMATOR_ARGUMENTS = m;
     }
 
