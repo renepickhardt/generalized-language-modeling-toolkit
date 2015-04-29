@@ -55,7 +55,7 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          int numResults) {
+            int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -192,7 +192,7 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
         if (!sequence.getPattern().isAbsolute()) {
             sequence = sequence.remove(0).convertWskpToSkp();
-            absSequenceCount = cache.getAbsolute(sequence);
+            absSequenceCount = cache.getCount(sequence);
         }
 
         if (sequence.getPattern().numElems(PatternElem.CNT) == 1)

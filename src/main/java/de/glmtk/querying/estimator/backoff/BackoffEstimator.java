@@ -81,7 +81,7 @@ public class BackoffEstimator extends AbstractEstimator {
                 default:
                     throw new SwitchCaseNotImplementedException();
             }
-        else if (cache.getAbsolute(getFullSequence(sequence, history)) == 0) {
+        else if (cache.getCount(getFullSequence(sequence, history)) == 0) {
             NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
 
             double betaVal = beta.probability(sequence, backoffHistory,
@@ -130,7 +130,7 @@ public class BackoffEstimator extends AbstractEstimator {
 
         for (String word : cache.getWords()) {
             NGram s = history.concat(word);
-            if (cache.getAbsolute(s) == 0)
+            if (cache.getCount(s) == 0)
                 sumBeta += beta.probability(new NGram(word), backoffHistory,
                         recDepth);
             else

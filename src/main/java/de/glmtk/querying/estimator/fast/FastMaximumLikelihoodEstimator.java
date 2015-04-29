@@ -10,12 +10,12 @@ public class FastMaximumLikelihoodEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        long denominator = cache.getAbsolute(getFullHistory(sequence, history));
+        long denominator = cache.getCount(getFullHistory(sequence, history));
         if (denominator == 0.0)
             return probability(sequence, history.backoff(BackoffMode.DEL),
                     recDepth);
 
-        long numerator = cache.getAbsolute(getFullSequence(sequence, history));
+        long numerator = cache.getCount(getFullSequence(sequence, history));
 
         return (double) numerator / denominator;
     }

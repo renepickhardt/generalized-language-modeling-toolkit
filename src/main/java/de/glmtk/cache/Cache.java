@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -107,7 +107,7 @@ public class Cache {
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
-                            : paths.getContinuationDir());
+                    : paths.getContinuationDir());
 
             Map<String, Object> countsForPattern = new HashMap<>();
             counts.put(pattern, countsForPattern);
@@ -145,7 +145,7 @@ public class Cache {
             boolean isPatternAbsolute = pattern.isAbsolute();
             Path inputDir = (isPatternAbsolute
                     ? paths.getAbsoluteDir()
-                            : paths.getContinuationDir());
+                    : paths.getContinuationDir());
 
             CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
                     true);
@@ -209,11 +209,23 @@ public class Cache {
             throw new IllegalArgumentException("Empty ngram.");
         Pattern pattern = ngram.getPattern();
 
-        if (pattern.isAbsolute())
-            return getAbsolute(ngram);
-        return getContinuation(ngram).getOnePlusCount();
+        if (pattern.isAbsolute()) {
+            Long result = (Long) CollectionUtils.getFromNestedMap(counts,
+                    pattern, ngram.toString(), "Counts not loaded",
+                    "Counts with pattern '%s' not loaded.", null);
+            return result == null ? 0 : result;
+        }
+
+        Counts result = (Counts) CollectionUtils.getFromNestedMap(counts,
+                pattern, ngram.toString(), "Counts not loaded",
+                "Counts with pattern '%s' not loaded.", null);
+        return result == null ? 0 : result.getOnePlusCount();
     }
 
+    /**
+     * Use {@link #getCount(NGram)} instead.
+     */
+    @Deprecated
     public long getAbsolute(NGram ngram) {
         Objects.requireNonNull(ngram);
         if (ngram.isEmpty())
@@ -256,13 +268,13 @@ public class Cache {
 
     public long getNumWords() {
         if (numWords == -1)
-            numWords = getAbsolute(NGram.SKP_NGRAM);
+            numWords = getCount(NGram.SKP_NGRAM);
         return numWords;
     }
 
     public long getVocabSize() {
         if (vocabSize == -1)
-            vocabSize = getContinuation(NGram.WSKP_NGRAM).getOnePlusCount();
+            vocabSize = getCount(NGram.WSKP_NGRAM);
         return vocabSize;
     }
 

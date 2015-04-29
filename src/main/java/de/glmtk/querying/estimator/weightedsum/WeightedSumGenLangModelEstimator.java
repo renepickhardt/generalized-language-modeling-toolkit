@@ -83,10 +83,9 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         for (GlmNode node : diamond.inOrder()) {
             NGram hist = history.applyIntPattern(~node.getIndex(), order);
             node.history = hist;
-            node.absoluteCount = cache.getAbsolute(hist.concat(SKP_NGRAM));
-            node.continuationCount = cache.getContinuation(
-                    WSKP_NGRAM.concat(hist.convertSkpToWskp()).concat(
-                            WSKP_NGRAM)).getOnePlusCount();
+            node.absoluteCount = cache.getCount(hist.concat(SKP_NGRAM));
+            node.continuationCount = cache.getCount(WSKP_NGRAM.concat(
+                    hist.convertSkpToWskp()).concat(WSKP_NGRAM));
             node.gammaNumerator = calcGammaNumerator(hist);
 
             double coeff = getCoefficient(diamond.order(), node.getLevel());

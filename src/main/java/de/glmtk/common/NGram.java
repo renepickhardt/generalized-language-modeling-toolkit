@@ -178,9 +178,7 @@ public class NGram {
         if (isEmpty())
             return true;
 
-        if (pattern.isAbsolute())
-            return cache.getAbsolute(this) != 0;
-        return cache.getContinuation(this).getOnePlusCount() != 0;
+        return cache.getCount(this) != 0;
     }
 
     public NGram concat(String token) {

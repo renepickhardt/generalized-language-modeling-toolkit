@@ -53,7 +53,7 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
 
         if (!sequence.getPattern().isAbsolute()) {
             sequence = sequence.remove(0).convertWskpToSkp();
-            absSequenceCount = cache.getAbsolute(sequence);
+            absSequenceCount = cache.getCount(sequence);
         }
 
         if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
