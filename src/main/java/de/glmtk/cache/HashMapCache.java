@@ -5,12 +5,12 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 import de.glmtk.files.CountsReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
@@ -19,6 +19,7 @@ public class HashMapCache extends AbstractCache {
     private static final Logger LOGGER = Logger.get(HashMapCache.class);
 
     private Map<Pattern, Map<String, Long>> counts = null;
+    private Map<Pattern, Map<String, Double>> gammas = null;
 
     public HashMapCache(GlmtkPaths paths) {
         super(paths);
@@ -29,7 +30,7 @@ public class HashMapCache extends AbstractCache {
 
     @Override
     void loadCounts(Collection<Pattern> patterns) throws IOException {
-        checkPatternsArg(patterns);
+        checkCountPatternsArg(patterns);
 
         LOGGER.debug("Loading counts...");
 
@@ -57,9 +58,7 @@ public class HashMapCache extends AbstractCache {
 
     @Override
     public long getCount(NGram ngram) {
-        Objects.requireNonNull(ngram);
-        if (ngram.isEmpty())
-            throw new IllegalArgumentException("Empty ngram.");
+        checkNGramArg(ngram);
 
         Long result = CollectionUtils.getFromNestedMap(counts,
                 ngram.getPattern(), ngram.toString(), "Counts not loaded.",
@@ -71,12 +70,40 @@ public class HashMapCache extends AbstractCache {
     // Gammas //////////////////////////////////////////////////////////////////
 
     @Override
-    void loadGammas(Collection<Pattern> patterns) {
-        throw new UnsupportedOperationException();
+    void loadGammas(Collection<Pattern> patterns) throws IOException {
+        checkGammaPatternsArg(patterns);
+
+        LOGGER.debug("Loading gammas...");
+
+        if (gammas == null)
+            gammas = new HashMap<>();
+
+        for (Pattern pattern : patterns) {
+            if (gammas.containsKey(pattern))
+                continue;
+
+            Map<String, Double> gammasForPattern = new HashMap<>();
+            gammas.put(pattern, gammasForPattern);
+
+            Path file = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
+            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
+                while (reader.readLine() != null)
+                    gammasForPattern.put(reader.getSequence(), calcGamma(
+                            pattern, reader.getCounts()));
+            }
+
+            if (progress != null)
+                progress.increase(1);
+        }
     }
 
     @Override
     public double getGamma(NGram ngram) {
-        throw new UnsupportedOperationException();
+        checkNGramArg(ngram);
+
+        Double result = CollectionUtils.getFromNestedMap(gammas,
+                ngram.getPattern(), ngram.toString(), "Gammas not loaded.",
+                "Gammas with pattern '%s' not loaded.", null);
+        return result == null ? 0.0 : result;
     }
 }

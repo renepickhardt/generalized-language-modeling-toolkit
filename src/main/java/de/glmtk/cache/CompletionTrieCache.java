@@ -21,16 +21,17 @@
 package de.glmtk.cache;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 import de.glmtk.files.CountsReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.completiontrie.CompletionTrie;
@@ -40,6 +41,7 @@ public class CompletionTrieCache extends AbstractCache {
     private static final Logger LOGGER = Logger.get(CompletionTrieCache.class);
 
     private Map<Pattern, CompletionTrie> counts = null;
+    private Map<Pattern, CompletionTrie> gammas = null;
 
     public CompletionTrieCache(GlmtkPaths paths) {
         super(paths);
@@ -50,7 +52,7 @@ public class CompletionTrieCache extends AbstractCache {
 
     @Override
     void loadCounts(Collection<Pattern> patterns) throws IOException {
-        checkPatternsArg(patterns);
+        checkCountPatternsArg(patterns);
 
         LOGGER.debug("Loading counts...");
 
@@ -86,39 +88,123 @@ public class CompletionTrieCache extends AbstractCache {
 
     @Override
     public long getCount(NGram ngram) {
-        Objects.requireNonNull(ngram);
-        if (ngram.isEmpty())
-            throw new IllegalArgumentException("Empty ngram.");
-
-        if (counts == null)
-            throw new IllegalStateException("Counts not loaded.");
+        checkNGramArg(ngram);
+        checkCountsLoaded();
 
         CompletionTrie completionTrie = counts.get(ngram.getPattern());
         if (completionTrie == null)
-            throw new IllegalStateException(
-                    "Counts with pattern '%s' not loaded.");
+            throw new IllegalStateException(String.format(
+                    "Counts with pattern '%s' not loaded.", ngram.getPattern()));
 
         Long result = completionTrie.get(ngram.toString());
         return result == null ? 0L : result;
     }
 
-    public CompletionTrie getCompletionTrie(Pattern pattern) {
-        Objects.requireNonNull(pattern);
-        if (pattern.isEmpty())
-            throw new IllegalArgumentException("Empty pattern.");
+    public CompletionTrie getCountCompletionTrie(Pattern pattern) {
+        checkPatternArg(pattern);
+        checkCountsLoaded();
         return counts.get(pattern);
+    }
+
+    private void checkCountsLoaded() {
+        if (counts == null)
+            throw new IllegalStateException("Counts not loaded.");
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Gammas //////////////////////////////////////////////////////////////////
 
+    /**
+     * {@link CompletionTrie}s can only store <{@link String}, {@link Long}>
+     * pairs. In order to store {@link Double}s, we have to convert doubles to
+     * long on a byte level, using {@link #longFromDouble(double)}.
+     */
     @Override
-    void loadGammas(Collection<Pattern> patterns) {
-        throw new UnsupportedOperationException();
+    void loadGammas(Collection<Pattern> patterns) throws IOException {
+        checkGammaPatternsArg(patterns);
+
+        LOGGER.debug("Loading gammas...");
+
+        if (gammas == null)
+            gammas = new HashMap<>();
+
+        for (Pattern pattern : patterns) {
+            if (gammas.containsKey(pattern))
+                continue;
+
+            CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
+                    true);
+
+            Path file = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
+            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
+                while (reader.readLine() != null)
+                    completionTrieBuilder.add(reader.getSequence(),
+                            longFromDouble(calcGamma(pattern,
+                                    reader.getCounts())));
+            }
+
+            CompletionTrie completionTrie = completionTrieBuilder.build();
+
+            // Free memory
+            completionTrieBuilder.reset();
+            completionTrieBuilder = null;
+
+            gammas.put(pattern, completionTrie);
+
+            if (progress != null)
+                progress.increase(1);
+        }
     }
 
+    /**
+     * {@link CompletionTrie}s can only store <{@link String}, {@link Long}>
+     * pairs. In order to load {@link Double}s, we have to convert longs to
+     * double on a byte level, using {@link #doubleFromLong(long)}.
+     */
     @Override
     public double getGamma(NGram ngram) {
-        throw new UnsupportedOperationException();
+        checkNGramArg(ngram);
+        checkGammasLoaded();
+
+        CompletionTrie completionTrie = gammas.get(ngram.getPattern());
+        if (completionTrie == null)
+            throw new IllegalStateException(String.format(
+                    "Gammas with pattern '%s' not loaded.", ngram.getPattern()));
+
+        Long result = completionTrie.get(ngram.toString());
+        return result == null ? 0.0 : doubleFromLong(result);
+    }
+
+    /**
+     * Use {@link #doubleFromLong(long)} to convert the {@link Long}s from the
+     * {@link CompletionTrie} to {@link Double}s.
+     */
+    public CompletionTrie getGammaCompletionTrie(Pattern pattern) {
+        checkPatternArg(pattern);
+        checkGammasLoaded();
+        return gammas.get(pattern);
+    }
+
+    private void checkGammasLoaded() {
+        if (gammas == null)
+            throw new IllegalStateException("Gammas not loaded.");
+    }
+
+    /**
+     * @see #loadGammas(Collection)
+     */
+    private static long longFromDouble(double d) {
+        byte[] bytes = new byte[8];
+        ByteBuffer.wrap(bytes).putDouble(d);
+        return ByteBuffer.wrap(bytes).getLong();
+    }
+
+    /**
+     * @see #getGamma(NGram)
+     */
+    public static double doubleFromLong(long l) {
+        byte[] bytes = new byte[8];
+        ByteBuffer.wrap(bytes).putLong(l);
+        return ByteBuffer.wrap(bytes).getDouble();
     }
 }

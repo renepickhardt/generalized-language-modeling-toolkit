@@ -170,7 +170,7 @@ public abstract class AbstractEstimator implements Estimator {
         requiredCache.withCounts(alphaAbsPatterns);
         requiredCache.withCounts(alphaContPatterns);
         requiredCache.withCounts(gammaPatterns);
-        requiredCache.withNGramTimes();
+        requiredCache.withDiscounts();
 
         return requiredCache;
     }

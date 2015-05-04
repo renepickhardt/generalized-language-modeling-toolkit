@@ -20,6 +20,8 @@
 
 package de.glmtk.cache;
 
+import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -39,12 +41,15 @@ import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
+import de.glmtk.counts.Counts;
+import de.glmtk.counts.Discounts;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.LengthDistributionReader;
 import de.glmtk.files.NGramTimesReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
+import de.glmtk.util.NioUtils;
 
 /**
  * Implements functionality that is common to all cache implementations.
@@ -61,12 +66,12 @@ public abstract class AbstractCache implements Cache {
     protected GlmtkPaths paths;
     protected Progress progress = null;
 
+    private SortedSet<String> words = null;
+    private Map<Pattern, NGramTimes> ngramTimes = null;
+    private Map<Pattern, Discounts> discounts = new HashMap<>();
+    private List<Double> lengthFrequencies = null;
     private long numWords = -1L;
     private long vocabSize = -1L;
-    private SortedSet<String> words = null;
-
-    private Map<Pattern, NGramTimes> ngramTimes = null;
-    private List<Double> lengthFrequencies = null;
 
     public AbstractCache(GlmtkPaths paths) {
         this.paths = paths;
@@ -76,7 +81,21 @@ public abstract class AbstractCache implements Cache {
         this.progress = progress;
     }
 
-    protected void checkPatternsArg(Collection<Pattern> patterns) {
+    protected void checkNGramArg(NGram ngram) {
+        Objects.requireNonNull(ngram);
+        if (ngram.isEmpty())
+            throw new IllegalArgumentException(
+                    "Argumnet 'ngram' is the empty ngram.");
+    }
+
+    protected void checkPatternArg(Pattern pattern) {
+        Objects.requireNonNull(pattern);
+        if (pattern.isEmpty())
+            throw new IllegalArgumentException(
+                    "Argument 'pattern' is the empty pattern.");
+    }
+
+    protected void checkCountPatternsArg(Collection<Pattern> patterns) {
         Objects.requireNonNull(patterns);
         for (Pattern pattern : patterns)
             if (pattern.isEmpty())
@@ -84,29 +103,19 @@ public abstract class AbstractCache implements Cache {
                         "Argument 'patterns' contains empty pattern.");
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Counts //////////////////////////////////////////////////////////////////
-
-    /* package */abstract void loadCounts(Collection<Pattern> patterns) throws IOException;
-
-    @Override
-    public long getNumWords() {
-        if (numWords == -1)
-            numWords = getCount(NGram.SKP_NGRAM);
-        return numWords;
+    protected void checkGammaPatternsArg(Collection<Pattern> patterns) {
+        checkCountPatternsArg(patterns);
+        for (Pattern pattern : patterns) {
+            Path cntFile = paths.getPatternsFile(pattern.concat(PatternElem.CNT));
+            Path wskpFile = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
+            if (!NioUtils.checkFile(cntFile, EXISTS)
+                    || !NioUtils.checkFile(wskpFile, EXISTS))
+                throw new IllegalStateException(
+                        String.format(
+                                "In order to load gamma counts for pattern '%1$s', counts for patterns '%1$s1' and '%1$sx' have to be computed.",
+                                pattern));
+        }
     }
-
-    @Override
-    public long getVocabSize() {
-        if (vocabSize == -1)
-            vocabSize = getCount(NGram.WSKP_NGRAM);
-        return vocabSize;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Gammas //////////////////////////////////////////////////////////////////
-
-    /* pacakge */abstract void loadGammas(Collection<Pattern> patterns);
 
     ////////////////////////////////////////////////////////////////////////////
     // Words ///////////////////////////////////////////////////////////////////
@@ -141,29 +150,61 @@ public abstract class AbstractCache implements Cache {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // NGramTimes //////////////////////////////////////////////////////////////
+    // Discounts //////////////////////////////////////////////////////////////
 
-    /* package */void loadNGramTimes() throws IOException {
-        LOGGER.debug("Loading NGram times counts...");
+    /**
+     * Loads discounts and ngramTimes counts.
+     */
+    /* package */void loadDiscounts() throws IOException {
+        LOGGER.debug("Loading Discounts...");
 
         ngramTimes = new HashMap<>();
         try (NGramTimesReader reader = new NGramTimesReader(
                 paths.getNGramTimesFile(), Constants.CHARSET)) {
-            while (reader.readLine() != null)
-                ngramTimes.put(reader.getPattern(), reader.getNGramTimes());
+            while (reader.readLine() != null) {
+                Pattern pattern = reader.getPattern();
+                NGramTimes times = reader.getNGramTimes();
+
+                ngramTimes.put(pattern, times);
+                discounts.put(pattern, calcDiscounts(times));
+            }
         }
 
         if (progress != null)
             progress.increase(1);
     }
 
+    private Discounts calcDiscounts(NGramTimes n) {
+        double y = (double) n.getOneCount()
+                / (n.getOneCount() + n.getTwoCount());
+        return new Discounts(1.0f - 2.0f * y * n.getTwoCount()
+                / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
+                / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
+                / n.getThreeCount());
+    }
+
+    @Override
+    public Discounts getDiscounts(Pattern pattern) {
+        checkPatternArg(pattern);
+        checkDiscountsLoaded();
+
+        Discounts result = discounts.get(pattern);
+        if (result == null)
+            throw new IllegalArgumentException(String.format(
+                    "No Discounts learned for pattern '%s'.", pattern));
+        return result;
+    }
+
+    private void checkDiscountsLoaded() {
+        if (discounts == null)
+            throw new IllegalStateException("Discounts not loaded.");
+    }
+
     @Override
     public NGramTimes getNGramTimes(Pattern pattern) {
-        Objects.requireNonNull(pattern);
-        if (pattern.isEmpty())
-            throw new IllegalArgumentException("Empty pattern.");
-
+        checkPatternArg(pattern);
         checkNGramTimesLoaded();
+
         NGramTimes result = ngramTimes.get(pattern);
         if (result == null)
             throw new IllegalStateException(String.format(
@@ -221,5 +262,37 @@ public abstract class AbstractCache implements Cache {
     private void checkLengthFrequenciesLoaded() {
         if (lengthFrequencies == null)
             throw new IllegalStateException("Length distribution not loaded.");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Counts //////////////////////////////////////////////////////////////////
+
+    /* package */abstract void loadCounts(Collection<Pattern> patterns) throws IOException;
+
+    @Override
+    public long getNumWords() {
+        if (numWords == -1)
+            numWords = getCount(NGram.SKP_NGRAM);
+        return numWords;
+    }
+
+    @Override
+    public long getVocabSize() {
+        if (vocabSize == -1)
+            vocabSize = getCount(NGram.WSKP_NGRAM);
+        return vocabSize;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Gammas //////////////////////////////////////////////////////////////////
+
+    /* pacakge */abstract void loadGammas(Collection<Pattern> patterns) throws IOException;
+
+    protected double calcGamma(Pattern pattern,
+                               Counts contCount) {
+        Discounts discount = getDiscounts(pattern.concat(PatternElem.CNT));
+        return discount.getOne() * contCount.getOnePlusCount()
+                + discount.getTwo() * contCount.getTwoCount()
+                + discount.getThree() + contCount.getThreePlusCount();
     }
 }
