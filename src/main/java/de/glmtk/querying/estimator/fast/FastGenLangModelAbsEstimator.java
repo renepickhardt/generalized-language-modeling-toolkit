@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
@@ -49,7 +49,7 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
     }
 
     @Override
-    public void setCache(OldCache cache) {
+    public void setCache(Cache cache) {
         super.setCache(cache);
         discounts = new HashMap<>();
     }

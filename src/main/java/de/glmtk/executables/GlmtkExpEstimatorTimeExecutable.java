@@ -24,7 +24,7 @@ import org.apache.commons.cli.Option;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
@@ -216,7 +216,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         Set<Pattern> neededPatterns = cacheBuilder.getCountsPatterns();
         neededPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this!
 
-        OldCache cache = null;
+        Cache cache = null;
         if (cacheFile != null) {
             GlmtkPaths queryCache = glmtk.provideQueryCache(cacheFile,
                     neededPatterns);

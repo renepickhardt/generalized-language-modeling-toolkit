@@ -33,7 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.StringUtils;
 
@@ -174,7 +174,7 @@ public class NGram {
      * Returns {@code true} if is either empty or has count greater zero.
      */
     // TODO: move method into class Cache?
-    public boolean seen(OldCache cache) {
+    public boolean seen(Cache cache) {
         if (isEmpty())
             return true;
 
@@ -284,7 +284,7 @@ public class NGram {
      * be empty.
      */
     public NGram backoffUntilSeen(BackoffMode backoffMode,
-                                  OldCache cache) {
+                                  Cache cache) {
         NGram result = backoff(backoffMode);
         while (!result.seen(cache))
             result = result.backoff(backoffMode);

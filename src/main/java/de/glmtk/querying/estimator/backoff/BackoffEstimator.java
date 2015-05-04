@@ -23,7 +23,7 @@ package de.glmtk.querying.estimator.backoff;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
@@ -48,7 +48,7 @@ public class BackoffEstimator extends AbstractEstimator {
     }
 
     @Override
-    public void setCache(OldCache cache) {
+    public void setCache(Cache cache) {
         super.setCache(cache);
         alpha.setCache(cache);
         if (beta != this)

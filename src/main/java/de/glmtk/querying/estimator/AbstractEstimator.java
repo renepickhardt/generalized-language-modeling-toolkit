@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
@@ -69,7 +69,7 @@ public abstract class AbstractEstimator implements Estimator {
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR;
     private String name;
-    protected OldCache cache;
+    protected Cache cache;
     protected ProbMode probMode;
 
     public AbstractEstimator() {
@@ -98,12 +98,12 @@ public abstract class AbstractEstimator implements Estimator {
     }
 
     @Override
-    public OldCache getCache() {
+    public Cache getCache() {
         return cache;
     }
 
     @Override
-    public void setCache(OldCache cache) {
+    public void setCache(Cache cache) {
         this.cache = cache;
 
         if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)

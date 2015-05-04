@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.List;
 
 import de.glmtk.GlmtkPaths;
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
@@ -37,7 +37,7 @@ public class QueryExecutor {
     private int corpusOrder;
     private QueryStats stats;
     private Calculator calculator;
-    private OldCache cache;
+    private Cache cache;
 
     public QueryExecutor(GlmtkPaths paths,
                          QueryMode mode,

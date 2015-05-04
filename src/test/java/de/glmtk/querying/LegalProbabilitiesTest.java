@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -20,7 +20,7 @@ import de.glmtk.testutil.TestCorpus;
 public class LegalProbabilitiesTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
 
-    private static OldCache cache;
+    private static Cache cache;
 
     @BeforeClass
     public static void loadCache() throws IOException {

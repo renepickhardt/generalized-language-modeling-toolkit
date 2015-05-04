@@ -1,33 +1,31 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.querying.argmax;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import de.glmtk.cache.OldCache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
-import de.glmtk.common.Patterns;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
@@ -39,6 +37,10 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator weightedSumEstimator;
     private Collection<String> vocab;
 
+    public static CacheBuilder getRequiredCache(CacheBuilder estimatorRequiredCache) {
+        return estimatorRequiredCache.withWords();
+    }
+
     public TrivialArgmaxQueryExecutor(Estimator estimator,
                                       Collection<String> vocab) {
         this.estimator = estimator;
@@ -48,18 +50,13 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         this.vocab = vocab;
     }
 
-    public TrivialArgmaxQueryExecutor(Estimator estimator) throws IOException {
-        this(estimator, loadVocabFromCache(estimator.getCache()));
-    }
-
-    private static Collection<String> loadVocabFromCache(OldCache cache) throws IOException {
-        cache.loadCounts(Patterns.getMany("1"));
-        return cache.getWords();
+    public TrivialArgmaxQueryExecutor(Estimator estimator) {
+        this(estimator, estimator.getCache().getWords());
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          int numResults) {
+            int numResults) {
         NGram hist = new NGram(StringUtils.split(history, ' '));
         WeightedSumFunction weightedSumFunction = null;
         if (weightedSumEstimator != null)
