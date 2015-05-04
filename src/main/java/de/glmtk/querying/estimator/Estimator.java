@@ -19,7 +19,7 @@
 
 package de.glmtk.querying.estimator;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
@@ -32,9 +32,9 @@ public interface Estimator {
 
     public void setName(String name);
 
-    public Cache getCache();
+    public OldCache getCache();
 
-    public void setCache(Cache cache);
+    public void setCache(OldCache cache);
 
     public ProbMode getProbMode();
 

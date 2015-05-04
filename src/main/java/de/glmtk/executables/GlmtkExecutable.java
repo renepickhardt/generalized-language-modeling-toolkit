@@ -49,7 +49,7 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
@@ -447,7 +447,7 @@ public class GlmtkExecutable extends Executable {
             for (Path file : files) {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(file,
                         neededPatterns);
-                Cache cache = cacheBuilder.build(queryCache);
+                OldCache cache = cacheBuilder.build(queryCache);
 
                 for (Estimator estimator : estimators) {
                     estimator.setCache(cache);
@@ -457,7 +457,7 @@ public class GlmtkExecutable extends Executable {
         }
 
         if (ioQueryMode != null) {
-            Cache cache = cacheBuilder.withProgress().build(glmtk.getPaths());
+            OldCache cache = cacheBuilder.withProgress().build(glmtk.getPaths());
             Estimator estimator = estimators.iterator().next();
             estimator.setCache(cache);
             glmtk.queryStream(ioQueryMode, estimator, trainingOrder, System.in,

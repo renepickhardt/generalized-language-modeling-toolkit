@@ -28,7 +28,7 @@ import java.util.Set;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
@@ -87,7 +87,7 @@ public enum TestCorpus {
             Set<Pattern> neededPatterns = Patterns.getMany("1");
             if (!glmtk.getStatus().getCounted().containsAll(neededPatterns))
                 glmtk.count(neededPatterns);
-            Cache cache = new CacheBuilder().withCounts(neededPatterns).build(
+            OldCache cache = new CacheBuilder().withCounts(neededPatterns).build(
                     glmtk.getPaths());
             Set<String> tokens = cache.getWords();
             this.tokens = tokens.toArray(new String[tokens.size()]);

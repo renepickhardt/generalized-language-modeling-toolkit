@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Patterns;
 import de.glmtk.querying.estimator.Estimator;
@@ -52,7 +52,7 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         this(estimator, loadVocabFromCache(estimator.getCache()));
     }
 
-    private static Collection<String> loadVocabFromCache(Cache cache) throws IOException {
+    private static Collection<String> loadVocabFromCache(OldCache cache) throws IOException {
         cache.loadCounts(Patterns.getMany("1"));
         return cache.getWords();
     }

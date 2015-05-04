@@ -55,7 +55,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import de.glmtk.Glmtk;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
@@ -172,7 +172,7 @@ public class EstimatorTest extends TestCorporaTest {
         for (TestCorpus testCorpus : TEST_CORPORA) {
             LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
-            Cache cache = createCache(testCorpus);
+            OldCache cache = createCache(testCorpus);
             estimator.setCache(cache);
 
             for (int order = 1; order != maxOrder + 1; ++order) {
@@ -203,7 +203,7 @@ public class EstimatorTest extends TestCorporaTest {
         for (TestCorpus testCorpus : TEST_CORPORA) {
             LOGGER.info("# %s corpus", testCorpus.getCorpusName());
 
-            Cache cache = createCache(testCorpus);
+            OldCache cache = createCache(testCorpus);
             estimator.setCache(cache);
 
             for (int order = 1; order != maxOrder + 1; ++order) {
@@ -251,7 +251,7 @@ public class EstimatorTest extends TestCorporaTest {
         }
     }
 
-    private Cache createCache(TestCorpus testCorpus) throws Exception {
+    private OldCache createCache(TestCorpus testCorpus) throws Exception {
         Glmtk glmtk = testCorpus.getGlmtk();
 
         CacheBuilder requiredCache = estimator.getRequiredCache(5);

@@ -3,7 +3,7 @@ package de.glmtk.querying.estimator.weightedsum;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
@@ -16,7 +16,7 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
     private Map<Pattern, Discounts> discounts = new HashMap<>();
 
     @Override
-    public void setCache(Cache cache) {
+    public void setCache(OldCache cache) {
         super.setCache(cache);
         discounts = new HashMap<>();
     }

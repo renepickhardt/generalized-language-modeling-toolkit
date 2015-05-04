@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
@@ -69,7 +69,7 @@ public abstract class AbstractEstimator implements Estimator {
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR;
     private String name;
-    protected Cache cache;
+    protected OldCache cache;
     protected ProbMode probMode;
 
     public AbstractEstimator() {
@@ -98,12 +98,12 @@ public abstract class AbstractEstimator implements Estimator {
     }
 
     @Override
-    public Cache getCache() {
+    public OldCache getCache() {
         return cache;
     }
 
     @Override
-    public void setCache(Cache cache) {
+    public void setCache(OldCache cache) {
         this.cache = cache;
 
         if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)

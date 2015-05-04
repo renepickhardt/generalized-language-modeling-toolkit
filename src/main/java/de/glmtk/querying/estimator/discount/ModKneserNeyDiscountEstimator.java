@@ -23,7 +23,7 @@ package de.glmtk.querying.estimator.discount;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.counts.Discounts;
 import de.glmtk.counts.NGramTimes;
@@ -37,7 +37,7 @@ public class ModKneserNeyDiscountEstimator extends ThreeDiscountEstimator {
     }
 
     @Override
-    public void setCache(Cache cache) {
+    public void setCache(OldCache cache) {
         super.setCache(cache);
 
         discounts = new HashMap<>();

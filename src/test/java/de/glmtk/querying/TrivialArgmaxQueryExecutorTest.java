@@ -35,7 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.glmtk.Constants;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.argmax.TrivialArgmaxQueryExecutor;
@@ -54,7 +54,7 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
     private static Set<String> vocab;
     private static List<String> queries;
 
-    private static Cache cache;
+    private static OldCache cache;
 
     @BeforeClass
     public static void loadFiles() throws IOException {

@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized.Parameters;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -85,9 +85,9 @@ public class QueryCacheTest extends TestCorporaTest {
                 requiredCache.getCountsPatterns());
 
         LOGGER.info("Loading cache without QueryCache...");
-        Cache cache = requiredCache.withProgress().build(paths);
+        OldCache cache = requiredCache.withProgress().build(paths);
         LOGGER.info("Loading cache with QueryCache...");
-        Cache queryCache = requiredCache.withProgress().build(queryCachePaths);
+        OldCache queryCache = requiredCache.withProgress().build(queryCachePaths);
 
         QueryMode queryMode = QueryMode.newCond(5);
         QueryExecutor executor = new QueryExecutor(paths, queryMode, estimator,

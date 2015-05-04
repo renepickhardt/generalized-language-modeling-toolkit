@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
@@ -28,7 +28,7 @@ import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
 public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
-    private Cache cache;
+    private OldCache cache;
     private Map<Pattern, Discounts> discounts = new HashMap<>();
     private Collection<String> vocab;
 

@@ -45,7 +45,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
@@ -87,7 +87,7 @@ public class CountingTest extends TestCorporaTest {
 
     private TestCorpus testCorpus;
     private List<String> corpusLines;
-    private Cache cache;
+    private OldCache cache;
     private Map<Pattern, Map<String, Long>> absolute;
     private Map<Pattern, Map<String, Counts>> continuation;
 
@@ -108,7 +108,7 @@ public class CountingTest extends TestCorporaTest {
 
         absolute = new HashMap<>();
         continuation = new HashMap<>();
-        Field countsField = Cache.class.getDeclaredField("counts");
+        Field countsField = OldCache.class.getDeclaredField("counts");
         countsField.setAccessible(true);
         Map<Pattern, Map<String, Object>> counts = (Map<Pattern, Map<String, Object>>) countsField.get(cache);
         for (Entry<Pattern, Map<String, Object>> entry : counts.entrySet()) {

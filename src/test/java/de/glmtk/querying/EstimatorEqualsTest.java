@@ -58,7 +58,7 @@ import org.junit.runners.Parameterized.Parameters;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
@@ -87,7 +87,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
     private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
-    private static Cache cache = null;
+    private static OldCache cache = null;
 
     @Parameters(name = "{1}")
     public static Iterable<Object[]> data() {

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import de.glmtk.cache.Cache;
+import de.glmtk.cache.OldCache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.Estimators;
@@ -23,7 +23,7 @@ public class QueryTest extends TestCorporaTest {
         TestCorpus testCorpus = TestCorpus.EN0008T;
         WeightedSumModKneserNeyEstimator estimator = Estimators.WEIGHTEDSUM_MKN;
         CacheBuilder requiredCache = estimator.getRequiredCache(5);
-        Cache cache = requiredCache.withProgress().build(
+        OldCache cache = requiredCache.withProgress().build(
                 testCorpus.getGlmtk().provideQueryCache(
                         Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5"),
                         requiredCache.getCountsPatterns()));
