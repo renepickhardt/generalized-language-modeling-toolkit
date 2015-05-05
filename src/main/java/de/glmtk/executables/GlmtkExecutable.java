@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -432,13 +432,13 @@ public class GlmtkExecutable extends Executable {
         // FIXME: Refactor this!
         cacheBuilder.withCounts(Patterns.getMany("x"));
 
-        Set<Pattern> neededPatterns = cacheBuilder.getCountsPatterns();
+        Set<Pattern> requiredPatterns = cacheBuilder.getRequiredPatterns();
         if (needPos)
-            neededPatterns.addAll(Patterns.getPosPatterns(neededPatterns));
+            requiredPatterns.addAll(Patterns.getPosPatterns(requiredPatterns));
         // FIXME: Refactor this!
-        neededPatterns.add(Patterns.get("x1111x"));
+        requiredPatterns.add(Patterns.get("x1111x"));
 
-        glmtk.count(neededPatterns);
+        glmtk.count(requiredPatterns);
 
         for (Entry<QueryMode, Set<Path>> entry : queries) {
             QueryMode queryMode = entry.getKey();
@@ -446,7 +446,7 @@ public class GlmtkExecutable extends Executable {
 
             for (Path file : files) {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(file,
-                        neededPatterns);
+                        requiredPatterns);
                 Cache cache = cacheBuilder.build(queryCache);
 
                 for (Estimator estimator : estimators) {

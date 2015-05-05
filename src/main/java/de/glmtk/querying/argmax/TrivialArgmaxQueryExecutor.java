@@ -20,11 +20,12 @@
 
 package de.glmtk.querying.argmax;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.Cache;
 import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
@@ -35,34 +36,39 @@ import de.glmtk.util.StringUtils;
 public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private Estimator estimator;
     private WeightedSumEstimator weightedSumEstimator;
+    @SuppressWarnings("unused")
+    private Cache randomAccessCache;
     private Collection<String> vocab;
 
-    public static CacheBuilder getRequiredCache(CacheBuilder estimatorRequiredCache) {
-        return estimatorRequiredCache.withWords();
-    }
-
     public TrivialArgmaxQueryExecutor(Estimator estimator,
+                                      Cache randomAccessCache,
                                       Collection<String> vocab) {
         this.estimator = estimator;
-        weightedSumEstimator = null;
         if (estimator instanceof WeightedSumEstimator)
             weightedSumEstimator = (WeightedSumEstimator) estimator;
+        this.randomAccessCache = randomAccessCache;
         this.vocab = vocab;
     }
 
-    public TrivialArgmaxQueryExecutor(Estimator estimator) {
-        this(estimator, estimator.getCache().getWords());
+    public TrivialArgmaxQueryExecutor(Estimator estimator,
+                                      Cache randomAccessCache) {
+        this(estimator, randomAccessCache, randomAccessCache.getWords());
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
             int numResults) {
+        if (numResults == 0)
+            return new ArrayList<>();
+        if (numResults < 0)
+            throw new IllegalArgumentException("numResults must be positive.");
+
         NGram hist = new NGram(StringUtils.split(history, ' '));
         WeightedSumFunction weightedSumFunction = null;
         if (weightedSumEstimator != null)
             weightedSumFunction = weightedSumEstimator.calcWeightedSumFunction(hist);
 
-        PriorityQueue<ArgmaxResult> queue = new PriorityQueue<>(6,
+        PriorityQueue<ArgmaxResult> queue = new PriorityQueue<>(numResults + 1,
                 ArgmaxResult.COMPARATOR);
         for (String sequence : vocab) {
             NGram seq = new NGram(sequence);
@@ -73,6 +79,9 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                         weightedSumFunction);
             else
                 prob = estimator.probability(seq, hist);
+
+            if (prob == 0.0)
+                continue;
 
             queue.add(new ArgmaxResult(sequence, prob));
             if (queue.size() > numResults)

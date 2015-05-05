@@ -80,19 +80,20 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
         CacheBuilder requiredCache = new CacheBuilder();
         requiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
         requiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
+        requiredCache.withWords();
         cache = requiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
     }
 
     @Test
-    public void testMkn() throws IOException {
+    public void testMkn() {
         WeightedSumModKneserNeyEstimator estimator = Estimators.WEIGHTEDSUM_MKN;
 
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
         TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
-                estimator);
+                estimator, cache);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
@@ -106,14 +107,14 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
     }
 
     @Test
-    public void testGlm() throws IOException {
+    public void testGlm() {
         WeightedSumGenLangModelEstimator estimator = Estimators.WEIGHTEDSUM_GLM;
 
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
         TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
-                estimator);
+                estimator, cache);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
@@ -127,14 +128,14 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
     }
 
     @Test
-    public void testOther() throws IOException {
+    public void testOther() {
         Estimator estimator = Estimators.FAST_GLM;
 
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
         TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
-                estimator);
+                estimator, cache);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);

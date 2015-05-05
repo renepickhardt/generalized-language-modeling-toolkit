@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -131,25 +131,8 @@ public class InterpolEstimator extends AbstractEstimator {
 
         NGram historyPlusWskp = history.concat(WSKP_WORD);
 
-        if (alpha instanceof ModKneserNeyDiscountEstimator) {
-            ;
-            //            ModKneserNeyDiscountEstimator threeDiscountEstimator = (ModKneserNeyDiscountEstimator) alpha;
-
-            //            NGram fullSequence = getFullSequence(sequence, history);
-            //            Discounts discount = threeDiscountEstimator.getDiscounts(fullSequence.getPattern());
-            //            Counts continuation = cache.getContinuation(historyPlusWskp);
-
-            //            logTrace(recDepth, "pattern     = %s", fullSequence.getPattern());
-            //            logTrace(recDepth, "discount    = %s", discount);
-            //            logTrace(recDepth, "contcounts  = %s", continuation);
-            //            logTrace(recDepth, "denominator = %e", denominator);
-
+        if (alpha instanceof ModKneserNeyDiscountEstimator)
             return cache.getGamma(history) / denominator;
-            //            return (discount.getOne() * continuation.getOneCount()
-            //                    + discount.getTwo() * continuation.getTwoCount() + discount.getThree()
-            //                    * continuation.getThreePlusCount())
-            //                    / denominator;
-        }
 
         double discout = alpha.discount(sequence, history, recDepth);
         double n_1p = cache.getCount(historyPlusWskp);

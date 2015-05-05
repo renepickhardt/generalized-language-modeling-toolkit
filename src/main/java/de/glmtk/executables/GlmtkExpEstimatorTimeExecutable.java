@@ -213,13 +213,13 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
             cacheBuilder.addAll(estimator.getRequiredCache(neededOrder));
         cacheBuilder.withCounts(Patterns.getMany("x")); // FIXME: Refactor this!
 
-        Set<Pattern> neededPatterns = cacheBuilder.getCountsPatterns();
-        neededPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this!
+        Set<Pattern> requiredPatterns = cacheBuilder.getRequiredPatterns();
+        requiredPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this!
 
         Cache cache = null;
         if (cacheFile != null) {
             GlmtkPaths queryCache = glmtk.provideQueryCache(cacheFile,
-                    neededPatterns);
+                    requiredPatterns);
             cache = cacheBuilder.build(queryCache);
         }
 
@@ -229,7 +229,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
             if (cacheFile == null) {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(queryFile,
-                        neededPatterns);
+                        requiredPatterns);
                 cache = cacheBuilder.build(queryCache);
             }
 

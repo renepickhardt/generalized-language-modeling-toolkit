@@ -2,21 +2,18 @@ package de.glmtk.querying.argmax;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Discounts;
-import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction.Summand;
@@ -28,29 +25,29 @@ import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
 public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
-    private Cache cache;
-    private Map<Pattern, Discounts> discounts = new HashMap<>();
+    private Cache randomAccessCache;
+    private CompletionTrieCache sortedAccessCache;
     private Collection<String> vocab;
 
-    public static CacheBuilder getRequiredCache(CacheBuilder estimatorRequiredCache) {
-        return estimatorRequiredCache.withWords();
-    }
-
     public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                              Cache randomAccessCache,
+                                              CompletionTrieCache sortedAccessCache,
                                               Collection<String> vocab) {
         this.estimator = estimator;
-        cache = estimator.getCache();
-        discounts = new HashMap<>();
+        this.randomAccessCache = randomAccessCache;
+        this.sortedAccessCache = sortedAccessCache;
         this.vocab = vocab;
     }
 
-    public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator) {
-        this(estimator, null);
+    public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                              Cache randomAccessCache,
+                                              CompletionTrieCache sortedAccessCache) {
+        this(estimator, randomAccessCache, sortedAccessCache, null);
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -77,7 +74,7 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             if (!h.isEmpty())
                 h += " ";
 
-            CompletionTrie trie = cache.getCompletionCounts(pattern);
+            CompletionTrie trie = sortedAccessCache.getCountCompletionTrie(pattern);
             PeekableIterator<CompletionTrieEntry> iter = trie.getCompletions(h);
 
             tries[i] = trie;
@@ -142,6 +139,9 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
             double probability = calcProbability(weightedSumFunction, args);
 
+            if (probability == 0.0)
+                continue;
+
             if (results.size() < numResults) {
                 results.add(new ArgmaxResult(sequence, probability));
                 lowestProb = results.peek().getProbability();
@@ -172,11 +172,11 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
      * For when we want alpha of random access sequence.
      */
     private double calcAlpha(NGram sequence) {
-        return calcAlpha(sequence, cache.getCount(sequence));
+        return calcAlpha(sequence, randomAccessCache.getCount(sequence));
     }
 
     /**
-     * For when we want alpha of sequence we have count for.
+     * For when we want alpha of sequence we have the count for.
      */
     private double calcAlpha(NGram sequence,
                              long count) {
@@ -187,15 +187,15 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
         if (!sequence.getPattern().isAbsolute()) {
             sequence = sequence.remove(0).convertWskpToSkp();
-            absSequenceCount = cache.getCount(sequence);
+            absSequenceCount = randomAccessCache.getCount(sequence);
         }
 
         if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
             // If we are on last order don't discount.
             return count;
 
-        Discounts disc = calcDiscounts(sequence.getPattern());
-        double d = disc.getForCount(absSequenceCount);
+        Discounts discounts = randomAccessCache.getDiscounts(sequence.getPattern());
+        double d = discounts.getForCount(absSequenceCount);
 
         return Math.max(count - d, 0.0);
     }
@@ -210,26 +210,9 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             // If we are on last order don't discount.
             return count;
 
-        Discounts disc = calcDiscounts(pattern);
-        double d = disc.getForCount(count);
+        Discounts discounts = randomAccessCache.getDiscounts(pattern);
+        double d = discounts.getForCount(count);
 
         return Math.max(count - d, 0.0);
-    }
-
-    protected Discounts calcDiscounts(Pattern pattern) {
-        Discounts result = discounts.get(pattern);
-        if (result != null)
-            return result;
-
-        NGramTimes n = cache.getNGramTimes(pattern);
-        double y = (double) n.getOneCount()
-                / (n.getOneCount() + n.getTwoCount());
-        result = new Discounts(1.0f - 2.0f * y * n.getTwoCount()
-                / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
-                / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
-                / n.getThreeCount());
-
-        discounts.put(pattern, result);
-        return result;
     }
 }
