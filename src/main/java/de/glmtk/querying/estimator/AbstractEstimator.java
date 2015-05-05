@@ -155,22 +155,28 @@ public abstract class AbstractEstimator implements Estimator {
         CacheBuilder requiredCache = new CacheBuilder();
 
         Set<Pattern> alphaAbsPatterns = new HashSet<>();
-        Set<Pattern> alphaContPatterns = new HashSet<>();
-        alphaContPatterns.add(Pattern.WSKP_PATTERN);
-        Set<Pattern> gammaPatterns = new HashSet<>();
-
         for (int i = 1; i != modelSize + 1; ++i)
             alphaAbsPatterns.addAll(Patterns.getPermutations(i,
                     PatternElem.CNT, PatternElem.SKP));
-        for (Pattern pattern : alphaAbsPatterns) {
+
+        Set<Pattern> alphaContPatterns = new HashSet<>();
+        alphaContPatterns.add(Pattern.WSKP_PATTERN);
+        for (Pattern pattern : alphaAbsPatterns)
             alphaContPatterns.add(Pattern.WSKP_PATTERN.concat(pattern.convertSkpToWskp()));
-            gammaPatterns.add(pattern.concat(PatternElem.WSKP));
-        }
+
+        Set<Pattern> gammaPatterns = new HashSet<>();
+        Set<Pattern> gammaCountPatterns = new HashSet<>();
+        for (Pattern pattern : alphaAbsPatterns)
+            if (pattern.size() != modelSize) {
+                gammaPatterns.add(pattern);
+                gammaCountPatterns.add(pattern.concat(PatternElem.CNT));
+                gammaCountPatterns.add(pattern.concat(PatternElem.WSKP));
+            }
 
         requiredCache.withCounts(alphaAbsPatterns);
         requiredCache.withCounts(alphaContPatterns);
-        requiredCache.withCounts(gammaPatterns);
-        requiredCache.withDiscounts();
+        requiredCache.withCounts(gammaCountPatterns);
+        requiredCache.withGammas(gammaPatterns);
 
         return requiredCache;
     }

@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -31,6 +31,7 @@ import java.util.Set;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
+import de.glmtk.common.PatternElem;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 
 /**
@@ -66,6 +67,16 @@ public class CacheBuilder {
     public CacheBuilder withProgress() {
         progress = true;
         return this;
+    }
+
+    public Set<Pattern> getRequiredPatterns() {
+        Set<Pattern> requiredPatterns = new HashSet<>();
+        requiredPatterns.addAll(getCountPatterns());
+        for (Pattern gammaPattern : getGammaPatterns()) {
+            requiredPatterns.add(gammaPattern.concat(PatternElem.CNT));
+            requiredPatterns.add(gammaPattern.concat(PatternElem.WSKP));
+        }
+        return requiredPatterns;
     }
 
     public Cache build(GlmtkPaths paths) throws IOException {

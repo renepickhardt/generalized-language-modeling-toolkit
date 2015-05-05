@@ -26,7 +26,7 @@ public class QueryTest extends TestCorporaTest {
         Cache cache = requiredCache.withProgress().build(
                 testCorpus.getGlmtk().provideQueryCache(
                         Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5"),
-                        requiredCache.getCountsPatterns()));
+                        requiredCache.getRequiredPatterns()));
         estimator.setCache(cache);
 
         //@formatter:off

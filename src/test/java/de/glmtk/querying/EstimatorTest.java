@@ -49,6 +49,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -58,6 +59,7 @@ import de.glmtk.Glmtk;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.NGram;
+import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.logging.Logger;
@@ -139,9 +141,11 @@ public class EstimatorTest extends TestCorporaTest {
                     highestOrder));
         }
 
+        Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
+
         for (TestCorpus testCorpus : TEST_CORPORA) {
             Glmtk glmtk = testCorpus.getGlmtk();
-            glmtk.count(requiredCache.getCountsPatterns());
+            glmtk.count(requiredPatterns);
         }
 
         countsAvailable = true;

@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,6 +63,7 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.probability.QueryExecutor;
@@ -130,11 +132,13 @@ public class EstimatorEqualsTest extends TestCorporaTest {
             requiredCache.addAll(actual.getRequiredCache(5));
         }
 
+        Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
+
         Glmtk glmtk = testCorpus.getGlmtk();
-        glmtk.count(requiredCache.getCountsPatterns());
+        glmtk.count(requiredPatterns);
 
         GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
-                requiredCache.getCountsPatterns());
+                requiredPatterns);
 
         cache = requiredCache.withProgress().build(queryCache);
     }

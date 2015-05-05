@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,6 +40,7 @@ import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
+import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -91,11 +93,13 @@ public class EstimatorSpeedTest extends TestCorporaTest {
             requiredCache.addAll(estimator.getRequiredCache(5));
         }
 
+        Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
+
         Glmtk glmtk = testCorpus.getGlmtk();
-        glmtk.count(requiredCache.getCountsPatterns());
+        glmtk.count(requiredPatterns);
 
         GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
-                requiredCache.getCountsPatterns());
+                requiredPatterns);
 
         cache = requiredCache.withProgress().build(queryCache);
     }

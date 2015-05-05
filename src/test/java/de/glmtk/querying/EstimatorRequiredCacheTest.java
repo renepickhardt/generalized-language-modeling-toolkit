@@ -45,6 +45,6 @@ public class EstimatorRequiredCacheTest extends LoggingTest {
 
         LOGGER.info("Estimator '%s' requires cache: %s", estimator,
                 requiredCache);
-        LOGGER.info(new TreeSet<>(requiredCache.getCountsPatterns()).toString());
+        LOGGER.info(new TreeSet<>(requiredCache.getRequiredPatterns()).toString());
     }
 }
