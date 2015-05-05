@@ -71,6 +71,8 @@ public class CacheBuilder {
 
     public Set<Pattern> getRequiredPatterns() {
         Set<Pattern> requiredPatterns = new HashSet<>();
+        if (words)
+            requiredPatterns.add(Pattern.CNT_PATTERN);
         requiredPatterns.addAll(getCountPatterns());
         for (Pattern gammaPattern : getGammaPatterns()) {
             requiredPatterns.add(gammaPattern.concat(PatternElem.CNT));

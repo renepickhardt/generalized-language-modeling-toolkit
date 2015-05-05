@@ -25,12 +25,10 @@ import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
-import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discounts;
 import de.glmtk.querying.estimator.AbstractEstimator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
-import de.glmtk.querying.estimator.discount.ThreeDiscountEstimator;
+import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 
 public class InterpolEstimator extends AbstractEstimator {
     protected DiscountEstimator alpha;
@@ -133,22 +131,24 @@ public class InterpolEstimator extends AbstractEstimator {
 
         NGram historyPlusWskp = history.concat(WSKP_WORD);
 
-        if (alpha instanceof ThreeDiscountEstimator) {
-            ThreeDiscountEstimator threeDiscountEstimator = (ThreeDiscountEstimator) alpha;
+        if (alpha instanceof ModKneserNeyDiscountEstimator) {
+            ;
+            //            ModKneserNeyDiscountEstimator threeDiscountEstimator = (ModKneserNeyDiscountEstimator) alpha;
 
-            NGram fullSequence = getFullSequence(sequence, history);
-            Discounts discount = threeDiscountEstimator.getDiscounts(fullSequence.getPattern());
-            Counts continuation = cache.getContinuation(historyPlusWskp);
+            //            NGram fullSequence = getFullSequence(sequence, history);
+            //            Discounts discount = threeDiscountEstimator.getDiscounts(fullSequence.getPattern());
+            //            Counts continuation = cache.getContinuation(historyPlusWskp);
 
-            logTrace(recDepth, "pattern     = %s", fullSequence.getPattern());
-            logTrace(recDepth, "discount    = %s", discount);
-            logTrace(recDepth, "contcounts  = %s", continuation);
-            logTrace(recDepth, "denominator = %e", denominator);
+            //            logTrace(recDepth, "pattern     = %s", fullSequence.getPattern());
+            //            logTrace(recDepth, "discount    = %s", discount);
+            //            logTrace(recDepth, "contcounts  = %s", continuation);
+            //            logTrace(recDepth, "denominator = %e", denominator);
 
-            return (discount.getOne() * continuation.getOneCount()
-                    + discount.getTwo() * continuation.getTwoCount() + discount.getThree()
-                    * continuation.getThreePlusCount())
-                    / denominator;
+            return cache.getGamma(history) / denominator;
+            //            return (discount.getOne() * continuation.getOneCount()
+            //                    + discount.getTwo() * continuation.getTwoCount() + discount.getThree()
+            //                    * continuation.getThreePlusCount())
+            //                    / denominator;
         }
 
         double discout = alpha.discount(sequence, history, recDepth);

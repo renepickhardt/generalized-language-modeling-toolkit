@@ -1,31 +1,29 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.querying.estimator;
 
 import de.glmtk.common.BackoffMode;
-import de.glmtk.counts.Discounts;
 import de.glmtk.querying.estimator.backoff.BackoffEstimator;
 import de.glmtk.querying.estimator.combination.CombinationEstimator;
 import de.glmtk.querying.estimator.discount.AbsoluteDiscountEstimator;
-import de.glmtk.querying.estimator.discount.AbsoluteThreeDiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelAbsEstimator;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
@@ -85,14 +83,6 @@ public class Estimators {
             MLE, 0.75);
     static {
         ABS_DISCOUNT_MLE.setName("Absolute-Discount-MaximumLikelihood");
-    }
-
-    // Discount values taken from en0008t MKN discounts for pattern 11111.
-    public static final AbsoluteThreeDiscountEstimator ABS_THREE_DISCOUNT_MLE = new AbsoluteThreeDiscountEstimator(
-            MLE, new Discounts(0.9893775421266705, 1.3470760887379134,
-                    1.7877230602665601));
-    static {
-        ABS_THREE_DISCOUNT_MLE.setName("Absolute-Three-Discount-MaximumLikelihood");
     }
 
     // Backoff Estimators //////////////////////////////////////////////////////
@@ -181,20 +171,6 @@ public class Estimators {
             ABS_DISCOUNT_MLE, BackoffMode.SKP_AND_DEL);
     static {
         DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL.setName("DiffInterpol-MaximumLikelihood (SKP_AND_DEL Backoff)");
-    }
-
-    // Abs Three Interpol Esimators ////////////////////////////////////////////
-
-    public static final InterpolEstimator INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL = new InterpolEstimator(
-            ABS_THREE_DISCOUNT_MLE, BackoffMode.DEL);
-    static {
-        INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL.setName("Interpol-3-Discount-MaximumLikelihood (DEL Backoff)");
-    }
-
-    public static final DiffInterpolEstimator DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP = new DiffInterpolEstimator(
-            ABS_THREE_DISCOUNT_MLE, BackoffMode.SKP);
-    static {
-        DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP.setName("DiffInterpol-3-Discount-MaximumLikelihood (SKP Backoff)");
     }
 
     // Combination Estimators //////////////////////////////////////////////////
@@ -331,7 +307,7 @@ public class Estimators {
         InterpolEstimator beta = new InterpolEstimator(
                 new ModKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
-                BackoffMode);
+                        BackoffMode);
         return new InterpolEstimator(alpha, beta, BackoffMode);
     }
 
@@ -341,7 +317,7 @@ public class Estimators {
         DiffInterpolEstimator beta = new DiffInterpolEstimator(
                 new ModKneserNeyDiscountEstimator(
                         new ContinuationMaximumLikelihoodEstimator()),
-                        BackoffMode);
+                BackoffMode);
         return new DiffInterpolEstimator(alpha, beta, BackoffMode);
     }
 }

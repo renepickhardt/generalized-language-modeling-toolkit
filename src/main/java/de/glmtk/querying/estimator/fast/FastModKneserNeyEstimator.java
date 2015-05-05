@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -22,8 +22,6 @@ package de.glmtk.querying.estimator.fast;
 
 import static de.glmtk.common.NGram.WSKP_NGRAM;
 import de.glmtk.common.NGram;
-import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discounts;
 
 public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
     @Override
@@ -40,13 +38,8 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         if (history.isEmptyOrOnlySkips())
             return (double) numerator / denominator;
 
-        Discounts d = getDiscounts(fullSequence.getPattern(), recDepth);
-        double discount = d.getForCount(numerator);
-
-        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
-        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
-                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
-                / denominator;
+        double discount = cache.getDiscount(fullSequence);
+        double gamma = cache.getGamma(history) / denominator;
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
@@ -82,13 +75,8 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         if (history.isEmptyOrOnlySkips())
             return (double) numerator / denominator;
 
-        Discounts d = getDiscounts(fullSequence.getPattern(), recDepth);
-        double discount = d.getForCount(cache.getCount(fullSequence));
-
-        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
-        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
-                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
-                / denominator;
+        double discount = cache.getDiscount(fullSequence);
+        double gamma = cache.getGamma(history) / denominator;
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double alpha = Math.max(numerator - discount, 0.0) / denominator;

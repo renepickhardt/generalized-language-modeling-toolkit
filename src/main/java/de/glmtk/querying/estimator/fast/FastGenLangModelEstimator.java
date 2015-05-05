@@ -25,8 +25,6 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 import java.util.Set;
 
 import de.glmtk.common.NGram;
-import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discounts;
 
 public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
     @Override
@@ -49,13 +47,8 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
         if (history.isEmptyOrOnlySkips())
             return (double) numerator / denominator;
 
-        Discounts d = getDiscounts(fullSequence.getPattern(), recDepth);
-        double discount = d.getForCount(numerator);
-
-        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
-        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
-                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
-                / denominator;
+        double discount = cache.getDiscount(fullSequence);
+        double gamma = cache.getGamma(history) / denominator;
 
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = 0;
@@ -99,13 +92,8 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
         if (history.isEmptyOrOnlySkips())
             return (double) numerator / denominator;
 
-        Discounts d = getDiscounts(fullSequence.getPattern(), recDepth);
-        double discount = d.getForCount(cache.getCount(fullSequence));
-
-        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
-        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
-                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
-                / denominator;
+        double discount = cache.getDiscount(fullSequence);
+        double gamma = cache.getGamma(history) / denominator;
 
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = 0;

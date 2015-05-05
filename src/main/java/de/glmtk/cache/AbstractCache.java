@@ -184,6 +184,14 @@ public abstract class AbstractCache implements Cache {
     }
 
     @Override
+    public double getDiscount(NGram ngram) {
+        checkNGramArg(ngram);
+        checkDiscountsLoaded();
+
+        return getDiscounts(ngram.getPattern()).getForCount(getCount(ngram));
+    }
+
+    @Override
     public Discounts getDiscounts(Pattern pattern) {
         checkPatternArg(pattern);
         checkDiscountsLoaded();

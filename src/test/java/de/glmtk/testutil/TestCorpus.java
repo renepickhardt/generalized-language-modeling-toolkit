@@ -32,7 +32,6 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.Patterns;
 
 /**
  * Make sure you are inherting {@link TestCorporaTest} when writing a test using
@@ -84,11 +83,11 @@ public enum TestCorpus {
      */
     public String[] getTokens() throws Exception {
         if (tokens == null) {
-            Set<Pattern> neededPatterns = Patterns.getMany("1");
-            if (!glmtk.getStatus().getCounted().containsAll(neededPatterns))
-                glmtk.count(neededPatterns);
-            Cache cache = new CacheBuilder().withCounts(neededPatterns).build(
-                    glmtk.getPaths());
+            CacheBuilder requiredCache = new CacheBuilder().withWords();
+            Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
+            if (!glmtk.getStatus().getCounted().containsAll(requiredPatterns))
+                glmtk.count(requiredPatterns);
+            Cache cache = requiredCache.build(glmtk.getPaths());
             Set<String> tokens = cache.getWords();
             this.tokens = tokens.toArray(new String[tokens.size()]);
         }

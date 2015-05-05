@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -35,13 +35,11 @@ import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
-import static de.glmtk.querying.estimator.Estimators.DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP;
 import static de.glmtk.querying.estimator.Estimators.FALSE_MLE;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_DEL_NOREC;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP;
 import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_DISCOUNT_MLE_SKP_NOREC;
-import static de.glmtk.querying.estimator.Estimators.INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL;
 import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.UNIFORM;
 import static org.junit.Assert.assertEquals;
@@ -118,9 +116,6 @@ public class EstimatorTest extends TestCorporaTest {
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_DEL_FRONT, false, HIGHEST_ORDER, HIGHEST_ORDER),
                 // HIGHEST_ORDER should actually also work, but takes far to long to calculate.
                 new EstimatorTestParams(DIFF_INTERPOL_ABS_DISCOUNT_MLE_SKP_AND_DEL, false, HIGHEST_ORDER - 1, HIGHEST_ORDER - 1),
-
-                new EstimatorTestParams(INTERPOL_ABS_THREE_DISCOUNT_MLE_DEL, false, HIGHEST_ORDER, HIGHEST_ORDER),
-                new EstimatorTestParams(DIFF_INTERPOL_ABS_THREE_DISCOUNT_MLE_SKP, false, HIGHEST_ORDER, HIGHEST_ORDER),
 
                 // Combination Estimators
                 new EstimatorTestParams(COMB_MLE_CMLE, true, 0, HIGHEST_ORDER - 1)

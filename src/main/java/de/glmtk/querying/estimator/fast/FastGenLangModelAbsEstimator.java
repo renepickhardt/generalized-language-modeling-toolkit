@@ -20,38 +20,21 @@
 
 package de.glmtk.querying.estimator.fast;
 
-import static de.glmtk.common.NGram.WSKP_NGRAM;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
-import de.glmtk.common.Pattern;
-import de.glmtk.counts.Counts;
-import de.glmtk.counts.Discounts;
-import de.glmtk.counts.NGramTimes;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
 public class FastGenLangModelAbsEstimator extends AbstractEstimator {
     protected BackoffMode backoffMode;
-    private Map<Pattern, Discounts> discounts;
 
     public FastGenLangModelAbsEstimator() {
         setBackoffMode(BackoffMode.SKP);
-        discounts = new HashMap<>();
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {
         this.backoffMode = backoffMode;
-    }
-
-    @Override
-    public void setCache(Cache cache) {
-        super.setCache(cache);
-        discounts = new HashMap<>();
     }
 
     @Override
@@ -74,13 +57,8 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
         if (history.isEmptyOrOnlySkips())
             return (double) numerator / denominator;
 
-        Discounts d = getDiscounts(fullSequence.getPattern(), recDepth);
-        double discount = d.getForCount(numerator);
-
-        Counts c = cache.getContinuation(history.concat(WSKP_NGRAM));
-        double gamma = (d.getOne() * c.getOneCount() + d.getTwo()
-                * c.getTwoCount() + d.getThree() * c.getThreePlusCount())
-                / denominator;
+        double discount = cache.getDiscount(fullSequence);
+        double gamma = cache.getGamma(history) / denominator;
 
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = 0;
@@ -90,23 +68,5 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
         beta /= differentiatedHistories.size();
 
         return alpha + gamma * beta;
-    }
-
-    protected Discounts getDiscounts(Pattern pattern,
-                                     @SuppressWarnings("unused") int recDepth) {
-        Discounts result = discounts.get(pattern);
-        if (result != null)
-            return result;
-
-        NGramTimes n = cache.getNGramTimes(pattern);
-        double y = (double) n.getOneCount()
-                / (n.getOneCount() + n.getTwoCount());
-        result = new Discounts(1.0f - 2.0f * y * n.getTwoCount()
-                / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
-                / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
-                / n.getThreeCount());
-
-        discounts.put(pattern, result);
-        return result;
     }
 }

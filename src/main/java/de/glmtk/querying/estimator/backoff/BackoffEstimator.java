@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.glmtk.cache.Cache;
+import de.glmtk.cache.CacheBuilder;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
@@ -144,5 +145,10 @@ public class BackoffEstimator extends AbstractEstimator {
         if (sumBeta == 0)
             return 0.0;
         return (1.0 - sumAlpha) / sumBeta;
+    }
+
+    @Override
+    public CacheBuilder getRequiredCache(int modelSize) {
+        return super.getRequiredCache(modelSize).withWords();
     }
 }
