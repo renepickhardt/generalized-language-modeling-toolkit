@@ -39,7 +39,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
@@ -87,7 +87,7 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         if (cache != null)
             return;
 
-        CacheBuilder requiredCache = new CacheBuilder().withProgress();
+        CacheSpecification requiredCache = new CacheSpecification().withProgress();
         for (Object[] params : data()) {
             Estimator estimator = (Estimator) params[0];
             requiredCache.addAll(estimator.getRequiredCache(5));

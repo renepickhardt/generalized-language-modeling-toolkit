@@ -27,7 +27,7 @@ import java.util.List;
 
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
@@ -52,7 +52,7 @@ public class QueryExecutor {
         calculator.setEstimator(estimator);
 
         if (mode.isWithLengthFreq())
-            cache = new CacheBuilder().withLengthDistribution().build(paths);
+            cache = new CacheSpecification().withLengthDistribution().build(paths);
     }
 
     /**

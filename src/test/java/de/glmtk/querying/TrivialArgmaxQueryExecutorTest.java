@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import de.glmtk.Constants;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.argmax.TrivialArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimator;
@@ -77,7 +77,7 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
 
     @BeforeClass
     public static void loadCache() throws IOException {
-        CacheBuilder requiredCache = new CacheBuilder();
+        CacheSpecification requiredCache = new CacheSpecification();
         requiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
         requiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
         requiredCache.withWords();

@@ -10,7 +10,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.testutil.TestCorporaTest;
@@ -24,7 +24,7 @@ public class LegalProbabilitiesTest extends TestCorporaTest {
 
     @BeforeClass
     public static void loadCache() throws IOException {
-        CacheBuilder requiredCache = Estimators.GLM.getRequiredCache(5);
+        CacheSpecification requiredCache = Estimators.GLM.getRequiredCache(5);
         cache = requiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
     }

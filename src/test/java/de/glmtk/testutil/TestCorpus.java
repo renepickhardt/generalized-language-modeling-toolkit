@@ -29,7 +29,7 @@ import java.util.Set;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
 
@@ -83,7 +83,7 @@ public enum TestCorpus {
      */
     public String[] getTokens() throws Exception {
         if (tokens == null) {
-            CacheBuilder requiredCache = new CacheBuilder().withWords();
+            CacheSpecification requiredCache = new CacheSpecification().withWords();
             Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
             if (!glmtk.getStatus().getCounted().containsAll(requiredPatterns))
                 glmtk.count(requiredPatterns);

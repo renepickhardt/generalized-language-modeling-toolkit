@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -36,8 +36,8 @@ import org.junit.Test;
 
 import de.glmtk.Constants;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
-import de.glmtk.cache.CacheBuilder.CacheImplementation;
+import de.glmtk.cache.CacheSpecification;
+import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.argmax.TopKMixedAccessArgmaxQueryExecutor;
@@ -79,13 +79,13 @@ public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
 
     @BeforeClass
     public static void loadCache() throws IOException {
-        CacheBuilder randomAccessRequiredCache = new CacheBuilder();
+        CacheSpecification randomAccessRequiredCache = new CacheSpecification();
         randomAccessRequiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
         randomAccessRequiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
         randomAccessCache = randomAccessRequiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
 
-        CacheBuilder sortedAccessRequiredCache = new CacheBuilder().withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
+        CacheSpecification sortedAccessRequiredCache = new CacheSpecification().withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
         sortedAccessRequiredCache.withCounts(randomAccessRequiredCache.getCountPatterns());
         sortedAccessCache = (CompletionTrieCache) sortedAccessRequiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());

@@ -60,7 +60,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
@@ -124,7 +124,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         if (cache != null)
             return;
 
-        CacheBuilder requiredCache = new CacheBuilder();
+        CacheSpecification requiredCache = new CacheSpecification();
         for (Object[] params : data()) {
             Estimator exptected = (Estimator) params[0];
             Estimator actual = (Estimator) params[1];

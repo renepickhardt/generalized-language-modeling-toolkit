@@ -28,7 +28,7 @@ import org.junit.Test;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
 import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
@@ -42,7 +42,7 @@ public class ArgmaxQueryCacheCreatorTest extends TestCorporaTest {
 
     @Test
     public void test() throws Exception {
-        CacheBuilder cacheBuilder = Estimators.GLM.getRequiredCache(4);
+        CacheSpecification cacheBuilder = Estimators.GLM.getRequiredCache(4);
         Set<Pattern> requiredPatterns = cacheBuilder.getRequiredPatterns();
 
         Glmtk glmtk = testCorpus.getGlmtk();

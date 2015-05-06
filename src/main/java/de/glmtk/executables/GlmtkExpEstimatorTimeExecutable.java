@@ -25,7 +25,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
@@ -207,7 +207,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
         int neededOrder = getNeededOrder();
 
-        CacheBuilder cacheBuilder = new CacheBuilder();
+        CacheSpecification cacheBuilder = new CacheSpecification();
         cacheBuilder.withProgress();
         for (Estimator estimator : estimators)
             cacheBuilder.addAll(estimator.getRequiredCache(neededOrder));

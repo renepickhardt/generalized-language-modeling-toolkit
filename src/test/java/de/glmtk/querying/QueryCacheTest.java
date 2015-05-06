@@ -38,7 +38,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
@@ -78,7 +78,7 @@ public class QueryCacheTest extends TestCorporaTest {
     public void testQueryingWithCacheEqualsWithout() throws Exception {
         Glmtk glmtk = testCorpus.getGlmtk();
 
-        CacheBuilder requiredCache = estimator.getRequiredCache(5);
+        CacheSpecification requiredCache = estimator.getRequiredCache(5);
         Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
 
         glmtk.count(requiredPatterns);

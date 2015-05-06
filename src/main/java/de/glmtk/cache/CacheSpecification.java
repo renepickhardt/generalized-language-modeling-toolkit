@@ -39,7 +39,7 @@ import de.glmtk.exceptions.SwitchCaseNotImplementedException;
  *
  * TODO: Rename to CacheSpecification?
  */
-public class CacheBuilder {
+public class CacheSpecification {
     public enum CacheImplementation {
         HASH_MAP,
         COMPLETION_TRIE;
@@ -57,7 +57,7 @@ public class CacheBuilder {
         return cacheImplementation;
     }
 
-    public CacheBuilder withCacheImplementation(CacheImplementation cacheImplementation) {
+    public CacheSpecification withCacheImplementation(CacheImplementation cacheImplementation) {
         this.cacheImplementation = cacheImplementation;
         return this;
     }
@@ -66,7 +66,7 @@ public class CacheBuilder {
         return progress;
     }
 
-    public CacheBuilder withProgress() {
+    public CacheSpecification withProgress() {
         progress = true;
         return this;
     }
@@ -131,7 +131,7 @@ public class CacheBuilder {
         }
     }
 
-    public CacheBuilder addAll(CacheBuilder cacheBuilder) {
+    public CacheSpecification addAll(CacheSpecification cacheBuilder) {
         words = words || cacheBuilder.words;
         discounts = discounts || cacheBuilder.discounts;
         lengthDistribution = lengthDistribution
@@ -161,7 +161,7 @@ public class CacheBuilder {
         return words;
     }
 
-    public CacheBuilder withWords() {
+    public CacheSpecification withWords() {
         words = true;
         return this;
     }
@@ -172,7 +172,7 @@ public class CacheBuilder {
         return discounts;
     }
 
-    public CacheBuilder withDiscounts() {
+    public CacheSpecification withDiscounts() {
         discounts = true;
         return this;
     }
@@ -183,7 +183,7 @@ public class CacheBuilder {
         return lengthDistribution;
     }
 
-    public CacheBuilder withLengthDistribution() {
+    public CacheSpecification withLengthDistribution() {
         lengthDistribution = true;
         return this;
     }
@@ -194,7 +194,7 @@ public class CacheBuilder {
         return counts;
     }
 
-    public CacheBuilder withCounts(Collection<Pattern> counts) {
+    public CacheSpecification withCounts(Collection<Pattern> counts) {
         this.counts.addAll(counts);
         return this;
     }
@@ -205,7 +205,7 @@ public class CacheBuilder {
         return gammas;
     }
 
-    public CacheBuilder withGammas(Collection<Pattern> gammas) {
+    public CacheSpecification withGammas(Collection<Pattern> gammas) {
         withDiscounts();
         this.gammas.addAll(gammas);
         return this;

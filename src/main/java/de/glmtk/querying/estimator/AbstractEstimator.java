@@ -29,7 +29,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
@@ -146,8 +146,8 @@ public abstract class AbstractEstimator implements Estimator {
                                               int recDepth);
 
     @Override
-    public CacheBuilder getRequiredCache(int modelSize) {
-        CacheBuilder requiredCache = new CacheBuilder();
+    public CacheSpecification getRequiredCache(int modelSize) {
+        CacheSpecification requiredCache = new CacheSpecification();
 
         Set<Pattern> alphaAbsPatterns = new HashSet<>();
         for (int i = 1; i != modelSize + 1; ++i)

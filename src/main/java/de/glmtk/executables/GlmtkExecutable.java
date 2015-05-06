@@ -50,7 +50,7 @@ import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
@@ -426,7 +426,7 @@ public class GlmtkExecutable extends Executable {
         for (Estimator estimator : estimators)
             estimator.setProbMode(probMode);
 
-        CacheBuilder cacheBuilder = new CacheBuilder();
+        CacheSpecification cacheBuilder = new CacheSpecification();
         for (Estimator estimator : estimators)
             cacheBuilder.addAll(estimator.getRequiredCache(trainingOrder));
         // FIXME: Refactor this!

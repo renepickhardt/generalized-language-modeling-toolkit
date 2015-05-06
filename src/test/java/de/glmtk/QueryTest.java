@@ -2,8 +2,8 @@ package de.glmtk;
 
 import org.junit.Test;
 
-import de.glmtk.cache.CacheBuilder;
-import de.glmtk.cache.CacheBuilder.CacheImplementation;
+import de.glmtk.cache.CacheSpecification;
+import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.querying.estimator.Estimators;
@@ -21,7 +21,7 @@ public class QueryTest extends TestCorporaTest {
     public void test() throws Exception {
         TestCorpus testCorpus = TestCorpus.EN0008T;
         WeightedSumModKneserNeyEstimator estimator = Estimators.WEIGHTEDSUM_MKN;
-        CacheBuilder requiredCache = estimator.getRequiredCache(5).withWords().withCacheImplementation(
+        CacheSpecification requiredCache = estimator.getRequiredCache(5).withWords().withCacheImplementation(
                 CacheImplementation.COMPLETION_TRIE);
         CompletionTrieCache cache = (CompletionTrieCache) requiredCache.withProgress().build(
                 testCorpus.getGlmtk().getPaths());

@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -41,7 +41,7 @@ public class EstimatorRequiredCacheTest extends LoggingTest {
 
     @Test
     public void testRequiredCache() {
-        CacheBuilder requiredCache = estimator.getRequiredCache(5);
+        CacheSpecification requiredCache = estimator.getRequiredCache(5);
 
         LOGGER.info("Estimator '%s' requires cache: %s", estimator,
                 requiredCache);

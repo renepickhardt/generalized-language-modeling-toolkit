@@ -55,7 +55,7 @@ import org.junit.runner.RunWith;
 
 import de.glmtk.Glmtk;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.ProbMode;
@@ -128,7 +128,7 @@ public class EstimatorTest extends TestCorporaTest {
         if (countsAvailable)
             return;
 
-        CacheBuilder requiredCache = new CacheBuilder();
+        CacheSpecification requiredCache = new CacheSpecification();
         for (EstimatorTestParams params : data()) {
             int highestOrder = Math.max(params.getCondOrder(),
                     params.getMargOrder());
@@ -253,7 +253,7 @@ public class EstimatorTest extends TestCorporaTest {
     private Cache createCache(TestCorpus testCorpus) throws Exception {
         Glmtk glmtk = testCorpus.getGlmtk();
 
-        CacheBuilder requiredCache = estimator.getRequiredCache(5);
+        CacheSpecification requiredCache = estimator.getRequiredCache(5);
         return requiredCache.build(glmtk.getPaths());
     }
 }

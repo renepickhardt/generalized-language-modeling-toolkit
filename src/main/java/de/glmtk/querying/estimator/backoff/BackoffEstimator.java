@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
@@ -148,7 +148,7 @@ public class BackoffEstimator extends AbstractEstimator {
     }
 
     @Override
-    public CacheBuilder getRequiredCache(int modelSize) {
+    public CacheSpecification getRequiredCache(int modelSize) {
         return super.getRequiredCache(modelSize).withWords();
     }
 }

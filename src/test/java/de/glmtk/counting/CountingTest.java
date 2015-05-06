@@ -46,7 +46,7 @@ import org.junit.runners.Parameterized.Parameters;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
@@ -105,7 +105,7 @@ public class CountingTest extends TestCorporaTest {
         LOGGER.info("Loading counts...");
         Glmtk glmtk = testCorpus.getGlmtk();
         glmtk.count(TEST_PATTERNS);
-        cache = new CacheBuilder().withCounts(TEST_PATTERNS).withProgress().build(
+        cache = new CacheSpecification().withCounts(TEST_PATTERNS).withProgress().build(
                 glmtk.getPaths());
 
         absolute = new HashMap<>();

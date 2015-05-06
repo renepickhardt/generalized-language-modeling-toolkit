@@ -20,7 +20,7 @@
 package de.glmtk.querying.estimator;
 
 import de.glmtk.cache.Cache;
-import de.glmtk.cache.CacheBuilder;
+import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 
@@ -58,5 +58,5 @@ public interface Estimator {
                               NGram history,
                               int recDepth);
 
-    public CacheBuilder getRequiredCache(int modelSize);
+    public CacheSpecification getRequiredCache(int modelSize);
 }
