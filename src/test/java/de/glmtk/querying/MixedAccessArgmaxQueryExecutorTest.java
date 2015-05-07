@@ -40,14 +40,14 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.TopKMixedAccessArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.MixedAccessArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
-public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
+public class MixedAccessArgmaxQueryExecutorTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
     private static final Path VOCAB_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.vocab");
     private static final Path QUERY_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.query");
@@ -98,7 +98,7 @@ public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(randomAccessCache);
-        TopKMixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new TopKMixedAccessArgmaxQueryExecutor(
+        MixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new MixedAccessArgmaxQueryExecutor(
                 estimator, randomAccessCache, sortedAccessCache);
 
         for (String query : queries) {
@@ -119,7 +119,7 @@ public class TopKArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(randomAccessCache);
-        TopKMixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new TopKMixedAccessArgmaxQueryExecutor(
+        MixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new MixedAccessArgmaxQueryExecutor(
                 estimator, randomAccessCache, sortedAccessCache);
 
         for (String query : queries) {

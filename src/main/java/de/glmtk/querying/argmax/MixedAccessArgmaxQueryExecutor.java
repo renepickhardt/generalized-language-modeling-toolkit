@@ -23,31 +23,31 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
-public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+public class MixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
     private Cache randomAccessCache;
     private CompletionTrieCache sortedAccessCache;
     private Collection<String> vocab;
 
-    public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                              Cache randomAccessCache,
-                                              CompletionTrieCache sortedAccessCache,
-                                              Collection<String> vocab) {
+    public MixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                          Cache randomAccessCache,
+                                          CompletionTrieCache sortedAccessCache,
+                                          Collection<String> vocab) {
         this.estimator = estimator;
         this.randomAccessCache = randomAccessCache;
         this.sortedAccessCache = sortedAccessCache;
         this.vocab = vocab;
     }
 
-    public TopKMixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                              Cache randomAccessCache,
-                                              CompletionTrieCache sortedAccessCache) {
+    public MixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                          Cache randomAccessCache,
+                                          CompletionTrieCache sortedAccessCache) {
         this(estimator, randomAccessCache, sortedAccessCache, null);
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          int numResults) {
+            int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -118,15 +118,12 @@ public class TopKMixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             threshold += weightedSumFunction.get(ptr).getWeight()
                     * calcAlpha(patterns[ptr], lastCounts[ptr]);
 
-            lowestProb = Double.NEGATIVE_INFINITY;
-            if (!results.isEmpty())
-                lowestProb = results.peek().getProbability();
-
             String string = entry.getString();
             List<String> split = StringUtils.split(string, ' ');
             String sequence = split.get(split.size() - 1);
-            if ((vocab != null && !vocab.contains(sequence))
-                    || !seen.add(sequence))
+            if (vocab != null && !vocab.contains(sequence))
+                continue;
+            if (!seen.add(sequence))
                 continue;
 
             double args[] = new double[size];
