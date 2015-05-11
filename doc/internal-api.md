@@ -158,3 +158,12 @@ A user wants to enable smoothing of unseen words/sequences.
     Word nextWord = m.nextWord("america the");
     sysout("Next word is " + nextWord + " with a chance of " + nextWord.getProbability() + ".");
 
+## open questions / topics
+* Estimators are used to implement smoothing methods
+* how to handle unknown words (in testing)?
+* what about the top-k join API (it would be really great if this part of the code base becomes reusable)
+* it should be possible to handle argmax queries like: what is the most probable word given the following history
+* I am pretty sure the api for conditional probabilities should look like `m.condProbability(ngram, history)` instead of `m.condProbability(history, ngram)`
+* what about ARPA format?
+* what about general backoff methods, and general interpolated methods (averaging / combining language model API)
+ 
