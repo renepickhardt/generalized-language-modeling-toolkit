@@ -147,7 +147,7 @@ A user wants to enable smoothing of unseen words/sequences.
      */
     c = m.count("america the brave");
     p = m.probability("america the brave");
-    pSequence = m.condProbability("america the", "brave"); // m.condProbability(history, ngram)
+    pSequence = m.condProbability("brave", "america the"); // m.condProbability(ngram, history)
     
     /**
      * common to all API versions
@@ -168,3 +168,11 @@ A user wants to enable smoothing of unseen words/sequences.
 
 * what are common mistakes in addition to the [misapplications mentioned](#avoid-misapplication)?
 * `c("w2" | "w1") == c("w1 w2")`?
+
+## Requests and discussion
+* how to handle unknown words (in testing)?
+* what about the top-k join API (it would be really great if this part of the code base becomes reusable)
+* <strike>it should be possible to handle argmax queries like: what is the most probable word given the following history</strike> `m.nextWord`
+* what about general backoff methods, and general interpolated methods (averaging / combining language model API)
+ 
+>>>>>>> eb926b6776d3b439c27e01d2d0f82fef68e2212c
