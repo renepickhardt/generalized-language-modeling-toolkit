@@ -58,11 +58,10 @@ This is a major problem when a user wants to create a new language model and use
 
 * API should clearly separate the notations, e.g. by using different endpoints, to increase the problem awareness
 
-## Unknown component
-
 ### Smoothing
-
-> Is this language model, estimator or toolkit specific?
+An estimator should allow to smooth words (sequences?).
+Smoothing means to increase the probability of unseen words (to higher than zero) and decrease the probability of seen words (to still be a probability function and sum to 1).
+This can either target the toolkit to apply smoothing to all estimators instantiated in future or per estimator manually.
 
 ## Use cases
 The new API has to fulfill the above requirements and has to be handy according to some use cases. 
@@ -167,4 +166,5 @@ A user wants to enable smoothing of unseen words/sequences.
 
   to calculate the conditional probability within a custom estimator => could be verified via test corpus in phase `mvn:test`
 
-* are there common mistakes in addition to the [misapplications mentioned](#avoid-misapplication)?
+* what are common mistakes in addition to the [misapplications mentioned](#avoid-misapplication)?
+* `c("w2" | "w1") == c("w1 w2")`?
