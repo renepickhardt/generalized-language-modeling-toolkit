@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -35,19 +35,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.glmtk.Constants;
-import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.MixedAccessArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor.ProbbabilityDislay;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
-public class MixedAccessArgmaxQueryExecutorTest extends TestCorporaTest {
+public class NoRandomAccessArgmaxQueryExecutorTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
     private static final Path VOCAB_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.vocab");
     private static final Path QUERY_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.query");
@@ -55,8 +55,7 @@ public class MixedAccessArgmaxQueryExecutorTest extends TestCorporaTest {
     private static Set<String> vocab;
     private static List<String> queries;
 
-    private static Cache randomAccessCache;
-    private static CompletionTrieCache sortedAccessCache;
+    private static CompletionTrieCache cache;
 
     @BeforeClass
     public static void loadFiles() throws IOException {
@@ -79,15 +78,10 @@ public class MixedAccessArgmaxQueryExecutorTest extends TestCorporaTest {
 
     @BeforeClass
     public static void loadCache() throws IOException {
-        CacheSpecification randomAccessRequiredCache = new CacheSpecification();
-        randomAccessRequiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
-        randomAccessRequiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
-        randomAccessCache = randomAccessRequiredCache.withProgress().build(
-                TEST_CORPUS.getGlmtk().getPaths());
-
-        CacheSpecification sortedAccessRequiredCache = new CacheSpecification().withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
-        sortedAccessRequiredCache.withCounts(randomAccessRequiredCache.getCountPatterns());
-        sortedAccessCache = (CompletionTrieCache) sortedAccessRequiredCache.withProgress().build(
+        CacheSpecification requiredCache = new CacheSpecification().withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
+        requiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
+        requiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
+        cache = (CompletionTrieCache) requiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
     }
 
@@ -97,9 +91,10 @@ public class MixedAccessArgmaxQueryExecutorTest extends TestCorporaTest {
 
         System.out.format("=== %s%n", estimator);
 
-        estimator.setCache(randomAccessCache);
-        MixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new MixedAccessArgmaxQueryExecutor(
-                estimator, randomAccessCache, sortedAccessCache);
+        estimator.setCache(cache);
+        NoRandomAccessArgmaxQueryExecutor argmaxQueryExecutor = new NoRandomAccessArgmaxQueryExecutor(
+                estimator, cache);
+        argmaxQueryExecutor.setProbbabilityDislay(ProbbabilityDislay.EXACT);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
@@ -118,9 +113,10 @@ public class MixedAccessArgmaxQueryExecutorTest extends TestCorporaTest {
 
         System.out.format("=== %s%n", estimator);
 
-        estimator.setCache(randomAccessCache);
-        MixedAccessArgmaxQueryExecutor argmaxQueryExecutor = new MixedAccessArgmaxQueryExecutor(
-                estimator, randomAccessCache, sortedAccessCache);
+        estimator.setCache(cache);
+        NoRandomAccessArgmaxQueryExecutor argmaxQueryExecutor = new NoRandomAccessArgmaxQueryExecutor(
+                estimator, cache);
+        argmaxQueryExecutor.setProbbabilityDislay(ProbbabilityDislay.EXACT);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);

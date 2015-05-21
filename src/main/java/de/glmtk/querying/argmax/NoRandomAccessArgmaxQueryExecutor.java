@@ -23,7 +23,7 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
-public class SortedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     public enum ProbbabilityDislay {
         EXACT,
 
@@ -63,7 +63,7 @@ public class SortedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         }
     }
 
-    public SortedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+    public NoRandomAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                            CompletionTrieCache cache,
                                            Collection<String> vocab) {
         this.estimator = estimator;
@@ -72,7 +72,7 @@ public class SortedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         probbabilityDislay = ProbbabilityDislay.AVERAGE;
     }
 
-    public SortedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+    public NoRandomAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                            CompletionTrieCache cache) {
         this(estimator, cache, null);
     }

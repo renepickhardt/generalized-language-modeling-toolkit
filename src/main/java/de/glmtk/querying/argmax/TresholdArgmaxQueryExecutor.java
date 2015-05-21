@@ -23,13 +23,13 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
-public class MixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+public class TresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
     private Cache randomAccessCache;
     private CompletionTrieCache sortedAccessCache;
     private Collection<String> vocab;
 
-    public MixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+    public TresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                           Cache randomAccessCache,
                                           CompletionTrieCache sortedAccessCache,
                                           Collection<String> vocab) {
@@ -39,7 +39,7 @@ public class MixedAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         this.vocab = vocab;
     }
 
-    public MixedAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
+    public TresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                           Cache randomAccessCache,
                                           CompletionTrieCache sortedAccessCache) {
         this(estimator, randomAccessCache, sortedAccessCache, null);
