@@ -40,7 +40,7 @@ import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor;
-import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor.ProbbabilityDislay;
+import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor.ProbabilityDislay;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
@@ -94,7 +94,7 @@ public class NoRandomAccessArgmaxQueryExecutorTest extends TestCorporaTest {
         estimator.setCache(cache);
         NoRandomAccessArgmaxQueryExecutor argmaxQueryExecutor = new NoRandomAccessArgmaxQueryExecutor(
                 estimator, cache);
-        argmaxQueryExecutor.setProbbabilityDislay(ProbbabilityDislay.EXACT);
+        argmaxQueryExecutor.setProbbabilityDislay(ProbabilityDislay.EXACT);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
@@ -116,7 +116,7 @@ public class NoRandomAccessArgmaxQueryExecutorTest extends TestCorporaTest {
         estimator.setCache(cache);
         NoRandomAccessArgmaxQueryExecutor argmaxQueryExecutor = new NoRandomAccessArgmaxQueryExecutor(
                 estimator, cache);
-        argmaxQueryExecutor.setProbbabilityDislay(ProbbabilityDislay.EXACT);
+        argmaxQueryExecutor.setProbbabilityDislay(ProbabilityDislay.EXACT);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);

@@ -24,7 +24,7 @@ import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
 public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
-    public enum ProbbabilityDislay {
+    public enum ProbabilityDislay {
         EXACT,
 
         AVERAGE,
@@ -37,7 +37,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
     private CompletionTrieCache cache;
     private Collection<String> vocab;
-    private ProbbabilityDislay probbabilityDislay;
+    private ProbabilityDislay probabilityDislay;
 
     private static class ArgmaxObject {
         public static final Comparator<ArgmaxObject> COMPARATOR = new Comparator<ArgmaxObject>() {
@@ -64,30 +64,30 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     }
 
     public NoRandomAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                           CompletionTrieCache cache,
-                                           Collection<String> vocab) {
+                                             CompletionTrieCache cache,
+                                             Collection<String> vocab) {
         this.estimator = estimator;
         this.cache = cache;
         this.vocab = vocab;
-        probbabilityDislay = ProbbabilityDislay.AVERAGE;
+        probabilityDislay = ProbabilityDislay.AVERAGE;
     }
 
     public NoRandomAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                           CompletionTrieCache cache) {
+                                             CompletionTrieCache cache) {
         this(estimator, cache, null);
     }
 
-    public ProbbabilityDislay getProbbabilityDislay() {
-        return probbabilityDislay;
+    public ProbabilityDislay getProbbabilityDislay() {
+        return probabilityDislay;
     }
 
-    public void setProbbabilityDislay(ProbbabilityDislay probbabilityDislay) {
-        this.probbabilityDislay = probbabilityDislay;
+    public void setProbbabilityDislay(ProbabilityDislay probbabilityDislay) {
+        probabilityDislay = probbabilityDislay;
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          int numResults) {
+            int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -219,7 +219,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private double calcDisplayProbability(WeightedSumFunction weightedSumFunction,
                                           NGram[] histories,
                                           ArgmaxObject object) {
-        switch (probbabilityDislay) {
+        switch (probabilityDislay) {
             case EXACT:
                 int size = histories.length;
                 double args[] = new double[size];
@@ -283,22 +283,6 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
         Discounts discounts = cache.getDiscounts(sequence.getPattern());
         double d = discounts.getForCount(absSequenceCount);
-
-        return Math.max(count - d, 0.0);
-    }
-
-    /**
-     * For when we want alpha of arbitrary counts with a specific pattern (used
-     * for threshold arguments).
-     */
-    private double calcAlpha(Pattern pattern,
-                             long count) {
-        if (pattern.numElems(PatternElem.CNT) == 1)
-            // If we are on last order don't discount.
-            return count;
-
-        Discounts discounts = cache.getDiscounts(pattern);
-        double d = discounts.getForCount(count);
 
         return Math.max(count - d, 0.0);
     }
