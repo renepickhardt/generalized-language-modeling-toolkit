@@ -34,6 +34,10 @@ public class MainClass {
                 GlmtkExecutable.main(newArgs);
                 break;
 
+            case "glmtk-delunk":
+                GlmtkDelUnk.main(newArgs);
+                break;
+
             case "glmtk-exp-setup":
                 GlmtkExpSetupExecutable.main(newArgs);
                 break;

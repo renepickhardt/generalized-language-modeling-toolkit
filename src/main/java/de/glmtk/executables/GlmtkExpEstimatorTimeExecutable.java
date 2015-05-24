@@ -140,9 +140,10 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
             throw new IOException(String.format(
                     "Working directory '%s' is not a directory.", workingDir));
         if (!NioUtils.checkFile(workingDir, EXISTS, IS_READABLE))
-            throw new IOException(String.format(
-                    "Working directory'%s' does not exist or is not readable.",
-                    workingDir));
+            throw new IOException(
+                    String.format(
+                            "Working directory '%s' does not exist or is not readable.",
+                            workingDir));
 
         if (estimators.isEmpty())
             throw new CliArgumentException(String.format(
