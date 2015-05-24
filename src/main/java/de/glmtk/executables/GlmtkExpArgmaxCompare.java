@@ -6,7 +6,9 @@ import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
 import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +31,8 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
+import de.glmtk.common.Output.Phase;
+import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
@@ -57,6 +61,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
     private static final Option OPTION_ESTIMATOR;
     private static final Option OPTION_QUERY;
     private static final Option OPTION_RANDOM_ACCESS;
+    private static final Option OPTION_NO_QUERYCACHE;
 
     private static final List<Option> OPTIONS;
 
@@ -91,9 +96,12 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 false,
                 "Use a HashMap baseed cache for any random access caches instead of default CompletionTrie based cache.");
 
+        OPTION_NO_QUERYCACHE = new Option("c", "no-querycache", false,
+                "Do not create QueryCache.");
+
         OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION,
                 OPTION_ARGMAX_EXECUTOR, OPTION_ESTIMATOR, OPTION_QUERY,
-                OPTION_RANDOM_ACCESS);
+                OPTION_RANDOM_ACCESS, OPTION_NO_QUERYCACHE);
     }
 
     private static final Map<String, String> OPTION_ARGMAX_EXECUTORS_ARGUMENTS;
@@ -142,6 +150,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
     private Set<WeightedSumEstimator> estimators = new LinkedHashSet<>();
     private Set<Path> queries = new LinkedHashSet<>();
     private Boolean randomAccess = null;
+    private Boolean noQueryCache = null;
 
     @Override
     protected String getExecutableName() {
@@ -222,6 +231,9 @@ public class GlmtkExpArgmaxCompare extends Executable {
 
         if (randomAccess == null)
             randomAccess = false;
+
+        if (noQueryCache == null)
+            noQueryCache = false;
     }
 
     private void parseFlags() throws IOException {
@@ -273,6 +285,10 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 optionFirstTimeOrFail(randomAccess, option);
                 randomAccess = true;
 
+            } else if (option.equals(OPTION_NO_QUERYCACHE)) {
+                optionFirstTimeOrFail(noQueryCache, option);
+                noQueryCache = true;
+
             } else
                 throw new CliArgumentException(String.format(
                         "Unexpected option: '%s'.", option));
@@ -307,11 +323,16 @@ public class GlmtkExpArgmaxCompare extends Executable {
             // TODO: there really should be an API for the following:
             String hash = HashUtils.generateMd5Hash(queryFile);
 
-            ArgmaxQueryCacheCreator argmaxQueryCacheCreator = new ArgmaxQueryCacheCreator(
-                    config);
-            GlmtkPaths queryCachePaths = argmaxQueryCacheCreator.createQueryCache(
-                    "argmax" + hash, queryFile, false, requiredPatterns,
-                    status, paths);
+            GlmtkPaths queryCachePaths;
+            if (noQueryCache)
+                queryCachePaths = paths;
+            else {
+                ArgmaxQueryCacheCreator argmaxQueryCacheCreator = new ArgmaxQueryCacheCreator(
+                        config);
+                queryCachePaths = argmaxQueryCacheCreator.createQueryCache(
+                        "argmax" + hash, queryFile, false, requiredPatterns,
+                        status, paths);
+            }
 
             CompletionTrieCache sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
                     CacheImplementation.COMPLETION_TRIE).build(queryCachePaths);
@@ -320,32 +341,61 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 randomAccessCache = cacheSpec.withCacheImplementation(
                         CacheImplementation.HASH_MAP).build(queryCachePaths);
 
-            for (String executor : executors) {
-                OUTPUT.printMessage("  " + executor + ":");
+            for (String executor : executors)
                 for (WeightedSumEstimator estimator : estimators) {
-                    OUTPUT.printMessage("    " + estimator + ":");
                     estimator.setCache(randomAccessCache);
                     ArgmaxQueryExecutor argmaxQueryExecutor = argmaxQueryExecutorFromString(
                             executor, estimator, randomAccessCache,
                             sortedAccessCache);
+
+                    BigInteger timeSum = BigInteger.ZERO;
+                    int n = 0;
+
+                    String type = String.format("%s-%s:", executor,
+                            estimator.getName());
+                    OUTPUT.beginPhases(type + " Querying...");
+                    OUTPUT.setPhase(Phase.QUERYING);
+                    Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(queryFile));
                     try (BufferedReader reader = Files.newBufferedReader(
-                            queryFile, Constants.CHARSET)) {
+                            queryFile, Constants.CHARSET);
+                            BufferedWriter writer = Files.newBufferedWriter(
+                                    Paths.get(queryFile
+                                            + "."
+                                            + type.substring(0,
+                                                    type.length() - 1)),
+                                                    Constants.CHARSET)) {
+
                         String line;
                         int i = 0;
                         while ((line = reader.readLine()) != null) {
                             int lastSpacePos = line.lastIndexOf(' ');
                             String history = line.substring(0, lastSpacePos);
                             String sequence = line.substring(lastSpacePos);
+                            long timeBefore = System.nanoTime();
                             List<ArgmaxResult> argmaxResults = argmaxQueryExecutor.queryArgmax(
-                                    history, 3);
+                                    history, 5);
+                            long timeAfter = System.nanoTime();
 
-                            ++i;
-                            if (i >= 5)
-                                break;
+                            writer.append(String.format("%s : %s ", history,
+                                    sequence));
+                            for (ArgmaxResult a : argmaxResults)
+                                writer.append(String.format("[%s-%e]",
+                                        a.getSequence(), a.getProbability()));
+                            writer.append('\n');
+
+                            timeSum = timeSum.add(BigInteger.valueOf(timeAfter
+                                    - timeBefore));
+                            progress.increase(1);
+                            ++n;
                         }
                     }
+                    OUTPUT.endPhases(type);
+
+                    BigInteger timePerArgmax = timeSum.divide(BigInteger.valueOf(n));
+                    OUTPUT.printMessage(String.format(
+                            "- Average prediciton time: %.3fms",
+                            (timePerArgmax.floatValue() / 1000 / 1000)));
                 }
-            }
         }
     }
 

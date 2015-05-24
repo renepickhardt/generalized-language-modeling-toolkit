@@ -34,6 +34,8 @@ import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.StringUtils;
 
 public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+    // TODO: ArgmaxComputation with this class tries out all possible arguments. A nice test case would be to check if those probabilities sum to one.
+
     private Estimator estimator;
     private WeightedSumEstimator weightedSumEstimator;
     @SuppressWarnings("unused")
