@@ -10,8 +10,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,21 +30,6 @@ import de.glmtk.util.StringUtils;
 public class GlmtkDelUnk extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkDelUnk.class);
 
-    private static final Option OPTION_HELP;
-    private static final Option OPTION_VERSION;
-
-    private static final List<Option> OPTIONS;
-
-    static {
-        OPTION_HELP = new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
-                "Print this message.");
-
-        OPTION_VERSION = new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG,
-                false, "Print the version infromation and exit.");
-
-        OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION);
-    }
-
     public static void main(String[] args) {
         new GlmtkDelUnk().run(args);
     }
@@ -60,35 +43,22 @@ public class GlmtkDelUnk extends Executable {
     }
 
     @Override
-    protected List<Option> getOptions() {
-        return OPTIONS;
+    protected void options() {
     }
 
     @Override
     protected String getHelpHeader() {
-        try (Formatter f = new Formatter()) {
-            f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
-            f.format("Takes input on stdin. Outputs all lines not containing unkown words.%n");
-
-            f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
-
-            return f.toString();
-        }
+        return "Takes input on stdin. Outputs all lines not containing unkown words.";
     }
 
     @Override
     protected String getHelpFooter() {
-        try (Formatter f = new Formatter()) {
-            f.format("%nFor more information, see:%n");
-            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
-
-            return f.toString();
-        }
+        return null;
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
-        super.parseArguments(args);
+    protected void parseOptions(String[] args) throws Exception {
+        super.parseOptions(args);
 
         corpus = parseInputArg();
         parseFlags();

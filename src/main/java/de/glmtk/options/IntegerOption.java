@@ -42,6 +42,16 @@ public class IntegerOption extends Option {
         return this;
     }
 
+    private void improveArgname() {
+        if (argname.equals(DEFAULT_ARGNAME))
+            if (mustBePositive && mustNotBeZero)
+                argname += ">0";
+            else if (mustBePositive)
+                argname += ">=0";
+            else if (mustNotBeZero)
+                argname += "!=0";
+    }
+
     public IntegerOption defaultValue(int defaultValue) {
         this.defaultValue = defaultValue;
         return this;
@@ -49,15 +59,5 @@ public class IntegerOption extends Option {
 
     public int getInt() {
         throw new UnsupportedOperationException();
-    }
-
-    private void improveArgname() {
-        if (argname.equals(DEFAULT_ARGNAME))
-            if (mustBePositive && mustNotBeZero)
-                argname += ">0";
-            else if (mustBePositive)
-                argname += ">=0";
-            else if (mustNotBeZero) 
-                argname += "!=0";
     }
 }

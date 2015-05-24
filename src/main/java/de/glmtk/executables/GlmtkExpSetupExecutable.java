@@ -32,19 +32,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
-import org.apache.commons.cli.Option;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
-import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
+import de.glmtk.options.DoubleOption;
+import de.glmtk.options.IntegerOption;
+import de.glmtk.options.PathOption;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StringUtils;
@@ -52,51 +49,14 @@ import de.glmtk.util.StringUtils;
 public class GlmtkExpSetupExecutable extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkExpSetupExecutable.class);
 
-    private static final Option OPTION_HELP;
-    private static final Option OPTION_VERSION;
-    private static final Option OPTION_WORKINGDIR;
-    private static final Option OPTION_TRAINING_PROB;
-    private static final Option OPTION_NGRAM_LENGTH;
-    private static final Option OPTION_NUM_NGRAMS;
-
-    private static final List<Option> OPTIONS;
-
-    static {
-        OPTION_HELP = new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
-                "Print this message.");
-
-        OPTION_VERSION = new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG,
-                false, "Print the version information and exit.");
-
-        OPTION_WORKINGDIR = new Option("w", "workingdir", true,
-                "Working directory.");
-        OPTION_WORKINGDIR.setArgName("DIRECTORY");
-
-        OPTION_TRAINING_PROB = new Option(
-                "p",
-                "training-prob",
-                true,
-                "Probability with which lines go into training, other lines go into held-out. Default: 0.8.");
-        OPTION_TRAINING_PROB.setArgName("PROBABILITY");
-
-        OPTION_NGRAM_LENGTH = new Option(
-                "n",
-                "ngram-length",
-                true,
-                "Lenghts for which n-grams should be selected. If zero no n-grams will be selected. Default: 10.");
-        OPTION_NGRAM_LENGTH.setArgName("NGRAM-LENGTH");
-
-        OPTION_NUM_NGRAMS = new Option("N", "num-ngrams", true,
-                "Number of n-gram sequences to select. Default: 5000");
-        OPTION_NUM_NGRAMS.setArgName("NUM-NGRAMS");
-
-        OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
-                OPTION_TRAINING_PROB, OPTION_NGRAM_LENGTH, OPTION_NUM_NGRAMS);
-    }
-
     public static void main(String[] args) {
         new GlmtkExpSetupExecutable().run(args);
     }
+
+    private PathOption optionWorkingDir;
+    private DoubleOption optionTrainingProb;
+    private IntegerOption optionNGramLength;
+    private IntegerOption optionNumNGrams;
 
     private Path corpus = null;
     private Path workingDir = null;
@@ -110,38 +70,38 @@ public class GlmtkExpSetupExecutable extends Executable {
     }
 
     @Override
-    protected List<Option> getOptions() {
-        return OPTIONS;
+    protected void options() {
+        optionWorkingDir = new PathOption("w", "workingdir",
+                "Working directory.").mayExist().needDirectory();
+        optionTrainingProb = new DoubleOption("p", "training-prob",
+                "Probability with which lines go into training, "
+                        + "other lines go into held-out. Default: 0.8.").mustBeProbability();
+        optionNGramLength = new IntegerOption("n", "ngram-length",
+                "Lenghts for which n-grams should be selected. "
+                        + "If zero no n-grams will be selected. Default: 10.").mustBePositive().mustNotBeZero();
+        optionNumNGrams = new IntegerOption("N", "num-ngrams",
+                "Number of n-gram sequences to select. Default: 5000").mustBePositive().mustNotBeZero();
+
+        optionManager.register(optionWorkingDir, optionTrainingProb,
+                optionNGramLength, optionNumNGrams);
     }
 
     @Override
     protected String getHelpHeader() {
-        try (Formatter f = new Formatter()) {
-            f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
-            f.format("Splits the given corpus into training and test files.%n");
-
-            f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
-
-            return f.toString();
-        }
+        return "Splits the given corpus into training and test files.";
     }
 
     @Override
     protected String getHelpFooter() {
-        try (Formatter f = new Formatter()) {
-            f.format("%nFor more information, see:%n");
-            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
-
-            return f.toString();
-        }
+        return null;
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
-        super.parseArguments(args);
+    protected void parseOptions(String[] args) throws Exception {
+        super.parseOptions(args);
 
         corpus = parseInputArg();
-        parseFlags();
+        //        parseFlags();
 
         if (workingDir == null)
             workingDir = Paths.get(corpus + Constants.EXPSETUP_DIR_SUFFIX);
@@ -161,36 +121,36 @@ public class GlmtkExpSetupExecutable extends Executable {
             numNGrams = 5000;
     }
 
-    private void parseFlags() {
-        @SuppressWarnings("unchecked")
-        Iterator<Option> iter = line.iterator();
-        while (iter.hasNext()) {
-            Option option = iter.next();
-
-            if (option.equals(OPTION_WORKINGDIR)) {
-                optionFirstTimeOrFail(workingDir, option);
-                workingDir = Paths.get(option.getValue());
-
-            } else if (option.equals(OPTION_TRAINING_PROB)) {
-                optionFirstTimeOrFail(trainingProb, option);
-                trainingProb = optionProbabilityOrFail(option.getValue(),
-                        "Illegal %s argument", makeOptionString(option));
-
-            } else if (option.equals(OPTION_NGRAM_LENGTH)) {
-                optionFirstTimeOrFail(ngramLength, option);
-                ngramLength = optionPositiveIntOrFail(option.getValue(), true,
-                        "Illegal %s argument", makeOptionString(option));
-
-            } else if (option.equals(OPTION_NUM_NGRAMS)) {
-                optionFirstTimeOrFail(numNGrams, option);
-                numNGrams = optionPositiveIntOrFail(option.getValue(), false,
-                        "Illegal %s argument", makeOptionString(option));
-
-            } else
-                throw new CliArgumentException(String.format(
-                        "Unexpected option: '%s'.", option));
-        }
-    }
+    //    private void parseFlags() {
+    //        @SuppressWarnings("unchecked")
+    //        Iterator<Option> iter = line.iterator();
+    //        while (iter.hasNext()) {
+    //            Option option = iter.next();
+    //
+    //            if (option.equals(OPTION_WORKINGDIR)) {
+    //                optionFirstTimeOrFail(workingDir, option);
+    //                workingDir = Paths.get(option.getValue());
+    //
+    //            } else if (option.equals(OPTION_TRAINING_PROB)) {
+    //                optionFirstTimeOrFail(trainingProb, option);
+    //                trainingProb = optionProbabilityOrFail(option.getValue(),
+    //                        "Illegal %s argument", makeOptionString(option));
+    //
+    //            } else if (option.equals(OPTION_NGRAM_LENGTH)) {
+    //                optionFirstTimeOrFail(ngramLength, option);
+    //                ngramLength = optionPositiveIntOrFail(option.getValue(), true,
+    //                        "Illegal %s argument", makeOptionString(option));
+    //
+    //            } else if (option.equals(OPTION_NUM_NGRAMS)) {
+    //                optionFirstTimeOrFail(numNGrams, option);
+    //                numNGrams = optionPositiveIntOrFail(option.getValue(), false,
+    //                        "Illegal %s argument", makeOptionString(option));
+    //
+    //            } else
+    //                throw new CliArgumentException(String.format(
+    //                        "Unexpected option: '%s'.", option));
+    //        }
+    //    }
 
     @Override
     protected void configureLogging() {

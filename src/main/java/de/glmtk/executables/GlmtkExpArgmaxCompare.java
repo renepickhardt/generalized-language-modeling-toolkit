@@ -12,17 +12,9 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.commons.cli.Option;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
@@ -37,15 +29,15 @@ import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
 import de.glmtk.exceptions.CliArgumentException;
-import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.logging.Logger;
+import de.glmtk.options.ArgmaxExecutorOption;
+import de.glmtk.options.ArgmaxExecutorsOption;
+import de.glmtk.options.BooleanOption;
+import de.glmtk.options.EstimatorsOption;
+import de.glmtk.options.PathsOption;
 import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.BeamSearchArgmaxQueryExecutor;
-import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor;
-import de.glmtk.querying.argmax.ThresholdArgmaxQueryExecutor;
-import de.glmtk.querying.argmax.TrivialArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.util.HashUtils;
@@ -55,94 +47,15 @@ import de.glmtk.util.StringUtils;
 public class GlmtkExpArgmaxCompare extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkExpArgmaxCompare.class);
 
-    private static final Option OPTION_HELP;
-    private static final Option OPTION_VERSION;
-    private static final Option OPTION_ARGMAX_EXECUTOR;
-    private static final Option OPTION_ESTIMATOR;
-    private static final Option OPTION_QUERY;
-    private static final Option OPTION_RANDOM_ACCESS;
-    private static final Option OPTION_NO_QUERYCACHE;
-
-    private static final List<Option> OPTIONS;
-
-    static {
-        OPTION_HELP = new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
-                "Print this message.");
-
-        OPTION_VERSION = new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG,
-                false, "Print the version information and exit.");
-
-        OPTION_ARGMAX_EXECUTOR = new Option("a", "argmax-executor", true,
-                "Executors to compare. Can be specified multiple times.");
-        OPTION_ARGMAX_EXECUTOR.setArgName("EXECUTOR...");
-        OPTION_ARGMAX_EXECUTOR.setArgs(Option.UNLIMITED_VALUES);
-
-        OPTION_ESTIMATOR = new Option(
-                "e",
-                "estimator",
-                true,
-                "Estimators to use. Only weighted sum Estimators are allowed. Can be specified multiple times.");
-        OPTION_ESTIMATOR.setArgName("ESTIMATOR...");
-        OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
-
-        OPTION_QUERY = new Option("q", "query", true,
-                "Query the given files. Can be specified multiple times.");
-        OPTION_QUERY.setArgName("FILE...");
-        OPTION_QUERY.setArgs(Option.UNLIMITED_VALUES);
-
-        OPTION_RANDOM_ACCESS = new Option(
-                "r",
-                "random-access",
-                false,
-                "Use a HashMap baseed cache for any random access caches instead of default CompletionTrie based cache.");
-
-        OPTION_NO_QUERYCACHE = new Option("c", "no-querycache", false,
-                "Do not create QueryCache.");
-
-        OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION,
-                OPTION_ARGMAX_EXECUTOR, OPTION_ESTIMATOR, OPTION_QUERY,
-                OPTION_RANDOM_ACCESS, OPTION_NO_QUERYCACHE);
-    }
-
-    private static final Map<String, String> OPTION_ARGMAX_EXECUTORS_ARGUMENTS;
-    static {
-        Map<String, String> m = new LinkedHashMap<>();
-        m.put("TA", "TopK Treshold Algorithm");
-        m.put("NRA", "TopK No Random Access");
-        m.put("BEAM", "Beam Search");
-        m.put("SMPL", "Trivial");
-        OPTION_ARGMAX_EXECUTORS_ARGUMENTS = m;
-    }
-
-    private static ArgmaxQueryExecutor argmaxQueryExecutorFromString(String executor,
-                                                                     WeightedSumEstimator estimator,
-                                                                     Cache randomAccessCache,
-                                                                     CompletionTrieCache sortedAccessCache) {
-        switch (executor) {
-            case "TA":
-                return new ThresholdArgmaxQueryExecutor(estimator,
-                        randomAccessCache, sortedAccessCache);
-
-            case "NRA":
-                return new NoRandomAccessArgmaxQueryExecutor(estimator,
-                        sortedAccessCache);
-
-            case "BEAM":
-                return new BeamSearchArgmaxQueryExecutor(estimator,
-                        sortedAccessCache);
-
-            case "SMPL":
-                return new TrivialArgmaxQueryExecutor(estimator,
-                        randomAccessCache);
-
-            default:
-                throw new SwitchCaseNotImplementedException();
-        }
-    }
-
     public static void main(String[] args) {
         new GlmtkExpArgmaxCompare().run(args);
     }
+
+    private ArgmaxExecutorsOption optionArgmaxExecutors;
+    private EstimatorsOption optionEstimators;
+    private PathsOption optionQuery;
+    private BooleanOption optionRandomAccess;
+    private BooleanOption optionNoQueryCache;
 
     private Path corpus = null;
     private Path workingDir = null;
@@ -158,51 +71,59 @@ public class GlmtkExpArgmaxCompare extends Executable {
     }
 
     @Override
-    protected List<Option> getOptions() {
-        return OPTIONS;
+    protected void options() {
+        optionArgmaxExecutors = new ArgmaxExecutorsOption("a",
+                "argmax-executor",
+                "Executors to compare. Can be specified multiple times.");
+        optionEstimators = new EstimatorsOption("e", "estimator",
+                "Estimators to use. Only weighted sum Estimators are allowed. "
+                        + "Can be specified multiple times.");
+        optionQuery = new PathsOption("q", "query",
+                "Query the given files. Can be specified multiple times.").mustExist().needFiles();
+        optionRandomAccess = new BooleanOption("r", "random-access",
+                "Use a HashMap baseed cache for any random access caches "
+                        + "instead of default CompletionTrie based cache.");
+        optionNoQueryCache = new BooleanOption("c", "no-querycache",
+                "Do not create QueryCache.");
+
+        optionManager.register(optionArgmaxExecutors, optionEstimators,
+                optionQuery, optionRandomAccess, optionNoQueryCache);
     }
 
     @Override
     protected String getHelpHeader() {
-        try (Formatter f = new Formatter()) {
-            f.format("%s <INPUT> [<OPTOIN...>]%n", getExecutableName());
-            f.format("Performs comparision of argmax query executors.%n");
-
-            f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
-
-            return f.toString();
-        }
+        return "Performs comparision of argmax query executors.";
     }
 
     @Override
     protected String getHelpFooter() {
-        try (Formatter f = new Formatter()) {
-            f.format("%nWhere <EXECUTOR> may be any of:%n");
-            for (Entry<String, String> executor : OPTION_ARGMAX_EXECUTORS_ARGUMENTS.entrySet())
-                f.format("  * %-5s %s%n", executor.getKey(),
-                        executor.getValue());
-
-            f.format("%nWhere <ESTIMATOR> may be any of:%n");
-            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet()) {
-                if (!(arg.getValue() instanceof WeightedSumEstimator))
-                    continue;
-                f.format("  * %-5s  %s%n", arg.getKey(),
-                        arg.getValue().getName());
-            }
-
-            f.format("%nFor more information, see:%n");
-            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
-
-            return f.toString();
-        }
+        return null;
+        //        try (Formatter f = new Formatter()) {
+        //            f.format("%nWhere <EXECUTOR> may be any of:%n");
+        //            for (Entry<String, String> executor : OPTION_ARGMAX_EXECUTORS_ARGUMENTS.entrySet())
+        //                f.format("  * %-5s %s%n", executor.getKey(),
+        //                        executor.getValue());
+        //
+        //            f.format("%nWhere <ESTIMATOR> may be any of:%n");
+        //            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet()) {
+        //                if (!(arg.getValue() instanceof WeightedSumEstimator))
+        //                    continue;
+        //                f.format("  * %-5s  %s%n", arg.getKey(),
+        //                        arg.getValue().getName());
+        //            }
+        //
+        //            f.format("%nFor more information, see:%n");
+        //            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
+        //
+        //            return f.toString();
+        //        }
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
-        super.parseArguments(args);
+    protected void parseOptions(String[] args) throws Exception {
+        super.parseOptions(args);
 
         corpus = parseInputArg();
-        parseFlags();
 
         if (NioUtils.checkFile(corpus, IS_DIRECTORY))
             workingDir = corpus;
@@ -220,14 +141,13 @@ public class GlmtkExpArgmaxCompare extends Executable {
                             workingDir));
 
         if (executors.isEmpty())
-            throw new CliArgumentException(String.format(
-                    "No executors given (%s).",
-                    makeOptionString(OPTION_ARGMAX_EXECUTOR)));
+            throw new CliArgumentException(
+                    String.format("No executors given, use option %s.",
+                            optionArgmaxExecutors));
 
         if (queries.isEmpty())
             throw new CliArgumentException(String.format(
-                    "No files to query given (%s).",
-                    makeOptionString(OPTION_QUERY)));
+                    "No files to query given, use option %s.", optionQuery));
 
         if (randomAccess == null)
             randomAccess = false;
@@ -236,64 +156,64 @@ public class GlmtkExpArgmaxCompare extends Executable {
             noQueryCache = false;
     }
 
-    private void parseFlags() throws IOException {
-        @SuppressWarnings("unchecked")
-        Iterator<Option> iter = line.iterator();
-        while (iter.hasNext()) {
-            Option option = iter.next();
-
-            if (option.equals(OPTION_ARGMAX_EXECUTOR))
-                for (String opt : option.getValues()) {
-                    opt = opt.toUpperCase();
-                    if (!OPTION_ARGMAX_EXECUTORS_ARGUMENTS.containsKey(opt))
-                        throw new CliArgumentException(
-                                String.format(
-                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
-                                        makeOptionString(option),
-                                        opt,
-                                        StringUtils.join(
-                                                OPTION_ARGMAX_EXECUTORS_ARGUMENTS.keySet(),
-                                                "', '")));
-                    executors.add(opt);
-                }
-
-            else if (option.equals(OPTION_ESTIMATOR))
-                for (String opt : option.getValues()) {
-                    Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
-                    if (estimator == null)
-                        throw new CliArgumentException(
-                                String.format(
-                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
-                                        makeOptionString(option),
-                                        opt,
-                                        StringUtils.join(
-                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
-                                                "', '")));
-                    if (!(estimator instanceof WeightedSumEstimator))
-                        throw new CliArgumentException(
-                                String.format(
-                                        "Illegal %s argument. Given estimator '%s' is not a weighted sum estimator.",
-                                        estimator));
-                    estimators.add((WeightedSumEstimator) estimator);
-                }
-
-            else if (option.equals(OPTION_QUERY))
-                for (String opt : option.getValues())
-                    queries.add(getAndCheckFile(opt));
-
-            else if (option.equals(OPTION_RANDOM_ACCESS)) {
-                optionFirstTimeOrFail(randomAccess, option);
-                randomAccess = true;
-
-            } else if (option.equals(OPTION_NO_QUERYCACHE)) {
-                optionFirstTimeOrFail(noQueryCache, option);
-                noQueryCache = true;
-
-            } else
-                throw new CliArgumentException(String.format(
-                        "Unexpected option: '%s'.", option));
-        }
-    }
+    //    private void parseFlags() throws IOException {
+    //        @SuppressWarnings("unchecked")
+    //        Iterator<Option> iter = line.iterator();
+    //        while (iter.hasNext()) {
+    //            Option option = iter.next();
+    //
+    //            if (option.equals(OPTION_ARGMAX_EXECUTOR))
+    //                for (String opt : option.getValues()) {
+    //                    opt = opt.toUpperCase();
+    //                    if (!OPTION_ARGMAX_EXECUTORS_ARGUMENTS.containsKey(opt))
+    //                        throw new CliArgumentException(
+    //                                String.format(
+    //                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
+    //                                        makeOptionString(option),
+    //                                        opt,
+    //                                        StringUtils.join(
+    //                                                OPTION_ARGMAX_EXECUTORS_ARGUMENTS.keySet(),
+    //                                                "', '")));
+    //                    executors.add(opt);
+    //                }
+    //
+    //            else if (option.equals(OPTION_ESTIMATOR))
+    //                for (String opt : option.getValues()) {
+    //                    Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
+    //                    if (estimator == null)
+    //                        throw new CliArgumentException(
+    //                                String.format(
+    //                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
+    //                                        makeOptionString(option),
+    //                                        opt,
+    //                                        StringUtils.join(
+    //                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
+    //                                                "', '")));
+    //                    if (!(estimator instanceof WeightedSumEstimator))
+    //                        throw new CliArgumentException(
+    //                                String.format(
+    //                                        "Illegal %s argument. Given estimator '%s' is not a weighted sum estimator.",
+    //                                        estimator));
+    //                    estimators.add((WeightedSumEstimator) estimator);
+    //                }
+    //
+    //            else if (option.equals(OPTION_QUERY))
+    //                for (String opt : option.getValues())
+    //                    queries.add(getAndCheckFile(opt));
+    //
+    //            else if (option.equals(OPTION_RANDOM_ACCESS)) {
+    //                optionFirstTimeOrFail(randomAccess, option);
+    //                randomAccess = true;
+    //
+    //            } else if (option.equals(OPTION_NO_QUERYCACHE)) {
+    //                optionFirstTimeOrFail(noQueryCache, option);
+    //                noQueryCache = true;
+    //
+    //            } else
+    //                throw new CliArgumentException(String.format(
+    //                        "Unexpected option: '%s'.", option));
+    //        }
+    //    }
 
     @Override
     protected void exec() throws Exception {
@@ -344,7 +264,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
             for (String executor : executors)
                 for (WeightedSumEstimator estimator : estimators) {
                     estimator.setCache(randomAccessCache);
-                    ArgmaxQueryExecutor argmaxQueryExecutor = argmaxQueryExecutorFromString(
+                    ArgmaxQueryExecutor argmaxQueryExecutor = ArgmaxExecutorOption.argmaxQueryExecutorFromString(
                             executor, estimator, randomAccessCache,
                             sortedAccessCache);
 

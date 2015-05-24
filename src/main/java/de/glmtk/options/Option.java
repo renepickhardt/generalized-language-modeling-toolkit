@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 public abstract class Option {
@@ -25,5 +26,12 @@ public abstract class Option {
 
     public boolean wasGiven() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String toString() {
+        if (shortopt == null)
+            return format("--%s", longopt);
+        return format("-%s (--%s)", shortopt, longopt);
     }
 }

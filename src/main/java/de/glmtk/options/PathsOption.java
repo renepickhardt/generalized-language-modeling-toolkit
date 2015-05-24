@@ -10,9 +10,10 @@ public class PathsOption extends Option {
     public static final String DEFAULT_ARGNAME = PathOption.DEFAULT_ARGNAME;
 
     private String argname;
+    private boolean mayExist = false;
     private boolean mustExist = false;
-    private boolean mustBeFiles = false;
-    private boolean mustBeDiretories = false;
+    private boolean needFiles = false;
+    private boolean needDiretories = false;
     private List<Path> defaultValue = list();
 
     public PathsOption(String shortopt,
@@ -31,33 +32,51 @@ public class PathsOption extends Option {
 
         this.argname = argname;
     }
+    
+    public PathsOption mayExist() {
+        mayExist = true;
+        checkConstraintsConflict();
+        return this;
+    }
 
     /**
      * Checks if paths exists and is readable.
      */
     public PathsOption mustExist() {
         mustExist = true;
+        checkConstraintsConflict();
         return this;
     }
 
-    public PathsOption mustBeFiles() {
-        if (mustBeDiretories)
-            throw new IllegalStateException(
-                    "Conflict: mustBeFile() and mustBeDirectory().");
-        mustBeFiles = true;
-        if (argname.equals(DEFAULT_ARGNAME))
-            argname = "FILE";
+    public PathsOption needFiles() {
+        needFiles = true;
+        checkConstraintsConflict();
+        improveArgname();
         return this;
     }
 
-    public PathsOption mustBeDirectories() {
-        if (mustBeFiles)
-            throw new IllegalStateException(
-                    "Conflict: mustBeFile() and mustBeDirectory().");
-        mustBeDiretories = true;
-        if (argname.equals(DEFAULT_ARGNAME))
-            argname = "DIR";
+    public PathsOption needDirectories() {
+        needDiretories = true;
+        checkConstraintsConflict();
+        improveArgname();
         return this;
+    }
+
+    private void checkConstraintsConflict() {
+        if (needFiles && needDiretories)
+            throw new IllegalStateException(
+                    "Conflict: both needFile() and needDirectory() active.");
+        if (mayExist & mustExist)
+            throw new IllegalStateException(
+                    "Conflict: both mayExist() and mustExist() active.");
+    }
+
+    private void improveArgname() {
+        if (argname.equals(DEFAULT_ARGNAME))
+            if (needFiles)
+                argname = "FILE";
+            else if (needDiretories)
+                argname = "DIR";
     }
 
     public PathsOption defaultValue(List<Path> defaultValue) {

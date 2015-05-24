@@ -31,18 +31,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
-import java.util.Formatter;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
@@ -59,7 +53,13 @@ import de.glmtk.counting.Tagger;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.logging.Logger;
+import de.glmtk.options.EstimatorsOption;
+import de.glmtk.options.IntegerOption;
+import de.glmtk.options.PathOption;
+import de.glmtk.options.QueryModeFilesOption;
+import de.glmtk.options.QueryModeOption;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
@@ -68,63 +68,15 @@ import de.glmtk.util.StringUtils;
 public class GlmtkExecutable extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkExecutable.class);
 
-    // TODO: mode help, version log_console, and log_debug options to Executable class?
-    private static final Option OPTION_HELP;
-    private static final Option OPTION_VERSION;
-    private static final Option OPTION_WORKINGDIR;
-    private static final Option OPTION_TRAINING_ORDER;
-    private static final Option OPTION_ESTIMATOR;
-    private static final Option OPTION_IO;
-    private static final Option OPTION_QUERY;
-    private static final Option OPTION_LOG_CONSOLE;
-    private static final Option OPTION_LOG_DEBUG;
-
-    private static final List<Option> OPTIONS;
-
-    static {
-        OPTION_HELP = new Option(OPTION_HELP_SHORT, OPTION_HELP_LONG, false,
-                "Print this message.");
-
-        OPTION_VERSION = new Option(OPTION_VERSION_SHORT, OPTION_VERSION_LONG,
-                false, "Print the version information and exit.");
-
-        OPTION_WORKINGDIR = new Option("w", "workingdir", true,
-                "Working directory.");
-        OPTION_WORKINGDIR.setArgName("DIRECTORY");
-
-        OPTION_TRAINING_ORDER = new Option("n", "training-order", true,
-                "Order to learn for training.");
-        OPTION_TRAINING_ORDER.setArgName("ORDER");
-
-        OPTION_ESTIMATOR = new Option("e", "estimator", true,
-                "Can be specified multiple times.");
-        OPTION_ESTIMATOR.setArgName("ESTIMATOR...");
-        OPTION_ESTIMATOR.setArgs(Option.UNLIMITED_VALUES);
-
-        OPTION_IO = new Option("i", "io", true,
-                "Takes queries from standart input with given mode.");
-        OPTION_IO.setArgName("MODE");
-        OPTION_IO.setArgs(1);
-
-        OPTION_QUERY = new Option("q", "query", true,
-                "Query the given files with given mode.");
-        OPTION_QUERY.setArgName("MODE> <FILE...");
-        OPTION_QUERY.setArgs(Option.UNLIMITED_VALUES);
-
-        OPTION_LOG_CONSOLE = new Option(null, "log", false,
-                "If set will also log to console");
-
-        OPTION_LOG_DEBUG = new Option(null, "debug", false,
-                "If set, log level will be increased to 'Debug'.");
-
-        OPTIONS = Arrays.asList(OPTION_HELP, OPTION_VERSION, OPTION_WORKINGDIR,
-                OPTION_TRAINING_ORDER, OPTION_ESTIMATOR, OPTION_IO,
-                OPTION_QUERY, OPTION_LOG_CONSOLE, OPTION_LOG_DEBUG);
-    }
-
     public static void main(String[] args) {
         new GlmtkExecutable().run(args);
     }
+
+    private PathOption optionWorkingDir;
+    private IntegerOption optionTrainingOrder;
+    private EstimatorsOption optionEstimators;
+    private QueryModeOption optionIo;
+    private QueryModeFilesOption optionQuery;
 
     private Path corpus = null;
     private Path workingDir = null;
@@ -141,59 +93,66 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected List<Option> getOptions() {
-        return OPTIONS;
+    protected void options() {
+        optionWorkingDir = new PathOption("w", "workingdir",
+                "Working directory.").mayExist().needDirectory();
+        optionTrainingOrder = new IntegerOption("n", "training-order",
+                "Order to learn for training.").mustBePositive().mustNotBeZero();
+        optionEstimators = new EstimatorsOption("e", "estimator",
+                "Estimators to learn for and query with.");
+        optionIo = new QueryModeOption("i", "io",
+                "Takes queries from standard input with given mode.");
+        optionQuery = new QueryModeFilesOption("q", "query",
+                "Query the given files with given mode.");
+
+        optionManager.register(optionWorkingDir, optionTrainingOrder,
+                optionEstimators, optionIo, optionQuery);
     }
 
     @Override
     protected String getHelpHeader() {
-        try (Formatter f = new Formatter()) {
-            f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
-            f.format("Invokes the Generalized Language Model Toolkit.%n");
+        return "Invokes the Generalized Language Model Toolkit.";
 
-            f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
-
-            return f.toString();
-        }
+        //f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
+        //f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
     }
 
     @Override
     protected String getHelpFooter() {
-        try (Formatter f = new Formatter()) {
-            f.format("%nWhere <ORDER> may be any postive integer.%n");
-
-            f.format("%nWhere <ESTIMATOR> may be any of:%n");
-            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet())
-                f.format("  * %-5s  %s%n", arg.getKey(),
-                        arg.getValue().getName());
-
-            f.format("%nWhere <MODE> may be any of:%n");
-            f.format("  * <ORDER>        P^n%n");
-            f.format("  * Sequence       P^*%n");
-            f.format("  * Markov<ORDER>  P^* with markov%n");
-            f.format("  * Cond<ORDER>    Conditional P%n");
-
-            f.format("%nFor more information, see:%n");
-            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
-
-            return f.toString();
-        }
+        return null;
+        //        try (Formatter f = new Formatter()) {
+        //            f.format("%nWhere <ORDER> may be any postive integer.%n");
+        //
+        //            f.format("%nWhere <ESTIMATOR> may be any of:%n");
+        //            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet())
+        //                f.format("  * %-5s  %s%n", arg.getKey(),
+        //                        arg.getValue().getName());
+        //
+        //            f.format("%nWhere <MODE> may be any of:%n");
+        //            f.format("  * <ORDER>        P^n%n");
+        //            f.format("  * Sequence       P^*%n");
+        //            f.format("  * Markov<ORDER>  P^* with markov%n");
+        //            f.format("  * Cond<ORDER>    Conditional P%n");
+        //
+        //            f.format("%nFor more information, see:%n");
+        //            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
+        //
+        //            return f.toString();
+        //        }
     }
 
     @Override
-    protected void parseArguments(String[] args) throws Exception {
-        super.parseArguments(args);
+    protected void parseOptions(String[] args) throws Exception {
+        super.parseOptions(args);
 
         corpus = parseInputArg();
-        parseFlags();
 
         if (NioUtils.checkFile(corpus, IS_DIRECTORY)) {
             if (workingDir != null)
                 throw new CliArgumentException(
                         String.format(
-                                "Can't use --%s (-%s) argument if using existing working directory as input.",
-                                OPTION_WORKINGDIR.getLongOpt(),
-                                OPTION_WORKINGDIR.getOpt()));
+                                "Can't use %s option if using existing working directory as input.",
+                                optionWorkingDir));
 
             workingDir = corpus;
             corpus = getWorkingDirFile(workingDir, Constants.TRAINING_FILE_NAME);
@@ -211,12 +170,12 @@ public class GlmtkExecutable extends Executable {
         checkCorpusForReservedSymbols();
 
         if (estimators.isEmpty())
-            estimators.add(OPTION_ESTIMATOR_ARGUMENTS.values().iterator().next());
+            estimators.add(Estimators.FAST_MLE);
 
         if (ioQueryMode != null && estimators.size() > 1)
             throw new CliArgumentException(String.format(
                     "Can specify at most one estimator if using option %s.",
-                    makeOptionString(OPTION_IO)));
+                    optionIo));
 
         if (trainingOrder == null)
             trainingOrder = calculateTrainingOrder();
@@ -233,93 +192,93 @@ public class GlmtkExecutable extends Executable {
         }
     }
 
-    private void parseFlags() throws IOException {
-        @SuppressWarnings("unchecked")
-        Iterator<Option> iter = line.iterator();
-        while (iter.hasNext()) {
-            Option option = iter.next();
-
-            if (option.equals(OPTION_WORKINGDIR)) {
-                optionFirstTimeOrFail(workingDir, option);
-                workingDir = Paths.get(option.getValue());
-
-            } else if (option.equals(OPTION_TRAINING_ORDER)) {
-                optionFirstTimeOrFail(trainingOrder, option);
-                trainingOrder = optionPositiveIntOrFail(option.getValue(),
-                        false, "Illegal %s argument", makeOptionString(option));
-
-            } else if (option.equals(OPTION_ESTIMATOR))
-                for (String opt : option.getValues()) {
-                    Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
-                    if (estimator == null)
-                        throw new CliArgumentException(
-                                String.format(
-                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
-                                        makeOptionString(option),
-                                        opt,
-                                        StringUtils.join(
-                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
-                                                "', '")));
-                    estimators.add(estimator);
-                }
-
-            else if (option.equals(OPTION_IO)) {
-                optionFirstTimeOrFail(ioQueryMode, option);
-                if (!queries.isEmpty())
-                    throw new CliArgumentException(String.format(
-                            "The options %s and %s are mutually exclusive.",
-                            makeOptionString(OPTION_IO),
-                            makeOptionString(OPTION_QUERY)));
-
-                try {
-                    ioQueryMode = QueryMode.forString(option.getValue());
-                } catch (RuntimeException e) {
-                    throw new CliArgumentException(String.format(
-                            "Illegal %s argument: %s",
-                            makeOptionString(option), e.getMessage()));
-                }
-
-            } else if (option.equals(OPTION_QUERY)) {
-                if (ioQueryMode != null)
-                    throw new CliArgumentException(String.format(
-                            "The options %s and %s are mutually exclusive.",
-                            makeOptionString(OPTION_IO),
-                            makeOptionString(OPTION_QUERY)));
-
-                String[] opts = option.getValues();
-                if (opts.length < 2)
-                    throw new CliArgumentException(
-                            String.format(
-                                    "Illegal %s argument: Must specify mode and at least one file.",
-                                    makeOptionString(option)));
-
-                QueryMode queryMode = null;
-                try {
-                    queryMode = QueryMode.forString(opts[0]);
-                } catch (RuntimeException e) {
-                    throw new CliArgumentException(String.format(
-                            "Illegal %s argument: %s",
-                            makeOptionString(option), e.getMessage()));
-                }
-
-                Set<Path> files = new HashSet<>();
-                for (int i = 1; i != opts.length; ++i)
-                    files.add(getAndCheckFile(opts[i]));
-
-                queries.add(new SimpleEntry<>(queryMode, files));
-            }
-
-            else if (option.equals(OPTION_LOG_CONSOLE))
-                logConsole = true;
-
-            else if (option.equals(OPTION_LOG_DEBUG))
-                logDebug = true;
-
-            else
-                throw new CliArgumentException(String.format(
-                        "Unexpected option: '%s'.", option));
-        }
-    }
+    //    private void parseFlags() throws IOException {
+    //        @SuppressWarnings("unchecked")
+    //        Iterator<Option> iter = line.iterator();
+    //        while (iter.hasNext()) {
+    //            Option option = iter.next();
+    //
+    //            if (option.equals(OPTION_WORKINGDIR)) {
+    //                optionFirstTimeOrFail(workingDir, option);
+    //                workingDir = Paths.get(option.getValue());
+    //
+    //            } else if (option.equals(OPTION_TRAINING_ORDER)) {
+    //                optionFirstTimeOrFail(trainingOrder, option);
+    //                trainingOrder = optionPositiveIntOrFail(option.getValue(),
+    //                        false, "Illegal %s argument", makeOptionString(option));
+    //
+    //            } else if (option.equals(OPTION_ESTIMATOR))
+    //                for (String opt : option.getValues()) {
+    //                    Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
+    //                    if (estimator == null)
+    //                        throw new CliArgumentException(
+    //                                String.format(
+    //                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
+    //                                        makeOptionString(option),
+    //                                        opt,
+    //                                        StringUtils.join(
+    //                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
+    //                                                "', '")));
+    //                    estimators.add(estimator);
+    //                }
+    //
+    //            else if (option.equals(OPTION_IO)) {
+    //                optionFirstTimeOrFail(ioQueryMode, option);
+    //                if (!queries.isEmpty())
+    //                    throw new CliArgumentException(String.format(
+    //                            "The options %s and %s are mutually exclusive.",
+    //                            makeOptionString(OPTION_IO),
+    //                            makeOptionString(OPTION_QUERY)));
+    //
+    //                try {
+    //                    ioQueryMode = QueryMode.forString(option.getValue());
+    //                } catch (RuntimeException e) {
+    //                    throw new CliArgumentException(String.format(
+    //                            "Illegal %s argument: %s",
+    //                            makeOptionString(option), e.getMessage()));
+    //                }
+    //
+    //            } else if (option.equals(OPTION_QUERY)) {
+    //                if (ioQueryMode != null)
+    //                    throw new CliArgumentException(String.format(
+    //                            "The options %s and %s are mutually exclusive.",
+    //                            makeOptionString(OPTION_IO),
+    //                            makeOptionString(OPTION_QUERY)));
+    //
+    //                String[] opts = option.getValues();
+    //                if (opts.length < 2)
+    //                    throw new CliArgumentException(
+    //                            String.format(
+    //                                    "Illegal %s argument: Must specify mode and at least one file.",
+    //                                    makeOptionString(option)));
+    //
+    //                QueryMode queryMode = null;
+    //                try {
+    //                    queryMode = QueryMode.forString(opts[0]);
+    //                } catch (RuntimeException e) {
+    //                    throw new CliArgumentException(String.format(
+    //                            "Illegal %s argument: %s",
+    //                            makeOptionString(option), e.getMessage()));
+    //                }
+    //
+    //                Set<Path> files = new HashSet<>();
+    //                for (int i = 1; i != opts.length; ++i)
+    //                    files.add(getAndCheckFile(opts[i]));
+    //
+    //                queries.add(new SimpleEntry<>(queryMode, files));
+    //            }
+    //
+    //            else if (option.equals(OPTION_LOG_CONSOLE))
+    //                logConsole = true;
+    //
+    //            else if (option.equals(OPTION_LOG_DEBUG))
+    //                logDebug = true;
+    //
+    //            else
+    //                throw new CliArgumentException(String.format(
+    //                        "Unexpected option: '%s'.", option));
+    //        }
+    //    }
 
     private void checkCorpusForReservedSymbols() throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(corpus,
