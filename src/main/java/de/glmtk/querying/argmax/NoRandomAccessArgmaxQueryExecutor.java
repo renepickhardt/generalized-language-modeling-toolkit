@@ -87,7 +87,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -119,7 +119,10 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
             tries[i] = trie;
             iters[i] = iter;
-            lastCounts[i] = iter.peek().getScore();
+            if (iter.hasNext())
+                lastCounts[i] = iter.peek().getScore();
+            else
+                lastCounts[i] = 0;
         }
 
         Map<String, ArgmaxObject> objects = new HashMap<>();

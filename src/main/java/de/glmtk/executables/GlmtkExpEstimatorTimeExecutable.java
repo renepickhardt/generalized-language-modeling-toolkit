@@ -76,16 +76,16 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 OPTION_QUERY, OPTION_RUNS, OPTION_CACHE_FILE);
     }
 
+    public static void main(String[] args) {
+        new GlmtkExpEstimatorTimeExecutable().run(args);
+    }
+
     private Path corpus = null;
     private Path workingDir = null;
     private Set<Estimator> estimators = new LinkedHashSet<>();
     private Set<Path> queries = new LinkedHashSet<>();
     private Integer times = null;
     private Path cacheFile = null;
-
-    public static void main(String[] args) {
-        new GlmtkExpEstimatorTimeExecutable().run(args);
-    }
 
     @Override
     protected String getExecutableName() {
@@ -136,7 +136,6 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         else
             workingDir = Paths.get(corpus + Constants.WORKING_DIR_SUFFIX);
         corpus = getWorkingDirFile(workingDir, Constants.TRAINING_FILE_NAME);
-        // TODO: check existance and readability of corpus file.
         if (!NioUtils.checkFile(workingDir, IS_DIRECTORY))
             throw new IOException(String.format(
                     "Working directory '%s' is not a directory.", workingDir));
@@ -207,20 +206,20 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
         int neededOrder = getNeededOrder();
 
-        CacheSpecification cacheBuilder = new CacheSpecification();
-        cacheBuilder.withProgress();
+        CacheSpecification cacheSpec = new CacheSpecification();
+        cacheSpec.withProgress();
         for (Estimator estimator : estimators)
-            cacheBuilder.addAll(estimator.getRequiredCache(neededOrder));
-        cacheBuilder.withCounts(Patterns.getMany("x")); // FIXME: Refactor this!
+            cacheSpec.addAll(estimator.getRequiredCache(neededOrder));
+        cacheSpec.withCounts(Patterns.getMany("x")); // FIXME: Refactor this!
 
-        Set<Pattern> requiredPatterns = cacheBuilder.getRequiredPatterns();
+        Set<Pattern> requiredPatterns = cacheSpec.getRequiredPatterns();
         requiredPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this!
 
         Cache cache = null;
         if (cacheFile != null) {
             GlmtkPaths queryCache = glmtk.provideQueryCache(cacheFile,
                     requiredPatterns);
-            cache = cacheBuilder.build(queryCache);
+            cache = cacheSpec.build(queryCache);
         }
 
         for (Path queryFile : queries) {
@@ -230,7 +229,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
             if (cacheFile == null) {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(queryFile,
                         requiredPatterns);
-                cache = cacheBuilder.build(queryCache);
+                cache = cacheSpec.build(queryCache);
             }
 
             for (Estimator estimator : estimators) {
@@ -291,8 +290,9 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private void logFields() {
         LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-",
                 80 - getExecutableName().length()));
-        LOGGER.debug("Corpus:        %s", workingDir);
-        LOGGER.debug("Estimators:    %s", estimators);
-        LOGGER.debug("Queries:       %s", queries);
+        LOGGER.debug("Corpus:     %s", corpus);
+        LOGGER.debug("WorkingDir: %s", workingDir);
+        LOGGER.debug("Estimators: %s", estimators);
+        LOGGER.debug("Queries:    %s", queries);
     }
 }

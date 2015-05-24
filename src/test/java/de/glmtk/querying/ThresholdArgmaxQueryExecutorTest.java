@@ -40,7 +40,7 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.TresholdArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.ThresholdArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
@@ -98,7 +98,7 @@ public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(randomAccessCache);
-        TresholdArgmaxQueryExecutor argmaxQueryExecutor = new TresholdArgmaxQueryExecutor(
+        ThresholdArgmaxQueryExecutor argmaxQueryExecutor = new ThresholdArgmaxQueryExecutor(
                 estimator, randomAccessCache, sortedAccessCache);
 
         for (String query : queries) {
@@ -119,7 +119,7 @@ public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(randomAccessCache);
-        TresholdArgmaxQueryExecutor argmaxQueryExecutor = new TresholdArgmaxQueryExecutor(
+        ThresholdArgmaxQueryExecutor argmaxQueryExecutor = new ThresholdArgmaxQueryExecutor(
                 estimator, randomAccessCache, sortedAccessCache);
 
         for (String query : queries) {

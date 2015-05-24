@@ -23,25 +23,25 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
-public class TresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
     private Cache randomAccessCache;
     private CompletionTrieCache sortedAccessCache;
     private Collection<String> vocab;
 
-    public TresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                          Cache randomAccessCache,
-                                          CompletionTrieCache sortedAccessCache,
-                                          Collection<String> vocab) {
+    public ThresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                        Cache randomAccessCache,
+                                        CompletionTrieCache sortedAccessCache,
+                                        Collection<String> vocab) {
         this.estimator = estimator;
         this.randomAccessCache = randomAccessCache;
         this.sortedAccessCache = sortedAccessCache;
         this.vocab = vocab;
     }
 
-    public TresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
-                                          Cache randomAccessCache,
-                                          CompletionTrieCache sortedAccessCache) {
+    public ThresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
+                                        Cache randomAccessCache,
+                                        CompletionTrieCache sortedAccessCache) {
         this(estimator, randomAccessCache, sortedAccessCache, null);
     }
 
@@ -79,7 +79,10 @@ public class TresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
             tries[i] = trie;
             iters[i] = iter;
-            lastCounts[i] = iter.peek().getScore();
+            if (iter.hasNext())
+                lastCounts[i] = iter.peek().getScore();
+            else
+                lastCounts[i] = 0;
         }
 
         Set<String> seen = new HashSet<>();

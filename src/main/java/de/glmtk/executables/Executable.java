@@ -62,6 +62,8 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
 /* package */abstract class Executable {
+    // TODO: make --debug and --log options for all executables.
+
     private static Logger LOGGER = Logger.get(Executable.class);
     protected static final String OPTION_HELP_SHORT = "h";
     protected static final String OPTION_HELP_LONG = "help";

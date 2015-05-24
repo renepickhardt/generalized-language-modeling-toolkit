@@ -42,8 +42,8 @@ public class ArgmaxQueryCacheCreatorTest extends TestCorporaTest {
 
     @Test
     public void test() throws Exception {
-        CacheSpecification cacheBuilder = Estimators.GLM.getRequiredCache(4);
-        Set<Pattern> requiredPatterns = cacheBuilder.getRequiredPatterns();
+        CacheSpecification cacheSpec = Estimators.GLM.getRequiredCache(4);
+        Set<Pattern> requiredPatterns = cacheSpec.getRequiredPatterns();
 
         Glmtk glmtk = testCorpus.getGlmtk();
         glmtk.count(requiredPatterns);
