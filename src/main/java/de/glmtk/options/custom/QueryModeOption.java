@@ -31,9 +31,8 @@ public class QueryModeOption extends Option {
         try {
             return QueryMode.forString(queryModeString);
         } catch (RuntimeException e) {
-            throw new OptionException(
-                    "Option %s got illegal query mode string '%s'.", option,
-                    queryModeString);
+            throw new OptionException("%s got illegal query mode string '%s'.",
+                    option, queryModeString);
         }
     }
 

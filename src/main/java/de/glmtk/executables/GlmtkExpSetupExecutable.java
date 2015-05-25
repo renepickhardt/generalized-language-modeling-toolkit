@@ -35,6 +35,7 @@ import java.util.Random;
 import de.glmtk.Constants;
 import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Output.Progress;
+import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.DoubleOption;
 import de.glmtk.options.IntegerOption;
@@ -82,7 +83,7 @@ public class GlmtkExpSetupExecutable extends Executable {
                 "Number of n-gram sequences to select. Default: 5000").defaultValue(
                         5000).requirePositive().requireNotZero();
 
-        optionManager.register(optionCorpus, optionTrainingProb,
+        optionManager.options(optionCorpus, optionTrainingProb,
                 optionNGramLength, optionNumNGrams);
     }
 
@@ -100,6 +101,8 @@ public class GlmtkExpSetupExecutable extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
+        if (!optionCorpus.wasGiven())
+            throw new CliArgumentException("%s missing.", optionCorpus);
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
 
@@ -163,9 +166,10 @@ public class GlmtkExpSetupExecutable extends Executable {
 
     private void selectNGrams(List<String> ngramCandidates) throws IOException {
         if (ngramCandidates.size() < numNGrams) {
-            OUTPUT.printError(String.format(
-                    "Not enough available NGram sequences that are longer than requested size. Size = %d, Have = %d, Need = %d",
-                    ngramLength, ngramCandidates.size(), numNGrams));
+            OUTPUT.printError(String.format("Not enough available NGram "
+                    + "sequences that are longer than requested size. "
+                    + "Size = %d, Have = %d, Need = %d", ngramLength,
+                    ngramCandidates.size(), numNGrams));
             return;
         }
 

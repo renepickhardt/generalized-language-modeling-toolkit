@@ -108,8 +108,9 @@ public class GlmtkExecutable extends Executable {
         optionQuery = new QueryModeFilesOption("q", "query",
                 "Query the given files with given mode.");
 
-        optionManager.register(optionCorpus, optionTrainingOrder,
-                optionEstimators, optionIo, optionQuery);
+        optionManager.inputArgs(optionCorpus);
+        optionManager.options(optionTrainingOrder, optionEstimators, optionIo,
+                optionQuery);
     }
 
     @Override
@@ -126,6 +127,8 @@ public class GlmtkExecutable extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
+        if (!optionCorpus.wasGiven())
+            throw new CliArgumentException("%s missing.", optionCorpus);
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
         checkCorpusForReservedSymbols();
@@ -139,15 +142,13 @@ public class GlmtkExecutable extends Executable {
         estimators = newHashSet(optionEstimators.getEstimators());
 
         if (optionIo.wasGiven() && optionQuery.wasGiven())
-            throw new CliArgumentException(
-                    "The options %s and %s are mutually exclusive.", optionIo,
-                    optionQuery);
+            throw new CliArgumentException("%s and %s are mutually exclusive.",
+                    optionIo, optionQuery);
 
         ioQueryMode = optionIo.getQueryMode();
         if (ioQueryMode != null && estimators.size() > 1)
             throw new CliArgumentException(String.format(
-                    "Can specify at most one estimator if using option %s.",
-                    optionIo));
+                    "Can specify at most one estimator if using %s.", optionIo));
 
         queries = newArrayList();
         Multimap<QueryMode, Path> queryModeFiles = optionQuery.getQueryModeFiles();

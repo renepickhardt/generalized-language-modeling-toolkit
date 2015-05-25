@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -120,9 +120,9 @@ import de.glmtk.util.ThreadUtils;
         optionLogDebug = new BooleanOption(null, "debug",
                 "Set log level to DEBUG.");
 
-        optionManager.register(optionHelp, optionVersion);
+        optionManager.options(optionHelp, optionVersion);
         registerOptions();
-        optionManager.register(optionLogConsole, optionLogDebug);
+        optionManager.options(optionLogConsole, optionLogDebug);
 
         try {
             optionManager.parse(args);
@@ -134,7 +134,8 @@ import de.glmtk.util.ThreadUtils;
             String helpHeader = getHelpHeader();
             String helpFooter = getHelpFooter();
 
-            System.out.println(getExecutableName() + " <INPUT> [OPTION...]");
+            System.out.format("%s %s <OPTION...>\n", getExecutableName(),
+                    optionManager.getInputArgsLine());
             if (helpHeader != null)
                 System.out.println(helpHeader);
 
@@ -157,26 +158,6 @@ import de.glmtk.util.ThreadUtils;
             throw new Termination();
         }
     }
-
-    //protected Path parseInputArg() {
-    //        if (line.getArgList() == null || line.getArgList().size() != 1) {
-    //            String error;
-    //            if (line.getArgList().size() == 0)
-    //                error = "Missing input.\n";
-    //            else
-    //                error = String.format("Incorrect input: %s%n",
-    //                        StringUtils.join(line.getArgList(), " "));
-    //            throw new CliArgumentException(error + "Try '"
-    //                    + getExecutableName() + " --help' for more information.");
-    //        }
-    //
-    //        Path inputArg = Paths.get(line.getArgs()[0]);
-    //        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
-    //            throw new CliArgumentException(String.format(
-    //                    "Input file/dir '%s' does not exist or is not readable.",
-    //                    inputArg));
-    //        return inputArg;
-    //}
 
     private void printLogHeader(String[] args) {
         LOGGER.info(StringUtils.repeat("=", 80));

@@ -21,18 +21,17 @@ public class IntegerOption extends Option {
         try {
             value = Integer.valueOf(integerString);
         } catch (NumberFormatException e) {
-            throw new OptionException("Option %s could not be parsed as an "
+            throw new OptionException("%s could not be parsed as an "
                     + "integer: '%s'. Reason: %s.", option, integerString,
                     e.getMessage());
         }
 
         if (requirePositive && value < 0)
             throw new OptionException(
-                    "Option %s must not be negative, got '%d' instead.",
-                    option, value);
+                    "%s must not be negative, got '%d' instead.", option, value);
 
         if (requireNotZero && value == 0)
-            throw new OptionException("Option %s must not be zero.", option);
+            throw new OptionException("%s must not be zero.", option);
 
         return value;
     }

@@ -73,9 +73,9 @@ public class CorpusOption extends Option {
 
         if (isDirectory(corpus)) {
             if (workingDir != null)
-                throw new OptionException("Can't explicitly specify working "
-                        + "directory '%s' if given corpus is already a "
-                        + "directory.", workingDir, corpus);
+                throw new OptionException("%s: Can't explicitly specify "
+                        + "working directory '%s' if given corpus is already "
+                        + "a directory.", this, workingDir, corpus);
             workingDir = corpus;
             corpus = checkWorkingDirFile(Constants.TRAINING_FILE_NAME);
             checkWorkingDirFile(Constants.STATUS_FILE_NAME);
@@ -83,19 +83,22 @@ public class CorpusOption extends Option {
             if (workingDir == null)
                 workingDir = Paths.get(corpus + suffix);
             if (exists(workingDir) && !isDirectory(workingDir))
-                throw new OptionException("Working directory '%s' exists, but "
-                        + "is not a directory.", workingDir);
+                throw new OptionException(
+                        "%s: Working directory '%s' exists, but "
+                                + "is not a directory.", this, workingDir);
             if (exists(workingDir) && !isReadable(workingDir))
-                throw new OptionException("Working directory '%s' exists, but "
-                        + "is not readable.", workingDir);
+                throw new OptionException(
+                        "%s: Working directory '%s' exists, but "
+                                + "is not readable.", this, workingDir);
         }
     }
 
     private Path checkWorkingDirFile(String filename) throws OptionException {
         Path file = workingDir.resolve(filename);
         if (!exists(file) || !isReadable(file) || !isRegularFile(file))
-            throw new OptionException("%s file '%s' does not exist, is not "
-                    + "readable, or not a regular file.", filename, file);
+            throw new OptionException("%s: %s file '%s' does not exist, is "
+                    + "not readable, or not a regular file.", this, filename,
+                    file);
         return file;
     }
 

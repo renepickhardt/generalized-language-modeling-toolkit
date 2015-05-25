@@ -35,7 +35,7 @@ public class PathOption extends Option {
         try {
             path = Paths.get(pathString);
         } catch (InvalidPathException e) {
-            throw new OptionException("Option %s path could not be parsed as "
+            throw new OptionException("%s path could not be parsed as "
                     + "a path: '%s'. Reason: %s.", option, pathString,
                     e.getMessage());
         }
@@ -45,17 +45,17 @@ public class PathOption extends Option {
         if (requireMayExist && !exists(path))
             return path;
         if (requireMustExist && !exists(path))
-            throw new OptionException("Option %s path does not exist: '%s'.",
-                    option, path);
+            throw new OptionException("%s path does not exist: '%s'.", option,
+                    path);
 
         if (!isReadable(path))
-            throw new OptionException("Option %s path does exist, "
+            throw new OptionException("%s path does exist, "
                     + "but is not readable: '%s'.", option, path);
         if (requireFile && !isRegularFile(path))
-            throw new OptionException("Option %s path is required to be a "
+            throw new OptionException("%s path is required to be a "
                     + "file, but was not: '%s'.", option, path);
         else if (requireDirectory && !isDirectory(path))
-            throw new OptionException("Option %s path is required to be a "
+            throw new OptionException("%s path is required to be a "
                     + "directory, but was not: '%s'.", option, path);
 
         return path;

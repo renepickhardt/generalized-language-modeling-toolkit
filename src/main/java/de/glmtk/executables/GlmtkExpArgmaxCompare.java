@@ -88,7 +88,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
         optionNoQueryCache = new BooleanOption("c", "no-querycache",
                 "Do not create QueryCache.");
 
-        optionManager.register(optionCorpus, optionArgmaxExecutors,
+        optionManager.options(optionCorpus, optionArgmaxExecutors,
                 optionEstimators, optionQuery, optionRandomAccess,
                 optionNoQueryCache);
     }
@@ -107,26 +107,27 @@ public class GlmtkExpArgmaxCompare extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
+        if (!optionCorpus.wasGiven())
+            throw new CliArgumentException("%s missing.", optionCorpus);
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
 
         executors = newLinkedHashSet(optionArgmaxExecutors.getArgmaxExecutors());
         if (executors.isEmpty())
-            throw new CliArgumentException(
-                    String.format("No executors given, use option %s.",
-                            optionArgmaxExecutors));
+            throw new CliArgumentException(String.format(
+                    "No executors given, use %s.", optionArgmaxExecutors));
 
         @SuppressWarnings({"rawtypes", "unchecked"})
         List<WeightedSumEstimator> list = (List) optionEstimators.getEstimators();
         estimators = newLinkedHashSet(list);
         if (estimators.isEmpty())
             throw new CliArgumentException(String.format(
-                    "No esimators given, use option %s.", optionEstimators));
+                    "No esimators given, use %s.", optionEstimators));
 
         queries = newLinkedHashSet(optionQuery.getPaths());
         if (queries.isEmpty())
             throw new CliArgumentException(String.format(
-                    "No files to query given, use option %s.", optionQuery));
+                    "No files to query given, use %s.", optionQuery));
 
         randomAccess = optionRandomAccess.getBoolean();
         noQueryCache = optionNoQueryCache.getBoolean();

@@ -68,7 +68,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         optionCacheFile = new PathOption("c", "cache-file",
                 "File to generate query cache from for all query files.").requireMustExist().requireFile();
 
-        optionManager.register(optionCorpus, optionEstimators, optionQuery,
+        optionManager.options(optionCorpus, optionEstimators, optionQuery,
                 optionRuns, optionCacheFile);
     }
 
@@ -86,18 +86,20 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
+        if (!optionCorpus.wasGiven())
+            throw new CliArgumentException("%s missing.", optionCorpus);
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
 
         estimators = newLinkedHashSet(optionEstimators.getEstimators());
         if (estimators.isEmpty())
             throw new CliArgumentException(String.format(
-                    "No estimators given, use option %s.", optionEstimators));
+                    "No estimators given, use %s.", optionEstimators));
 
         queries = newLinkedHashSet(optionQuery.getPaths());
         if (queries.isEmpty())
             throw new CliArgumentException(String.format(
-                    "No files to query given, use option %s.", optionQuery));
+                    "No files to query given, use %s.", optionQuery));
 
         times = optionRuns.getInt();
         cacheFile = optionCacheFile.getPath();

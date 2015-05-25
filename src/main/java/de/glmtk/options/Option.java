@@ -8,6 +8,8 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+
 public abstract class Option {
     protected static class Arg {
         public String name;
@@ -32,9 +34,15 @@ public abstract class Option {
         }
     }
 
+    /* package */static enum Type {
+        OPTION,
+        INPUT_ARG
+    }
+
     protected static final int GREATER_ONE = -1;
     protected static final int MAX_ONE = -2;
 
+    /* package */Type type = Type.OPTION;
     /* package */String shortopt;
     /* package */String longopt;
     /* package */String desc;
@@ -59,9 +67,18 @@ public abstract class Option {
 
     @Override
     public String toString() {
-        if (shortopt == null)
-            return format("--%s", longopt);
-        return format("-%s (--%s)", shortopt, longopt);
+        switch (type) {
+            case OPTION:
+                if (shortopt == null)
+                    return format("--%s", longopt);
+                return format("-%s (--%s)", shortopt, longopt);
+
+            case INPUT_ARG:
+                return format("Input argument '%s'", longopt);
+
+            default:
+                throw new SwitchCaseNotImplementedException();
+        }
     }
 
     protected List<Arg> arguments() {
@@ -70,7 +87,7 @@ public abstract class Option {
 
     /* package */final void runParse() throws OptionException {
         if (given && !mayBeGivenRepeatedly)
-            throw new OptionException("Option %s may only be given once.", this);
+            throw new OptionException("%s may only be given once.", this);
 
         parse();
         given = true;

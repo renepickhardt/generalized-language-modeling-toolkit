@@ -20,13 +20,13 @@ public class DoubleOption extends Option {
         try {
             value = Double.valueOf(doubleString);
         } catch (NumberFormatException e) {
-            throw new OptionException("Option %s could not be parsed as a "
+            throw new OptionException("%s could not be parsed as a "
                     + "floating point value: '%s'. Reason: %s.", option,
                     doubleString, e.getMessage());
         }
 
         if (requireProbability && (value < 0.0 || value > 1.0))
-            throw new OptionException("Option %s must be a valid probability "
+            throw new OptionException("%s must be a valid probability "
                     + "in the range of [0.0, 1.0], got '%.2f' instead.",
                     option, value);
 

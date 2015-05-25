@@ -22,11 +22,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
 import de.glmtk.Constants;
 import de.glmtk.options.Option.Arg;
+import de.glmtk.options.Option.Type;
 
 public class OptionManager {
     private static class OptionWrapper {
@@ -76,14 +78,16 @@ public class OptionManager {
     private static final String OPTIONAL_ARG_SUFFIX = "?";;
 
     private List<OptionWrapper> options = newArrayList();
+    private List<OptionWrapper> inputArgs = newArrayList();
     /** For sorting options in {@link #help(OutputStream)}. */
     private List<org.apache.commons.cli.Option> commonsCliOptionList = newArrayList();
     private org.apache.commons.cli.Options commonsCliOptions = new org.apache.commons.cli.Options();
 
-    public OptionManager register(Option... options) {
+    public OptionManager options(Option... options) {
         requireNonNull(options);
 
         for (Option option : options) {
+            option.type = Type.OPTION;
             OptionWrapper optionWrapper = new OptionWrapper(option);
 
             this.options.add(optionWrapper);
@@ -93,10 +97,36 @@ public class OptionManager {
         return this;
     }
 
+    // TODO: catch if option is both registered as an option and as an inputArg.
+    // TODO: Catch if an argument parses a dynamic number of values that is not the last.
+    public OptionManager inputArgs(Option... options) {
+        requireNonNull(options);
+
+        for (Option option : options) {
+            option.type = Type.INPUT_ARG;
+            OptionWrapper optionWrapper = new OptionWrapper(option);
+
+            inputArgs.add(optionWrapper);
+        }
+        return this;
+    }
+
+    /**
+     * Will contain leading space if not empty.
+     */
+    public String getInputArgsLine() {
+        StringBuilder sb = new StringBuilder();
+        for (OptionWrapper optionWrapper : inputArgs) {
+            sb.append(" <");
+            sb.append(optionWrapper.argNames);
+            sb.append('>');
+        }
+
+        return sb.toString();
+    }
+
     public void help(OutputStream outputStream) {
         requireNonNull(outputStream);
-
-        // TODO: Header
 
         HelpFormatter formatter = new HelpFormatter();
         formatter.setLongOptPrefix(" --");
@@ -142,10 +172,33 @@ public class OptionManager {
             throw new OptionException(e.getMessage() + ".");
         }
 
+        parseArgs(line);
+        parseOptions(line);
+    }
+
+    private void parseArgs(CommandLine line) throws OptionException {
+        @SuppressWarnings("unchecked")
+        Iterator<String> valuesIter = line.getArgList().iterator();
+
+        for (OptionWrapper optionWrapper : inputArgs) {
+            if (!valuesIter.hasNext())
+                break;
+
+            for (Arg arg : optionWrapper.args)
+                parseOptionArgs(valuesIter, optionWrapper, arg);
+
+            optionWrapper.option.runParse();
+        }
+
+        if (valuesIter.hasNext())
+            throw new OptionException("Too many input arguments: '%s'.", join(
+                    ImmutableList.copyOf(valuesIter), "', '"));
+    }
+
+    private void parseOptions(CommandLine line) throws OptionException {
         @SuppressWarnings("unchecked")
         Iterator<org.apache.commons.cli.Option> iter = line.iterator();
-        while (iter.hasNext()) {
-            org.apache.commons.cli.Option commonsCliOption = iter.next();
+        for (org.apache.commons.cli.Option commonsCliOption : ImmutableList.copyOf(iter)) {
             @SuppressWarnings("unchecked")
             List<String> values = commonsCliOption.getValuesList();
 
@@ -156,30 +209,35 @@ public class OptionManager {
             OptionWrapper optionWrapper = options.get(index);
 
             Iterator<String> valuesIter = values.iterator();
-            for (Arg arg : optionWrapper.args) {
-                arg.values = newArrayList();
-
-                try {
-                    if (arg.count == GREATER_ONE) {
-                        arg.values.add(valuesIter.next());
-                        while (valuesIter.hasNext())
-                            arg.values.add(valuesIter.next());
-                    } else if (arg.count == MAX_ONE) {
-                        if (valuesIter.hasNext())
-                            arg.values.add(valuesIter.next());
-                    } else
-                        for (int i = 0; i != arg.count; ++i)
-                            arg.values.add(valuesIter.next());
-                } catch (NoSuchElementException e) {
-                    throw new OptionException("Option %s got too few "
-                            + "arguments, need to have the form: <%s>",
-                            optionWrapper.option, optionWrapper.argNames);
-                }
-
-                arg.value = arg.values.isEmpty() ? null : arg.values.get(0);
-            }
+            for (Arg arg : optionWrapper.args)
+                parseOptionArgs(valuesIter, optionWrapper, arg);
 
             optionWrapper.option.runParse();
         }
+    }
+
+    private void parseOptionArgs(Iterator<String> valuesIter,
+                                 OptionWrapper optionWrapper,
+                                 Arg arg) throws OptionException {
+        arg.values = newArrayList();
+
+        try {
+            if (arg.count == GREATER_ONE) {
+                arg.values.add(valuesIter.next());
+                while (valuesIter.hasNext())
+                    arg.values.add(valuesIter.next());
+            } else if (arg.count == MAX_ONE) {
+                if (valuesIter.hasNext())
+                    arg.values.add(valuesIter.next());
+            } else
+                for (int i = 0; i != arg.count; ++i)
+                    arg.values.add(valuesIter.next());
+        } catch (NoSuchElementException e) {
+            throw new OptionException("%s got too few "
+                    + "arguments, need to have the form: <%s>",
+                    optionWrapper.option, optionWrapper.argNames);
+        }
+
+        arg.value = arg.values.isEmpty() ? null : arg.values.get(0);
     }
 }

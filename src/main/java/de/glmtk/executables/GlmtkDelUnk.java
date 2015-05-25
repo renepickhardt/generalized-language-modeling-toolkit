@@ -13,6 +13,7 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Patterns;
+import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.util.StringUtils;
@@ -39,7 +40,7 @@ public class GlmtkDelUnk extends Executable {
         optionCorpus = new CorpusOption("c", "corpus",
                 "Give corpus and maybe working directory.");
 
-        optionManager.register(optionCorpus);
+        optionManager.options(optionCorpus);
     }
 
     @Override
@@ -56,6 +57,8 @@ public class GlmtkDelUnk extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
+        if (!optionCorpus.wasGiven())
+            throw new CliArgumentException("%s missing.", optionCorpus);
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
     }

@@ -56,9 +56,9 @@ public class ArgmaxExecutorOption extends Option {
 
         executorString = executorString.toUpperCase();
         if (!VALUES.containsKey(executorString))
-            throw new OptionException("Option %s argmax executor not "
-                    + "recognized: '%s'. Valid Values: %s.", option,
-                    executorString, join(VALUES.keySet(), ", "));
+            throw new OptionException(
+                    "%s argmax executor not recognized: '%s'. Valid Values: %s.",
+                    option, executorString, join(VALUES.keySet(), ", "));
         return executorString;
     }
 

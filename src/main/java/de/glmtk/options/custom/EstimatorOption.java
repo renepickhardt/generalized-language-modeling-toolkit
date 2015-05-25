@@ -69,10 +69,10 @@ public class EstimatorOption extends Option {
         Estimator estimator = VALUES.get(estimatorString.toUpperCase());
         if (estimator == null)
             throw new OptionException(
-                    "Option %s estimator not recognized: '%s'. Valid Values: %s.",
+                    "%s estimator not recognized: '%s'. Valid Values: %s.",
                     option, estimatorString, join(VALUES.keySet(), ", "));
         if (requireWeightedSum && !(estimator instanceof WeightedSumEstimator))
-            throw new OptionException("Option %s estimator needs to be a "
+            throw new OptionException("%s estimator needs to be a "
                     + "weighted sum estimator.", option);
         return estimator;
     }
