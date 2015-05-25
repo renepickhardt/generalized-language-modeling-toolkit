@@ -1,7 +1,7 @@
 package de.glmtk.options;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.EstimatorOption.parseEstimator;
-import static de.glmtk.util.revamp.ListUtils.list;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public class EstimatorsOption extends Option {
     public static final String DEFAULT_ARGNAME = EstimatorOption.DEFAULT_ARGNAME;
 
     private String argname;
-    private List<Estimator> value = list();
+    private List<Estimator> value = newArrayList();
     private boolean explicitDefault = false;
 
     public EstimatorsOption(String shortopt,
@@ -51,7 +51,7 @@ public class EstimatorsOption extends Option {
     /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
-            value = list();
+            value = newArrayList();
         }
 
         for (String estimatorString : commonsCliOption.getValues())

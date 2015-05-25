@@ -1,9 +1,9 @@
 package de.glmtk.options;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static de.glmtk.options.PathOption.parsePath;
 import static de.glmtk.options.QueryModeOption.parseQueryMode;
-import static de.glmtk.util.revamp.MapUtils.map;
-import static de.glmtk.util.revamp.SetUtils.set;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -19,7 +19,7 @@ public class QueryModeFilesOption extends Option {
 
     private String queryModeArgname;
     private String filesArgname;
-    private Map<QueryMode, Set<Path>> value = map();
+    private Map<QueryMode, Set<Path>> value = newHashMap();
     private boolean explicitDefault = false;
 
     public QueryModeFilesOption(String shortopt,
@@ -63,7 +63,7 @@ public class QueryModeFilesOption extends Option {
     /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
-            value = map();
+            value = newHashMap();
         }
 
         String[] args = commonsCliOption.getValues();
@@ -74,7 +74,7 @@ public class QueryModeFilesOption extends Option {
         QueryMode queryMode = parseQueryMode(args[0], this);
         Set<Path> paths = value.get(queryMode);
         if (paths == null) {
-            paths = set();
+            paths = newHashSet();
             value.put(queryMode, paths);
         }
 

@@ -1,7 +1,7 @@
 package de.glmtk.options;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.PathOption.parsePath;
-import static de.glmtk.util.revamp.ListUtils.list;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
@@ -15,7 +15,7 @@ public class PathsOption extends Option {
     private boolean mustExist = false;
     private boolean needFiles = false;
     private boolean needDirectories = false;
-    private List<Path> value = list();
+    private List<Path> value = newArrayList();
     private boolean explicitDefault = false;
 
     public PathsOption(String shortopt,
@@ -100,7 +100,7 @@ public class PathsOption extends Option {
     /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
-            value = list();
+            value = newArrayList();
         }
 
         for (String pathString : commonsCliOption.getValues())

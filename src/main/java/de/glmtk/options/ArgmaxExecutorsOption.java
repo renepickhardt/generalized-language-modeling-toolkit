@@ -1,7 +1,7 @@
 package de.glmtk.options;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.ArgmaxExecutorOption.parseArgmaxExecutor;
-import static de.glmtk.util.revamp.ListUtils.list;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -10,7 +10,7 @@ public class ArgmaxExecutorsOption extends Option {
     public static final String DEFAULT_ARGNAME = ArgmaxExecutorOption.DEFAULT_ARGNAME;
 
     private String argname;
-    private List<String> value = list();
+    private List<String> value = newArrayList();
     private boolean explicitDefault = false;
 
     public ArgmaxExecutorsOption(String shortopt,
@@ -49,7 +49,7 @@ public class ArgmaxExecutorsOption extends Option {
     /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
-            value = list();
+            value = newArrayList();
         }
 
         for (String executorString : commonsCliOption.getValues())

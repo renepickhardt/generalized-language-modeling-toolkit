@@ -1,6 +1,6 @@
 package de.glmtk.options;
 
-import static de.glmtk.util.revamp.ListUtils.list;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,8 +19,8 @@ import org.apache.commons.cli.PosixParser;
 import de.glmtk.Constants;
 
 public class OptionManager {
-    private List<Option> optionList = list();
-    private List<org.apache.commons.cli.Option> commonsCliOptionList = list();
+    private List<Option> optionList = newArrayList();
+    private List<org.apache.commons.cli.Option> commonsCliOptionList = newArrayList();
     org.apache.commons.cli.Options commonsCliOptions = new org.apache.commons.cli.Options();
 
     public OptionManager register(Option... options) {
