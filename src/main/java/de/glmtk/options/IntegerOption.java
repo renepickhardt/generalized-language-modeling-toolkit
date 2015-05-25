@@ -6,9 +6,9 @@ public class IntegerOption extends Option {
     public static final String DEFAULT_ARGNAME = "INT";
 
     private String argname;
-    private int defaultValue = 0;
     private boolean mustBePositive = false;
     private boolean mustNotBeZero = false;
+    private int value = 0;
 
     public IntegerOption(String shortopt,
                          String longopt,
@@ -53,11 +53,41 @@ public class IntegerOption extends Option {
     }
 
     public IntegerOption defaultValue(int defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
         return this;
     }
 
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname);
+        commonsCliOption.setArgs(1);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        checkOnlyDefinedOnce();
+
+        try {
+            value = Integer.valueOf(commonsCliOption.getValue());
+        } catch (NumberFormatException e) {
+            throw new OptionException("Option %s could not be parsed as an "
+                    + "integer: '%s'. Reason: %s.", this,
+                    commonsCliOption.getValue(), e.getMessage());
+        }
+
+        if (mustBePositive && value < 0)
+            throw new OptionException(
+                    "Option %s must not be negative, got '%d' instead.", this,
+                    value);
+
+        if (mustNotBeZero && value == 0)
+            throw new OptionException("Option %s must not be zero.", this);
+    }
+
     public int getInt() {
-        throw new UnsupportedOperationException();
+        return value;
     }
 }

@@ -10,10 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.List;
-
-import org.apache.commons.cli.Option;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
@@ -22,7 +19,6 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Patterns;
-import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
@@ -61,7 +57,6 @@ public class GlmtkDelUnk extends Executable {
         super.parseOptions(args);
 
         corpus = parseInputArg();
-        parseFlags();
 
         if (NioUtils.checkFile(corpus, IS_DIRECTORY))
             workingDir = corpus;
@@ -76,17 +71,6 @@ public class GlmtkDelUnk extends Executable {
                     String.format(
                             "Working directory '%s' does not exist or is not readable.",
                             workingDir));
-    }
-
-    private void parseFlags() {
-        @SuppressWarnings("unchecked")
-        Iterator<Option> iter = line.iterator();
-        while (iter.hasNext()) {
-            Option option = iter.next();
-
-            throw new CliArgumentException(String.format(
-                    "Unexpected option: '%s'.", option));
-        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.StringUtils.join;
 import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
@@ -10,7 +11,8 @@ import de.glmtk.querying.estimator.Estimators;
 
 public class EstimatorOption extends Option {
     public static final String DEFAULT_ARGNAME = "ESTIMATOR";
-    /* package */static final Map<String, Estimator> VALUES = new LinkedHashMap<>();
+
+    private static final Map<String, Estimator> VALUES = new LinkedHashMap<>();
     static {
         VALUES.put("MLE", Estimators.FAST_MLE);
         VALUES.put("MKN", Estimators.WEIGHTEDSUM_MKN);
@@ -26,8 +28,18 @@ public class EstimatorOption extends Option {
         VALUES.put("WSA", Estimators.WEIGHTEDSUM_AVERAGE);
     }
 
+    /* package */static final Estimator parseEstimator(String estimatorString,
+                                                       Option option) throws OptionException {
+        Estimator estimator = VALUES.get(estimatorString.toUpperCase());
+        if (estimator == null)
+            throw new OptionException(
+                    "Option %s estimator not recognized: '%s'. Valid Values: %s.",
+                    option, estimatorString, join(VALUES.keySet(), ", "));
+        return estimator;
+    }
+
     private String argname;
-    private Estimator defaultValue = null;
+    private Estimator value = null;
 
     public EstimatorOption(String shortopt,
                            String longopt,
@@ -47,11 +59,26 @@ public class EstimatorOption extends Option {
     }
 
     public EstimatorOption defaultValue(Estimator defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
         return this;
     }
 
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname);
+        commonsCliOption.setArgs(1);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        checkOnlyDefinedOnce();
+        value = parseEstimator(commonsCliOption.getValue(), this);
+    }
+
     public Estimator getEstimator() {
-        throw new UnsupportedOperationException();
+        return value;
     }
 }

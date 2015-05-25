@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.options.EstimatorOption.parseEstimator;
 import static de.glmtk.util.revamp.ListUtils.list;
 import static java.util.Objects.requireNonNull;
 
@@ -11,7 +12,8 @@ public class EstimatorsOption extends Option {
     public static final String DEFAULT_ARGNAME = EstimatorOption.DEFAULT_ARGNAME;
 
     private String argname;
-    private List<Estimator> defaultValue = list();
+    private List<Estimator> value = list();
+    private boolean explicitDefault = false;
 
     public EstimatorsOption(String shortopt,
                             String longopt,
@@ -31,11 +33,32 @@ public class EstimatorsOption extends Option {
     }
 
     public EstimatorsOption defaultValue(List<Estimator> defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
+        explicitDefault = true;
         return this;
     }
 
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);
+        commonsCliOption.setArgs(org.apache.commons.cli.Option.UNLIMITED_VALUES);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        if (explicitDefault) {
+            explicitDefault = false;
+            value = list();
+        }
+
+        for (String estimatorString : commonsCliOption.getValues())
+            value.add(parseEstimator(estimatorString, this));
+    }
+
     public List<Estimator> getEstimators() {
-        throw new UnsupportedOperationException();
+        return value;
     }
 }

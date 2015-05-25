@@ -1,10 +1,15 @@
 package de.glmtk.options;
 
-import static de.glmtk.util.revamp.ListUtils.list;
+import static de.glmtk.options.PathOption.parsePath;
+import static de.glmtk.options.QueryModeOption.parseQueryMode;
+import static de.glmtk.util.revamp.MapUtils.map;
+import static de.glmtk.util.revamp.SetUtils.set;
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import de.glmtk.querying.probability.QueryMode;
 
@@ -14,8 +19,8 @@ public class QueryModeFilesOption extends Option {
 
     private String queryModeArgname;
     private String filesArgname;
-    private QueryMode queryModeDefaultValue = null;
-    private List<Path> filesDefaultValue = list();
+    private Map<QueryMode, Set<Path>> value = map();
+    private boolean explicitDefault = false;
 
     public QueryModeFilesOption(String shortopt,
                                 String longopt,
@@ -38,21 +43,46 @@ public class QueryModeFilesOption extends Option {
         this.filesArgname = filesArgname;
     }
 
-    public QueryModeFilesOption queryModeDefaultValue(QueryMode defaultValue) {
-        queryModeDefaultValue = defaultValue;
+    public QueryModeFilesOption defaultValue(Map<QueryMode, Set<Path>> defaultValue) {
+        value = defaultValue;
+        explicitDefault = true;
         return this;
     }
 
-    public QueryModeFilesOption filesDefaultValue(List<Path> defaultValue) {
-        filesDefaultValue = defaultValue;
-        return this;
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(format("%s> <%s%s", queryModeArgname,
+                filesArgname, MULTIPLE_ARG_SUFFIX));
+        commonsCliOption.setArgs(org.apache.commons.cli.Option.UNLIMITED_VALUES);
+        return commonsCliOption;
     }
 
-    public QueryMode getQueryMode() {
-        throw new UnsupportedOperationException();
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        if (explicitDefault) {
+            explicitDefault = false;
+            value = map();
+        }
+
+        String[] args = commonsCliOption.getValues();
+        if (args.length < 2)
+            throw new OptionException("Option %s requires at least a "
+                    + "query mode and one file.", this);
+
+        QueryMode queryMode = parseQueryMode(args[0], this);
+        Set<Path> paths = value.get(queryMode);
+        if (paths == null) {
+            paths = set();
+            value.put(queryMode, paths);
+        }
+
+        for (String pathString : commonsCliOption.getValues())
+            paths.add(parsePath(pathString, false, true, true, false, this));
     }
 
-    public List<Path> getFiles() {
-        throw new UnsupportedOperationException();
+    public Map<QueryMode, Set<Path>> getQueryModeFiles() {
+        return value;
     }
 }

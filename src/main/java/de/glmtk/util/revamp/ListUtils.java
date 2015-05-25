@@ -9,6 +9,7 @@ public class ListUtils {
         return new ArrayList<>();
     }
 
+    @SafeVarargs
     public static <T> List<T> list(T... values) {
         return Arrays.asList(values);
     }

@@ -6,8 +6,8 @@ public class DoubleOption extends Option {
     public static final String DEFAULT_ARGNAME = "FLOAT";
 
     private String argname;
-    private double defaultValue = 0.0;
     private boolean mustBeProb = false;
+    private double value = 0.0;
 
     public DoubleOption(String shortopt,
                         String longopt,
@@ -35,11 +35,38 @@ public class DoubleOption extends Option {
     }
 
     public DoubleOption defaultValue(double defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
         return this;
     }
 
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname);
+        commonsCliOption.setArgs(1);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        checkOnlyDefinedOnce();
+
+        try {
+            value = Double.valueOf(commonsCliOption.getValue());
+        } catch (NumberFormatException e) {
+            throw new OptionException("Option %s could not be parsed as a "
+                    + "floating point value: '%s'. Reason: %s.", this,
+                    commonsCliOption.getValue(), e.getMessage());
+        }
+
+        if (mustBeProb && (value < 0.0 || value > 1.0))
+            throw new OptionException("Option %s must be a valid probability "
+                    + "in the range of [0.0, 1.0], got '%.2f' instead.", this,
+                    value);
+    }
+
     public double getDouble() {
-        throw new UnsupportedOperationException();
+        return value;
     }
 }

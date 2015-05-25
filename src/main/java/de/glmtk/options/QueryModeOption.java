@@ -6,8 +6,19 @@ import de.glmtk.querying.probability.QueryMode;
 public class QueryModeOption extends Option {
     public static final String DEFAULT_ARGNAME = "QUERY_MODE";
 
+    /* package */static QueryMode parseQueryMode(String queryModeString,
+                                                 Option option) throws OptionException {
+        try {
+            return QueryMode.forString(queryModeString);
+        } catch (RuntimeException e) {
+            throw new OptionException(
+                    "Option %s got illegal query mode string '%s'.", option,
+                    queryModeString);
+        }
+    }
+
     private String argname;
-    private QueryMode defaultValue = null;
+    private QueryMode value = null;
 
     public QueryModeOption(String shortopt,
                            String longopt,
@@ -27,11 +38,27 @@ public class QueryModeOption extends Option {
     }
 
     public QueryModeOption defaultValue(QueryMode defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
         return this;
     }
 
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname);
+        commonsCliOption.setArgs(1);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        checkOnlyDefinedOnce();
+
+        value = parseQueryMode(commonsCliOption.getValue(), this);
+    }
+
     public QueryMode getQueryMode() {
-        throw new UnsupportedOperationException();
+        return value;
     }
 }

@@ -6,9 +6,10 @@ import static java.util.Objects.requireNonNull;
 public abstract class Option {
     protected static final String MULTIPLE_ARG_SUFFIX = "...";
 
-    private String shortopt;
-    private String longopt;
-    private String desc;
+    protected String shortopt;
+    protected String longopt;
+    protected String desc;
+    private boolean firstDefinition = true;
 
     /**
      * @param shortopt
@@ -26,6 +27,20 @@ public abstract class Option {
 
     public boolean wasGiven() {
         throw new UnsupportedOperationException();
+    }
+
+    /* package */abstract org.apache.commons.cli.Option createCommonsCliOption();
+
+    /* package */abstract void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException;
+
+    protected void checkOnlyDefinedOnce() throws OptionException {
+        if (firstDefinition) {
+            firstDefinition = false;
+            return;
+        }
+
+        throw new OptionException(
+                "Option %s must not be specified more than once.", this);
     }
 
     @Override

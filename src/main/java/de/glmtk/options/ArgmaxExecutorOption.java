@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.StringUtils.join;
 import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
@@ -17,7 +18,8 @@ import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 
 public class ArgmaxExecutorOption extends Option {
     public static final String DEFAULT_ARGNAME = "ARGMAX_EXECUTOR";
-    /* package */static final Map<String, String> VALUES = new LinkedHashMap<>();
+
+    private static final Map<String, String> VALUES = new LinkedHashMap<>();
     static {
         VALUES.put("TA", "TopK Treshold Algorithm");
         VALUES.put("NRA", "TopK No Random Access");
@@ -25,8 +27,18 @@ public class ArgmaxExecutorOption extends Option {
         VALUES.put("SMPL", "Trivial");
     }
 
+    /* package */static final String parseArgmaxExecutor(String executorString,
+                                                         Option option) throws OptionException {
+        executorString = executorString.toUpperCase();
+        if (!VALUES.containsKey(executorString))
+            throw new OptionException("Option %s argmax executor not "
+                    + "recognized: '%s'. Valid Values: %s.", option,
+                    executorString, join(VALUES.keySet(), ", "));
+        return executorString;
+    }
+
     private String argname;
-    private ArgmaxQueryExecutor defaultValue = null;
+    private String value = null;
 
     public ArgmaxExecutorOption(String shortopt,
                                 String longopt,
@@ -45,13 +57,29 @@ public class ArgmaxExecutorOption extends Option {
         this.argname = argname;
     }
 
-    public ArgmaxExecutorOption defaultValue(ArgmaxQueryExecutor defaultValue) {
-        this.defaultValue = defaultValue;
+    public ArgmaxExecutorOption defaultValue(String defaultValue) {
+        value = defaultValue;
         return this;
     }
 
-    public ArgmaxQueryExecutor getArgmaxExecutor() {
-        throw new UnsupportedOperationException();
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname);
+        commonsCliOption.setArgs(1);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        checkOnlyDefinedOnce();
+
+        value = parseArgmaxExecutor(commonsCliOption.getValue(), this);
+    }
+
+    public String getArgmaxExecutor() {
+        return value;
     }
 
     public static ArgmaxQueryExecutor argmaxQueryExecutorFromString(String executor,

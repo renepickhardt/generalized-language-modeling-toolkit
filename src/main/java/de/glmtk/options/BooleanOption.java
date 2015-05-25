@@ -1,7 +1,7 @@
 package de.glmtk.options;
 
 public class BooleanOption extends Option {
-    private boolean defaultValue = false;
+    private boolean value = false;
 
     public BooleanOption(String shortopt,
                          String longopt,
@@ -10,11 +10,25 @@ public class BooleanOption extends Option {
     }
 
     public BooleanOption defaultValue(boolean defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
         return this;
     }
 
-    public boolean getBoolean() {
-        throw new UnsupportedOperationException();
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, false, desc);
+        return commonsCliOption;
     }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        checkOnlyDefinedOnce();
+        value = true;
+    }
+
+    public boolean getBoolean() {
+        return value;
+    }
+
 }

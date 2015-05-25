@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -34,8 +34,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.cli.CommandLine;
-
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.Config;
@@ -43,6 +41,7 @@ import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.BooleanOption;
+import de.glmtk.options.OptionException;
 import de.glmtk.options.OptionManager;
 import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.NioUtils;
@@ -61,15 +60,11 @@ import de.glmtk.util.ThreadUtils;
 
     protected Config config;
     protected OptionManager optionManager;
-    @Deprecated
-    protected CommandLine line;
     private boolean outputIntialized = false;
 
     protected abstract String getExecutableName();
 
     protected abstract void options();
-
-    //protected abstract List<Option> getOptions();
 
     protected abstract String getHelpHeader();
 
@@ -134,11 +129,15 @@ import de.glmtk.util.ThreadUtils;
         options();
         optionManager.register(optionLogConsole, optionLogDebug);
 
-        optionManager.parse(args);
+        try {
+            optionManager.parse(args);
+        } catch (OptionException e) {
+            throw new CliArgumentException(e.getMessage(), e);
+        }
 
         if (optionHelp.getBoolean()) {
             // getHelpHeader()
-            System.out.println(optionManager.helpString());
+            optionManager.help(System.out);
             // getHelpFooter()
             throw new Termination();
         }
@@ -184,23 +183,24 @@ import de.glmtk.util.ThreadUtils;
     }
 
     protected Path parseInputArg() {
-        if (line.getArgList() == null || line.getArgList().size() != 1) {
-            String error;
-            if (line.getArgList().size() == 0)
-                error = "Missing input.\n";
-            else
-                error = String.format("Incorrect input: %s%n",
-                        StringUtils.join(line.getArgList(), " "));
-            throw new CliArgumentException(error + "Try '"
-                    + getExecutableName() + " --help' for more information.");
-        }
-
-        Path inputArg = Paths.get(line.getArgs()[0]);
-        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
-            throw new CliArgumentException(String.format(
-                    "Input file/dir '%s' does not exist or is not readable.",
-                    inputArg));
-        return inputArg;
+        //        if (line.getArgList() == null || line.getArgList().size() != 1) {
+        //            String error;
+        //            if (line.getArgList().size() == 0)
+        //                error = "Missing input.\n";
+        //            else
+        //                error = String.format("Incorrect input: %s%n",
+        //                        StringUtils.join(line.getArgList(), " "));
+        //            throw new CliArgumentException(error + "Try '"
+        //                    + getExecutableName() + " --help' for more information.");
+        //        }
+        //
+        //        Path inputArg = Paths.get(line.getArgs()[0]);
+        //        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
+        //            throw new CliArgumentException(String.format(
+        //                    "Input file/dir '%s' does not exist or is not readable.",
+        //                    inputArg));
+        //        return inputArg;
+        return Paths.get("sup");
     }
 
     protected Path getAndCheckFile(String filename) throws IOException {
@@ -220,51 +220,6 @@ import de.glmtk.util.ThreadUtils;
                     filename, file));
         return file;
     }
-
-    //    protected void optionFirstTimeOrFail(Object value,
-    //                                         Option option) {
-    //        if (value != null)
-    //            throw new CliArgumentException(String.format(
-    //                    "Option %s must not be specified more than once.",
-    //                    makeOptionString(option)));
-    //    }
-    //
-    //    protected int optionPositiveIntOrFail(String value,
-    //                                          boolean allowZero,
-    //                                          String message,
-    //                                          Object... params) {
-    //        Integer v = null;
-    //        try {
-    //            v = Integer.valueOf(value);
-    //        } catch (NumberFormatException e) {
-    //        }
-    //        if (v == null || v < 0 || (!allowZero && v == 0))
-    //            try (Formatter f = new Formatter()) {
-    //                f.format(message, params);
-    //                f.format(" '%s'.%n", value);
-    //                f.format("Needs to be a positive integer");
-    //                throw new CliArgumentException(f.toString());
-    //            }
-    //        return v;
-    //    }
-    //
-    //    protected double optionProbabilityOrFail(String value,
-    //                                             String message,
-    //                                             Object... params) {
-    //        Double v = null;
-    //        try {
-    //            v = Double.valueOf(value);
-    //        } catch (NumberFormatException e) {
-    //        }
-    //        if (v == null || v < 0.0 || v > 1.0)
-    //            try (Formatter f = new Formatter()) {
-    //                f.format(message, params);
-    //                f.format(" '%s'.%n", value);
-    //                f.format("Needs to be a floating point probability in the range of 0.0 to 1.0.");
-    //                throw new CliArgumentException(f.toString());
-    //            }
-    //        return v;
-    //    }
 
     private void printLogHeader(String[] args) {
         LOGGER.info(StringUtils.repeat("=", 80));

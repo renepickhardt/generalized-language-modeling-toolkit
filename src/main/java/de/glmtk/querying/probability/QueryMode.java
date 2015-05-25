@@ -53,7 +53,7 @@ public class QueryMode {
             }
         }
         throw new RuntimeException(String.format(
-                "Illegal Query Mode string '%s'.", string));
+                "Illegal QueryMode string '%s'", string));
     }
 
     private static int posOfFirstNumber(String string) {

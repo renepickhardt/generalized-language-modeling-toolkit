@@ -1,17 +1,17 @@
 package de.glmtk.options;
 
+import static de.glmtk.options.ArgmaxExecutorOption.parseArgmaxExecutor;
 import static de.glmtk.util.revamp.ListUtils.list;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 
-import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
-
 public class ArgmaxExecutorsOption extends Option {
     public static final String DEFAULT_ARGNAME = ArgmaxExecutorOption.DEFAULT_ARGNAME;
 
     private String argname;
-    private List<ArgmaxExecutorOption> defaultValue = list();
+    private List<String> value = list();
+    private boolean explicitDefault = false;
 
     public ArgmaxExecutorsOption(String shortopt,
                                  String longopt,
@@ -30,12 +30,33 @@ public class ArgmaxExecutorsOption extends Option {
         this.argname = argname;
     }
 
-    public ArgmaxExecutorsOption defaultValue(List<ArgmaxQueryExecutor> defaultValue) {
-        this.defaultValue = this.defaultValue;
+    public ArgmaxExecutorsOption defaultValue(List<String> defaultValue) {
+        value = defaultValue;
+        explicitDefault = true;
         return this;
     }
 
-    public List<ArgmaxQueryExecutor> getArgmaxExecutors() {
-        throw new UnsupportedOperationException();
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);
+        commonsCliOption.setArgs(org.apache.commons.cli.Option.UNLIMITED_VALUES);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        if (explicitDefault) {
+            explicitDefault = false;
+            value = list();
+        }
+
+        for (String executorString : commonsCliOption.getValues())
+            value.add(parseArgmaxExecutor(executorString, this));
+    }
+
+    public List<String> getArgmaxExecutors() {
+        return value;
     }
 }

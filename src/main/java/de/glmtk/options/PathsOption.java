@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.options.PathOption.parsePath;
 import static de.glmtk.util.revamp.ListUtils.list;
 import static java.util.Objects.requireNonNull;
 
@@ -13,8 +14,9 @@ public class PathsOption extends Option {
     private boolean mayExist = false;
     private boolean mustExist = false;
     private boolean needFiles = false;
-    private boolean needDiretories = false;
-    private List<Path> defaultValue = list();
+    private boolean needDirectories = false;
+    private List<Path> value = list();
+    private boolean explicitDefault = false;
 
     public PathsOption(String shortopt,
                        String longopt,
@@ -32,7 +34,7 @@ public class PathsOption extends Option {
 
         this.argname = argname;
     }
-    
+
     public PathsOption mayExist() {
         mayExist = true;
         checkConstraintsConflict();
@@ -56,16 +58,16 @@ public class PathsOption extends Option {
     }
 
     public PathsOption needDirectories() {
-        needDiretories = true;
+        needDirectories = true;
         checkConstraintsConflict();
         improveArgname();
         return this;
     }
 
     private void checkConstraintsConflict() {
-        if (needFiles && needDiretories)
+        if (needFiles && needDirectories)
             throw new IllegalStateException(
-                    "Conflict: both needFile() and needDirectory() active.");
+                    "Conflict: both needFiles() and needDirectories() active.");
         if (mayExist & mustExist)
             throw new IllegalStateException(
                     "Conflict: both mayExist() and mustExist() active.");
@@ -75,16 +77,38 @@ public class PathsOption extends Option {
         if (argname.equals(DEFAULT_ARGNAME))
             if (needFiles)
                 argname = "FILE";
-            else if (needDiretories)
+            else if (needDirectories)
                 argname = "DIR";
     }
 
     public PathsOption defaultValue(List<Path> defaultValue) {
-        this.defaultValue = defaultValue;
+        value = defaultValue;
+        explicitDefault = true;
         return this;
     }
 
+    @Override
+    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
+                shortopt, longopt, true, desc);
+        commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);
+        commonsCliOption.setArgs(org.apache.commons.cli.Option.UNLIMITED_VALUES);
+        return commonsCliOption;
+    }
+
+    @Override
+    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+        if (explicitDefault) {
+            explicitDefault = false;
+            value = list();
+        }
+
+        for (String pathString : commonsCliOption.getValues())
+            value.add(parsePath(pathString, mayExist, mustExist, needFiles,
+                    needDirectories, this));
+    }
+
     public List<Path> getPaths() {
-        throw new UnsupportedOperationException();
+        return value;
     }
 }
