@@ -1,11 +1,15 @@
 package de.glmtk.options;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static de.glmtk.util.StringUtils.join;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +19,9 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 import de.glmtk.Constants;
 
@@ -26,6 +33,7 @@ public class OptionManager {
     public OptionManager register(Option... options) {
         for (Option option : options) {
             org.apache.commons.cli.Option commonsCliOption = option.createCommonsCliOption();
+            requireNonNull(commonsCliOption);
 
             optionList.add(option);
             commonsCliOptionList.add(commonsCliOption);
@@ -35,10 +43,10 @@ public class OptionManager {
     }
 
     public void help(OutputStream outputStream) {
+        requireNonNull(outputStream);
+
         // TODO: Header
 
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputStream,
-                Constants.CHARSET));
         HelpFormatter formatter = new HelpFormatter();
         formatter.setLongOptPrefix(" --");
         formatter.setOptionComparator(new Comparator<org.apache.commons.cli.Option>() {
@@ -49,13 +57,31 @@ public class OptionManager {
                         - commonsCliOptionList.indexOf(o2);
             }
         });
-        formatter.printOptions(pw, 80, commonsCliOptions, 2, 2);
-        pw.flush();
 
-        // TODO: Argument explanation
+        Multimap<String, String> explanations = LinkedHashMultimap.create();
+        for (Option option : optionList) {
+            Multimap<String, String> explanation = option.registerExplanation();
+            if (explanation != null)
+                explanations.putAll(explanation);
+        }
+
+        try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(
+                outputStream, Constants.CHARSET))) {
+            formatter.printOptions(pw, 80, commonsCliOptions, 2, 2);
+
+            for (String explanation : explanations.keySet()) {
+                Collection<String> argnames = explanations.get(explanation);
+                pw.append('\n').append(
+                        format(explanation, join(argnames, ", ")));
+            }
+
+            pw.flush();
+        }
     }
 
     public void parse(String[] args) throws IOException, OptionException {
+        requireNonNull(args);
+
         CommandLineParser parser = new PosixParser();
         CommandLine line;
         try {

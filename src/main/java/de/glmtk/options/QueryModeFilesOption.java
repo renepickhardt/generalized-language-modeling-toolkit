@@ -3,6 +3,7 @@ package de.glmtk.options;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.glmtk.options.PathOption.parsePath;
+import static de.glmtk.options.QueryModeOption.EXPLANATION;
 import static de.glmtk.options.QueryModeOption.parseQueryMode;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -10,6 +11,9 @@ import static java.util.Objects.requireNonNull;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import de.glmtk.querying.probability.QueryMode;
 
@@ -50,6 +54,11 @@ public class QueryModeFilesOption extends Option {
     }
 
     @Override
+    /* packge */Multimap<String, String> registerExplanation() {
+        return ImmutableMultimap.of(EXPLANATION, queryModeArgname);
+    }
+
+    @Override
     /* package */org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
@@ -60,7 +69,7 @@ public class QueryModeFilesOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
             value = newHashMap();

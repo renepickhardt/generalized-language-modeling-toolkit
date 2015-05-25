@@ -22,7 +22,7 @@ public class BooleanOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         checkOnlyDefinedOnce();
         value = true;
     }

@@ -97,7 +97,7 @@ public class PathsOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
             value = newArrayList();

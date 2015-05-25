@@ -1,10 +1,16 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CompletionTrieCache;
@@ -25,6 +31,19 @@ public class ArgmaxExecutorOption extends Option {
         VALUES.put("NRA", "TopK No Random Access");
         VALUES.put("BEAM", "Beam Search");
         VALUES.put("SMPL", "Trivial");
+    }
+
+    /* package */static final String EXPLANATION;
+    static {
+        int longestAbbr = maxKeyLength(VALUES);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Where <%s> may be any of:\n");
+        for (Entry<String, String> executor : VALUES.entrySet())
+            sb.append(format("  * %-" + longestAbbr + "s - %s\n",
+                    executor.getKey(), executor.getValue()));
+
+        EXPLANATION = sb.toString();
     }
 
     /* package */static final String parseArgmaxExecutor(String executorString,
@@ -63,6 +82,11 @@ public class ArgmaxExecutorOption extends Option {
     }
 
     @Override
+    /* package */Multimap<String, String> registerExplanation() {
+        return ImmutableMultimap.of(EXPLANATION, argname);
+    }
+
+    @Override
     /* package */org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
@@ -72,7 +96,7 @@ public class ArgmaxExecutorOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         checkOnlyDefinedOnce();
 
         value = parseArgmaxExecutor(commonsCliOption.getValue(), this);

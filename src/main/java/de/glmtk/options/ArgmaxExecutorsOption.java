@@ -1,10 +1,14 @@
 package de.glmtk.options;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static de.glmtk.options.ArgmaxExecutorOption.EXPLANATION;
 import static de.glmtk.options.ArgmaxExecutorOption.parseArgmaxExecutor;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 public class ArgmaxExecutorsOption extends Option {
     public static final String DEFAULT_ARGNAME = ArgmaxExecutorOption.DEFAULT_ARGNAME;
@@ -37,6 +41,11 @@ public class ArgmaxExecutorsOption extends Option {
     }
 
     @Override
+    /* package */Multimap<String, String> registerExplanation() {
+        return ImmutableMultimap.of(EXPLANATION, argname);
+    }
+
+    @Override
     /* package */org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
@@ -46,7 +55,7 @@ public class ArgmaxExecutorsOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         if (explicitDefault) {
             explicitDefault = false;
             value = newArrayList();

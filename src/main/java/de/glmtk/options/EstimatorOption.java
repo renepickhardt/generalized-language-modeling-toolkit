@@ -1,10 +1,16 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
@@ -26,6 +32,19 @@ public class EstimatorOption extends Option {
         VALUES.put("GLMSD", Estimators.FAST_GLM_SKP_AND_DEL);
         VALUES.put("GLMA", Estimators.FAST_GLM_ABS);
         VALUES.put("WSA", Estimators.WEIGHTEDSUM_AVERAGE);
+    }
+
+    /* package */static final String EXPLANATION;
+    static {
+        int longestAbbr = maxKeyLength(VALUES);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Where <%s> may be any of:\n");
+        for (Entry<String, Estimator> estimator : VALUES.entrySet())
+            sb.append(format("  * %-" + longestAbbr + "s - %s\n",
+                    estimator.getKey(), estimator.getValue().getName()));
+
+        EXPLANATION = sb.toString();
     }
 
     /* package */static final Estimator parseEstimator(String estimatorString,
@@ -64,6 +83,11 @@ public class EstimatorOption extends Option {
     }
 
     @Override
+    /* package */Multimap<String, String> registerExplanation() {
+        return ImmutableMultimap.of(EXPLANATION, argname);
+    }
+
+    @Override
     /* package */org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
@@ -73,7 +97,7 @@ public class EstimatorOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         checkOnlyDefinedOnce();
         value = parseEstimator(commonsCliOption.getValue(), this);
     }

@@ -1,10 +1,23 @@
 package de.glmtk.options;
 
 import static java.util.Objects.requireNonNull;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+
 import de.glmtk.querying.probability.QueryMode;
 
 public class QueryModeOption extends Option {
     public static final String DEFAULT_ARGNAME = "QUERY_MODE";
+
+    //@formatter:off
+    /* package */static final String EXPLANATION =
+            "Where <%s> may be any of: \n" +
+                    "  * sequence - Sequence\n" +
+                    "  * <INT> - Fixed\n" +
+                    "  * markov<INT> - Markov\n" +
+                    "  * cond<INT> - Conditional\n";
+    //@formatter:on
 
     /* package */static QueryMode parseQueryMode(String queryModeString,
                                                  Option option) throws OptionException {
@@ -43,6 +56,11 @@ public class QueryModeOption extends Option {
     }
 
     @Override
+    /* package */Multimap<String, String> registerExplanation() {
+        return ImmutableMultimap.of(EXPLANATION, argname);
+    }
+
+    @Override
     /* package */org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
@@ -52,7 +70,7 @@ public class QueryModeOption extends Option {
     }
 
     @Override
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         checkOnlyDefinedOnce();
 
         value = parseQueryMode(commonsCliOption.getValue(), this);
