@@ -15,20 +15,11 @@ public class BooleanOption extends Option {
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, false, desc);
-        return commonsCliOption;
-    }
-
-    @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        checkOnlyDefinedOnce();
+    protected void parse() throws OptionException {
         value = true;
     }
 
     public boolean getBoolean() {
         return value;
     }
-
 }

@@ -8,8 +8,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableList;
 
 import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
@@ -18,66 +17,49 @@ import de.glmtk.querying.estimator.Estimator;
 public class EstimatorsOption extends Option {
     public static final String DEFAULT_ARGNAME = EstimatorOption.DEFAULT_ARGNAME;
 
-    private String argname;
-    private boolean needWeightedSum = false;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, MORE_THAN_ONE, EXPLANATION);
+    private boolean constrainWeightedSum = false;
     private List<Estimator> value = newArrayList();
-    private boolean explicitDefault = false;
 
     public EstimatorsOption(String shortopt,
                             String longopt,
                             String desc) {
-        this(shortopt, longopt, desc, DEFAULT_ARGNAME);
+        super(shortopt, longopt, desc);
+        mayBeGivenRepeatedly = true;
     }
 
-    public EstimatorsOption(String shortopt,
-                            String longopt,
-                            String desc,
-                            String argname) {
-        super(shortopt, longopt, desc);
-
-        requireNonNull(argname);
-
-        this.argname = argname;
+    public EstimatorsOption argName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
     }
 
     public EstimatorsOption needWeightedSum() {
-        needWeightedSum = true;
-        if (argname.equals(DEFAULT_ARGNAME))
-            argname = "WEIGHTEDSUM_ESTIMATOR";
+        constrainWeightedSum = true;
+        if (arg.name.equals(DEFAULT_ARGNAME))
+            arg.name = "WEIGHTEDSUM_ESTIMATOR";
+        arg.explanation = WEIGHTEDSUM_EXPLANATION;
         return this;
     }
 
     public EstimatorsOption defaultValue(List<Estimator> defaultValue) {
         value = defaultValue;
-        explicitDefault = true;
         return this;
     }
 
     @Override
-    protected Multimap<String, String> registerExplanation() {
-        if (needWeightedSum)
-            return ImmutableMultimap.of(WEIGHTEDSUM_EXPLANATION, argname);
-        return ImmutableMultimap.of(EXPLANATION, argname);
+    protected List<Arg> arguments() {
+        return ImmutableList.of(arg);
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, true, desc);
-        commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);
-        commonsCliOption.setArgs(org.apache.commons.cli.Option.UNLIMITED_VALUES);
-        return commonsCliOption;
-    }
-
-    @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        if (explicitDefault) {
-            explicitDefault = false;
+    protected void parse() throws OptionException {
+        if (!given)
             value = newArrayList();
-        }
 
-        for (String estimatorString : commonsCliOption.getValues())
-            value.add(parseEstimator(estimatorString, needWeightedSum, this));
+        for (String estimatorString : arg.values)
+            value.add(parseEstimator(estimatorString, constrainWeightedSum,
+                    this));
     }
 
     public List<Estimator> getEstimators() {

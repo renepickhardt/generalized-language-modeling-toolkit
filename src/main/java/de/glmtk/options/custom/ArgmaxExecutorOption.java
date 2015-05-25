@@ -6,11 +6,11 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableList;
 
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CompletionTrieCache;
@@ -50,6 +50,9 @@ public class ArgmaxExecutorOption extends Option {
 
     public static final String parseArgmaxExecutor(String executorString,
                                                    Option option) throws OptionException {
+        requireNonNull(executorString);
+        requireNonNull(option);
+
         executorString = executorString.toUpperCase();
         if (!VALUES.containsKey(executorString))
             throw new OptionException("Option %s argmax executor not "
@@ -58,24 +61,25 @@ public class ArgmaxExecutorOption extends Option {
         return executorString;
     }
 
-    private String argname;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, 1, EXPLANATION);
     private String value = null;
 
     public ArgmaxExecutorOption(String shortopt,
                                 String longopt,
                                 String desc) {
-        this(shortopt, longopt, desc, DEFAULT_ARGNAME);
+        super(shortopt, longopt, desc);
     }
 
-    public ArgmaxExecutorOption(String shortopt,
-                                String longopt,
-                                String desc,
-                                String argname) {
-        super(shortopt, longopt, desc);
+    public ArgmaxExecutorOption argName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
+    }
 
-        requireNonNull(argname);
-
-        this.argname = argname;
+    public ArgmaxExecutorOption setArgName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
     }
 
     public ArgmaxExecutorOption defaultValue(String defaultValue) {
@@ -84,24 +88,13 @@ public class ArgmaxExecutorOption extends Option {
     }
 
     @Override
-    protected Multimap<String, String> registerExplanation() {
-        return ImmutableMultimap.of(EXPLANATION, argname);
+    protected List<Arg> arguments() {
+        return ImmutableList.of(arg);
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, true, desc);
-        commonsCliOption.setArgName(argname);
-        commonsCliOption.setArgs(1);
-        return commonsCliOption;
-    }
-
-    @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        checkOnlyDefinedOnce();
-
-        value = parseArgmaxExecutor(commonsCliOption.getValue(), this);
+    protected void parse() throws OptionException {
+        value = parseArgmaxExecutor(arg.values.get(0), this);
     }
 
     public String getArgmaxExecutor() {
@@ -112,6 +105,9 @@ public class ArgmaxExecutorOption extends Option {
                                                                     WeightedSumEstimator estimator,
                                                                     Cache randomAccessCache,
                                                                     CompletionTrieCache sortedAccessCache) {
+        requireNonNull(executor);
+        requireNonNull(estimator);
+
         switch (executor) {
             case "TA":
                 return new ThresholdArgmaxQueryExecutor(estimator,

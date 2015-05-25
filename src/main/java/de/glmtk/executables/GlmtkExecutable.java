@@ -95,9 +95,9 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void registerOptions() {
         optionWorkingDir = new PathOption("w", "workingdir",
-                "Working directory.").mayExist().needDirectory();
+                "Working directory.").constrainMayExist().constrainDirectory();
         optionTrainingOrder = new IntegerOption("n", "training-order",
-                "Order to learn for training.").mustBePositive().mustNotBeZero();
+                "Order to learn for training.").constainPositive().contrainNotZero();
         optionEstimators = new EstimatorsOption("e", "estimator",
                 "Estimators to learn for and query with.");
         optionIo = new QueryModeOption("i", "io",

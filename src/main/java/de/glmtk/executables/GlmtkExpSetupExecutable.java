@@ -72,15 +72,15 @@ public class GlmtkExpSetupExecutable extends Executable {
     @Override
     protected void registerOptions() {
         optionWorkingDir = new PathOption("w", "workingdir",
-                "Working directory.").mayExist().needDirectory();
+                "Working directory.").constrainMayExist().constrainDirectory();
         optionTrainingProb = new DoubleOption("p", "training-prob",
                 "Probability with which lines go into training, "
-                        + "other lines go into held-out. Default: 0.8.").mustBeProbability();
+                        + "other lines go into held-out. Default: 0.8.").constrainProbability();
         optionNGramLength = new IntegerOption("n", "ngram-length",
                 "Lenghts for which n-grams should be selected. "
-                        + "If zero no n-grams will be selected. Default: 10.").mustBePositive().mustNotBeZero();
+                        + "If zero no n-grams will be selected. Default: 10.").constainPositive().contrainNotZero();
         optionNumNGrams = new IntegerOption("N", "num-ngrams",
-                "Number of n-gram sequences to select. Default: 5000").mustBePositive().mustNotBeZero();
+                "Number of n-gram sequences to select. Default: 5000").constainPositive().contrainNotZero();
 
         optionManager.register(optionWorkingDir, optionTrainingProb,
                 optionNGramLength, optionNumNGrams);

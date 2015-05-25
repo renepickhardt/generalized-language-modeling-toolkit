@@ -7,36 +7,33 @@ import static java.util.Objects.requireNonNull;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 public class PathsOption extends Option {
     public static final String DEFAULT_ARGNAME = PathOption.DEFAULT_ARGNAME;
 
-    private String argname;
-    private boolean mayExist = false;
-    private boolean mustExist = false;
-    private boolean needFiles = false;
-    private boolean needDirectories = false;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, MORE_THAN_ONE);
+    private boolean constrainMayExist = false;
+    private boolean constrainMustExist = false;
+    private boolean constrainFiles = false;
+    private boolean constrainDirectories = false;
     private List<Path> value = newArrayList();
-    private boolean explicitDefault = false;
 
     public PathsOption(String shortopt,
                        String longopt,
                        String desc) {
-        this(shortopt, longopt, desc, DEFAULT_ARGNAME);
-    }
-
-    public PathsOption(String shortopt,
-                       String longopt,
-                       String desc,
-                       String argname) {
         super(shortopt, longopt, desc);
-
-        requireNonNull(argname);
-
-        this.argname = argname;
+        mayBeGivenRepeatedly = true;
     }
 
-    public PathsOption mayExist() {
-        mayExist = true;
+    public PathsOption argName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
+    }
+
+    public PathsOption constrainMayExist() {
+        constrainMayExist = true;
         checkConstraintsConflict();
         return this;
     }
@@ -44,68 +41,62 @@ public class PathsOption extends Option {
     /**
      * Checks if paths exists and is readable.
      */
-    public PathsOption mustExist() {
-        mustExist = true;
+    public PathsOption constrainMustExist() {
+        constrainMustExist = true;
         checkConstraintsConflict();
         return this;
     }
 
-    public PathsOption needFiles() {
-        needFiles = true;
+    public PathsOption constrainFiles() {
+        constrainFiles = true;
         checkConstraintsConflict();
-        improveArgname();
+        improveArgName();
         return this;
     }
 
     public PathsOption needDirectories() {
-        needDirectories = true;
+        constrainDirectories = true;
         checkConstraintsConflict();
-        improveArgname();
+        improveArgName();
         return this;
     }
 
     private void checkConstraintsConflict() {
-        if (needFiles && needDirectories)
+        if (constrainFiles && constrainDirectories)
             throw new IllegalStateException(
                     "Conflict: both needFiles() and needDirectories() active.");
-        if (mayExist & mustExist)
+        if (constrainMayExist & constrainMustExist)
             throw new IllegalStateException(
                     "Conflict: both mayExist() and mustExist() active.");
     }
 
-    private void improveArgname() {
-        if (argname.equals(DEFAULT_ARGNAME))
-            if (needFiles)
-                argname = "FILE";
-            else if (needDirectories)
-                argname = "DIR";
+    private void improveArgName() {
+        if (arg.name.equals(DEFAULT_ARGNAME))
+            if (constrainFiles)
+                arg.name = "FILE";
+            else if (constrainDirectories)
+                arg.name = "DIR";
     }
 
     public PathsOption defaultValue(List<Path> defaultValue) {
         value = defaultValue;
-        explicitDefault = true;
         return this;
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, true, desc);
-        commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);
-        commonsCliOption.setArgs(org.apache.commons.cli.Option.UNLIMITED_VALUES);
-        return commonsCliOption;
+    protected List<Arg> arguments() {
+        return ImmutableList.of(arg);
     }
 
     @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        if (explicitDefault) {
-            explicitDefault = false;
+    protected void parse() throws OptionException {
+        if (!given)
             value = newArrayList();
-        }
 
-        for (String pathString : commonsCliOption.getValues())
-            value.add(parsePath(pathString, mayExist, mustExist, needFiles,
-                    needDirectories, this));
+        for (String pathString : arg.values)
+            value.add(parsePath(pathString, constrainMayExist,
+                    constrainMustExist, constrainFiles, constrainDirectories,
+                    this));
     }
 
     public List<Path> getPaths() {

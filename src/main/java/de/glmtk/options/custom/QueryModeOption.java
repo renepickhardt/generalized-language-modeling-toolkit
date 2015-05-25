@@ -2,8 +2,9 @@ package de.glmtk.options.custom;
 
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
@@ -23,6 +24,9 @@ public class QueryModeOption extends Option {
 
     public static QueryMode parseQueryMode(String queryModeString,
                                            Option option) throws OptionException {
+        requireNonNull(queryModeString);
+        requireNonNull(option);
+
         try {
             return QueryMode.forString(queryModeString);
         } catch (RuntimeException e) {
@@ -32,24 +36,19 @@ public class QueryModeOption extends Option {
         }
     }
 
-    private String argname;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, 1, EXPLANATION);
     private QueryMode value = null;
 
     public QueryModeOption(String shortopt,
                            String longopt,
                            String desc) {
-        this(shortopt, longopt, desc, DEFAULT_ARGNAME);
+        super(shortopt, longopt, desc);
     }
 
-    public QueryModeOption(String shortopt,
-                           String longopt,
-                           String desc,
-                           String argname) {
-        super(shortopt, longopt, desc);
-
-        requireNonNull(argname);
-
-        this.argname = argname;
+    public QueryModeOption argName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
     }
 
     public QueryModeOption defaultValue(QueryMode defaultValue) {
@@ -58,24 +57,13 @@ public class QueryModeOption extends Option {
     }
 
     @Override
-    protected Multimap<String, String> registerExplanation() {
-        return ImmutableMultimap.of(EXPLANATION, argname);
+    protected List<Arg> arguments() {
+        return ImmutableList.of(arg);
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, true, desc);
-        commonsCliOption.setArgName(argname);
-        commonsCliOption.setArgs(1);
-        return commonsCliOption;
-    }
-
-    @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        checkOnlyDefinedOnce();
-
-        value = parseQueryMode(commonsCliOption.getValue(), this);
+    protected void parse() throws OptionException {
+        value = parseQueryMode(arg.values.get(0), this);
     }
 
     public QueryMode getQueryMode() {

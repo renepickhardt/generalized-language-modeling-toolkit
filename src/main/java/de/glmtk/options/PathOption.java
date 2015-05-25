@@ -9,16 +9,22 @@ import static java.util.Objects.requireNonNull;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public class PathOption extends Option {
     public static final String DEFAULT_ARGNAME = "PATH";
 
     public static Path parsePath(String pathString,
-                                 boolean mayExist,
-                                 boolean mustExist,
-                                 boolean needFile,
-                                 boolean needDirectory,
+                                 boolean constrainMayExist,
+                                 boolean constrainMustExist,
+                                 boolean constrainFile,
+                                 boolean constrainDirectory,
                                  Option option) throws OptionException {
+        requireNonNull(pathString);
+        requireNonNull(option);
+
         Path path;
         try {
             path = Paths.get(pathString);
@@ -28,53 +34,48 @@ public class PathOption extends Option {
                     e.getMessage());
         }
 
-        if (!mayExist && !mustExist)
+        if (!constrainMayExist && !constrainMustExist)
             return path;
-        if (mayExist && !exists(path))
+        if (constrainMayExist && !exists(path))
             return path;
-        if (mustExist && !exists(path))
+        if (constrainMustExist && !exists(path))
             throw new OptionException("Option %s path does not exist: '%s'.",
                     option, path);
 
         if (!isReadable(path))
             throw new OptionException("Option %s path does exist, "
                     + "but is not readable: '%s'.", option, path);
-        if (needFile && !isRegularFile(path))
+        if (constrainFile && !isRegularFile(path))
             throw new OptionException("Option %s path is required to be a "
                     + "file, but was not: '%s'.", option, path);
-        else if (needDirectory && !isDirectory(path))
+        else if (constrainDirectory && !isDirectory(path))
             throw new OptionException("Option %s path is required to be a "
                     + "directory, but was not: '%s'.", option, path);
 
         return path;
     }
 
-    private String argname;
-    private boolean mayExist = false;
-    private boolean mustExist = false;
-    private boolean needFile = false;
-    private boolean needDirectory = false;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, 1);
+    private boolean constrainMayExist = false;
+    private boolean constrainMustExist = false;
+    private boolean constrainFile = false;
+    private boolean constrainDirectory = false;
     private Path value = null;
 
     public PathOption(String shortopt,
                       String longopt,
                       String desc) {
-        this(shortopt, longopt, desc, DEFAULT_ARGNAME);
-    }
-
-    public PathOption(String shortopt,
-                      String longopt,
-                      String desc,
-                      String argname) {
         super(shortopt, longopt, desc);
-
-        requireNonNull(argname);
-
-        this.argname = argname;
     }
 
-    public PathOption mayExist() {
-        mayExist = true;
+    public PathOption argName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
+    }
+
+    public PathOption constrainMayExist() {
+        constrainMayExist = true;
         checkConstraintsConflict();
         return this;
     }
@@ -82,41 +83,41 @@ public class PathOption extends Option {
     /**
      * Checks if path exists and is readable.
      */
-    public PathOption mustExist() {
-        mustExist = true;
+    public PathOption constrainMustExist() {
+        constrainMustExist = true;
         checkConstraintsConflict();
         return this;
     }
 
-    public PathOption needFile() {
-        needFile = true;
+    public PathOption constrainFile() {
+        constrainFile = true;
         checkConstraintsConflict();
-        improveArgname();
+        improveArgName();
         return this;
     }
 
-    public PathOption needDirectory() {
-        needDirectory = true;
+    public PathOption constrainDirectory() {
+        constrainDirectory = true;
         checkConstraintsConflict();
-        improveArgname();
+        improveArgName();
         return this;
     }
 
     private void checkConstraintsConflict() {
-        if (needFile && needDirectory)
+        if (constrainFile && constrainDirectory)
             throw new IllegalStateException(
                     "Conflict: both needFile() and needDirectory() active.");
-        if (mayExist & mustExist)
+        if (constrainMayExist & constrainMustExist)
             throw new IllegalStateException(
                     "Conflict: both mayExist() and mustExist() active.");
     }
 
-    private void improveArgname() {
-        if (argname.equals(DEFAULT_ARGNAME))
-            if (needFile)
-                argname = "FILE";
-            else if (needDirectory)
-                argname = "DIR";
+    private void improveArgName() {
+        if (arg.name.equals(DEFAULT_ARGNAME))
+            if (constrainFile)
+                arg.name = "FILE";
+            else if (constrainDirectory)
+                arg.name = "DIR";
     }
 
     public PathOption defaultValue(Path defaultValue) {
@@ -125,20 +126,14 @@ public class PathOption extends Option {
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, true, desc);
-        commonsCliOption.setArgName(argname);
-        commonsCliOption.setArgs(1);
-        return commonsCliOption;
+    protected List<Arg> arguments() {
+        return ImmutableList.of(arg);
     }
 
     @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        checkOnlyDefinedOnce();
-
-        value = parsePath(commonsCliOption.getValue(), mayExist, mustExist,
-                needFile, needDirectory, this);
+    protected void parse() throws OptionException {
+        value = parsePath(arg.values.get(0), constrainMayExist,
+                constrainMustExist, constrainFile, constrainDirectory, this);
     }
 
     public Path getPath() {

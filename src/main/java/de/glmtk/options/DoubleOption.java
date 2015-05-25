@@ -2,12 +2,19 @@ package de.glmtk.options;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 public class DoubleOption extends Option {
     public static final String DEFAULT_ARGNAME = "FLOAT";
 
     public static double parseDouble(String doubleString,
-                                     boolean mustBeProb,
+                                     boolean constrainProbability,
                                      Option option) throws OptionException {
+        requireNonNull(doubleString);
+        requireNonNull(option);
+
         double value;
         try {
             value = Double.valueOf(doubleString);
@@ -17,7 +24,7 @@ public class DoubleOption extends Option {
                     doubleString, e.getMessage());
         }
 
-        if (mustBeProb && (value < 0.0 || value > 1.0))
+        if (constrainProbability && (value < 0.0 || value > 1.0))
             throw new OptionException("Option %s must be a valid probability "
                     + "in the range of [0.0, 1.0], got '%.2f' instead.",
                     option, value);
@@ -25,32 +32,27 @@ public class DoubleOption extends Option {
         return value;
     }
 
-    private String argname;
-    private boolean mustBeProb = false;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, 1);
+    private boolean constrainProbability = false;
     private double value = 0.0;
 
     public DoubleOption(String shortopt,
                         String longopt,
                         String desc) {
-        this(shortopt, longopt, desc, DEFAULT_ARGNAME);
+        super(shortopt, longopt, desc);
     }
 
-    public DoubleOption(String shortopt,
-                        String longopt,
-                        String desc,
-                        String argname) {
-        super(shortopt, longopt, desc);
-
-        requireNonNull(argname);
-
-        this.argname = argname;
+    public DoubleOption argName(String argName) {
+        requireNonNull(argName);
+        arg.name = argName;
+        return this;
     }
 
     /**
      * Must be in [0.0, 1.0].
      */
-    public DoubleOption mustBeProbability() {
-        mustBeProb = true;
+    public DoubleOption constrainProbability() {
+        constrainProbability = true;
         return this;
     }
 
@@ -60,19 +62,13 @@ public class DoubleOption extends Option {
     }
 
     @Override
-    protected org.apache.commons.cli.Option createCommonsCliOption() {
-        org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
-                shortopt, longopt, true, desc);
-        commonsCliOption.setArgName(argname);
-        commonsCliOption.setArgs(1);
-        return commonsCliOption;
+    protected List<Arg> arguments() {
+        return ImmutableList.of(arg);
     }
 
     @Override
-    protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
-        checkOnlyDefinedOnce();
-
-        value = parseDouble(commonsCliOption.getValue(), mustBeProb, this);
+    protected void parse() throws OptionException {
+        value = parseDouble(arg.values.get(0), constrainProbability, this);
     }
 
     public double getDouble() {

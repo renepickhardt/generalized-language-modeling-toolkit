@@ -79,7 +79,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 "Estimators to use. Only weighted sum Estimators are allowed. "
                         + "Can be specified multiple times.").needWeightedSum();
         optionQuery = new PathsOption("q", "query",
-                "Query the given files. Can be specified multiple times.").mustExist().needFiles();
+                "Query the given files. Can be specified multiple times.").constrainMustExist().constrainFiles();
         optionRandomAccess = new BooleanOption("r", "random-access",
                 "Use a HashMap baseed cache for any random access caches "
                         + "instead of default CompletionTrie based cache.");

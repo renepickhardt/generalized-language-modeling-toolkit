@@ -62,11 +62,11 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         optionEstimators = new EstimatorsOption("e", "estimator",
                 "Estimators to check.");
         optionQuery = new PathsOption("q", "query",
-                "Query the given files. Can be specified multiple times.").mustExist().needFiles();
+                "Query the given files. Can be specified multiple times.").constrainMustExist().constrainFiles();
         optionRuns = new IntegerOption("N", "num-runs",
-                "Number of times to run. Default: 1.").mustBePositive().mustNotBeZero();
+                "Number of times to run. Default: 1.").constainPositive().contrainNotZero();
         optionCacheFile = new PathOption("c", "cache-file",
-                "File to generate query cache from for all query files.").mustExist().needFile();
+                "File to generate query cache from for all query files.").constrainMustExist().constrainFile();
 
         optionManager.register(optionEstimators, optionQuery, optionRuns,
                 optionCacheFile);
