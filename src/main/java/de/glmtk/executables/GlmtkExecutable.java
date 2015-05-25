@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -93,7 +93,7 @@ public class GlmtkExecutable extends Executable {
     }
 
     @Override
-    protected void options() {
+    protected void registerOptions() {
         optionWorkingDir = new PathOption("w", "workingdir",
                 "Working directory.").mayExist().needDirectory();
         optionTrainingOrder = new IntegerOption("n", "training-order",
@@ -112,33 +112,11 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected String getHelpHeader() {
         return "Invokes the Generalized Language Model Toolkit.";
-
-        //f.format("%s <INPUT> [<OPTION...>]%n", getExecutableName());
-        //f.format("%nMandatory arguments to long options are mandatory for short options too.%n");
     }
 
     @Override
     protected String getHelpFooter() {
         return null;
-        //        try (Formatter f = new Formatter()) {
-        //            f.format("%nWhere <ORDER> may be any postive integer.%n");
-        //
-        //            f.format("%nWhere <ESTIMATOR> may be any of:%n");
-        //            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet())
-        //                f.format("  * %-5s  %s%n", arg.getKey(),
-        //                        arg.getValue().getName());
-        //
-        //            f.format("%nWhere <MODE> may be any of:%n");
-        //            f.format("  * <ORDER>        P^n%n");
-        //            f.format("  * Sequence       P^*%n");
-        //            f.format("  * Markov<ORDER>  P^* with markov%n");
-        //            f.format("  * Cond<ORDER>    Conditional P%n");
-        //
-        //            f.format("%nFor more information, see:%n");
-        //            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
-        //
-        //            return f.toString();
-        //        }
     }
 
     @Override

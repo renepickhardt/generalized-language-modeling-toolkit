@@ -70,7 +70,7 @@ public class GlmtkExpSetupExecutable extends Executable {
     }
 
     @Override
-    protected void options() {
+    protected void registerOptions() {
         optionWorkingDir = new PathOption("w", "workingdir",
                 "Working directory.").mayExist().needDirectory();
         optionTrainingProb = new DoubleOption("p", "training-prob",

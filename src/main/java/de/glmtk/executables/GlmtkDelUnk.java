@@ -39,7 +39,7 @@ public class GlmtkDelUnk extends Executable {
     }
 
     @Override
-    protected void options() {
+    protected void registerOptions() {
     }
 
     @Override

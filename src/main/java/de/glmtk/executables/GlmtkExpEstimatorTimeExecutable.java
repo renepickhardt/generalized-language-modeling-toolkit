@@ -58,7 +58,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     }
 
     @Override
-    protected void options() {
+    protected void registerOptions() {
         optionEstimators = new EstimatorsOption("e", "estimator",
                 "Estimators to check.");
         optionQuery = new PathsOption("q", "query",

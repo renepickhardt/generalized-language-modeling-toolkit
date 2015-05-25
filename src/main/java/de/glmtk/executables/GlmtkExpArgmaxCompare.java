@@ -71,7 +71,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
     }
 
     @Override
-    protected void options() {
+    protected void registerOptions() {
         optionArgmaxExecutors = new ArgmaxExecutorsOption("a",
                 "argmax-executor",
                 "Executors to compare. Can be specified multiple times.");
@@ -98,25 +98,6 @@ public class GlmtkExpArgmaxCompare extends Executable {
     @Override
     protected String getHelpFooter() {
         return null;
-        //        try (Formatter f = new Formatter()) {
-        //            f.format("%nWhere <EXECUTOR> may be any of:%n");
-        //            for (Entry<String, String> executor : OPTION_ARGMAX_EXECUTORS_ARGUMENTS.entrySet())
-        //                f.format("  * %-5s %s%n", executor.getKey(),
-        //                        executor.getValue());
-        //
-        //            f.format("%nWhere <ESTIMATOR> may be any of:%n");
-        //            for (Entry<String, Estimator> arg : OPTION_ESTIMATOR_ARGUMENTS.entrySet()) {
-        //                if (!(arg.getValue() instanceof WeightedSumEstimator))
-        //                    continue;
-        //                f.format("  * %-5s  %s%n", arg.getKey(),
-        //                        arg.getValue().getName());
-        //            }
-        //
-        //            f.format("%nFor more information, see:%n");
-        //            f.format("https://github.com/renepickhardt/generalized-language-modeling-toolkit/%n");
-        //
-        //            return f.toString();
-        //        }
     }
 
     @Override
@@ -283,7 +264,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                             + "."
                                             + type.substring(0,
                                                     type.length() - 1)),
-                                    Constants.CHARSET)) {
+                                                    Constants.CHARSET)) {
 
                         String line;
                         int i = 0;

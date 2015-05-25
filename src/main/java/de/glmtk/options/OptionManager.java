@@ -65,18 +65,20 @@ public class OptionManager {
                 explanations.putAll(explanation);
         }
 
-        try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(
-                outputStream, Constants.CHARSET))) {
-            formatter.printOptions(pw, 80, commonsCliOptions, 2, 2);
+        // Must not close PrintWriter, as it will also close the outputStream
+        // which is not our resource. For Example: We my close System.out
+        // and make further writing to stdout.
+        @SuppressWarnings("resource")
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputStream,
+                Constants.CHARSET));
+        formatter.printOptions(pw, 80, commonsCliOptions, 2, 2);
 
-            for (String explanation : explanations.keySet()) {
-                Collection<String> argnames = explanations.get(explanation);
-                pw.append('\n').append(
-                        format(explanation, join(argnames, ", ")));
-            }
-
-            pw.flush();
+        for (String explanation : explanations.keySet()) {
+            Collection<String> argnames = explanations.get(explanation);
+            pw.append('\n').append(format(explanation, join(argnames, ", ")));
         }
+
+        pw.flush();
     }
 
     public void parse(String[] args) throws IOException, OptionException {

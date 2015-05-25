@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -64,7 +64,7 @@ import de.glmtk.util.ThreadUtils;
 
     protected abstract String getExecutableName();
 
-    protected abstract void options();
+    protected abstract void registerOptions();
 
     protected abstract String getHelpHeader();
 
@@ -126,7 +126,7 @@ import de.glmtk.util.ThreadUtils;
                 "Set log level to DEBUG.");
 
         optionManager.register(optionHelp, optionVersion);
-        options();
+        registerOptions();
         optionManager.register(optionLogConsole, optionLogDebug);
 
         try {
@@ -136,9 +136,24 @@ import de.glmtk.util.ThreadUtils;
         }
 
         if (optionHelp.getBoolean()) {
-            // getHelpHeader()
+            String helpHeader = getHelpHeader();
+            String helpFooter = getHelpFooter();
+
+            System.out.println(getExecutableName() + " <INPUT> [OPTION...]");
+            if (helpHeader != null)
+                System.out.println(helpHeader);
+            System.out.println();
+
             optionManager.help(System.out);
-            // getHelpFooter()
+
+            if (helpFooter != null) {
+                System.out.println();
+                System.out.println(helpFooter);
+            }
+            System.out.println();
+            System.out.println("For more information, see:");
+            System.out.println("https://github.com/renepickhardt/generalized-language-modeling-toolkit/");
+
             throw new Termination();
         }
 
@@ -147,39 +162,6 @@ import de.glmtk.util.ThreadUtils;
             System.out.println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
-
-        //        Options options = new Options();
-        //        for (Option option : getOptions())
-        //            options.addOption(option);
-        //
-        //        CommandLineParser parser = new PosixParser();
-        //        line = parser.parse(options, args);
-        //
-        //        if (line.hasOption(OPTION_VERSION_LONG)) {
-        //        }
-        //
-        //        if (line.hasOption(OPTION_HELP_LONG)) {
-        //            System.out.print(getHelpHeader());
-        //
-        //            PrintWriter pw = new PrintWriter(new OutputStreamWriter(System.out,
-        //                    Constants.CHARSET));
-        //            //            GlmtkHelpFormatter formatter = new GlmtkHelpFormatter();
-        //            HelpFormatter formatter = new HelpFormatter();
-        //            formatter.setLongOptPrefix(" --");
-        //            formatter.setOptionComparator(new Comparator<Option>() {
-        //                @Override
-        //                public int compare(Option o1,
-        //                                   Option o2) {
-        //                    return getOptions().indexOf(o1) - getOptions().indexOf(o2);
-        //                }
-        //            });
-        //            formatter.printOptions(pw, 80, options, 2, 2);
-        //            pw.flush();
-        //            // do not close stream to System.out
-        //
-        //            System.out.print(getHelpFooter());
-        //            throw new Termination();
-        //        }
     }
 
     protected Path parseInputArg() {
@@ -200,7 +182,7 @@ import de.glmtk.util.ThreadUtils;
         //                    "Input file/dir '%s' does not exist or is not readable.",
         //                    inputArg));
         //        return inputArg;
-        return Paths.get("sup");
+        return Paths.get("sup"); // FIXME
     }
 
     protected Path getAndCheckFile(String filename) throws IOException {
