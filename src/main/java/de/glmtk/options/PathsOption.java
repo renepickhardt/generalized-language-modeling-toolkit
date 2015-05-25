@@ -88,7 +88,7 @@ public class PathsOption extends Option {
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);

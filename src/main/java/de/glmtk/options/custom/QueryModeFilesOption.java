@@ -1,10 +1,10 @@
-package de.glmtk.options;
+package de.glmtk.options.custom;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static de.glmtk.options.PathOption.parsePath;
-import static de.glmtk.options.QueryModeOption.EXPLANATION;
-import static de.glmtk.options.QueryModeOption.parseQueryMode;
+import static de.glmtk.options.custom.QueryModeOption.EXPLANATION;
+import static de.glmtk.options.custom.QueryModeOption.parseQueryMode;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -15,6 +15,8 @@ import java.util.Set;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
+import de.glmtk.options.Option;
+import de.glmtk.options.OptionException;
 import de.glmtk.querying.probability.QueryMode;
 
 public class QueryModeFilesOption extends Option {
@@ -54,12 +56,12 @@ public class QueryModeFilesOption extends Option {
     }
 
     @Override
-    /* packge */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         return ImmutableMultimap.of(EXPLANATION, queryModeArgname);
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(format("%s> <%s%s", queryModeArgname,

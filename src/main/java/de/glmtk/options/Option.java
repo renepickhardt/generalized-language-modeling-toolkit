@@ -5,6 +5,13 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.Multimap;
 
+/**
+ * The wrap methods {@link #wrapRegisterExplanation()},
+ * {@link #wrapCreateCommonsCliOption()},
+ * {@link #parse(org.apache.commons.cli.Option)} in this class are necessary to
+ * allow both {@link OptionManager} to access them, but also for Subclasses to
+ * not be in the same package.
+ */
 public abstract class Option {
     protected static final String MULTIPLE_ARG_SUFFIX = "...";
 
@@ -39,13 +46,13 @@ public abstract class Option {
         return parsed;
     }
 
-    /* package */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         return null;
     }
 
-    /* package */abstract org.apache.commons.cli.Option createCommonsCliOption();
+    protected abstract org.apache.commons.cli.Option createCommonsCliOption();
 
-    /* package */void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
+    /* package */final void parse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         requireNonNull(commonsCliOption);
         handleParse(commonsCliOption);
         parsed = true;

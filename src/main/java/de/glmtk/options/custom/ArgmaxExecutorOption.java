@@ -1,4 +1,4 @@
-package de.glmtk.options;
+package de.glmtk.options.custom;
 
 import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
@@ -15,6 +15,8 @@ import com.google.common.collect.Multimap;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+import de.glmtk.options.Option;
+import de.glmtk.options.OptionException;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.BeamSearchArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor;
@@ -33,7 +35,7 @@ public class ArgmaxExecutorOption extends Option {
         VALUES.put("SMPL", "Trivial");
     }
 
-    /* package */static final String EXPLANATION;
+    protected static final String EXPLANATION;
     static {
         int longestAbbr = maxKeyLength(VALUES);
 
@@ -46,8 +48,8 @@ public class ArgmaxExecutorOption extends Option {
         EXPLANATION = sb.toString();
     }
 
-    /* package */static final String parseArgmaxExecutor(String executorString,
-                                                         Option option) throws OptionException {
+    public static final String parseArgmaxExecutor(String executorString,
+                                                   Option option) throws OptionException {
         executorString = executorString.toUpperCase();
         if (!VALUES.containsKey(executorString))
             throw new OptionException("Option %s argmax executor not "
@@ -82,12 +84,12 @@ public class ArgmaxExecutorOption extends Option {
     }
 
     @Override
-    /* package */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname);

@@ -5,6 +5,30 @@ import static java.util.Objects.requireNonNull;
 public class IntegerOption extends Option {
     public static final String DEFAULT_ARGNAME = "INT";
 
+    public static final int parseInteger(String integerString,
+                                         boolean mustBePositive,
+                                         boolean mustNotBeZero,
+                                         Option option) throws OptionException {
+        int value;
+        try {
+            value = Integer.valueOf(integerString);
+        } catch (NumberFormatException e) {
+            throw new OptionException("Option %s could not be parsed as an "
+                    + "integer: '%s'. Reason: %s.", option, integerString,
+                    e.getMessage());
+        }
+
+        if (mustBePositive && value < 0)
+            throw new OptionException(
+                    "Option %s must not be negative, got '%d' instead.",
+                    option, value);
+
+        if (mustNotBeZero && value == 0)
+            throw new OptionException("Option %s must not be zero.", option);
+
+        return value;
+    }
+
     private String argname;
     private boolean mustBePositive = false;
     private boolean mustNotBeZero = false;
@@ -58,7 +82,7 @@ public class IntegerOption extends Option {
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname);
@@ -70,21 +94,8 @@ public class IntegerOption extends Option {
     protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         checkOnlyDefinedOnce();
 
-        try {
-            value = Integer.valueOf(commonsCliOption.getValue());
-        } catch (NumberFormatException e) {
-            throw new OptionException("Option %s could not be parsed as an "
-                    + "integer: '%s'. Reason: %s.", this,
-                    commonsCliOption.getValue(), e.getMessage());
-        }
-
-        if (mustBePositive && value < 0)
-            throw new OptionException(
-                    "Option %s must not be negative, got '%d' instead.", this,
-                    value);
-
-        if (mustNotBeZero && value == 0)
-            throw new OptionException("Option %s must not be zero.", this);
+        value = parseInteger(commonsCliOption.getValue(), mustBePositive,
+                mustNotBeZero, this);
     }
 
     public int getInt() {

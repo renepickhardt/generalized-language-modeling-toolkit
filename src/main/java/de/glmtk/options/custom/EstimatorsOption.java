@@ -1,9 +1,9 @@
-package de.glmtk.options;
+package de.glmtk.options.custom;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static de.glmtk.options.EstimatorOption.EXPLANATION;
-import static de.glmtk.options.EstimatorOption.WEIGHTEDSUM_EXPLANATION;
-import static de.glmtk.options.EstimatorOption.parseEstimator;
+import static de.glmtk.options.custom.EstimatorOption.EXPLANATION;
+import static de.glmtk.options.custom.EstimatorOption.WEIGHTEDSUM_EXPLANATION;
+import static de.glmtk.options.custom.EstimatorOption.parseEstimator;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -11,6 +11,8 @@ import java.util.List;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
+import de.glmtk.options.Option;
+import de.glmtk.options.OptionException;
 import de.glmtk.querying.estimator.Estimator;
 
 public class EstimatorsOption extends Option {
@@ -52,14 +54,14 @@ public class EstimatorsOption extends Option {
     }
 
     @Override
-    /* package */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         if (needWeightedSum)
             return ImmutableMultimap.of(WEIGHTEDSUM_EXPLANATION, argname);
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);

@@ -1,17 +1,19 @@
-package de.glmtk.options;
+package de.glmtk.options.custom;
 
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
+import de.glmtk.options.Option;
+import de.glmtk.options.OptionException;
 import de.glmtk.querying.probability.QueryMode;
 
 public class QueryModeOption extends Option {
     public static final String DEFAULT_ARGNAME = "QUERY_MODE";
 
     //@formatter:off
-    /* package */static final String EXPLANATION =
+    protected static final String EXPLANATION =
             "Where <%s> may be any of: \n" +
                     "  * sequence - Sequence\n" +
                     "  * <INT> - Fixed\n" +
@@ -19,8 +21,8 @@ public class QueryModeOption extends Option {
                     "  * cond<INT> - Conditional\n";
     //@formatter:on
 
-    /* package */static QueryMode parseQueryMode(String queryModeString,
-                                                 Option option) throws OptionException {
+    public static QueryMode parseQueryMode(String queryModeString,
+                                           Option option) throws OptionException {
         try {
             return QueryMode.forString(queryModeString);
         } catch (RuntimeException e) {
@@ -56,12 +58,12 @@ public class QueryModeOption extends Option {
     }
 
     @Override
-    /* package */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname);

@@ -13,12 +13,12 @@ import java.nio.file.Paths;
 public class PathOption extends Option {
     public static final String DEFAULT_ARGNAME = "PATH";
 
-    /* package */static Path parsePath(String pathString,
-                                       boolean mayExist,
-                                       boolean mustExist,
-                                       boolean needFile,
-                                       boolean needDirectory,
-                                       Option option) throws OptionException {
+    public static Path parsePath(String pathString,
+                                 boolean mayExist,
+                                 boolean mustExist,
+                                 boolean needFile,
+                                 boolean needDirectory,
+                                 Option option) throws OptionException {
         Path path;
         try {
             path = Paths.get(pathString);
@@ -125,7 +125,7 @@ public class PathOption extends Option {
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname);

@@ -5,7 +5,6 @@ import static de.glmtk.util.StringUtils.join;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -81,7 +80,7 @@ public class OptionManager {
         pw.flush();
     }
 
-    public void parse(String[] args) throws IOException, OptionException {
+    public void parse(String[] args) throws OptionException {
         requireNonNull(args);
 
         CommandLineParser parser = new PosixParser();
@@ -89,7 +88,7 @@ public class OptionManager {
         try {
             line = parser.parse(commonsCliOptions, args);
         } catch (ParseException e) {
-            throw new IOException(e);
+            throw new OptionException(e.getMessage() + ".");
         }
 
         @SuppressWarnings("unchecked")

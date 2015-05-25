@@ -1,4 +1,4 @@
-package de.glmtk.options;
+package de.glmtk.options.custom;
 
 import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 
+import de.glmtk.options.Option;
+import de.glmtk.options.OptionException;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
@@ -35,8 +37,8 @@ public class EstimatorOption extends Option {
         VALUES.put("WSA", Estimators.WEIGHTEDSUM_AVERAGE);
     }
 
-    /* package */static final String EXPLANATION;
-    /* package */static final String WEIGHTEDSUM_EXPLANATION;
+    protected static final String EXPLANATION;
+    protected static final String WEIGHTEDSUM_EXPLANATION;
     static {
         int longestAbbr = maxKeyLength(VALUES);
 
@@ -57,9 +59,9 @@ public class EstimatorOption extends Option {
         WEIGHTEDSUM_EXPLANATION = wsumExp.toString();
     }
 
-    /* package */static final Estimator parseEstimator(String estimatorString,
-                                                       boolean needWeightedSum,
-                                                       Option option) throws OptionException {
+    public static final Estimator parseEstimator(String estimatorString,
+                                                 boolean needWeightedSum,
+                                                 Option option) throws OptionException {
         Estimator estimator = VALUES.get(estimatorString.toUpperCase());
         if (estimator == null)
             throw new OptionException(
@@ -105,14 +107,14 @@ public class EstimatorOption extends Option {
     }
 
     @Override
-    /* package */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         if (needWeightedSum)
             return ImmutableMultimap.of(WEIGHTEDSUM_EXPLANATION, argname);
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname);

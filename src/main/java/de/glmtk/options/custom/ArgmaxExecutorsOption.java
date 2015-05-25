@@ -1,14 +1,17 @@
-package de.glmtk.options;
+package de.glmtk.options.custom;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static de.glmtk.options.ArgmaxExecutorOption.EXPLANATION;
-import static de.glmtk.options.ArgmaxExecutorOption.parseArgmaxExecutor;
+import static de.glmtk.options.custom.ArgmaxExecutorOption.EXPLANATION;
+import static de.glmtk.options.custom.ArgmaxExecutorOption.parseArgmaxExecutor;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+
+import de.glmtk.options.Option;
+import de.glmtk.options.OptionException;
 
 public class ArgmaxExecutorsOption extends Option {
     public static final String DEFAULT_ARGNAME = ArgmaxExecutorOption.DEFAULT_ARGNAME;
@@ -41,12 +44,12 @@ public class ArgmaxExecutorsOption extends Option {
     }
 
     @Override
-    /* package */Multimap<String, String> registerExplanation() {
+    protected Multimap<String, String> registerExplanation() {
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
     @Override
-    /* package */org.apache.commons.cli.Option createCommonsCliOption() {
+    protected org.apache.commons.cli.Option createCommonsCliOption() {
         org.apache.commons.cli.Option commonsCliOption = new org.apache.commons.cli.Option(
                 shortopt, longopt, true, desc);
         commonsCliOption.setArgName(argname + MULTIPLE_ARG_SUFFIX);
