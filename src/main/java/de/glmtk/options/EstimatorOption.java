@@ -14,6 +14,7 @@ import com.google.common.collect.Multimap;
 
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 
 public class EstimatorOption extends Option {
     public static final String DEFAULT_ARGNAME = "ESTIMATOR";
@@ -35,29 +36,43 @@ public class EstimatorOption extends Option {
     }
 
     /* package */static final String EXPLANATION;
+    /* package */static final String WEIGHTEDSUM_EXPLANATION;
     static {
         int longestAbbr = maxKeyLength(VALUES);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("Where <%s> may be any of:\n");
-        for (Entry<String, Estimator> estimator : VALUES.entrySet())
-            sb.append(format("  * %-" + longestAbbr + "s - %s\n",
-                    estimator.getKey(), estimator.getValue().getName()));
+        StringBuilder exp = new StringBuilder();
+        StringBuilder wsumExp = new StringBuilder();
+        exp.append("Where <%s> may be any of:\n");
+        wsumExp.append("Where <%s> may be any of:\n");
+        for (Entry<String, Estimator> estimator : VALUES.entrySet()) {
+            String line = format("  * %-" + longestAbbr + "s - %s\n",
+                    estimator.getKey(), estimator.getValue().getName());
 
-        EXPLANATION = sb.toString();
+            exp.append(line);
+            if (estimator.getValue() instanceof WeightedSumEstimator)
+                wsumExp.append(line);
+        }
+
+        EXPLANATION = exp.toString();
+        WEIGHTEDSUM_EXPLANATION = wsumExp.toString();
     }
 
     /* package */static final Estimator parseEstimator(String estimatorString,
+                                                       boolean needWeightedSum,
                                                        Option option) throws OptionException {
         Estimator estimator = VALUES.get(estimatorString.toUpperCase());
         if (estimator == null)
             throw new OptionException(
                     "Option %s estimator not recognized: '%s'. Valid Values: %s.",
                     option, estimatorString, join(VALUES.keySet(), ", "));
+        if (needWeightedSum && !(estimator instanceof WeightedSumEstimator))
+            throw new OptionException("Option %s estimator needs to be a "
+                    + "weighted sum estimator.", option);
         return estimator;
     }
 
     private String argname;
+    private boolean needWeightedSum = false;
     private Estimator value = null;
 
     public EstimatorOption(String shortopt,
@@ -77,6 +92,13 @@ public class EstimatorOption extends Option {
         this.argname = argname;
     }
 
+    public EstimatorOption needWeightedSum() {
+        needWeightedSum = true;
+        if (argname.equals(DEFAULT_ARGNAME))
+            argname = "WEIGHTEDSUM_ESTIMATOR";
+        return this;
+    }
+
     public EstimatorOption defaultValue(Estimator defaultValue) {
         value = defaultValue;
         return this;
@@ -84,6 +106,8 @@ public class EstimatorOption extends Option {
 
     @Override
     /* package */Multimap<String, String> registerExplanation() {
+        if (needWeightedSum)
+            return ImmutableMultimap.of(WEIGHTEDSUM_EXPLANATION, argname);
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
@@ -99,7 +123,8 @@ public class EstimatorOption extends Option {
     @Override
     protected void handleParse(org.apache.commons.cli.Option commonsCliOption) throws OptionException {
         checkOnlyDefinedOnce();
-        value = parseEstimator(commonsCliOption.getValue(), this);
+        value = parseEstimator(commonsCliOption.getValue(), needWeightedSum,
+                this);
     }
 
     public Estimator getEstimator() {

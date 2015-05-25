@@ -2,6 +2,7 @@ package de.glmtk.options;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.EstimatorOption.EXPLANATION;
+import static de.glmtk.options.EstimatorOption.WEIGHTEDSUM_EXPLANATION;
 import static de.glmtk.options.EstimatorOption.parseEstimator;
 import static java.util.Objects.requireNonNull;
 
@@ -16,6 +17,7 @@ public class EstimatorsOption extends Option {
     public static final String DEFAULT_ARGNAME = EstimatorOption.DEFAULT_ARGNAME;
 
     private String argname;
+    private boolean needWeightedSum = false;
     private List<Estimator> value = newArrayList();
     private boolean explicitDefault = false;
 
@@ -36,6 +38,13 @@ public class EstimatorsOption extends Option {
         this.argname = argname;
     }
 
+    public EstimatorsOption needWeightedSum() {
+        needWeightedSum = true;
+        if (argname.equals(DEFAULT_ARGNAME))
+            argname = "WEIGHTEDSUM_ESTIMATOR";
+        return this;
+    }
+
     public EstimatorsOption defaultValue(List<Estimator> defaultValue) {
         value = defaultValue;
         explicitDefault = true;
@@ -44,6 +53,8 @@ public class EstimatorsOption extends Option {
 
     @Override
     /* package */Multimap<String, String> registerExplanation() {
+        if (needWeightedSum)
+            return ImmutableMultimap.of(WEIGHTEDSUM_EXPLANATION, argname);
         return ImmutableMultimap.of(EXPLANATION, argname);
     }
 
@@ -64,7 +75,7 @@ public class EstimatorsOption extends Option {
         }
 
         for (String estimatorString : commonsCliOption.getValues())
-            value.add(parseEstimator(estimatorString, this));
+            value.add(parseEstimator(estimatorString, needWeightedSum, this));
     }
 
     public List<Estimator> getEstimators() {

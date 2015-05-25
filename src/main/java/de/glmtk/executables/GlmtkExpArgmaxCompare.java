@@ -77,7 +77,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 "Executors to compare. Can be specified multiple times.");
         optionEstimators = new EstimatorsOption("e", "estimator",
                 "Estimators to use. Only weighted sum Estimators are allowed. "
-                        + "Can be specified multiple times.");
+                        + "Can be specified multiple times.").needWeightedSum();
         optionQuery = new PathsOption("q", "query",
                 "Query the given files. Can be specified multiple times.").mustExist().needFiles();
         optionRandomAccess = new BooleanOption("r", "random-access",
@@ -283,7 +283,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                             + "."
                                             + type.substring(0,
                                                     type.length() - 1)),
-                                                    Constants.CHARSET)) {
+                                    Constants.CHARSET)) {
 
                         String line;
                         int i = 0;
