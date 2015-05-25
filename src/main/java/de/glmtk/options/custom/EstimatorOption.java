@@ -2,6 +2,7 @@ package de.glmtk.options.custom;
 
 import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -60,7 +61,7 @@ public class EstimatorOption extends Option {
     }
 
     public static final Estimator parseEstimator(String estimatorString,
-                                                 boolean constrainWeightedSum,
+                                                 boolean requireWeightedSum,
                                                  Option option) throws OptionException {
         requireNonNull(estimatorString);
         requireNonNull(option);
@@ -70,15 +71,14 @@ public class EstimatorOption extends Option {
             throw new OptionException(
                     "Option %s estimator not recognized: '%s'. Valid Values: %s.",
                     option, estimatorString, join(VALUES.keySet(), ", "));
-        if (constrainWeightedSum
-                && !(estimator instanceof WeightedSumEstimator))
+        if (requireWeightedSum && !(estimator instanceof WeightedSumEstimator))
             throw new OptionException("Option %s estimator needs to be a "
                     + "weighted sum estimator.", option);
         return estimator;
     }
 
     private Arg arg = new Arg(DEFAULT_ARGNAME, 1, EXPLANATION);
-    private boolean constrainWeightedSum = false;
+    private boolean requireWeightedSum = false;
     private Estimator value = null;
 
     public EstimatorOption(String shortopt,
@@ -89,12 +89,13 @@ public class EstimatorOption extends Option {
 
     public EstimatorOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
 
-    public EstimatorOption constrainWeightedSum() {
-        constrainWeightedSum = true;
+    public EstimatorOption requireWeightedSum() {
+        requireWeightedSum = true;
         if (arg.name.equals(DEFAULT_ARGNAME))
             arg.name = "WEIGHTEDSUM_ESTIMATOR";
         arg.explanation = WEIGHTEDSUM_EXPLANATION;
@@ -113,7 +114,7 @@ public class EstimatorOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        value = parseEstimator(arg.values.get(0), constrainWeightedSum, this);
+        value = parseEstimator(arg.value, requireWeightedSum, this);
     }
 
     public Estimator getEstimator() {

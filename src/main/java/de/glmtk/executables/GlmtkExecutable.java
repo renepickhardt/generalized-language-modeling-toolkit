@@ -1,36 +1,36 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.executables;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
-import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
-import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
-import static de.glmtk.util.NioUtils.CheckFile.IS_NO_DIRECTORY;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +39,9 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
@@ -54,14 +57,13 @@ import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.FileFormatException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.IntegerOption;
-import de.glmtk.options.PathOption;
+import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
 import de.glmtk.options.custom.QueryModeFilesOption;
 import de.glmtk.options.custom.QueryModeOption;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.probability.QueryMode;
-import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 
@@ -72,7 +74,7 @@ public class GlmtkExecutable extends Executable {
         new GlmtkExecutable().run(args);
     }
 
-    private PathOption optionWorkingDir;
+    private CorpusOption optionCorpus;
     private IntegerOption optionTrainingOrder;
     private EstimatorsOption optionEstimators;
     private QueryModeOption optionIo;
@@ -80,7 +82,7 @@ public class GlmtkExecutable extends Executable {
 
     private Path corpus = null;
     private Path workingDir = null;
-    private Integer trainingOrder = null;
+    private int trainingOrder = 5;
     private Set<Estimator> estimators = new LinkedHashSet<>();
     private QueryMode ioQueryMode = null;
     private List<Entry<QueryMode, Set<Path>>> queries = new LinkedList<>();
@@ -94,18 +96,19 @@ public class GlmtkExecutable extends Executable {
 
     @Override
     protected void registerOptions() {
-        optionWorkingDir = new PathOption("w", "workingdir",
-                "Working directory.").constrainMayExist().constrainDirectory();
+        optionCorpus = new CorpusOption("c", "corpus",
+                "Give corpus and maybe working directory.");
         optionTrainingOrder = new IntegerOption("n", "training-order",
-                "Order to learn for training.").constainPositive().contrainNotZero();
+                "Order to learn for training.").requirePositive().requireNotZero().defaultValue(
+                -1);
         optionEstimators = new EstimatorsOption("e", "estimator",
-                "Estimators to learn for and query with.");
+                "Estimators to learn for and query with.").defaultValue(ImmutableList.of((Estimator) Estimators.FAST_MLE));
         optionIo = new QueryModeOption("i", "io",
                 "Takes queries from standard input with given mode.");
         optionQuery = new QueryModeFilesOption("q", "query",
                 "Query the given files with given mode.");
 
-        optionManager.register(optionWorkingDir, optionTrainingOrder,
+        optionManager.register(optionCorpus, optionTrainingOrder,
                 optionEstimators, optionIo, optionQuery);
     }
 
@@ -123,42 +126,34 @@ public class GlmtkExecutable extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
-        corpus = parseInputArg();
-
-        if (NioUtils.checkFile(corpus, IS_DIRECTORY)) {
-            if (workingDir != null)
-                throw new CliArgumentException(
-                        String.format(
-                                "Can't use %s option if using existing working directory as input.",
-                                optionWorkingDir));
-
-            workingDir = corpus;
-            corpus = getWorkingDirFile(workingDir, Constants.TRAINING_FILE_NAME);
-            getWorkingDirFile(workingDir, Constants.STATUS_FILE_NAME);
-        } else {
-            if (workingDir == null)
-                workingDir = Paths.get(corpus + Constants.WORKING_DIR_SUFFIX);
-            if (NioUtils.checkFile(workingDir, EXISTS, IS_NO_DIRECTORY))
-                throw new IOException(
-                        String.format(
-                                "Working directory '%s' already exists but is not a directory.",
-                                workingDir));
-        }
-
+        corpus = optionCorpus.getCorpus();
+        workingDir = optionCorpus.getWorkingDir();
         checkCorpusForReservedSymbols();
 
-        if (estimators.isEmpty())
-            estimators.add(Estimators.FAST_MLE);
+        trainingOrder = optionTrainingOrder.getInt();
+        if (trainingOrder == -1)
+            trainingOrder = calculateTrainingOrder();
+        else
+            verifyTrainingOrder();
 
+        estimators = newHashSet(optionEstimators.getEstimators());
+
+        if (optionIo.wasGiven() && optionQuery.wasGiven())
+            throw new CliArgumentException(
+                    "The options %s and %s are mutually exclusive.", optionIo,
+                    optionQuery);
+
+        ioQueryMode = optionIo.getQueryMode();
         if (ioQueryMode != null && estimators.size() > 1)
             throw new CliArgumentException(String.format(
                     "Can specify at most one estimator if using option %s.",
                     optionIo));
 
-        if (trainingOrder == null)
-            trainingOrder = calculateTrainingOrder();
-        else
-            verifyTrainingOrder();
+        queries = newArrayList();
+        Multimap<QueryMode, Path> queryModeFiles = optionQuery.getQueryModeFiles();
+        for (QueryMode queryMode : queryModeFiles.keySet())
+            queries.add(new AbstractMap.SimpleEntry<QueryMode, Set<Path>>(
+                    queryMode, newLinkedHashSet(queryModeFiles.get(queryMode))));
 
         // Need to create workingDirectory here in order to create Logger for
         // "<workingdir>/log" as soon as possible.
@@ -169,94 +164,6 @@ public class GlmtkExecutable extends Executable {
                     "Could not create working directory '%s'.", workingDir), e);
         }
     }
-
-    //    private void parseFlags() throws IOException {
-    //        @SuppressWarnings("unchecked")
-    //        Iterator<Option> iter = line.iterator();
-    //        while (iter.hasNext()) {
-    //            Option option = iter.next();
-    //
-    //            if (option.equals(OPTION_WORKINGDIR)) {
-    //                optionFirstTimeOrFail(workingDir, option);
-    //                workingDir = Paths.get(option.getValue());
-    //
-    //            } else if (option.equals(OPTION_TRAINING_ORDER)) {
-    //                optionFirstTimeOrFail(trainingOrder, option);
-    //                trainingOrder = optionPositiveIntOrFail(option.getValue(),
-    //                        false, "Illegal %s argument", makeOptionString(option));
-    //
-    //            } else if (option.equals(OPTION_ESTIMATOR))
-    //                for (String opt : option.getValues()) {
-    //                    Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
-    //                    if (estimator == null)
-    //                        throw new CliArgumentException(
-    //                                String.format(
-    //                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
-    //                                        makeOptionString(option),
-    //                                        opt,
-    //                                        StringUtils.join(
-    //                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
-    //                                                "', '")));
-    //                    estimators.add(estimator);
-    //                }
-    //
-    //            else if (option.equals(OPTION_IO)) {
-    //                optionFirstTimeOrFail(ioQueryMode, option);
-    //                if (!queries.isEmpty())
-    //                    throw new CliArgumentException(String.format(
-    //                            "The options %s and %s are mutually exclusive.",
-    //                            makeOptionString(OPTION_IO),
-    //                            makeOptionString(OPTION_QUERY)));
-    //
-    //                try {
-    //                    ioQueryMode = QueryMode.forString(option.getValue());
-    //                } catch (RuntimeException e) {
-    //                    throw new CliArgumentException(String.format(
-    //                            "Illegal %s argument: %s",
-    //                            makeOptionString(option), e.getMessage()));
-    //                }
-    //
-    //            } else if (option.equals(OPTION_QUERY)) {
-    //                if (ioQueryMode != null)
-    //                    throw new CliArgumentException(String.format(
-    //                            "The options %s and %s are mutually exclusive.",
-    //                            makeOptionString(OPTION_IO),
-    //                            makeOptionString(OPTION_QUERY)));
-    //
-    //                String[] opts = option.getValues();
-    //                if (opts.length < 2)
-    //                    throw new CliArgumentException(
-    //                            String.format(
-    //                                    "Illegal %s argument: Must specify mode and at least one file.",
-    //                                    makeOptionString(option)));
-    //
-    //                QueryMode queryMode = null;
-    //                try {
-    //                    queryMode = QueryMode.forString(opts[0]);
-    //                } catch (RuntimeException e) {
-    //                    throw new CliArgumentException(String.format(
-    //                            "Illegal %s argument: %s",
-    //                            makeOptionString(option), e.getMessage()));
-    //                }
-    //
-    //                Set<Path> files = new HashSet<>();
-    //                for (int i = 1; i != opts.length; ++i)
-    //                    files.add(getAndCheckFile(opts[i]));
-    //
-    //                queries.add(new SimpleEntry<>(queryMode, files));
-    //            }
-    //
-    //            else if (option.equals(OPTION_LOG_CONSOLE))
-    //                logConsole = true;
-    //
-    //            else if (option.equals(OPTION_LOG_DEBUG))
-    //                logDebug = true;
-    //
-    //            else
-    //                throw new CliArgumentException(String.format(
-    //                        "Unexpected option: '%s'.", option));
-    //        }
-    //    }
 
     private void checkCorpusForReservedSymbols() throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(corpus,

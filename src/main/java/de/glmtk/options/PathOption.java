@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isReadable;
@@ -17,10 +18,15 @@ public class PathOption extends Option {
     public static final String DEFAULT_ARGNAME = "PATH";
 
     public static Path parsePath(String pathString,
-                                 boolean constrainMayExist,
-                                 boolean constrainMustExist,
-                                 boolean constrainFile,
-                                 boolean constrainDirectory,
+                                 Option option) throws OptionException {
+        return parsePath(pathString, false, false, false, false, option);
+    }
+
+    public static Path parsePath(String pathString,
+                                 boolean requireMayExist,
+                                 boolean requireMustExist,
+                                 boolean requireFile,
+                                 boolean requireDirectory,
                                  Option option) throws OptionException {
         requireNonNull(pathString);
         requireNonNull(option);
@@ -34,21 +40,21 @@ public class PathOption extends Option {
                     e.getMessage());
         }
 
-        if (!constrainMayExist && !constrainMustExist)
+        if (!requireMayExist && !requireMustExist)
             return path;
-        if (constrainMayExist && !exists(path))
+        if (requireMayExist && !exists(path))
             return path;
-        if (constrainMustExist && !exists(path))
+        if (requireMustExist && !exists(path))
             throw new OptionException("Option %s path does not exist: '%s'.",
                     option, path);
 
         if (!isReadable(path))
             throw new OptionException("Option %s path does exist, "
                     + "but is not readable: '%s'.", option, path);
-        if (constrainFile && !isRegularFile(path))
+        if (requireFile && !isRegularFile(path))
             throw new OptionException("Option %s path is required to be a "
                     + "file, but was not: '%s'.", option, path);
-        else if (constrainDirectory && !isDirectory(path))
+        else if (requireDirectory && !isDirectory(path))
             throw new OptionException("Option %s path is required to be a "
                     + "directory, but was not: '%s'.", option, path);
 
@@ -56,10 +62,10 @@ public class PathOption extends Option {
     }
 
     private Arg arg = new Arg(DEFAULT_ARGNAME, 1);
-    private boolean constrainMayExist = false;
-    private boolean constrainMustExist = false;
-    private boolean constrainFile = false;
-    private boolean constrainDirectory = false;
+    private boolean requireMayExist = false;
+    private boolean requireMustExist = false;
+    private boolean requireFile = false;
+    private boolean requireDirectory = false;
     private Path value = null;
 
     public PathOption(String shortopt,
@@ -70,53 +76,54 @@ public class PathOption extends Option {
 
     public PathOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
 
-    public PathOption constrainMayExist() {
-        constrainMayExist = true;
-        checkConstraintsConflict();
+    public PathOption requireMayExist() {
+        requireMayExist = true;
+        checkrequiretsConflict();
         return this;
     }
 
     /**
      * Checks if path exists and is readable.
      */
-    public PathOption constrainMustExist() {
-        constrainMustExist = true;
-        checkConstraintsConflict();
+    public PathOption requireMustExist() {
+        requireMustExist = true;
+        checkrequiretsConflict();
         return this;
     }
 
-    public PathOption constrainFile() {
-        constrainFile = true;
-        checkConstraintsConflict();
+    public PathOption requireFile() {
+        requireFile = true;
+        checkrequiretsConflict();
         improveArgName();
         return this;
     }
 
-    public PathOption constrainDirectory() {
-        constrainDirectory = true;
-        checkConstraintsConflict();
+    public PathOption requireDirectory() {
+        requireDirectory = true;
+        checkrequiretsConflict();
         improveArgName();
         return this;
     }
 
-    private void checkConstraintsConflict() {
-        if (constrainFile && constrainDirectory)
+    private void checkrequiretsConflict() {
+        if (requireFile && requireDirectory)
             throw new IllegalStateException(
                     "Conflict: both needFile() and needDirectory() active.");
-        if (constrainMayExist & constrainMustExist)
+        if (requireMayExist & requireMustExist)
             throw new IllegalStateException(
                     "Conflict: both mayExist() and mustExist() active.");
     }
 
     private void improveArgName() {
         if (arg.name.equals(DEFAULT_ARGNAME))
-            if (constrainFile)
+            if (requireFile)
                 arg.name = "FILE";
-            else if (constrainDirectory)
+            else if (requireDirectory)
                 arg.name = "DIR";
     }
 
@@ -132,8 +139,8 @@ public class PathOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        value = parsePath(arg.values.get(0), constrainMayExist,
-                constrainMustExist, constrainFile, constrainDirectory, this);
+        value = parsePath(arg.value, requireMayExist, requireMustExist,
+                requireFile, requireDirectory, this);
     }
 
     public Path getPath() {

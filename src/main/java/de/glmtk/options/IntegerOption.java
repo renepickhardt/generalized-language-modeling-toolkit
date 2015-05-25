@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -10,8 +11,8 @@ public class IntegerOption extends Option {
     public static final String DEFAULT_ARGNAME = "INT";
 
     public static final int parseInteger(String integerString,
-                                         boolean constrainPositive,
-                                         boolean constrainNotZero,
+                                         boolean requirePositive,
+                                         boolean requireNotZero,
                                          Option option) throws OptionException {
         requireNonNull(integerString);
         requireNonNull(option);
@@ -25,20 +26,20 @@ public class IntegerOption extends Option {
                     e.getMessage());
         }
 
-        if (constrainPositive && value < 0)
+        if (requirePositive && value < 0)
             throw new OptionException(
                     "Option %s must not be negative, got '%d' instead.",
                     option, value);
 
-        if (constrainNotZero && value == 0)
+        if (requireNotZero && value == 0)
             throw new OptionException("Option %s must not be zero.", option);
 
         return value;
     }
 
     private Arg arg = new Arg(DEFAULT_ARGNAME, 1);
-    private boolean constrainPositive = false;
-    private boolean constrainNotZero = false;
+    private boolean requirePositive = false;
+    private boolean requireNotZero = false;
     private int value = 0;
 
     public IntegerOption(String shortopt,
@@ -49,6 +50,7 @@ public class IntegerOption extends Option {
 
     public IntegerOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
@@ -56,25 +58,25 @@ public class IntegerOption extends Option {
     /**
      * Allows zero and greater integers.
      */
-    public IntegerOption constainPositive() {
-        constrainPositive = true;
+    public IntegerOption requirePositive() {
+        requirePositive = true;
         improveArgName();
         return this;
     }
 
-    public IntegerOption contrainNotZero() {
-        constrainNotZero = true;
+    public IntegerOption requireNotZero() {
+        requireNotZero = true;
         improveArgName();
         return this;
     }
 
     private void improveArgName() {
         if (arg.name.equals(DEFAULT_ARGNAME))
-            if (constrainPositive && constrainNotZero)
+            if (requirePositive && requireNotZero)
                 arg.name += ">0";
-            else if (constrainPositive)
+            else if (requirePositive)
                 arg.name += ">=0";
-            else if (constrainNotZero)
+            else if (requireNotZero)
                 arg.name += "!=0";
     }
 
@@ -90,8 +92,7 @@ public class IntegerOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        value = parseInteger(arg.values.get(0), constrainPositive,
-                constrainNotZero, this);
+        value = parseInteger(arg.value, requirePositive, requireNotZero, this);
     }
 
     public int getInt() {

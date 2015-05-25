@@ -1,15 +1,9 @@
 package de.glmtk.executables;
 
-import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
-import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
-import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
-
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import de.glmtk.Constants;
@@ -20,7 +14,7 @@ import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Patterns;
 import de.glmtk.logging.Logger;
-import de.glmtk.util.NioUtils;
+import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkDelUnk extends Executable {
@@ -29,6 +23,8 @@ public class GlmtkDelUnk extends Executable {
     public static void main(String[] args) {
         new GlmtkDelUnk().run(args);
     }
+
+    private CorpusOption optionCorpus;
 
     private Path corpus = null;
     private Path workingDir = null;
@@ -40,6 +36,10 @@ public class GlmtkDelUnk extends Executable {
 
     @Override
     protected void registerOptions() {
+        optionCorpus = new CorpusOption("c", "corpus",
+                "Give corpus and maybe working directory.");
+
+        optionManager.register(optionCorpus);
     }
 
     @Override
@@ -56,21 +56,8 @@ public class GlmtkDelUnk extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
-        corpus = parseInputArg();
-
-        if (NioUtils.checkFile(corpus, IS_DIRECTORY))
-            workingDir = corpus;
-        else
-            workingDir = Paths.get(corpus + Constants.WORKING_DIR_SUFFIX);
-        corpus = getWorkingDirFile(workingDir, Constants.TRAINING_FILE_NAME);
-        if (!NioUtils.checkFile(workingDir, IS_DIRECTORY))
-            throw new IOException(String.format(
-                    "Working directory '%s' is not a directory.", workingDir));
-        if (!NioUtils.checkFile(workingDir, EXISTS, IS_READABLE))
-            throw new IOException(
-                    String.format(
-                            "Working directory '%s' does not exist or is not readable.",
-                            workingDir));
+        corpus = optionCorpus.getCorpus();
+        workingDir = optionCorpus.getWorkingDir();
     }
 
     @Override

@@ -16,7 +16,7 @@ public class OptionException extends Exception {
 
     public OptionException(String format,
                            Object... args) {
-        super(format(format, args));
+        this(format(format, args));
     }
 
     public OptionException(Throwable cause) {

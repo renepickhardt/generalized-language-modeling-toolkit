@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.custom.EstimatorOption.EXPLANATION;
 import static de.glmtk.options.custom.EstimatorOption.WEIGHTEDSUM_EXPLANATION;
 import static de.glmtk.options.custom.EstimatorOption.parseEstimator;
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -17,8 +18,8 @@ import de.glmtk.querying.estimator.Estimator;
 public class EstimatorsOption extends Option {
     public static final String DEFAULT_ARGNAME = EstimatorOption.DEFAULT_ARGNAME;
 
-    private Arg arg = new Arg(DEFAULT_ARGNAME, MORE_THAN_ONE, EXPLANATION);
-    private boolean constrainWeightedSum = false;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, GREATER_ONE, EXPLANATION);
+    private boolean requireWeightedSum = false;
     private List<Estimator> value = newArrayList();
 
     public EstimatorsOption(String shortopt,
@@ -30,12 +31,13 @@ public class EstimatorsOption extends Option {
 
     public EstimatorsOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
 
     public EstimatorsOption needWeightedSum() {
-        constrainWeightedSum = true;
+        requireWeightedSum = true;
         if (arg.name.equals(DEFAULT_ARGNAME))
             arg.name = "WEIGHTEDSUM_ESTIMATOR";
         arg.explanation = WEIGHTEDSUM_EXPLANATION;
@@ -58,7 +60,7 @@ public class EstimatorsOption extends Option {
             value = newArrayList();
 
         for (String estimatorString : arg.values)
-            value.add(parseEstimator(estimatorString, constrainWeightedSum,
+            value.add(parseEstimator(estimatorString, requireWeightedSum,
                     this));
     }
 

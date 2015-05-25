@@ -3,6 +3,7 @@ package de.glmtk.options.custom;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.custom.ArgmaxExecutorOption.EXPLANATION;
 import static de.glmtk.options.custom.ArgmaxExecutorOption.parseArgmaxExecutor;
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import de.glmtk.options.OptionException;
 public class ArgmaxExecutorsOption extends Option {
     public static final String DEFAULT_ARGNAME = ArgmaxExecutorOption.DEFAULT_ARGNAME;
 
-    private Arg arg = new Arg(DEFAULT_ARGNAME, MORE_THAN_ONE, EXPLANATION);
+    private Arg arg = new Arg(DEFAULT_ARGNAME, GREATER_ONE, EXPLANATION);
     private List<String> value = newArrayList();
 
     public ArgmaxExecutorsOption(String shortopt,
@@ -27,6 +28,7 @@ public class ArgmaxExecutorsOption extends Option {
 
     public ArgmaxExecutorsOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }

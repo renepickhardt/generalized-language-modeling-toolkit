@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -13,6 +14,8 @@ public abstract class Option {
         public int count;
         public String explanation = null;
         public List<String> values = null;
+        /** Convenience for {@code values.get(0)}. */
+        public String value;
 
         public Arg(String name,
                    int count) {
@@ -29,7 +32,8 @@ public abstract class Option {
         }
     }
 
-    protected static final int MORE_THAN_ONE = -1;
+    protected static final int GREATER_ONE = -1;
+    protected static final int MAX_ONE = -2;
 
     /* package */String shortopt;
     /* package */String longopt;
@@ -45,6 +49,7 @@ public abstract class Option {
                   String longopt,
                   String desc) {
         requireNonNull(longopt);
+        requireNotEmpty(longopt);
         requireNonNull(desc);
 
         this.shortopt = shortopt;

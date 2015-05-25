@@ -1,5 +1,6 @@
 package de.glmtk.options.custom;
 
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -47,6 +48,7 @@ public class QueryModeOption extends Option {
 
     public QueryModeOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
@@ -63,7 +65,7 @@ public class QueryModeOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        value = parseQueryMode(arg.values.get(0), this);
+        value = parseQueryMode(arg.value, this);
     }
 
     public QueryMode getQueryMode() {

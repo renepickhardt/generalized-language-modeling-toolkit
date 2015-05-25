@@ -2,6 +2,7 @@ package de.glmtk.options;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.PathOption.parsePath;
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
@@ -12,11 +13,11 @@ import com.google.common.collect.ImmutableList;
 public class PathsOption extends Option {
     public static final String DEFAULT_ARGNAME = PathOption.DEFAULT_ARGNAME;
 
-    private Arg arg = new Arg(DEFAULT_ARGNAME, MORE_THAN_ONE);
-    private boolean constrainMayExist = false;
-    private boolean constrainMustExist = false;
-    private boolean constrainFiles = false;
-    private boolean constrainDirectories = false;
+    private Arg arg = new Arg(DEFAULT_ARGNAME, GREATER_ONE);
+    private boolean requireMayExist = false;
+    private boolean requireMustExist = false;
+    private boolean requireFiles = false;
+    private boolean requireDirectories = false;
     private List<Path> value = newArrayList();
 
     public PathsOption(String shortopt,
@@ -28,53 +29,54 @@ public class PathsOption extends Option {
 
     public PathsOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
 
-    public PathsOption constrainMayExist() {
-        constrainMayExist = true;
-        checkConstraintsConflict();
+    public PathsOption requireMayExist() {
+        requireMayExist = true;
+        checkrequiretsConflict();
         return this;
     }
 
     /**
      * Checks if paths exists and is readable.
      */
-    public PathsOption constrainMustExist() {
-        constrainMustExist = true;
-        checkConstraintsConflict();
+    public PathsOption requireMustExist() {
+        requireMustExist = true;
+        checkrequiretsConflict();
         return this;
     }
 
-    public PathsOption constrainFiles() {
-        constrainFiles = true;
-        checkConstraintsConflict();
+    public PathsOption requireFiles() {
+        requireFiles = true;
+        checkrequiretsConflict();
         improveArgName();
         return this;
     }
 
     public PathsOption needDirectories() {
-        constrainDirectories = true;
-        checkConstraintsConflict();
+        requireDirectories = true;
+        checkrequiretsConflict();
         improveArgName();
         return this;
     }
 
-    private void checkConstraintsConflict() {
-        if (constrainFiles && constrainDirectories)
+    private void checkrequiretsConflict() {
+        if (requireFiles && requireDirectories)
             throw new IllegalStateException(
                     "Conflict: both needFiles() and needDirectories() active.");
-        if (constrainMayExist & constrainMustExist)
+        if (requireMayExist & requireMustExist)
             throw new IllegalStateException(
                     "Conflict: both mayExist() and mustExist() active.");
     }
 
     private void improveArgName() {
         if (arg.name.equals(DEFAULT_ARGNAME))
-            if (constrainFiles)
+            if (requireFiles)
                 arg.name = "FILE";
-            else if (constrainDirectories)
+            else if (requireDirectories)
                 arg.name = "DIR";
     }
 
@@ -94,8 +96,8 @@ public class PathsOption extends Option {
             value = newArrayList();
 
         for (String pathString : arg.values)
-            value.add(parsePath(pathString, constrainMayExist,
-                    constrainMustExist, constrainFiles, constrainDirectories,
+            value.add(parsePath(pathString, requireMayExist,
+                    requireMustExist, requireFiles, requireDirectories,
                     this));
     }
 

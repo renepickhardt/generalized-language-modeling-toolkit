@@ -1,5 +1,6 @@
 package de.glmtk.options;
 
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.util.List;
@@ -10,7 +11,7 @@ public class DoubleOption extends Option {
     public static final String DEFAULT_ARGNAME = "FLOAT";
 
     public static double parseDouble(String doubleString,
-                                     boolean constrainProbability,
+                                     boolean requireProbability,
                                      Option option) throws OptionException {
         requireNonNull(doubleString);
         requireNonNull(option);
@@ -24,7 +25,7 @@ public class DoubleOption extends Option {
                     doubleString, e.getMessage());
         }
 
-        if (constrainProbability && (value < 0.0 || value > 1.0))
+        if (requireProbability && (value < 0.0 || value > 1.0))
             throw new OptionException("Option %s must be a valid probability "
                     + "in the range of [0.0, 1.0], got '%.2f' instead.",
                     option, value);
@@ -33,7 +34,7 @@ public class DoubleOption extends Option {
     }
 
     private Arg arg = new Arg(DEFAULT_ARGNAME, 1);
-    private boolean constrainProbability = false;
+    private boolean requireProbability = false;
     private double value = 0.0;
 
     public DoubleOption(String shortopt,
@@ -44,6 +45,7 @@ public class DoubleOption extends Option {
 
     public DoubleOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
@@ -51,8 +53,8 @@ public class DoubleOption extends Option {
     /**
      * Must be in [0.0, 1.0].
      */
-    public DoubleOption constrainProbability() {
-        constrainProbability = true;
+    public DoubleOption requireProbability() {
+        requireProbability = true;
         return this;
     }
 
@@ -68,7 +70,7 @@ public class DoubleOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        value = parseDouble(arg.values.get(0), constrainProbability, this);
+        value = parseDouble(arg.value, requireProbability, this);
     }
 
     public double getDouble() {

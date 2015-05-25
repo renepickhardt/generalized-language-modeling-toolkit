@@ -1,16 +1,13 @@
 package de.glmtk.executables;
 
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static de.glmtk.common.Output.OUTPUT;
-import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
-import static de.glmtk.util.NioUtils.CheckFile.IS_DIRECTORY;
-import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,9 +25,9 @@ import de.glmtk.logging.Logger;
 import de.glmtk.options.IntegerOption;
 import de.glmtk.options.PathOption;
 import de.glmtk.options.PathsOption;
+import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
 import de.glmtk.querying.estimator.Estimator;
-import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExpEstimatorTimeExecutable extends Executable {
@@ -40,6 +37,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         new GlmtkExpEstimatorTimeExecutable().run(args);
     }
 
+    private CorpusOption optionCorpus;
     private EstimatorsOption optionEstimators;
     private PathsOption optionQuery;
     private IntegerOption optionRuns;
@@ -59,17 +57,19 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
     @Override
     protected void registerOptions() {
+        optionCorpus = new CorpusOption("c", "corpus",
+                "Give corpus and maybe working directory.");
         optionEstimators = new EstimatorsOption("e", "estimator",
                 "Estimators to check.");
         optionQuery = new PathsOption("q", "query",
-                "Query the given files. Can be specified multiple times.").constrainMustExist().constrainFiles();
+                "Query the given files. Can be specified multiple times.").requireMustExist().requireFiles();
         optionRuns = new IntegerOption("N", "num-runs",
-                "Number of times to run. Default: 1.").constainPositive().contrainNotZero();
+                "Number of times to run. Default: 1.").defaultValue(1).requirePositive().requireNotZero();
         optionCacheFile = new PathOption("c", "cache-file",
-                "File to generate query cache from for all query files.").constrainMustExist().constrainFile();
+                "File to generate query cache from for all query files.").requireMustExist().requireFile();
 
-        optionManager.register(optionEstimators, optionQuery, optionRuns,
-                optionCacheFile);
+        optionManager.register(optionCorpus, optionEstimators, optionQuery,
+                optionRuns, optionCacheFile);
     }
 
     @Override
@@ -86,32 +86,21 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
-        corpus = parseInputArg();
+        corpus = optionCorpus.getCorpus();
+        workingDir = optionCorpus.getWorkingDir();
 
-        if (NioUtils.checkFile(corpus, IS_DIRECTORY))
-            workingDir = corpus;
-        else
-            workingDir = Paths.get(corpus + Constants.WORKING_DIR_SUFFIX);
-        corpus = getWorkingDirFile(workingDir, Constants.TRAINING_FILE_NAME);
-        if (!NioUtils.checkFile(workingDir, IS_DIRECTORY))
-            throw new IOException(String.format(
-                    "Working directory '%s' is not a directory.", workingDir));
-        if (!NioUtils.checkFile(workingDir, EXISTS, IS_READABLE))
-            throw new IOException(
-                    String.format(
-                            "Working directory '%s' does not exist or is not readable.",
-                            workingDir));
-
+        estimators = newLinkedHashSet(optionEstimators.getEstimators());
         if (estimators.isEmpty())
             throw new CliArgumentException(String.format(
                     "No estimators given, use option %s.", optionEstimators));
 
+        queries = newLinkedHashSet(optionQuery.getPaths());
         if (queries.isEmpty())
             throw new CliArgumentException(String.format(
                     "No files to query given, use option %s.", optionQuery));
 
-        if (times == null)
-            times = 1;
+        times = optionRuns.getInt();
+        cacheFile = optionCacheFile.getPath();
     }
 
     //

@@ -31,12 +31,12 @@ public class CliArgumentException extends Termination {
     }
 
     public CliArgumentException(String message) {
-        super(message);
+        super(message + "\nTry --help for more information.");
     }
 
     public CliArgumentException(String format,
                                 Object... args) {
-        super(format(format, args));
+        this(format(format, args));
     }
 
     public CliArgumentException(Throwable cause) {

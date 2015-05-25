@@ -22,14 +22,9 @@ package de.glmtk.executables;
 
 import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
-import static de.glmtk.util.NioUtils.CheckFile.EXISTS;
-import static de.glmtk.util.NioUtils.CheckFile.IS_READABLE;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +39,6 @@ import de.glmtk.options.BooleanOption;
 import de.glmtk.options.OptionException;
 import de.glmtk.options.OptionManager;
 import de.glmtk.util.ExceptionUtils;
-import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
@@ -133,9 +127,7 @@ import de.glmtk.util.ThreadUtils;
         try {
             optionManager.parse(args);
         } catch (OptionException e) {
-            throw new CliArgumentException(
-                    "%s\nTry '%s --help' for more information.",
-                    e.getMessage(), getExecutableName());
+            throw new CliArgumentException(e.getMessage());
         }
 
         if (optionHelp.getBoolean()) {
@@ -145,7 +137,6 @@ import de.glmtk.util.ThreadUtils;
             System.out.println(getExecutableName() + " <INPUT> [OPTION...]");
             if (helpHeader != null)
                 System.out.println(helpHeader);
-            System.out.println();
 
             optionManager.help(System.out);
 
@@ -167,44 +158,25 @@ import de.glmtk.util.ThreadUtils;
         }
     }
 
-    protected Path parseInputArg() {
-        //        if (line.getArgList() == null || line.getArgList().size() != 1) {
-        //            String error;
-        //            if (line.getArgList().size() == 0)
-        //                error = "Missing input.\n";
-        //            else
-        //                error = String.format("Incorrect input: %s%n",
-        //                        StringUtils.join(line.getArgList(), " "));
-        //            throw new CliArgumentException(error + "Try '"
-        //                    + getExecutableName() + " --help' for more information.");
-        //        }
-        //
-        //        Path inputArg = Paths.get(line.getArgs()[0]);
-        //        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
-        //            throw new CliArgumentException(String.format(
-        //                    "Input file/dir '%s' does not exist or is not readable.",
-        //                    inputArg));
-        //        return inputArg;
-        return Paths.get("sup"); // FIXME
-    }
-
-    protected Path getAndCheckFile(String filename) throws IOException {
-        Path file = Paths.get(filename);
-        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
-            throw new IOException(String.format(
-                    "File '%s' does not exist or is not readable.", filename));
-        return file;
-    }
-
-    protected Path getWorkingDirFile(Path workingDir,
-                                     String filename) throws IOException {
-        Path file = workingDir.resolve(filename);
-        if (!NioUtils.checkFile(file, EXISTS, IS_READABLE))
-            throw new IOException(String.format(
-                    "%s file '%s' does not exist or is not readable.",
-                    filename, file));
-        return file;
-    }
+    //protected Path parseInputArg() {
+    //        if (line.getArgList() == null || line.getArgList().size() != 1) {
+    //            String error;
+    //            if (line.getArgList().size() == 0)
+    //                error = "Missing input.\n";
+    //            else
+    //                error = String.format("Incorrect input: %s%n",
+    //                        StringUtils.join(line.getArgList(), " "));
+    //            throw new CliArgumentException(error + "Try '"
+    //                    + getExecutableName() + " --help' for more information.");
+    //        }
+    //
+    //        Path inputArg = Paths.get(line.getArgs()[0]);
+    //        if (!NioUtils.checkFile(inputArg, EXISTS, IS_READABLE))
+    //            throw new CliArgumentException(String.format(
+    //                    "Input file/dir '%s' does not exist or is not readable.",
+    //                    inputArg));
+    //        return inputArg;
+    //}
 
     private void printLogHeader(String[] args) {
         LOGGER.info(StringUtils.repeat("=", 80));

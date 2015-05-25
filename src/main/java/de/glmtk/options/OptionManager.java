@@ -1,7 +1,8 @@
 package de.glmtk.options;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static de.glmtk.options.Option.MORE_THAN_ONE;
+import static de.glmtk.options.Option.GREATER_ONE;
+import static de.glmtk.options.Option.MAX_ONE;
 import static de.glmtk.util.StringUtils.join;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -49,14 +50,17 @@ public class OptionManager {
                 for (Arg arg : args) {
                     if (numArgs == org.apache.commons.cli.Option.UNLIMITED_VALUES)
                         throw new RuntimeException("Only the last option may "
-                                + "have an unlimited  number of values.");
+                                + "have an unspecified number of values.");
 
                     if (numArgs != 0)
                         argNamesBuilder.append("> <");
                     argNamesBuilder.append(arg.name);
 
-                    if (arg.count == MORE_THAN_ONE) {
+                    if (arg.count == GREATER_ONE) {
                         argNamesBuilder.append(MULTIPLE_ARG_SUFFIX);
+                        numArgs = org.apache.commons.cli.Option.UNLIMITED_VALUES;
+                    } else if (arg.count == MAX_ONE) {
+                        argNamesBuilder.append(OPTIONAL_ARG_SUFFIX);
                         numArgs = org.apache.commons.cli.Option.UNLIMITED_VALUES;
                     } else
                         numArgs += arg.count;
@@ -69,6 +73,7 @@ public class OptionManager {
     }
 
     private static final String MULTIPLE_ARG_SUFFIX = "...";
+    private static final String OPTIONAL_ARG_SUFFIX = "?";;
 
     private List<OptionWrapper> options = newArrayList();
     /** For sorting options in {@link #help(OutputStream)}. */
@@ -155,9 +160,12 @@ public class OptionManager {
                 arg.values = newArrayList();
 
                 try {
-                    if (arg.count == MORE_THAN_ONE) {
+                    if (arg.count == GREATER_ONE) {
                         arg.values.add(valuesIter.next());
                         while (valuesIter.hasNext())
+                            arg.values.add(valuesIter.next());
+                    } else if (arg.count == MAX_ONE) {
+                        if (valuesIter.hasNext())
                             arg.values.add(valuesIter.next());
                     } else
                         for (int i = 0; i != arg.count; ++i)
@@ -167,6 +175,8 @@ public class OptionManager {
                             + "arguments, need to have the form: <%s>",
                             optionWrapper.option, optionWrapper.argNames);
                 }
+
+                arg.value = arg.values.isEmpty() ? null : arg.values.get(0);
             }
 
             optionWrapper.option.runParse();

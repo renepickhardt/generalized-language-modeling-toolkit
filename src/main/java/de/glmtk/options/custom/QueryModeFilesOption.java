@@ -1,18 +1,17 @@
 package de.glmtk.options.custom;
 
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static de.glmtk.options.PathOption.parsePath;
 import static de.glmtk.options.custom.QueryModeOption.EXPLANATION;
 import static de.glmtk.options.custom.QueryModeOption.parseQueryMode;
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
@@ -24,8 +23,8 @@ public class QueryModeFilesOption extends Option {
 
     private Arg queryModeArg = new Arg(QUERY_MODE_DEFAULT_ARGNAME, 1,
             EXPLANATION);
-    private Arg filesArg = new Arg(FILES_DEFAULT_ARGNAME, MORE_THAN_ONE);
-    private Map<QueryMode, Set<Path>> value = newHashMap();
+    private Arg filesArg = new Arg(FILES_DEFAULT_ARGNAME, GREATER_ONE);
+    private Multimap<QueryMode, Path> value = LinkedHashMultimap.create();
 
     public QueryModeFilesOption(String shortopt,
                                 String longopt,
@@ -36,17 +35,19 @@ public class QueryModeFilesOption extends Option {
 
     public QueryModeFilesOption queryModeArgName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         queryModeArg.name = argName;
         return this;
     }
 
     public QueryModeFilesOption filesArgName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         filesArg.name = argName;
         return this;
     }
 
-    public QueryModeFilesOption defaultValue(Map<QueryMode, Set<Path>> defaultValue) {
+    public QueryModeFilesOption defaultValue(Multimap<QueryMode, Path> defaultValue) {
         value = defaultValue;
         return this;
     }
@@ -59,20 +60,15 @@ public class QueryModeFilesOption extends Option {
     @Override
     protected void parse() throws OptionException {
         if (!given)
-            value = newHashMap();
+            value = LinkedHashMultimap.create();
 
-        QueryMode queryMode = parseQueryMode(queryModeArg.values.get(0), this);
-        Set<Path> paths = value.get(queryMode);
-        if (paths == null) {
-            paths = newHashSet();
-            value.put(queryMode, paths);
-        }
-
+        QueryMode queryMode = parseQueryMode(queryModeArg.value, this);
         for (String pathString : filesArg.values)
-            paths.add(parsePath(pathString, false, true, true, false, this));
+            value.put(queryMode, parsePath(pathString, false, true, true,
+                    false, this));
     }
 
-    public Map<QueryMode, Set<Path>> getQueryModeFiles() {
+    public Multimap<QueryMode, Path> getQueryModeFiles() {
         return value;
     }
 }

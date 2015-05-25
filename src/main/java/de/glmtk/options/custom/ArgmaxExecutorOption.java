@@ -2,6 +2,7 @@ package de.glmtk.options.custom;
 
 import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
+import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -72,6 +73,7 @@ public class ArgmaxExecutorOption extends Option {
 
     public ArgmaxExecutorOption argName(String argName) {
         requireNonNull(argName);
+        requireNotEmpty(argName);
         arg.name = argName;
         return this;
     }
@@ -94,7 +96,7 @@ public class ArgmaxExecutorOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        value = parseArgmaxExecutor(arg.values.get(0), this);
+        value = parseArgmaxExecutor(arg.value, this);
     }
 
     public String getArgmaxExecutor() {
