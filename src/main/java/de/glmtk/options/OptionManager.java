@@ -75,7 +75,7 @@ public class OptionManager {
     }
 
     private static final String MULTIPLE_ARG_SUFFIX = "...";
-    private static final String OPTIONAL_ARG_SUFFIX = "?";;
+    private static final String OPTIONAL_ARG_SUFFIX = "?";
 
     private List<OptionWrapper> options = newArrayList();
     private List<OptionWrapper> inputArgs = newArrayList();

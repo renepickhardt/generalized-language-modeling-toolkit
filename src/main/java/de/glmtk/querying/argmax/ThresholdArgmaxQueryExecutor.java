@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import com.google.common.collect.PeekingIterator;
+
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.common.NGram;
@@ -18,7 +20,6 @@ import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction.Summand;
 import de.glmtk.util.CollectionUtils;
-import de.glmtk.util.PeekableIterator;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
@@ -47,7 +48,7 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -75,7 +76,7 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                 h += " ";
 
             CompletionTrie trie = sortedAccessCache.getCountCompletionTrie(pattern);
-            PeekableIterator<CompletionTrieEntry> iter = trie.getCompletions(h);
+            PeekingIterator<CompletionTrieEntry> iter = trie.getCompletions(h);
 
             tries[i] = trie;
             iters[i] = iter;

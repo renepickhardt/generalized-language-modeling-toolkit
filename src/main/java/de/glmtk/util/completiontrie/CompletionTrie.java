@@ -1,5 +1,8 @@
 package de.glmtk.util.completiontrie;
 
+import static com.google.common.collect.Iterators.peekingIterator;
+import static java.util.Collections.emptyIterator;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -11,7 +14,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 
-import de.glmtk.util.PeekableIterator;
+import com.google.common.collect.PeekingIterator;
+
 import de.glmtk.util.StringUtils;
 
 /**
@@ -97,7 +101,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         }
     }
 
-    private class CompletionTrieIterator implements PeekableIterator<CompletionTrieEntry> {
+    private class CompletionTrieIterator implements PeekingIterator<CompletionTrieEntry> {
         private boolean isFirstNode = true;
         private PriorityQueue<Entry> queue = new PriorityQueue<>(11, // 11 is PriorityQueue.DEFAULT_INITIAL_CAPACITY
                 Entry.BY_SCORE_COMPARATOR);
@@ -164,7 +168,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     private byte[] memory;
 
     /* package */CompletionTrie(byte[] memory,
-            boolean caseSensitive) {
+                                boolean caseSensitive) {
         this.memory = memory;
         this.caseSensitive = caseSensitive;
     }
@@ -267,20 +271,21 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         return new CompletionTrieIterator(makeRootEntry());
     }
 
-    @SuppressWarnings("unchecked")
-    public PeekableIterator<CompletionTrieEntry> getCompletions(String prefix) {
+    public PeekingIterator<CompletionTrieEntry> getCompletions(String prefix) {
         if (!caseSensitive)
             prefix = prefix.toLowerCase();
 
         Entry entry = findPath(prefix, false);
 
-        if (entry == null)
-            return PeekableIterator.EMPTY_PEEKABLE_ITERATOR;
+        if (entry == null) {
+            Iterator<CompletionTrieEntry> iter = emptyIterator();
+            return peekingIterator(iter);
+        }
         return new CompletionTrieIterator(entry);
     }
 
     public List<CompletionTrieEntry> getTopKCompletions(String prefix,
-                                                        int k) {
+            int k) {
         List<CompletionTrieEntry> result = new ArrayList<>(k);
         Iterator<CompletionTrieEntry> iter = getCompletions(prefix);
         for (int i = 0; i != k && iter.hasNext(); ++i)
