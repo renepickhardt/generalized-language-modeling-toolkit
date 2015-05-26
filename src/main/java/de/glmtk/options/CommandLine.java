@@ -1,11 +1,11 @@
 package de.glmtk.options;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.Option.GREATER_ONE;
 import static de.glmtk.options.Option.MAX_ONE;
 import static de.glmtk.util.StringUtils.join;
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -37,7 +37,7 @@ public class CommandLine {
         public org.apache.commons.cli.Option commonsCliOption;
 
         public OptionWrapper(Option option) {
-            requireNonNull(option);
+            checkNotNull(option);
 
             this.option = option;
             args = option.arguments();
@@ -83,7 +83,7 @@ public class CommandLine {
     private org.apache.commons.cli.Options commonsCliOptions = new org.apache.commons.cli.Options();
 
     public CommandLine options(Option... options) {
-        requireNonNull(options);
+        checkNotNull(options);
 
         for (Option option : options) {
             option.type = Type.OPTION;
@@ -99,7 +99,7 @@ public class CommandLine {
     // TODO: catch if option is both registered as an option and as an inputArg.
     // TODO: Catch if an argument parses a dynamic number of values that is not the last.
     public CommandLine inputArgs(Option... options) {
-        requireNonNull(options);
+        checkNotNull(options);
 
         for (Option option : options) {
             option.type = Type.INPUT_ARG;
@@ -125,7 +125,7 @@ public class CommandLine {
     }
 
     public void help(OutputStream outputStream) {
-        requireNonNull(outputStream);
+        checkNotNull(outputStream);
 
         org.apache.commons.cli.HelpFormatter formatter = new org.apache.commons.cli.HelpFormatter();
         formatter.setLongOptPrefix(" --");
@@ -161,7 +161,7 @@ public class CommandLine {
     }
 
     public void parse(String[] args) throws OptionException {
-        requireNonNull(args);
+        checkNotNull(args);
 
         org.apache.commons.cli.CommandLineParser parser = new org.apache.commons.cli.PosixParser();
         org.apache.commons.cli.CommandLine line;
