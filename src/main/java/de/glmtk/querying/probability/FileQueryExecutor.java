@@ -53,11 +53,10 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
 
         OUTPUT.endPhases(message + ".");
 
-        OUTPUT.printMessage(String.format("    Saves as '%s' under '%s'.",
+        OUTPUT.printMessage(String.format("    Saved as '%s' under '%s'.",
                 OUTPUT.bold(outputFile.getFileName()), outputFile.getParent()));
 
-        List<String> statsLines = StringUtils.split(stats.toString(),
-                '\n');
+        List<String> statsLines = StringUtils.split(stats.toString(), '\n');
         for (String statsLine : statsLines)
             OUTPUT.printMessage("    " + statsLine);
 
@@ -85,8 +84,7 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
                 writer.append(line).append('\n');
 
             stats = executor.getResultingStats();
-            List<String> statsLines = StringUtils.split(stats.toString(),
-                    '\n');
+            List<String> statsLines = StringUtils.split(stats.toString(), '\n');
             for (String statsLine : statsLines)
                 writer.append("# ").append(statsLine).append('\n');
         }
