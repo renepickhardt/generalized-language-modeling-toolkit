@@ -1,24 +1,26 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.common;
+
+import static com.google.common.base.Throwables.getStackTraceAsString;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -40,7 +42,6 @@ import org.fusesource.jansi.WindowsAnsiOutputStream;
 import de.glmtk.Constants;
 import de.glmtk.logging.Logger;
 import de.glmtk.logging.Logger.Level;
-import de.glmtk.util.ExceptionUtils;
 import de.glmtk.util.ReflectionUtils;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
@@ -242,7 +243,7 @@ public enum Output {
             LOGGER.debug("Ansi Codes enabled.");
         } catch (Throwable e) {
             LOGGER.error("Ansi Codes could not be enabled because: "
-                    + ExceptionUtils.getStackTrace(e));
+                    + getStackTraceAsString(e));
         }
     }
 
