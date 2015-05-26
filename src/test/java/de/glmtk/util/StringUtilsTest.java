@@ -20,28 +20,48 @@
 
 package de.glmtk.util;
 
+import static de.glmtk.util.StringUtils.split;
+import static de.glmtk.util.StringUtils.splitSparse;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-
-import java.util.Arrays;
 
 import org.junit.Test;
 
 public class StringUtilsTest {
     @Test
     public void testSplit() {
-        assertEquals(Arrays.asList("a"), StringUtils.split("a", ' '));
-        assertEquals(Arrays.asList("a"), StringUtils.split("   a   ", ' '));
-        assertEquals(Arrays.asList("a"), StringUtils.split("a ", ' '));
-        assertEquals(Arrays.asList("a"), StringUtils.split(" a", ' '));
+        assertEquals(asList("a"), split("a", ' '));
+        assertEquals(asList("a"), split("   a   ", ' '));
+        assertEquals(asList("a"), split("a ", ' '));
+        assertEquals(asList("a"), split(" a", ' '));
 
-        assertEquals(Arrays.asList("a", "a"), StringUtils.split("a a", ' '));
-        assertEquals(Arrays.asList("a", "b"), StringUtils.split("a b", ' '));
-        assertEquals(Arrays.asList("b", "a"), StringUtils.split("b a", ' '));
-        assertEquals(Arrays.asList("a", "a"), StringUtils.split("  a a  ", ' '));
-        assertEquals(Arrays.asList("a", "a"),
-                StringUtils.split("a    a  ", ' '));
+        assertEquals(asList("a", "a"), split("a a", ' '));
+        assertEquals(asList("a", "b"), split("a b", ' '));
+        assertEquals(asList("b", "a"), split("b a", ' '));
+        assertEquals(asList("a", "a"), split("  a a  ", ' '));
+        assertEquals(asList("a", "a"), split("a    a  ", ' '));
 
-        assertEquals(Arrays.asList("a", "b", "c", "d", "e", "e", "f"),
-                StringUtils.split("a    b   c d   e e f ", ' '));
+        assertEquals(asList("a", "b", "c", "d", "e", "e", "f"), split(
+                "a    b   c d   e e f ", ' '));
+    }
+
+    @Test
+    public void testsplitSparseSparse() {
+        assertEquals(asList("a"), splitSparse("a", ' '));
+        assertEquals(asList("", "", "", "a", "", "", ""), splitSparse(
+                "   a   ", ' '));
+        assertEquals(asList("a", ""), splitSparse("a ", ' '));
+        assertEquals(asList("", "a"), splitSparse(" a", ' '));
+
+        assertEquals(asList("a", "a"), splitSparse("a a", ' '));
+        assertEquals(asList("a", "b"), splitSparse("a b", ' '));
+        assertEquals(asList("b", "a"), splitSparse("b a", ' '));
+        assertEquals(asList("", "", "a", "a", "", ""), splitSparse("  a a  ",
+                ' '));
+        assertEquals(asList("a", "", "", "", "a", "", ""), splitSparse(
+                "a    a  ", ' '));
+
+        assertEquals(asList("a", "", "", "", "b", "", "", "c", "d", "", "",
+                "e", "e", "f", ""), splitSparse("a    b   c d   e e f ", ' '));
     }
 }
