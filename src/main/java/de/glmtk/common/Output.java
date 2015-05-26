@@ -224,7 +224,7 @@ public enum Output {
         updateConsoleParams();
     }
 
-    // TODO: funcation name! we try to do something but we don't get a return value?
+    // TODO: function name! we try to do something but we don't get a return value?
     public void tryToEnableAnsi() {
         boolean isttyStderr = Boolean.parseBoolean(System.getProperty("glmtk.isttyStderr"));
         if (!isttyStderr) {
