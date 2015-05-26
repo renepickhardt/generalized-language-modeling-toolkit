@@ -1,25 +1,27 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk;
 
+import static com.google.common.hash.Hashing.md5;
+import static com.google.common.io.Files.hash;
 import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.IOException;
@@ -50,7 +52,6 @@ import de.glmtk.querying.probability.QueryCacherCreator;
 import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.querying.probability.QueryStats;
 import de.glmtk.querying.probability.StreamQueryExecutor;
-import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.PrintUtils;
 
@@ -283,7 +284,7 @@ public class Glmtk {
         String message = String.format("QueryCache for file '%s'", queryFile);
         OUTPUT.beginPhases(message + "...");
 
-        String hash = HashUtils.generateMd5Hash(queryFile);
+        String hash = hash(queryFile.toFile(), md5()).toString();
 
         Set<Pattern> neededPatterns = new HashSet<>(patterns);
         neededPatterns.removeAll(status.getQueryCacheCounted(hash));

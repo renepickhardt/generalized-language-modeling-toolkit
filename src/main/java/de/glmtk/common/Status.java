@@ -20,6 +20,9 @@
 
 package de.glmtk.common;
 
+import static com.google.common.hash.Hashing.md5;
+import static com.google.common.io.Files.hash;
+
 import java.beans.IntrospectionException;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -57,7 +60,6 @@ import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.exceptions.WrongStatusException;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.AbstractYamlParser;
-import de.glmtk.util.HashUtils;
 import de.glmtk.util.StringUtils;
 
 public class Status {
@@ -484,7 +486,7 @@ public class Status {
             this.training = Training.NONE;
         }
 
-        String hash = HashUtils.generateMd5Hash(paths.getTrainingFile());
+        String hash = hash(paths.getTrainingFile().toFile(), md5()).toString();
         if (training == Training.UNTAGGED) {
             if (this.hash == null)
                 this.hash = hash;
@@ -775,14 +777,14 @@ public class Status {
 
     private boolean validCorpusHash() throws IOException {
         if (!corpusTagged) {
-            String corpusHash = HashUtils.generateMd5Hash(corpus);
+            String corpusHash = hash(corpus.toFile(), md5()).toString();
             if (hash == null)
                 hash = corpusHash;
             if (hash.equals(corpusHash))
                 return true;
             hash = corpusHash;
         } else {
-            String taggedCorpusHash = HashUtils.generateMd5Hash(corpus);
+            String taggedCorpusHash = hash(corpus.toFile(), md5()).toString();
             if (taggedHash == null)
                 taggedHash = taggedCorpusHash;
             if (taggedHash.equals(taggedCorpusHash))

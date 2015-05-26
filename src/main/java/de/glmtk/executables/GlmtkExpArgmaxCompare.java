@@ -1,6 +1,8 @@
 package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static com.google.common.hash.Hashing.md5;
+import static com.google.common.io.Files.hash;
 import static de.glmtk.common.Output.OUTPUT;
 
 import java.io.BufferedReader;
@@ -39,7 +41,6 @@ import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
-import de.glmtk.util.HashUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
@@ -159,7 +160,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
             OUTPUT.printMessage(queryFile + ":");
 
             // TODO: there really should be an API for the following:
-            String hash = HashUtils.generateMd5Hash(queryFile);
+            String hash = hash(queryFile.toFile(), md5()).toString();
 
             GlmtkPaths queryCachePaths;
             if (noQueryCache)
@@ -201,7 +202,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                             + "."
                                             + type.substring(0,
                                                     type.length() - 1)),
-                                    Constants.CHARSET)) {
+                                                    Constants.CHARSET)) {
 
                         String line;
                         while ((line = reader.readLine()) != null) {
