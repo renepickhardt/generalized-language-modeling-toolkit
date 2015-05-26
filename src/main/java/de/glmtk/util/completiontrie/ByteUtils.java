@@ -1,7 +1,9 @@
 package de.glmtk.util.completiontrie;
 
-
 public class ByteUtils {
+    private ByteUtils() {
+    }
+
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     public static byte[] concat(byte[] left,
@@ -28,8 +30,8 @@ public class ByteUtils {
             return EMPTY_BYTE_ARRAY;
         if ((val & 0xFFFF0000) != 0)
             return new byte[] {(byte) (val & 0xFF),
-                    (byte) ((val >>> 8) & 0xFF), (byte) ((val >>> 16) & 0xFF),
-                    (byte) ((val >>> 24) & 0xFF)};
+                (byte) ((val >>> 8) & 0xFF), (byte) ((val >>> 16) & 0xFF),
+                (byte) ((val >>> 24) & 0xFF)};
         if ((val & 0x0000FF00) != 0)
             return new byte[] {(byte) (val & 0xFF), (byte) ((val >>> 8) & 0xFF)};
         return new byte[] {(byte) (val & 0xFF)};
@@ -40,10 +42,10 @@ public class ByteUtils {
             return EMPTY_BYTE_ARRAY;
         if ((val & 0xFFFFFFFFFFFF0000L) != 0)
             return new byte[] {(byte) (val & 0xFF),
-                    (byte) ((val >>> 8) & 0xFF), (byte) ((val >>> 16) & 0xFF),
-                    (byte) ((val >>> 24) & 0xFF), (byte) ((val >>> 32) & 0xFF),
-                    (byte) ((val >>> 40) & 0xFF), (byte) ((val >>> 48) & 0xFF),
-                    (byte) ((val >>> 56) & 0xFF)};
+                (byte) ((val >>> 8) & 0xFF), (byte) ((val >>> 16) & 0xFF),
+                (byte) ((val >>> 24) & 0xFF), (byte) ((val >>> 32) & 0xFF),
+                (byte) ((val >>> 40) & 0xFF), (byte) ((val >>> 48) & 0xFF),
+                (byte) ((val >>> 56) & 0xFF)};
         if ((val & 0x000000000000FF00L) != 0)
             return new byte[] {(byte) (val & 0xFF), (byte) ((val >>> 8) & 0xFF)};
         return new byte[] {(byte) (val & 0xFF)};

@@ -22,6 +22,9 @@ package de.glmtk.executables;
 
 import java.util.Arrays;
 
+/**
+ * GLMTK entry point for all executables.
+ */
 public class MainClass {
     public static void main(String[] args) throws Exception {
         if (args.length == 0)

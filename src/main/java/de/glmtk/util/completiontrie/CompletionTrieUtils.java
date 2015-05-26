@@ -11,6 +11,9 @@ import java.nio.file.Paths;
 import de.glmtk.util.NioUtils;
 
 public class CompletionTrieUtils {
+    private CompletionTrieUtils() {
+    }
+
     public static void visualize(CompletionTrie trie) throws IOException, InterruptedException {
         Path fileDot = Files.createTempFile("completionTrie", ".dot");
         Path filePng = Paths.get(fileDot + ".png");
