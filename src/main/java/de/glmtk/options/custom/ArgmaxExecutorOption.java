@@ -1,10 +1,10 @@
 package de.glmtk.options.custom;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
-import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,8 +51,8 @@ public class ArgmaxExecutorOption extends Option {
 
     public static final String parseArgmaxExecutor(String executorString,
                                                    Option option) throws OptionException {
-        requireNonNull(executorString);
-        requireNonNull(option);
+        checkNotNull(executorString);
+        checkNotNull(option);
 
         executorString = executorString.toUpperCase();
         if (!VALUES.containsKey(executorString))
@@ -72,14 +72,14 @@ public class ArgmaxExecutorOption extends Option {
     }
 
     public ArgmaxExecutorOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }
 
     public ArgmaxExecutorOption setArgName(String argName) {
-        requireNonNull(argName);
+        checkNotNull(argName);
         arg.name = argName;
         return this;
     }
@@ -107,8 +107,8 @@ public class ArgmaxExecutorOption extends Option {
                                                                     WeightedSumEstimator estimator,
                                                                     Cache randomAccessCache,
                                                                     CompletionTrieCache sortedAccessCache) {
-        requireNonNull(executor);
-        requireNonNull(estimator);
+        checkNotNull(executor);
+        checkNotNull(estimator);
 
         switch (executor) {
             case "TA":

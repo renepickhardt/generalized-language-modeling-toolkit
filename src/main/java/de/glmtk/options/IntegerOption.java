@@ -1,7 +1,7 @@
 package de.glmtk.options;
 
-import static de.glmtk.util.Strings.requireNotEmpty;
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ public class IntegerOption extends Option {
                                          boolean requirePositive,
                                          boolean requireNotZero,
                                          Option option) throws OptionException {
-        requireNonNull(integerString);
-        requireNonNull(option);
+        checkNotNull(integerString);
+        checkNotNull(option);
 
         int value;
         try {
@@ -48,8 +48,8 @@ public class IntegerOption extends Option {
     }
 
     public IntegerOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }

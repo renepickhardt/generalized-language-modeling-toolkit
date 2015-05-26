@@ -1,11 +1,11 @@
 package de.glmtk.options.custom;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.custom.EstimatorOption.EXPLANATION;
 import static de.glmtk.options.custom.EstimatorOption.WEIGHTEDSUM_EXPLANATION;
 import static de.glmtk.options.custom.EstimatorOption.parseEstimator;
-import static de.glmtk.util.Strings.requireNotEmpty;
-import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 
@@ -30,8 +30,8 @@ public class EstimatorsOption extends Option {
     }
 
     public EstimatorsOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }
@@ -60,8 +60,7 @@ public class EstimatorsOption extends Option {
             value = newArrayList();
 
         for (String estimatorString : arg.values)
-            value.add(parseEstimator(estimatorString, requireWeightedSum,
-                    this));
+            value.add(parseEstimator(estimatorString, requireWeightedSum, this));
     }
 
     public List<Estimator> getEstimators() {

@@ -1,8 +1,8 @@
 package de.glmtk.options;
 
-import static de.glmtk.util.Strings.requireNotEmpty;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 
@@ -56,9 +56,9 @@ public abstract class Option {
     public Option(String shortopt,
                   String longopt,
                   String desc) {
-        requireNonNull(longopt);
-        requireNotEmpty(longopt);
-        requireNonNull(desc);
+        checkNotNull(longopt);
+        checkArgument(!longopt.isEmpty());
+        checkNotNull(desc);
 
         this.shortopt = shortopt;
         this.longopt = longopt;

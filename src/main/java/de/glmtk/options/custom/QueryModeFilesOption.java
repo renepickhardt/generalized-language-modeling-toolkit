@@ -1,10 +1,10 @@
 package de.glmtk.options.custom;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static de.glmtk.options.PathOption.parsePath;
 import static de.glmtk.options.custom.QueryModeOption.EXPLANATION;
 import static de.glmtk.options.custom.QueryModeOption.parseQueryMode;
-import static de.glmtk.util.Strings.requireNotEmpty;
-import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -34,15 +34,15 @@ public class QueryModeFilesOption extends Option {
     }
 
     public QueryModeFilesOption queryModeArgName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         queryModeArg.name = argName;
         return this;
     }
 
     public QueryModeFilesOption filesArgName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         filesArg.name = argName;
         return this;
     }

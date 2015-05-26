@@ -1,9 +1,9 @@
 package de.glmtk.options;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static de.glmtk.options.PathOption.parsePath;
-import static de.glmtk.util.Strings.requireNotEmpty;
-import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -28,8 +28,8 @@ public class PathsOption extends Option {
     }
 
     public PathsOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }
@@ -96,9 +96,8 @@ public class PathsOption extends Option {
             value = newArrayList();
 
         for (String pathString : arg.values)
-            value.add(parsePath(pathString, requireMayExist,
-                    requireMustExist, requireFiles, requireDirectories,
-                    this));
+            value.add(parsePath(pathString, requireMayExist, requireMustExist,
+                    requireFiles, requireDirectories, this));
     }
 
     public List<Path> getPaths() {

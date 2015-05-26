@@ -1,7 +1,7 @@
 package de.glmtk.options;
 
-import static de.glmtk.util.Strings.requireNotEmpty;
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
@@ -13,8 +13,8 @@ public class DoubleOption extends Option {
     public static double parseDouble(String doubleString,
                                      boolean requireProbability,
                                      Option option) throws OptionException {
-        requireNonNull(doubleString);
-        requireNonNull(option);
+        checkNotNull(doubleString);
+        checkNotNull(option);
 
         double value;
         try {
@@ -44,8 +44,8 @@ public class DoubleOption extends Option {
     }
 
     public DoubleOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }

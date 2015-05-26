@@ -1,11 +1,11 @@
 package de.glmtk.options;
 
-import static de.glmtk.util.Strings.requireNotEmpty;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isReadable;
 import static java.nio.file.Files.isRegularFile;
-import static java.util.Objects.requireNonNull;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -28,8 +28,8 @@ public class PathOption extends Option {
                                  boolean requireFile,
                                  boolean requireDirectory,
                                  Option option) throws OptionException {
-        requireNonNull(pathString);
-        requireNonNull(option);
+        checkNotNull(pathString);
+        checkNotNull(option);
 
         Path path;
         try {
@@ -75,8 +75,8 @@ public class PathOption extends Option {
     }
 
     public PathOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }

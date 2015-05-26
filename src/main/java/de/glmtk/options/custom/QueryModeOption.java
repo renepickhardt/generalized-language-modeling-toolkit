@@ -1,7 +1,7 @@
 package de.glmtk.options.custom;
 
-import static de.glmtk.util.Strings.requireNotEmpty;
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
@@ -25,8 +25,8 @@ public class QueryModeOption extends Option {
 
     public static QueryMode parseQueryMode(String queryModeString,
                                            Option option) throws OptionException {
-        requireNonNull(queryModeString);
-        requireNonNull(option);
+        checkNotNull(queryModeString);
+        checkNotNull(option);
 
         try {
             return QueryMode.forString(queryModeString);
@@ -46,8 +46,8 @@ public class QueryModeOption extends Option {
     }
 
     public QueryModeOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }

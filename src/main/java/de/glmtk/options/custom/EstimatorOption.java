@@ -1,10 +1,10 @@
 package de.glmtk.options.custom;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static de.glmtk.util.Maps.maxKeyLength;
 import static de.glmtk.util.StringUtils.join;
-import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,8 +63,8 @@ public class EstimatorOption extends Option {
     public static final Estimator parseEstimator(String estimatorString,
                                                  boolean requireWeightedSum,
                                                  Option option) throws OptionException {
-        requireNonNull(estimatorString);
-        requireNonNull(option);
+        checkNotNull(estimatorString);
+        checkNotNull(option);
 
         Estimator estimator = VALUES.get(estimatorString.toUpperCase());
         if (estimator == null)
@@ -88,8 +88,8 @@ public class EstimatorOption extends Option {
     }
 
     public EstimatorOption argName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         arg.name = argName;
         return this;
     }

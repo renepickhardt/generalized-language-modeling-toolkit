@@ -1,12 +1,12 @@
 package de.glmtk.options.custom;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static de.glmtk.options.PathOption.parsePath;
-import static de.glmtk.util.Strings.requireNotEmpty;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.isDirectory;
 import static java.nio.file.Files.isReadable;
 import static java.nio.file.Files.isRegularFile;
-import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,15 +35,15 @@ public class CorpusOption extends Option {
     }
 
     public CorpusOption corpusArgName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         corpusArg.name = argName;
         return this;
     }
 
     public CorpusOption workingDirArgName(String argName) {
-        requireNonNull(argName);
-        requireNotEmpty(argName);
+        checkNotNull(argName);
+        checkArgument(!argName.isEmpty());
         workingDirArg.name = argName;
         return this;
     }
@@ -54,8 +54,8 @@ public class CorpusOption extends Option {
     }
 
     public CorpusOption suffix(String suffix) {
-        requireNonNull(suffix);
-        requireNotEmpty(suffix);
+        checkNotNull(suffix);
+        checkArgument(!suffix.isEmpty());
         this.suffix = suffix;
         return this;
     }
