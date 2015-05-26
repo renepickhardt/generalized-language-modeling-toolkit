@@ -19,7 +19,7 @@ public class IntegerOption extends Option {
 
         int value;
         try {
-            value = Integer.valueOf(integerString);
+            value = Integer.parseInt(integerString);
         } catch (NumberFormatException e) {
             throw new OptionException("%s could not be parsed as an "
                     + "integer: '%s'. Reason: %s.", option, integerString,

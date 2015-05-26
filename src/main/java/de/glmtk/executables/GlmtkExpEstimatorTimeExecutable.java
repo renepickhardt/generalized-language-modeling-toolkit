@@ -68,7 +68,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         optionCacheFile = new PathOption("c", "cache-file",
                 "File to generate query cache from for all query files.").requireMustExist().requireFile();
 
-        optionManager.options(optionCorpus, optionEstimators, optionQuery,
+        commandLine.options(optionCorpus, optionEstimators, optionQuery,
                 optionRuns, optionCacheFile);
     }
 

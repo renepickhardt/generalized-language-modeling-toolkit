@@ -83,7 +83,7 @@ public class GlmtkExpSetupExecutable extends Executable {
                 "Number of n-gram sequences to select. Default: 5000").defaultValue(
                         5000).requirePositive().requireNotZero();
 
-        optionManager.options(optionCorpus, optionTrainingProb,
+        commandLine.options(optionCorpus, optionTrainingProb,
                 optionNGramLength, optionNumNGrams);
     }
 

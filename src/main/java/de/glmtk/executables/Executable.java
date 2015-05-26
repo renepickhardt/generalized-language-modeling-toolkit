@@ -41,7 +41,7 @@ import de.glmtk.exceptions.Termination;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.BooleanOption;
 import de.glmtk.options.OptionException;
-import de.glmtk.options.OptionManager;
+import de.glmtk.options.CommandLine;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
@@ -56,7 +56,7 @@ import de.glmtk.util.ThreadUtils;
     protected BooleanOption optionLogDebug;
 
     protected Config config;
-    protected OptionManager optionManager;
+    protected CommandLine commandLine;
     private boolean outputIntialized = false;
     private boolean logConsole;
     private boolean logDebug;
@@ -102,7 +102,7 @@ import de.glmtk.util.ThreadUtils;
     }
 
     protected void parseOptions(String[] args) throws Exception {
-        optionManager = new OptionManager();
+        commandLine = new CommandLine();
 
         optionHelp = new BooleanOption("h", "help", "Print this message.");
         optionVersion = new BooleanOption("v", "version",
@@ -112,12 +112,12 @@ import de.glmtk.util.ThreadUtils;
         optionLogDebug = new BooleanOption(null, "debug",
                 "Set log level to DEBUG.");
 
-        optionManager.options(optionHelp, optionVersion);
+        commandLine.options(optionHelp, optionVersion);
         registerOptions();
-        optionManager.options(optionLogConsole, optionLogDebug);
+        commandLine.options(optionLogConsole, optionLogDebug);
 
         try {
-            optionManager.parse(args);
+            commandLine.parse(args);
         } catch (OptionException e) {
             throw new CliArgumentException(e.getMessage());
         }
@@ -127,11 +127,11 @@ import de.glmtk.util.ThreadUtils;
             String helpFooter = getHelpFooter();
 
             System.out.format("%s %s <OPTION...>\n", getExecutableName(),
-                    optionManager.getInputArgsLine());
+                    commandLine.getInputArgsLine());
             if (helpHeader != null)
                 System.out.println(helpHeader);
 
-            optionManager.help(System.out);
+            commandLine.help(System.out);
 
             if (helpFooter != null) {
                 System.out.println();

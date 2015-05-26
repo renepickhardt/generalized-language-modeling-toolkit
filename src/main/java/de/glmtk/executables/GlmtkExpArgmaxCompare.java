@@ -89,7 +89,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
         optionNoQueryCache = new BooleanOption("c", "no-querycache",
                 "Do not create QueryCache.");
 
-        optionManager.options(optionCorpus, optionArgmaxExecutors,
+        commandLine.options(optionCorpus, optionArgmaxExecutors,
                 optionEstimators, optionQuery, optionRandomAccess,
                 optionNoQueryCache);
     }

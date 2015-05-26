@@ -18,7 +18,7 @@ public class DoubleOption extends Option {
 
         double value;
         try {
-            value = Double.valueOf(doubleString);
+            value = Double.parseDouble(doubleString);
         } catch (NumberFormatException e) {
             throw new OptionException("%s could not be parsed as a "
                     + "floating point value: '%s'. Reason: %s.", option,

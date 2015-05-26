@@ -40,7 +40,7 @@ public class GlmtkDelUnk extends Executable {
         optionCorpus = new CorpusOption("c", "corpus",
                 "Give corpus and maybe working directory.");
 
-        optionManager.options(optionCorpus);
+        commandLine.options(optionCorpus);
     }
 
     @Override

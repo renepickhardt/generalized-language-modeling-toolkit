@@ -96,8 +96,8 @@ public class GlmtkExecutable extends Executable {
         optionTrainingOrder = new IntegerOption("n", "training-order",
                 "Order to learn for training.").defaultValue(-1).requirePositive().requireNotZero();
 
-        optionManager.inputArgs(optionCorpus);
-        optionManager.options(optionEstimators, optionIo, optionQuery,
+        commandLine.inputArgs(optionCorpus);
+        commandLine.options(optionEstimators, optionIo, optionQuery,
                 optionTrainingOrder);
     }
 

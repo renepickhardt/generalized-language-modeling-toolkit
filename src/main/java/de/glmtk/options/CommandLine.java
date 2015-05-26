@@ -16,12 +16,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -30,7 +24,12 @@ import de.glmtk.Constants;
 import de.glmtk.options.Option.Arg;
 import de.glmtk.options.Option.Type;
 
-public class OptionManager {
+/**
+ * Entities of package {@link org.apache.commons.cli} are not imported and
+ * instead used fully qualified, because of name clashes, and I expect to
+ * reimplement their functionallity myself in the future.
+ */
+public class CommandLine {
     private static class OptionWrapper {
         public Option option;
         public List<Arg> args;
@@ -83,7 +82,7 @@ public class OptionManager {
     private List<org.apache.commons.cli.Option> commonsCliOptionList = newArrayList();
     private org.apache.commons.cli.Options commonsCliOptions = new org.apache.commons.cli.Options();
 
-    public OptionManager options(Option... options) {
+    public CommandLine options(Option... options) {
         requireNonNull(options);
 
         for (Option option : options) {
@@ -99,7 +98,7 @@ public class OptionManager {
 
     // TODO: catch if option is both registered as an option and as an inputArg.
     // TODO: Catch if an argument parses a dynamic number of values that is not the last.
-    public OptionManager inputArgs(Option... options) {
+    public CommandLine inputArgs(Option... options) {
         requireNonNull(options);
 
         for (Option option : options) {
@@ -128,7 +127,7 @@ public class OptionManager {
     public void help(OutputStream outputStream) {
         requireNonNull(outputStream);
 
-        HelpFormatter formatter = new HelpFormatter();
+        org.apache.commons.cli.HelpFormatter formatter = new org.apache.commons.cli.HelpFormatter();
         formatter.setLongOptPrefix(" --");
         formatter.setOptionComparator(new Comparator<org.apache.commons.cli.Option>() {
             @Override
@@ -164,11 +163,11 @@ public class OptionManager {
     public void parse(String[] args) throws OptionException {
         requireNonNull(args);
 
-        CommandLineParser parser = new PosixParser();
-        CommandLine line;
+        org.apache.commons.cli.CommandLineParser parser = new org.apache.commons.cli.PosixParser();
+        org.apache.commons.cli.CommandLine line;
         try {
             line = parser.parse(commonsCliOptions, args);
-        } catch (ParseException e) {
+        } catch (org.apache.commons.cli.ParseException e) {
             throw new OptionException(e.getMessage() + ".");
         }
 
@@ -176,7 +175,7 @@ public class OptionManager {
         parseOptions(line);
     }
 
-    private void parseArgs(CommandLine line) throws OptionException {
+    private void parseArgs(org.apache.commons.cli.CommandLine line) throws OptionException {
         @SuppressWarnings("unchecked")
         Iterator<String> valuesIter = line.getArgList().iterator();
 
@@ -195,7 +194,7 @@ public class OptionManager {
                     ImmutableList.copyOf(valuesIter), "', '"));
     }
 
-    private void parseOptions(CommandLine line) throws OptionException {
+    private void parseOptions(org.apache.commons.cli.CommandLine line) throws OptionException {
         @SuppressWarnings("unchecked")
         Iterator<org.apache.commons.cli.Option> iter = line.iterator();
         for (org.apache.commons.cli.Option commonsCliOption : ImmutableList.copyOf(iter)) {
