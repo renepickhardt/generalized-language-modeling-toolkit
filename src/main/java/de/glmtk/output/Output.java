@@ -217,8 +217,8 @@ public class Output {
 
     public static void print(String message) {
         checkNotNull(message);
+        eraseAllLines();
         err.print(message);
-        numVolatileLines = 0;
     }
 
     public static void print(String format,
@@ -374,6 +374,11 @@ public class Output {
     public static void eraseLines(int count) {
         checkArgument(count >= 0, "Argument 'count' must be positive!");
         for (int i = 0; i != count; ++i)
+            eraseLine();
+    }
+
+    public static void eraseAllLines() {
+        while (numVolatileLines != 0)
             eraseLine();
     }
 }
