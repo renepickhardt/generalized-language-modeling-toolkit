@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
+import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 import org.fusesource.jansi.AnsiOutputStream;
 import org.fusesource.jansi.WindowsAnsiOutputStream;
@@ -247,6 +248,57 @@ public class Output {
         checkNotNull(object);
         print(object);
         println();
+    }
+
+    public static void printlnWarning(String message) {
+        checkNotNull(message);
+        print(addPrefixAndColor(message, "Warning: ", Color.YELLOW));
+    }
+
+    public static void printlnWarning(String format,
+                                      Object... args) {
+        checkNotNull(format);
+        printlnWarning(format(format, args));
+    }
+
+    public static void printlnWarning(Object object) {
+        checkNotNull(object);
+        printlnWarning(object.toString());
+    }
+
+    public static void printlnError(String message) {
+        checkNotNull(message);
+        print(addPrefixAndColor(message, "Error: ", Color.RED));
+    }
+
+    public static void printlnError(String format,
+                                    Object... args) {
+        checkNotNull(format);
+        printlnError(format(format, args));
+    }
+
+    public static void printlnError(Object object) {
+        checkNotNull(object);
+        printlnError(object.toString());
+    }
+
+    /**
+     * @return Guaranteed to have trailing newline.
+     */
+    private static String addPrefixAndColor(String message,
+                                            String prefix,
+                                            Color color) {
+        StringBuilder sb = new StringBuilder();
+        for (String line : splitSparse(message, '\n')) {
+            if (isFormattingEnabled)
+                sb.append(ansi().fg(color));
+            sb.append(prefix).append(line);
+            if (isFormattingEnabled)
+                sb.append(ansi().fg(Color.DEFAULT));
+            sb.append('\n');
+        }
+
+        return sb.toString();
     }
 
     /**
