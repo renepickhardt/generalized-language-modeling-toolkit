@@ -12,6 +12,9 @@ import static java.lang.Integer.parseInt;
 import static java.lang.Math.ceil;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.err;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.fusesource.jansi.Ansi.ansi;
 
 import java.io.BufferedReader;
@@ -20,7 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.fusesource.jansi.AnsiConsole;
 import org.fusesource.jansi.AnsiOutputStream;
@@ -74,6 +76,9 @@ public class Output {
     private Output() {
     }
 
+    private static final long TERMINAL_WIDTH_UPDATE_INTERVALL = 500;
+    private static final long TERMINAL_WDITH_UPDATE_TIME = 10;
+
     private static boolean isFormattingEnabled = false;
     private static int terminalWidth = 80;
     private static long lastTerminalWidthCheck = 0;
@@ -109,8 +114,9 @@ public class Output {
      * {@code glmtk.isttyStderr} to specify whether we should enable output
      * formatting or not.
      *
-     * @return Returns {@code null} if successful, if not will return a string
-     *         describing the reason it failed.
+     * @return If successful, returns {@link Optional#absent()}, if not will
+     *         return a string describing the error wrapped in
+     *         {@link Optional#of(Object)}.
      */
     public static Optional<String> initializeStderrFormatting() {
         boolean isttyStderr = parseBoolean(System.getProperty("glmtk.isttyStderr"));
@@ -160,6 +166,10 @@ public class Output {
         };
     }
 
+    public static boolean isFormattingEnabled() {
+        return isFormattingEnabled;
+    }
+
     public static int getTerminalWidth() {
         updateTerminalWidth();
         return terminalWidth;
@@ -171,20 +181,22 @@ public class Output {
      * <p>
      * The terminal width is queried with {@code bash -c tput cols 2> /dev/tty}.
      * As this may be an expensive operation, it is only performed if the last
-     * call to this method was more than 200ms ago. Also we won't wait longer
+     * call to this method was more than 500ms ago. Also we won't wait longer
      * than 10ms for the process to complete.
      */
     private static void updateTerminalWidth() {
-        long time = System.currentTimeMillis();
-        if (time - lastTerminalWidthCheck < 200)
+        long time = currentTimeMillis();
+        if (time - lastTerminalWidthCheck < TERMINAL_WIDTH_UPDATE_INTERVALL)
             return;
-
         lastTerminalWidthCheck = time;
 
         try {
             Process tputColsProc = getRuntime().exec(
                     new String[] {"bash", "-c", "tput cols 2> /dev/tty"});
-            executeProcess(tputColsProc, 10, TimeUnit.MILLISECONDS);
+
+            executeProcess(tputColsProc, TERMINAL_WDITH_UPDATE_TIME,
+                    MILLISECONDS);
+
             try (BufferedReader reader = newBufferedReader(
                     tputColsProc.getInputStream(), Constants.CHARSET)) {
                 terminalWidth = parseInt(reader.readLine());
@@ -194,12 +206,12 @@ public class Output {
     }
 
     public static void flush() {
-        System.err.flush();
+        err.flush();
     }
 
     public static void print(String message) {
         checkNotNull(message);
-        System.err.print(message);
+        err.print(message);
         numVolatileLines = 0;
     }
 
@@ -242,13 +254,13 @@ public class Output {
      * removed with {@link #eraseLine()}.
      */
     public static void printlnVolatile() {
-        System.err.println();
+        err.println();
         ++numVolatileLines;
     }
 
     public static void printlnVolatile(String message) {
         checkNotNull(message);
-        System.err.println(message);
+        err.println(message);
         int terminalWidth = getTerminalWidth();
         List<String> lines = splitSparse(message, '\n');
         for (String line : lines)
@@ -298,7 +310,7 @@ public class Output {
         if (!isFormattingEnabled || numVolatileLines == 0)
             return;
         --numVolatileLines;
-        System.err.print(ansi().cursorUp(1).eraseLine());
+        err.print(ansi().cursorUp(1).eraseLine());
         flush();
     }
 
