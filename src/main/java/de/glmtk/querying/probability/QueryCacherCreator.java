@@ -20,7 +20,6 @@
 
 package de.glmtk.querying.probability;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.WSKP;
 
@@ -42,18 +41,19 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.AbstractWorkerExecutor;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
 import de.glmtk.files.CountsReader;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
 public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
     private static final Logger LOGGER = Logger.get(QueryCacherCreator.class);
+    private static final String PHASE_SCANNING_COUNTS = "Scanning Counts";
 
     protected class Worker extends AbstractWorkerExecutor<Pattern>.Worker {
         protected Path patternFile;
@@ -220,7 +220,7 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
                                        Set<Pattern> patterns,
                                        Status status,
                                        GlmtkPaths paths) throws Exception {
-        OUTPUT.setPhase(Phase.SCANNING_COUNTS);
+        ProgressBar progressBar = new ProgressBar(PHASE_SCANNING_COUNTS);
 
         GlmtkPaths queryCachePaths = paths.newQueryCache(name);
         queryCachePaths.logPaths();
@@ -237,7 +237,7 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
         Files.createDirectories(targetAbsoluteDir);
         Files.createDirectories(targetContinuationDir);
 
-        work(patterns);
+        work(patterns, progressBar);
 
         return queryCachePaths;
     }

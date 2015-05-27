@@ -1,6 +1,6 @@
 package de.glmtk.querying.probability;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.println;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,9 +34,8 @@ public class StreamQueryExecutor {
         QueryExecutor executor = new QueryExecutor(paths, mode, estimator,
                 corpusOrder);
 
-        OUTPUT.printMessage(String.format(
-                "Interactive querying with %s estimator...",
-                estimator.getName()));
+        println("Interactive querying with %s estimator...",
+                estimator.getName());
 
         QueryStats stats = null;
         try (LineNumberReader reader = new LineNumberReader(new BufferedReader(
@@ -50,8 +49,7 @@ public class StreamQueryExecutor {
             }
 
             stats = executor.getResultingStats();
-            List<String> statsLines = StringUtils.split(
-                    stats.toString(), '\n');
+            List<String> statsLines = StringUtils.split(stats.toString(), '\n');
             for (String statsLine : statsLines)
                 writer.append("# ").append(statsLine).append('\n');
         }

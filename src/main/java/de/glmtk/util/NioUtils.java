@@ -166,7 +166,7 @@ public class NioUtils {
                 Files.newInputStream(path), charset), sz);
     }
 
-    public static int calcNumberOfLines(Path file) throws IOException {
+    public static int countNumberOfLines(Path file) throws IOException {
         try (InputStream reader = new BufferedInputStream(
                 Files.newInputStream(file))) {
             byte[] c = new byte[1024];

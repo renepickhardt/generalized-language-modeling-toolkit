@@ -20,7 +20,6 @@
 
 package de.glmtk.querying;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.querying.estimator.Estimators.FAST_GLM;
 import static de.glmtk.querying.estimator.Estimators.FAST_GLM_ABS;
 import static de.glmtk.querying.estimator.Estimators.FAST_GLM_DEL;
@@ -61,10 +60,9 @@ import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.probability.QueryExecutor;
 import de.glmtk.querying.probability.QueryMode;
@@ -85,6 +83,7 @@ import de.glmtk.util.NioUtils;
 @RunWith(Parameterized.class)
 public class EstimatorEqualsTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(EstimatorEqualsTest.class);
+    private static final String PHASE_QUERYING = "Querying";
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
     private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
@@ -168,8 +167,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         QueryExecutor executorActual = new QueryExecutor(paths, queryMode,
                 actual, 5);
 
-        OUTPUT.setPhase(Phase.QUERYING);
-        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(testFile));
+        ProgressBar progressBar = new ProgressBar(PHASE_QUERYING,
+                NioUtils.countNumberOfLines(testFile));
 
         Logger.setTraceEnabled(false);
         try (BufferedReader reader = Files.newBufferedReader(testFile,
@@ -196,7 +195,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                     throw t;
                 }
 
-                progress.increase(1);
+                progressBar.increase();
             }
         }
         Logger.setTraceEnabled(true);

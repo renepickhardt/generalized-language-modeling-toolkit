@@ -51,8 +51,8 @@ public class HashMapCache extends AbstractCache {
                             reader.getCount());
             }
 
-            if (progress != null)
-                progress.increase(1);
+            if (progressBar != null)
+                progressBar.increase();
         }
     }
 
@@ -92,8 +92,8 @@ public class HashMapCache extends AbstractCache {
                             pattern, reader.getCounts()));
             }
 
-            if (progress != null)
-                progress.increase(1);
+            if (progressBar != null)
+                progressBar.increase();
         }
     }
 

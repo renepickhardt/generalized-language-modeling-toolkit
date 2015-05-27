@@ -1,26 +1,26 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.cache;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.println;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -29,10 +29,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import de.glmtk.GlmtkPaths;
-import de.glmtk.common.Output.Phase;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 
 /**
  * Class to construct {@link Cache} instances.
@@ -40,6 +41,9 @@ import de.glmtk.exceptions.SwitchCaseNotImplementedException;
  * TODO: Rename to CacheSpecification?
  */
 public class CacheSpecification {
+    private static final Logger LOGGER = Logger.get(CacheSpecification.class);
+    private static final String PHASE_LOADING_CACHE = "Loading cache";
+
     public enum CacheImplementation {
         HASH_MAP,
         COMPLETION_TRIE;
@@ -86,11 +90,8 @@ public class CacheSpecification {
 
     // TODO: move to be glmtk method.
     public Cache build(GlmtkPaths paths) throws IOException {
-        String message = "Loading data into cache";
-        if (progress) {
-            OUTPUT.beginPhases(message + "...");
-            OUTPUT.setPhase(Phase.LOADING_CACHE);
-        }
+        println("Loading data into cache...");
+        LOGGER.info("Building cache...");
 
         AbstractCache cache = newCacheFromImplementation(paths);
         if (progress) {
@@ -100,7 +101,7 @@ public class CacheSpecification {
             total += lengthDistribution ? 1 : 0;
             total += counts.size();
             total += gammas.size();
-            cache.setProgress(OUTPUT.newProgress(total));
+            cache.setProgressBar(new ProgressBar(PHASE_LOADING_CACHE, total));
         }
 
         if (words)
@@ -113,9 +114,6 @@ public class CacheSpecification {
             cache.loadCounts(counts);
         if (!gammas.isEmpty())
             cache.loadGammas(gammas);
-
-        if (progress)
-            OUTPUT.endPhases(message + ".");
 
         return cache;
     }

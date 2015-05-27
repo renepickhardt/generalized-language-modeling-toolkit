@@ -37,7 +37,6 @@ import java.util.TreeSet;
 import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.NGram;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
@@ -48,6 +47,7 @@ import de.glmtk.files.CountsReader;
 import de.glmtk.files.LengthDistributionReader;
 import de.glmtk.files.NGramTimesReader;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 
@@ -64,7 +64,7 @@ public abstract class AbstractCache implements Cache {
     private static final Logger LOGGER = Logger.get(AbstractCache.class);
 
     protected GlmtkPaths paths;
-    protected Progress progress = null;
+    protected ProgressBar progressBar = null;
 
     private SortedSet<String> words = null;
     private Map<Pattern, NGramTimes> ngramTimes = null;
@@ -77,8 +77,8 @@ public abstract class AbstractCache implements Cache {
         this.paths = paths;
     }
 
-    /* package */void setProgress(Progress progress) {
-        this.progress = progress;
+    /* package */void setProgressBar(ProgressBar progressBar) {
+        this.progressBar = progressBar;
     }
 
     protected void checkNGramArg(NGram ngram) {
@@ -134,8 +134,8 @@ public abstract class AbstractCache implements Cache {
 
         words = new TreeSet<>(unsortedWords);
 
-        if (progress != null)
-            progress.increase(1);
+        if (progressBar != null)
+            progressBar.increase();
     }
 
     @Override
@@ -170,8 +170,8 @@ public abstract class AbstractCache implements Cache {
             }
         }
 
-        if (progress != null)
-            progress.increase(1);
+        if (progressBar != null)
+            progressBar.increase();
     }
 
     private Discounts calcDiscounts(NGramTimes n) {
@@ -243,8 +243,8 @@ public abstract class AbstractCache implements Cache {
             }
         }
 
-        if (progress != null)
-            progress.increase(1);
+        if (progressBar != null)
+            progressBar.increase();
     }
 
     @Override

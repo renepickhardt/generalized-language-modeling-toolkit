@@ -1,26 +1,25 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.counting;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.IOException;
@@ -41,14 +40,13 @@ import java.util.concurrent.TimeUnit;
 import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.NGramTimesWriter;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.ThreadUtils;
 
 public class NGramTimesCounter {
@@ -73,8 +71,8 @@ public class NGramTimesCounter {
 
                 LOGGER.debug("Finished pattern '%s'.", pattern);
 
-                synchronized (progress) {
-                    progress.increase(1);
+                synchronized (progressBar) {
+                    progressBar.increase();
                 }
             }
 
@@ -87,7 +85,7 @@ public class NGramTimesCounter {
 
             Path inputDir = pattern.isAbsolute()
                     ? absoluteDir
-                            : continuationDir;
+                    : continuationDir;
             Path inputFile = inputDir.resolve(pattern.toString());
             int memory = (int) Math.min(Files.size(inputFile), readerMemory);
             try (CountsReader reader = new CountsReader(inputFile,
@@ -100,7 +98,7 @@ public class NGramTimesCounter {
 
     private Config config;
 
-    private Progress progress;
+    private ProgressBar progressBar;
     private Path outputFile;
     private Path absoluteDir;
     private Path continuationDir;
@@ -115,9 +113,8 @@ public class NGramTimesCounter {
     public void count(Status status,
                       Path outputFile,
                       Path absoluteDir,
-                      Path continuationDir) throws Exception {
-        OUTPUT.setPhase(Phase.NGRAM_TIMES_COUNTING);
-
+                      Path continuationDir,
+                      ProgressBar progressBar) throws Exception {
         if (status.isNGramTimesCounted()) {
             LOGGER.debug("Status reports ngram times already counted, returning.");
             return;
@@ -136,7 +133,8 @@ public class NGramTimesCounter {
         for (int i = 0; i != config.getNumberOfThreads(); ++i)
             threads.add(new Thread());
 
-        progress = OUTPUT.newProgress(patternQueue.size());
+        this.progressBar = progressBar;
+        this.progressBar.total(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
         Glmtk.validateExpectedResults("ngram times couting", patterns,

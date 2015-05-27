@@ -20,8 +20,8 @@
 
 package de.glmtk.counting;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
+import static java.nio.file.Files.size;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,9 +33,8 @@ import java.util.List;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 import edu.stanford.nlp.ling.HasWord;
@@ -47,6 +46,7 @@ public class Tagger {
     public static final char POS_SEPARATOR = '/';
 
     private static final Logger LOGGER = Logger.get(Tagger.class);
+    private static final String PHASE_TAGGING = "Tagging";
 
     public static boolean detectFileTagged(Path file) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(file,
@@ -83,8 +83,8 @@ public class Tagger {
 
     public void tag(Path inputFile,
                     Path outputFile) throws IOException {
-        OUTPUT.setPhase(Phase.TAGGING);
-        Progress progress = OUTPUT.newProgress(Files.size(inputFile));
+        ProgressBar progressBar = new ProgressBar(PHASE_TAGGING,
+                size(inputFile));
 
         if (inputFile.equals(outputFile))
             throw new IllegalArgumentException(String.format(
@@ -101,7 +101,7 @@ public class Tagger {
                         Constants.CHARSET, writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                progress.increase(line.getBytes(Constants.CHARSET).length);
+                progressBar.increase(line.getBytes(Constants.CHARSET).length);
 
                 // Tag
                 List<HasWord> sequence = new LinkedList<>();

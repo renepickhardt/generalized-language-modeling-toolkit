@@ -3,7 +3,7 @@ package de.glmtk.executables;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.hash.Hashing.md5;
 import static com.google.common.io.Files.hash;
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.println;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -23,8 +23,6 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.Status;
@@ -36,6 +34,7 @@ import de.glmtk.options.custom.ArgmaxExecutorOption;
 import de.glmtk.options.custom.ArgmaxExecutorsOption;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
@@ -156,8 +155,8 @@ public class GlmtkExpArgmaxCompare extends Executable {
         GlmtkPaths paths = glmtk.getPaths();
 
         for (Path queryFile : queries) {
-            OUTPUT.printMessage("");
-            OUTPUT.printMessage(queryFile + ":");
+            println();
+            println(queryFile + ":");
 
             // TODO: there really should be an API for the following:
             String hash = hash(queryFile.toFile(), md5()).toString();
@@ -192,9 +191,9 @@ public class GlmtkExpArgmaxCompare extends Executable {
 
                     String type = String.format("%s-%s:", executor,
                             estimator.getName());
-                    OUTPUT.beginPhases(type + " Querying...");
-                    OUTPUT.setPhase(Phase.QUERYING);
-                    Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(queryFile));
+                    println("Querying...");
+                    ProgressBar progressBar = new ProgressBar("Querying",
+                            NioUtils.countNumberOfLines(queryFile));
                     try (BufferedReader reader = Files.newBufferedReader(
                             queryFile, Constants.CHARSET);
                             BufferedWriter writer = Files.newBufferedWriter(
@@ -202,7 +201,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                             + "."
                                             + type.substring(0,
                                                     type.length() - 1)),
-                                                    Constants.CHARSET)) {
+                                    Constants.CHARSET)) {
 
                         String line;
                         while ((line = reader.readLine()) != null) {
@@ -223,16 +222,14 @@ public class GlmtkExpArgmaxCompare extends Executable {
 
                             timeSum = timeSum.add(BigInteger.valueOf(timeAfter
                                     - timeBefore));
-                            progress.increase(1);
+                            progressBar.increase();
                             ++n;
                         }
                     }
-                    OUTPUT.endPhases(type);
 
                     BigInteger timePerArgmax = timeSum.divide(BigInteger.valueOf(n));
-                    OUTPUT.printMessage(String.format(
-                            "- Average prediciton time: %.3fms",
-                            (timePerArgmax.floatValue() / 1000 / 1000)));
+                    println("- Average prediciton time: %.3fms",
+                            (timePerArgmax.floatValue() / 1000 / 1000));
                 }
         }
     }

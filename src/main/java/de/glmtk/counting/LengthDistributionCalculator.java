@@ -1,26 +1,25 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.counting;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.BufferedReader;
@@ -33,10 +32,9 @@ import java.util.List;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Status;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
@@ -46,7 +44,7 @@ public class LengthDistributionCalculator {
 
     private Config config;
 
-    private Progress progress;
+    private ProgressBar progressBar;
     private Path inputFile;
     private Path outputFile;
     private int readerMemory;
@@ -57,17 +55,17 @@ public class LengthDistributionCalculator {
 
     public void calculate(Status status,
                           Path inputFile,
-                          Path outputFile) throws IOException {
-        OUTPUT.setPhase(Phase.LENGTH_DISTRIBUATION_CALCULATING);
-
+                          Path outputFile,
+                          ProgressBar progressBar) throws IOException {
         if (status.isLengthDistribution()) {
             LOGGER.debug("Status reports length distribution already calculated, returning.");
             return;
         }
 
-        progress = OUTPUT.newProgress(Files.size(inputFile));
         this.inputFile = inputFile;
         this.outputFile = outputFile;
+        this.progressBar = progressBar;
+        this.progressBar.total(Files.size(inputFile));
         calculateMemory();
 
         List<Double> frequencies = calculateLengthDistribution();
@@ -91,7 +89,7 @@ public class LengthDistributionCalculator {
                 Constants.CHARSET, readerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                progress.increase(line.getBytes(Constants.CHARSET).length);
+                progressBar.increase(line.getBytes(Constants.CHARSET).length);
 
                 // This is a slow method to get sequence length, better would be to count number of spaces.
                 int length = StringUtils.split(line, ' ').size();

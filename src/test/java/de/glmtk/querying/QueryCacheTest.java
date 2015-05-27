@@ -20,7 +20,7 @@
 
 package de.glmtk.querying;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.util.NioUtils.countNumberOfLines;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -39,17 +39,15 @@ import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.probability.QueryExecutor;
 import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
-import de.glmtk.util.NioUtils;
 
 @RunWith(Parameterized.class)
 public class QueryCacheTest extends TestCorporaTest {
@@ -96,8 +94,8 @@ public class QueryCacheTest extends TestCorporaTest {
         QueryExecutor executor = new QueryExecutor(paths, queryMode, estimator,
                 5);
 
-        OUTPUT.setPhase(Phase.QUERYING);
-        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(testFile));
+        ProgressBar progressBar = new ProgressBar("Querying",
+                countNumberOfLines(testFile));
 
         Logger.setTraceEnabled(false);
         try (BufferedReader reader = Files.newBufferedReader(testFile,
@@ -132,7 +130,7 @@ public class QueryCacheTest extends TestCorporaTest {
                     throw t;
                 }
 
-                progress.increase(1);
+                progressBar.increase();
             }
         }
         Logger.setTraceEnabled(true);

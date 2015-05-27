@@ -1,6 +1,7 @@
 package de.glmtk.querying.probability;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.bold;
+import static de.glmtk.output.Output.println;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,12 +15,17 @@ import de.glmtk.Constants;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.common.AbstractWorkerExecutor;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
+import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
 
 // TODO: optimize for test files that do not completely fit into memory, by quering chunks at a time.
 public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
+    private static final Logger LOGGER = Logger.get(FileQueryExecutor.class);
+    private static final String PHASE_QUERYING = "Querying";
+    private static final String PHASE_ASSEMBLING = "Assembling";
+
     private class Worker extends AbstractWorkerExecutor<String>.Worker {
         @Override
         protected void work(String line,
@@ -30,6 +36,7 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
 
     private QueryExecutor executor;
     private String[] resultingLines;
+    private ProgressBar progressBar;
 
     public FileQueryExecutor(Config config) {
         super(config);
@@ -41,39 +48,39 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
                                 int corpusOrder,
                                 Path inputFile,
                                 Path outputFile) throws Exception {
-        String message = String.format(
-                "Querying '%s' using mode %s with %s estimation",
-                OUTPUT.bold(inputFile), mode, estimator);
-        OUTPUT.beginPhases(message + "...");
+        println("Querying '%s' using mode %s with %s estimation...",
+                bold(inputFile), mode, estimator);
+        LOGGER.info("Querying '%s' using mode %s with %s estimation...",
+                inputFile, mode, estimator);
+
+        progressBar = new ProgressBar(PHASE_QUERYING, PHASE_ASSEMBLING);
 
         executor = new QueryExecutor(paths, mode, estimator, corpusOrder);
 
         queryLines(inputFile);
         QueryStats stats = assembleFile(outputFile);
 
-        OUTPUT.endPhases(message + ".");
-
-        OUTPUT.printMessage(String.format("    Saved as '%s' under '%s'.",
-                OUTPUT.bold(outputFile.getFileName()), outputFile.getParent()));
+        println("    Saved as '%s' under '%s'.",
+                bold(outputFile.getFileName()), outputFile.getParent());
 
         List<String> statsLines = StringUtils.split(stats.toString(), '\n');
         for (String statsLine : statsLines)
-            OUTPUT.printMessage("    " + statsLine);
+            println("    " + statsLine);
 
         return stats;
     }
 
     private void queryLines(Path inputFile) throws Exception {
-        OUTPUT.setPhase(Phase.QUERYING);
+        progressBar.setPhase(PHASE_QUERYING);
 
         List<String> lines = Files.readAllLines(inputFile, Constants.CHARSET);
         resultingLines = new String[lines.size()];
 
-        work(lines);
+        work(lines, progressBar);
     }
 
     private QueryStats assembleFile(Path outputFile) throws IOException {
-        OUTPUT.setPhase(Phase.ASSEMBLING);
+        progressBar.setPhase(PHASE_ASSEMBLING);
 
         Files.deleteIfExists(outputFile);
 
@@ -90,6 +97,8 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
         }
 
         resultingLines = null; // Enable gc on memory
+
+        progressBar.set(1.0);
 
         return stats;
     }

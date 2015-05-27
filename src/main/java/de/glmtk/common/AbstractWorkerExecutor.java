@@ -1,26 +1,25 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.common;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 import static de.glmtk.util.PrintUtils.logHeader;
 
@@ -31,8 +30,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import de.glmtk.Constants;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.ThreadUtils;
 
 public abstract class AbstractWorkerExecutor<T> {
@@ -57,8 +56,8 @@ public abstract class AbstractWorkerExecutor<T> {
 
                 work(obj, objNo);
 
-                synchronized (progress) {
-                    progress.increase(1);
+                synchronized (progressBar) {
+                    progressBar.increase();
                 }
             }
 
@@ -80,7 +79,7 @@ public abstract class AbstractWorkerExecutor<T> {
 
     private int objectNo;
     private BlockingQueue<T> queue;
-    private Progress progress;
+    private ProgressBar progressBar;
 
     public AbstractWorkerExecutor(Config config) {
         this.config = config;
@@ -96,7 +95,8 @@ public abstract class AbstractWorkerExecutor<T> {
         LOGGER.debug("writerMemory : %s", humanReadableByteCount(writerMemory));
     }
 
-    protected void work(Collection<T> objects) throws Exception {
+    protected void work(Collection<T> objects,
+                        ProgressBar progressBar) throws Exception {
         if (objects == null || objects.isEmpty()) {
             LOGGER.debug("No objects given, no work to do.");
             return;
@@ -104,7 +104,8 @@ public abstract class AbstractWorkerExecutor<T> {
 
         objectNo = 0;
         queue = createQueue(objects);
-        progress = OUTPUT.newProgress(queue.size());
+        this.progressBar = progressBar;
+        this.progressBar.total(queue.size());
 
         Collection<? extends Worker> workers = createWorkers();
         ThreadUtils.executeThreads(workers.size(), workers);

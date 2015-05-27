@@ -1,27 +1,30 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.executables;
 
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.println;
+import static de.glmtk.output.Output.printlnError;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
+import static de.glmtk.util.NioUtils.countNumberOfLines;
+import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,19 +36,19 @@ import java.util.List;
 import java.util.Random;
 
 import de.glmtk.Constants;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.DoubleOption;
 import de.glmtk.options.IntegerOption;
 import de.glmtk.options.custom.CorpusOption;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.NioUtils;
-import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExpSetupExecutable extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkExpSetupExecutable.class);
+    private static final String PHASE_SPLITTING_CORPUS = "Splitting Corpus";
+    private static final String PHASE_SELECTING_NGRAMS = "Selecting NGrams";
 
     public static void main(String[] args) {
         new GlmtkExpSetupExecutable().run(args);
@@ -56,11 +59,12 @@ public class GlmtkExpSetupExecutable extends Executable {
     private IntegerOption optionNGramLength;
     private IntegerOption optionNumNGrams;
 
-    private Path corpus = null;
-    private Path workingDir = null;
-    private Double trainingProb = null;
-    private Integer ngramLength = null;
-    private Integer numNGrams = null;
+    private Path corpus;
+    private Path workingDir;
+    private Double trainingProb;
+    private int ngramLength;
+    private int numNGrams;
+    private ProgressBar progressBar;
 
     @Override
     protected String getExecutableName() {
@@ -74,14 +78,14 @@ public class GlmtkExpSetupExecutable extends Executable {
         optionTrainingProb = new DoubleOption("p", "training-prob",
                 "Probability with which lines go into training, "
                         + "other lines go into held-out. Default: 0.8.").defaultValue(
-                0.8).requireProbability();
+                                0.8).requireProbability();
         optionNGramLength = new IntegerOption("n", "ngram-length",
                 "Lenghts for which n-grams should be selected. "
                         + "If zero no n-grams will be selected. Default: 10.").defaultValue(
-                                10).requirePositive().requireNotZero();
+                10).requirePositive().requireNotZero();
         optionNumNGrams = new IntegerOption("N", "num-ngrams",
                 "Number of n-gram sequences to select. Default: 5000").defaultValue(
-                        5000).requirePositive().requireNotZero();
+                5000).requirePositive().requireNotZero();
 
         commandLine.options(optionCorpus, optionTrainingProb,
                 optionNGramLength, optionNumNGrams);
@@ -124,6 +128,9 @@ public class GlmtkExpSetupExecutable extends Executable {
     protected void exec() throws Exception {
         logFields();
 
+        progressBar = new ProgressBar(PHASE_SPLITTING_CORPUS,
+                PHASE_SELECTING_NGRAMS);
+
         Path trainingFile = workingDir.resolve("training");
         Path heldoutFile = workingDir.resolve("heldout");
 
@@ -133,10 +140,8 @@ public class GlmtkExpSetupExecutable extends Executable {
 
         long corpusFileSize = NioUtils.calcFileSize(corpus);
 
-        String message = "Experimental setup";
-        OUTPUT.beginPhases(message + "...");
-        OUTPUT.setPhase(Phase.SPLITTING_CORPUS);
-        Progress progress = OUTPUT.newProgress(NioUtils.calcNumberOfLines(corpus));
+        println("Experimental setup");
+        progressBar.setPhase(PHASE_SPLITTING_CORPUS, countNumberOfLines(corpus));
         try (BufferedReader reader = Files.newBufferedReader(corpus,
                 Constants.CHARSET);
                 BufferedWriter trainingWriter = Files.newBufferedWriter(
@@ -153,28 +158,26 @@ public class GlmtkExpSetupExecutable extends Executable {
                             && StringUtils.split(line, ' ').size() >= ngramLength)
                         ngramCandidates.add(line);
                 }
-                progress.increase(1);
+                progressBar.increase();
             }
         }
 
         if (ngramLength != 0)
             selectNGrams(ngramCandidates);
 
-        OUTPUT.endPhases(String.format("%s done (%s)", message,
-                PrintUtils.humanReadableByteCount(corpusFileSize)));
+        println("    took %s)", humanReadableByteCount(corpusFileSize));
     }
 
     private void selectNGrams(List<String> ngramCandidates) throws IOException {
         if (ngramCandidates.size() < numNGrams) {
-            OUTPUT.printError(String.format("Not enough available NGram "
+            printlnError("Not enough available NGram "
                     + "sequences that are longer than requested size. "
                     + "Size = %d, Have = %d, Need = %d", ngramLength,
-                    ngramCandidates.size(), numNGrams));
+                    ngramCandidates.size(), numNGrams);
             return;
         }
 
-        OUTPUT.setPhase(Phase.SELECTING_NGRAMS);
-        Progress progress = OUTPUT.newProgress(numNGrams);
+        progressBar.setPhase(PHASE_SELECTING_NGRAMS, numNGrams);
 
         Random rand = new Random();
 
@@ -202,7 +205,7 @@ public class GlmtkExpSetupExecutable extends Executable {
                 ngramWords.remove(ngramWords.size() - 1);
             }
 
-            progress.increase(1);
+            progressBar.increase();
         }
 
         for (BufferedWriter writer : ngramWriters)

@@ -81,8 +81,8 @@ public class CompletionTrieCache extends AbstractCache {
 
             counts.put(pattern, completionTrie);
 
-            if (progress != null)
-                progress.increase(1);
+            if (progressBar != null)
+                progressBar.increase();
         }
     }
 
@@ -151,8 +151,8 @@ public class CompletionTrieCache extends AbstractCache {
 
             gammas.put(pattern, completionTrie);
 
-            if (progress != null)
-                progress.increase(1);
+            if (progressBar != null)
+                progressBar.increase();
         }
     }
 

@@ -1,26 +1,25 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.counting;
 
-import static de.glmtk.common.Output.OUTPUT;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.BufferedReader;
@@ -48,14 +47,13 @@ import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 
 import de.glmtk.Constants;
 import de.glmtk.common.Config;
-import de.glmtk.common.Output.Phase;
-import de.glmtk.common.Output.Progress;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Status;
 import de.glmtk.counts.Counts;
 import de.glmtk.files.CountsReader;
 import de.glmtk.files.CountsWriter;
 import de.glmtk.logging.Logger;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
@@ -113,8 +111,8 @@ public class Chunker {
 
                 LOGGER.debug("Finished pattern '%s'.", pattern);
 
-                synchronized (progress) {
-                    progress.increase(1);
+                synchronized (progressBar) {
+                    progressBar.increase();
                 }
             }
 
@@ -175,8 +173,7 @@ public class Chunker {
 
         private void perLine(String line,
                              int patternSize) throws IOException {
-            String[] split = StringUtils.split(line, ' ').toArray(
-                    new String[0]);
+            String[] split = StringUtils.split(line, ' ').toArray(new String[0]);
             String[] words = new String[split.length];
             String[] poses = new String[split.length];
             StringUtils.extractWordsAndPoses(split, trainingFileTagged, words,
@@ -299,7 +296,7 @@ public class Chunker {
 
     private Config config;
 
-    private Progress progress;
+    private ProgressBar progressBar;
     private boolean absolute;
     private Status status;
     private Path trainingFile;
@@ -322,13 +319,13 @@ public class Chunker {
                               Set<Pattern> patterns,
                               Path trainingFile,
                               boolean trainingFileTagged,
-                              Path absoluteChunkedDir) throws Exception {
-        OUTPUT.setPhase(Phase.ABSOLUTE_CHUNKING);
+                              Path absoluteChunkedDir,
+                              ProgressBar progressBar) throws Exception {
         this.status = status;
         this.trainingFile = trainingFile;
         this.trainingFileTagged = trainingFileTagged;
         this.absoluteChunkedDir = absoluteChunkedDir;
-        chunk(true, patterns);
+        chunk(true, patterns, progressBar);
     }
 
     public void chunkContinuation(Status status,
@@ -336,18 +333,19 @@ public class Chunker {
                                   Path absoluteDir,
                                   Path continuationDir,
                                   Path absoluteChunkedDir,
-                                  Path continuationChunkedDir) throws Exception {
-        OUTPUT.setPhase(Phase.CONTINUATION_CHUNKING);
+                                  Path continuationChunkedDir,
+                                  ProgressBar progressBar) throws Exception {
         this.status = status;
         this.absoluteDir = absoluteDir;
         this.absoluteChunkedDir = absoluteChunkedDir;
         this.continuationDir = continuationDir;
         this.continuationChunkedDir = continuationChunkedDir;
-        chunk(false, patterns);
+        chunk(false, patterns, progressBar);
     }
 
     private void chunk(boolean absolute,
-                       Set<Pattern> patterns) throws Exception {
+                       Set<Pattern> patterns,
+                       ProgressBar progressBar) throws Exception {
         LOGGER.debug("patterns = '%s'", patterns);
         if (patterns.isEmpty())
             return;
@@ -377,7 +375,8 @@ public class Chunker {
             else
                 threads.add(new ContinuationThread());
 
-        progress = OUTPUT.newProgress(patternQueue.size());
+        this.progressBar = progressBar;
+        this.progressBar.total(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
     }
 

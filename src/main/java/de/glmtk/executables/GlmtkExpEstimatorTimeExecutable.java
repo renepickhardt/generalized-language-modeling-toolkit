@@ -1,7 +1,7 @@
 package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.println;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -171,8 +171,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         }
 
         for (Path queryFile : queries) {
-            OUTPUT.printMessage("");
-            OUTPUT.printMessage(queryFile + ":");
+            println();
+            println(queryFile + ":");
 
             if (cacheFile == null) {
                 GlmtkPaths queryCache = glmtk.provideQueryCache(queryFile,
@@ -219,8 +219,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 }
 
                 BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(n));
-                OUTPUT.printMessage(String.format("%s: %sns",
-                        estimator.getName(), timePerProbability));
+                println("%s: %sns", estimator.getName(), timePerProbability);
             }
         }
     }

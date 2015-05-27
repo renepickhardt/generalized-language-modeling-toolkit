@@ -21,7 +21,9 @@
 package de.glmtk.executables;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
-import static de.glmtk.common.Output.OUTPUT;
+import static de.glmtk.output.Output.disableFormatting;
+import static de.glmtk.output.Output.enableFormatting;
+import static de.glmtk.output.Output.printlnError;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import java.io.BufferedReader;
@@ -40,8 +42,8 @@ import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.BooleanOption;
-import de.glmtk.options.OptionException;
 import de.glmtk.options.CommandLine;
+import de.glmtk.options.OptionException;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
@@ -57,7 +59,6 @@ import de.glmtk.util.ThreadUtils;
 
     protected Config config;
     protected CommandLine commandLine;
-    private boolean outputIntialized = false;
     private boolean logConsole;
     private boolean logDebug;
 
@@ -73,15 +74,13 @@ import de.glmtk.util.ThreadUtils;
 
     public void run(String[] args) {
         try {
+            enableFormatting();
+
             parseOptions(args);
 
             configureLogging();
 
             config = new Config();
-
-            OUTPUT.initialize(config);
-            OUTPUT.tryToEnableAnsi();
-            outputIntialized = true;
 
             printLogHeader(args);
 
@@ -92,11 +91,7 @@ import de.glmtk.util.ThreadUtils;
             if (e.getMessage() != null)
                 System.err.println(e.getMessage());
         } catch (Throwable e) {
-            if (outputIntialized)
-                OUTPUT.printError(e.getMessage());
-            else
-                System.err.println(e.getMessage());
-            e.printStackTrace();
+            printlnError(e.getMessage());
             LOGGER.error(String.format("Exception %s", getStackTraceAsString(e)));
         }
     }
@@ -169,7 +164,7 @@ import de.glmtk.util.ThreadUtils;
             LOGGING_HELPER.addConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
             // TODO: Does this even work, since it is called before tryToEnableAnsi()
-            OUTPUT.disableAnsi();
+            disableFormatting();
         }
 
         if (logDebug
