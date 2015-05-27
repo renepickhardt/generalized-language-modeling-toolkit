@@ -119,7 +119,7 @@ public class Output {
      *         return a string describing the error wrapped in
      *         {@link Optional#of(Object)}.
      */
-    public static Optional<String> initializeStderrFormatting() {
+    public static Optional<String> enableFormatting() {
         boolean isttyStderr = parseBoolean(System.getProperty("glmtk.isttyStderr"));
         if (!isttyStderr)
             return Optional.of("Ansi codes will not be enables because "
@@ -129,7 +129,7 @@ public class Output {
             setFinalStaticField(AnsiConsole.class.getField("out"),
                     AnsiConsole.system_out);
             setFinalStaticField(AnsiConsole.class.getField("err"),
-                    new PrintStream(wrapStderrStream(AnsiConsole.system_err)));
+                    new PrintStream(wrapStream(AnsiConsole.system_err)));
             AnsiConsole.systemInstall();
             isFormattingEnabled = true;
             return Optional.absent();
@@ -137,6 +137,11 @@ public class Output {
             return Optional.of("Ansi codes could not be enables because: "
                     + getStackTraceAsString(e));
         }
+    }
+
+    public static void disableFormatting() {
+        AnsiConsole.systemUninstall();
+        isFormattingEnabled = false;
     }
 
     /**
@@ -148,7 +153,7 @@ public class Output {
      * {@link AnsiConsole#wrapOutputStream(OutputStream)}, without the check
      * whether specifically stdout is a terminal.
      */
-    private static OutputStream wrapStderrStream(OutputStream stream) {
+    private static OutputStream wrapStream(OutputStream stream) {
         String os = System.getProperty("os.name");
         if (os.startsWith("Windows"))
             try {
