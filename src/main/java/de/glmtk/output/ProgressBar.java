@@ -29,6 +29,12 @@ public class ProgressBar {
     private long total;
     private long lastDisplay;
 
+    public ProgressBar(String phase,
+                       long total) {
+        this(ImmutableList.of(phase));
+        setPhase(phase, total);
+    }
+
     public ProgressBar(String... phases) {
         this(ImmutableList.copyOf(phases));
     }
