@@ -186,7 +186,11 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 BigInteger timeSum = BigInteger.ZERO;
                 int n = 0;
 
-                for (int i = 0; i != times; ++i)
+                for (int i = 0; i != times; ++i) {
+                    // Trigger garbage collection at begin of every benchmark
+                    // iteration, to avoid triggering it mid benchmark.
+                    System.gc();
+
                     try (BufferedReader reader = Files.newBufferedReader(
                             queryFile, Constants.CHARSET)) {
                         String line;
@@ -212,6 +216,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                             ++n;
                         }
                     }
+                }
 
                 BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(n));
                 OUTPUT.printMessage(String.format("%s: %sns",
