@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 
 public class ProgressBar {
     private static final long DISPLAY_INTERVAL = 200;
+    private static final long DISABLE_PERCENT_DISPLAY = -1;
 
     private List<String> phases;
     private String curPhase;
@@ -28,6 +29,10 @@ public class ProgressBar {
     private long current;
     private long total;
     private long lastDisplay;
+
+    public ProgressBar(String phase) {
+        this(phase, DISABLE_PERCENT_DISPLAY);
+    }
 
     public ProgressBar(String phase,
                        long total) {
@@ -61,6 +66,10 @@ public class ProgressBar {
         maxIndex = this.phases.size();
     }
 
+    public void setPhase(String phase) {
+        setPhase(phase, DISABLE_PERCENT_DISPLAY);
+    }
+
     public void setPhase(String phase,
                          long total) {
         checkNotNull(phase);
@@ -75,6 +84,11 @@ public class ProgressBar {
         display();
     }
 
+    public void total(long total) {
+        this.total = total;
+        display();
+    }
+
     public void increase() {
         increase(1);
     }
@@ -85,12 +99,9 @@ public class ProgressBar {
 
     public void set(long current) {
         this.current = current;
-        if (current == total) {
-            // We always want to display the 100%
+        if (total == DISABLE_PERCENT_DISPLAY || current == total)
             forceDisplay();
-            // No longer need to update after 100% though
-            lastDisplay = Long.MAX_VALUE;
-        } else
+        else
             display();
     }
 
@@ -108,11 +119,19 @@ public class ProgressBar {
     }
 
     private void forceDisplay() {
+        String phaseCounter = format("(%" + numDigits(phases.size()) + "d/%d)",
+                curIndex, maxIndex);
+
+        if (total == DISABLE_PERCENT_DISPLAY) {
+            eraseLine();
+            printlnVolatile("%s %s...", phaseCounter, curPhase);
+            return;
+        }
+
         float percent = (float) current / total;
 
-        String beforeBlocks = format("(%" + numDigits(numDigits(phases.size()))
-                + "d/%d) %-" + maxPhaseLength + "s [", curIndex, maxIndex,
-                curPhase);
+        String beforeBlocks = format("%s %-" + maxPhaseLength + "s [",
+                phaseCounter, curPhase);
         String afterBlocks = format("] %6.2f%%", 100.0 * percent);
 
         int lengthWithoutBlocks = beforeBlocks.length() + afterBlocks.length();
