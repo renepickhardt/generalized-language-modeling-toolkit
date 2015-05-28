@@ -60,11 +60,13 @@ import de.glmtk.util.ThreadUtils;
     protected BooleanOption optionVersion;
     protected BooleanOption optionLogConsole;
     protected BooleanOption optionLogDebug;
+    protected BooleanOption optionLogTrace;
 
     protected Config config;
     protected CommandLine commandLine;
     private boolean logConsole;
     private boolean logDebug;
+    private boolean logTrace;
 
     protected abstract String getExecutableName();
 
@@ -110,10 +112,12 @@ import de.glmtk.util.ThreadUtils;
                 "Logging messages are also written to stdout.");
         optionLogDebug = new BooleanOption(null, "debug",
                 "Set log level to DEBUG.");
+        optionLogTrace = new BooleanOption(null, "trace",
+                "Set log level to TRACE.");
 
         commandLine.options(optionHelp, optionVersion);
         registerOptions();
-        commandLine.options(optionLogConsole, optionLogDebug);
+        commandLine.options(optionLogConsole, optionLogDebug, optionLogTrace);
 
         try {
             commandLine.parse(args);
@@ -151,6 +155,7 @@ import de.glmtk.util.ThreadUtils;
 
         logConsole = optionLogConsole.getBoolean();
         logDebug = optionLogDebug.getBoolean();
+        logTrace = optionLogTrace.getBoolean();
     }
 
     protected void configureLogging() {
@@ -173,6 +178,8 @@ import de.glmtk.util.ThreadUtils;
 
         if (logDebug && getLogLevel().isMoreSpecificThan(Level.DEBUG))
             setLogLevel(Level.DEBUG);
+        if (logTrace && getLogLevel().isMoreSpecificThan(Level.TRACE))
+            setLogLevel(Level.TRACE);
     }
 
     private void printLogHeader(String[] args) {
