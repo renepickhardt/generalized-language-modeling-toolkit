@@ -18,7 +18,10 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.util;
+package de.glmtk.logging;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.nio.file.Path;
 
@@ -36,54 +39,72 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import de.glmtk.Constants;
 
-public enum LoggingHelper {
-    LOGGING_HELPER;
+public class LoggingHelper {
+    private LoggingHelper() {
+    }
 
-    private static final String loggingPattern = "%date{yyyy-MM-dd HH:mm:ss} [%-5level]  %-100msg  [%class{1}#%method:%line] %thread (%logger)%n";
+    private static final String LOGGING_PATTERN = "%date{yyyy-MM-dd HH:mm:ss} [%-5level]  %-100msg  [%class{1}#%method:%line] %thread (%logger)%n";
 
     /**
      * Log4j LoggerContext.
      */
-    private LoggerContext loggerContext;
+    private static LoggerContext context;
 
     /**
      * Log4j Configuration.
      */
-    private Configuration Configuration;
+    private static Configuration config;
 
     /**
      * Serializable Log4j Root Logger Configuration.
      */
-    private LoggerConfig loggerconfig;
+    private static LoggerConfig rootLoggerConfig;
 
-    private Layout<String> layout;
+    private static Layout<String> layout;
 
-    private LoggingHelper() {
-        loggerContext = (LoggerContext) LogManager.getContext(false);
-        Configuration = loggerContext.getConfiguration();
-        loggerconfig = Configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-        layout = PatternLayout.createLayout(loggingPattern, Configuration,
-                null, Constants.CHARSET, true, true, null, null);
+    private static boolean initialized = false;
+
+    public static void initLoggingHelper() {
+        context = (LoggerContext) LogManager.getContext(false);
+        config = context.getConfiguration();
+        rootLoggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+        layout = PatternLayout.createLayout(LOGGING_PATTERN, config, null,
+                Constants.CHARSET, true, true, null, null);
+
+        initialized = true;
     }
 
-    public Level getLogLevel() {
-        return loggerconfig.getLevel();
+    private static void checkInitialized() {
+        if (!initialized)
+            throw new IllegalStateException("Call #initLoggingHelper() before "
+                    + "using any other methods of this class.");
     }
 
-    public void setLogLevel(Level level) {
-        loggerconfig.setLevel(level);
+    public static Level getLogLevel() {
+        checkInitialized();
 
-        loggerContext.updateLoggers();
+        return rootLoggerConfig.getLevel();
     }
 
-    public void addConsoleAppender(Target target) {
+    public static void setLogLevel(Level level) {
+        checkInitialized();
+        checkNotNull(level);
+
+        rootLoggerConfig.setLevel(level);
+        context.updateLoggers();
+    }
+
+    public static void addLoggingConsoleAppender(Target target) {
+        checkInitialized();
+        checkNotNull(target);
+
         Appender consoleApender = ConsoleAppender.createAppender(layout, null,
-                target.toString(), "Output", "true", "false");
+                target.toString(), target.toString() + "Log", "true", "false");
         consoleApender.start();
-        Configuration.addAppender(consoleApender);
-        loggerconfig.addAppender(consoleApender, null, null);
+        config.addAppender(consoleApender);
+        rootLoggerConfig.addAppender(consoleApender, null, null);
 
-        loggerContext.updateLoggers();
+        context.updateLoggers();
     }
 
     /**
@@ -97,17 +118,22 @@ public enum LoggingHelper {
      *            If {@code true} log messages are appended to the file. If
      *            {@code false} log message replace file contents.
      */
-    public void addFileAppender(Path logFile,
-                                String name,
-                                boolean append) {
+    public static void addLoggingFileAppender(Path logFile,
+                                       String name,
+                                       boolean append) {
+        checkInitialized();
+        checkNotNull(logFile);
+        checkNotNull(name);
+        checkArgument(!name.isEmpty());
+
         Appender fileLocalAppender = FileAppender.createAppender(
                 logFile.toString(), Boolean.toString(append), "false", name,
                 "false", "false", "true", "8192", layout, null, "false",
-                "false", Configuration);
+                "false", config);
         fileLocalAppender.start();
-        Configuration.addAppender(fileLocalAppender);
-        loggerconfig.addAppender(fileLocalAppender, null, null);
+        config.addAppender(fileLocalAppender);
+        rootLoggerConfig.addAppender(fileLocalAppender, null, null);
 
-        loggerContext.updateLoggers();
+        context.updateLoggers();
     }
 }

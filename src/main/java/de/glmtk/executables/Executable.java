@@ -1,30 +1,34 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.executables;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
+import static de.glmtk.logging.LoggingHelper.addLoggingConsoleAppender;
+import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
+import static de.glmtk.logging.LoggingHelper.getLogLevel;
+import static de.glmtk.logging.LoggingHelper.initLoggingHelper;
+import static de.glmtk.logging.LoggingHelper.setLogLevel;
 import static de.glmtk.output.Output.disableOutputFormatting;
 import static de.glmtk.output.Output.enableOutputFormatting;
 import static de.glmtk.output.Output.printlnError;
-import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -150,26 +154,25 @@ import de.glmtk.util.ThreadUtils;
     }
 
     protected void configureLogging() {
-        LOGGING_HELPER.addFileAppender(
+        initLoggingHelper();
+        addLoggingFileAppender(
                 GlmtkPaths.LOG_DIR.resolve(Constants.ALL_LOG_FILE_NAME),
                 "FileAll", true);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = format.format(Calendar.getInstance().getTime());
-        LOGGING_HELPER.addFileAppender(
-                GlmtkPaths.LOG_DIR.resolve(time + ".log"), "FileTimestamp",
-                false);
+        addLoggingFileAppender(GlmtkPaths.LOG_DIR.resolve(time + ".log"),
+                "FileTimestamp", false);
 
         if (logConsole) {
-            LOGGING_HELPER.addConsoleAppender(Target.SYSTEM_ERR);
+            addLoggingConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
             // TODO: Does this even work, since it is called before tryToEnableAnsi()
             disableOutputFormatting();
         }
 
-        if (logDebug
-                && LOGGING_HELPER.getLogLevel().isMoreSpecificThan(Level.DEBUG))
-            LOGGING_HELPER.setLogLevel(Level.DEBUG);
+        if (logDebug && getLogLevel().isMoreSpecificThan(Level.DEBUG))
+            setLogLevel(Level.DEBUG);
     }
 
     private void printLogHeader(String[] args) {

@@ -21,7 +21,7 @@
 package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
+import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -220,7 +220,7 @@ public class GlmtkExecutable extends Executable {
     protected void configureLogging() {
         super.configureLogging();
 
-        LOGGING_HELPER.addFileAppender(
+        addLoggingFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
     }

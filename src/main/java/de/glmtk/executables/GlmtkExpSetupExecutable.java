@@ -20,9 +20,9 @@
 
 package de.glmtk.executables;
 
+import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
 import static de.glmtk.output.Output.println;
 import static de.glmtk.output.Output.printlnError;
-import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 import static de.glmtk.util.NioUtils.countNumberOfLines;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
@@ -119,7 +119,7 @@ public class GlmtkExpSetupExecutable extends Executable {
     protected void configureLogging() {
         super.configureLogging();
 
-        LOGGING_HELPER.addFileAppender(
+        addLoggingFileAppender(
                 workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
                 true);
     }
