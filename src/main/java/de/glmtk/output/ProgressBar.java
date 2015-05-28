@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static de.glmtk.output.Output.eraseLine;
 import static de.glmtk.output.Output.getTerminalWidth;
-import static de.glmtk.output.Output.isFormattingEnabled;
+import static de.glmtk.output.Output.isOutputFormattingEnabled;
 import static de.glmtk.output.Output.printlnVolatile;
 import static de.glmtk.util.StringUtils.repeat;
 import static java.lang.Math.ceil;
@@ -136,7 +136,7 @@ public class ProgressBar {
 
         int lengthWithoutBlocks = beforeBlocks.length() + afterBlocks.length();
         int widthForBlocks = 80 - lengthWithoutBlocks;
-        if (isFormattingEnabled())
+        if (isOutputFormattingEnabled())
             widthForBlocks = getTerminalWidth() - lengthWithoutBlocks;
         int numBlocks = (int) ceil(percent * widthForBlocks);
 

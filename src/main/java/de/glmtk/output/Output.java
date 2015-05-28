@@ -119,7 +119,7 @@ public class Output {
      *         return a string describing the error wrapped in
      *         {@link Optional#of(Object)}.
      */
-    public static Optional<String> enableFormatting() {
+    public static Optional<String> enableOutputFormatting() {
         boolean isttyStderr = parseBoolean(System.getProperty("glmtk.isttyStderr"));
         if (!isttyStderr)
             return Optional.of("Ansi codes will not be enables because "
@@ -139,7 +139,7 @@ public class Output {
         }
     }
 
-    public static void disableFormatting() {
+    public static void disableOutputFormatting() {
         AnsiConsole.systemUninstall();
         isFormattingEnabled = false;
     }
@@ -172,7 +172,7 @@ public class Output {
         };
     }
 
-    public static boolean isFormattingEnabled() {
+    public static boolean isOutputFormattingEnabled() {
         return isFormattingEnabled;
     }
 

@@ -20,7 +20,7 @@
 
 package de.glmtk.testutil;
 
-import static de.glmtk.output.Output.enableFormatting;
+import static de.glmtk.output.Output.enableOutputFormatting;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
@@ -38,6 +38,6 @@ public class LoggingTest {
 
     @BeforeClass
     public static void setUpOutput() {
-        enableFormatting();
+        enableOutputFormatting();
     }
 }

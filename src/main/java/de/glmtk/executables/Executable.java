@@ -21,8 +21,8 @@
 package de.glmtk.executables;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
-import static de.glmtk.output.Output.disableFormatting;
-import static de.glmtk.output.Output.enableFormatting;
+import static de.glmtk.output.Output.disableOutputFormatting;
+import static de.glmtk.output.Output.enableOutputFormatting;
 import static de.glmtk.output.Output.printlnError;
 import static de.glmtk.util.LoggingHelper.LOGGING_HELPER;
 
@@ -74,7 +74,7 @@ import de.glmtk.util.ThreadUtils;
 
     public void run(String[] args) {
         try {
-            enableFormatting();
+            enableOutputFormatting();
 
             parseOptions(args);
 
@@ -164,7 +164,7 @@ import de.glmtk.util.ThreadUtils;
             LOGGING_HELPER.addConsoleAppender(Target.SYSTEM_ERR);
             // Stop clash of Log Messages with CondoleOutputter's Ansi Control Codes.
             // TODO: Does this even work, since it is called before tryToEnableAnsi()
-            disableFormatting();
+            disableOutputFormatting();
         }
 
         if (logDebug
