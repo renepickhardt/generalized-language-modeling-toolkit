@@ -189,8 +189,12 @@ public class Output {
      * As this may be an expensive operation, it is only performed if the last
      * call to this method was more than 500ms ago. Also we won't wait longer
      * than 10ms for the process to complete.
+     *
+     * <p>
+     * This method is {@code synchronized} so calls to it from other threads,
+     * while it is waiting for the bash process will not trigger another update.
      */
-    private static void updateTerminalWidth() {
+    private synchronized static void updateTerminalWidth() {
         long time = currentTimeMillis();
         if (time - lastTerminalWidthCheck < TERMINAL_WIDTH_UPDATE_INTERVALL)
             return;
@@ -307,8 +311,9 @@ public class Output {
     }
 
     /**
-     * Prints like {@link #println}, except that printed lines are subject to be
-     * removed with {@link #eraseLine()}.
+     * Prints like {@link #println}, expect that printed lines can be removed
+     * again by calls to {@link #eraseLine()}. Although any call to an
+     * non-volatile {@link #print}-method will delete all volatile lines.
      */
     public static void printlnVolatile() {
         err.println();
@@ -333,6 +338,13 @@ public class Output {
     public static void printlnVolatile(Object object) {
         checkNotNull(object);
         printlnVolatile(object.toString());
+    }
+
+    /**
+     * Removes the volatile status of all previously printed lines.
+     */
+    public static void fixateVolatileLines() {
+        numVolatileLines = 0;
     }
 
     public static String bold(String message) {
@@ -362,6 +374,7 @@ public class Output {
      * by this.
      *
      * @see #eraseLines(int)
+     * @see #eraseAllLines()
      */
     public static void eraseLine() {
         if (!isFormattingEnabled || numVolatileLines == 0)
