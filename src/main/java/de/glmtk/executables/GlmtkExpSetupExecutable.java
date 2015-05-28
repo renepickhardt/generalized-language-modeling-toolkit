@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -73,22 +73,23 @@ public class GlmtkExpSetupExecutable extends Executable {
 
     @Override
     protected void registerOptions() {
-        optionCorpus = new CorpusOption("c", "corpus",
+        optionCorpus = new CorpusOption(null, "corpus",
                 "Give corpus and maybe working directory.").suffix(".datasets");
         optionTrainingProb = new DoubleOption("p", "training-prob",
                 "Probability with which lines go into training, "
                         + "other lines go into held-out. Default: 0.8.").defaultValue(
-                                0.8).requireProbability();
+                0.8).requireProbability();
         optionNGramLength = new IntegerOption("n", "ngram-length",
                 "Lenghts for which n-grams should be selected. "
                         + "If zero no n-grams will be selected. Default: 10.").defaultValue(
-                10).requirePositive().requireNotZero();
+                                10).requirePositive().requireNotZero();
         optionNumNGrams = new IntegerOption("N", "num-ngrams",
                 "Number of n-gram sequences to select. Default: 5000").defaultValue(
-                5000).requirePositive().requireNotZero();
+                        5000).requirePositive().requireNotZero();
 
-        commandLine.options(optionCorpus, optionTrainingProb,
-                optionNGramLength, optionNumNGrams);
+        commandLine.inputArgs(optionCorpus);
+        commandLine.options(optionTrainingProb, optionNGramLength,
+                optionNumNGrams);
     }
 
     @Override

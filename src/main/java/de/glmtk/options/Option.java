@@ -70,8 +70,8 @@ public abstract class Option {
         switch (type) {
             case OPTION:
                 if (shortopt == null)
-                    return format("--%s", longopt);
-                return format("-%s (--%s)", shortopt, longopt);
+                    return format("Option --%s", longopt);
+                return format("Option -%s (--%s)", shortopt, longopt);
 
             case INPUT_ARG:
                 return format("Input argument '%s'", longopt);

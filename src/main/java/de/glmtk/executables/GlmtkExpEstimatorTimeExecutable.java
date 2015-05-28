@@ -57,7 +57,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
     @Override
     protected void registerOptions() {
-        optionCorpus = new CorpusOption("c", "corpus",
+        optionCorpus = new CorpusOption(null, "corpus",
                 "Give corpus and maybe working directory.");
         optionEstimators = new EstimatorsOption("e", "estimator",
                 "Estimators to check.");
@@ -68,8 +68,9 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         optionCacheFile = new PathOption("c", "cache-file",
                 "File to generate query cache from for all query files.").requireMustExist().requireFile();
 
-        commandLine.options(optionCorpus, optionEstimators, optionQuery,
-                optionRuns, optionCacheFile);
+        commandLine.inputArgs(optionCorpus);
+        commandLine.options(optionEstimators, optionQuery, optionRuns,
+                optionCacheFile);
     }
 
     @Override

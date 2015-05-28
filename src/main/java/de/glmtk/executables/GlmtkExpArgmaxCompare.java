@@ -72,7 +72,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
 
     @Override
     protected void registerOptions() {
-        optionCorpus = new CorpusOption("c", "corpus",
+        optionCorpus = new CorpusOption(null, "corpus",
                 "Give corpus and maybe working directory.");
         optionArgmaxExecutors = new ArgmaxExecutorsOption("a",
                 "argmax-executor",
@@ -88,9 +88,9 @@ public class GlmtkExpArgmaxCompare extends Executable {
         optionNoQueryCache = new BooleanOption("c", "no-querycache",
                 "Do not create QueryCache.");
 
-        commandLine.options(optionCorpus, optionArgmaxExecutors,
-                optionEstimators, optionQuery, optionRandomAccess,
-                optionNoQueryCache);
+        commandLine.inputArgs(optionCorpus);
+        commandLine.options(optionArgmaxExecutors, optionEstimators,
+                optionQuery, optionRandomAccess, optionNoQueryCache);
     }
 
     @Override
