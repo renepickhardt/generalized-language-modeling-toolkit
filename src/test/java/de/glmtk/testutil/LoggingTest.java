@@ -20,9 +20,9 @@
 
 package de.glmtk.testutil;
 
-import static de.glmtk.logging.LoggingHelper.addLoggingConsoleAppender;
-import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
-import static de.glmtk.logging.LoggingHelper.initLoggingHelper;
+import static de.glmtk.logging.Log4jHelper.addLoggingConsoleAppender;
+import static de.glmtk.logging.Log4jHelper.addLoggingFileAppender;
+import static de.glmtk.logging.Log4jHelper.initLoggingHelper;
 import static de.glmtk.output.Output.enableOutputFormatting;
 
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;

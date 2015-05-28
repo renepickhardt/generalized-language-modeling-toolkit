@@ -39,8 +39,8 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import de.glmtk.Constants;
 
-public class LoggingHelper {
-    private LoggingHelper() {
+public class Log4jHelper {
+    private Log4jHelper() {
     }
 
     private static final String LOGGING_PATTERN = "%date{yyyy-MM-dd HH:mm:ss} [%-5level]  %-100msg  [%class{1}#%method:%line] %thread (%logger)%n";

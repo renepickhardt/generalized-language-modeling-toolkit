@@ -21,11 +21,11 @@
 package de.glmtk.executables;
 
 import static com.google.common.base.Throwables.getStackTraceAsString;
-import static de.glmtk.logging.LoggingHelper.addLoggingConsoleAppender;
-import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
-import static de.glmtk.logging.LoggingHelper.getLogLevel;
-import static de.glmtk.logging.LoggingHelper.initLoggingHelper;
-import static de.glmtk.logging.LoggingHelper.setLogLevel;
+import static de.glmtk.logging.Log4jHelper.addLoggingConsoleAppender;
+import static de.glmtk.logging.Log4jHelper.addLoggingFileAppender;
+import static de.glmtk.logging.Log4jHelper.getLogLevel;
+import static de.glmtk.logging.Log4jHelper.initLoggingHelper;
+import static de.glmtk.logging.Log4jHelper.setLogLevel;
 import static de.glmtk.output.Output.disableOutputFormatting;
 import static de.glmtk.output.Output.enableOutputFormatting;
 import static de.glmtk.output.Output.printlnError;

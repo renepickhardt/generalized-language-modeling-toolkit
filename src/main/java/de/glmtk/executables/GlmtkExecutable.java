@@ -21,7 +21,7 @@
 package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
+import static de.glmtk.logging.Log4jHelper.addLoggingFileAppender;
 
 import java.io.BufferedReader;
 import java.io.IOException;

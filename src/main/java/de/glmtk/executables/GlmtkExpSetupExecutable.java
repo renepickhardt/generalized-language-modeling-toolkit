@@ -20,7 +20,7 @@
 
 package de.glmtk.executables;
 
-import static de.glmtk.logging.LoggingHelper.addLoggingFileAppender;
+import static de.glmtk.logging.Log4jHelper.addLoggingFileAppender;
 import static de.glmtk.output.Output.println;
 import static de.glmtk.output.Output.printlnError;
 import static de.glmtk.util.NioUtils.countNumberOfLines;
