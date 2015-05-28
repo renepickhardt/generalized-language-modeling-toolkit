@@ -49,7 +49,7 @@ public class Log4jHelper {
      * Buffer size to use for file appenders.
      *
      * Note that buffering has to be enabled in
-     * {@link #initLoggingHelper(boolean)} for this to have any effect.
+     * {@link #initLog4jHelper(boolean)} for this to have any effect.
      */
     private static final int BUFFER_SIZE = 8192;
 
@@ -70,7 +70,7 @@ public class Log4jHelper {
      *            However one will not see log messages directly in the log
      *            file.
      */
-    public static void initLoggingHelper(boolean bufferLogging) {
+    public static void initLog4jHelper(boolean bufferLogging) {
         context = (LoggerContext) LogManager.getContext(false);
         config = context.getConfiguration();
         rootLoggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);

@@ -22,7 +22,7 @@ package de.glmtk.testutil;
 
 import static de.glmtk.logging.Log4jHelper.addLoggingConsoleAppender;
 import static de.glmtk.logging.Log4jHelper.addLoggingFileAppender;
-import static de.glmtk.logging.Log4jHelper.initLoggingHelper;
+import static de.glmtk.logging.Log4jHelper.initLog4jHelper;
 import static de.glmtk.output.Output.enableOutputFormatting;
 
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
@@ -33,7 +33,7 @@ import de.glmtk.GlmtkPaths;
 public class LoggingTest {
     @BeforeClass
     public static void setUpLogging() {
-        initLoggingHelper(false);
+        initLog4jHelper(false);
         addLoggingFileAppender(GlmtkPaths.LOG_DIR.resolve("test"), "FileTest",
                 false);
         addLoggingConsoleAppender(Target.SYSTEM_ERR);
