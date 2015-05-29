@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.querying;
+package de.glmtk.querying.argmax;
 
 import java.nio.file.Path;
 import java.util.Set;

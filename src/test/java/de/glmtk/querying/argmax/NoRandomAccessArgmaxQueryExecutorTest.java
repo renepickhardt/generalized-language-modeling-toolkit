@@ -18,7 +18,7 @@
  * See the AUTHORS file for contributors.
  */
 
-package de.glmtk.querying;
+package de.glmtk.querying.argmax;
 
 import static de.glmtk.Constants.TEST_RESSOURCES_DIR;
 
@@ -35,18 +35,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.glmtk.Constants;
-import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
+import de.glmtk.cache.CacheSpecification.CacheImplementation;
+import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.TrivialArgmaxQueryExecutor;
-import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor.ProbabilityDislay;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
-public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
+public class NoRandomAccessArgmaxQueryExecutorTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
     private static final Path VOCAB_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.vocab");
     private static final Path QUERY_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.query");
@@ -54,7 +55,7 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
     private static Set<String> vocab;
     private static List<String> queries;
 
-    private static Cache cache;
+    private static CompletionTrieCache cache;
 
     @BeforeClass
     public static void loadFiles() throws IOException {
@@ -77,11 +78,10 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
 
     @BeforeClass
     public static void loadCache() throws IOException {
-        CacheSpecification requiredCache = new CacheSpecification();
+        CacheSpecification requiredCache = new CacheSpecification().withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
         requiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
         requiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
-        requiredCache.withWords();
-        cache = requiredCache.withProgress().build(
+        cache = (CompletionTrieCache) requiredCache.withProgress().build(
                 TEST_CORPUS.getGlmtk().getPaths());
     }
 
@@ -92,8 +92,9 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
+        NoRandomAccessArgmaxQueryExecutor argmaxQueryExecutor = new NoRandomAccessArgmaxQueryExecutor(
                 estimator, cache);
+        argmaxQueryExecutor.setProbbabilityDislay(ProbabilityDislay.EXACT);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
@@ -113,29 +114,9 @@ public class TrivialArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(cache);
-        TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
+        NoRandomAccessArgmaxQueryExecutor argmaxQueryExecutor = new NoRandomAccessArgmaxQueryExecutor(
                 estimator, cache);
-
-        for (String query : queries) {
-            System.out.format("# %s:%n", query);
-            long t1 = System.currentTimeMillis();
-            List<ArgmaxResult> results = argmaxQueryExecutor.queryArgmax(query,
-                    5);
-            long t2 = System.currentTimeMillis();
-            printArgmaxResults(results);
-            System.out.format("took %dms%n%n", t2 - t1);
-        }
-    }
-
-    @Test
-    public void testOther() {
-        Estimator estimator = Estimators.FAST_GLM;
-
-        System.out.format("=== %s%n", estimator);
-
-        estimator.setCache(cache);
-        TrivialArgmaxQueryExecutor argmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
-                estimator, cache);
+        argmaxQueryExecutor.setProbbabilityDislay(ProbabilityDislay.EXACT);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
