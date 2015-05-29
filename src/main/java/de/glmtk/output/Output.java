@@ -398,6 +398,9 @@ public class Output {
     }
 
     public static void eraseAllLines() {
+        if (!isFormattingEnabled)
+            return;
+
         while (numVolatileLines != 0)
             eraseLine();
     }
