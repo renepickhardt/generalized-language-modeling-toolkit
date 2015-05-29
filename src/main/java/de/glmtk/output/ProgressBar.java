@@ -99,6 +99,9 @@ public class ProgressBar {
 
     public void set(long current) {
         this.current = current;
+        if (current > total)
+            throw new IllegalStateException(
+                    "current must not be large than total.");
         if (total == DISABLE_PERCENT_DISPLAY || current == total)
             forceDisplay();
         else
