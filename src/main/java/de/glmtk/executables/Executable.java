@@ -40,7 +40,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.appender.ConsoleAppender.Target;
 
 import de.glmtk.Constants;
@@ -49,6 +48,7 @@ import de.glmtk.common.Config;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.exceptions.Termination;
 import de.glmtk.logging.Logger;
+import de.glmtk.logging.Logger.Level;
 import de.glmtk.options.BooleanOption;
 import de.glmtk.options.CommandLine;
 import de.glmtk.options.OptionException;

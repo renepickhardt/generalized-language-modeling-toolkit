@@ -67,6 +67,14 @@ public class Logger implements org.slf4j.Logger {
                     throw new SwitchCaseNotImplementedException();
             }
         }
+
+        public boolean isMoreSpecificThan(Level level) {
+            return toInt() >= level.toInt();
+        }
+
+        public boolean isLessSpecificThan(Level level) {
+            return toInt() <= level.toInt();
+        }
     }
 
     public static Logger get(Class<?> clazz) {
