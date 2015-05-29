@@ -32,7 +32,7 @@ public class HashMapCache extends AbstractCache {
     void loadCounts(Collection<Pattern> patterns) throws IOException {
         checkCountPatternsArg(patterns);
 
-        LOGGER.debug("Loading counts...");
+        LOGGER.debug("Loading counts for patterns: %s", patterns);
 
         if (counts == null)
             counts = new HashMap<>();
@@ -73,7 +73,7 @@ public class HashMapCache extends AbstractCache {
     void loadGammas(Collection<Pattern> patterns) throws IOException {
         checkGammaPatternsArg(patterns);
 
-        LOGGER.debug("Loading gammas...");
+        LOGGER.debug("Loading gammas for patterns: %s", patterns);
 
         if (gammas == null)
             gammas = new HashMap<>();
@@ -88,8 +88,9 @@ public class HashMapCache extends AbstractCache {
             Path file = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
             try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
                 while (reader.readLine() != null)
-                    gammasForPattern.put(reader.getSequence(), calcGamma(
-                            pattern, reader.getCounts()));
+                    gammasForPattern.put(
+                            removeTrailingWSkp(reader.getSequence()),
+                            calcGamma(pattern, reader.getCounts()));
             }
 
             if (progressBar != null)

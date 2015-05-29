@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -54,7 +54,7 @@ public class CompletionTrieCache extends AbstractCache {
     void loadCounts(Collection<Pattern> patterns) throws IOException {
         checkCountPatternsArg(patterns);
 
-        LOGGER.debug("Loading counts...");
+        LOGGER.debug("Loading counts for patterns: %s", patterns);
 
         if (counts == null)
             counts = new HashMap<>();
@@ -123,7 +123,7 @@ public class CompletionTrieCache extends AbstractCache {
     void loadGammas(Collection<Pattern> patterns) throws IOException {
         checkGammaPatternsArg(patterns);
 
-        LOGGER.debug("Loading gammas...");
+        LOGGER.debug("Loading gammas for patterns: %s", patterns);
 
         if (gammas == null)
             gammas = new HashMap<>();
@@ -138,7 +138,8 @@ public class CompletionTrieCache extends AbstractCache {
             Path file = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
             try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
                 while (reader.readLine() != null)
-                    completionTrieBuilder.add(reader.getSequence(),
+                    completionTrieBuilder.add(
+                            removeTrailingWSkp(reader.getSequence()),
                             longFromDouble(calcGamma(pattern,
                                     reader.getCounts())));
             }

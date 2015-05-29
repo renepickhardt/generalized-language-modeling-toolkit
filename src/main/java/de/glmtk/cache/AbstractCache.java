@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- *
+ * 
  * Copyright (C) 2015 Lukas Schmelzeisen
- *
+ * 
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- *
+ * 
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * See the AUTHORS file for contributors.
  */
 
@@ -295,6 +295,14 @@ public abstract class AbstractCache implements Cache {
     // Gammas //////////////////////////////////////////////////////////////////
 
     /* pacakge */abstract void loadGammas(Collection<Pattern> patterns) throws IOException;
+
+    /**
+     * All gamma sequences have a trailing " %" because they all end in WSKP. No
+     * need to store that for all gamma sequences.
+     */
+    protected String removeTrailingWSkp(String sequence) {
+        return sequence.substring(0, sequence.length() - 2);
+    }
 
     protected double calcGamma(Pattern pattern,
                                Counts contCount) {
