@@ -33,6 +33,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
+
 import de.glmtk.cache.Cache;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.StringUtils;
@@ -58,6 +60,10 @@ public class NGram {
         tokens = Arrays.asList(token);
         string = token;
         pattern = Patterns.get(PatternElem.fromWord(token));
+    }
+
+    public NGram(String... tokens) {
+        this(ImmutableList.copyOf(tokens));
     }
 
     public NGram(List<String> tokens) {
