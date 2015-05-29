@@ -94,7 +94,11 @@ import de.glmtk.options.OptionException;
             if (e.getMessage() != null)
                 println(e.getMessage());
         } catch (Throwable e) {
-            printlnError(e.getMessage());
+            String error = e.getMessage();
+            if (error != null)
+                printlnError(error);
+            else
+                printlnError(e.getClass().getSimpleName());
             LOGGER.error(String.format("Exception %s", getStackTraceAsString(e)));
         }
     }
