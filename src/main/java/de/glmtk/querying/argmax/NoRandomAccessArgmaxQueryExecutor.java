@@ -1,5 +1,7 @@
 package de.glmtk.querying.argmax;
 
+import static com.google.common.collect.Iterators.peekingIterator;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -88,7 +90,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -116,7 +118,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                 h += " ";
 
             CompletionTrie trie = cache.getCountCompletionTrie(pattern);
-            PeekingIterator<CompletionTrieEntry> iter = trie.getCompletions(h);
+            PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions(h));
 
             tries[i] = trie;
             iters[i] = iter;
@@ -154,8 +156,11 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             lastCounts[ptr] = entry.getScore();
 
             String string = entry.getString();
-            List<String> split = StringUtils.split(string, ' ');
-            String sequence = split.get(split.size() - 1);
+            int lastSpacePos = string.lastIndexOf(' ');
+            String sequence = string;
+            if (lastSpacePos != -1)
+                sequence = string.substring(lastSpacePos + 1);
+
             if (vocab != null && !vocab.contains(sequence))
                 continue;
 
@@ -218,6 +223,13 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         }
 
         return results;
+    }
+
+    @Override
+    public List<ArgmaxResult> queryArgmax(String history,
+            String prefix,
+            int numResults) {
+        throw new UnsupportedOperationException();
     }
 
     private double calcDisplayProbability(WeightedSumFunction weightedSumFunction,

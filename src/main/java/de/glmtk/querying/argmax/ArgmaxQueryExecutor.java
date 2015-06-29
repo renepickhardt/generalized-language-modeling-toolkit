@@ -38,4 +38,13 @@ public interface ArgmaxQueryExecutor {
 
     public List<ArgmaxResult> queryArgmax(String history,
                                           int numResults);
+
+    /**
+     * @param prefix
+     *            Enforce that any resulting argmax sequences begin with this
+     *            prefix.
+     */
+    public List<ArgmaxResult> queryArgmax(String history,
+                                          String prefix,
+                                          int numResults);
 }

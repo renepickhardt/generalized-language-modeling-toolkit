@@ -1,6 +1,5 @@
 package de.glmtk.util.completiontrie;
 
-import static com.google.common.collect.Iterators.peekingIterator;
 import static java.util.Collections.emptyIterator;
 
 import java.io.IOException;
@@ -13,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
-
-import com.google.common.collect.PeekingIterator;
 
 import de.glmtk.util.StringUtils;
 
@@ -101,7 +98,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         }
     }
 
-    private class CompletionTrieIterator implements PeekingIterator<CompletionTrieEntry> {
+    private class CompletionTrieIterator implements Iterator<CompletionTrieEntry> {
         private boolean isFirstNode = true;
         private PriorityQueue<Entry> queue = new PriorityQueue<>(11, // 11 is PriorityQueue.DEFAULT_INITIAL_CAPACITY
                 Entry.BY_SCORE_COMPARATOR);
@@ -125,13 +122,6 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public CompletionTrieEntry peek() {
-            Entry entry = nextEntry();
-            queue.add(entry);
-            return entry.toCompletionTrieEntry();
         }
 
         private Entry nextEntry() {
@@ -271,16 +261,14 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         return new CompletionTrieIterator(makeRootEntry());
     }
 
-    public PeekingIterator<CompletionTrieEntry> getCompletions(String prefix) {
+    public Iterator<CompletionTrieEntry> getCompletions(String prefix) {
         if (!caseSensitive)
             prefix = prefix.toLowerCase();
 
         Entry entry = findPath(prefix, false);
 
-        if (entry == null) {
-            Iterator<CompletionTrieEntry> iter = emptyIterator();
-            return peekingIterator(iter);
-        }
+        if (entry == null)
+            return emptyIterator();
         return new CompletionTrieIterator(entry);
     }
 

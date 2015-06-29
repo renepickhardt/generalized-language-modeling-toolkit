@@ -1,5 +1,7 @@
 package de.glmtk.querying.argmax;
 
+import static com.google.common.collect.Iterators.peekingIterator;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,6 +18,7 @@ import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Discounts;
+import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction.Summand;
@@ -25,6 +28,8 @@ import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
 public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
+    private static final Logger LOGGER = Logger.get(ThresholdArgmaxQueryExecutor.class);
+
     private WeightedSumEstimator estimator;
     private Cache randomAccessCache;
     private CompletionTrieCache sortedAccessCache;
@@ -49,6 +54,13 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
                                           int numResults) {
+        return queryArgmax(history, "", numResults);
+    }
+
+    @Override
+    public List<ArgmaxResult> queryArgmax(String history,
+            String prefix,
+            int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -71,12 +83,11 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
         for (int i = 0; i != size; ++i) {
             Pattern pattern = patterns[i];
-            String h = histories[i].toString();
-            if (!h.isEmpty())
-                h += " ";
+            String hi = histories[i].toString();
+            String h = hi.isEmpty() ? prefix : hi + " " + prefix;
 
             CompletionTrie trie = sortedAccessCache.getCountCompletionTrie(pattern);
-            PeekingIterator<CompletionTrieEntry> iter = trie.getCompletions(h);
+            PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions(h));
 
             tries[i] = trie;
             iters[i] = iter;
@@ -123,12 +134,21 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                     * calcAlpha(patterns[ptr], lastCounts[ptr]);
 
             String string = entry.getString();
-            List<String> split = StringUtils.split(string, ' ');
-            String sequence = split.get(split.size() - 1);
-            if (vocab != null && !vocab.contains(sequence))
+            int lastSpacePos = string.lastIndexOf(' ');
+            String sequence = string;
+            if (lastSpacePos != -1)
+                sequence = string.substring(lastSpacePos + 1);
+
+            if (vocab != null && !vocab.contains(sequence)) {
+                LOGGER.debug(
+                        "Sequence '%s' does not occur in given vocabulary, skipping.",
+                        sequence);
                 continue;
-            if (!seen.add(sequence))
+            }
+            if (!seen.add(sequence)) {
+                LOGGER.debug("Sequence '%s' already seen, skipping.", sequence);
                 continue;
+            }
 
             double args[] = new double[size];
             for (int i = 0; i != size; ++i)

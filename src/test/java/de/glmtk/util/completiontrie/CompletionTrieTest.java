@@ -1,5 +1,6 @@
 package de.glmtk.util.completiontrie;
 
+import static com.google.common.collect.Iterators.peekingIterator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -80,7 +81,7 @@ public class CompletionTrieTest {
                     trie.get(entry.getString()));
         }
 
-        PeekingIterator<CompletionTrieEntry> iter = trie.getCompletions("1");
+        PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions("1"));
         while (iter.hasNext())
             assertEquals(iter.peek(), iter.next());
     }

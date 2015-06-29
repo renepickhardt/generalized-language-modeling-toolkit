@@ -4,6 +4,10 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import static com.google.common.hash.Hashing.md5;
 import static com.google.common.io.Files.hash;
 import static de.glmtk.output.Output.println;
+import static de.glmtk.util.Files.newBufferedReader;
+import static de.glmtk.util.Files.newBufferedWriter;
+import static de.glmtk.util.StringUtils.repeat;
+import static java.lang.String.format;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,7 +15,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,13 +37,11 @@ import de.glmtk.options.custom.ArgmaxExecutorOption;
 import de.glmtk.options.custom.ArgmaxExecutorsOption;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
-import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
-import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExpArgmaxCompare extends Executable {
@@ -189,40 +190,56 @@ public class GlmtkExpArgmaxCompare extends Executable {
                     BigInteger timeSum = BigInteger.ZERO;
                     int n = 0;
 
-                    String type = String.format("%s-%s:", executor,
+                    String type = String.format("%s-%s", executor,
                             estimator.getName());
-                    println("Querying...");
-                    ProgressBar progressBar = new ProgressBar("Querying",
-                            NioUtils.countNumberOfLines(queryFile));
-                    try (BufferedReader reader = Files.newBufferedReader(
-                            queryFile, Constants.CHARSET);
-                            BufferedWriter writer = Files.newBufferedWriter(
-                                    Paths.get(queryFile
-                                            + "."
-                                            + type.substring(0,
-                                                    type.length() - 1)),
-                                    Constants.CHARSET)) {
+                    println("Querying %s...", type);
+                    //                    ProgressBar progressBar = new ProgressBar("Querying",
+                    //                            NioUtils.countNumberOfLines(queryFile));
+                    //                    try (BufferedReader reader = Files.newBufferedReader(
+                    //                            queryFile, Constants.CHARSET);
+                    //                            BufferedWriter writer = Files.newBufferedWriter(
+                    //                                    Paths.get(queryFile + "." + type),
+                    //                                            Constants.CHARSET)) {
+                    try (BufferedReader reader = newBufferedReader(System.in,
+                            Constants.CHARSET);
+                            BufferedWriter writer = newBufferedWriter(
+                                    System.out, Constants.CHARSET)) {
 
                         String line;
                         while ((line = reader.readLine()) != null) {
                             int lastSpacePos = line.lastIndexOf(' ');
                             String history = line.substring(0, lastSpacePos);
-                            String sequence = line.substring(lastSpacePos);
+                            String sequence = line.substring(lastSpacePos + 1);
                             long timeBefore = System.nanoTime();
                             List<ArgmaxResult> argmaxResults = argmaxQueryExecutor.queryArgmax(
                                     history, 5);
                             long timeAfter = System.nanoTime();
 
-                            writer.append(String.format("%s : %s ", history,
-                                    sequence));
+                            writer.append(format("%s : %s ", history, sequence));
                             for (ArgmaxResult a : argmaxResults)
-                                writer.append(String.format("[%s-%e]",
+                                writer.append(format("[%s-%e]",
                                         a.getSequence(), a.getProbability()));
                             writer.append('\n');
 
+                            writer.append(repeat("-", 80)).append('\n');
+                            for (int i = 1; i != sequence.length() + 1; ++i) {
+                                String s = sequence.substring(0, i);
+                                List<ArgmaxResult> a = argmaxQueryExecutor.queryArgmax(
+                                        history, s, 5);
+                                writer.append(s).append(
+                                        repeat("-", sequence.length() - i)).append(
+                                        " : ");
+                                for (ArgmaxResult r : a)
+                                    writer.append(format("[%s-%e]",
+                                            r.getSequence(), r.getProbability()));
+                                writer.append('\n');
+                            }
+
+                            writer.flush();
+
                             timeSum = timeSum.add(BigInteger.valueOf(timeAfter
                                     - timeBefore));
-                            progressBar.increase();
+                            //                            progressBar.increase();
                             ++n;
                         }
                     }

@@ -17,6 +17,8 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
+// FIXME: class not implemented yet, so suppress warnings.
+@SuppressWarnings("unused")
 public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private WeightedSumEstimator estimator;
     private CompletionTrieCache cache;
@@ -37,7 +39,7 @@ public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          int numResults) {
+            int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -70,7 +72,14 @@ public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             iters[i] = iter;
         }
 
-        return null;
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<ArgmaxResult> queryArgmax(String history,
+                                          String prefix,
+                                          int numResults) {
+        throw new UnsupportedOperationException();
     }
 
     private double calcProbability(WeightedSumFunction weightedSumFunction,
