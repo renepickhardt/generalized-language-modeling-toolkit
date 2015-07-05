@@ -157,15 +157,13 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
                                           boolean absolute) {
         boolean last = ancestor.getLevel() == node.getLevel() - 1;
         double mult = 1.0;
-        if (absolute)
-            if (ancestor.absoluteCount == 0) {
-                if (last && node.absoluteFactor != 0)
-                    return 0;
-            } else {
+        if (absolute) {
+            if (ancestor.absoluteCount != 0) {
                 mult = ancestor.gammaNumerator / ancestor.absoluteCount;
                 absolute = false;
-            }
-        else if (ancestor.continuationCount != 0)
+            } else if (last && node.absoluteFactor != 0)
+                return 0;
+        } else if (ancestor.continuationCount != 0)
             mult = ancestor.gammaNumerator / ancestor.continuationCount;
 
         if (last)
