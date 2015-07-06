@@ -155,19 +155,18 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
     private double calcContinuationFactor(GlmNode ancestor,
                                           GlmNode node,
                                           boolean absolute) {
-        boolean last = ancestor.getLevel() == node.getLevel() - 1;
         double mult = 1.0;
-        if (absolute) {
-            if (ancestor.absoluteCount != 0) {
-                mult = ancestor.gammaNumerator / ancestor.absoluteCount;
-                absolute = false;
-            } else if (last && node.absoluteFactor != 0)
-                return 0;
+        if (absolute && ancestor.absoluteCount != 0) {
+            mult = ancestor.gammaNumerator / ancestor.absoluteCount;
+            absolute = false;
         } else if (ancestor.continuationCount != 0)
             mult = ancestor.gammaNumerator / ancestor.continuationCount;
 
-        if (last)
+        if (ancestor.getLevel() == node.getLevel() - 1) {
+            if (absolute)
+                return 0;
             return mult;
+        }
 
         double sum = 0;
         for (int i = 0; i != ancestor.numChilds(); ++i) {
