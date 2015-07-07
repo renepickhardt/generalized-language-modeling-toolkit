@@ -22,13 +22,9 @@ import de.glmtk.Constants;
  */
 public class Tokenize {
     public static void main(String[] args) throws IOException {
-        // Path to filter for vocab.
-        Path inputFile = Paths.get("/home/lukas/langmodels/data/oanc.untokenized");
-        // Path to write filtered output to.
+        Path inputFile = Paths.get("/home/lukas/langmodels/data/oanc.noreserved");
         Path outputFile = Paths.get("/home/lukas/langmodels/data/oanc");
 
-        //        String input = "She said: \"Hello you're 13th\".";
-        //        System.out.println(tokenizeLine(input));
         try (BufferedReader reader = newBufferedReader(inputFile,
                 Constants.CHARSET);
                 BufferedWriter writer = newBufferedWriter(outputFile,
@@ -39,7 +35,7 @@ public class Tokenize {
         }
     }
 
-    public static String tokenizeLine(String line) {
+    private static String tokenizeLine(String line) {
         StringBuilder result = new StringBuilder();
 
         int offset = 0;
