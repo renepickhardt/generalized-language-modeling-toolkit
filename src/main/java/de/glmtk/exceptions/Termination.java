@@ -20,6 +20,8 @@
 
 package de.glmtk.exceptions;
 
+import static java.lang.String.format;
+
 /**
  * Exception used to trigger safe program exit.
  */
@@ -36,6 +38,11 @@ public class Termination extends RuntimeException {
      */
     public Termination(String message) {
         super(message);
+    }
+
+    public Termination(String format,
+                       Object... args) {
+        super(format(format, args));
     }
 
     public Termination(Throwable cause) {
