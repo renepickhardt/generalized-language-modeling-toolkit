@@ -70,7 +70,7 @@ import de.glmtk.Constants;
  *
  * <p>
  * This class assumes to be the only source of console output. If this is
- * violated methods like {@link #printlnVolatile} or {@link #eraseLine()} will
+ * violated, methods like {@link #printlnVolatile} or {@link #eraseLine()} will
  * no longer work as expected. If there happens to be another source of console
  * output, output formatting has to be disabled with
  * {@link #disableOutputFormatting()}.

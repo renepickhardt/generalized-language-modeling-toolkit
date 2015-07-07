@@ -2,8 +2,12 @@ package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static de.glmtk.output.Output.println;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.newBufferedReader;
+import static java.nio.file.Files.newBufferedWriter;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -42,6 +46,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private PathsOption optionQuery;
     private IntegerOption optionRuns;
     private PathOption optionCacheFile;
+    private PathOption optionOutputDir;
 
     private Path corpus = null;
     private Path workingDir = null;
@@ -49,6 +54,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private Set<Path> queries = new LinkedHashSet<>();
     private Integer times = null;
     private Path cacheFile = null;
+    private Path outputDir = null;
 
     @Override
     protected String getExecutableName() {
@@ -67,15 +73,17 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 "Number of times to run. Default: 1.").defaultValue(1).requirePositive().requireNotZero();
         optionCacheFile = new PathOption("c", "cache-file",
                 "File to generate query cache from for all query files.").requireMustExist().requireFile();
+        optionOutputDir = new PathOption("o", "output-dir",
+                "Output directory to store all results").requireMayExist().requireDirectory();
 
         commandLine.inputArgs(optionCorpus);
         commandLine.options(optionEstimators, optionQuery, optionRuns,
-                optionCacheFile);
+                optionCacheFile, optionOutputDir);
     }
 
     @Override
     protected String getHelpHeader() {
-        return "Splits the given corpus into training and test files.";
+        return "Performs estimator time experiment.";
     }
 
     @Override
@@ -94,58 +102,18 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
         estimators = newLinkedHashSet(optionEstimators.getEstimators());
         if (estimators.isEmpty())
-            throw new CliArgumentException(String.format(
-                    "No estimators given, use %s.", optionEstimators));
+            throw new CliArgumentException("No estimators given, use %s.",
+                    optionEstimators);
 
         queries = newLinkedHashSet(optionQuery.getPaths());
         if (queries.isEmpty())
-            throw new CliArgumentException(String.format(
-                    "No files to query given, use %s.", optionQuery));
+            throw new CliArgumentException("No files to query given, use %s.",
+                    optionQuery);
 
         times = optionRuns.getInt();
         cacheFile = optionCacheFile.getPath();
+        outputDir = optionOutputDir.getPath();
     }
-
-    //
-    //    private void parseFlags() throws IOException {
-    //        @SuppressWarnings("unchecked")
-    //        Iterator<Option> iter = line.iterator();
-    //        while (iter.hasNext()) {
-    //            Option option = iter.next();
-    //
-    //            if (option.equals(OPTION_ESTIMATOR))
-    //                for (String opt : option.getValues()) {
-    //                    Estimator estimator = OPTION_ESTIMATOR_ARGUMENTS.get(opt.toUpperCase());
-    //                    if (estimator == null)
-    //                        throw new CliArgumentException(
-    //                                String.format(
-    //                                        "Illegal %s argument. Unkown estimators option '%s'. Valid arguments would be: '%s'.",
-    //                                        makeOptionString(option),
-    //                                        opt,
-    //                                        StringUtils.join(
-    //                                                OPTION_ESTIMATOR_ARGUMENTS.keySet(),
-    //                                                "', '")));
-    //                    estimators.add(estimator);
-    //                }
-    //
-    //            else if (option.equals(OPTION_QUERY))
-    //                for (String opt : option.getValues())
-    //                    queries.add(getAndCheckFile(opt));
-    //
-    //            else if (option.equals(OPTION_RUNS)) {
-    //                optionFirstTimeOrFail(times, option);
-    //                times = optionPositiveIntOrFail(option.getValue(), false,
-    //                        "Illegal %s argument", makeOptionString(option));
-    //
-    //            } else if (option.equals(OPTION_CACHE_FILE)) {
-    //                optionFirstTimeOrFail(cacheFile, option);
-    //                cacheFile = getAndCheckFile(option.getValue());
-    //
-    //            } else
-    //                throw new CliArgumentException(String.format(
-    //                        "Unexpected option: '%s'.", option));
-    //        }
-    //    }
 
     @Override
     protected void exec() throws Exception {
@@ -171,6 +139,9 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
             cache = cacheSpec.build(queryCache);
         }
 
+        if (outputDir != null)
+            createDirectories(outputDir);
+
         for (Path queryFile : queries) {
             println();
             println(queryFile + ":");
@@ -185,15 +156,21 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 estimator.setCache(cache);
 
                 BigInteger timeSum = BigInteger.ZERO;
-                int n = 0;
+                int numProbs = 0;
 
-                for (int i = 0; i != times; ++i) {
+                BufferedWriter writer = null;
+                if (outputDir != null)
+                    writer = newBufferedWriter(outputDir.resolve(queryFile
+                            + "-" + estimator), Constants.CHARSET);
+
+                for (int i = 0; i != times + 1; ++i) {
                     // Trigger garbage collection at begin of every benchmark
                     // iteration, to avoid triggering it mid benchmark.
                     System.gc();
 
                     try (BufferedReader reader = Files.newBufferedReader(
                             queryFile, Constants.CHARSET)) {
+                        boolean firstLine = true;
                         String line;
                         while ((line = reader.readLine()) != null) {
                             List<String> words = StringUtils.split(line, ' ');
@@ -209,17 +186,32 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
                             long timeAfter = System.nanoTime();
 
-                            LOGGER.trace("P(%s | %s) = %e", sequence, history,
-                                    prob);
+                            if (i != 0) {
+                                // i == 0 is warmup run
 
-                            timeSum = timeSum.add(BigInteger.valueOf(timeAfter
-                                    - timeBefore));
-                            ++n;
+                                long timeDelta = timeAfter - timeBefore;
+                                timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
+                                ++numProbs;
+
+                                if (writer != null) {
+                                    if (firstLine)
+                                        firstLine = false;
+                                    else
+                                        writer.append('\t');
+                                    writer.append(Long.toString(timeDelta));
+                                }
+                            }
                         }
                     }
+
+                    if (i != 0 && writer != null)
+                        writer.append('\n');
                 }
 
-                BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(n));
+                if (writer != null)
+                    writer.close();
+
+                BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(numProbs));
                 println("%s: %sns", estimator.getName(), timePerProbability);
             }
         }
@@ -228,7 +220,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private int getNeededOrder() throws IOException {
         int neededOrder = 0;
         for (Path queryFile : queries)
-            try (BufferedReader reader = Files.newBufferedReader(queryFile,
+            try (BufferedReader reader = newBufferedReader(queryFile,
                     Constants.CHARSET)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
