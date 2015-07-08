@@ -60,6 +60,13 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
                                           int numResults) {
+        return queryArgmax(history, "", numResults);
+    }
+
+    @Override
+    public List<ArgmaxResult> queryArgmax(String history,
+                                          String prefix,
+                                          int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -73,6 +80,9 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         PriorityQueue<ArgmaxResult> queue = new PriorityQueue<>(numResults + 1,
                 ArgmaxResult.COMPARATOR);
         for (String sequence : vocab) {
+            if (!sequence.startsWith(prefix))
+                continue;
+
             NGram seq = new NGram(sequence);
 
             double prob;
@@ -91,12 +101,5 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         }
 
         return CollectionUtils.drainQueueToList(queue);
-    }
-
-    @Override
-    public List<ArgmaxResult> queryArgmax(String history,
-                                          String prefix,
-                                          int numResults) {
-        throw new UnsupportedOperationException();
     }
 }
