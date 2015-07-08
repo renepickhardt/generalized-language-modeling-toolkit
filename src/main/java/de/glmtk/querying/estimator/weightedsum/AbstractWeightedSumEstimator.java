@@ -1,5 +1,7 @@
 package de.glmtk.querying.estimator.weightedsum;
 
+import java.util.Objects;
+
 import de.glmtk.common.NGram;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counts.Discounts;
@@ -10,20 +12,29 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
     @Override
     public double probability(NGram sequence,
                               WeightedSumFunction weightedSumFunction) {
-        return calcProbability(sequence, weightedSumFunction, 1);
+        Objects.requireNonNull(cache,
+                "You have to set a cache that is not null before using this method");
+
+        logTrace(1, "%s#probability(%s,?)", getClass().getSimpleName(),
+                sequence);
+
+        double result = calcProbability(sequence, weightedSumFunction, 2);
+        logTrace(2, "result = %e", result);
+
+        return result;
     }
 
     @Override
-    public double calcProbability(NGram sequence,
-                                  NGram history,
-                                  int recDepth) {
+    protected double calcProbability(NGram sequence,
+                                     NGram history,
+                                     int recDepth) {
         WeightedSumFunction weightedSumFunction = calcWeightedSumFunction(history);
         return calcProbability(sequence, weightedSumFunction, recDepth);
     }
 
-    public double calcProbability(NGram sequence,
-                                  WeightedSumFunction weightedSumFunction,
-                                  @SuppressWarnings("unused") int recDepth) {
+    protected double calcProbability(NGram sequence,
+                                     WeightedSumFunction weightedSumFunction,
+                                     @SuppressWarnings("unused") int recDepth) {
         double prob = 0.0;
 
         for (Summand summand : weightedSumFunction) {
