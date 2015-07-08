@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,8 @@ import de.glmtk.options.PathsOption;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
 import de.glmtk.querying.estimator.Estimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExpEstimatorTimeExecutable extends Executable {
@@ -153,15 +156,30 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
             }
 
             for (Estimator estimator : estimators) {
+                boolean weightedSumEstimator = estimator instanceof WeightedSumEstimator;
+
                 estimator.setCache(cache);
 
                 BigInteger timeSum = BigInteger.ZERO;
                 int numProbs = 0;
 
-                BufferedWriter writer = null;
-                if (outputDir != null)
-                    writer = newBufferedWriter(outputDir.resolve(queryFile
-                            + "-" + estimator), Constants.CHARSET);
+                BufferedWriter writer = null, writerNumWeights = null, writerTimeWeights = null, writerTimeRemaining = null;
+                if (outputDir != null) {
+                    Path outputFile = outputDir.resolve(queryFile + "-"
+                            + estimator);
+                    writer = newBufferedWriter(outputFile, Constants.CHARSET);
+                    if (weightedSumEstimator) {
+                        writerNumWeights = newBufferedWriter(
+                                Paths.get(outputFile + "-numWeights"),
+                                Constants.CHARSET);
+                        writerTimeWeights = newBufferedWriter(
+                                Paths.get(outputFile + "-timeWeights"),
+                                Constants.CHARSET);
+                        writerTimeRemaining = newBufferedWriter(
+                                Paths.get(outputFile + "-timeRemaining"),
+                                Constants.CHARSET);
+                    }
+                }
 
                 for (int i = 0; i != times + 1; ++i) {
                     // Trigger garbage collection at begin of every benchmark
@@ -179,37 +197,84 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                             NGram history = new NGram(words.subList(0,
                                     words.size() - 1));
 
-                            long timeBefore = System.nanoTime();
+                            long timeDelta = 0, timeDeltaWeights = 0, timeDeltaRemaining = 0;
+                            int numWeights = 0;
+                            double prob;
 
-                            double prob = estimator.probability(sequence,
-                                    history);
+                            if (!weightedSumEstimator) {
+                                long timeBefore = System.nanoTime();
+                                prob = estimator.probability(sequence, history);
+                                long timeAfter = System.nanoTime();
 
-                            long timeAfter = System.nanoTime();
+                                timeDelta = timeAfter - timeBefore;
+                            } else {
+                                long timeBeforeWeights = System.nanoTime();
+                                WeightedSumFunction weightedSumFunction = ((WeightedSumEstimator) estimator).calcWeightedSumFunction(history);
+                                long timeAfterWeights = System.nanoTime();
+                                numWeights = weightedSumFunction.size();
+
+                                long timeBeforeRemaining = System.nanoTime();
+                                prob = ((WeightedSumEstimator) estimator).probability(
+                                        sequence, weightedSumFunction);
+                                long timeAfterRemaining = System.nanoTime();
+
+                                timeDeltaWeights = timeAfterWeights
+                                        - timeBeforeWeights;
+                                timeDeltaRemaining = timeAfterRemaining
+                                        - timeBeforeRemaining;
+                                timeDelta = timeDeltaWeights
+                                        + timeDeltaRemaining;
+                            }
+
+                            LOGGER.trace("P(%s | %s) = %e", sequence, history,
+                                    prob);
 
                             if (i != 0) {
                                 // i == 0 is warmup run
 
-                                long timeDelta = timeAfter - timeBefore;
                                 timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
                                 ++numProbs;
 
-                                if (writer != null) {
+                                if (outputDir != null) {
                                     if (firstLine)
                                         firstLine = false;
-                                    else
+                                    else {
                                         writer.append('\t');
+                                        if (weightedSumEstimator) {
+                                            writerNumWeights.append('\t');
+                                            writerTimeWeights.append('\t');
+                                            writerTimeRemaining.append('\t');
+                                        }
+                                    }
                                     writer.append(Long.toString(timeDelta));
+                                    if (weightedSumEstimator) {
+                                        writerNumWeights.append(Integer.toString(numWeights));
+                                        writerTimeWeights.append(Long.toString(timeDeltaWeights));
+                                        writerTimeRemaining.append(Long.toString(timeDeltaRemaining));
+                                    }
                                 }
                             }
                         }
                     }
 
-                    if (i != 0 && writer != null)
+                    if (i != 0 && outputDir != null) {
                         writer.append('\n');
+                        if (weightedSumEstimator) {
+                            writerNumWeights.append('\n');
+                            writerTimeWeights.append('\n');
+                            writerTimeRemaining.append('\n');
+                        }
+                    }
                 }
 
-                if (writer != null)
+                if (outputDir != null) {
                     writer.close();
+                    if (weightedSumEstimator) {
+                        writerNumWeights.close();
+                        writerTimeWeights.close();
+                        writerTimeRemaining.close();
+                    }
+                }
 
                 BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(numProbs));
                 println("%s: %sns", estimator.getName(), timePerProbability);
@@ -239,5 +304,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         LOGGER.debug("WorkingDir: %s", workingDir);
         LOGGER.debug("Estimators: %s", estimators);
         LOGGER.debug("Queries:    %s", queries);
+        LOGGER.debug("CacheFile:  %s", cacheFile);
+        LOGGER.debug("OutputDir:  %s", outputDir);
     }
 }
