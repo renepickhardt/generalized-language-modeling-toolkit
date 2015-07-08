@@ -38,7 +38,6 @@ import de.glmtk.common.ProbMode;
 import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
-import de.glmtk.util.StringUtils;
 
 public abstract class AbstractEstimator implements Estimator {
     private static final Logger LOGGER = Logger.get(AbstractEstimator.class);
@@ -58,13 +57,15 @@ public abstract class AbstractEstimator implements Estimator {
 
     protected static final void logTrace(int recDepth,
                                          String message) {
-        LOGGER.trace(StringUtils.repeat("  ", recDepth) + message);
+        // TODO: commented out to not experiments
+        //        LOGGER.trace(StringUtils.repeat("  ", recDepth) + message);
     }
 
     protected static final void logTrace(int recDepth,
                                          String format,
                                          Object... params) {
-        LOGGER.trace(StringUtils.repeat("  ", recDepth) + format, params);
+        // TODO: commented out to not experiments
+        //        LOGGER.trace(StringUtils.repeat("  ", recDepth) + format, params);
     }
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR;
