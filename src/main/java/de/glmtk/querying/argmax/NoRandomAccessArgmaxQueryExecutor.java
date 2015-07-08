@@ -90,6 +90,13 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
+            int numResults) {
+        return queryArgmax(history, "", numResults);
+    }
+
+    @Override
+    public List<ArgmaxResult> queryArgmax(String history,
+                                          String prefix,
                                           int numResults) {
         if (numResults == 0)
             return new ArrayList<>();
@@ -113,9 +120,8 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
         for (int i = 0; i != size; ++i) {
             Pattern pattern = patterns[i];
-            String h = histories[i].toString();
-            if (!h.isEmpty())
-                h += " ";
+            String hi = histories[i].toString();
+            String h = hi.isEmpty() ? prefix : hi + " " + prefix;
 
             CompletionTrie trie = cache.getCountCompletionTrie(pattern);
             PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions(h));
@@ -223,13 +229,6 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         }
 
         return results;
-    }
-
-    @Override
-    public List<ArgmaxResult> queryArgmax(String history,
-            String prefix,
-            int numResults) {
-        throw new UnsupportedOperationException();
     }
 
     private double calcDisplayProbability(WeightedSumFunction weightedSumFunction,
