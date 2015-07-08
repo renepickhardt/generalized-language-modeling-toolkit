@@ -2,6 +2,7 @@ package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static de.glmtk.output.Output.println;
+import static de.glmtk.util.NioUtils.countNumberOfLines;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.newBufferedReader;
 import static java.nio.file.Files.newBufferedWriter;
@@ -13,7 +14,8 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ import de.glmtk.options.PathOption;
 import de.glmtk.options.PathsOption;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
@@ -51,13 +54,14 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private PathOption optionCacheFile;
     private PathOption optionOutputDir;
 
-    private Path corpus = null;
-    private Path workingDir = null;
-    private Set<Estimator> estimators = new LinkedHashSet<>();
-    private Set<Path> queries = new LinkedHashSet<>();
-    private Integer times = null;
-    private Path cacheFile = null;
-    private Path outputDir = null;
+    private Path corpus;
+    private Path workingDir;
+    private Set<Estimator> estimators;
+    private Set<Path> queries;
+    private Integer times;
+    private Path cacheFile;
+    private Path outputDir;
+    private ProgressBar progressBar;
 
     @Override
     protected String getExecutableName() {
@@ -122,6 +126,11 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     protected void exec() throws Exception {
         logFields();
 
+        List<String> phases = new ArrayList<>(estimators.size());
+        for (Estimator estimator : estimators)
+            phases.add(estimator.getName());
+        progressBar = new ProgressBar(phases);
+
         Glmtk glmtk = new Glmtk(config, corpus, workingDir);
 
         int neededOrder = getNeededOrder();
@@ -155,7 +164,11 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 cache = cacheSpec.build(queryCache);
             }
 
+            Iterator<String> phaseIter = phases.iterator();
             for (Estimator estimator : estimators) {
+                int numLines = countNumberOfLines(queryFile);
+                progressBar.setPhase(phaseIter.next(), numLines * (times + 1));
+
                 boolean weightedSumEstimator = estimator instanceof WeightedSumEstimator;
 
                 estimator.setCache(cache);
@@ -164,115 +177,123 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 int numProbs = 0;
 
                 BufferedWriter writer = null, writerNumWeights = null, writerTimeWeights = null, writerTimeRemaining = null;
-                if (outputDir != null) {
-                    Path outputFile = outputDir.resolve(queryFile + "-"
-                            + estimator);
-                    writer = newBufferedWriter(outputFile, Constants.CHARSET);
-                    if (weightedSumEstimator) {
-                        writerNumWeights = newBufferedWriter(
-                                Paths.get(outputFile + "-numWeights"),
+                try {
+                    if (outputDir != null) {
+                        Path outputFile = outputDir.resolve(queryFile + "-"
+                                + estimator);
+                        writer = newBufferedWriter(outputFile,
                                 Constants.CHARSET);
-                        writerTimeWeights = newBufferedWriter(
-                                Paths.get(outputFile + "-timeWeights"),
-                                Constants.CHARSET);
-                        writerTimeRemaining = newBufferedWriter(
-                                Paths.get(outputFile + "-timeRemaining"),
-                                Constants.CHARSET);
+                        if (weightedSumEstimator) {
+                            writerNumWeights = newBufferedWriter(
+                                    Paths.get(outputFile + "-numWeights"),
+                                    Constants.CHARSET);
+                            writerTimeWeights = newBufferedWriter(
+                                    Paths.get(outputFile + "-timeWeights"),
+                                    Constants.CHARSET);
+                            writerTimeRemaining = newBufferedWriter(
+                                    Paths.get(outputFile + "-timeRemaining"),
+                                    Constants.CHARSET);
+                        }
                     }
-                }
 
-                for (int i = 0; i != times + 1; ++i) {
-                    // Trigger garbage collection at begin of every benchmark
-                    // iteration, to avoid triggering it mid benchmark.
-                    System.gc();
+                    for (int i = 0; i != times + 1; ++i) {
+                        // Trigger garbage collection at begin of every benchmark
+                        // iteration, to avoid triggering it mid benchmark.
+                        System.gc();
 
-                    try (BufferedReader reader = Files.newBufferedReader(
-                            queryFile, Constants.CHARSET)) {
-                        boolean firstLine = true;
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            List<String> words = StringUtils.split(line, ' ');
-                            NGram sequence = new NGram(
-                                    words.get(words.size() - 1));
-                            NGram history = new NGram(words.subList(0,
-                                    words.size() - 1));
+                        try (BufferedReader reader = Files.newBufferedReader(
+                                queryFile, Constants.CHARSET)) {
+                            boolean firstLine = true;
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                List<String> words = StringUtils.split(line,
+                                        ' ');
+                                NGram sequence = new NGram(
+                                        words.get(words.size() - 1));
+                                NGram history = new NGram(words.subList(0,
+                                        words.size() - 1));
 
-                            long timeDelta = 0, timeDeltaWeights = 0, timeDeltaRemaining = 0;
-                            int numWeights = 0;
-                            double prob;
+                                long timeDelta = 0, timeDeltaWeights = 0, timeDeltaRemaining = 0;
+                                int numWeights = 0;
+                                double prob;
 
-                            if (!weightedSumEstimator) {
-                                long timeBefore = System.nanoTime();
-                                prob = estimator.probability(sequence, history);
-                                long timeAfter = System.nanoTime();
+                                if (!weightedSumEstimator) {
+                                    long timeBefore = System.nanoTime();
+                                    prob = estimator.probability(sequence,
+                                            history);
+                                    long timeAfter = System.nanoTime();
 
-                                timeDelta = timeAfter - timeBefore;
-                            } else {
-                                long timeBeforeWeights = System.nanoTime();
-                                WeightedSumFunction weightedSumFunction = ((WeightedSumEstimator) estimator).calcWeightedSumFunction(history);
-                                long timeAfterWeights = System.nanoTime();
-                                numWeights = weightedSumFunction.size();
+                                    timeDelta = timeAfter - timeBefore;
+                                } else {
+                                    long timeBeforeWeights = System.nanoTime();
+                                    WeightedSumFunction weightedSumFunction = ((WeightedSumEstimator) estimator).calcWeightedSumFunction(history);
+                                    long timeAfterWeights = System.nanoTime();
+                                    numWeights = weightedSumFunction.size();
 
-                                long timeBeforeRemaining = System.nanoTime();
-                                prob = ((WeightedSumEstimator) estimator).probability(
-                                        sequence, weightedSumFunction);
-                                long timeAfterRemaining = System.nanoTime();
+                                    long timeBeforeRemaining = System.nanoTime();
+                                    prob = ((WeightedSumEstimator) estimator).probability(
+                                            sequence, weightedSumFunction);
+                                    long timeAfterRemaining = System.nanoTime();
 
-                                timeDeltaWeights = timeAfterWeights
-                                        - timeBeforeWeights;
-                                timeDeltaRemaining = timeAfterRemaining
-                                        - timeBeforeRemaining;
-                                timeDelta = timeDeltaWeights
-                                        + timeDeltaRemaining;
-                            }
+                                    timeDeltaWeights = timeAfterWeights
+                                            - timeBeforeWeights;
+                                    timeDeltaRemaining = timeAfterRemaining
+                                            - timeBeforeRemaining;
+                                    timeDelta = timeDeltaWeights
+                                            + timeDeltaRemaining;
+                                }
 
-                            LOGGER.trace("P(%s | %s) = %e", sequence, history,
-                                    prob);
+                                LOGGER.trace("P(%s | %s) = %e", sequence,
+                                        history, prob);
 
-                            if (i != 0) {
-                                // i == 0 is warmup run
+                                if (i != 0) {
+                                    // i == 0 is warmup run
 
-                                timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
-                                ++numProbs;
+                                    timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
+                                    ++numProbs;
 
-                                if (outputDir != null) {
-                                    if (firstLine)
-                                        firstLine = false;
-                                    else {
-                                        writer.append('\t');
+                                    if (outputDir != null) {
+                                        if (firstLine)
+                                            firstLine = false;
+                                        else {
+                                            writer.append('\t');
+                                            if (weightedSumEstimator) {
+                                                writerNumWeights.append('\t');
+                                                writerTimeWeights.append('\t');
+                                                writerTimeRemaining.append('\t');
+                                            }
+                                        }
+                                        writer.append(Long.toString(timeDelta));
                                         if (weightedSumEstimator) {
-                                            writerNumWeights.append('\t');
-                                            writerTimeWeights.append('\t');
-                                            writerTimeRemaining.append('\t');
+                                            writerNumWeights.append(Integer.toString(numWeights));
+                                            writerTimeWeights.append(Long.toString(timeDeltaWeights));
+                                            writerTimeRemaining.append(Long.toString(timeDeltaRemaining));
                                         }
                                     }
-                                    writer.append(Long.toString(timeDelta));
-                                    if (weightedSumEstimator) {
-                                        writerNumWeights.append(Integer.toString(numWeights));
-                                        writerTimeWeights.append(Long.toString(timeDeltaWeights));
-                                        writerTimeRemaining.append(Long.toString(timeDeltaRemaining));
-                                    }
                                 }
+
+                                progressBar.increase(1);
+                            }
+                        }
+
+                        if (i != 0 && outputDir != null) {
+                            writer.append('\n');
+                            if (weightedSumEstimator) {
+                                writerNumWeights.append('\n');
+                                writerTimeWeights.append('\n');
+                                writerTimeRemaining.append('\n');
                             }
                         }
                     }
 
-                    if (i != 0 && outputDir != null) {
-                        writer.append('\n');
+                } finally {
+                    if (outputDir != null) {
+                        writer.close();
                         if (weightedSumEstimator) {
-                            writerNumWeights.append('\n');
-                            writerTimeWeights.append('\n');
-                            writerTimeRemaining.append('\n');
+                            writerNumWeights.close();
+                            writerTimeWeights.close();
+                            writerTimeRemaining.close();
                         }
-                    }
-                }
-
-                if (outputDir != null) {
-                    writer.close();
-                    if (weightedSumEstimator) {
-                        writerNumWeights.close();
-                        writerTimeWeights.close();
-                        writerTimeRemaining.close();
                     }
                 }
 

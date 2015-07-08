@@ -1,11 +1,8 @@
 package de.glmtk.executables;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static com.google.common.hash.Hashing.md5;
-import static com.google.common.io.Files.hash;
 import static de.glmtk.output.Output.println;
-import static de.glmtk.util.Files.newBufferedReader;
-import static de.glmtk.util.Files.newBufferedWriter;
+import static de.glmtk.util.NioUtils.countNumberOfLines;
 import static de.glmtk.util.StringUtils.repeat;
 import static java.lang.String.format;
 
@@ -15,7 +12,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +27,6 @@ import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
-import de.glmtk.common.Status;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.BooleanOption;
@@ -37,7 +35,7 @@ import de.glmtk.options.custom.ArgmaxExecutorOption;
 import de.glmtk.options.custom.ArgmaxExecutorsOption;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
-import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
+import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.estimator.Estimator;
@@ -58,13 +56,14 @@ public class GlmtkExpArgmaxCompare extends Executable {
     private BooleanOption optionRandomAccess;
     private BooleanOption optionNoQueryCache;
 
-    private Path corpus = null;
-    private Path workingDir = null;
-    private Set<String> executors = new LinkedHashSet<>();
-    private Set<WeightedSumEstimator> estimators = new LinkedHashSet<>();
-    private Set<Path> queries = new LinkedHashSet<>();
-    private Boolean randomAccess = null;
-    private Boolean noQueryCache = null;
+    private Path corpus;
+    private Path workingDir;
+    private Set<String> executors;
+    private Set<WeightedSumEstimator> estimators;
+    private Set<Path> queries;
+    private Boolean randomAccess;
+    private Boolean noQueryCache;
+    private ProgressBar progressBar;
 
     @Override
     protected String getExecutableName() {
@@ -122,13 +121,13 @@ public class GlmtkExpArgmaxCompare extends Executable {
         List<WeightedSumEstimator> list = (List) optionEstimators.getEstimators();
         estimators = newLinkedHashSet(list);
         if (estimators.isEmpty())
-            throw new CliArgumentException(String.format(
-                    "No esimators given, use %s.", optionEstimators));
+            throw new CliArgumentException("No esimators given, use %s.",
+                    optionEstimators);
 
         queries = newLinkedHashSet(optionQuery.getPaths());
         if (queries.isEmpty())
-            throw new CliArgumentException(String.format(
-                    "No files to query given, use %s.", optionQuery));
+            throw new CliArgumentException("No files to query given, use %s.",
+                    optionQuery);
 
         randomAccess = optionRandomAccess.getBoolean();
         noQueryCache = optionNoQueryCache.getBoolean();
@@ -137,6 +136,13 @@ public class GlmtkExpArgmaxCompare extends Executable {
     @Override
     protected void exec() throws Exception {
         logFields();
+
+        List<String> phases = new ArrayList<>(executors.size()
+                * estimators.size());
+        for (String executor : executors)
+            for (Estimator estimator : estimators)
+                phases.add(executor + " " + estimator.getName());
+        progressBar = new ProgressBar(phases);
 
         Glmtk glmtk = new Glmtk(config, corpus, workingDir);
 
@@ -152,26 +158,18 @@ public class GlmtkExpArgmaxCompare extends Executable {
         Set<Pattern> requiredPatterns = cacheSpec.getRequiredPatterns();
         requiredPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this
 
-        Status status = glmtk.getStatus();
         GlmtkPaths paths = glmtk.getPaths();
 
         for (Path queryFile : queries) {
             println();
             println(queryFile + ":");
 
-            // TODO: there really should be an API for the following:
-            String hash = hash(queryFile.toFile(), md5()).toString();
-
             GlmtkPaths queryCachePaths;
             if (noQueryCache)
                 queryCachePaths = paths;
-            else {
-                ArgmaxQueryCacheCreator argmaxQueryCacheCreator = new ArgmaxQueryCacheCreator(
-                        config);
-                queryCachePaths = argmaxQueryCacheCreator.createQueryCache(
-                        "argmax" + hash, queryFile, false, requiredPatterns,
-                        status, paths);
-            }
+            else
+                queryCachePaths = glmtk.provideArgmaxQueryCache(queryFile,
+                        requiredPatterns);
 
             CompletionTrieCache sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
                     CacheImplementation.COMPLETION_TRIE).build(queryCachePaths);
@@ -180,30 +178,33 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 randomAccessCache = cacheSpec.withCacheImplementation(
                         CacheImplementation.HASH_MAP).build(queryCachePaths);
 
+            Iterator<String> phaseIter = phases.iterator();
             for (String executor : executors)
                 for (WeightedSumEstimator estimator : estimators) {
+                    int numLines = countNumberOfLines(queryFile);
+                    progressBar.setPhase(phaseIter.next(), numLines);
+
                     estimator.setCache(randomAccessCache);
                     ArgmaxQueryExecutor argmaxQueryExecutor = ArgmaxExecutorOption.argmaxQueryExecutorFromString(
                             executor, estimator, randomAccessCache,
                             sortedAccessCache);
 
                     BigInteger timeSum = BigInteger.ZERO;
-                    int n = 0;
+                    int numCalcs = 0;
 
-                    String type = String.format("%s-%s", executor,
-                            estimator.getName());
-                    println("Querying %s...", type);
-                    //                    ProgressBar progressBar = new ProgressBar("Querying",
-                    //                            NioUtils.countNumberOfLines(queryFile));
-                    //                    try (BufferedReader reader = Files.newBufferedReader(
-                    //                            queryFile, Constants.CHARSET);
-                    //                            BufferedWriter writer = Files.newBufferedWriter(
-                    //                                    Paths.get(queryFile + "." + type),
-                    //                                            Constants.CHARSET)) {
-                    try (BufferedReader reader = newBufferedReader(System.in,
-                            Constants.CHARSET);
-                            BufferedWriter writer = newBufferedWriter(
-                                    System.out, Constants.CHARSET)) {
+                    String type = format("%s-%s", executor, estimator.getName());
+                    //                    println("Querying %s...", type);
+                    //                                        ProgressBar progressBar = new ProgressBar("Querying",
+                    //                                                NioUtils.countNumberOfLines(queryFile));
+                    try (BufferedReader reader = Files.newBufferedReader(
+                            queryFile, Constants.CHARSET);
+                            BufferedWriter writer = Files.newBufferedWriter(
+                                    Paths.get(queryFile + "." + type),
+                                    Constants.CHARSET)) {
+                        //                    try (BufferedReader reader = newBufferedReader(System.in,
+                        //                            Constants.CHARSET);
+                        //                            BufferedWriter writer = newBufferedWriter(
+                        //                                    System.out, Constants.CHARSET)) {
 
                         String line;
                         while ((line = reader.readLine()) != null) {
@@ -239,12 +240,13 @@ public class GlmtkExpArgmaxCompare extends Executable {
 
                             timeSum = timeSum.add(BigInteger.valueOf(timeAfter
                                     - timeBefore));
-                            //                            progressBar.increase();
-                            ++n;
+                            ++numCalcs;
+
+                            progressBar.increase();
                         }
                     }
 
-                    BigInteger timePerArgmax = timeSum.divide(BigInteger.valueOf(n));
+                    BigInteger timePerArgmax = timeSum.divide(BigInteger.valueOf(numCalcs));
                     println("- Average prediciton time: %.3fms",
                             (timePerArgmax.floatValue() / 1000 / 1000));
                 }

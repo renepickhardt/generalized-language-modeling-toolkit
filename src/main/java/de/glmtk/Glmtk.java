@@ -23,6 +23,7 @@ package de.glmtk;
 import static com.google.common.hash.Hashing.md5;
 import static com.google.common.io.Files.hash;
 import static de.glmtk.output.Output.println;
+import static de.glmtk.util.NioUtils.calcFileSize;
 import static de.glmtk.util.PrintUtils.humanReadableByteCount;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ import de.glmtk.counting.Tagger;
 import de.glmtk.logging.Logger;
 import de.glmtk.output.Output;
 import de.glmtk.output.ProgressBar;
+import de.glmtk.querying.argmax.ArgmaxQueryCacheCreator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.probability.FileQueryExecutor;
 import de.glmtk.querying.probability.QueryCacherCreator;
@@ -112,6 +114,7 @@ public class Glmtk {
     private LengthDistributionCalculator lengthDistributionCalculator;
 
     private QueryCacherCreator queryCacherCreator;
+    private ArgmaxQueryCacheCreator argmaxQueryCacheCreator;
     private StreamQueryExecutor streamQueryExecutor;
     private FileQueryExecutor fileQueryExecutor;
 
@@ -136,6 +139,7 @@ public class Glmtk {
         lengthDistributionCalculator = new LengthDistributionCalculator(config);
 
         queryCacherCreator = new QueryCacherCreator(config);
+        argmaxQueryCacheCreator = new ArgmaxQueryCacheCreator(config);
         streamQueryExecutor = new StreamQueryExecutor(config);
         fileQueryExecutor = new FileQueryExecutor(config);
     }
@@ -320,7 +324,30 @@ public class Glmtk {
                 status.getQueryCacheCounted(hash));
 
         Path dir = queryCachePaths.getDir();
-        long size = NioUtils.calcFileSize(dir);
+        long size = calcFileSize(dir);
+        println("    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
+                dir.getParent(), humanReadableByteCount(size));
+
+        return queryCachePaths;
+    }
+
+    public GlmtkPaths provideArgmaxQueryCache(Path queryFile,
+                                              Set<Pattern> patterns) throws Exception {
+        println("ArgmaxQueryCache for file '%s'...", queryFile);
+
+        String hash = "argmax" + hash(queryFile.toFile(), md5()).toString();
+
+        Set<Pattern> neededPatterns = new HashSet<>(patterns);
+        neededPatterns.removeAll(status.getQueryCacheCounted(hash));
+
+        boolean tagged = Tagger.detectFileTagged(queryFile);
+        GlmtkPaths queryCachePaths = argmaxQueryCacheCreator.createQueryCache(
+                hash, queryFile, tagged, neededPatterns, status, paths);
+        validateExpectedResults("Caching pattern counts", neededPatterns,
+                status.getQueryCacheCounted(hash));
+
+        Path dir = queryCachePaths.getDir();
+        long size = calcFileSize(dir);
         println("    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
                 dir.getParent(), humanReadableByteCount(size));
 
