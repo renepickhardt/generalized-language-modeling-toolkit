@@ -34,6 +34,8 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private Cache randomAccessCache;
     private CompletionTrieCache sortedAccessCache;
     private Collection<String> vocab;
+    private int numSortedAccesses;
+    private int numRandomAccesses;
 
     public ThresholdArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                         Cache randomAccessCache,
@@ -53,14 +55,17 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          int numResults) {
+            int numResults) {
         return queryArgmax(history, "", numResults);
     }
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            String prefix,
-            int numResults) {
+                                          String prefix,
+                                          int numResults) {
+        numSortedAccesses = 0;
+        numRandomAccesses = 0;
+
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -127,6 +132,7 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             }
 
             CompletionTrieEntry entry = iter.next();
+            ++numSortedAccesses;
             threshold -= weightedSumFunction.get(ptr).getWeight()
                     * calcAlpha(patterns[ptr], lastCounts[ptr]);
             lastCounts[ptr] = entry.getScore();
@@ -139,24 +145,24 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             if (lastSpacePos != -1)
                 sequence = string.substring(lastSpacePos + 1);
 
-            if (vocab != null && !vocab.contains(sequence)) {
-                LOGGER.debug(
-                        "Sequence '%s' does not occur in given vocabulary, skipping.",
-                        sequence);
+            if (vocab != null && !vocab.contains(sequence))
+                //                LOGGER.debug(
+                //                        "Sequence '%s' does not occur in given vocabulary, skipping.",
+                //                        sequence);
                 continue;
-            }
-            if (!seen.add(sequence)) {
-                LOGGER.debug("Sequence '%s' already seen, skipping.", sequence);
+            if (!seen.add(sequence))
+                //                LOGGER.debug("Sequence '%s' already seen, skipping.", sequence);
                 continue;
-            }
 
             double args[] = new double[size];
             for (int i = 0; i != size; ++i)
                 if (i == ptr)
                     args[i] = calcAlpha(histories[i].concat(sequence),
                             entry.getScore());
-                else
+                else {
+                    ++numRandomAccesses;
                     args[i] = calcAlpha(histories[i].concat(sequence));
+                }
 
             double probability = calcProbability(weightedSumFunction, args);
 
@@ -235,5 +241,13 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         double d = discounts.getForCount(count);
 
         return Math.max(count - d, 0.0);
+    }
+
+    public int getNumSortedAccesses() {
+        return numSortedAccesses;
+    }
+
+    public int getNumRandomAccesses() {
+        return numRandomAccesses;
     }
 }

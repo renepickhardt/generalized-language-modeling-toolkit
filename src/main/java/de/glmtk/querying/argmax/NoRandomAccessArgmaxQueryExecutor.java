@@ -41,6 +41,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private CompletionTrieCache cache;
     private Collection<String> vocab;
     private ProbabilityDislay probabilityDislay;
+    private int numSortedAccesses;
 
     private static class ArgmaxObject {
         public static final Comparator<ArgmaxObject> COMPARATOR = new Comparator<ArgmaxObject>() {
@@ -90,7 +91,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         return queryArgmax(history, "", numResults);
     }
 
@@ -98,6 +99,8 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     public List<ArgmaxResult> queryArgmax(String history,
                                           String prefix,
                                           int numResults) {
+        numSortedAccesses = 0;
+
         if (numResults == 0)
             return new ArrayList<>();
         if (numResults < 0)
@@ -159,6 +162,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             }
 
             CompletionTrieEntry entry = iter.next();
+            ++numSortedAccesses;
             lastCounts[ptr] = entry.getScore();
 
             String string = entry.getString();
@@ -300,5 +304,9 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         double d = discounts.getForCount(absSequenceCount);
 
         return Math.max(count - d, 0.0);
+    }
+
+    public int getNumSortedAccesses() {
+        return numSortedAccesses;
     }
 }

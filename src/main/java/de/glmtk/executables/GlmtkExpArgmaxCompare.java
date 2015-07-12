@@ -5,6 +5,8 @@ import static de.glmtk.output.Output.println;
 import static de.glmtk.util.NioUtils.countNumberOfLines;
 import static de.glmtk.util.StringUtils.repeat;
 import static java.lang.String.format;
+import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.newBufferedWriter;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,6 +32,8 @@ import de.glmtk.common.Patterns;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.BooleanOption;
+import de.glmtk.options.IntegerOption;
+import de.glmtk.options.PathOption;
 import de.glmtk.options.PathsOption;
 import de.glmtk.options.custom.ArgmaxExecutorOption;
 import de.glmtk.options.custom.ArgmaxExecutorsOption;
@@ -38,6 +42,8 @@ import de.glmtk.options.custom.EstimatorsOption;
 import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
+import de.glmtk.querying.argmax.NoRandomAccessArgmaxQueryExecutor;
+import de.glmtk.querying.argmax.ThresholdArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.util.StringUtils;
@@ -53,17 +59,32 @@ public class GlmtkExpArgmaxCompare extends Executable {
     private ArgmaxExecutorsOption optionArgmaxExecutors;
     private EstimatorsOption optionEstimators;
     private PathsOption optionQuery;
+    private IntegerOption optionRuns;
+    private IntegerOption optionLimit;
     private BooleanOption optionRandomAccess;
     private BooleanOption optionNoQueryCache;
+    private PathOption optionResultsDir;
+    private PathOption optionOutputDir;
 
     private Path corpus;
     private Path workingDir;
     private Set<String> executors;
     private Set<WeightedSumEstimator> estimators;
     private Set<Path> queries;
+    private Integer times;
+    private Integer limit;
     private Boolean randomAccess;
     private Boolean noQueryCache;
+    private Path resultsDir;
+    private Path outputDir;
     private ProgressBar progressBar;
+
+    private BufferedWriter writerKeystrokes = null;
+    private BufferedWriter writerTimeKeystrokes = null;
+    private List<BufferedWriter> writersTime = null;
+    private List<BufferedWriter> writersNumSortedAccesses = null;
+    private List<BufferedWriter> writersNumRandomAccesses = null;
+    private List<BufferedWriter> writersProbabilities = null;
 
     @Override
     protected String getExecutableName() {
@@ -82,15 +103,24 @@ public class GlmtkExpArgmaxCompare extends Executable {
                         + "Can be specified multiple times.").needWeightedSum();
         optionQuery = new PathsOption("q", "query",
                 "Query the given files. Can be specified multiple times.").requireMustExist().requireFiles();
+        optionRuns = new IntegerOption("N", "num-runs",
+                "Number of times to run. Default: 1.").defaultValue(1).requirePositive().requireNotZero();
+        optionLimit = new IntegerOption("k", "limit",
+                "Compute argmax with limits from 1 to this.").defaultValue(1).requirePositive().requireNotZero();
         optionRandomAccess = new BooleanOption("r", "random-access",
                 "Use a HashMap baseed cache for any random access caches "
                         + "instead of default CompletionTrie based cache.");
         optionNoQueryCache = new BooleanOption("c", "no-querycache",
                 "Do not create QueryCache.");
+        optionResultsDir = new PathOption("d", "results-dir",
+                "Directory to store all results like times.").requireMayExist().requireDirectory();
+        optionOutputDir = new PathOption("o", "output-dir",
+                "Directory to store all output, that is argmax results.").requireMayExist().requireDirectory();
 
         commandLine.inputArgs(optionCorpus);
         commandLine.options(optionArgmaxExecutors, optionEstimators,
-                optionQuery, optionRandomAccess, optionNoQueryCache);
+                optionQuery, optionRuns, optionLimit, optionRandomAccess,
+                optionNoQueryCache, optionResultsDir, optionOutputDir);
     }
 
     @Override
@@ -129,8 +159,12 @@ public class GlmtkExpArgmaxCompare extends Executable {
             throw new CliArgumentException("No files to query given, use %s.",
                     optionQuery);
 
+        times = optionRuns.getInt();
+        limit = optionLimit.getInt();
         randomAccess = optionRandomAccess.getBoolean();
         noQueryCache = optionNoQueryCache.getBoolean();
+        resultsDir = optionResultsDir.getPath();
+        outputDir = optionOutputDir.getPath();
     }
 
     @Override
@@ -141,7 +175,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                 * estimators.size());
         for (String executor : executors)
             for (Estimator estimator : estimators)
-                phases.add(executor + " " + estimator.getName());
+                phases.add(executor + "-" + estimator.getName());
         progressBar = new ProgressBar(phases);
 
         Glmtk glmtk = new Glmtk(config, corpus, workingDir);
@@ -159,6 +193,11 @@ public class GlmtkExpArgmaxCompare extends Executable {
         requiredPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this
 
         GlmtkPaths paths = glmtk.getPaths();
+
+        if (resultsDir != null)
+            createDirectories(resultsDir);
+        if (outputDir != null)
+            createDirectories(outputDir);
 
         for (Path queryFile : queries) {
             println();
@@ -182,75 +221,268 @@ public class GlmtkExpArgmaxCompare extends Executable {
             for (String executor : executors)
                 for (WeightedSumEstimator estimator : estimators) {
                     int numLines = countNumberOfLines(queryFile);
-                    progressBar.setPhase(phaseIter.next(), numLines);
+                    String phase = phaseIter.next();
+                    progressBar.setPhase(phase, numLines * (times + 1));
 
                     estimator.setCache(randomAccessCache);
                     ArgmaxQueryExecutor argmaxQueryExecutor = ArgmaxExecutorOption.argmaxQueryExecutorFromString(
                             executor, estimator, randomAccessCache,
                             sortedAccessCache);
 
+                    boolean isTAExecutor = argmaxQueryExecutor instanceof ThresholdArgmaxQueryExecutor;
+                    boolean isNRAExecutor = argmaxQueryExecutor instanceof NoRandomAccessArgmaxQueryExecutor;
+
                     BigInteger timeSum = BigInteger.ZERO;
                     int numCalcs = 0;
 
-                    String type = format("%s-%s", executor, estimator.getName());
-                    //                    println("Querying %s...", type);
-                    //                                        ProgressBar progressBar = new ProgressBar("Querying",
-                    //                                                NioUtils.countNumberOfLines(queryFile));
-                    try (BufferedReader reader = Files.newBufferedReader(
-                            queryFile, Constants.CHARSET);
-                            BufferedWriter writer = Files.newBufferedWriter(
-                                    Paths.get(queryFile + "." + type),
-                                    Constants.CHARSET)) {
-                        //                    try (BufferedReader reader = newBufferedReader(System.in,
-                        //                            Constants.CHARSET);
-                        //                            BufferedWriter writer = newBufferedWriter(
-                        //                                    System.out, Constants.CHARSET)) {
+                    try {
+                        openWriters(queryFile, phase, isTAExecutor,
+                                isNRAExecutor);
 
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            int lastSpacePos = line.lastIndexOf(' ');
-                            String history = line.substring(0, lastSpacePos);
-                            String sequence = line.substring(lastSpacePos + 1);
-                            long timeBefore = System.nanoTime();
-                            List<ArgmaxResult> argmaxResults = argmaxQueryExecutor.queryArgmax(
-                                    history, 5);
-                            long timeAfter = System.nanoTime();
+                        for (int i = 0; i != times + 1; ++i) {
+                            // Trigger garbage collection at begin of every benchmark
+                            // iteration, to avoid triggering it mid benchmark.
+                            System.gc();
 
-                            writer.append(format("%s : %s ", history, sequence));
-                            for (ArgmaxResult a : argmaxResults)
-                                writer.append(format("[%s-%e]",
-                                        a.getSequence(), a.getProbability()));
-                            writer.append('\n');
+                            try (BufferedReader reader = Files.newBufferedReader(
+                                    queryFile, Constants.CHARSET)) {
+                                boolean firstLine = true;
+                                String line;
+                                while ((line = reader.readLine()) != null) {
+                                    int lastSpacePos = line.lastIndexOf(' ');
+                                    String history = line.substring(0,
+                                            lastSpacePos);
+                                    String sequence = line.substring(lastSpacePos + 1);
 
-                            writer.append(repeat("-", 80)).append('\n');
-                            for (int i = 1; i != sequence.length() + 1; ++i) {
-                                String s = sequence.substring(0, i);
-                                List<ArgmaxResult> a = argmaxQueryExecutor.queryArgmax(
-                                        history, s, 5);
-                                writer.append(s).append(
-                                        repeat("-", sequence.length() - i)).append(
-                                        " : ");
-                                for (ArgmaxResult r : a)
-                                    writer.append(format("[%s-%e]",
-                                            r.getSequence(), r.getProbability()));
-                                writer.append('\n');
+                                    for (int k = 0; k != limit; ++k) {
+                                        long timeBefore = System.nanoTime();
+                                        List<ArgmaxResult> argmaxResults = argmaxQueryExecutor.queryArgmax(
+                                                history, k + 1);
+                                        long timeAfter = System.nanoTime();
+
+                                        long timeDelta = timeAfter - timeBefore;
+                                        long timeKeystokes = timeDelta;
+
+                                        if (i != 0) {
+                                            // i == 0 is warmup run
+                                            timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
+                                            ++numCalcs;
+
+                                            if (resultsDir != null) {
+                                                if (!firstLine) {
+                                                    writersTime.get(k).append(
+                                                            '\t');
+                                                    if (isTAExecutor
+                                                            || isNRAExecutor)
+                                                        writersNumSortedAccesses.get(
+                                                                k).append('\t');
+                                                    if (isTAExecutor)
+                                                        writersNumRandomAccesses.get(
+                                                                k).append('\t');
+                                                }
+                                                writersTime.get(k).append(
+                                                        Long.toString(timeDelta));
+                                                if (isTAExecutor) {
+                                                    ThresholdArgmaxQueryExecutor ta = (ThresholdArgmaxQueryExecutor) argmaxQueryExecutor;
+                                                    writersNumSortedAccesses.get(
+                                                            k).append(
+                                                                    Integer.toString(ta.getNumSortedAccesses()));
+                                                    writersNumRandomAccesses.get(
+                                                            k).append(
+                                                                    Integer.toString(ta.getNumRandomAccesses()));
+                                                }
+                                                if (isNRAExecutor) {
+                                                    NoRandomAccessArgmaxQueryExecutor nra = (NoRandomAccessArgmaxQueryExecutor) argmaxQueryExecutor;
+                                                    writersNumSortedAccesses.get(
+                                                            k).append(
+                                                                    Integer.toString(nra.getNumSortedAccesses()));
+                                                }
+                                            }
+
+                                            if (outputDir != null) {
+                                                writersProbabilities.get(k).append(
+                                                        format("%s : %s ",
+                                                                history,
+                                                                sequence));
+                                                for (ArgmaxResult a : argmaxResults)
+                                                    writersProbabilities.get(k).append(
+                                                            format("[%s-%e]",
+                                                                    a.getSequence(),
+                                                                    a.getProbability()));
+                                                writersProbabilities.get(k).append(
+                                                        '\n');
+                                            }
+                                        }
+
+                                        if (k == 0) {
+                                            if (i != 0 && outputDir != null)
+                                                writersProbabilities.get(k).append(
+                                                        repeat("-", 80)).append(
+                                                        '\n');
+
+                                            int keystrokes = -1;
+                                            ArgmaxResult argmaxResult = argmaxResults.get(0);
+                                            if (argmaxResult.getSequence().equals(
+                                                    sequence))
+                                                keystrokes = 0;
+
+                                            for (int prefixLength = 1; prefixLength != sequence.length() + 1; ++prefixLength) {
+                                                String s = sequence.substring(
+                                                        0, prefixLength);
+                                                timeBefore = System.nanoTime();
+                                                argmaxResults = argmaxQueryExecutor.queryArgmax(
+                                                        history, s, k + 1);
+                                                timeAfter = System.nanoTime();
+                                                timeDelta = timeAfter
+                                                        - timeBefore;
+
+                                                // TODO: investigate why this happens for history="are said to be" sequence="underutilizied" on training-1 of oanc
+                                                if (argmaxResults.size() != 0)
+                                                    argmaxResult = argmaxResults.get(0);
+                                                if (keystrokes == -1) {
+                                                    timeKeystokes += timeDelta;
+                                                    if (argmaxResult.getSequence().equals(
+                                                            sequence))
+                                                        keystrokes = prefixLength;
+                                                }
+
+                                                if (i != 0 && outputDir != null) {
+                                                    writersProbabilities.get(k).append(
+                                                            s).append(
+                                                            repeat("-",
+                                                                    sequence.length()
+                                                                            - prefixLength)).append(
+                                                            " : ");
+                                                    for (ArgmaxResult r : argmaxResults)
+                                                        writersProbabilities.get(
+                                                                k).append(
+                                                                format("[%s-%e]",
+                                                                        r.getSequence(),
+                                                                        r.getProbability()));
+                                                    writersProbabilities.get(k).append(
+                                                            '\n');
+                                                }
+                                            }
+
+                                            if (outputDir != null)
+                                                writersProbabilities.get(k).append(
+                                                        '\n');
+
+                                            if (keystrokes == -1)
+                                                keystrokes = sequence.length();
+
+                                            float keystokeSavings = (float) (sequence.length() - keystrokes)
+                                                    / sequence.length();
+                                            if (i != 0 && resultsDir != null) {
+                                                if (!firstLine) {
+                                                    writerKeystrokes.append('\t');
+                                                    writerTimeKeystrokes.append('\t');
+                                                }
+                                                writerKeystrokes.append(Float.toString(keystokeSavings));
+                                                writerTimeKeystrokes.append(Long.toString(timeKeystokes));
+                                            }
+                                        }
+                                    }
+
+                                    firstLine = false;
+                                    progressBar.increase();
+                                }
+
+                                if (i != 0) {
+                                    writerKeystrokes.append('\n');
+                                    writerTimeKeystrokes.append('\n');
+                                    for (int k = 0; k != limit; ++k) {
+                                        if (resultsDir != null) {
+                                            writersTime.get(k).append('\n');
+                                            if (isTAExecutor || isNRAExecutor)
+                                                writersNumSortedAccesses.get(k).append(
+                                                        '\n');
+                                            if (isTAExecutor)
+                                                writersNumRandomAccesses.get(k).append(
+                                                        '\n');
+                                        }
+                                        if (outputDir != null)
+                                            if (k == 0)
+                                                writersProbabilities.get(k).append(
+                                                        repeat("=", 80)).append(
+                                                        '\n');
+                                            else
+                                                writersProbabilities.get(k).append(
+                                                        '\n');
+                                    }
+                                }
                             }
-
-                            writer.flush();
-
-                            timeSum = timeSum.add(BigInteger.valueOf(timeAfter
-                                    - timeBefore));
-                            ++numCalcs;
-
-                            progressBar.increase();
                         }
+                    } finally {
+                        closeWriters(isTAExecutor, isNRAExecutor);
                     }
 
                     BigInteger timePerArgmax = timeSum.divide(BigInteger.valueOf(numCalcs));
-                    println("- Average prediciton time: %.3fms",
-                            (timePerArgmax.floatValue() / 1000 / 1000));
+                    println("%s: %.2fms", phase,
+                            timePerArgmax.floatValue() / 1000 / 1000);
                 }
         }
+    }
+
+    private void openWriters(Path queryFile,
+                             String phase,
+                             boolean isTAExecutor,
+                             boolean isNRAExecutor) throws IOException {
+        if (resultsDir != null) {
+            Path resultsFile = resultsDir.resolve(format("%s-%s", queryFile, phase));
+            
+            writerKeystrokes = newBufferedWriter(Paths.get(format("%s-nkss",
+                    resultsFile)), Constants.CHARSET);
+            writerTimeKeystrokes = newBufferedWriter(Paths.get(format(
+                    "%s-time-nkss", resultsFile)), Constants.CHARSET);
+            writersTime = new ArrayList<>(limit);
+
+            for (int k = 1; k != limit + 1; ++k)
+                writersTime.add(newBufferedWriter(Paths.get(format("%s-%d",
+                        resultsFile, k)), Constants.CHARSET));
+
+            if (isTAExecutor || isNRAExecutor) {
+                writersNumSortedAccesses = new ArrayList<>(limit);
+                for (int k = 1; k != limit + 1; ++k)
+                    writersNumSortedAccesses.add(newBufferedWriter(
+                            Paths.get(format("%s-%d-numSortedAccesses",
+                                    resultsFile, k)), Constants.CHARSET));
+            }
+            if (isTAExecutor) {
+                writersNumRandomAccesses = new ArrayList<>(limit);
+                for (int k = 1; k != limit + 1; ++k)
+                    writersNumRandomAccesses.add(newBufferedWriter(
+                            Paths.get(format("%s-%d-numRandomAccesses",
+                                    resultsFile, k)), Constants.CHARSET));
+            }
+        }
+
+        if (outputDir != null) { 
+            Path outputFile = outputDir.resolve(format("%s-%s", queryFile, phase));
+            
+            writersProbabilities = new ArrayList<>(limit);
+            for (int k = 1; k != limit + 1; ++k)
+                writersProbabilities.add(newBufferedWriter(Paths.get(format(
+                        "%s-%d", outputFile, k)), Constants.CHARSET));
+        }
+    }
+
+    private void closeWriters(boolean isTAExecutor,
+                              boolean isNRAExecutor) throws IOException {
+        if (resultsDir != null) {
+            writerKeystrokes.close();
+            writerTimeKeystrokes.close();
+            for (int k = 0; k != limit; ++k) {
+                writersTime.get(k).close();
+                if (isTAExecutor || isNRAExecutor)
+                    writersNumSortedAccesses.get(k).close();
+                if (isTAExecutor)
+                    writersNumRandomAccesses.get(k).close();
+            }
+        }
+        if (outputDir != null)
+            for (int k = 0; k != limit; ++k)
+                writersProbabilities.get(k).close();
     }
 
     private int getNeededOrder() throws IOException {

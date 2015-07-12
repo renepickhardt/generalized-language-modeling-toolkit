@@ -52,7 +52,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private PathsOption optionQuery;
     private IntegerOption optionRuns;
     private PathOption optionCacheFile;
-    private PathOption optionOutputDir;
+    private PathOption optionResultsDir;
 
     private Path corpus;
     private Path workingDir;
@@ -60,7 +60,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     private Set<Path> queries;
     private Integer times;
     private Path cacheFile;
-    private Path outputDir;
+    private Path resultsDir;
     private ProgressBar progressBar;
 
     @Override
@@ -80,12 +80,12 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 "Number of times to run. Default: 1.").defaultValue(1).requirePositive().requireNotZero();
         optionCacheFile = new PathOption("c", "cache-file",
                 "File to generate query cache from for all query files.").requireMustExist().requireFile();
-        optionOutputDir = new PathOption("o", "output-dir",
-                "Output directory to store all results").requireMayExist().requireDirectory();
+        optionResultsDir = new PathOption("d", "results-dir",
+                "Directory to store all results like times or numWeights.").requireMayExist().requireDirectory();
 
         commandLine.inputArgs(optionCorpus);
         commandLine.options(optionEstimators, optionQuery, optionRuns,
-                optionCacheFile, optionOutputDir);
+                optionCacheFile, optionResultsDir);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
         times = optionRuns.getInt();
         cacheFile = optionCacheFile.getPath();
-        outputDir = optionOutputDir.getPath();
+        resultsDir = optionResultsDir.getPath();
     }
 
     @Override
@@ -151,8 +151,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
             cache = cacheSpec.build(queryCache);
         }
 
-        if (outputDir != null)
-            createDirectories(outputDir);
+        if (resultsDir != null)
+            createDirectories(resultsDir);
 
         for (Path queryFile : queries) {
             println();
@@ -176,22 +176,25 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 BigInteger timeSum = BigInteger.ZERO;
                 int numProbs = 0;
 
-                BufferedWriter writer = null, writerNumWeights = null, writerTimeWeights = null, writerTimeRemaining = null;
+                BufferedWriter writerTime = null;
+                BufferedWriter writerTimeWeights = null;
+                BufferedWriter writerTimeRemaining = null;
+                BufferedWriter writerNumWeights = null;
                 try {
-                    if (outputDir != null) {
-                        Path outputFile = outputDir.resolve(queryFile + "-"
+                    if (resultsDir != null) {
+                        Path resultsFile = resultsDir.resolve(queryFile + "-"
                                 + estimator);
-                        writer = newBufferedWriter(outputFile,
+                        writerTime = newBufferedWriter(resultsFile,
                                 Constants.CHARSET);
                         if (weightedSumEstimator) {
-                            writerNumWeights = newBufferedWriter(
-                                    Paths.get(outputFile + "-numWeights"),
-                                    Constants.CHARSET);
                             writerTimeWeights = newBufferedWriter(
-                                    Paths.get(outputFile + "-timeWeights"),
+                                    Paths.get(resultsFile + "-timeWeights"),
                                     Constants.CHARSET);
                             writerTimeRemaining = newBufferedWriter(
-                                    Paths.get(outputFile + "-timeRemaining"),
+                                    Paths.get(resultsFile + "-timeRemaining"),
+                                    Constants.CHARSET);
+                            writerNumWeights = newBufferedWriter(
+                                    Paths.get(resultsFile + "-numWeights"),
                                     Constants.CHARSET);
                         }
                     }
@@ -252,22 +255,22 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                     timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
                                     ++numProbs;
 
-                                    if (outputDir != null) {
+                                    if (resultsDir != null) {
                                         if (firstLine)
                                             firstLine = false;
                                         else {
-                                            writer.append('\t');
+                                            writerTime.append('\t');
                                             if (weightedSumEstimator) {
-                                                writerNumWeights.append('\t');
                                                 writerTimeWeights.append('\t');
                                                 writerTimeRemaining.append('\t');
+                                                writerNumWeights.append('\t');
                                             }
                                         }
-                                        writer.append(Long.toString(timeDelta));
+                                        writerTime.append(Long.toString(timeDelta));
                                         if (weightedSumEstimator) {
-                                            writerNumWeights.append(Integer.toString(numWeights));
                                             writerTimeWeights.append(Long.toString(timeDeltaWeights));
                                             writerTimeRemaining.append(Long.toString(timeDeltaRemaining));
+                                            writerNumWeights.append(Integer.toString(numWeights));
                                         }
                                     }
                                 }
@@ -276,29 +279,29 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                             }
                         }
 
-                        if (i != 0 && outputDir != null) {
-                            writer.append('\n');
+                        if (i != 0 && resultsDir != null) {
+                            writerTime.append('\n');
                             if (weightedSumEstimator) {
-                                writerNumWeights.append('\n');
                                 writerTimeWeights.append('\n');
                                 writerTimeRemaining.append('\n');
+                                writerNumWeights.append('\n');
                             }
                         }
                     }
 
                 } finally {
-                    if (outputDir != null) {
-                        writer.close();
+                    if (resultsDir != null) {
+                        writerTime.close();
                         if (weightedSumEstimator) {
-                            writerNumWeights.close();
                             writerTimeWeights.close();
                             writerTimeRemaining.close();
+                            writerNumWeights.close();
                         }
                     }
                 }
 
                 BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(numProbs));
-                println("%s: %sns", estimator.getName(), timePerProbability);
+                println("%s: %ssns", estimator.getName(), timePerProbability);
             }
         }
     }
@@ -326,6 +329,6 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         LOGGER.debug("Estimators: %s", estimators);
         LOGGER.debug("Queries:    %s", queries);
         LOGGER.debug("CacheFile:  %s", cacheFile);
-        LOGGER.debug("OutputDir:  %s", outputDir);
+        LOGGER.debug("OutputDir:  %s", resultsDir);
     }
 }
