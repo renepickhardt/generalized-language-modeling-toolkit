@@ -3,14 +3,19 @@ package de.glmtk.executables;
 import static com.google.common.base.Throwables.getStackTraceAsString;
 import static de.glmtk.output.Output.println;
 import static de.glmtk.output.Output.printlnError;
+import static de.glmtk.util.StringUtils.split;
+import static fi.iki.elonen.NanoHTTPD.Response.Status.INTERNAL_ERROR;
 import static fi.iki.elonen.NanoHTTPD.Response.Status.OK;
+import static java.lang.String.format;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.glmtk.Constants;
 import de.glmtk.Glmtk;
 import de.glmtk.GlmtkPaths;
 import de.glmtk.cache.CacheSpecification;
@@ -27,6 +32,7 @@ import de.glmtk.options.custom.EstimatorOption;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
+import de.glmtk.util.StringUtils;
 import fi.iki.elonen.NanoHTTPD;
 
 public class GlmtkAutocompletionDemo extends Executable {
@@ -56,14 +62,31 @@ public class GlmtkAutocompletionDemo extends Executable {
 
         @Override
         public Response serve(IHTTPSession session) {
-            String uri = session.getUri();
-            switch (uri) {
-                case "/complete":
-                    return serverCompletion(session);
+            try {
+                String uri = session.getUri();
+                switch (uri) {
+                    case "/complete":
+                        return serverCompletion(session);
 
-                default:
-                    return newFixedLengthResponse("uri = '" + uri + "'");
+                    default:
+                        return serveDemo(session);
+                }
+            } catch (Throwable e) {
+                String stackTrace = getStackTraceAsString(e);
+                printlnError(stackTrace);
+                return newFixedLengthResponse(INTERNAL_ERROR, "text/plain",
+                        stackTrace);
             }
+        }
+
+        public Response serveDemo(IHTTPSession session) throws IOException {
+            String demoHtml = new String(
+                    Files.readAllBytes(GlmtkPaths.GLMTK_DIR.resolve(
+                            Constants.MAIN_RESOURCES_DIR).resolve(
+                                    "autocompletion-demo.html")), Constants.CHARSET);
+            Response response = newFixedLengthResponse(OK,
+                    "application/xhtml+xml", demoHtml);
+            return response;
         }
 
         public Response serverCompletion(IHTTPSession session) {
@@ -72,8 +95,10 @@ public class GlmtkAutocompletionDemo extends Executable {
 
             // Parse query parameters.
             Map<String, String> params = session.getParms();
-            String history = params.get("history");
+            String history = getRelevantHistory(params.get("history"));
             String prefix = params.get("prefix");
+            if (prefix == null)
+                prefix = "";
             int numResults;
             try {
                 numResults = Integer.parseInt(params.get("numResults"));
@@ -88,17 +113,9 @@ public class GlmtkAutocompletionDemo extends Executable {
 
             // Build completions.
             List<ArgmaxResult> completions = null;
-            try {
-                if (history != null && !history.isEmpty())
-                    if (prefix == null || prefix.isEmpty())
-                        completions = argmaxQueryExecutor.queryArgmax(history,
-                                numResults);
-                    else
-                        completions = argmaxQueryExecutor.queryArgmax(history,
-                                prefix, numResults);
-            } catch (Throwable e) {
-                printlnError(getStackTraceAsString(e));
-            }
+            if (history != null)
+                completions = argmaxQueryExecutor.queryArgmax(history, prefix,
+                        numResults);
 
             // Output completions
             msg.append("  \"completion\": ");
@@ -115,9 +132,11 @@ public class GlmtkAutocompletionDemo extends Executable {
 
                     msg.append("    {\n");
                     msg.append("      \"completion\": \""
-                            + completion.getSequence() + "\",\n");
+                            + completion.getSequence().replace("\"", "\\\"")
+                            + "\",\n");
                     msg.append("      \"probability\": \""
-                            + completion.getProbability() + "\"\n");
+                            + format("%e", completion.getProbability())
+                            + "\"\n");
                     msg.append("    }");
                 }
                 msg.append("\n  ]\n");
@@ -127,6 +146,22 @@ public class GlmtkAutocompletionDemo extends Executable {
             Response response = newFixedLengthResponse(OK, "application/json",
                     msg.toString());
             return response;
+        }
+
+        private String getRelevantHistory(String history) {
+            if (history == null)
+                return "";
+            List<String> split = split(history, ' ');
+            split = split.subList(max(split.size() - ngramSize + 1, 0),
+                    split.size());
+            return StringUtils.join(split, ' ');
+        }
+
+        private int max(int a,
+                        int b) {
+            if (a > b)
+                return a;
+            return b;
         }
     }
 

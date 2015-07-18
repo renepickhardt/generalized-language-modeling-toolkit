@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+  <head>
+    <title>GLMTK Autocompletion Demo</title>
+    <meta charset="UTF-8"/>
+    <style>
+      h1 {
+        position: fixed;
+        top: 0;
+        right: 0;
+        margin: 0;
+        padding: 10pt;
+        text-align: center;
+        font-size: 22pt;
+        color: #AF3235;
+      }
+
+      h1 span {
+        padding-top: 10pt;
+        display: block;
+        font-size: 15pt;
+        color: black;
+      }
+
+      #text {
+        position: fixed;
+        top: 50%;
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: #EAEAEA;
+        border: 0;
+        margin: 0;
+        padding: 20pt;
+        transform: translateY(-100%);
+        display: block;
+        font-size: 40pt;
+        font-family: sans-serif;
+      }
+
+      #results {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50%;
+        padding: 20pt 0;
+      }
+
+      #results thead {
+        display: none;
+      }
+
+      #results td {
+        font-size: 30pt;
+        font-family: sans-serif;
+      }
+
+      #results td:nth-child(2) {
+        color: #DADADA;
+        text-align: right;
+      }
+    </style>
+    <script>
+      //<![CDATA[
+      var text = null;
+      var results = null;
+      var dbg_url = null;
+      
+      function updateCompletions() {
+        var lastSpace = text.value.lastIndexOf(" ");
+        var history = text.value.substring(0, lastSpace);
+        var prefix = text.value.substring(lastSpace + 1);
+        
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+          if (xmlhttp.readyState != 4 || xmlhttp.status != 200) {
+            return;
+          }
+          
+          var response = JSON.parse(xmlhttp.responseText);
+          var completions = response.completion;
+           
+          var resultsHTML = "";
+          for (var completion of completions) {
+            resultsHTML += "<tr>\n";
+            resultsHTML += "  <td>" + completion.completion + "</td>\n"
+            resultsHTML += "  <td>" + completion.probability + "</td>\n"
+            resultsHTML += "</tr>\n";
+          }
+          results.innerHTML = resultsHTML;
+        };
+        
+        var url = "complete?history=" + history.replace(/\"/g, "\\\"") + "&prefix=" + prefix.replace(/\"/g, "\\\"") + "&numResults=5";
+        if (dbg_url != null) {
+          dbg_url.innerHTML = url.replace(/&/g, "&amp;");
+        }
+        
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send()
+      };
+
+      window.onload = function() {
+        text = document.getElementById("text");
+        results = document.getElementById("results").getElementsByTagName("tbody")[0];
+        dbg_url = document.getElementById("dbg_url");
+
+        text.onclick = function() {
+          if (text.value == "<type here>") {
+            text.value = "";
+            updateCompletions();
+          }
+        };
+        
+        text.onkeyup = updateCompletions;
+        //text.onchange = updateCompletions;
+      };
+      //]]>
+    </script>
+  </head>
+  <body>
+    <h1>
+      Fast and Non-Approximative<br />Language Model Prefixqueries<br/>for Word Prediction using<br/>Top-k Joining Techniques<br/>
+      <span>Lukas Schmelzeisen</span>
+    </h1>
+    <form>
+      <input type="text" name="text" id="text" value="&lt;type here&gt;" autocomplete="off"/>
+    </form>
+    <table id="results">
+      <thead>
+        <tr>
+          <th>Completion</th>
+          <th>Probability</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <!--
+    <pre id="dbg_url">dbg_url</pre>
+    -->
+  </body>
+</html>
