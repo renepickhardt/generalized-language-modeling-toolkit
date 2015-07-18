@@ -93,7 +93,7 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
             if (node.absoluteCount == 0)
                 node.absoluteFactor = 0.0;
             else if (node.isTop())
-                node.absoluteFactor = coeff / node.absoluteCount;
+                node.absoluteFactor = 1.0f / node.absoluteCount;
             else {
                 node.absoluteFactor = calcAbsoluteFactor(diamond.getTop(), node);
                 node.absoluteFactor *= coeff / node.absoluteCount;
