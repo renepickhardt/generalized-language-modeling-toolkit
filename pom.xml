@@ -17,6 +17,15 @@
       <id>lib</id>
       <url>file://${project.basedir}/lib/</url>
     </repository>
+    
+    <!-- For NanoHTTPD snapshots -->
+    <repository>
+      <id>sonatype-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <build>
@@ -110,6 +119,14 @@
       <version>1.14</version>
     </dependency>
     
+    <!-- For autocompletion demo application -->
+    <dependency>
+      <groupId>org.nanohttpd</groupId>
+      <artifactId>nanohttpd</artifactId>
+      <version>2.2.0-SNAPSHOT</version>
+    </dependency>
+    
+    <!-- For memory inspection -->
     <dependency>
       <groupId>classmexer</groupId>
       <artifactId>classmexer</artifactId>
