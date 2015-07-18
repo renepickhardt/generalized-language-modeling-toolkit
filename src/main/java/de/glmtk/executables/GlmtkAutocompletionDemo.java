@@ -40,14 +40,14 @@ public class GlmtkAutocompletionDemo extends Executable {
 
     private class Server extends NanoHTTPD {
         public Server() {
-            super(8080);
+            super(port);
         }
 
         @Override
         public void start() throws IOException {
             try {
                 super.start();
-                println("Running on http://localhost:8080/");
+                println("Running on http://localhost:" + port + "/");
                 println("Hit enter to stop.");
                 try {
                     System.in.read();
@@ -173,12 +173,14 @@ public class GlmtkAutocompletionDemo extends Executable {
     private ArgmaxExecutorOption optionArgmaxExecutorOption;
     private EstimatorOption optionEstimator;
     private IntegerOption optionNGramSize;
+    private IntegerOption optionPort;
 
     private Path corpus;
     private Path workingDir;
     private String executor;
     private WeightedSumEstimator estimator;
     private int ngramSize;
+    private int port;
     private ArgmaxQueryExecutor argmaxQueryExecutor;
 
     @Override
@@ -197,10 +199,13 @@ public class GlmtkAutocompletionDemo extends Executable {
         optionNGramSize = new IntegerOption("n", "ngram-size",
                 "Max N-Gram length to use for completion.").requireNotZero().requirePositive().defaultValue(
                         3);
+        optionPort = new IntegerOption("p", "port",
+                "Port for the webserver to run on.").requireNotZero().requirePositive().defaultValue(
+                        8080);
 
         commandLine.inputArgs(optionCorpus);
         commandLine.options(optionArgmaxExecutorOption, optionEstimator,
-                optionNGramSize);
+                optionNGramSize, optionPort);
     }
 
     @Override
@@ -233,6 +238,7 @@ public class GlmtkAutocompletionDemo extends Executable {
         estimator = (WeightedSumEstimator) optionEstimator.getEstimator();
 
         ngramSize = optionNGramSize.getInt();
+        port = optionPort.getInt();
     }
 
     @Override
