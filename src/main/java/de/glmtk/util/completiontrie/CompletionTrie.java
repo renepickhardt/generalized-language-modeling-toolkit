@@ -157,10 +157,14 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     private boolean caseSensitive;
     private byte[] memory;
 
-    /* package */CompletionTrie(byte[] memory,
-                                boolean caseSensitive) {
+    public CompletionTrie(byte[] memory,
+                          boolean caseSensitive) {
         this.memory = memory;
         this.caseSensitive = caseSensitive;
+    }
+
+    public byte[] getMemory() {
+        return memory;
     }
 
     public int getMemoryConsumption() {

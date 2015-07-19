@@ -1,27 +1,31 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.cache;
 
+import static com.google.common.io.Files.write;
+import static java.nio.file.Files.createDirectories;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
@@ -62,27 +66,20 @@ public class CompletionTrieCache extends AbstractCache {
         for (Pattern pattern : patterns) {
             if (counts.containsKey(pattern))
                 continue;
-
-            CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
-                    true);
-
-            Path file = paths.getPatternsFile(pattern);
-            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
-                while (reader.readLine() != null)
-                    completionTrieBuilder.add(reader.getSequence(),
-                            reader.getCount());
-            }
-
-            CompletionTrie completionTrie = completionTrieBuilder.build();
-
-            // Free memory
-            completionTrieBuilder.reset();
-            completionTrieBuilder = null;
-
-            counts.put(pattern, completionTrie);
+            ensureCompletionTrieMaterialized(pattern, true);
 
             if (progressBar != null)
                 progressBar.increase();
+        }
+
+        for (Pattern pattern : patterns) {
+            if (counts.containsKey(pattern))
+                continue;
+
+            CompletionTrie completionTrie = loadCompletionTrieFromTrieFile(
+                    pattern, true);
+
+            counts.put(pattern, completionTrie);
         }
     }
 
@@ -132,28 +129,20 @@ public class CompletionTrieCache extends AbstractCache {
             if (gammas.containsKey(pattern))
                 continue;
 
-            CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
-                    true);
-
-            Path file = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
-            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
-                while (reader.readLine() != null)
-                    completionTrieBuilder.add(
-                            removeTrailingWSkp(reader.getSequence()),
-                            longFromDouble(calcGamma(pattern,
-                                    reader.getCounts())));
-            }
-
-            CompletionTrie completionTrie = completionTrieBuilder.build();
-
-            // Free memory
-            completionTrieBuilder.reset();
-            completionTrieBuilder = null;
-
-            gammas.put(pattern, completionTrie);
+            ensureCompletionTrieMaterialized(pattern, false);
 
             if (progressBar != null)
                 progressBar.increase();
+        }
+
+        for (Pattern pattern : patterns) {
+            if (gammas.containsKey(pattern))
+                continue;
+
+            CompletionTrie completionTrie = loadCompletionTrieFromTrieFile(
+                    pattern, false);
+
+            gammas.put(pattern, completionTrie);
         }
     }
 
@@ -207,5 +196,86 @@ public class CompletionTrieCache extends AbstractCache {
         byte[] bytes = new byte[8];
         ByteBuffer.wrap(bytes).putLong(l);
         return ByteBuffer.wrap(bytes).getDouble();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Helper //////////////////////////////////////////////////////////////////
+
+    /**
+     * @param count
+     *            If {@code true} pattern is for counts, if {@code false}
+     *            pattern is for gammas.
+     */
+    private void ensureCompletionTrieMaterialized(Pattern pattern,
+                                                  boolean count) throws IOException {
+        Path trieFile;
+        if (count)
+            trieFile = paths.getCountsTrieFile(pattern);
+        else
+            trieFile = paths.getGammasTrieFile(pattern);
+
+        if (Files.exists(trieFile))
+            return;
+
+        CompletionTrie completionTrie = loadCompletionTrieFromRawFile(pattern,
+                count);
+
+        createDirectories(paths.getTriesDir());
+        write(completionTrie.getMemory(), trieFile.toFile());
+    }
+
+    /**
+     * @param count
+     *            If {@code true} pattern is for counts, if {@code false}
+     *            pattern is for gammas.
+     */
+    private CompletionTrie loadCompletionTrieFromRawFile(Pattern pattern,
+                                                         boolean count) throws IOException {
+        CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
+                true);
+
+        Path rawFile;
+        if (count)
+            rawFile = paths.getPatternsFile(pattern);
+        else
+            rawFile = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
+
+        try (CountsReader reader = new CountsReader(rawFile, Constants.CHARSET)) {
+            if (count)
+                while (reader.readLine() != null)
+                    completionTrieBuilder.add(reader.getSequence(),
+                            reader.getCount());
+            else
+                while (reader.readLine() != null)
+                    completionTrieBuilder.add(
+                            removeTrailingWSkp(reader.getSequence()),
+                            longFromDouble(calcGamma(pattern,
+                                    reader.getCounts())));
+        }
+
+        CompletionTrie completionTrie = completionTrieBuilder.build();
+
+        // Free memory
+        completionTrieBuilder.reset();
+        completionTrieBuilder = null;
+
+        return completionTrie;
+    }
+
+    /**
+     * @param count
+     *            If {@code true} pattern is for counts, if {@code false}
+     *            pattern is for gammas.
+     */
+    private CompletionTrie loadCompletionTrieFromTrieFile(Pattern pattern,
+                                                          boolean count) throws IOException {
+        Path trieFile;
+        if (count)
+            trieFile = paths.getCountsTrieFile(pattern);
+        else
+            trieFile = paths.getGammasTrieFile(pattern);
+
+        byte[] memory = Files.readAllBytes(trieFile);
+        return new CompletionTrie(memory, true);
     }
 }

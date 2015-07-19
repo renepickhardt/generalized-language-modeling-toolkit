@@ -31,6 +31,7 @@ import static de.glmtk.Constants.QUERIES_DIR_NAME;
 import static de.glmtk.Constants.QUERYHACHES_DIR_NAME;
 import static de.glmtk.Constants.STATUS_FILE_NAME;
 import static de.glmtk.Constants.TRAINING_FILE_NAME;
+import static de.glmtk.Constants.TRIES_DIR_NAME;
 import static de.glmtk.Constants.UNTAGGED_SUFFIX;
 
 import java.lang.reflect.Field;
@@ -97,6 +98,7 @@ public class GlmtkPaths {
     private Path absoluteChunkedDir;
     private Path continuationDir;
     private Path continuationChunkedDir;
+    private Path triesDir;
     private Path ngramTimesFile;
     private Path lengthDistributionFile;
 
@@ -129,6 +131,7 @@ public class GlmtkPaths {
         paths.continuationDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME);
         paths.continuationChunkedDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME
                 + CHUNKED_SUFFIX);
+        paths.triesDir = paths.countsDir.resolve(TRIES_DIR_NAME);
     }
 
     public GlmtkPaths newQueryCache(String name) {
@@ -217,6 +220,18 @@ public class GlmtkPaths {
         if (pattern.isAbsolute())
             return getAbsoluteDir().resolve(pattern.toString());
         return getContinuationDir().resolve(pattern.toString());
+    }
+
+    public Path getTriesDir() {
+        return triesDir;
+    }
+
+    public Path getCountsTrieFile(Pattern pattern) {
+        return getTriesDir().resolve("count-" + pattern.toString());
+    }
+
+    public Path getGammasTrieFile(Pattern pattern) {
+        return getTriesDir().resolve("gamma-" + pattern.toString());
     }
 
     // TODO: add getPatternsChunkedDir(Pattern pattern)
