@@ -42,30 +42,62 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     private Collection<String> vocab;
     private ProbabilityDislay probabilityDislay;
     private int numSortedAccesses;
+    private WeightedSumFunction weightedSumFunction;
+    private NGram[] histories;
+    private long[] lastCounts;
 
-    private static class ArgmaxObject {
-        public static final Comparator<ArgmaxObject> COMPARATOR = new Comparator<ArgmaxObject>() {
-            @Override
-            public int compare(ArgmaxObject lhs,
-                               ArgmaxObject rhs) {
-                int cmp = -Double.compare(lhs.lowerBound, rhs.lowerBound);
-                if (cmp != 0)
-                    return cmp;
-
-                return -Double.compare(rhs.upperBound, rhs.upperBound);
-            }
-        };
-
+    private class ArgmaxObject {
         public String sequence;
-        public double upperBound, lowerBound;
-        public long[] counts;
+        public double[] alphas;
         public boolean done;
+
+        public double upperBoundCache;
+        public int upperBoundCalc = -1;
+
+        public double lowerBoundCache;
+        public int lowerBoundCalc = -1;
+
+        public double upperBound() {
+            if (upperBoundCalc == numSortedAccesses)
+                return upperBoundCache;
+
+            double args[] = new double[alphas.length];
+            for (int i = 0; i != alphas.length; ++i)
+                if (alphas[i] == 0)
+                    args[i] = calcAlpha(histories[i].concat(sequence),
+                            lastCounts[i]);
+                else
+                    args[i] = alphas[i];
+            upperBoundCache = calcProbability(weightedSumFunction, args);
+            upperBoundCalc = numSortedAccesses;
+            return upperBoundCache;
+        }
+
+        public double lowerBound() {
+            if (lowerBoundCalc == numSortedAccesses)
+                return lowerBoundCache;
+            lowerBoundCache = calcProbability(weightedSumFunction, alphas);
+            lowerBoundCalc = numSortedAccesses;
+            return lowerBoundCache;
+        }
 
         @Override
         public int hashCode() {
             return sequence.hashCode();
         }
     }
+
+    public static final Comparator<ArgmaxObject> ARGMAX_OBJECT_COMPARATOR = new Comparator<ArgmaxObject>() {
+        @Override
+        public int compare(ArgmaxObject lhs,
+                           ArgmaxObject rhs) {
+            int cmp = -Double.compare(lhs.lowerBound(), rhs.lowerBound());
+            if (cmp != 0)
+                return cmp;
+
+            return -Double.compare(rhs.upperBound(), rhs.upperBound());
+        }
+    };
 
     public NoRandomAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                              CompletionTrieCache cache,
@@ -97,8 +129,8 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            String prefix,
-            int numResults) {
+                                          String prefix,
+                                          int numResults) {
         numSortedAccesses = 0;
 
         if (numResults == 0)
@@ -107,7 +139,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             throw new IllegalArgumentException("numResults must be positive.");
 
         NGram hist = new NGram(StringUtils.split(history, ' '));
-        WeightedSumFunction weightedSumFunction = estimator.calcWeightedSumFunction(hist);
+        weightedSumFunction = estimator.calcWeightedSumFunction(hist);
 
         int size = weightedSumFunction.size();
         if (size == 0)
@@ -115,11 +147,11 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             return new ArrayList<>();
 
         Pattern[] patterns = weightedSumFunction.getPatterns();
-        NGram[] histories = weightedSumFunction.getHistories();
+        histories = weightedSumFunction.getHistories();
         CompletionTrie[] tries = new CompletionTrie[size];
         @SuppressWarnings("unchecked")
         Iterator<CompletionTrieEntry>[] iters = new Iterator[size];
-        long[] lastCounts = new long[size];
+        lastCounts = new long[size];
 
         for (int i = 0; i != size; ++i) {
             Pattern pattern = patterns[i];
@@ -139,7 +171,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
         Map<String, ArgmaxObject> objects = new HashMap<>();
         PriorityQueue<ArgmaxObject> queue = new PriorityQueue<>(11,
-                ArgmaxObject.COMPARATOR);
+                ARGMAX_OBJECT_COMPARATOR);
         List<ArgmaxResult> results = new ArrayList<>(numResults);
 
         List<Integer> ptrs = new ArrayList<>(size);
@@ -181,40 +213,24 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                 objects.put(sequence, curObject);
                 curObject.sequence = sequence;
                 curObject.done = false;
-                curObject.counts = new long[size];
+                curObject.alphas = new double[size];
                 for (int i = 0; i != size; ++i)
-                    curObject.counts[i] = 0;
-            }
-            curObject.counts[ptr] = entry.getScore();
-
-            queue = new PriorityQueue<>(11, ArgmaxObject.COMPARATOR);
-            for (ArgmaxObject object : objects.values()) {
-                if (object.done)
-                    continue;
-
-                double upperBoundArgs[] = new double[size];
-                double lowerBoundArgs[] = new double[size];
-                for (int i = 0; i != size; ++i)
-                    if (object.counts[i] == 0) {
-                        upperBoundArgs[i] = calcAlpha(
-                                histories[i].concat(sequence), lastCounts[i]);
-                        lowerBoundArgs[i] = 0;
-                    } else
-                        upperBoundArgs[i] = lowerBoundArgs[i] = calcAlpha(
-                                histories[i].concat(sequence), object.counts[i]);
-                object.upperBound = calcProbability(weightedSumFunction,
-                        upperBoundArgs);
-                object.lowerBound = calcProbability(weightedSumFunction,
-                        lowerBoundArgs);
-
-                queue.add(object);
+                    curObject.alphas[i] = 0;
+            } else if (!curObject.done)
+                queue.remove(curObject);
+            if (!curObject.done) {
+                curObject.alphas[ptr] = calcAlpha(
+                        histories[ptr].concat(sequence), entry.getScore());
+                queue.add(curObject);
             }
 
             while (results.size() != numResults) {
                 ArgmaxObject object = queue.remove();
                 if (queue.isEmpty()
-                        || object.lowerBound < queue.peek().upperBound)
+                        || object.lowerBound() < queue.peek().upperBound()) {
+                    queue.add(object);
                     break;
+                }
 
                 results.add(new ArgmaxResult(object.sequence,
                         calcDisplayProbability(weightedSumFunction, histories,
@@ -227,7 +243,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             if (queue.isEmpty())
                 break;
             ArgmaxObject object = queue.remove();
-            if (object.upperBound == 0.0)
+            if (object.upperBound() == 0.0)
                 break;
             results.add(new ArgmaxResult(object.sequence,
                     calcDisplayProbability(weightedSumFunction, histories,
@@ -245,19 +261,17 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                 int size = histories.length;
                 double args[] = new double[size];
                 for (int i = 0; i != size; ++i)
-                    if (object.counts[i] == 0)
+                    if (object.alphas[i] == 0)
                         args[i] = calcAlpha(histories[i].concat(object.sequence));
                     else
-                        args[i] = calcAlpha(
-                                histories[i].concat(object.sequence),
-                                object.counts[i]);
+                        args[i] = object.alphas[i];
                 return calcProbability(weightedSumFunction, args);
             case AVERAGE:
-                return (object.lowerBound + object.upperBound) / 2;
+                return (object.lowerBound() + object.upperBound()) / 2;
             case LOWER_BOUND:
-                return object.lowerBound;
+                return object.lowerBound();
             case UPPER_BOUND:
-                return object.upperBound;
+                return object.upperBound();
             default:
                 throw new SwitchCaseNotImplementedException();
         }
