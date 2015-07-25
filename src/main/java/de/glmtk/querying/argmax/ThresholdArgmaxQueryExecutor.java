@@ -127,6 +127,9 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
             Iterator<CompletionTrieEntry> iter = iters[ptr];
             if (!iter.hasNext()) {
+                threshold -= weightedSumFunction.get(ptr).getWeight()
+                        * calcAlpha(patterns[ptr], lastCounts[ptr]);
+                lastCounts[ptr] = 0;
                 ptrIter.remove();
                 continue;
             }
