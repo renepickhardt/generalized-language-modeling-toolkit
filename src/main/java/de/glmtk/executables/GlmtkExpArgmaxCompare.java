@@ -364,7 +364,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                                 }
                                             }
 
-                                            if (outputDir != null)
+                                            if (i != 0 && outputDir != null)
                                                 writersProbabilities.get(k).append(
                                                         '\n');
 
@@ -429,8 +429,9 @@ public class GlmtkExpArgmaxCompare extends Executable {
                              boolean isTAExecutor,
                              boolean isNRAExecutor) throws IOException {
         if (resultsDir != null) {
-            Path resultsFile = resultsDir.resolve(format("%s-%s", queryFile, phase));
-            
+            Path resultsFile = resultsDir.resolve(format("%s-%s", queryFile,
+                    phase));
+
             writerKeystrokes = newBufferedWriter(Paths.get(format("%s-nkss",
                     resultsFile)), Constants.CHARSET);
             writerTimeKeystrokes = newBufferedWriter(Paths.get(format(
@@ -457,9 +458,10 @@ public class GlmtkExpArgmaxCompare extends Executable {
             }
         }
 
-        if (outputDir != null) { 
-            Path outputFile = outputDir.resolve(format("%s-%s", queryFile, phase));
-            
+        if (outputDir != null) {
+            Path outputFile = outputDir.resolve(format("%s-%s", queryFile,
+                    phase));
+
             writersProbabilities = new ArrayList<>(limit);
             for (int k = 1; k != limit + 1; ++k)
                 writersProbabilities.add(newBufferedWriter(Paths.get(format(
