@@ -97,8 +97,8 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-                                          String prefix,
-                                          int numResults) {
+            String prefix,
+            int numResults) {
         numSortedAccesses = 0;
 
         if (numResults == 0)
@@ -157,6 +157,7 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
             Iterator<CompletionTrieEntry> iter = iters[ptr];
             if (!iter.hasNext()) {
+                lastCounts[ptr] = 0;
                 ptrIter.remove();
                 continue;
             }
@@ -174,50 +175,51 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             if (vocab != null && !vocab.contains(sequence))
                 continue;
 
-            ArgmaxObject object = objects.get(sequence);
-            if (object == null) {
-                object = new ArgmaxObject();
-                objects.put(sequence, object);
-                object.sequence = sequence;
-                object.done = false;
-                object.counts = new long[size];
+            ArgmaxObject curObject = objects.get(sequence);
+            if (curObject == null) {
+                curObject = new ArgmaxObject();
+                objects.put(sequence, curObject);
+                curObject.sequence = sequence;
+                curObject.done = false;
+                curObject.counts = new long[size];
                 for (int i = 0; i != size; ++i)
-                    object.counts[i] = 0;
-            } else if (object.done)
-                continue;
-            else
-                queue.remove(object);
-            object.counts[ptr] = entry.getScore();
+                    curObject.counts[i] = 0;
+            }
+            curObject.counts[ptr] = entry.getScore();
 
-            double upperBoundArgs[] = new double[size];
-            double lowerBoundArgs[] = new double[size];
-            for (int i = 0; i != size; ++i)
-                if (object.counts[i] == 0) {
-                    upperBoundArgs[i] = calcAlpha(
-                            histories[i].concat(sequence), lastCounts[i]);
-                    lowerBoundArgs[i] = 0;
-                } else
-                    upperBoundArgs[i] = lowerBoundArgs[i] = calcAlpha(
-                            histories[i].concat(sequence), object.counts[i]);
-            object.upperBound = calcProbability(weightedSumFunction,
-                    upperBoundArgs);
-            object.lowerBound = calcProbability(weightedSumFunction,
-                    lowerBoundArgs);
+            queue = new PriorityQueue<>(11, ArgmaxObject.COMPARATOR);
+            for (ArgmaxObject object : objects.values()) {
+                if (object.done)
+                    continue;
 
-            queue.add(object);
+                double upperBoundArgs[] = new double[size];
+                double lowerBoundArgs[] = new double[size];
+                for (int i = 0; i != size; ++i)
+                    if (object.counts[i] == 0) {
+                        upperBoundArgs[i] = calcAlpha(
+                                histories[i].concat(sequence), lastCounts[i]);
+                        lowerBoundArgs[i] = 0;
+                    } else
+                        upperBoundArgs[i] = lowerBoundArgs[i] = calcAlpha(
+                                histories[i].concat(sequence), object.counts[i]);
+                object.upperBound = calcProbability(weightedSumFunction,
+                        upperBoundArgs);
+                object.lowerBound = calcProbability(weightedSumFunction,
+                        lowerBoundArgs);
 
-            while (true) {
-                object = queue.remove();
-                if (!queue.isEmpty()
-                        && object.lowerBound >= queue.peek().upperBound) {
-                    results.add(new ArgmaxResult(object.sequence,
-                            calcDisplayProbability(weightedSumFunction,
-                                    histories, object)));
-                    object.done = true;
-                } else {
-                    queue.add(object);
+                queue.add(object);
+            }
+
+            while (results.size() != numResults) {
+                ArgmaxObject object = queue.remove();
+                if (queue.isEmpty()
+                        || object.lowerBound < queue.peek().upperBound)
                     break;
-                }
+
+                results.add(new ArgmaxResult(object.sequence,
+                        calcDisplayProbability(weightedSumFunction, histories,
+                                object)));
+                object.done = true;
             }
         }
 
