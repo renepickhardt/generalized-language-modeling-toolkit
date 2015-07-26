@@ -199,23 +199,33 @@ public class GlmtkExpArgmaxCompare extends Executable {
         if (outputDir != null)
             createDirectories(outputDir);
 
+        GlmtkPaths queryCachePaths = paths;
+        CompletionTrieCache sortedAccessCache = null;
+        Cache randomAccessCache = null;
+        if (noQueryCache) {
+            sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
+                    CacheImplementation.COMPLETION_TRIE).build(queryCachePaths);
+            randomAccessCache = sortedAccessCache;
+            if (randomAccess)
+                randomAccessCache = cacheSpec.withCacheImplementation(
+                        CacheImplementation.HASH_MAP).build(queryCachePaths);
+        }
+
         for (Path queryFile : queries) {
             println();
             println(queryFile + ":");
 
-            GlmtkPaths queryCachePaths;
-            if (noQueryCache)
-                queryCachePaths = paths;
-            else
+            if (!noQueryCache) {
                 queryCachePaths = glmtk.provideArgmaxQueryCache(queryFile,
                         requiredPatterns);
-
-            CompletionTrieCache sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
-                    CacheImplementation.COMPLETION_TRIE).build(queryCachePaths);
-            Cache randomAccessCache = sortedAccessCache;
-            if (randomAccess)
-                randomAccessCache = cacheSpec.withCacheImplementation(
-                        CacheImplementation.HASH_MAP).build(queryCachePaths);
+                sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
+                        CacheImplementation.COMPLETION_TRIE).build(
+                                queryCachePaths);
+                randomAccessCache = sortedAccessCache;
+                if (randomAccess)
+                    randomAccessCache = cacheSpec.withCacheImplementation(
+                            CacheImplementation.HASH_MAP).build(queryCachePaths);
+            }
 
             Iterator<String> phaseIter = phases.iterator();
             for (String executor : executors)
@@ -286,16 +296,16 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                                     ThresholdArgmaxQueryExecutor ta = (ThresholdArgmaxQueryExecutor) argmaxQueryExecutor;
                                                     writersNumSortedAccesses.get(
                                                             k).append(
-                                                                    Integer.toString(ta.getNumSortedAccesses()));
+                                                            Integer.toString(ta.getNumSortedAccesses()));
                                                     writersNumRandomAccesses.get(
                                                             k).append(
-                                                                    Integer.toString(ta.getNumRandomAccesses()));
+                                                            Integer.toString(ta.getNumRandomAccesses()));
                                                 }
                                                 if (isNRAExecutor) {
                                                     NoRandomAccessArgmaxQueryExecutor nra = (NoRandomAccessArgmaxQueryExecutor) argmaxQueryExecutor;
                                                     writersNumSortedAccesses.get(
                                                             k).append(
-                                                                    Integer.toString(nra.getNumSortedAccesses()));
+                                                            Integer.toString(nra.getNumSortedAccesses()));
                                                 }
                                             }
 
@@ -318,7 +328,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                             if (i != 0 && outputDir != null)
                                                 writersProbabilities.get(k).append(
                                                         repeat("-", 80)).append(
-                                                        '\n');
+                                                                '\n');
 
                                             int keystrokes = -1;
                                             ArgmaxResult argmaxResult = argmaxResults.get(0);
@@ -349,16 +359,16 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                                 if (i != 0 && outputDir != null) {
                                                     writersProbabilities.get(k).append(
                                                             s).append(
-                                                            repeat("-",
-                                                                    sequence.length()
+                                                                    repeat("-",
+                                                                            sequence.length()
                                                                             - prefixLength)).append(
-                                                            " : ");
+                                                                                    " : ");
                                                     for (ArgmaxResult r : argmaxResults)
                                                         writersProbabilities.get(
                                                                 k).append(
-                                                                format("[%s-%e]",
-                                                                        r.getSequence(),
-                                                                        r.getProbability()));
+                                                                        format("[%s-%e]",
+                                                                                r.getSequence(),
+                                                                                r.getProbability()));
                                                     writersProbabilities.get(k).append(
                                                             '\n');
                                                 }
@@ -405,7 +415,7 @@ public class GlmtkExpArgmaxCompare extends Executable {
                                             if (k == 0)
                                                 writersProbabilities.get(k).append(
                                                         repeat("=", 80)).append(
-                                                        '\n');
+                                                                '\n');
                                             else
                                                 writersProbabilities.get(k).append(
                                                         '\n');
