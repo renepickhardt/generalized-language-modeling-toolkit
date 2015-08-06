@@ -36,7 +36,8 @@ import de.glmtk.util.StringUtils;
 import fi.iki.elonen.NanoHTTPD;
 
 public class GlmtkAutocompletionDemo extends Executable {
-    private static final Logger LOGGER = Logger.get(GlmtkAutocompletionDemo.class);
+    private static final Logger LOGGER = Logger.get(
+            GlmtkAutocompletionDemo.class);
 
     private class Server extends NanoHTTPD {
         public Server() {
@@ -80,10 +81,11 @@ public class GlmtkAutocompletionDemo extends Executable {
         }
 
         public Response serveDemo(IHTTPSession session) throws IOException {
-            String demoHtml = new String(
-                    Files.readAllBytes(GlmtkPaths.GLMTK_DIR.resolve(
+            String demoHtml = new String(Files.readAllBytes(
+                    GlmtkPaths.GLMTK_DIR.resolve(
                             Constants.MAIN_RESOURCES_DIR).resolve(
-                                    "autocompletion-demo.html")), Constants.CHARSET);
+                                    "autocompletion-demo.html")),
+                    Constants.CHARSET);
             Response response = newFixedLengthResponse(OK,
                     "application/xhtml+xml", demoHtml);
             return response;
@@ -113,9 +115,14 @@ public class GlmtkAutocompletionDemo extends Executable {
 
             // Build completions.
             List<ArgmaxResult> completions = null;
+            long timeBefore = System.nanoTime();
             if (history != null)
                 completions = argmaxQueryExecutor.queryArgmax(history, prefix,
                         numResults);
+            long timeAfter = System.nanoTime();
+            long timeDelta = timeAfter - timeBefore;
+
+            msg.append("  \"time\": " + Long.toString(timeDelta) + ",\n");
 
             // Output completions
             msg.append("  \"completion\": ");
@@ -134,9 +141,8 @@ public class GlmtkAutocompletionDemo extends Executable {
                     msg.append("      \"completion\": \""
                             + completion.getSequence().replace("\"", "\\\"")
                             + "\",\n");
-                    msg.append("      \"probability\": \""
-                            + format("%e", completion.getProbability())
-                            + "\"\n");
+                    msg.append("      \"probability\": \"" + format("%e",
+                            completion.getProbability()) + "\"\n");
                     msg.append("    }");
                 }
                 msg.append("\n  ]\n");
@@ -247,10 +253,10 @@ public class GlmtkAutocompletionDemo extends Executable {
 
         CacheSpecification cacheSpec = estimator.getRequiredCache(ngramSize);
         cacheSpec.withProgress();
-        cacheSpec.withWords().withCounts(Patterns.getMany("x")); // FIXME: Refacotr this
+        cacheSpec.withWords().withCounts(Patterns.getMany("x"));// FIXME: Refacotr this
 
         Set<Pattern> requiredPatterns = cacheSpec.getRequiredPatterns();
-        requiredPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this
+        requiredPatterns.add(Patterns.get("x1111x"));// FIXME: Refactor this
 
         GlmtkPaths paths = glmtk.getPaths();
 

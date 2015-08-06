@@ -60,11 +60,19 @@
         color: #DADADA;
         text-align: right;
       }
+      
+      #time {
+        position: fixed;
+        top: 2%;
+        left: 2%;
+        font-size: 32pt;
+      }
     </style>
     <script>
       //<![CDATA[
       var text = null;
       var results = null;
+      var time = null;
       var dbg_url = null;
       
       function updateCompletions() {
@@ -80,6 +88,7 @@
           
           var response = JSON.parse(xmlhttp.responseText);
           var completions = response.completion;
+          var timeDelta = parseInt(response.time);
            
           var resultsHTML = "";
           for (var completion of completions) {
@@ -89,6 +98,8 @@
             resultsHTML += "</tr>\n";
           }
           results.innerHTML = resultsHTML;
+          
+          time.innerHTML = "took " + (timeDelta / 1000 / 1000).toFixed(2) + "ms";
         };
         
         var url = "complete?history=" + history.replace(/\"/g, "\\\"") + "&prefix=" + prefix.replace(/\"/g, "\\\"") + "&numResults=5";
@@ -103,6 +114,7 @@
       window.onload = function() {
         text = document.getElementById("text");
         results = document.getElementById("results").getElementsByTagName("tbody")[0];
+        time = document.getElementById("time");
         dbg_url = document.getElementById("dbg_url");
 
         text.onclick = function() {
@@ -136,6 +148,7 @@
       <tbody>
       </tbody>
     </table>
+    <div id="time"></div>
     <!--
     <pre id="dbg_url">dbg_url</pre>
     -->
