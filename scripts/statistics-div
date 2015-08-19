@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+from sys import argv, exit
+
+if len(argv) < 3:
+    print(argv[0] + " <pattern> <files...>")
+    exit()
+
+pattern = argv[1].split(':')
+if len(pattern) != 2:
+    print("<pattern> must be <search>:<replace>")
+    exit()
+nom = pattern[0]
+den = pattern[1]
+
+files = argv[2:]
+
+for nom_file in files:
+    if not nom in nom_file:
+        print("nominator term <" + nom + "> does not occur in filename: " + nom_file)
+        exit()
+    den_file = nom_file.replace(nom, den)
+    out_file = "div-" + nom_file.replace(nom, nom + ":" + den)
+    print("dividing " + nom_file + " by " + den_file + " to " + out_file)
+
+    with open(nom_file) as nom_fh:
+        num_contents = nom_fh.read()
+    with open(den_file) as den_fh:
+        den_contents = den_fh.read()
+
+    num_values = list(map(float, num_contents.split()))
+    den_values = list(map(float, den_contents.split()))
+
+    if len(num_values) != len(den_values):
+        print("files do not have same number of values")
+        exit()
+
+    with open(out_file, 'w') as out_fh:
+        for term in zip(num_values, den_values):
+            result = term[0] / term[1]
+            out_fh.write(str(result))
+            out_fh.write('\n')

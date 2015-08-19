@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+import matplotlib.cbook
+from sys import argv
+
+if len(argv) == 1:
+    print("No files given.")
+    exit()
+
+for arg in argv[1:]:
+    print()
+    print("% " + arg)
+    with open(arg) as f:
+        content = f.read()
+        values = list(map(float, content.split()))
+
+        boxplot_stats = matplotlib.cbook.boxplot_stats(values)[0]
+
+        def s(numpy_number):
+            return "%.2f" % numpy_number
+
+        a = 5
+        print("\\addplot+[")
+        print("  boxplot prepared = {");
+        print("    lower whisker = " + s(boxplot_stats['whislo']) + ",")
+        print("    lower quartile = " + s(boxplot_stats['q1']) + ",")
+        print("    median = " + s(boxplot_stats['med']) + ",")
+        print("    upper quartile = " + s(boxplot_stats['q3']) + ",")
+        print("    upper whisker = " + s(boxplot_stats['whishi']) + ",")
+        print("    average = " + s(boxplot_stats['mean']) + ",")
+        print("  },")
+        print("] table [row sep = \\\\, y index = 0] {")
+        #print("  data\\\\ " + "\\\\ ".join(map(s, boxplot_stats['fliers'])) + "\\\\")
+        print("  data\\\\")
+        print("};")

@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+import math
+import numpy
+import matplotlib.pyplot as plt
+import matplotlib.cbook as cbook
+from sys import argv, exit
+
+if len(argv) < 3:
+    print(argv[0] + " <file> <num-bins>")
+    exit()
+
+
+def remove_outliers(values, percent):
+    num_outliers = int(len(values) * percent / 100)
+    print("Removing " + str(percent) + "% of outliers, in total removing " + str(num_outliers) + " outliers.")
+    values.sort()
+    bound = int(num_outliers/2)
+    #return values[:-bound]
+    return values[bound:-bound]
+
+
+with open(argv[1]) as f:
+    contents = f.read();
+    values = list(map(float, contents.split()))
+
+    if len(argv) >= 4:
+        per_outliers = float(argv[3])
+        if len(argv) == 4:
+            values = remove_outliers(values, per_outliers)
+
+    max_value = max(values)
+    min_value = min(values)
+
+    stats = cbook.boxplot_stats(values)[0]
+
+    mean = stats['mean']
+    std = numpy.std(values)
+
+    median = stats['med']
+    q1 = stats['q1']
+    q3 = stats['q3']
+    whislo = stats['whislo']
+    whishi = stats['whishi']
+
+    if len(argv) > 4:
+        values = remove_outliers(values, per_outliers)
+
+    print("max:", max_value)
+    print("min:", min_value)
+    print()
+    print("mean:", mean)
+    print("standard deviation:", std)
+    print()
+    print("lower whisker:", whislo)
+    print("lower quartile:", q1)
+    print("median:", median)
+    print("upper quartile:", q3)
+    print("upper whisker:", whishi)
+
+    num_bins = int(argv[2])
+    logspace_small = numpy.logspace(math.log10(0.1), math.log10(1), num=11)
+    print(logspace_small)
+    print(plt.hist(values, bins=logspace_small, color='r')[0])
+    #plt.gca().set_xscale("log")
+    #plt.show()
+    logspace_big = numpy.logspace(math.log10(1), math.log10(100), num=21)
+    logspace = numpy.array(list(logspace_small) + list(logspace_big[1:]))
+    print(logspace_big)
+    print(plt.hist(values, bins=logspace_big, color='b')[0])
+    plt.gca().set_xscale("log")
+    plt.show()

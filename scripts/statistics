@@ -1,0 +1,150 @@
+#!/usr/bin/env python
+
+from math import isinf, sqrt
+from sys import argv, exit
+
+if len(argv) == 1:
+    print("No files given.")
+    exit()
+
+
+class Result:
+    name_just = len("File")
+    num_just = len("N")
+    mean_just = len("μ")
+    deviation_just = len("σ")
+    variance_just = len("σ²")
+    coefficient_just = len("σ/μ")
+    min_just = len("min")
+    max_just = len("max")
+
+    def __init__(self, name, num, mean, variance, min_value, max_value):
+        self.name = name
+        self.num = num
+        self.mean = mean
+        self.deviation = sqrt(variance)
+        self.variance = variance
+        if mean != 0:
+            self.coefficient = self.deviation / mean
+        else:
+            self.coefficient = float("inf")
+        self.min_value = min_value
+        self.max_value = max_value
+
+        Result.name_just = max(Result.name_just, len(self.name_str()))
+        Result.num_just = max(Result.num_just, len(self.num_str()))
+        Result.mean_just = max(Result.mean_just, len(self.mean_str()))
+        Result.deviation_just = max(Result.deviation_just, len(self.deviation_str()))
+        Result.variance_just = max(Result.variance_just, len(self.variance_str()))
+        Result.coefficient_just = max(Result.coefficient_just, len(self.coefficient_str()))
+        Result.min_just = max(Result.min_just, len(self.min_str()))
+        Result.max_just = max(Result.max_just, len(self.max_str()))
+
+    @classmethod
+    def print_header(cls):
+        print("File".center(cls.name_just) + '  ' + \
+               "N".center(cls.num_just) + '  ' + \
+               "μ".center(cls.mean_just) + '  ' + \
+               "σ".center(cls.deviation_just) + '  ' + \
+               "σ²".center(cls.variance_just) + '  ' + \
+               "σ/μ".center(cls.coefficient_just) + '  ' + \
+               "min".center(cls.min_just) + '  ' + \
+               "max".center(cls.max_just), sep='')
+
+    @classmethod
+    def print_sep(cls, sep):
+        print(sep * (cls.name_just + cls.num_just + cls.mean_just + cls.deviation_just + cls.variance_just + cls.coefficient_just + cls.min_just + cls.max_just + 14))
+
+    def __str__(self):
+        return self.name_str().ljust(Result.name_just) + '  ' + \
+               self.num_str().rjust(Result.num_just) + '  ' + \
+               self.mean_str().rjust(Result.mean_just) + '  ' + \
+               self.deviation_str().rjust(Result.deviation_just) + '  ' + \
+               self.variance_str().rjust(Result.variance_just) + '  ' + \
+               self.coefficient_str().rjust(Result.coefficient_just) + '  ' + \
+               self.min_str().rjust(Result.min_just) + '  ' + \
+               self.max_str().rjust(Result.max_just)
+
+    def name_str(self):
+        return self.name
+
+    def num_str(self):
+        return str(self.num)
+
+    def mean_str(self):
+        return "{:.2f}".format(self.mean)
+
+    def deviation_str(self):
+        return "{:.2f}".format(self.deviation)
+
+    def variance_str(self):
+        return "{:.2f}".format(self.variance)
+
+    def coefficient_str(self):
+        if not isinf(self.coefficient):
+            return "{:.2f}".format(self.coefficient)
+        else:
+            return "∞"
+
+    def min_str(self):
+        return "{:.2f}".format(self.min_value)
+
+    def max_str(self):
+        return "{:.2f}".format(self.max_value)
+
+
+results = []
+
+per_outlier = None
+files = argv[1:]
+if argv[1][0] == '-':
+    per_outlier = float(argv[1][1:])
+    files = argv[2:]
+
+def remove_outliers(values, percent):
+    num_outliers = int(len(values) * percent / 100)
+    values.sort()
+    bound = int(num_outliers/2)
+    return values[bound:-bound]
+
+for arg in files:
+    with open(arg) as f:
+        contents = f.read()
+    values = list(map(float, contents.split()))
+
+    num = 0
+    mean = 0
+    variance = 0
+    min_value = None
+    max_value = None
+
+    if per_outlier:
+        values = remove_outliers(values, per_outlier)
+
+    for value in values:
+        num += 1
+        mean += value
+        variance += value * value
+        if min_value:
+            min_value = min(value, min_value)
+        else:
+            min_value = value
+        if max_value:
+            max_value = max(value, max_value)
+        else:
+            max_value = value
+
+    mean /= num
+    variance /= num
+    variance -= mean * mean
+
+    results.append(Result(arg, num, mean, variance, min_value, max_value))
+
+Result.print_header()
+Result.print_sep('=')
+i = 0
+for result in results:
+    if i != 0 and i % 5 == 0:
+        Result.print_sep('-')
+    print(result)
+    i += 1
