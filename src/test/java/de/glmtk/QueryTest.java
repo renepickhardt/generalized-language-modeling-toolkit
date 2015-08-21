@@ -97,7 +97,7 @@ public class QueryTest extends TestCorporaTest {
         Path workingDir = Paths.get("/home/lukas/langmodels/data/oanc.expsetup/training-5.glmtk");
         Glmtk glmtk = new Glmtk(config, corpus, workingDir);
 
-        Path queryFile = Paths.get("/home/lukas/langmodels/data/oanc.expsetup/ngram-2-100");
+        Path queryFile = Paths.get("/home/lukas/langmodels/data/oanc.expsetup/ngram-2-100-ac");
 
         int neededOrder = 2;
 
@@ -110,22 +110,31 @@ public class QueryTest extends TestCorporaTest {
         requiredPatterns.add(Patterns.get("x1111x"));
 
         GlmtkPaths paths = glmtk.getPaths();
-        GlmtkPaths cachePaths = paths;
-        //        GlmtkPaths cachePaths = glmtk.provideArgmaxQueryCache(queryFile,
-        //                requiredPatterns);
+        //        GlmtkPaths cachePaths = paths;
+        GlmtkPaths cachePaths = glmtk.provideArgmaxQueryCache(queryFile,
+                requiredPatterns);
 
         CompletionTrieCache sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
                 CacheImplementation.COMPLETION_TRIE).build(cachePaths);
+
+        String s1 = "for";
+        String s2 = "mid";
+        int k = 5;
 
         estimator.setCache(sortedAccessCache);
         ThresholdArgmaxQueryExecutor thresholdArgmaxQueryExecutor = new ThresholdArgmaxQueryExecutor(
                 estimator, sortedAccessCache, sortedAccessCache);
         System.out.println("\nTA");
-        System.out.println(thresholdArgmaxQueryExecutor.queryArgmax("in", 1));
+        long t1 = System.nanoTime();
+        System.out.println(thresholdArgmaxQueryExecutor.queryArgmax(s1, k));
+        long t2 = System.nanoTime();
+        System.out.println((t2 - t1) + "ns");
         System.out.println(thresholdArgmaxQueryExecutor.getNumSortedAccesses()
                 + " " + thresholdArgmaxQueryExecutor.getNumRandomAccesses());
-        System.out.println(thresholdArgmaxQueryExecutor.queryArgmax(
-                "improbably", 1));
+        long t3 = System.nanoTime();
+        System.out.println(thresholdArgmaxQueryExecutor.queryArgmax(s2, k));
+        long t4 = System.nanoTime();
+        System.out.println((t4 - t3) + "ns");
         System.out.println(thresholdArgmaxQueryExecutor.getNumSortedAccesses()
                 + " " + thresholdArgmaxQueryExecutor.getNumSortedAccesses());
 
@@ -133,18 +142,27 @@ public class QueryTest extends TestCorporaTest {
                 estimator, sortedAccessCache);
         noRandomAccessArgmaxQueryExecutor.setProbbabilityDislay(ProbabilityDislay.AVERAGE);
         System.out.println("\nNRA");
-        System.out.println(noRandomAccessArgmaxQueryExecutor.queryArgmax("in",
-                1));
+        long t5 = System.nanoTime();
+        System.out.println(noRandomAccessArgmaxQueryExecutor.queryArgmax(s1, k));
+        long t6 = System.nanoTime();
+        System.out.println((t6 - t5) + "ns");
         System.out.println(noRandomAccessArgmaxQueryExecutor.getNumSortedAccesses());
-        System.out.println(noRandomAccessArgmaxQueryExecutor.queryArgmax(
-                "improbably", 1));
+        long t7 = System.nanoTime();
+        System.out.println(noRandomAccessArgmaxQueryExecutor.queryArgmax(s2, k));
+        long t8 = System.nanoTime();
+        System.out.println((t8 - t7) + "ns");
         System.out.println(noRandomAccessArgmaxQueryExecutor.getNumSortedAccesses());
 
         TrivialArgmaxQueryExecutor trivialArgmaxQueryExecutor = new TrivialArgmaxQueryExecutor(
                 estimator, sortedAccessCache);
         System.out.println("\nSMPL");
-        System.out.println(trivialArgmaxQueryExecutor.queryArgmax("in", 1));
-        System.out.println(trivialArgmaxQueryExecutor.queryArgmax("improbably",
-                1));
+        long t9 = System.nanoTime();
+        System.out.println(trivialArgmaxQueryExecutor.queryArgmax(s1, k));
+        long t10 = System.nanoTime();
+        System.out.println((t10 - t9) + "ns");
+        long t11 = System.nanoTime();
+        System.out.println(trivialArgmaxQueryExecutor.queryArgmax(s2, k));
+        long t12 = System.nanoTime();
+        System.out.println((t12 - t11) + "ns");
     }
 }
