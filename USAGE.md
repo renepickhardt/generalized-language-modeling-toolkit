@@ -36,7 +36,7 @@ The `-n` flag specifies the lenght of the longest n-gram the program will count.
 Splits a given text file into training and testing datasets as described
 in the "Experimental Setup" of Lukas' thesis.
 
-    glmtk-exp-setup oanc.txt -p 0.8 -b 5 -n 5 -N 40000
+    glmtk-exp-setup oanc.txt -p 0.8 -b 5 -n 5 -N 40000 -U 10000
 
 The first argument is the path to the corpus that should be split into datasets.
 In the example this would be `oanc.txt`. This should be a plain text file
@@ -83,6 +83,14 @@ smallest training set. The actual testings sequences are in files named
 `ngram-1`, `ngram-2`, `ngram-3`, ... which contain the corresponding n-grams.
 *Note that in the VM there often times exist files like `ngram-3-5k`, these are
 hand created the first 5k sequences from the `ngram-3` file.*
+
+The `-U` argument gives the number of testing sequences containing atleast one
+unkown words per n-gram length that should be generating. Testing sequences
+are randomly selected from the heldout data in a way that the last word is
+always in the vocabulary of all training corpora but atleast one of the
+preceedings words is not. The file `heldout.unk` is the heldout data filtered
+fot sentences with atleast one unkown word. The actual testing sequences are
+in files named `ngram.unk-1`, `ngram.unk-2`, `ngram.unk-3`, ...
 
 ## `glmtk-exp-argmaxcompare`
 
