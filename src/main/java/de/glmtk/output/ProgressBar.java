@@ -77,7 +77,7 @@ public class ProgressBar {
                 "Given phase was not specified in constructor.");
 
         curPhase = phase;
-        curIndex = phases.indexOf(phase) + 1; // indexOf() starts at 0.
+        curIndex = phases.indexOf(phase) + 1;// indexOf() starts at 0.
         current = 0;
         this.total = total;
         lastDisplay = 0;
@@ -101,7 +101,7 @@ public class ProgressBar {
         this.current = current;
         if (current > total)
             throw new IllegalStateException(
-                    "current must not be large than total.");
+                    "current must not be larger than total.");
         if (total == DISABLE_PERCENT_DISPLAY || current == total)
             forceDisplay();
         else
@@ -144,8 +144,8 @@ public class ProgressBar {
         int numBlocks = (int) ceil(percent * widthForBlocks);
 
         eraseLine();
-        printlnVolatile(beforeBlocks + repeat("#", numBlocks)
-                + repeat("-", widthForBlocks - numBlocks) + afterBlocks);
+        printlnVolatile(beforeBlocks + repeat("#", numBlocks) + repeat("-",
+                widthForBlocks - numBlocks) + afterBlocks);
     }
 
     private static int numDigits(long number) {
