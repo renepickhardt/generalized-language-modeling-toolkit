@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -41,13 +41,14 @@ import java.util.List;
  */
 public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     public static final Pattern CNT_PATTERN = Patterns.get(CNT);
+    public static final Pattern SKP_PATTERN = Patterns.get(SKP);
     public static final Pattern WSKP_PATTERN = Patterns.get(WSKP);
 
     private List<PatternElem> elems;
     private String asString;
 
-    /* package */Pattern(List<PatternElem> elems,
-                         String asString) {
+    /* package */ Pattern(List<PatternElem> elems,
+                          String asString) {
         this.elems = elems;
         this.asString = asString;
     }
@@ -72,8 +73,8 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     @Override
     public int compareTo(Pattern other) {
-        int cmp = Integer.compare(numElems(CSKIP_ELEMS),
-                other.numElems(CSKIP_ELEMS));
+        int cmp = Integer.compare(numElems(CSKIP_ELEMS), other.numElems(
+                CSKIP_ELEMS));
         if (cmp != 0)
             return cmp;
         cmp = Integer.compare(asString.length(), other.asString.length());
@@ -148,7 +149,8 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     public boolean containsAny(Collection<PatternElem> elems) {
         if (elems.isEmpty())
-            throw new IllegalArgumentException("Argument was empty collection.");
+            throw new IllegalArgumentException(
+                    "Argument was empty collection.");
         for (PatternElem elem : elems)
             if (this.elems.contains(elem))
                 return true;
@@ -164,7 +166,8 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     public boolean containsOnly(Collection<PatternElem> elems) {
         if (elems.isEmpty())
-            throw new IllegalArgumentException("Argument was empty collection.");
+            throw new IllegalArgumentException(
+                    "Argument was empty collection.");
         outerLoop:
         for (PatternElem e : this.elems) {
             for (PatternElem elem : elems)
@@ -178,7 +181,8 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     // TODO: untested
     public boolean containsAll(Collection<PatternElem> elems) {
         if (elems.isEmpty())
-            throw new IllegalArgumentException("Argument was empty collection.");
+            throw new IllegalArgumentException(
+                    "Argument was empty collection.");
         outerLoop:
         for (PatternElem e : elems) {
             for (PatternElem elem : this.elems)
@@ -207,7 +211,8 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     public int numElems(Collection<PatternElem> elems) {
         if (elems.isEmpty())
-            throw new IllegalArgumentException("Argument was empty collection.");
+            throw new IllegalArgumentException(
+                    "Argument was empty collection.");
         int num = 0;
         outerLoop:
         for (PatternElem elem : this.elems)

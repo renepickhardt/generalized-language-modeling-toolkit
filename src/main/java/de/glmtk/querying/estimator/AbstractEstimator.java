@@ -1,26 +1,31 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
 package de.glmtk.querying.estimator;
 
+import static de.glmtk.common.Pattern.SKP_PATTERN;
+import static de.glmtk.common.Pattern.WSKP_PATTERN;
+import static de.glmtk.common.PatternElem.CNT;
+import static de.glmtk.common.PatternElem.SKP;
 import static de.glmtk.common.PatternElem.SKP_WORD;
+import static de.glmtk.common.PatternElem.WSKP;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,7 +37,6 @@ import de.glmtk.cache.Cache;
 import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
-import de.glmtk.common.PatternElem;
 import de.glmtk.common.Patterns;
 import de.glmtk.common.ProbMode;
 import de.glmtk.logging.Logger;
@@ -152,21 +156,25 @@ public abstract class AbstractEstimator implements Estimator {
 
         Set<Pattern> alphaAbsPatterns = new HashSet<>();
         for (int i = 1; i != modelSize + 1; ++i)
-            alphaAbsPatterns.addAll(Patterns.getPermutations(i,
-                    PatternElem.CNT, PatternElem.SKP));
+            alphaAbsPatterns.addAll(Patterns.getPermutations(i, CNT, SKP));
 
         Set<Pattern> alphaContPatterns = new HashSet<>();
-        alphaContPatterns.add(Pattern.WSKP_PATTERN);
+        alphaContPatterns.add(WSKP_PATTERN);
         for (Pattern pattern : alphaAbsPatterns)
-            alphaContPatterns.add(Pattern.WSKP_PATTERN.concat(pattern.convertSkpToWskp()));
+            alphaContPatterns.add(WSKP_PATTERN.concat(
+                    pattern.convertSkpToWskp()));
 
         Set<Pattern> gammaPatterns = new HashSet<>();
         Set<Pattern> gammaCountPatterns = new HashSet<>();
         for (Pattern pattern : alphaAbsPatterns)
             if (pattern.size() != modelSize) {
                 gammaPatterns.add(pattern);
-                gammaCountPatterns.add(pattern.concat(PatternElem.CNT));
-                gammaCountPatterns.add(pattern.concat(PatternElem.WSKP));
+                //                gammaCountPatterns.add(pattern.concat(CNT));
+                // highest order gamma
+                gammaCountPatterns.add(pattern.concat(WSKP));
+                // lower order gammas
+                gammaCountPatterns.add(SKP_PATTERN.concat(pattern).concat(
+                        WSKP));
             }
 
         requiredCache.withCounts(alphaAbsPatterns);

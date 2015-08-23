@@ -21,6 +21,7 @@
 package de.glmtk.querying.estimator.fast;
 
 import static de.glmtk.common.NGram.WSKP_NGRAM;
+
 import de.glmtk.common.NGram;
 
 public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
@@ -31,7 +32,8 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
         NGram fullHistory = getFullHistory(sequence, history);
         long denominator = cache.getCount(fullHistory);
         if (denominator == 0.0)
-            return probability(sequence, history.backoff(backoffMode), recDepth);
+            return probability(sequence, history.backoff(backoffMode),
+                    recDepth);
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getCount(fullSequence);
@@ -65,13 +67,15 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
                                           NGram history,
                                           int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
-        long denominator = cache.getCount(WSKP_NGRAM.concat(fullHistory.convertSkpToWskp()));
+        long denominator = cache.getCount(WSKP_NGRAM.concat(
+                fullHistory.convertSkpToWskp()));
         if (denominator == 0.0)
             return probabilityLower(sequence, history.backoff(backoffMode),
                     recDepth);
 
         NGram fullSequence = getFullSequence(sequence, history);
-        long numerator = cache.getCount(WSKP_NGRAM.concat(fullSequence.convertSkpToWskp()));
+        long numerator = cache.getCount(WSKP_NGRAM.concat(
+                fullSequence.convertSkpToWskp()));
         if (history.isEmptyOrOnlySkips())
             return (double) numerator / denominator;
 

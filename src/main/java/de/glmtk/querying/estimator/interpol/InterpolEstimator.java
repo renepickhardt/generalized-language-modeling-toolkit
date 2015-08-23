@@ -20,7 +20,10 @@
 
 package de.glmtk.querying.estimator.interpol;
 
+import static de.glmtk.common.NGram.SKP_NGRAM;
 import static de.glmtk.common.PatternElem.WSKP_WORD;
+import static java.lang.String.format;
+
 import de.glmtk.cache.Cache;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
@@ -29,6 +32,8 @@ import de.glmtk.querying.estimator.AbstractEstimator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
+import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
+import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 
 public class InterpolEstimator extends AbstractEstimator {
     protected DiscountEstimator alpha;
@@ -93,10 +98,12 @@ public class InterpolEstimator extends AbstractEstimator {
                     recDepth);
         } else if (!alpha.isDefined(sequence, history, recDepth)) {
             logTrace(recDepth, "Alpha undefined, backing off.");
-            return probability(sequence, history.backoff(backoffMode), recDepth);
+            return probability(sequence, history.backoff(backoffMode),
+                    recDepth);
         }
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
+
         double alphaVal = alpha.probability(sequence, history, recDepth);
         double betaVal = beta.probability(sequence, backoffHistory, recDepth);
         double gammaVal = gamma(sequence, history, recDepth);
@@ -129,18 +136,28 @@ public class InterpolEstimator extends AbstractEstimator {
             return 0;
         }
 
-        NGram historyPlusWskp = history.concat(WSKP_WORD);
+        NGram gammaHistory;
+        if (alpha.getFractionEstimator() instanceof MaximumLikelihoodEstimator)
+            gammaHistory = history.concat(WSKP_WORD);
+        else if (alpha.getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator)
+            gammaHistory = SKP_NGRAM.concat(history.concat(WSKP_WORD));
+        else
+            throw new IllegalStateException(format(
+                    "Fraction Estimator '%s' not implented in Interpolation Estimator.",
+                    alpha.getFractionEstimator().getClass()));
+
+        logTrace(recDepth, "gammaHistory = %s", gammaHistory);
 
         if (alpha instanceof ModKneserNeyDiscountEstimator)
             return cache.getGamma(history) / denominator;
 
-        double discout = alpha.discount(sequence, history, recDepth);
-        double n_1p = cache.getCount(historyPlusWskp);
+        double discount = alpha.discount(sequence, history, recDepth);
+        double n_1p = cache.getCount(gammaHistory);
 
         logTrace(recDepth, "denominator = %f", denominator);
-        logTrace(recDepth, "discount = %f", discout);
+        logTrace(recDepth, "discount = %f", discount);
         logTrace(recDepth, "n_1p = %f", n_1p);
 
-        return discout * n_1p / denominator;
+        return discount * n_1p / denominator;
     }
 }

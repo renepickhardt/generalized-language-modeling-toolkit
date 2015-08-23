@@ -303,8 +303,9 @@ public class NGram {
             if (backoffMode == SKP_AND_DEL || backoffMode == DEL
                     || (backoffMode == DEL_FRONT && i == 0))
                 result.add(remove(i));
-            if ((backoffMode == SKP || backoffMode == SKP_AND_DEL || (backoffMode == DEL_FRONT && i != 0))
-                    && !tokens.get(i).equals(SKP_WORD))
+            if ((backoffMode == SKP || backoffMode == SKP_AND_DEL
+                    || (backoffMode == DEL_FRONT && i != 0)) && !tokens.get(
+                            i).equals(SKP_WORD))
                 result.add(set(i, SKP_WORD));
         }
         return result;
@@ -337,7 +338,9 @@ public class NGram {
                                  int order) {
         List<PatternElem> elems = new ArrayList<>(order);
         for (int i = 0; i != order; ++i) {
-            elems.add((intPattern & 1) == 1 ? PatternElem.CNT : PatternElem.SKP);
+            elems.add((intPattern & 1) == 1
+                    ? PatternElem.CNT
+                    : PatternElem.SKP);
             intPattern >>= 1;
         }
         Pattern pattern = Patterns.get(elems);
