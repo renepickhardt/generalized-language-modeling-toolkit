@@ -91,7 +91,8 @@ public class CompletionTrieCache extends AbstractCache {
         CompletionTrie completionTrie = counts.get(ngram.getPattern());
         if (completionTrie == null)
             throw new IllegalStateException(String.format(
-                    "Counts with pattern '%s' not loaded.", ngram.getPattern()));
+                    "Counts with pattern '%s' not loaded.",
+                    ngram.getPattern()));
 
         Long result = completionTrie.get(ngram.toString());
         return result == null ? 0L : result;
@@ -159,7 +160,8 @@ public class CompletionTrieCache extends AbstractCache {
         CompletionTrie completionTrie = gammas.get(ngram.getPattern());
         if (completionTrie == null)
             throw new IllegalStateException(String.format(
-                    "Gammas with pattern '%s' not loaded.", ngram.getPattern()));
+                    "Gammas with pattern '%s' not loaded.",
+                    ngram.getPattern()));
 
         Long result = completionTrie.get(ngram.toString());
         return result == null ? 0.0 : doubleFromLong(result);
@@ -240,17 +242,18 @@ public class CompletionTrieCache extends AbstractCache {
         else
             rawFile = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
 
-        try (CountsReader reader = new CountsReader(rawFile, Constants.CHARSET)) {
+        try (CountsReader reader = new CountsReader(rawFile,
+                Constants.CHARSET)) {
             if (count)
                 while (reader.readLine() != null)
                     completionTrieBuilder.add(reader.getSequence(),
                             reader.getCount());
             else
-                while (reader.readLine() != null)
-                    completionTrieBuilder.add(
-                            removeTrailingWSkp(reader.getSequence()),
-                            longFromDouble(calcGamma(pattern,
-                                    reader.getCounts())));
+                while (reader.readLine() != null) {
+                    String sequence = removeTrailingWSkp(reader.getSequence());
+                    double gamma = calcGamma(pattern, reader.getCounts());
+                    completionTrieBuilder.add(sequence, longFromDouble(gamma));
+                }
         }
 
         CompletionTrie completionTrie = completionTrieBuilder.build();
