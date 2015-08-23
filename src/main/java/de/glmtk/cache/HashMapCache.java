@@ -45,7 +45,8 @@ public class HashMapCache extends AbstractCache {
             counts.put(pattern, countsForPattern);
 
             Path file = paths.getPatternsFile(pattern);
-            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
+            try (CountsReader reader = new CountsReader(file,
+                    Constants.CHARSET)) {
                 while (reader.readLine() != null)
                     countsForPattern.put(reader.getSequence(),
                             reader.getCount());
@@ -86,11 +87,13 @@ public class HashMapCache extends AbstractCache {
             gammas.put(pattern, gammasForPattern);
 
             Path file = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
-            try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
-                while (reader.readLine() != null)
-                    gammasForPattern.put(
-                            removeTrailingWSkp(reader.getSequence()),
-                            calcGamma(pattern, reader.getCounts()));
+            try (CountsReader reader = new CountsReader(file,
+                    Constants.CHARSET)) {
+                while (reader.readLine() != null) {
+                    String sequence = removeTrailingWSkp(reader.getSequence());
+                    double gamma = calcGamma(pattern, reader.getCounts());
+                    gammasForPattern.put(sequence, gamma);
+                }
             }
 
             if (progressBar != null)

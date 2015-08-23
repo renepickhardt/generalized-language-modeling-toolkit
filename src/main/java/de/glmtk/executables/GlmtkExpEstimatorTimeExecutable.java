@@ -41,7 +41,8 @@ import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExpEstimatorTimeExecutable extends Executable {
-    private static final Logger LOGGER = Logger.get(GlmtkExpEstimatorTimeExecutable.class);
+    private static final Logger LOGGER = Logger.get(
+            GlmtkExpEstimatorTimeExecutable.class);
 
     public static void main(String[] args) {
         new GlmtkExpEstimatorTimeExecutable().run(args);
@@ -77,7 +78,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         optionQuery = new PathsOption("q", "query",
                 "Query the given files. Can be specified multiple times.").requireMustExist().requireFiles();
         optionRuns = new IntegerOption("N", "num-runs",
-                "Number of times to run. Default: 1.").defaultValue(1).requirePositive().requireNotZero();
+                "Number of times to run. Default: 1.").defaultValue(
+                        1).requirePositive().requireNotZero();
         optionCacheFile = new PathOption("c", "cache-file",
                 "File to generate query cache from for all query files.").requireMustExist().requireFile();
         optionResultsDir = new PathOption("d", "results-dir",
@@ -139,10 +141,10 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
         cacheSpec.withProgress();
         for (Estimator estimator : estimators)
             cacheSpec.addAll(estimator.getRequiredCache(neededOrder));
-        cacheSpec.withCounts(Patterns.getMany("x")); // FIXME: Refactor this!
+        cacheSpec.withCounts(Patterns.getMany("x"));// FIXME: Refactor this!
 
         Set<Pattern> requiredPatterns = cacheSpec.getRequiredPatterns();
-        requiredPatterns.add(Patterns.get("x1111x")); // FIXME: Refactor this!
+        requiredPatterns.add(Patterns.get("x1111x"));// FIXME: Refactor this!
 
         Cache cache = null;
         if (cacheFile != null) {
@@ -177,6 +179,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 int numProbs = 0;
 
                 BufferedWriter writerTime = null;
+                BufferedWriter writerProbabilties = null;
                 BufferedWriter writerTimeWeights = null;
                 BufferedWriter writerTimeRemaining = null;
                 BufferedWriter writerNumWeights = null;
@@ -186,15 +189,18 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                 + estimator);
                         writerTime = newBufferedWriter(resultsFile,
                                 Constants.CHARSET);
+                        writerProbabilties = newBufferedWriter(Paths.get(
+                                resultsFile + "-probabilities"),
+                                Constants.CHARSET);
                         if (weightedSumEstimator) {
-                            writerTimeWeights = newBufferedWriter(
-                                    Paths.get(resultsFile + "-timeWeights"),
+                            writerTimeWeights = newBufferedWriter(Paths.get(
+                                    resultsFile + "-timeWeights"),
                                     Constants.CHARSET);
-                            writerTimeRemaining = newBufferedWriter(
-                                    Paths.get(resultsFile + "-timeRemaining"),
+                            writerTimeRemaining = newBufferedWriter(Paths.get(
+                                    resultsFile + "-timeRemaining"),
                                     Constants.CHARSET);
-                            writerNumWeights = newBufferedWriter(
-                                    Paths.get(resultsFile + "-numWeights"),
+                            writerNumWeights = newBufferedWriter(Paths.get(
+                                    resultsFile + "-numWeights"),
                                     Constants.CHARSET);
                         }
                     }
@@ -211,12 +217,13 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                             while ((line = reader.readLine()) != null) {
                                 List<String> words = StringUtils.split(line,
                                         ' ');
-                                NGram sequence = new NGram(
-                                        words.get(words.size() - 1));
+                                NGram sequence = new NGram(words.get(
+                                        words.size() - 1));
                                 NGram history = new NGram(words.subList(0,
                                         words.size() - 1));
 
-                                long timeDelta = 0, timeDeltaWeights = 0, timeDeltaRemaining = 0;
+                                long timeDelta = 0, timeDeltaWeights = 0,
+                                        timeDeltaRemaining = 0;
                                 int numWeights = 0;
                                 double prob;
 
@@ -229,7 +236,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                     timeDelta = timeAfter - timeBefore;
                                 } else {
                                     long timeBeforeWeights = System.nanoTime();
-                                    WeightedSumFunction weightedSumFunction = ((WeightedSumEstimator) estimator).calcWeightedSumFunction(history);
+                                    WeightedSumFunction weightedSumFunction = ((WeightedSumEstimator) estimator).calcWeightedSumFunction(
+                                            history);
                                     long timeAfterWeights = System.nanoTime();
                                     numWeights = weightedSumFunction.size();
 
@@ -252,7 +260,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                 if (i != 0) {
                                     // i == 0 is warmup run
 
-                                    timeSum = timeSum.add(BigInteger.valueOf(timeDelta));
+                                    timeSum = timeSum.add(BigInteger.valueOf(
+                                            timeDelta));
                                     ++numProbs;
 
                                     if (resultsDir != null) {
@@ -260,17 +269,28 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                             firstLine = false;
                                         else {
                                             writerTime.append('\t');
+                                            writerProbabilties.append('\t');
                                             if (weightedSumEstimator) {
                                                 writerTimeWeights.append('\t');
-                                                writerTimeRemaining.append('\t');
+                                                writerTimeRemaining.append(
+                                                        '\t');
                                                 writerNumWeights.append('\t');
                                             }
                                         }
-                                        writerTime.append(Long.toString(timeDelta));
+                                        writerTime.append(Long.toString(
+                                                timeDelta));
+                                        writerProbabilties.append(
+                                                Double.toString(prob));
                                         if (weightedSumEstimator) {
-                                            writerTimeWeights.append(Long.toString(timeDeltaWeights));
-                                            writerTimeRemaining.append(Long.toString(timeDeltaRemaining));
-                                            writerNumWeights.append(Integer.toString(numWeights));
+                                            writerTimeWeights.append(
+                                                    Long.toString(
+                                                            timeDeltaWeights));
+                                            writerTimeRemaining.append(
+                                                    Long.toString(
+                                                            timeDeltaRemaining));
+                                            writerNumWeights.append(
+                                                    Integer.toString(
+                                                            numWeights));
                                         }
                                     }
                                 }
@@ -281,6 +301,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
                         if (i != 0 && resultsDir != null) {
                             writerTime.append('\n');
+                            writerProbabilties.append('\n');
                             if (weightedSumEstimator) {
                                 writerTimeWeights.append('\n');
                                 writerTimeRemaining.append('\n');
@@ -292,6 +313,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 } finally {
                     if (resultsDir != null) {
                         writerTime.close();
+                        writerProbabilties.close();
                         if (weightedSumEstimator) {
                             writerTimeWeights.close();
                             writerTimeRemaining.close();
@@ -300,7 +322,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                     }
                 }
 
-                BigInteger timePerProbability = timeSum.divide(BigInteger.valueOf(numProbs));
+                BigInteger timePerProbability = timeSum.divide(
+                        BigInteger.valueOf(numProbs));
                 println("%s: %ssns", estimator.getName(), timePerProbability);
             }
         }
@@ -322,8 +345,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
     }
 
     private void logFields() {
-        LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-",
-                80 - getExecutableName().length()));
+        LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-", 80
+                - getExecutableName().length()));
         LOGGER.debug("Corpus:     %s", corpus);
         LOGGER.debug("WorkingDir: %s", workingDir);
         LOGGER.debug("Estimators: %s", estimators);

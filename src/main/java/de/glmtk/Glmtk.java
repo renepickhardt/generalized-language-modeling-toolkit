@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -169,7 +169,8 @@ public class Glmtk {
 
         progressBar.setPhase(PHASE_NGRAM_TIMES_COUNTING);
         ngramTimesCounter.count(status, paths.getNGramTimesFile(),
-                paths.getAbsoluteDir(), paths.getContinuationDir(), progressBar);
+                paths.getAbsoluteDir(), paths.getContinuationDir(),
+                progressBar);
 
         progressBar.setPhase(PHASE_LENGTH_DISTRIBUTION_MEASURING);
         lengthDistributionCalculator.calculate(status, paths.getTrainingFile(),
@@ -262,8 +263,7 @@ public class Glmtk {
         LOGGER.debug("chunkingPatterns = %s", chunkingPatterns);
 
         progressBar.setPhase(PHASE_ABSOLUTE_CHUNKING);
-        chunker.chunkAbsolute(status, chunkingPatterns,
-                paths.getTrainingFile(),
+        chunker.chunkAbsolute(status, chunkingPatterns, paths.getTrainingFile(),
                 status.getTraining() == Training.TAGGED,
                 paths.getAbsoluteChunkedDir(), progressBar);
         validateExpectedResults("Absolute chunking", chunkingPatterns,
@@ -369,10 +369,10 @@ public class Glmtk {
                                 Path inputFile) throws Exception {
         Files.createDirectories(paths.getQueriesDir());
 
-        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
-        Path outputFile = paths.getQueriesDir().resolve(
-                String.format("%s %s %s %s", inputFile.getFileName(),
-                        estimator, mode, date));
+        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(
+                Calendar.getInstance().getTime());
+        Path outputFile = paths.getQueriesDir().resolve(String.format(
+                "%s %s %s %s", inputFile.getFileName(), estimator, mode, date));
 
         return queryFile(mode, estimator, corpusOrder, inputFile, outputFile);
     }

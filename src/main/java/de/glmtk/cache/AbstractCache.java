@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
@@ -108,14 +109,15 @@ public abstract class AbstractCache implements Cache {
     protected void checkGammaPatternsArg(Collection<Pattern> patterns) {
         checkCountPatternsArg(patterns);
         for (Pattern pattern : patterns) {
-            Path cntFile = paths.getPatternsFile(pattern.concat(PatternElem.CNT));
-            Path wskpFile = paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
-            if (!NioUtils.checkFile(cntFile, EXISTS)
-                    || !NioUtils.checkFile(wskpFile, EXISTS))
-                throw new IllegalStateException(
-                        String.format(
-                                "In order to load gamma counts for pattern '%1$s', counts for patterns '%1$s1' and '%1$sx' have to be computed.",
-                                pattern));
+            Path cntFile = paths.getPatternsFile(pattern.concat(
+                    PatternElem.CNT));
+            Path wskpFile = paths.getPatternsFile(pattern.concat(
+                    PatternElem.WSKP));
+            if (!NioUtils.checkFile(cntFile, EXISTS) || !NioUtils.checkFile(
+                    wskpFile, EXISTS))
+                throw new IllegalStateException(String.format(
+                        "In order to load gamma counts for pattern '%1$s', counts for patterns '%1$s1' and '%1$sx' have to be computed.",
+                        pattern));
         }
     }
 
@@ -172,17 +174,28 @@ public abstract class AbstractCache implements Cache {
             }
         }
 
+        LOGGER.trace("NGramTimes:");
+        for (Entry<Pattern, NGramTimes> entry : ngramTimes.entrySet())
+            LOGGER.trace("  %s\t: %s", entry.getKey(), entry.getValue());
+        LOGGER.trace("Discounts:");
+        for (Entry<Pattern, Discounts> entry : discounts.entrySet())
+            LOGGER.trace("  %s\t: %s", entry.getKey(), entry.getValue());
+
         if (progressBar != null)
             progressBar.increase();
     }
 
     private Discounts calcDiscounts(NGramTimes n) {
-        double y = (double) n.getOneCount()
-                / (n.getOneCount() + n.getTwoCount());
-        return new Discounts(1.0f - 2.0f * y * n.getTwoCount()
-                / n.getOneCount(), 2.0f - 3.0f * y * n.getThreeCount()
-                / n.getTwoCount(), 3.0f - 4.0f * y * n.getFourCount()
-                / n.getThreeCount());
+        //        if (true)
+        //            return new Discounts(0.75, 0.75, 0.75);
+        //@formatter:off
+        double y = (double) n.getOneCount() / (n.getOneCount()
+                + n.getTwoCount());
+        return new Discounts(
+                1.0f - 2.0f * y * n.getTwoCount()   / n.getOneCount(),
+                2.0f - 3.0f * y * n.getThreeCount() / n.getTwoCount(),
+                3.0f - 4.0f * y * n.getFourCount()  / n.getThreeCount());
+        //@formatter:on
     }
 
     @Override
@@ -252,10 +265,9 @@ public abstract class AbstractCache implements Cache {
     @Override
     public double getLengthFrequency(int length) {
         if (length <= 0)
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Illegal length requested: '%s'. Must be an integer greater zero.",
-                            length));
+            throw new IllegalArgumentException(String.format(
+                    "Illegal length requested: '%s'. Must be an integer greater zero.",
+                    length));
 
         checkLengthFrequenciesLoaded();
         if (length >= lengthFrequencies.size())
@@ -309,8 +321,11 @@ public abstract class AbstractCache implements Cache {
     protected double calcGamma(Pattern pattern,
                                Counts contCount) {
         Discounts discount = getDiscounts(pattern.concat(PatternElem.CNT));
-        return discount.getOne() * contCount.getOnePlusCount()
+
+        //@formatter:off
+        return discount.getOne() * contCount.getOneCount()
                 + discount.getTwo() * contCount.getTwoCount()
-                + discount.getThree() + contCount.getThreePlusCount();
+                + discount.getThree() * contCount.getThreePlusCount();
+        //@formatter:on
     }
 }

@@ -2,7 +2,7 @@
 
 After cloning the repo compile all java files with `./build.sh`.
 
-Then run `./install.sh` to create symlink in `/usr/local/bin` to the important shell scripts.
+Then run `./install.sh` to create symlinks in `/usr/local/bin` to the important shell scripts.
 
 # Usage of GLMTK utilities
 
@@ -25,7 +25,7 @@ appended to the training file. So in the example output is written to directory
 The `-e` argument specifies the language models that we should learn occurence
 counts for. Can take an arbitrary number of arguments. In the example this would
 be Modified Kneser-Ney Smoothing and the Generalized Language Model.
-There are more available see `glmtk --help`.
+There are more available, see `glmtk --help`.
 *Note that AFAIK this flag is redundant at the moment, and we always learn all
 occurence counts, but let's better be on the safe side.*
 
@@ -36,7 +36,7 @@ The `-n` flag specifies the lenght of the longest n-gram the program will count.
 Splits a given text file into training and testing datasets as described
 in the "Experimental Setup" of Lukas' thesis.
 
-    glmtk-exp-setup oanc.txt -p 0.8 -b 5 -n 5 -N 40000
+    glmtk-exp-setup oanc.txt -p 0.8 -b 5 -n 5 -N 40000 -U 10000
 
 The first argument is the path to the corpus that should be split into datasets.
 In the example this would be `oanc.txt`. This should be a plain text file
@@ -81,8 +81,16 @@ contain words which also occur in the smallest training set. The file
 `heldout.nounk` is the heldout data filtered for words that only occur in the
 smallest training set. The actual testings sequences are in files named
 `ngram-1`, `ngram-2`, `ngram-3`, ... which contain the corresponding n-grams.
-*Note that in the VM there often times exist files like `ngram-3-5k` these are
+*Note that in the VM there often times exist files like `ngram-3-5k`, these are
 hand created the first 5k sequences from the `ngram-3` file.*
+
+The `-U` argument gives the number of testing sequences containing atleast one
+unkown words per n-gram length that should be generating. Testing sequences
+are randomly selected from the heldout data in a way that the last word is
+always in the vocabulary of all training corpora but atleast one of the
+preceedings words is not. The file `heldout.unk` is the heldout data filtered
+fot sentences with atleast one unkown word. The actual testing sequences are
+in files named `ngram.unk-1`, `ngram.unk-2`, `ngram.unk-3`, ...
 
 ## `glmtk-exp-argmaxcompare`
 
@@ -203,11 +211,11 @@ Will compute simple statistical characteristics for all given files.
 Just go into a directory which only contains file which contain white-space
 delimited numbers and call it with
 
-statistics <file1> <file2> ...
+    statistics <file1> <file2> ...
 
 Most of the time you will just do `statistics *`.
 
-Print a pretty table with a bunch of statistics:
+A pretty table with a bunch of statistics will be printed:
 - `N`: The sample size
 - `μ`: The mean
 - `σ`: The standard deviation
