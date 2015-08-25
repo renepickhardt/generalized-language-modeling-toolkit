@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -76,8 +76,8 @@ public class GlmtkPaths {
     }
 
     public static void logStaticPaths() {
-        LOGGER.info("GlmtkPath static %s", StringUtils.repeat("-",
-                80 - "GlmtkPath static ".length()));
+        LOGGER.info("GlmtkPath static %s", StringUtils.repeat("-", 80
+                - "GlmtkPath static ".length()));
         LOGGER.info("USER_DIR:    %s", USER_DIR);
         LOGGER.info("GLMTK_DIR:   %s", GLMTK_DIR);
         LOGGER.info("LOG_DIR:     %s", LOG_DIR);
@@ -113,11 +113,13 @@ public class GlmtkPaths {
         statusFile = dir.resolve(STATUS_FILE_NAME);
 
         trainingFile = dir.resolve(TRAINING_FILE_NAME);
-        untaggedTrainingFile = dir.resolve(TRAINING_FILE_NAME + UNTAGGED_SUFFIX);
+        untaggedTrainingFile = dir.resolve(TRAINING_FILE_NAME
+                + UNTAGGED_SUFFIX);
 
         fillCountsDirPaths(this);
         ngramTimesFile = countsDir.resolve(NGRAMTIMES_FILE_NAME);
-        lengthDistributionFile = countsDir.resolve(LENGTHDISTRIBUTION_FILE_NAME);
+        lengthDistributionFile = countsDir.resolve(
+                LENGTHDISTRIBUTION_FILE_NAME);
 
         queryCachesDir = dir.resolve(QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(QUERIES_DIR_NAME);
@@ -129,8 +131,8 @@ public class GlmtkPaths {
         paths.absoluteChunkedDir = paths.countsDir.resolve(ABSOLUTE_DIR_NAME
                 + CHUNKED_SUFFIX);
         paths.continuationDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME);
-        paths.continuationChunkedDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME
-                + CHUNKED_SUFFIX);
+        paths.continuationChunkedDir = paths.countsDir.resolve(
+                CONTINUATION_DIR_NAME + CHUNKED_SUFFIX);
         paths.triesDir = paths.countsDir.resolve(TRIES_DIR_NAME);
     }
 
@@ -167,8 +169,8 @@ public class GlmtkPaths {
                 maxNameLength = name.length();
         }
 
-        LOGGER.debug("Paths %s",
-                StringUtils.repeat("-", 80 - "Paths ".length()));
+        LOGGER.debug("Paths %s", StringUtils.repeat("-", 80
+                - "Paths ".length()));
         for (Entry<String, Path> entry : paths) {
             String name = entry.getKey();
             Path path = entry.getValue();
@@ -230,8 +232,12 @@ public class GlmtkPaths {
         return getTriesDir().resolve("count-" + pattern.toString());
     }
 
-    public Path getGammasTrieFile(Pattern pattern) {
-        return getTriesDir().resolve("gamma-" + pattern.toString());
+    public Path getGammasHighTrieFile(Pattern pattern) {
+        return getTriesDir().resolve("gamma-high-" + pattern.toString());
+    }
+
+    public Path getGammasLowTrieFile(Pattern pattern) {
+        return getTriesDir().resolve("gamma-low-" + pattern.toString());
     }
 
     // TODO: add getPatternsChunkedDir(Pattern pattern)

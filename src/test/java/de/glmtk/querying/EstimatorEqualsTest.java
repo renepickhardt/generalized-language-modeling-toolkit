@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -86,7 +86,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
     private static final String PHASE_QUERYING = "Querying";
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
-    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
+    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve(
+            "en0008t.testing.5");
 
     private static Cache cache = null;
 
@@ -162,6 +163,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         actual.setCache(cache);
 
         QueryMode queryMode = QueryMode.newSequence();
+        //        QueryMode queryMode = QueryMode.newCond(5);
         QueryExecutor executorExpected = new QueryExecutor(paths, queryMode,
                 expected, 5);
         QueryExecutor executorActual = new QueryExecutor(paths, queryMode,
@@ -179,8 +181,10 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                 try {
                     probExpected = executorExpected.querySequence(line);
                     probActual = executorActual.querySequence(line);
-                    if (Double.isNaN(probActual)
-                            || Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e6)
+                    if (Double.isNaN(probActual) || probActual < 0.0
+                            || probActual > 1.0 || Math.abs(probExpected
+                                    - probActual) > Math.abs(probExpected)
+                                            / 1e6)
                         throw new Exception("failAssert");
                 } catch (Throwable t) {
                     Logger.setTraceEnabled(true);

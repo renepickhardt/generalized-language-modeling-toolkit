@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -36,7 +36,8 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         private NGram history = null;
         private long absoluteCount = 0;
         private long continuationCount = 0;
-        private double gammaNumerator = 0.0;
+        private double gammaHighNumerator = 0.0;
+        private double gammaLowNumerator = 0.0;
         private double absoluteFactor = 0.0;
         private double continuationFactor = 0.0;
     }
@@ -56,15 +57,16 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
     @Override
     public WeightedSumFunction calcWeightedSumFunction(NGram history) {
         if (history.isEmpty()) {
-            WeightedSumFunction weightedSumFunction = new WeightedSumFunction(1);
+            WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
+                    1);
             weightedSumFunction.add(1.0 / cache.getNumWords(), history);
             return weightedSumFunction;
         }
 
         BinomDiamond<GlmNode> diamond = buildGlmDiamond(history);
 
-        WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
-                2 * diamond.size());
+        WeightedSumFunction weightedSumFunction = new WeightedSumFunction(2
+                * diamond.size());
         for (GlmNode node : diamond) {
             if (node.absoluteFactor != 0)
                 weightedSumFunction.add(node.absoluteFactor, node.history);
@@ -78,7 +80,8 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
 
     private BinomDiamond<GlmNode> buildGlmDiamond(NGram history) {
         int order = history.size();
-        BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order, GlmNode.class);
+        BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order,
+                GlmNode.class);
 
         for (GlmNode node : diamond.inOrder()) {
             NGram hist = history.applyIntPattern(~node.getIndex(), order);
@@ -86,7 +89,8 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
             node.absoluteCount = cache.getCount(hist.concat(SKP_NGRAM));
             node.continuationCount = cache.getCount(WSKP_NGRAM.concat(
                     hist.convertSkpToWskp()).concat(WSKP_NGRAM));
-            node.gammaNumerator = cache.getGamma(hist);
+            node.gammaHighNumerator = cache.getGammaHigh(hist);
+            node.gammaLowNumerator = cache.getGammaLow(hist);
 
             double coeff = getCoefficient(diamond.order(), node.getLevel());
 
@@ -95,7 +99,8 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
             else if (node.isTop())
                 node.absoluteFactor = 1.0f / node.absoluteCount;
             else {
-                node.absoluteFactor = calcAbsoluteFactor(diamond.getTop(), node);
+                node.absoluteFactor = calcAbsoluteFactor(diamond.getTop(),
+                        node);
                 node.absoluteFactor *= coeff / node.absoluteCount;
             }
 
@@ -157,10 +162,10 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
                                           boolean absolute) {
         double mult = 1.0;
         if (absolute && ancestor.absoluteCount != 0) {
-            mult = ancestor.gammaNumerator / ancestor.absoluteCount;
+            mult = ancestor.gammaHighNumerator / ancestor.absoluteCount;
             absolute = false;
         } else if (ancestor.continuationCount != 0)
-            mult = ancestor.gammaNumerator / ancestor.continuationCount;
+            mult = ancestor.gammaLowNumerator / ancestor.continuationCount;
 
         if (ancestor.getLevel() == node.getLevel() - 1) {
             if (absolute)

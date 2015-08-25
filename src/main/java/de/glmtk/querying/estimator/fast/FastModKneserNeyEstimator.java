@@ -41,7 +41,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
             return (double) numerator / denominator;
 
         double discount = cache.getDiscount(fullSequence);
-        double gamma = cache.getGamma(history) / denominator;
+        double gamma = cache.getGammaHigh(history) / denominator;
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
@@ -80,7 +80,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
             return (double) numerator / denominator;
 
         double discount = cache.getDiscount(fullSequence);
-        double gamma = cache.getGamma(history) / denominator;
+        double gamma = cache.getGammaLow(history) / denominator;
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
         double alpha = Math.max(numerator - discount, 0.0) / denominator;

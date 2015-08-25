@@ -43,7 +43,7 @@ public class Discounts {
         return two;
     }
 
-    public double getThree() {
+    public double getThreePlus() {
         return threePlus;
     }
 

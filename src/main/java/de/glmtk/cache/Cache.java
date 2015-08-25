@@ -56,5 +56,13 @@ public interface Cache {
 
     // Gammas //////////////////////////////////////////////////////////////////
 
-    public double getGamma(NGram ngram);
+    /**
+     * Interpolation weight gamma of the highest order.
+     */
+    public double getGammaHigh(NGram ngram);
+
+    /**
+     * Interpolation weight gamma of all lower orders.
+     */
+    public double getGammaLow(NGram ngram);
 }

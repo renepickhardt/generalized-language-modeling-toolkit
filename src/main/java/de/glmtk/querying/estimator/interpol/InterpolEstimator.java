@@ -136,6 +136,21 @@ public class InterpolEstimator extends AbstractEstimator {
             return 0;
         }
 
+        if (alpha instanceof ModKneserNeyDiscountEstimator)
+            if (alpha.getFractionEstimator() instanceof MaximumLikelihoodEstimator) {
+                double gammaHigh = cache.getGammaHigh(history);
+                logTrace(recDepth, "gammaHigh = %e", gammaHigh);
+                return gammaHigh / denominator;
+            } else
+                if (alpha.getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator) {
+                double gammaLow = cache.getGammaLow(history);
+                logTrace(recDepth, "gammaLow = %e", gammaLow);
+                return gammaLow / denominator;
+            } else
+                throw new IllegalStateException(format(
+                        "Fraction Estimator '%s' not implented in Interpolation Estimator.",
+                        alpha.getFractionEstimator().getClass()));
+
         NGram gammaHistory;
         if (alpha.getFractionEstimator() instanceof MaximumLikelihoodEstimator)
             gammaHistory = history.concat(WSKP_WORD);
@@ -147,9 +162,6 @@ public class InterpolEstimator extends AbstractEstimator {
                     alpha.getFractionEstimator().getClass()));
 
         logTrace(recDepth, "gammaHistory = %s", gammaHistory);
-
-        if (alpha instanceof ModKneserNeyDiscountEstimator)
-            return cache.getGamma(history) / denominator;
 
         double discount = alpha.discount(sequence, history, recDepth);
         double n_1p = cache.getCount(gammaHistory);

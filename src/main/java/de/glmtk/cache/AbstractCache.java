@@ -186,8 +186,6 @@ public abstract class AbstractCache implements Cache {
     }
 
     private Discounts calcDiscounts(NGramTimes n) {
-        //        if (true)
-        //            return new Discounts(0.75, 0.75, 0.75);
         //@formatter:off
         double y = (double) n.getOneCount() / (n.getOneCount()
                 + n.getTwoCount());
@@ -200,6 +198,8 @@ public abstract class AbstractCache implements Cache {
 
     @Override
     public double getDiscount(NGram ngram) {
+        if (true)
+            return 0.75;
         checkNGramArg(ngram);
         checkDiscountsLoaded();
 
@@ -208,6 +208,8 @@ public abstract class AbstractCache implements Cache {
 
     @Override
     public Discounts getDiscounts(Pattern pattern) {
+        if (true)
+            return new Discounts(0.75, 0.75, 0.75);
         checkPatternArg(pattern);
         checkDiscountsLoaded();
 
@@ -308,16 +310,33 @@ public abstract class AbstractCache implements Cache {
     ////////////////////////////////////////////////////////////////////////////
     // Gammas //////////////////////////////////////////////////////////////////
 
-    /* pacakge */abstract void loadGammas(Collection<Pattern> patterns) throws IOException;
+    /* package */abstract void loadGammas(Collection<Pattern> patterns) throws IOException;
 
     /**
-     * All gamma sequences have a trailing " %" because they all end in WSKP. No
-     * need to store that for all gamma sequences.
+     * All highest order gamma ngrams have a trailing " %" because they all end
+     * in WSKP. No need to store that for all gamma sequences.
      */
-    protected String removeTrailingWSkp(String sequence) {
+    protected String getGammaHighNGram(String sequence) {
         return sequence.substring(0, sequence.length() - 2);
     }
 
+    /**
+     * All lower orders gamma ngrams have a starting "_ " and a trailing " %"
+     * because they all start with SKP and end in WSKP. No need to store that
+     * for all gamma sequences.
+     */
+    protected String getGammaLowNGram(String sequence) {
+        return sequence.substring(2, sequence.length() - 2);
+    }
+
+    /**
+     * Calculates both the highest order gamma and the lower order gamma
+     * depending on which {@code contCount} is passed:
+     * <ul>
+     * <li>Highest order: {@code N_1+(h %)}
+     * <li>Lower orders: {@code N_1+(_ h %)}
+     * </ul>
+     */
     protected double calcGamma(Pattern pattern,
                                Counts contCount) {
         Discounts discount = getDiscounts(pattern.concat(PatternElem.CNT));
@@ -325,7 +344,7 @@ public abstract class AbstractCache implements Cache {
         //@formatter:off
         return discount.getOne() * contCount.getOneCount()
                 + discount.getTwo() * contCount.getTwoCount()
-                + discount.getThree() * contCount.getThreePlusCount();
+                + discount.getThreePlus() * contCount.getThreePlusCount();
         //@formatter:on
     }
 }

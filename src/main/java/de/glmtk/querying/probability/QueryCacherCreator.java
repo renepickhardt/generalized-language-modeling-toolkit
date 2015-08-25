@@ -67,7 +67,7 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
         protected void work(Pattern pattern,
                             int patternNo) throws IOException {
             extractSequences(pattern);
-            LOGGER.trace("neededSequences = %s", neededSequences);
+            //            LOGGER.trace("neededSequences = %s", neededSequences);
             getPatternFiles(pattern);
             filterAndWriteSequenceCounts();
 
@@ -88,7 +88,8 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     List<String> sequenceList = StringUtils.split(line, ' ');
-                    String[] split = sequenceList.toArray(new String[sequenceList.size()]);
+                    String[] split = sequenceList.toArray(
+                            new String[sequenceList.size()]);
                     String[] words = new String[split.length];
                     String[] poses = new String[split.length];
                     StringUtils.extractWordsAndPoses(split, queryFileTagged,
@@ -154,10 +155,12 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
         private void getPatternFiles(Pattern pattern) {
             if (pattern.isAbsolute()) {
                 patternFile = absoluteDir.resolve(pattern.toString());
-                targetPatternFile = targetAbsoluteDir.resolve(pattern.toString());
+                targetPatternFile = targetAbsoluteDir.resolve(
+                        pattern.toString());
             } else {
                 patternFile = continuationDir.resolve(pattern.toString());
-                targetPatternFile = targetContinuationDir.resolve(pattern.toString());
+                targetPatternFile = targetContinuationDir.resolve(
+                        pattern.toString());
             }
         }
 
@@ -165,7 +168,8 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
             try (CountsReader reader = new CountsReader(patternFile,
                     Constants.CHARSET, readerMemory);
                     BufferedWriter writer = NioUtils.newBufferedWriter(
-                            targetPatternFile, Constants.CHARSET, writerMemory)) {
+                            targetPatternFile, Constants.CHARSET,
+                            writerMemory)) {
                 nextSequence = neededSequences.poll();
 
                 String line;

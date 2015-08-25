@@ -58,7 +58,7 @@ public class FastGenLangModelAbsEstimator extends AbstractEstimator {
             return (double) numerator / denominator;
 
         double discount = cache.getDiscount(fullSequence);
-        double gamma = cache.getGamma(history) / denominator;
+        double gamma = cache.getGammaHigh(history) / denominator;
 
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = 0;
