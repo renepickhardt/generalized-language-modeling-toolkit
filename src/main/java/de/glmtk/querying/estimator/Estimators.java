@@ -40,6 +40,7 @@ import de.glmtk.querying.estimator.substitute.ContinuationUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.UniformEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumAverageEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
+import de.glmtk.querying.estimator.weightedsum.WeightedSumMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 
 public class Estimators {
@@ -409,6 +410,12 @@ public class Estimators {
 
     static {
         WEIGHTEDSUM_AVERAGE.setName("Weighted-Sum-Average");
+    }
+
+    public static final WeightedSumMaximumLikelihoodEstimator WEIGHTEDSUM_MLE = new WeightedSumMaximumLikelihoodEstimator();
+
+    static {
+        WEIGHTEDSUM_MLE.setName("Weighted-Sum-Maximum-Likelihood");
     }
 
     public static final WeightedSumModKneserNeyEstimator WEIGHTEDSUM_MKN = new WeightedSumModKneserNeyEstimator();

@@ -41,6 +41,7 @@ import static de.glmtk.querying.estimator.Estimators.MLE;
 import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_GLM;
 import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MKN;
 import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MKN_SKP;
+import static de.glmtk.querying.estimator.Estimators.WEIGHTEDSUM_MLE;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -96,6 +97,7 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         //@formatter:off
         return Arrays.asList(new Object[][] {
                 {MLE, FAST_MLE},
+                {MLE, WEIGHTEDSUM_MLE},
 
                 {MKN_ABS, FAST_MKN_ABS},
 
