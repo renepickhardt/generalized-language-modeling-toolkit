@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+# encoding=UTF-8
+
+from math import log
+from sys import argv, exit
+
+if len(argv) == 1:
+    print("No files given.")
+    exit()
+
+
+class Result:
+    name_just = len("File")
+    num_just = len("N")
+    num_eq_zero_just = len("N(p=0)")
+    num_neq_zero_just = len("N(p≠0)")
+    entropy_just = len("Entropy")
+    perplexity_just = len("Perplexity")
+
+    def __init__(self, name, num, num_neq_zero, entropy):
+        self.name = name
+        self.num = num
+        self.num_eq_zero = num - num_neq_zero
+        self.num_neq_zero = num_neq_zero
+        self.entropy = entropy
+        self.perplexity = 2 ** entropy
+
+        Result.name_just = max(Result.name_just, len(self.name_str()))
+        Result.num_just = max(Result.num_just, len(self.num_str()))
+        Result.num_eq_zero_just = max(Result.num_eq_zero_just, len(self.num_eq_zero_str()))
+        Result.num_neq_zero_just = max(Result.num_neq_zero_just, len(self.num_neq_zero_str()))
+        Result.entropy_just = max(Result.entropy_just, len(self.entropy_str()))
+        Result.perplexity_just = max(Result.perplexity_just, len(self.perplexity_str()))
+
+    @classmethod
+    def print_header(cls):
+        print("File".center(cls.name_just) + '  ' + \
+               "N".center(cls.num_just) + '  ' + \
+               "N(p=0)".center(cls.num_eq_zero_just) + '  ' + \
+               "N(p≠0)".center(cls.num_neq_zero_just) + '  ' + \
+               "Entropy".center(cls.entropy_just) + '  ' + \
+               "Perplexity".center(cls.perplexity_just))
+
+    @classmethod
+    def print_sep(cls, sep):
+        print(sep * (cls.name_just + cls.num_just + cls.num_eq_zero_just + cls.num_neq_zero_just + cls.entropy_just + cls.perplexity_just + 10))
+
+    def __str__(self):
+        return self.name_str().ljust(Result.name_just) + '  ' + \
+               self.num_str().rjust(Result.num_just) + '  ' + \
+               self.num_eq_zero_str().rjust(Result.num_eq_zero_just) + '  ' + \
+               self.num_neq_zero_str().rjust(Result.num_neq_zero_just) + '  ' + \
+               self.entropy_str().rjust(Result.entropy_just) + '  ' + \
+               self.perplexity_str().rjust(Result.perplexity_just)
+
+    def name_str(self):
+        return self.name
+
+    def num_str(self):
+        return str(self.num)
+
+    def num_eq_zero_str(self):
+        return str(self.num_eq_zero)
+
+    def num_neq_zero_str(self):
+        return str(self.num_neq_zero)
+
+    def entropy_str(self):
+        return "{:.2f}".format(self.entropy)
+
+    def perplexity_str(self):
+        return "{:.2f}".format(self.perplexity)
+
+
+results = []
+
+files = argv[1:]
+
+for arg in files:
+    with open(arg) as f:
+        contents = f.read()
+    values = list(map(float, contents.split()))
+
+    num = 0
+    num_neq_zero = 0
+    entropy = 0
+
+    for value in values:
+        num += 1
+
+        if value == 0:
+            continue
+
+        num_neq_zero += 1
+        entropy -= log(value, 2)
+
+    entropy /= num_neq_zero
+
+    results.append(Result(arg, num, num_neq_zero, entropy))
+
+Result.print_header()
+Result.print_sep('=')
+i = 0
+for result in results:
+    if i != 0 and i % 5 == 0:
+        Result.print_sep('-')
+    print(result)
+    i += 1
