@@ -27,6 +27,7 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.NGram;
 import de.glmtk.common.Pattern;
 import de.glmtk.common.Patterns;
+import de.glmtk.common.ProbMode;
 import de.glmtk.exceptions.CliArgumentException;
 import de.glmtk.logging.Logger;
 import de.glmtk.options.IntegerOption;
@@ -35,9 +36,11 @@ import de.glmtk.options.PathsOption;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.options.custom.EstimatorsOption;
 import de.glmtk.output.ProgressBar;
+import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
+import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.util.StringUtils;
 
 public class GlmtkExpEstimatorTimeExecutable extends Executable {
@@ -179,7 +182,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 int numProbs = 0;
 
                 BufferedWriter writerTime = null;
-                BufferedWriter writerProbabilties = null;
+                BufferedWriter writerCondProbabilities = null;
+                BufferedWriter writerBaseProbabilities = null;
                 BufferedWriter writerTimeWeights = null;
                 BufferedWriter writerTimeRemaining = null;
                 BufferedWriter writerNumWeights = null;
@@ -189,8 +193,11 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                 + estimator);
                         writerTime = newBufferedWriter(resultsFile,
                                 Constants.CHARSET);
-                        writerProbabilties = newBufferedWriter(Paths.get(
-                                resultsFile + "-probabilities"),
+                        writerCondProbabilities = newBufferedWriter(Paths.get(
+                                resultsFile + "-probabilitiesCond"),
+                                Constants.CHARSET);
+                        writerBaseProbabilities = newBufferedWriter(Paths.get(
+                                resultsFile + "-probabilitiesBase"),
                                 Constants.CHARSET);
                         if (weightedSumEstimator) {
                             writerTimeWeights = newBufferedWriter(Paths.get(
@@ -225,11 +232,11 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                 long timeDelta = 0, timeDeltaWeights = 0,
                                         timeDeltaRemaining = 0;
                                 int numWeights = 0;
-                                double prob;
+                                double probCond;
 
                                 if (!weightedSumEstimator) {
                                     long timeBefore = System.nanoTime();
-                                    prob = estimator.probability(sequence,
+                                    probCond = estimator.probability(sequence,
                                             history);
                                     long timeAfter = System.nanoTime();
 
@@ -242,7 +249,7 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                     numWeights = weightedSumFunction.size();
 
                                     long timeBeforeRemaining = System.nanoTime();
-                                    prob = ((WeightedSumEstimator) estimator).probability(
+                                    probCond = ((WeightedSumEstimator) estimator).probability(
                                             sequence, weightedSumFunction);
                                     long timeAfterRemaining = System.nanoTime();
 
@@ -254,8 +261,14 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                             + timeDeltaRemaining;
                                 }
 
+                                Calculator calculator = Calculator.forQueryMode(
+                                        QueryMode.newSequence());
+                                calculator.setEstimator(estimator);
+                                calculator.setProbMode(ProbMode.MARG);
+                                double probBase = calculator.probability(words);
+
                                 LOGGER.trace("P(%s | %s) = %e", sequence,
-                                        history, prob);
+                                        history, probCond);
 
                                 if (i != 0) {
                                     // i == 0 is warmup run
@@ -269,7 +282,10 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                             firstLine = false;
                                         else {
                                             writerTime.append('\t');
-                                            writerProbabilties.append('\t');
+                                            writerCondProbabilities.append(
+                                                    '\t');
+                                            writerBaseProbabilities.append(
+                                                    '\t');
                                             if (weightedSumEstimator) {
                                                 writerTimeWeights.append('\t');
                                                 writerTimeRemaining.append(
@@ -279,8 +295,10 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                                         }
                                         writerTime.append(Long.toString(
                                                 timeDelta));
-                                        writerProbabilties.append(
-                                                Double.toString(prob));
+                                        writerCondProbabilities.append(
+                                                Double.toString(probCond));
+                                        writerBaseProbabilities.append(
+                                                Double.toString(probBase));
                                         if (weightedSumEstimator) {
                                             writerTimeWeights.append(
                                                     Long.toString(
@@ -301,7 +319,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
 
                         if (i != 0 && resultsDir != null) {
                             writerTime.append('\n');
-                            writerProbabilties.append('\n');
+                            writerCondProbabilities.append('\n');
+                            writerBaseProbabilities.append('\n');
                             if (weightedSumEstimator) {
                                 writerTimeWeights.append('\n');
                                 writerTimeRemaining.append('\n');
@@ -313,7 +332,8 @@ public class GlmtkExpEstimatorTimeExecutable extends Executable {
                 } finally {
                     if (resultsDir != null) {
                         writerTime.close();
-                        writerProbabilties.close();
+                        writerCondProbabilities.close();
+                        writerBaseProbabilities.close();
                         if (weightedSumEstimator) {
                             writerTimeWeights.close();
                             writerTimeRemaining.close();
