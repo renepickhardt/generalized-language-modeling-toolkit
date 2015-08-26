@@ -23,8 +23,9 @@ public class EstimatorOption extends Option {
     public static final String DEFAULT_ARGNAME = "ESTIMATOR";
 
     private static final Map<String, Estimator> VALUES = new LinkedHashMap<>();
+
     static {
-        VALUES.put("MLE", Estimators.FAST_MLE);
+        VALUES.put("MLE", Estimators.WEIGHTEDSUM_MLE);
         VALUES.put("MKN", Estimators.WEIGHTEDSUM_MKN);
         VALUES.put("FMKN", Estimators.FAST_MKN);
         VALUES.put("MKNS", Estimators.FAST_MKN_SKP);
@@ -40,6 +41,7 @@ public class EstimatorOption extends Option {
 
     protected static final String EXPLANATION;
     protected static final String WEIGHTEDSUM_EXPLANATION;
+
     static {
         int longestAbbr = maxKeyLength(VALUES);
 
