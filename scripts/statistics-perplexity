@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # encoding=UTF-8
 
-from math import log
+from math import isinf, log
 from sys import argv, exit
 
 if len(argv) == 1:
@@ -23,7 +23,10 @@ class Result:
         self.num_eq_zero = num - num_neq_zero
         self.num_neq_zero = num_neq_zero
         self.entropy = entropy
-        self.perplexity = 2 ** entropy
+        if not isinf(entropy):
+            self.perplexity = 2 ** entropy
+        else:
+            self.perplexity = float("inf")
 
         Result.name_just = max(Result.name_just, len(self.name_str()))
         Result.num_just = max(Result.num_just, len(self.num_str()))
@@ -66,10 +69,16 @@ class Result:
         return str(self.num_neq_zero)
 
     def entropy_str(self):
-        return "{:.2f}".format(self.entropy)
+        if not isinf(self.entropy):
+            return "{:.2f}".format(self.entropy)
+        else:
+            return "∞"
 
     def perplexity_str(self):
-        return "{:.2f}".format(self.perplexity)
+        if not isinf(self.entropy):
+            return "{:.2f}".format(self.perplexity)
+        else:
+            return "∞"
 
 
 results = []
@@ -94,7 +103,10 @@ for arg in files:
         num_neq_zero += 1
         entropy -= log(value, 2)
 
-    entropy /= num_neq_zero
+    if num_neq_zero == 0:
+        entropy = float("inf")
+    else:
+        entropy /= num_neq_zero
 
     results.append(Result(arg, num, num_neq_zero, entropy))
 
