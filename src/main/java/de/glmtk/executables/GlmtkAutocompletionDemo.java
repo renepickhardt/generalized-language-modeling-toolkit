@@ -35,9 +35,10 @@ import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 import de.glmtk.util.StringUtils;
 import fi.iki.elonen.NanoHTTPD;
 
+
 public class GlmtkAutocompletionDemo extends Executable {
-    private static final Logger LOGGER = Logger.get(
-            GlmtkAutocompletionDemo.class);
+    private static final Logger LOGGER =
+        Logger.get(GlmtkAutocompletionDemo.class);
 
     private class Server extends NanoHTTPD {
         public Server() {
@@ -52,8 +53,7 @@ public class GlmtkAutocompletionDemo extends Executable {
                 println("Hit enter to stop.");
                 try {
                     System.in.read();
-                } catch (Throwable ignore) {
-                }
+                } catch (Throwable ignore) {}
                 stop();
             } catch (IOException e) {
                 printlnError("Could not start server.");
@@ -76,18 +76,18 @@ public class GlmtkAutocompletionDemo extends Executable {
                 String stackTrace = getStackTraceAsString(e);
                 printlnError(stackTrace);
                 return newFixedLengthResponse(INTERNAL_ERROR, "text/plain",
-                        stackTrace);
+                    stackTrace);
             }
         }
 
         public Response serveDemo(IHTTPSession session) throws IOException {
-            String demoHtml = new String(Files.readAllBytes(
-                    GlmtkPaths.GLMTK_DIR.resolve(
-                            Constants.MAIN_RESOURCES_DIR).resolve(
-                                    "autocompletion-demo.html")),
-                    Constants.CHARSET);
-            Response response = newFixedLengthResponse(OK,
-                    "application/xhtml+xml", demoHtml);
+            String demoHtml = new String(
+                Files.readAllBytes(
+                    GlmtkPaths.GLMTK_DIR.resolve(Constants.MAIN_RESOURCES_DIR)
+                        .resolve("autocompletion-demo.html")),
+                Constants.CHARSET);
+            Response response =
+                newFixedLengthResponse(OK, "application/xhtml+xml", demoHtml);
             return response;
         }
 
@@ -99,8 +99,9 @@ public class GlmtkAutocompletionDemo extends Executable {
             Map<String, String> params = session.getParms();
             String history = getRelevantHistory(params.get("history"));
             String prefix = params.get("prefix");
-            if (prefix == null)
+            if (prefix == null) {
                 prefix = "";
+            }
             int numResults;
             try {
                 numResults = Integer.parseInt(params.get("numResults"));
@@ -116,9 +117,10 @@ public class GlmtkAutocompletionDemo extends Executable {
             // Build completions.
             List<ArgmaxResult> completions = null;
             long timeBefore = System.nanoTime();
-            if (history != null)
+            if (history != null) {
                 completions = argmaxQueryExecutor.queryArgmax(history, prefix,
-                        numResults);
+                    numResults);
+            }
             long timeAfter = System.nanoTime();
             long timeDelta = timeAfter - timeBefore;
 
@@ -126,47 +128,50 @@ public class GlmtkAutocompletionDemo extends Executable {
 
             // Output completions
             msg.append("  \"completion\": ");
-            if (completions == null)
+            if (completions == null) {
                 msg.append("null\n");
-            else {
+            } else {
                 msg.append("[\n");
                 boolean first = true;
                 for (ArgmaxResult completion : completions) {
-                    if (first)
+                    if (first) {
                         first = false;
-                    else
+                    } else {
                         msg.append(",\n");
+                    }
 
                     msg.append("    {\n");
                     msg.append("      \"completion\": \""
-                            + completion.getSequence().replace("\"", "\\\"")
-                            + "\",\n");
-                    msg.append("      \"probability\": \"" + format("%e",
-                            completion.getProbability()) + "\"\n");
+                        + completion.getSequence().replace("\"", "\\\"")
+                        + "\",\n");
+                    msg.append("      \"probability\": \""
+                        + format("%e", completion.getProbability()) + "\"\n");
                     msg.append("    }");
                 }
                 msg.append("\n  ]\n");
             }
 
             msg.append("}\n");
-            Response response = newFixedLengthResponse(OK, "application/json",
-                    msg.toString());
+            Response response =
+                newFixedLengthResponse(OK, "application/json", msg.toString());
             return response;
         }
 
         private String getRelevantHistory(String history) {
-            if (history == null)
+            if (history == null) {
                 return "";
+            }
             List<String> split = split(history, ' ');
             split = split.subList(max(split.size() - ngramSize + 1, 0),
-                    split.size());
+                split.size());
             return StringUtils.join(split, ' ');
         }
 
         private int max(int a,
                         int b) {
-            if (a > b)
+            if (a > b) {
                 return a;
+            }
             return b;
         }
     }
@@ -197,21 +202,21 @@ public class GlmtkAutocompletionDemo extends Executable {
     @Override
     protected void registerOptions() {
         optionCorpus = new CorpusOption(null, "corpus",
-                "Give corpus and maybe working direcotry.");
+            "Give corpus and maybe working direcotry.");
         optionArgmaxExecutorOption = new ArgmaxExecutorOption("a",
-                "argmax-executor", "Executor to use for completion");
+            "argmax-executor", "Executor to use for completion");
         optionEstimator = new EstimatorOption("e", "estimator",
-                "Estimator to use for completion.").requireWeightedSum();
+            "Estimator to use for completion.").requireWeightedSum();
         optionNGramSize = new IntegerOption("n", "ngram-size",
-                "Max N-Gram length to use for completion.").requireNotZero().requirePositive().defaultValue(
-                        3);
-        optionPort = new IntegerOption("p", "port",
-                "Port for the webserver to run on.").requireNotZero().requirePositive().defaultValue(
-                        8080);
+            "Max N-Gram length to use for completion.").requireNotZero()
+                .requirePositive().defaultValue(3);
+        optionPort =
+            new IntegerOption("p", "port", "Port for the webserver to run on.")
+                .requireNotZero().requirePositive().defaultValue(8080);
 
         commandLine.inputArgs(optionCorpus);
         commandLine.options(optionArgmaxExecutorOption, optionEstimator,
-                optionNGramSize, optionPort);
+            optionNGramSize, optionPort);
     }
 
     @Override
@@ -228,19 +233,22 @@ public class GlmtkAutocompletionDemo extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
-        if (!optionCorpus.wasGiven())
+        if (!optionCorpus.wasGiven()) {
             throw new CliArgumentException("%s missing.", optionCorpus);
+        }
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
 
-        if (!optionArgmaxExecutorOption.wasGiven())
+        if (!optionArgmaxExecutorOption.wasGiven()) {
             throw new CliArgumentException("No executor given, use %s.",
-                    optionArgmaxExecutorOption);
+                optionArgmaxExecutorOption);
+        }
         executor = optionArgmaxExecutorOption.getArgmaxExecutor();
 
-        if (!optionEstimator.wasGiven())
+        if (!optionEstimator.wasGiven()) {
             throw new CliArgumentException("No estimator given, use %s.",
-                    optionEstimator);
+                optionEstimator);
+        }
         estimator = (WeightedSumEstimator) optionEstimator.getEstimator();
 
         ngramSize = optionNGramSize.getInt();
@@ -253,18 +261,21 @@ public class GlmtkAutocompletionDemo extends Executable {
 
         CacheSpecification cacheSpec = estimator.getRequiredCache(ngramSize);
         cacheSpec.withProgress();
-        cacheSpec.withWords().withCounts(Patterns.getMany("x"));// FIXME: Refacotr this
+        cacheSpec.withWords().withCounts(Patterns.getMany("x"));// FIXME:
+                                                                // Refacotr this
 
         Set<Pattern> requiredPatterns = cacheSpec.getRequiredPatterns();
         requiredPatterns.add(Patterns.get("x1111x"));// FIXME: Refactor this
 
         GlmtkPaths paths = glmtk.getPaths();
 
-        CompletionTrieCache sortedAccessCache = (CompletionTrieCache) cacheSpec.withCacheImplementation(
-                CacheImplementation.COMPLETION_TRIE).build(paths);
+        CompletionTrieCache sortedAccessCache = (CompletionTrieCache) cacheSpec
+            .withCacheImplementation(CacheImplementation.COMPLETION_TRIE)
+            .build(paths);
         estimator.setCache(sortedAccessCache);
-        argmaxQueryExecutor = ArgmaxExecutorOption.argmaxQueryExecutorFromString(
-                executor, estimator, sortedAccessCache, sortedAccessCache);
+        argmaxQueryExecutor =
+            ArgmaxExecutorOption.argmaxQueryExecutorFromString(executor,
+                estimator, sortedAccessCache, sortedAccessCache);
 
         Server server = new Server();
         server.start();

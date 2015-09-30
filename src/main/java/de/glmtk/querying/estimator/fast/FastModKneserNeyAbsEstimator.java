@@ -24,6 +24,7 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
+
 public class FastModKneserNeyAbsEstimator extends AbstractEstimator {
     protected BackoffMode backoffMode;
 
@@ -32,9 +33,10 @@ public class FastModKneserNeyAbsEstimator extends AbstractEstimator {
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {
-        if (backoffMode != BackoffMode.DEL && backoffMode != BackoffMode.SKP)
+        if (backoffMode != BackoffMode.DEL && backoffMode != BackoffMode.SKP) {
             throw new IllegalArgumentException(
-                    "Illegal BackoffMode for this class.");
+                "Illegal BackoffMode for this class.");
+        }
         this.backoffMode = backoffMode;
     }
 
@@ -43,13 +45,16 @@ public class FastModKneserNeyAbsEstimator extends AbstractEstimator {
                                      NGram history,
                                      int recDepth) {
         long denominator = cache.getCount(getFullHistory(sequence, history));
-        if (denominator == 0.0)
-            return probability(sequence, history.backoff(backoffMode), recDepth);
+        if (denominator == 0.0) {
+            return probability(sequence, history.backoff(backoffMode),
+                recDepth);
+        }
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getCount(fullSequence);
-        if (history.isEmptyOrOnlySkips())
+        if (history.isEmptyOrOnlySkips()) {
             return (double) numerator / denominator;
+        }
 
         double discount = cache.getDiscount(fullSequence);
         double gamma = cache.getGammaHigh(history) / denominator;

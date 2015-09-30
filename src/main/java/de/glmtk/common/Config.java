@@ -38,6 +38,7 @@ import de.glmtk.logging.Logger;
 import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.StringUtils;
 
+
 /**
  * All field values (except those declared final) are read from config file.
  */
@@ -58,7 +59,7 @@ public class Config {
 
         protected void parseConfig() {
             Map<String, Boolean> keys = createValidKeysMap("numberOfThreads",
-                    "memory", "updateInterval", "tagging");
+                "memory", "updateInterval", "tagging");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
@@ -95,7 +96,7 @@ public class Config {
             assertEventIsId(ID.MappingStart);
 
             Map<String, Boolean> keys = createValidKeysMap("jvm", "reader",
-                    "writer", "chunkSize", "cacheThreshold");
+                "writer", "chunkSize", "cacheThreshold");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
@@ -140,18 +141,19 @@ public class Config {
 
         private int parseIntMiB() {
             long result = parseLongMiB();
-            if (result >= Integer.MAX_VALUE)
+            if (result >= Integer.MAX_VALUE) {
                 throw newFileFormatException(
-                        "Given memory value is to large for integer: %s resp. %d bytes.",
-                        humanReadableByteCount(result), result);
+                    "Given memory value is to large for integer: %s resp. %d bytes.",
+                    humanReadableByteCount(result), result);
+            }
             return (int) result;
         }
 
         private void parseUpdateInterval() {
             assertEventIsId(ID.MappingStart);
 
-            Map<String, Boolean> keys = createValidKeysMap("log", "console",
-                    "consoleParams");
+            Map<String, Boolean> keys =
+                createValidKeysMap("log", "console", "consoleParams");
 
             event = iter.next();
             while (!event.is(ID.MappingEnd)) {
@@ -265,8 +267,8 @@ public class Config {
     }
 
     public void logConfig() {
-        LOGGER.info("config %s", StringUtils.repeat("-",
-                80 - "config ".length()));
+        LOGGER.info("config %s",
+            StringUtils.repeat("-", 80 - "config ".length()));
         //@formatter:off
         LOGGER.info("numberOfThreads:             %d",   numberOfThreads);
         LOGGER.info("memoryJvm:                   %s",   humanReadableByteCount(memoryJvm));
@@ -287,12 +289,11 @@ public class Config {
         try {
             new ConfigParser(file).run();
         } catch (NoSuchFileException e) {
-            throw new NoSuchFileException(
-                    String.format(
-                            "Config file missing: Could not open '%s'.%n"
-                                    + "Did you copy '%s.sample' to '%s' in the installation directory '%s'?",
-                            file, Constants.CONFIG_FILE, Constants.CONFIG_FILE,
-                            GlmtkPaths.GLMTK_DIR));
+            throw new NoSuchFileException(String.format(
+                "Config file missing: Could not open '%s'.%n"
+                    + "Did you copy '%s.sample' to '%s' in the installation directory '%s'?",
+                file, Constants.CONFIG_FILE, Constants.CONFIG_FILE,
+                GlmtkPaths.GLMTK_DIR));
         }
     }
 }

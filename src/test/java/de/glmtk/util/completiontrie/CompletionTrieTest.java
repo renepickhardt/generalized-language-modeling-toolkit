@@ -25,6 +25,7 @@ import com.google.common.collect.PeekingIterator;
 
 import de.glmtk.util.StringUtils;
 
+
 public class CompletionTrieTest {
     @Test
     public void testEmptyTrie() throws IOException {
@@ -37,8 +38,7 @@ public class CompletionTrieTest {
         try {
             trieIter.next();
             fail("Expected NoSuchElementException.");
-        } catch (NoSuchElementException e) {
-        }
+        } catch (NoSuchElementException e) {}
     }
 
     @Test
@@ -55,8 +55,9 @@ public class CompletionTrieTest {
         //@formatter:on
 
         CompletionTrieBuilder builder = new CompletionTrieBuilder(true);
-        for (CompletionTrieEntry entry : entries)
+        for (CompletionTrieEntry entry : entries) {
             builder.add(entry.getString(), entry.getScore());
+        }
 
         CompletionTrie trie = builder.build();
         CompletionTrieUtils.visualize(trie);
@@ -78,12 +79,14 @@ public class CompletionTrieTest {
             assertTrue(trie.contains(entry.getString()));
             assertTrue(trie.containsPrefix(entry.getString()));
             assertEquals(Long.valueOf(entry.getScore()),
-                    trie.get(entry.getString()));
+                trie.get(entry.getString()));
         }
 
-        PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions("1"));
-        while (iter.hasNext())
+        PeekingIterator<CompletionTrieEntry> iter =
+            peekingIterator(trie.getCompletions("1"));
+        while (iter.hasNext()) {
             assertEquals(iter.peek(), iter.next());
+        }
     }
 
     @Test
@@ -91,8 +94,9 @@ public class CompletionTrieTest {
     public void testAutocompletion() throws IOException {
         CompletionTrieBuilder builder = new CompletionTrieBuilder(true);
         try (BufferedReader reader = Files.newBufferedReader(
-                Paths.get("/home/lukas/langmodels/workspace/autocompletion/data/wiki-articles.nolink.tsv"),
-                Charset.defaultCharset())) {
+            Paths.get(
+                "/home/lukas/langmodels/workspace/autocompletion/data/wiki-articles.nolink.tsv"),
+            Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -105,20 +109,21 @@ public class CompletionTrieTest {
         CompletionTrie trie = builder.build();
         builder.reset();
 
-        try (BufferedReader stdin = new BufferedReader(new InputStreamReader(
-                System.in))) {
+        try (BufferedReader stdin =
+            new BufferedReader(new InputStreamReader(System.in))) {
             System.out.println("Query:");
             String input;
             long timeBefore, timeAfter;
             while ((input = stdin.readLine()) != null) {
                 timeBefore = System.nanoTime();
-                List<CompletionTrieEntry> completions = trie.getTopKCompletions(
-                        input, 5);
+                List<CompletionTrieEntry> completions =
+                    trie.getTopKCompletions(input, 5);
                 timeAfter = System.nanoTime();
                 System.out.println("Completion took... "
-                        + (timeAfter - timeBefore) / 1000f + "us");
-                for (CompletionTrieEntry entry : completions)
+                    + (timeAfter - timeBefore) / 1000f + "us");
+                for (CompletionTrieEntry entry : completions) {
                     System.out.println(entry);
+                }
             }
         }
     }

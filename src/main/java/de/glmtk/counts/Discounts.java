@@ -48,14 +48,15 @@ public class Discounts {
     }
 
     public double getForCount(long count) {
-        if (count == 0)
+        if (count == 0) {
             return 0.0;
-        else if (count == 1)
+        } else if (count == 1) {
             return one;
-        else if (count == 2)
+        } else if (count == 2) {
             return two;
-        else
+        } else {
             return threePlus;
+        }
     }
 
     public void setOne(double one) {

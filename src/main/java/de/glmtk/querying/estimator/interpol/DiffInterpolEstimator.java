@@ -27,6 +27,7 @@ import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.discount.DiscountEstimator;
 
+
 public class DiffInterpolEstimator extends InterpolEstimator {
     public DiffInterpolEstimator(DiscountEstimator alpha) {
         super(alpha, BackoffMode.SKP);
@@ -59,15 +60,17 @@ public class DiffInterpolEstimator extends InterpolEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        if (history.isEmptyOrOnlySkips())
-            //if (history.isEmpty()) {
+        if (history.isEmptyOrOnlySkips()) {
+            // if (history.isEmpty()) {
             return super.calcProbability(sequence, history, recDepth);
-        else if (!alpha.isDefined(sequence, history, recDepth)) {
+        } else if (!alpha.isDefined(sequence, history, recDepth)) {
             logTrace(recDepth, "Alpha undefined, averaging backoffs.");
             double result = 0;
-            Set<NGram> diffHistories = history.getDifferentiatedNGrams(backoffMode);
-            for (NGram diffHistory : diffHistories)
+            Set<NGram> diffHistories =
+                history.getDifferentiatedNGrams(backoffMode);
+            for (NGram diffHistory : diffHistories) {
                 result += probability(sequence, diffHistory, recDepth);
+            }
             result /= diffHistories.size();
             return result;
         }
@@ -75,8 +78,9 @@ public class DiffInterpolEstimator extends InterpolEstimator {
         double alphaVal = alpha.probability(sequence, history, recDepth);
         double betaVal = 0;
         Set<NGram> diffHistories = history.getDifferentiatedNGrams(backoffMode);
-        for (NGram diffHistory : diffHistories)
+        for (NGram diffHistory : diffHistories) {
             betaVal += beta.probability(sequence, diffHistory, recDepth);
+        }
         betaVal /= diffHistories.size();
         double gammaVal = gamma(sequence, history, recDepth);
 

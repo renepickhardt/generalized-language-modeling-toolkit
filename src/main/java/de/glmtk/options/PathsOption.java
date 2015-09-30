@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+
 public class PathsOption extends Option {
     public static final String DEFAULT_ARGNAME = PathOption.DEFAULT_ARGNAME;
 
@@ -64,20 +65,24 @@ public class PathsOption extends Option {
     }
 
     private void checkrequiretsConflict() {
-        if (requireFiles && requireDirectories)
+        if (requireFiles && requireDirectories) {
             throw new IllegalStateException(
-                    "Conflict: both needFiles() and needDirectories() active.");
-        if (requireMayExist & requireMustExist)
+                "Conflict: both needFiles() and needDirectories() active.");
+        }
+        if (requireMayExist & requireMustExist) {
             throw new IllegalStateException(
-                    "Conflict: both mayExist() and mustExist() active.");
+                "Conflict: both mayExist() and mustExist() active.");
+        }
     }
 
     private void improveArgName() {
-        if (arg.name.equals(DEFAULT_ARGNAME))
-            if (requireFiles)
+        if (arg.name.equals(DEFAULT_ARGNAME)) {
+            if (requireFiles) {
                 arg.name = "FILE";
-            else if (requireDirectories)
+            } else if (requireDirectories) {
                 arg.name = "DIR";
+            }
+        }
     }
 
     public PathsOption defaultValue(List<Path> defaultValue) {
@@ -92,12 +97,14 @@ public class PathsOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        if (!given)
+        if (!given) {
             value = newArrayList();
+        }
 
-        for (String pathString : arg.values)
+        for (String pathString : arg.values) {
             value.add(parsePath(pathString, requireMayExist, requireMustExist,
-                    requireFiles, requireDirectories, this));
+                requireFiles, requireDirectories, this));
+        }
     }
 
     public List<Path> getPaths() {

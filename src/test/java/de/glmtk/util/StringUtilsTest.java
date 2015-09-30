@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+
 public class StringUtilsTest {
     @Test
     public void testSplit() {
@@ -41,27 +42,27 @@ public class StringUtilsTest {
         assertEquals(asList("a", "a"), split("  a a  ", ' '));
         assertEquals(asList("a", "a"), split("a    a  ", ' '));
 
-        assertEquals(asList("a", "b", "c", "d", "e", "e", "f"), split(
-                "a    b   c d   e e f ", ' '));
+        assertEquals(asList("a", "b", "c", "d", "e", "e", "f"),
+            split("a    b   c d   e e f ", ' '));
     }
 
     @Test
     public void testsplitSparseSparse() {
         assertEquals(asList("a"), splitSparse("a", ' '));
-        assertEquals(asList("", "", "", "a", "", "", ""), splitSparse(
-                "   a   ", ' '));
+        assertEquals(asList("", "", "", "a", "", "", ""),
+            splitSparse("   a   ", ' '));
         assertEquals(asList("a", ""), splitSparse("a ", ' '));
         assertEquals(asList("", "a"), splitSparse(" a", ' '));
 
         assertEquals(asList("a", "a"), splitSparse("a a", ' '));
         assertEquals(asList("a", "b"), splitSparse("a b", ' '));
         assertEquals(asList("b", "a"), splitSparse("b a", ' '));
-        assertEquals(asList("", "", "a", "a", "", ""), splitSparse("  a a  ",
-                ' '));
-        assertEquals(asList("a", "", "", "", "a", "", ""), splitSparse(
-                "a    a  ", ' '));
+        assertEquals(asList("", "", "a", "a", "", ""),
+            splitSparse("  a a  ", ' '));
+        assertEquals(asList("a", "", "", "", "a", "", ""),
+            splitSparse("a    a  ", ' '));
 
-        assertEquals(asList("a", "", "", "", "b", "", "", "c", "d", "", "",
-                "e", "e", "f", ""), splitSparse("a    b   c d   e e f ", ' '));
+        assertEquals(asList("a", "", "", "", "b", "", "", "c", "d", "", "", "e",
+            "e", "f", ""), splitSparse("a    b   c d   e e f ", ' '));
     }
 }

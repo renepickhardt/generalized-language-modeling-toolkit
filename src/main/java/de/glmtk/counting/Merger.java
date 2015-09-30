@@ -50,6 +50,7 @@ import de.glmtk.util.NioUtils;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.ThreadUtils;
 
+
 public class Merger {
     private static final Logger LOGGER = Logger.get(Merger.class);
 
@@ -58,7 +59,7 @@ public class Merger {
         public Object call() throws InterruptedException, IOException {
             while (!patternQueue.isEmpty()) {
                 Pattern pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
-                        TimeUnit.MILLISECONDS);
+                    TimeUnit.MILLISECONDS);
                 if (pattern == null) {
                     LOGGER.trace("Thread Idle.");
                     StatisticalNumberHelper.count("Merger#Thread idle");
@@ -80,34 +81,37 @@ public class Merger {
             Path patternDir = chunkedDir.resolve(pattern.toString());
 
             Set<String> chunksForPattern;
-            while ((chunksForPattern = status.getChunksForPattern(pattern)).size() != 1) {
-                int numParallelChunks = Math.min(numParallelReaders,
-                        chunksForPattern.size());
+            while ((chunksForPattern = status.getChunksForPattern(pattern))
+                .size() != 1) {
+                int numParallelChunks =
+                    Math.min(numParallelReaders, chunksForPattern.size());
 
                 Set<String> chunksToMerge = new LinkedHashSet<>();
                 Iterator<String> iter = chunksForPattern.iterator();
-                for (int i = 0; i != numParallelChunks; ++i)
+                for (int i = 0; i != numParallelChunks; ++i) {
                     chunksToMerge.add(iter.next());
+                }
 
-                Path mergeFile = patternDir.resolve("merge"
-                        + getMergeCounter(chunksForPattern));
+                Path mergeFile = patternDir
+                    .resolve("merge" + getMergeCounter(chunksForPattern));
                 LOGGER.debug("Merging pattern %s:\t%s -> %s.", pattern,
-                        chunksToMerge, mergeFile.getFileName());
+                    chunksToMerge, mergeFile.getFileName());
                 mergeChunksToFile(patternDir, chunksToMerge, mergeFile);
 
                 synchronized (status) {
                     try {
                         status.performMergeForChunks(pattern, chunksToMerge,
-                                mergeFile.getFileName().toString());
+                            mergeFile.getFileName().toString());
                     } catch (IOException e) {
                         // Updating status did not work, we continue in the hope
                         // it works next time.
                         LOGGER.warn("Unable to write status, continuing: "
-                                + getStackTraceAsString(e));
+                            + getStackTraceAsString(e));
                     }
 
-                    for (String chunk : chunksToMerge)
+                    for (String chunk : chunksToMerge) {
                         Files.deleteIfExists(patternDir.resolve(chunk));
+                    }
                 }
             }
 
@@ -115,25 +119,29 @@ public class Merger {
             Path dest = countedDir.resolve(pattern.toString());
 
             synchronized (status) {
-                LOGGER.debug("Finishing pattern %s:\t%s\t -> %s.", pattern,
-                        src, dest);
+                LOGGER.debug("Finishing pattern %s:\t%s\t -> %s.", pattern, src,
+                    dest);
                 Files.deleteIfExists(dest);
                 Files.move(src, dest);
                 status.finishMerge(pattern);
 
-                if (NioUtils.isDirEmpty(patternDir))
+                if (NioUtils.isDirEmpty(patternDir)) {
                     Files.deleteIfExists(patternDir);
+                }
             }
         }
 
         private int getMergeCounter(Set<String> chunksForPattern) {
             int maxMergeNr = 0;
-            for (String chunk : chunksForPattern)
+            for (String chunk : chunksForPattern) {
                 if (chunk.startsWith("merge")) {
-                    int mergeNr = Integer.parseInt(chunk.substring("merge".length()));
-                    if (maxMergeNr < mergeNr)
+                    int mergeNr =
+                        Integer.parseInt(chunk.substring("merge".length()));
+                    if (maxMergeNr < mergeNr) {
                         maxMergeNr = mergeNr;
+                    }
                 }
+            }
             return maxMergeNr + 1;
         }
 
@@ -143,32 +151,33 @@ public class Merger {
             Files.deleteIfExists(mergeFile);
 
             PriorityQueue<CountsReader> readerQueue = new PriorityQueue<>(
-                    chunksToMerge.size(), CountsReader.SEQUENCE_COMPARATOR);
+                chunksToMerge.size(), CountsReader.SEQUENCE_COMPARATOR);
 
             int memoryPerReader = (int) (readerMemory / chunksToMerge.size());
             for (String chunk : chunksToMerge) {
                 Path chunkFile = patternDir.resolve(chunk);
-                int memory = (int) Math.min(Files.size(chunkFile),
-                        memoryPerReader);
+                int memory =
+                    (int) Math.min(Files.size(chunkFile), memoryPerReader);
 
                 // Reader is closed later manually so we supress the warning.
                 @SuppressWarnings("resource")
-                CountsReader reader = new CountsReader(chunkFile,
-                        Constants.CHARSET, memory);
+                CountsReader reader =
+                    new CountsReader(chunkFile, Constants.CHARSET, memory);
 
                 reader.readLine();
                 readerQueue.add(reader);
             }
 
             try (CountsWriter writer = new CountsWriter(mergeFile,
-                    Constants.CHARSET, (int) writerMemory)) {
+                Constants.CHARSET, (int) writerMemory)) {
                 String lastSequence = null;
                 Counts countsAgg = null;
                 while (!readerQueue.isEmpty()) {
                     @SuppressWarnings("resource")
                     CountsReader reader = readerQueue.poll();
-                    if (reader == null)
+                    if (reader == null) {
                         continue;
+                    }
                     if (reader.isEof()) {
                         reader.close();
                         continue;
@@ -177,15 +186,17 @@ public class Merger {
                     String sequence = reader.getSequence();
                     Counts counts = reader.getCounts();
 
-                    if (sequence.equals(lastSequence))
+                    if (sequence.equals(lastSequence)) {
                         countsAgg.add(counts);
-                    else {
-                        if (lastSequence != null)
-                            if (absolute)
+                    } else {
+                        if (lastSequence != null) {
+                            if (absolute) {
                                 writer.append(lastSequence,
-                                        countsAgg.getOnePlusCount());
-                            else
+                                    countsAgg.getOnePlusCount());
+                            } else {
                                 writer.append(lastSequence, countsAgg);
+                            }
+                        }
                         lastSequence = sequence;
                         countsAgg = counts;
                     }
@@ -194,14 +205,18 @@ public class Merger {
                     readerQueue.add(reader);
                 }
 
-                if (lastSequence != null)
-                    if (absolute)
-                        writer.append(lastSequence, countsAgg.getOnePlusCount());
-                    else
+                if (lastSequence != null) {
+                    if (absolute) {
+                        writer.append(lastSequence,
+                            countsAgg.getOnePlusCount());
+                    } else {
                         writer.append(lastSequence, countsAgg);
+                    }
+                }
             } finally {
-                for (CountsReader reader : readerQueue)
+                for (CountsReader reader : readerQueue) {
                     reader.close();
+                }
             }
         }
     }
@@ -245,8 +260,9 @@ public class Merger {
                        Path countedDir,
                        ProgressBar progressBar) throws Exception {
         LOGGER.debug("patterns = %s", patterns);
-        if (patterns.isEmpty())
+        if (patterns.isEmpty()) {
             return;
+        }
 
         Files.createDirectories(countedDir);
 
@@ -258,15 +274,17 @@ public class Merger {
         calculateMemory();
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != config.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i) {
             threads.add(new Thread());
+        }
 
         this.progressBar = progressBar;
         this.progressBar.total(patternQueue.size());
         ThreadUtils.executeThreads(config.getNumberOfThreads(), threads);
 
-        if (NioUtils.isDirEmpty(chunkedDir))
+        if (NioUtils.isDirEmpty(chunkedDir)) {
             Files.deleteIfExists(chunkedDir);
+        }
     }
 
     private void calculateMemory() {

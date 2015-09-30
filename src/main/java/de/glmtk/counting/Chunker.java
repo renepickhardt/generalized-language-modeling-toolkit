@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen, Rene Pickhardt
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -59,10 +59,12 @@ import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 import de.glmtk.util.ThreadUtils;
 
+
 public class Chunker {
     private static final Logger LOGGER = Logger.get(Chunker.class);
-    private static final int TAB_COUNTS_NL_BYTES = ("\t"
-            + new Counts(10, 10, 10, 10).toString() + "\n").getBytes(Constants.CHARSET).length;
+    private static final int TAB_COUNTS_NL_BYTES =
+        ("\t" + new Counts(10, 10, 10, 10).toString() + "\n")
+            .getBytes(Constants.CHARSET).length;
 
     private abstract class Thread implements Callable<Object> {
         protected Pattern pattern;
@@ -75,9 +77,10 @@ public class Chunker {
         public Object call() throws Exception {
             while (!patternQueue.isEmpty()) {
                 pattern = patternQueue.poll(Constants.MAX_IDLE_TIME,
-                        TimeUnit.MILLISECONDS);
-                if (pattern == null)
+                    TimeUnit.MILLISECONDS);
+                if (pattern == null) {
                     continue;
+                }
 
                 List<Path> inputFiles = getInputFiles();
                 if (inputFiles == null) {
@@ -91,18 +94,21 @@ public class Chunker {
 
                 LOGGER.debug("Chunking pattern '%s'.", pattern);
 
-                if (absolute)
+                if (absolute) {
                     patternDir = absoluteChunkedDir.resolve(pattern.toString());
-                else
-                    patternDir = continuationChunkedDir.resolve(pattern.toString());
+                } else {
+                    patternDir =
+                        continuationChunkedDir.resolve(pattern.toString());
+                }
                 chunkFiles = new LinkedHashSet<>();
                 chunkSize = 0L;
                 chunkCounts = new HashMap<>();
 
                 Files.createDirectories(patternDir);
 
-                for (Path inputFile : inputFiles)
+                for (Path inputFile : inputFiles) {
                     sequenceInput(inputFile);
+                }
 
                 writeChunkToFile(); // Write remaining partial chunk.
                 chunkCounts = null; // Free memory of map.
@@ -129,22 +135,23 @@ public class Chunker {
             Files.deleteIfExists(chunkFile);
 
             Map<String, Counts> sortedCounts = new TreeMap<>(chunkCounts);
-            try (CountsWriter writer = new CountsWriter(chunkFile,
-                    Constants.CHARSET, writerMemory)) {
+            try (CountsWriter writer =
+                new CountsWriter(chunkFile, Constants.CHARSET, writerMemory)) {
                 for (Entry<String, Counts> entry : sortedCounts.entrySet()) {
                     String sequence = entry.getKey();
                     Counts counts = entry.getValue();
-                    if (absolute)
+                    if (absolute) {
                         writer.append(sequence, counts.getOnePlusCount());
-                    else
+                    } else {
                         writer.append(sequence, counts);
+                    }
                 }
             }
 
             chunkFiles.add(chunkFile.getFileName().toString());
 
             LOGGER.debug("Wrote chunk for pattern '%s': '%s'.", pattern,
-                    chunkFile);
+                chunkFile);
         }
     }
 
@@ -157,27 +164,31 @@ public class Chunker {
         @Override
         protected void sequenceInput(Path inputFile) throws Exception {
             int patternSize = pattern.size();
-            if (trainingCache != null)
-                for (String line : trainingCache)
+            if (trainingCache != null) {
+                for (String line : trainingCache) {
                     perLine(line, patternSize);
-            else {
-                int memory = (int) Math.min(Files.size(inputFile), readerMemory);
-                try (BufferedReader reader = NioUtils.newBufferedReader(
-                        inputFile, Constants.CHARSET, memory)) {
+                }
+            } else {
+                int memory =
+                    (int) Math.min(Files.size(inputFile), readerMemory);
+                try (BufferedReader reader = NioUtils
+                    .newBufferedReader(inputFile, Constants.CHARSET, memory)) {
                     String line;
-                    while ((line = reader.readLine()) != null)
+                    while ((line = reader.readLine()) != null) {
                         perLine(line, patternSize);
+                    }
                 }
             }
         }
 
         private void perLine(String line,
                              int patternSize) throws IOException {
-            String[] split = StringUtils.split(line, ' ').toArray(new String[0]);
+            String[] split =
+                StringUtils.split(line, ' ').toArray(new String[0]);
             String[] words = new String[split.length];
             String[] poses = new String[split.length];
             StringUtils.extractWordsAndPoses(split, trainingFileTagged, words,
-                    poses);
+                poses);
 
             for (int p = 0; p <= split.length - patternSize; ++p) {
                 String sequence = pattern.apply(words, poses, p);
@@ -191,15 +202,16 @@ public class Chunker {
                 counts = new Counts();
                 chunkCounts.put(sequence, counts);
                 chunkSize += sequence.getBytes(Constants.CHARSET).length
-                        + TAB_COUNTS_NL_BYTES;
+                    + TAB_COUNTS_NL_BYTES;
             }
             counts.add(1L);
 
             if (chunkSize > maxChunkSize) {
-                if (Constants.DEBUG_AVERAGE_MEMORY)
+                if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average("Chunk Map Memory",
-                            MemoryUtil.deepMemoryUsageOf(chunkCounts,
-                                    VisibilityFilter.ALL));
+                        MemoryUtil.deepMemoryUsageOf(chunkCounts,
+                            VisibilityFilter.ALL));
+                }
 
                 writeChunkToFile();
                 chunkSize = 0L;
@@ -221,29 +233,33 @@ public class Chunker {
                 inputDir = absoluteDir;
                 fromChunked = false;
             } else if (isAbsolute
-                    && status.getChunkedPatterns(true).contains(inputPattern)) {
+                && status.getChunkedPatterns(true).contains(inputPattern)) {
                 inputDir = absoluteChunkedDir;
                 fromChunked = true;
             } else if (!isAbsolute
-                    && status.getCounted(false).contains(inputPattern)) {
+                && status.getCounted(false).contains(inputPattern)) {
                 inputDir = continuationDir;
                 fromChunked = false;
             } else if (!isAbsolute
-                    && status.getChunkedPatterns(false).contains(inputPattern)) {
+                && status.getChunkedPatterns(false).contains(inputPattern)) {
                 inputDir = continuationChunkedDir;
                 fromChunked = true;
-            } else
+            } else {
                 return null;
+            }
 
             inputDir = inputDir.resolve(inputPattern.toString());
 
-            if (!fromChunked)
+            if (!fromChunked) {
                 return Arrays.asList(inputDir);
+            }
 
             List<Path> result = new ArrayList<>();
-            try (DirectoryStream<Path> inputDirStream = Files.newDirectoryStream(inputDir)) {
-                for (Path inputFile : inputDirStream)
+            try (DirectoryStream<Path> inputDirStream =
+                Files.newDirectoryStream(inputDir)) {
+                for (Path inputFile : inputDirStream) {
                     result.add(inputFile);
+                }
             }
             return result;
         }
@@ -252,15 +268,15 @@ public class Chunker {
         protected void sequenceInput(Path inputFile) throws Exception {
             LOGGER.debug("Sequencing '%s' from '%s'.", pattern, inputFile);
             int memory = (int) Math.min(Files.size(inputFile), readerMemory);
-            try (CountsReader reader = new CountsReader(inputFile,
-                    Constants.CHARSET, memory)) {
+            try (CountsReader reader =
+                new CountsReader(inputFile, Constants.CHARSET, memory)) {
                 while (reader.readLine() != null) {
                     String sequence = reader.getSequence();
                     Counts counts = reader.getCounts();
                     boolean fromAbsolute = reader.isFromAbsolute();
 
-                    String appliedSequence = pattern.apply(StringUtils.split(
-                            sequence, ' ').toArray(new String[0]));
+                    String appliedSequence = pattern.apply(StringUtils
+                        .split(sequence, ' ').toArray(new String[0]));
                     countSequence(appliedSequence, counts, fromAbsolute);
                 }
             }
@@ -274,18 +290,20 @@ public class Chunker {
                 counts = new Counts();
                 chunkCounts.put(sequence, counts);
                 chunkSize += sequence.getBytes(Constants.CHARSET).length
-                        + TAB_COUNTS_NL_BYTES;
+                    + TAB_COUNTS_NL_BYTES;
             }
-            if (fromAbsolute)
+            if (fromAbsolute) {
                 counts.addOne(sequenceCounts.getOnePlusCount());
-            else
+            } else {
                 counts.add(sequenceCounts);
+            }
 
             if (chunkSize > maxChunkSize) {
-                if (Constants.DEBUG_AVERAGE_MEMORY)
+                if (Constants.DEBUG_AVERAGE_MEMORY) {
                     StatisticalNumberHelper.average("Chunk Map Memory",
-                            MemoryUtil.deepMemoryUsageOf(chunkCounts,
-                                    VisibilityFilter.ALL));
+                        MemoryUtil.deepMemoryUsageOf(chunkCounts,
+                            VisibilityFilter.ALL));
+                }
 
                 writeChunkToFile();
                 chunkSize = 0L;
@@ -347,33 +365,37 @@ public class Chunker {
                        Set<Pattern> patterns,
                        ProgressBar progressBar) throws Exception {
         LOGGER.debug("patterns = '%s'", patterns);
-        if (patterns.isEmpty())
+        if (patterns.isEmpty()) {
             return;
+        }
 
         this.absolute = absolute;
         patternQueue = new PriorityBlockingQueue<>(patterns);
         calculateMemory();
 
         if (!absolute
-                || Files.size(trainingFile) > config.getMemoryCacheThreshold())
+            || Files.size(trainingFile) > config.getMemoryCacheThreshold()) {
             trainingCache = null;
-        else {
+        } else {
             int memory = (int) Math.min(Files.size(trainingFile), readerMemory);
-            try (BufferedReader reader = NioUtils.newBufferedReader(
-                    trainingFile, Constants.CHARSET, memory)) {
+            try (BufferedReader reader = NioUtils
+                .newBufferedReader(trainingFile, Constants.CHARSET, memory)) {
                 trainingCache = new ArrayList<>();
                 String line;
-                while ((line = reader.readLine()) != null)
+                while ((line = reader.readLine()) != null) {
                     trainingCache.add(line);
+                }
             }
         }
 
         List<Callable<Object>> threads = new LinkedList<>();
-        for (int i = 0; i != config.getNumberOfThreads(); ++i)
-            if (absolute)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i) {
+            if (absolute) {
                 threads.add(new AbsoluteThread());
-            else
+            } else {
                 threads.add(new ContinuationThread());
+            }
+        }
 
         this.progressBar = progressBar;
         this.progressBar.total(patternQueue.size());

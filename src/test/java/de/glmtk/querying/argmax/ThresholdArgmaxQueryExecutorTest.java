@@ -40,17 +40,19 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.cache.CacheSpecification.CacheImplementation;
 import de.glmtk.cache.CompletionTrieCache;
 import de.glmtk.querying.argmax.ArgmaxQueryExecutor.ArgmaxResult;
-import de.glmtk.querying.argmax.ThresholdArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumModKneserNeyEstimator;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
+
 public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
-    private static final Path VOCAB_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.vocab");
-    private static final Path QUERY_FILE = TEST_RESSOURCES_DIR.resolve("en0008t.argmax.query");
+    private static final Path VOCAB_FILE =
+        TEST_RESSOURCES_DIR.resolve("en0008t.argmax.vocab");
+    private static final Path QUERY_FILE =
+        TEST_RESSOURCES_DIR.resolve("en0008t.argmax.query");
 
     private static Set<String> vocab;
     private static List<String> queries;
@@ -61,34 +63,40 @@ public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
     @BeforeClass
     public static void loadFiles() throws IOException {
         vocab = new HashSet<>();
-        try (BufferedReader reader = Files.newBufferedReader(VOCAB_FILE,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(VOCAB_FILE, Constants.CHARSET)) {
             String line;
-            while ((line = reader.readLine()) != null)
+            while ((line = reader.readLine()) != null) {
                 vocab.add(line);
+            }
         }
 
         queries = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(QUERY_FILE,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(QUERY_FILE, Constants.CHARSET)) {
             String line;
-            while ((line = reader.readLine()) != null)
+            while ((line = reader.readLine()) != null) {
                 queries.add(line);
+            }
         }
     }
 
     @BeforeClass
     public static void loadCache() throws IOException {
         CacheSpecification randomAccessRequiredCache = new CacheSpecification();
-        randomAccessRequiredCache.addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
-        randomAccessRequiredCache.addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
-        randomAccessCache = randomAccessRequiredCache.withProgress().build(
-                TEST_CORPUS.getGlmtk().getPaths());
+        randomAccessRequiredCache
+            .addAll(Estimators.WEIGHTEDSUM_MKN.getRequiredCache(5));
+        randomAccessRequiredCache
+            .addAll(Estimators.WEIGHTEDSUM_GLM.getRequiredCache(5));
+        randomAccessCache = randomAccessRequiredCache.withProgress()
+            .build(TEST_CORPUS.getGlmtk().getPaths());
 
-        CacheSpecification sortedAccessRequiredCache = new CacheSpecification().withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
-        sortedAccessRequiredCache.withCounts(randomAccessRequiredCache.getCountPatterns());
-        sortedAccessCache = (CompletionTrieCache) sortedAccessRequiredCache.withProgress().build(
-                TEST_CORPUS.getGlmtk().getPaths());
+        CacheSpecification sortedAccessRequiredCache = new CacheSpecification()
+            .withCacheImplementation(CacheImplementation.COMPLETION_TRIE);
+        sortedAccessRequiredCache
+            .withCounts(randomAccessRequiredCache.getCountPatterns());
+        sortedAccessCache = (CompletionTrieCache) sortedAccessRequiredCache
+            .withProgress().build(TEST_CORPUS.getGlmtk().getPaths());
     }
 
     @Test
@@ -98,14 +106,15 @@ public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(randomAccessCache);
-        ThresholdArgmaxQueryExecutor argmaxQueryExecutor = new ThresholdArgmaxQueryExecutor(
-                estimator, randomAccessCache, sortedAccessCache);
+        ThresholdArgmaxQueryExecutor argmaxQueryExecutor =
+            new ThresholdArgmaxQueryExecutor(estimator, randomAccessCache,
+                sortedAccessCache);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
             long t1 = System.currentTimeMillis();
-            List<ArgmaxResult> results = argmaxQueryExecutor.queryArgmax(query,
-                    5);
+            List<ArgmaxResult> results =
+                argmaxQueryExecutor.queryArgmax(query, 5);
             long t2 = System.currentTimeMillis();
             printArgmaxResults(results);
             System.out.format("took %dms%n%n", t2 - t1);
@@ -119,14 +128,15 @@ public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
         System.out.format("=== %s%n", estimator);
 
         estimator.setCache(randomAccessCache);
-        ThresholdArgmaxQueryExecutor argmaxQueryExecutor = new ThresholdArgmaxQueryExecutor(
-                estimator, randomAccessCache, sortedAccessCache);
+        ThresholdArgmaxQueryExecutor argmaxQueryExecutor =
+            new ThresholdArgmaxQueryExecutor(estimator, randomAccessCache,
+                sortedAccessCache);
 
         for (String query : queries) {
             System.out.format("# %s:%n", query);
             long t1 = System.currentTimeMillis();
-            List<ArgmaxResult> results = argmaxQueryExecutor.queryArgmax(query,
-                    5);
+            List<ArgmaxResult> results =
+                argmaxQueryExecutor.queryArgmax(query, 5);
             long t2 = System.currentTimeMillis();
             printArgmaxResults(results);
             System.out.format("took %dms%n%n", t2 - t1);
@@ -134,7 +144,8 @@ public class ThresholdArgmaxQueryExecutorTest extends TestCorporaTest {
     }
 
     private void printArgmaxResults(List<ArgmaxResult> results) {
-        for (ArgmaxResult result : results)
+        for (ArgmaxResult result : results) {
             System.out.println(result);
+        }
     }
 }

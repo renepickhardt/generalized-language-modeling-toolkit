@@ -25,15 +25,18 @@ import java.lang.reflect.Constructor;
 import java.util.Iterator;
 import java.util.ListIterator;
 
-public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> {
+
+public class BinomDiamond<T extends BinomDiamondNode<T>>
+        implements Iterable<T> {
     private T[] diamond;
     private int order;
 
     public BinomDiamond(int order,
                         Class<T> clazz) {
-        if (order <= 0 || order >= 31)
+        if (order <= 0 || order >= 31) {
             throw new IllegalArgumentException(
-                    "Illegal order, must be: 0 > order > 31.");
+                "Illegal order, must be: 0 > order > 31.");
+        }
 
         @SuppressWarnings("unchecked")
         T[] diamond = (T[]) Array.newInstance(clazz, 1 << order);
@@ -51,10 +54,10 @@ public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> 
             }
         } catch (NoSuchMethodException e1) {
             throw new RuntimeException(
-                    "Node class needs constructor without arguments");
+                "Node class needs constructor without arguments");
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(
-                    "Could not invoke node class constructor.");
+                "Could not invoke node class constructor.");
         }
     }
 
@@ -75,9 +78,10 @@ public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> 
     }
 
     public T get(int index) {
-        if (index < 0 || index >= diamond.length)
+        if (index < 0 || index >= diamond.length) {
             throw new IllegalArgumentException(
-                    "Illegal 'index': needs to be in [0,size[.");
+                "Illegal 'index': needs to be in [0,size[.");
+        }
         return diamond[index];
     }
 
@@ -169,20 +173,22 @@ public class BinomDiamond<T extends BinomDiamondNode<T>> implements Iterable<T> 
         @Override
         public T next() {
             index = nextIndex;
-            if (nextIndex == 0)
+            if (nextIndex == 0) {
                 nextIndex = 1;
-            else {
+            } else {
                 int x = Integer.bitCount(nextIndex);
                 // next integer with x bits set
                 int t = (nextIndex | (nextIndex - 1)) + 1;
-                nextIndex = t
-                        | ((((t & -t) / (nextIndex & -nextIndex)) >> 1) - 1);
+                nextIndex =
+                    t | ((((t & -t) / (nextIndex & -nextIndex)) >> 1) - 1);
 
                 int m = ((1 << x) - 1) << (order - x);
-                if (nextIndex > m)
+                if (nextIndex > m) {
                     nextIndex = (1 << (x + 1)) - 1;
-                if (nextIndex > (1 << order) - 1)
+                }
+                if (nextIndex > (1 << order) - 1) {
                     nextIndex = -1;
+                }
             }
             return diamond[index];
         }

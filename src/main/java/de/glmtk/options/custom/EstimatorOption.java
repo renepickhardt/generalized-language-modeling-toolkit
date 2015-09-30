@@ -19,6 +19,7 @@ import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 
+
 public class EstimatorOption extends Option {
     public static final String DEFAULT_ARGNAME = "ESTIMATOR";
 
@@ -51,11 +52,12 @@ public class EstimatorOption extends Option {
         wsumExp.append("Where <%s> may be any of:\n");
         for (Entry<String, Estimator> estimator : VALUES.entrySet()) {
             String line = format("  * %-" + longestAbbr + "s - %s\n",
-                    estimator.getKey(), estimator.getValue().getName());
+                estimator.getKey(), estimator.getValue().getName());
 
             exp.append(line);
-            if (estimator.getValue() instanceof WeightedSumEstimator)
+            if (estimator.getValue() instanceof WeightedSumEstimator) {
                 wsumExp.append(line);
+            }
         }
 
         EXPLANATION = exp.toString();
@@ -64,18 +66,23 @@ public class EstimatorOption extends Option {
 
     public static final Estimator parseEstimator(String estimatorString,
                                                  boolean requireWeightedSum,
-                                                 Option option) throws OptionException {
+                                                 Option option)
+                                                         throws OptionException {
         checkNotNull(estimatorString);
         checkNotNull(option);
 
         Estimator estimator = VALUES.get(estimatorString.toUpperCase());
-        if (estimator == null)
+        if (estimator == null) {
             throw new OptionException(
-                    "%s estimator not recognized: '%s'. Valid Values: %s.",
-                    option, estimatorString, join(VALUES.keySet(), ", "));
-        if (requireWeightedSum && !(estimator instanceof WeightedSumEstimator))
-            throw new OptionException("%s estimator needs to be a "
-                    + "weighted sum estimator.", option);
+                "%s estimator not recognized: '%s'. Valid Values: %s.", option,
+                estimatorString, join(VALUES.keySet(), ", "));
+        }
+        if (requireWeightedSum
+            && !(estimator instanceof WeightedSumEstimator)) {
+            throw new OptionException(
+                "%s estimator needs to be a " + "weighted sum estimator.",
+                option);
+        }
         return estimator;
     }
 
@@ -98,8 +105,9 @@ public class EstimatorOption extends Option {
 
     public EstimatorOption requireWeightedSum() {
         requireWeightedSum = true;
-        if (arg.name.equals(DEFAULT_ARGNAME))
+        if (arg.name.equals(DEFAULT_ARGNAME)) {
             arg.name = "WEIGHTEDSUM_ESTIMATOR";
+        }
         arg.explanation = WEIGHTEDSUM_EXPLANATION;
         return this;
     }

@@ -26,6 +26,7 @@ import org.junit.BeforeClass;
 
 import de.glmtk.common.Config;
 
+
 public class ConfigTest extends LoggingTest {
     protected static Config config;
 

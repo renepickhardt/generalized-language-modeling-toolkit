@@ -27,7 +27,9 @@ import static de.glmtk.common.PatternElem.CNT;
 import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 
-public class WeightedSumModKneserNeyEstimator extends AbstractWeightedSumEstimator {
+
+public class WeightedSumModKneserNeyEstimator extends
+                                              AbstractWeightedSumEstimator {
     protected BackoffMode backoffMode;
 
     public WeightedSumModKneserNeyEstimator() {
@@ -36,36 +38,39 @@ public class WeightedSumModKneserNeyEstimator extends AbstractWeightedSumEstimat
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {
-        if (backoffMode != BackoffMode.DEL && backoffMode != BackoffMode.SKP)
+        if (backoffMode != BackoffMode.DEL && backoffMode != BackoffMode.SKP) {
             throw new IllegalArgumentException(
-                    "Illegal BackoffMode for this class.");
+                "Illegal BackoffMode for this class.");
+        }
         this.backoffMode = backoffMode;
     }
 
     @Override
     public WeightedSumFunction calcWeightedSumFunction(NGram history) {
-        WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
-                history.size());
+        WeightedSumFunction weightedSumFunction =
+            new WeightedSumFunction(history.size());
 
         NGram fullHistory = history.concat(SKP_NGRAM);
-        while (!fullHistory.seen(cache))
+        while (!fullHistory.seen(cache)) {
             fullHistory = fullHistory.backoff(backoffMode);
+        }
 
         NGram hist = fullHistory.remove(fullHistory.size() - 1);
         int order = fullHistory.getPattern().numElems(CNT);
         double lambda = 1.0 / cache.getCount(hist.concat(SKP_NGRAM));
         weightedSumFunction.add(lambda, hist);
         for (int i = 0; i != order; ++i) {
-            if (i == 0)
+            if (i == 0) {
                 lambda *= cache.getGammaHigh(hist);
-            else
+            } else {
                 lambda *= cache.getGammaLow(hist);
+            }
             hist = hist.backoff(backoffMode);
-            lambda /= cache.getCount(WSKP_NGRAM.concat(hist).concat(
-                    WSKP_NGRAM));
+            lambda /=
+                cache.getCount(WSKP_NGRAM.concat(hist).concat(WSKP_NGRAM));
 
-            weightedSumFunction.add(lambda, WSKP_NGRAM.concat(
-                    hist.convertSkpToWskp()));
+            weightedSumFunction.add(lambda,
+                WSKP_NGRAM.concat(hist.convertSkpToWskp()));
         }
 
         return weightedSumFunction;

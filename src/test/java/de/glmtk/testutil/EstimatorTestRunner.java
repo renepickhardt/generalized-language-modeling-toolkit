@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -48,6 +48,7 @@ import de.glmtk.querying.EstimatorTest;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
 
+
 /**
  * Highly specialized JUnit-Test Runner, so we can have nice code, output and
  * eclipse JUnit view for {@link EstimatorTest}.
@@ -59,13 +60,12 @@ public class EstimatorTestRunner extends Suite {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public static @interface IgnoreProbMode {
-        ProbMode[] value();
+        ProbMode[]value();
     }
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    public static @interface EstimatorTestParameters {
-    }
+    public static @interface EstimatorTestParameters {}
 
     public static class EstimatorTestParams {
         private Estimator estimator;
@@ -107,17 +107,19 @@ public class EstimatorTestRunner extends Suite {
 
             public TestRunnerForProbMode(Class<?> type,
                                          ProbMode probMode,
-                                         int highestOrder) throws InitializationError {
+                                         int highestOrder)
+                                                 throws InitializationError {
                 super(type);
                 this.probMode = probMode;
                 this.highestOrder = highestOrder;
             }
 
             @Override
-            public Object createTest() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            public Object createTest()
+                    throws InstantiationException, IllegalAccessException,
+                    IllegalArgumentException, InvocationTargetException {
                 return getTestClass().getOnlyConstructor().newInstance(
-                        estimator, continuationEstimator, probMode,
-                        highestOrder);
+                    estimator, continuationEstimator, probMode, highestOrder);
             }
 
             @Override
@@ -135,20 +137,22 @@ public class EstimatorTestRunner extends Suite {
             @Override
             protected String testName(FrameworkMethod method) {
                 return String.format("%s - %s (%s)", method.getName(),
-                        TestRunnerForEstimator.this.getName(), getName());
+                    TestRunnerForEstimator.this.getName(), getName());
             }
 
             @Override
             protected void validateConstructor(List<Throwable> errors) {
                 validateOnlyOneConstructor(errors);
-                Constructor<?> constructor = getTestClass().getJavaClass().getConstructors()[0];
+                Constructor<?> constructor =
+                    getTestClass().getJavaClass().getConstructors()[0];
                 Class<?>[] types = constructor.getParameterTypes();
                 if (types.length != 4 || !types[0].equals(Estimator.class)
-                        || !types[1].equals(boolean.class)
-                        || !types[2].equals(ProbMode.class)
-                        || !types[3].equals(int.class))
+                    || !types[1].equals(boolean.class)
+                    || !types[2].equals(ProbMode.class)
+                    || !types[3].equals(int.class)) {
                     errors.add(new Exception(
-                            "Test class constructor should take exactly these arguments: (Estimator, boolean, ProbMode, integer)"));
+                        "Test class constructor should take exactly these arguments: (Estimator, boolean, ProbMode, integer)"));
+                }
             }
 
             @Override
@@ -167,8 +171,9 @@ public class EstimatorTestRunner extends Suite {
         private final List<TestRunnerForProbMode> runners;
 
         public TestRunnerForEstimator(Class<?> type,
-                                      EstimatorTestParams params) throws InitializationError {
-            super(type, Collections.<Runner> emptyList());
+                                      EstimatorTestParams params)
+                                              throws InitializationError {
+            super(type, Collections.<Runner>emptyList());
 
             estimator = params.estimator;
             continuationEstimator = params.continuationEstimator;
@@ -182,26 +187,29 @@ public class EstimatorTestRunner extends Suite {
             // Due to https://bugs.eclipse.org/bugs/show_bug.cgi?id=102512
             // we have to replace () with [].
             return StringUtils.replaceAll(estimator.getName(), "()", "[]")
-                    + " Estimator";
+                + " Estimator";
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         protected List<Runner> getChildren() {
             return (List) runners;
         }
 
-        private void createRunners(EstimatorTestParams params) throws InitializationError {
+        private void createRunners(EstimatorTestParams params)
+                throws InitializationError {
             if (!ignoredProbModes.contains(ProbMode.COND)
-                    && params.condOrder != 0)
-                runners.add(new TestRunnerForProbMode(
-                        getTestClass().getJavaClass(), ProbMode.COND,
-                        params.condOrder));
+                && params.condOrder != 0) {
+                runners.add(
+                    new TestRunnerForProbMode(getTestClass().getJavaClass(),
+                        ProbMode.COND, params.condOrder));
+            }
             if (!ignoredProbModes.contains(ProbMode.MARG)
-                    && params.margOrder != 0)
-                runners.add(new TestRunnerForProbMode(
-                        getTestClass().getJavaClass(), ProbMode.MARG,
-                        params.margOrder));
+                && params.margOrder != 0) {
+                runners.add(
+                    new TestRunnerForProbMode(getTestClass().getJavaClass(),
+                        ProbMode.MARG, params.margOrder));
+            }
         }
     }
 
@@ -209,12 +217,12 @@ public class EstimatorTestRunner extends Suite {
     private List<TestRunnerForEstimator> runners;
 
     public EstimatorTestRunner(Class<?> type) throws Throwable {
-        super(type, Collections.<Runner> emptyList());
+        super(type, Collections.<Runner>emptyList());
         loadIgnoredProbModes();
         createRunnersForParameters(allParameters());
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected List<Runner> getChildren() {
         return (List) runners;
@@ -222,45 +230,53 @@ public class EstimatorTestRunner extends Suite {
 
     private void loadIgnoredProbModes() {
         ignoredProbModes = new HashSet<>();
-        for (Annotation annotation : getTestClass().getAnnotations())
+        for (Annotation annotation : getTestClass().getAnnotations()) {
             if (annotation instanceof IgnoreProbMode) {
                 IgnoreProbMode a = (IgnoreProbMode) annotation;
-                for (ProbMode probMode : a.value())
+                for (ProbMode probMode : a.value()) {
                     ignoredProbModes.add(probMode);
+                }
             }
+        }
     }
 
     @SuppressWarnings("unchecked")
     private Iterable<EstimatorTestParams> allParameters() throws Throwable {
         Object parameters = getParametersMethod().invokeExplosively(null);
-        if (parameters instanceof Iterable<?>)
+        if (parameters instanceof Iterable<?>) {
             return (Iterable<EstimatorTestParams>) parameters;
+        }
 
         throw parametersMethodReturnedWrongType();
     }
 
     private FrameworkMethod getParametersMethod() throws Exception {
-        List<FrameworkMethod> methods = getTestClass().getAnnotatedMethods(
-                EstimatorTestParameters.class);
-        for (FrameworkMethod method : methods)
-            if (method.isStatic() && method.isPublic())
+        List<FrameworkMethod> methods =
+            getTestClass().getAnnotatedMethods(EstimatorTestParameters.class);
+        for (FrameworkMethod method : methods) {
+            if (method.isStatic() && method.isPublic()) {
                 return method;
+            }
+        }
 
-        throw new Exception(String.format(
-                "No public static parameters method on class %s.",
+        throw new Exception(
+            String.format("No public static parameters method on class %s.",
                 getTestClass().getName()));
     }
 
-    private void createRunnersForParameters(Iterable<EstimatorTestParams> allParameters) throws InitializationError {
+    private void
+            createRunnersForParameters(Iterable<EstimatorTestParams> allParameters)
+                    throws InitializationError {
         runners = new ArrayList<>();
-        for (EstimatorTestParams parameters : allParameters)
+        for (EstimatorTestParams parameters : allParameters) {
             runners.add(new TestRunnerForEstimator(
-                    getTestClass().getJavaClass(), parameters));
+                getTestClass().getJavaClass(), parameters));
+        }
     }
 
     private Exception parametersMethodReturnedWrongType() throws Exception {
-        return new Exception(String.format(
-                "%s.%s() must return an Iterable of %s.",
+        return new Exception(
+            String.format("%s.%s() must return an Iterable of %s.",
                 getTestClass().getName(), getParametersMethod().getName(),
                 EstimatorTestParams.class.getName()));
     }

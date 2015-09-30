@@ -23,6 +23,7 @@ package de.glmtk.querying.estimator.discount;
 import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 
+
 public class AbsoluteDiscountEstimator extends DiscountEstimator {
     private double discount;
 

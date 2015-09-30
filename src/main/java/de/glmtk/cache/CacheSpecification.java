@@ -35,6 +35,7 @@ import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.logging.Logger;
 import de.glmtk.output.ProgressBar;
 
+
 /**
  * Class to construct {@link Cache} instances.
  *
@@ -45,11 +46,11 @@ public class CacheSpecification {
     private static final String PHASE_LOADING_CACHE = "Loading cache";
 
     public enum CacheImplementation {
-        HASH_MAP,
-        COMPLETION_TRIE;
+        HASH_MAP, COMPLETION_TRIE;
     }
 
-    private CacheImplementation cacheImplementation = CacheImplementation.HASH_MAP;
+    private CacheImplementation cacheImplementation =
+        CacheImplementation.HASH_MAP;
     private boolean words = false;
     private boolean discounts = false;
     private boolean lengthDistribution = false;
@@ -62,7 +63,8 @@ public class CacheSpecification {
     }
 
     // TODO: move CacheImplementation setting to #build() parameter.
-    public CacheSpecification withCacheImplementation(CacheImplementation cacheImplementation) {
+    public CacheSpecification
+            withCacheImplementation(CacheImplementation cacheImplementation) {
         this.cacheImplementation = cacheImplementation;
         return this;
     }
@@ -78,8 +80,9 @@ public class CacheSpecification {
 
     public Set<Pattern> getRequiredPatterns() {
         Set<Pattern> requiredPatterns = new HashSet<>();
-        if (words)
+        if (words) {
             requiredPatterns.add(Pattern.CNT_PATTERN);
+        }
         requiredPatterns.addAll(getCountPatterns());
         for (Pattern gammaPattern : getGammaPatterns()) {
             requiredPatterns.add(gammaPattern.concat(PatternElem.CNT));
@@ -104,16 +107,21 @@ public class CacheSpecification {
             cache.setProgressBar(new ProgressBar(PHASE_LOADING_CACHE, total));
         }
 
-        if (words)
+        if (words) {
             cache.loadWords();
-        if (discounts)
+        }
+        if (discounts) {
             cache.loadDiscounts();
-        if (lengthDistribution)
+        }
+        if (lengthDistribution) {
             cache.loadLengthDistribution();
-        if (!counts.isEmpty())
+        }
+        if (!counts.isEmpty()) {
             cache.loadCounts(counts);
-        if (!gammas.isEmpty())
+        }
+        if (!gammas.isEmpty()) {
             cache.loadGammas(gammas);
+        }
 
         return cache;
     }
@@ -134,8 +142,8 @@ public class CacheSpecification {
     public CacheSpecification addAll(CacheSpecification cacheBuilder) {
         words = words || cacheBuilder.words;
         discounts = discounts || cacheBuilder.discounts;
-        lengthDistribution = lengthDistribution
-                || cacheBuilder.lengthDistribution;
+        lengthDistribution =
+            lengthDistribution || cacheBuilder.lengthDistribution;
         counts.addAll(cacheBuilder.counts);
         gammas.addAll(cacheBuilder.gammas);
         return this;

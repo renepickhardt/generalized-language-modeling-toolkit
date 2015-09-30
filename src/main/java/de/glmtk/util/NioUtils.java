@@ -41,23 +41,19 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 
+
 /**
  * Util class containing various static helper methods related to nio (Java 7 io
  * api).
  */
 public class NioUtils {
-    private NioUtils() {
-    }
+    private NioUtils() {}
 
     /**
      * @see NioUtils#checkFile(Path, CheckFile...)
      */
     public enum CheckFile {
-        EXISTS,
-        IS_READABLE,
-        IS_REGULAR_FILE,
-        IS_DIRECTORY,
-        IS_NO_DIRECTORY;
+        EXISTS, IS_READABLE, IS_REGULAR_FILE, IS_DIRECTORY, IS_NO_DIRECTORY;
     }
 
     /**
@@ -84,32 +80,38 @@ public class NioUtils {
      */
     public static boolean checkFile(Path path,
                                     CheckFile... checks) {
-        for (CheckFile check : checks)
+        for (CheckFile check : checks) {
             switch (check) {
                 case EXISTS:
-                    if (!Files.exists(path))
+                    if (!Files.exists(path)) {
                         return false;
+                    }
                     break;
                 case IS_READABLE:
-                    if (!Files.isReadable(path))
+                    if (!Files.isReadable(path)) {
                         return false;
+                    }
                     break;
                 case IS_REGULAR_FILE:
-                    if (!Files.isRegularFile(path))
+                    if (!Files.isRegularFile(path)) {
                         return false;
+                    }
                     break;
                 case IS_DIRECTORY:
-                    if (!Files.isDirectory(path))
+                    if (!Files.isDirectory(path)) {
                         return false;
+                    }
                     break;
                 case IS_NO_DIRECTORY:
-                    if (Files.isDirectory(path))
+                    if (Files.isDirectory(path)) {
                         return false;
+                    }
                     break;
 
                 default:
                     throw new SwitchCaseNotImplementedException();
             }
+        }
         return true;
     }
 
@@ -129,7 +131,8 @@ public class NioUtils {
 
             @Override
             public FileVisitResult visitFile(Path file,
-                                             BasicFileAttributes attrs) throws IOException {
+                                             BasicFileAttributes attrs)
+                                                     throws IOException {
                 size.addAndGet(attrs.size());
                 return FileVisitResult.CONTINUE;
             }
@@ -140,47 +143,51 @@ public class NioUtils {
 
     public static long calcFileSize(List<Path> paths) throws IOException {
         long sum = 0;
-        for (Path path : paths)
+        for (Path path : paths) {
             sum += calcFileSize(path);
+        }
         return sum;
     }
 
     public static BufferedReader newBufferedReader(Path path,
                                                    Charset charset,
                                                    int sz) throws IOException {
-        return new BufferedReader(new InputStreamReader(
-                Files.newInputStream(path), charset), sz);
+        return new BufferedReader(
+            new InputStreamReader(Files.newInputStream(path), charset), sz);
     }
 
     public static BufferedWriter newBufferedWriter(Path path,
                                                    Charset charset,
                                                    int sz) throws IOException {
-        return new BufferedWriter(new OutputStreamWriter(
-                Files.newOutputStream(path), charset), sz);
+        return new BufferedWriter(
+            new OutputStreamWriter(Files.newOutputStream(path), charset), sz);
     }
 
     public static LineNumberReader newLineNumberReader(Path path,
                                                        Charset charset,
                                                        int sz) throws IOException {
-        return new LineNumberReader(new InputStreamReader(
-                Files.newInputStream(path), charset), sz);
+        return new LineNumberReader(
+            new InputStreamReader(Files.newInputStream(path), charset), sz);
     }
 
     public static int countNumberOfLines(Path file) throws IOException {
-        try (InputStream reader = new BufferedInputStream(
-                Files.newInputStream(file))) {
+        try (InputStream reader =
+            new BufferedInputStream(Files.newInputStream(file))) {
             byte[] c = new byte[1024];
             int count = 0;
             int readChars = 0;
             boolean endsWithoutNewLine = false;
             while ((readChars = reader.read(c)) != -1) {
-                for (int i = 0; i != readChars; ++i)
-                    if (c[i] == '\n')
+                for (int i = 0; i != readChars; ++i) {
+                    if (c[i] == '\n') {
                         ++count;
+                    }
+                }
                 endsWithoutNewLine = c[readChars - 1] != '\n';
             }
-            if (endsWithoutNewLine)
+            if (endsWithoutNewLine) {
                 ++count;
+            }
             return count;
         }
     }
@@ -190,8 +197,9 @@ public class NioUtils {
         try {
             byte[] buffer = new byte[1024];
             int len;
-            while ((len = input.read(buffer)) > 0)
+            while ((len = input.read(buffer)) > 0) {
                 output.write(buffer, 0, len);
+            }
         } finally {
             input.close();
             output.close();

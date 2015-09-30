@@ -27,8 +27,10 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
+
 public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
-    private static final Logger LOGGER = Logger.get(ThresholdArgmaxQueryExecutor.class);
+    private static final Logger LOGGER =
+        Logger.get(ThresholdArgmaxQueryExecutor.class);
 
     private WeightedSumEstimator estimator;
     private Cache randomAccessCache;
@@ -55,7 +57,7 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
+                                          int numResults) {
         return queryArgmax(history, "", numResults);
     }
 
@@ -66,18 +68,22 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         numSortedAccesses = 0;
         numRandomAccesses = 0;
 
-        if (numResults == 0)
+        if (numResults == 0) {
             return new ArrayList<>();
-        if (numResults < 0)
+        }
+        if (numResults < 0) {
             throw new IllegalArgumentException("numResults must be positive.");
+        }
 
         NGram hist = new NGram(StringUtils.split(history, ' '));
-        WeightedSumFunction weightedSumFunction = estimator.calcWeightedSumFunction(hist);
+        WeightedSumFunction weightedSumFunction =
+            estimator.calcWeightedSumFunction(hist);
 
         int size = weightedSumFunction.size();
-        if (size == 0)
+        if (size == 0) {
             // TODO: what to do here?
             return new ArrayList<>();
+        }
 
         Pattern[] patterns = weightedSumFunction.getPatterns();
         NGram[] histories = weightedSumFunction.getHistories();
@@ -91,36 +97,42 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             String hi = histories[i].toString();
             String h = hi.isEmpty() ? prefix : hi + " " + prefix;
 
-            CompletionTrie trie = sortedAccessCache.getCountCompletionTrie(pattern);
-            PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions(h));
+            CompletionTrie trie =
+                sortedAccessCache.getCountCompletionTrie(pattern);
+            PeekingIterator<CompletionTrieEntry> iter =
+                peekingIterator(trie.getCompletions(h));
 
             tries[i] = trie;
             iters[i] = iter;
-            if (iter.hasNext())
+            if (iter.hasNext()) {
                 lastCounts[i] = iter.peek().getScore();
-            else
+            } else {
                 lastCounts[i] = 0;
+            }
         }
 
         Set<String> seen = new HashSet<>();
-        PriorityQueue<ArgmaxResult> results = new PriorityQueue<>(numResults,
-                ArgmaxResult.COMPARATOR);
+        PriorityQueue<ArgmaxResult> results =
+            new PriorityQueue<>(numResults, ArgmaxResult.COMPARATOR);
 
         List<Integer> ptrs = new ArrayList<>(size);
-        for (int i = 0; i != size; ++i)
+        for (int i = 0; i != size; ++i) {
             ptrs.add(i);
+        }
 
         double thresholdArgs[] = new double[size];
-        for (int i = 0; i != size; ++i)
+        for (int i = 0; i != size; ++i) {
             thresholdArgs[i] = calcAlpha(patterns[i], lastCounts[i]);
+        }
         double threshold = calcProbability(weightedSumFunction, thresholdArgs);
         double lowestProb = Double.NEGATIVE_INFINITY;
 
         Iterator<Integer> ptrIter = ptrs.iterator();
         while (!(results.size() == numResults && threshold < lowestProb)) {
             if (!ptrIter.hasNext()) {
-                if (ptrs.isEmpty())
+                if (ptrs.isEmpty()) {
                     break;
+                }
                 ptrIter = ptrs.iterator();
             }
             int ptr = ptrIter.next();
@@ -128,7 +140,7 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             Iterator<CompletionTrieEntry> iter = iters[ptr];
             if (!iter.hasNext()) {
                 threshold -= weightedSumFunction.get(ptr).getWeight()
-                        * calcAlpha(patterns[ptr], lastCounts[ptr]);
+                    * calcAlpha(patterns[ptr], lastCounts[ptr]);
                 lastCounts[ptr] = 0;
                 ptrIter.remove();
                 continue;
@@ -137,40 +149,47 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             CompletionTrieEntry entry = iter.next();
             ++numSortedAccesses;
             threshold -= weightedSumFunction.get(ptr).getWeight()
-                    * calcAlpha(patterns[ptr], lastCounts[ptr]);
+                * calcAlpha(patterns[ptr], lastCounts[ptr]);
             lastCounts[ptr] = entry.getScore();
             threshold += weightedSumFunction.get(ptr).getWeight()
-                    * calcAlpha(patterns[ptr], lastCounts[ptr]);
+                * calcAlpha(patterns[ptr], lastCounts[ptr]);
 
             String string = entry.getString();
             int lastSpacePos = string.lastIndexOf(' ');
             String sequence = string;
-            if (lastSpacePos != -1)
+            if (lastSpacePos != -1) {
                 sequence = string.substring(lastSpacePos + 1);
+            }
 
-            if (vocab != null && !vocab.contains(sequence))
-                //                LOGGER.debug(
-                //                        "Sequence '%s' does not occur in given vocabulary, skipping.",
-                //                        sequence);
+            if (vocab != null && !vocab.contains(sequence)) {
+                // LOGGER.debug(
+                // "Sequence '%s' does not occur in given vocabulary,
+                // skipping.",
+                // sequence);
                 continue;
-            if (!seen.add(sequence))
-                //                LOGGER.debug("Sequence '%s' already seen, skipping.", sequence);
+            }
+            if (!seen.add(sequence)) {
+                // LOGGER.debug("Sequence '%s' already seen, skipping.",
+                // sequence);
                 continue;
+            }
 
             double args[] = new double[size];
-            for (int i = 0; i != size; ++i)
-                if (i == ptr)
+            for (int i = 0; i != size; ++i) {
+                if (i == ptr) {
                     args[i] = calcAlpha(histories[i].concat(sequence),
-                            entry.getScore());
-                else {
+                        entry.getScore());
+                } else {
                     ++numRandomAccesses;
                     args[i] = calcAlpha(histories[i].concat(sequence));
                 }
+            }
 
             double probability = calcProbability(weightedSumFunction, args);
 
-            if (probability == 0.0)
+            if (probability == 0.0) {
                 continue;
+            }
 
             if (results.size() < numResults) {
                 results.add(new ArgmaxResult(sequence, probability));
@@ -210,8 +229,9 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
      */
     private double calcAlpha(NGram sequence,
                              long count) {
-        if (count == 0)
+        if (count == 0) {
             return 0;
+        }
 
         long absSequenceCount = count;
 
@@ -220,11 +240,13 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             absSequenceCount = randomAccessCache.getCount(sequence);
         }
 
-        if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
+        if (sequence.getPattern().numElems(PatternElem.CNT) == 1) {
             // If we are on last order don't discount.
             return count;
+        }
 
-        Discounts discounts = randomAccessCache.getDiscounts(sequence.getPattern());
+        Discounts discounts =
+            randomAccessCache.getDiscounts(sequence.getPattern());
         double d = discounts.getForCount(absSequenceCount);
 
         return Math.max(count - d, 0.0);
@@ -236,9 +258,10 @@ public class ThresholdArgmaxQueryExecutor implements ArgmaxQueryExecutor {
      */
     private double calcAlpha(Pattern pattern,
                              long count) {
-        if (pattern.numElems(PatternElem.CNT) == 1)
+        if (pattern.numElems(PatternElem.CNT) == 1) {
             // If we are on last order don't discount.
             return count;
+        }
 
         Discounts discounts = randomAccessCache.getDiscounts(pattern);
         double d = discounts.getForCount(count);

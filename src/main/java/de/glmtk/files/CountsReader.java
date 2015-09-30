@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -28,8 +28,10 @@ import java.util.List;
 import de.glmtk.counts.Counts;
 import de.glmtk.util.StringUtils;
 
+
 public class CountsReader extends SequenceReader {
-    public static final SequenceComparator<CountsReader> SEQUENCE_COMPARATOR = new SequenceComparator<>();
+    public static final SequenceComparator<CountsReader> SEQUENCE_COMPARATOR =
+        new SequenceComparator<>();
 
     private Counts counts;
     private boolean fromAbsolute;
@@ -63,11 +65,12 @@ public class CountsReader extends SequenceReader {
             } else if (split.size() == 5) {
                 fromAbsolute = false;
                 counts = new Counts(parseNumber(split.get(1)),
-                        parseNumber(split.get(2)), parseNumber(split.get(3)),
-                        parseNumber(split.get(4)));
-            } else
+                    parseNumber(split.get(2)), parseNumber(split.get(3)),
+                    parseNumber(split.get(4)));
+            } else {
                 throw new IllegalArgumentException(
-                        "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
+                    "Expected line to have format '<sequence>(\\t<count>){1,4}'.");
+            }
         } catch (IllegalArgumentException e) {
             throw newFileFormatException("counts", e.getMessage());
         }

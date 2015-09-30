@@ -77,12 +77,13 @@ import de.glmtk.testutil.EstimatorTestRunner.IgnoreProbMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
+
 @RunWith(EstimatorTestRunner.class)
 @IgnoreProbMode(ProbMode.COND)
 public class EstimatorTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(EstimatorTest.class);
-    private static final List<TestCorpus> TEST_CORPORA = Arrays.asList(
-            TestCorpus.ABC, TestCorpus.MOBYDICK);
+    private static final List<TestCorpus> TEST_CORPORA =
+        Arrays.asList(TestCorpus.ABC, TestCorpus.MOBYDICK);
     private static final int HIGHEST_ORDER = 5;
 
     private static boolean countsAvailable = false;
@@ -137,15 +138,16 @@ public class EstimatorTest extends TestCorporaTest {
 
     @BeforeClass
     public static void setUpCountsAvailable() throws Exception {
-        if (countsAvailable)
+        if (countsAvailable) {
             return;
+        }
 
         CacheSpecification requiredCache = new CacheSpecification();
         for (EstimatorTestParams params : data()) {
-            int highestOrder = Math.max(params.getCondOrder(),
-                    params.getMargOrder());
-            requiredCache.addAll(params.getEstimator().getRequiredCache(
-                    highestOrder));
+            int highestOrder =
+                Math.max(params.getCondOrder(), params.getMargOrder());
+            requiredCache
+                .addAll(params.getEstimator().getRequiredCache(highestOrder));
         }
 
         Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
@@ -188,14 +190,14 @@ public class EstimatorTest extends TestCorporaTest {
 
             for (int order = 1; order != maxOrder + 1; ++order) {
                 double sum = 0;
-                for (int i = 0; i != (int) Math.pow(
-                        testCorpus.getTokens().length, order); ++i) {
-                    List<String> sequence = testCorpus.getSequenceList(i,
-                            order);
+                for (int i = 0; i != (int) Math
+                    .pow(testCorpus.getTokens().length, order); ++i) {
+                    List<String> sequence =
+                        testCorpus.getSequenceList(i, order);
                     double prob = calculator.probability(sequence);
                     if (Double.isNaN(prob) || prob < 0.0 || prob > 1.0) {
                         LOGGER.info("Illegal probability: P(%s) = %e", sequence,
-                                prob);
+                            prob);
                         fail("Illegal probability: " + prob);
                     }
                     sum += prob;
@@ -223,21 +225,21 @@ public class EstimatorTest extends TestCorporaTest {
 
             for (int order = 1; order != maxOrder + 1; ++order) {
                 LOGGER.info("n=%s", order);
-                for (int i = 0; i != (int) Math.pow(
-                        testCorpus.getTokens().length, order - 1); ++i) {
-                    NGram history = new NGram(testCorpus.getSequenceList(i,
-                            order - 1));
+                for (int i = 0; i != (int) Math
+                    .pow(testCorpus.getTokens().length, order - 1); ++i) {
+                    NGram history =
+                        new NGram(testCorpus.getSequenceList(i, order - 1));
 
                     double sum = 0;
                     for (int j = 0; j != testCorpus.getTokens().length; ++j) {
-                        NGram sequence = new NGram(Arrays.asList(
-                                testCorpus.getTokens()[j]));
+                        NGram sequence =
+                            new NGram(Arrays.asList(testCorpus.getTokens()[j]));
                         double prob = estimator.probability(sequence, history);
-                        //                        println("P(" + sequence + " | " + history + ") = "
-                        //                                + prob);
+                        // println("P(" + sequence + " | " + history + ") = "
+                        // + prob);
                         if (Double.isNaN(prob) || prob < 0.0 || prob > 1.0) {
                             LOGGER.info("Illegal probability P(%s | %s) = %e",
-                                    sequence, history, prob);
+                                sequence, history, prob);
                             fail("Illegal probability: " + prob);
                         }
                         sum += prob;
@@ -247,13 +249,15 @@ public class EstimatorTest extends TestCorporaTest {
                         switch (probMode) {
                             case COND:
                                 NGram checkHistory = history.concat(SKP_NGRAM);
-                                if (continuationEstimator)
-                                    checkHistory = SKP_NGRAM.concat(
-                                            checkHistory);
-                                if (checkHistory.seen(cache))
+                                if (continuationEstimator) {
+                                    checkHistory =
+                                        SKP_NGRAM.concat(checkHistory);
+                                }
+                                if (checkHistory.seen(cache)) {
                                     assertEquals(1.0, sum, 1e-6);
-                                else
+                                } else {
                                     assertEquals(0.0, sum, 1e-6);
+                                }
                                 break;
                             case MARG:
                                 assertEquals(1.0, sum, 1e-6);
@@ -263,7 +267,7 @@ public class EstimatorTest extends TestCorporaTest {
                         }
                     } catch (AssertionError e) {
                         LOGGER.error("history = %s, sum = %s fail", history,
-                                sum);
+                            sum);
                         throw e;
                     }
                     LOGGER.debug("history = %s, sum = %s", history, sum);

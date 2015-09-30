@@ -29,15 +29,18 @@ import java.util.Set;
 
 import de.glmtk.util.StringUtils;
 
+
 /**
  * 2014-12-22 Printing several representations of the recursive GLM formula.
  */
 public class E03_GlmPrintMults {
-    private static List<List<String>> getSkippedHistories(List<String> history) {
+    private static List<List<String>>
+            getSkippedHistories(List<String> history) {
         List<List<String>> skippedHistories = new LinkedList<>();
         for (int i = 0; i != history.size(); ++i) {
-            if (history.get(i).equals("*"))
+            if (history.get(i).equals("*")) {
                 continue;
+            }
             List<String> skippedHistory = new ArrayList<>(history);
             skippedHistory.set(i, "*");
             skippedHistories.add(skippedHistory);
@@ -73,16 +76,16 @@ public class E03_GlmPrintMults {
 
         List<List<String>> skippedHistories = getSkippedHistories(history);
         if (skippedHistories.isEmpty()) {
-            System.out.print("α(" + StringUtils.join(history, " ") + " "
-                    + sequence + ")");
+            System.out.print(
+                "α(" + StringUtils.join(history, " ") + " " + sequence + ")");
             return;
         }
 
         String indentStr = StringUtils.repeat(" ", indent);
-        System.out.println("α(" + StringUtils.join(history, " ") + " "
-                + sequence + ") + ");
+        System.out.println(
+            "α(" + StringUtils.join(history, " ") + " " + sequence + ") + ");
         String out = indentStr + "1/" + skippedHistories.size() + " * γ("
-                + StringUtils.join(history, " ") + ") * (";
+            + StringUtils.join(history, " ") + ") * (";
         System.out.print(out);
         int in = out.length();
         String inStr = StringUtils.repeat(" ", in);
@@ -91,7 +94,7 @@ public class E03_GlmPrintMults {
         curGammas.add(history);
 
         boolean first = true;
-        for (List<String> skippedHistory : skippedHistories)
+        for (List<String> skippedHistory : skippedHistories) {
             if (first) {
                 glm(sequence, skippedHistory, in);
                 first = false;
@@ -99,6 +102,7 @@ public class E03_GlmPrintMults {
                 System.out.print(" + \n" + inStr);
                 glm(sequence, skippedHistory, in);
             }
+        }
         System.out.print(")");
 
         curDenom /= skippedHistories.size();
@@ -108,18 +112,21 @@ public class E03_GlmPrintMults {
     private static void printAlphaWithMults(AlphaWithMults alphaWithMults,
                                             boolean withAlpha) {
         System.out.print("1/" + alphaWithMults.denom);
-        if (alphaWithMults.denom < 10)
+        if (alphaWithMults.denom < 10) {
             System.out.print(" ");
-        for (List<String> gamma : alphaWithMults.gammas)
+        }
+        for (List<String> gamma : alphaWithMults.gammas) {
             System.out.print(" * γ(" + StringUtils.join(gamma, " ") + ")");
-        if (withAlpha)
-            System.out.println(" * α("
-                    + StringUtils.join(alphaWithMults.alpha, " ") + ")");
+        }
+        if (withAlpha) {
+            System.out.println(
+                " * α(" + StringUtils.join(alphaWithMults.alpha, " ") + ")");
+        }
     }
 
     public static void main(String[] args) {
         glm("e", Arrays.asList("a", "b", "c", "d"), 0);
-        //        glm("Brucke", Arrays.asList("ich", "gehe", "uber", "die"), 0);
+        // glm("Brucke", Arrays.asList("ich", "gehe", "uber", "die"), 0);
 
         System.out.println("\n\n" + StringUtils.repeat("-", 80) + "\n");
 
@@ -127,33 +134,41 @@ public class E03_GlmPrintMults {
         int maxDenom = 0;
         for (AlphaWithMults alphaWithMults : alphasWithMults) {
             printAlphaWithMults(alphaWithMults, true);
-            if (maxGammas < alphaWithMults.gammas.size())
+            if (maxGammas < alphaWithMults.gammas.size()) {
                 maxGammas = alphaWithMults.gammas.size();
-            if (maxDenom < alphaWithMults.denom)
+            }
+            if (maxDenom < alphaWithMults.denom) {
                 maxDenom = alphaWithMults.denom;
+            }
         }
 
         System.out.println("\n" + StringUtils.repeat("-", 80) + "\n");
 
         Set<List<String>> alphas = new LinkedHashSet<>();
         int maxAlphaLength = 0;
-        for (int i = 0; i != maxGammas + 1; ++i)
-            for (AlphaWithMults alphaWithMults : alphasWithMults)
+        for (int i = 0; i != maxGammas + 1; ++i) {
+            for (AlphaWithMults alphaWithMults : alphasWithMults) {
                 if (alphaWithMults.gammas.size() == i) {
                     alphas.add(alphaWithMults.alpha);
-                    int alphaLength = StringUtils.join(alphaWithMults.alpha,
-                            " ").length();
-                    if (maxAlphaLength < alphaLength)
+                    int alphaLength =
+                        StringUtils.join(alphaWithMults.alpha, " ").length();
+                    if (maxAlphaLength < alphaLength) {
                         maxAlphaLength = alphaLength;
+                    }
                     printAlphaWithMults(alphaWithMults, true);
                 }
+            }
+        }
 
         System.out.println("\n" + StringUtils.repeat("-", 80) + "\n");
 
-        for (int i = 1; i != maxDenom + 1; ++i)
-            for (AlphaWithMults alphaWithMults : alphasWithMults)
-                if (alphaWithMults.denom == i)
+        for (int i = 1; i != maxDenom + 1; ++i) {
+            for (AlphaWithMults alphaWithMults : alphasWithMults) {
+                if (alphaWithMults.denom == i) {
                     printAlphaWithMults(alphaWithMults, true);
+                }
+            }
+        }
 
         System.out.println("\n" + StringUtils.repeat("-", 80) + "\n");
 
@@ -164,16 +179,18 @@ public class E03_GlmPrintMults {
             System.out.print(out);
 
             boolean first = true;
-            for (AlphaWithMults alphaWithMults : alphasWithMults)
+            for (AlphaWithMults alphaWithMults : alphasWithMults) {
                 if (alpha.equals(alphaWithMults.alpha)) {
                     if (first) {
                         int diff = in - out.length() - 1;
                         System.out.print(StringUtils.repeat(" ", diff) + "(");
                         first = false;
-                    } else
+                    } else {
                         System.out.print(" + \n" + inStr);
+                    }
                     printAlphaWithMults(alphaWithMults, false);
                 }
+            }
             System.out.println(")");
         }
     }

@@ -24,24 +24,26 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 
 import de.glmtk.common.NGram;
 
+
 public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     public boolean isDefined(NGram sequence,
                              NGram history,
                              int recDepth) {
-        return WSKP_NGRAM.concat(getFullHistory(sequence,
-                history).convertSkpToWskp()).seen(cache);
+        return WSKP_NGRAM
+            .concat(getFullHistory(sequence, history).convertSkpToWskp())
+            .seen(cache);
     }
 
     @Override
     protected double calcNumerator(NGram sequence,
                                    NGram history,
                                    int recDepth) {
-        NGram contFullSequence = WSKP_NGRAM.concat(getFullSequence(sequence,
-                history).convertSkpToWskp());
+        NGram contFullSequence = WSKP_NGRAM
+            .concat(getFullSequence(sequence, history).convertSkpToWskp());
         long contFullSequenceCount = cache.getCount(contFullSequence);
         logTrace(recDepth, "contFullSequence = %s (%d)", contFullSequence,
-                contFullSequenceCount);
+            contFullSequenceCount);
         return contFullSequenceCount;
     }
 
@@ -49,11 +51,11 @@ public class ContinuationMaximumLikelihoodEstimator extends FractionEstimator {
     protected double calcDenominator(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        NGram contFullHistory = WSKP_NGRAM.concat(getFullHistory(sequence,
-                history).convertSkpToWskp());
+        NGram contFullHistory = WSKP_NGRAM
+            .concat(getFullHistory(sequence, history).convertSkpToWskp());
         long contFullHistoryCount = cache.getCount(contFullHistory);
         logTrace(recDepth, "contFullHistory = %s (%d)", contFullHistory,
-                contFullHistoryCount);
+            contFullHistoryCount);
         return contFullHistoryCount;
     }
 }

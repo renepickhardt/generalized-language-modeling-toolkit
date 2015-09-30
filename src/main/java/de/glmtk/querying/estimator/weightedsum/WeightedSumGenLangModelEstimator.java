@@ -31,7 +31,9 @@ import de.glmtk.common.NGram;
 import de.glmtk.util.BinomDiamond;
 import de.glmtk.util.BinomDiamondNode;
 
-public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEstimator {
+
+public class WeightedSumGenLangModelEstimator extends
+                                              WeightedSumModKneserNeyEstimator {
     private static class GlmNode extends BinomDiamondNode<GlmNode> {
         private NGram history = null;
         private long absoluteCount = 0;
@@ -57,22 +59,24 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
     @Override
     public WeightedSumFunction calcWeightedSumFunction(NGram history) {
         if (history.isEmpty()) {
-            WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
-                    1);
+            WeightedSumFunction weightedSumFunction =
+                new WeightedSumFunction(1);
             weightedSumFunction.add(1.0 / cache.getNumWords(), history);
             return weightedSumFunction;
         }
 
         BinomDiamond<GlmNode> diamond = buildGlmDiamond(history);
 
-        WeightedSumFunction weightedSumFunction = new WeightedSumFunction(2
-                * diamond.size());
+        WeightedSumFunction weightedSumFunction =
+            new WeightedSumFunction(2 * diamond.size());
         for (GlmNode node : diamond) {
-            if (node.absoluteFactor != 0)
+            if (node.absoluteFactor != 0) {
                 weightedSumFunction.add(node.absoluteFactor, node.history);
-            if (node.continuationFactor != 0)
+            }
+            if (node.continuationFactor != 0) {
                 weightedSumFunction.add(node.continuationFactor,
-                        WSKP_NGRAM.concat(node.history.convertSkpToWskp()));
+                    WSKP_NGRAM.concat(node.history.convertSkpToWskp()));
+            }
         }
 
         return weightedSumFunction;
@@ -80,35 +84,35 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
 
     private BinomDiamond<GlmNode> buildGlmDiamond(NGram history) {
         int order = history.size();
-        BinomDiamond<GlmNode> diamond = new BinomDiamond<>(order,
-                GlmNode.class);
+        BinomDiamond<GlmNode> diamond =
+            new BinomDiamond<>(order, GlmNode.class);
 
         for (GlmNode node : diamond.inOrder()) {
             NGram hist = history.applyIntPattern(~node.getIndex(), order);
             node.history = hist;
             node.absoluteCount = cache.getCount(hist.concat(SKP_NGRAM));
-            node.continuationCount = cache.getCount(WSKP_NGRAM.concat(
-                    hist.convertSkpToWskp()).concat(WSKP_NGRAM));
+            node.continuationCount = cache.getCount(
+                WSKP_NGRAM.concat(hist.convertSkpToWskp()).concat(WSKP_NGRAM));
             node.gammaHighNumerator = cache.getGammaHigh(hist);
             node.gammaLowNumerator = cache.getGammaLow(hist);
 
             double coeff = getCoefficient(diamond.order(), node.getLevel());
 
-            if (node.absoluteCount == 0)
+            if (node.absoluteCount == 0) {
                 node.absoluteFactor = 0.0;
-            else if (node.isTop())
+            } else if (node.isTop()) {
                 node.absoluteFactor = 1.0f / node.absoluteCount;
-            else {
-                node.absoluteFactor = calcAbsoluteFactor(diamond.getTop(),
-                        node);
+            } else {
+                node.absoluteFactor =
+                    calcAbsoluteFactor(diamond.getTop(), node);
                 node.absoluteFactor *= coeff / node.absoluteCount;
             }
 
-            if (node.continuationCount == 0 || node.isTop())
+            if (node.continuationCount == 0 || node.isTop()) {
                 node.continuationFactor = 0;
-            else {
-                node.continuationFactor = calcContinuationFactor(
-                        diamond.getTop(), node, true);
+            } else {
+                node.continuationFactor =
+                    calcContinuationFactor(diamond.getTop(), node, true);
                 node.continuationFactor *= coeff / node.continuationCount;
             }
         }
@@ -119,21 +123,24 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
     private static double calcCoefficient(int order,
                                           int level) {
         int result = 1;
-        for (int i = 0; i != level; ++i)
+        for (int i = 0; i != level; ++i) {
             result *= (order - i);
+        }
         return 1.0 / result;
     }
 
     private static double getCoefficient(int order,
                                          int level) {
         synchronized (coefficients) {
-            if (coefficients.size() <= order)
+            if (coefficients.size() <= order) {
                 for (int o = coefficients.size(); o != order + 1; ++o) {
                     List<Double> coeffs = new ArrayList<>();
-                    for (int l = 0; l != o + 1; ++l)
+                    for (int l = 0; l != o + 1; ++l) {
                         coeffs.add(calcCoefficient(o, l));
+                    }
                     coefficients.add(coeffs);
                 }
+            }
         }
 
         return coefficients.get(order).get(level);
@@ -141,17 +148,20 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
 
     private int calcAbsoluteFactor(GlmNode ancestor,
                                    GlmNode node) {
-        if (ancestor.absoluteCount != 0)
+        if (ancestor.absoluteCount != 0) {
             return 0;
+        }
 
-        if (ancestor.getLevel() == node.getLevel() - 1)
+        if (ancestor.getLevel() == node.getLevel() - 1) {
             return 1;
+        }
 
         int numUnseenPaths = 0;
         for (int i = 0; i != ancestor.numChilds(); ++i) {
             GlmNode child = ancestor.getChild(i);
-            if (child.isAncestorOf(node))
+            if (child.isAncestorOf(node)) {
                 numUnseenPaths += calcAbsoluteFactor(child, node);
+            }
         }
 
         return numUnseenPaths;
@@ -164,20 +174,23 @@ public class WeightedSumGenLangModelEstimator extends WeightedSumModKneserNeyEst
         if (absolute && ancestor.absoluteCount != 0) {
             mult = ancestor.gammaHighNumerator / ancestor.absoluteCount;
             absolute = false;
-        } else if (ancestor.continuationCount != 0)
+        } else if (ancestor.continuationCount != 0) {
             mult = ancestor.gammaLowNumerator / ancestor.continuationCount;
+        }
 
         if (ancestor.getLevel() == node.getLevel() - 1) {
-            if (absolute)
+            if (absolute) {
                 return 0;
+            }
             return mult;
         }
 
         double sum = 0;
         for (int i = 0; i != ancestor.numChilds(); ++i) {
             GlmNode child = ancestor.getChild(i);
-            if (child.isAncestorOf(node))
+            if (child.isAncestorOf(node)) {
                 sum += calcContinuationFactor(child, node, absolute);
+            }
         }
 
         return mult * sum;

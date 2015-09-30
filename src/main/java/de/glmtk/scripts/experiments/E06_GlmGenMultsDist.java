@@ -28,6 +28,7 @@ import java.util.List;
 import de.glmtk.util.ArrayUtils;
 import de.glmtk.util.StringUtils;
 
+
 /**
  * 2014-12-27
  */
@@ -36,10 +37,12 @@ public class E06_GlmGenMultsDist {
     private static boolean[] getPattern(int size,
                                         int order) {
         boolean[] pattern = new boolean[size];
-        for (int i = 0; i != order; ++i)
+        for (int i = 0; i != order; ++i) {
             pattern[i] = true;
-        for (int i = order; i != size; ++i)
+        }
+        for (int i = order; i != size; ++i) {
             pattern[i] = false;
+        }
         return pattern;
     }
 
@@ -58,8 +61,9 @@ public class E06_GlmGenMultsDist {
         List<String> skippedHistory = new ArrayList<>(history);
         int i = 0;
         for (boolean p : pattern) {
-            if (p)
+            if (p) {
                 skippedHistory.set(i, "*");
+            }
             ++i;
         }
         return skippedHistory;
@@ -73,16 +77,18 @@ public class E06_GlmGenMultsDist {
             histories.add(getPatternedHistory(history, pattern));
 
             int first = 0, last = history.size();
-            for (int i = last - 2; i != first - 1; --i)
+            for (int i = last - 2; i != first - 1; --i) {
                 if (pattern[i] && !pattern[i + 1]) { // pattern[i] > pattern[ii]
                     int j = last - 1;
-                    while (!pattern[i] || pattern[j])
+                    while (!pattern[i] || pattern[j]) {
                         --j;
+                    }
                     ArrayUtils.swap(pattern, i, j);
                     ArrayUtils.reverse(pattern, i + 1, last);
                     histories.add(getPatternedHistory(history, pattern));
                     i = last - 1;
                 }
+            }
         }
 
         return histories;
@@ -90,27 +96,31 @@ public class E06_GlmGenMultsDist {
 
     private static boolean equals(boolean[] lhs,
                                   boolean[] rhs) {
-        for (int i = 0; i != lhs.length; ++i)
-            if (lhs[i] != rhs[i])
+        for (int i = 0; i != lhs.length; ++i) {
+            if (lhs[i] != rhs[i]) {
                 return false;
+            }
+        }
         return true;
     }
 
     private static List<Object> generateMults(boolean[] pattern,
                                               boolean[] hpattern,
                                               List<String> fullHistory) {
-        if (equals(pattern, hpattern))
+        if (equals(pattern, hpattern)) {
             return null;
+        }
 
         List<Object> mults = new ArrayList<>();
         mults.add(getPatternedHistory(fullHistory, pattern));
         List<List<Object>> subMults = new ArrayList<>();
-        for (int i = 0; i != pattern.length; ++i)
+        for (int i = 0; i != pattern.length; ++i) {
             if (hpattern[i] && !pattern[i]) {
                 boolean[] newPattern = Arrays.copyOf(pattern, pattern.length);
                 newPattern[i] = true;
                 subMults.add(generateMults(newPattern, hpattern, fullHistory));
             }
+        }
         mults.add(subMults);
         return mults;
     }
@@ -129,22 +139,25 @@ public class E06_GlmGenMultsDist {
 
         String out = "(γ(" + StringUtils.join(gamma, " ") + ")";
 
-        if (subMults.isEmpty())
+        if (subMults.isEmpty()) {
             System.out.print(out);
-        else {
+        } else {
 
             boolean first = true;
             for (List<Object> subMult : subMults) {
                 if (first) {
                     first = false;
-                    if (subMult != null)
+                    if (subMult != null) {
                         out += " * ";
+                    }
                     System.out.print(out);
-                } else
+                } else {
                     System.out.print(" + \n"
-                            + StringUtils.repeat(" ", indent + out.length()));
-                if (subMult != null)
+                        + StringUtils.repeat(" ", indent + out.length()));
+                }
+                if (subMult != null) {
                     printMults(subMult, indent + out.length());
+                }
             }
         }
 
@@ -155,10 +168,10 @@ public class E06_GlmGenMultsDist {
                                                 List<String> history) {
         List<List<String>> histories = generateHistories(history);
         for (List<String> h : histories) {
-            List<Object> gammas = generateMults(getPattern(history),
-                    getPattern(h), history);
-            String out = "α(" + StringUtils.join(h, " ") + " " + sequence
-                    + ") * ";
+            List<Object> gammas =
+                generateMults(getPattern(history), getPattern(h), history);
+            String out =
+                "α(" + StringUtils.join(h, " ") + " " + sequence + ") * ";
             System.out.print(out);
             printMults(gammas, out.length());
             System.out.println();
@@ -166,7 +179,8 @@ public class E06_GlmGenMultsDist {
     }
 
     public static void main(String[] args) {
-        //        generateAlphasWithMults("Brucke", Arrays.asList("gehe", "uber", "die"));
+        // generateAlphasWithMults("Brucke", Arrays.asList("gehe", "uber",
+        // "die"));
         generateAlphasWithMults("e", Arrays.asList("a", "b", "c", "d"));
     }
 }

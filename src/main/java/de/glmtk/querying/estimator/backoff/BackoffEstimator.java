@@ -32,6 +32,7 @@ import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.querying.estimator.AbstractEstimator;
 import de.glmtk.querying.estimator.Estimator;
 
+
 public class BackoffEstimator extends AbstractEstimator {
     private Map<NGram, Double> gammaCache;
     private Estimator alpha;
@@ -52,8 +53,9 @@ public class BackoffEstimator extends AbstractEstimator {
     public void setCache(Cache cache) {
         super.setCache(cache);
         alpha.setCache(cache);
-        if (beta != this)
+        if (beta != this) {
             beta.setCache(cache);
+        }
 
         gammaCache = new HashMap<>();
     }
@@ -62,8 +64,9 @@ public class BackoffEstimator extends AbstractEstimator {
     public void setProbMode(ProbMode probMode) {
         super.setProbMode(probMode);
         alpha.setProbMode(probMode);
-        if (beta != this)
+        if (beta != this) {
             beta.setProbMode(probMode);
+        }
 
         gammaCache = new HashMap<>();
     }
@@ -72,21 +75,24 @@ public class BackoffEstimator extends AbstractEstimator {
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        if (history.isEmpty())
+        if (history.isEmpty()) {
             switch (probMode) {
                 case COND:
                     return 0;
                 case MARG:
                     return SUBSTITUTE_ESTIMATOR.probability(sequence, history,
-                            recDepth);
+                        recDepth);
                 default:
                     throw new SwitchCaseNotImplementedException();
             }
-        else if (cache.getCount(getFullSequence(sequence, history)) == 0) {
-            NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
+        } else if (cache.getCount(getFullSequence(sequence, history)) == 0) {
+            NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO:
+                                                                     // fix
+                                                                     // backoff
+                                                                     // arg
 
-            double betaVal = beta.probability(sequence, backoffHistory,
-                    recDepth);
+            double betaVal =
+                beta.probability(sequence, backoffHistory, recDepth);
             double gammaVal = gamma(sequence, history, recDepth);
             logTrace(recDepth, "beta = %f", betaVal);
             logTrace(recDepth, "gamma = %f", gammaVal);
@@ -127,23 +133,26 @@ public class BackoffEstimator extends AbstractEstimator {
         double sumAlpha = 0;
         double sumBeta = 0;
 
-        NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix backoff arg
+        NGram backoffHistory = history.backoff(BackoffMode.DEL); // TODO: fix
+                                                                 // backoff arg
 
         for (String word : cache.getWords()) {
             NGram s = history.concat(word);
-            if (cache.getCount(s) == 0)
-                sumBeta += beta.probability(new NGram(word), backoffHistory,
-                        recDepth);
-            else
-                sumAlpha += alpha.probability(new NGram(word), history,
-                        recDepth);
+            if (cache.getCount(s) == 0) {
+                sumBeta +=
+                    beta.probability(new NGram(word), backoffHistory, recDepth);
+            } else {
+                sumAlpha +=
+                    alpha.probability(new NGram(word), history, recDepth);
+            }
         }
 
         logTrace(recDepth, "sumAlpha = %f", sumAlpha);
         logTrace(recDepth, "sumBeta = %f", sumBeta);
 
-        if (sumBeta == 0)
+        if (sumBeta == 0) {
             return 0.0;
+        }
         return (1.0 - sumAlpha) / sumBeta;
     }
 

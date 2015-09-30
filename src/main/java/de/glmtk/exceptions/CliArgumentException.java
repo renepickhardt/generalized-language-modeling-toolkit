@@ -22,6 +22,7 @@ package de.glmtk.exceptions;
 
 import static java.lang.String.format;
 
+
 public class CliArgumentException extends Termination {
 
     private static final long serialVersionUID = -8644343219016883237L;

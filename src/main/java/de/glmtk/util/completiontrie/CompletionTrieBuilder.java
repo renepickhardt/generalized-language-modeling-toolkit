@@ -15,6 +15,7 @@ import java.util.TreeSet;
 
 import de.glmtk.util.StringUtils;
 
+
 public class CompletionTrieBuilder {
     private static class Node {
         public byte[] chars = null;
@@ -30,52 +31,60 @@ public class CompletionTrieBuilder {
 
         @Override
         public String toString() {
-            StringBuilder a = new StringBuilder("Node "
-                    + System.identityHashCode(this) + "[chars=\""
+            StringBuilder a = new StringBuilder(
+                "Node " + System.identityHashCode(this) + "[chars=\""
                     + new String(chars) + "\", score=" + score + ", childs=");
-            for (Node child : childs)
+            for (Node child : childs) {
                 a.append(System.identityHashCode(child)).append(',');
+            }
             a.append(", parent=" + System.identityHashCode(parent)
-                    + ", scoreDelta=" + scoreDelta + ", isLastSibling="
-                    + isLastSibling + ", layer=" + layer
-                    + ", firstChildOffset=" + firstChildPointer + "]");
+                + ", scoreDelta=" + scoreDelta + ", isLastSibling="
+                + isLastSibling + ", layer=" + layer + ", firstChildOffset="
+                + firstChildPointer + "]");
             return a.toString();
         }
     }
 
-    private static final Comparator<Node> NODE_SCORE_COMPARATOR = new Comparator<Node>() {
-        @Override
-        public int compare(Node lhs,
-                           Node rhs) {
-            int cmp = -Long.compare(lhs.score, rhs.score);
-            if (cmp != 0)
-                return cmp;
-            return ByteUtils.compare(lhs.chars, rhs.chars);
-        }
-    };
+    private static final Comparator<Node> NODE_SCORE_COMPARATOR =
+        new Comparator<Node>() {
+            @Override
+            public int compare(Node lhs,
+                               Node rhs) {
+                int cmp = -Long.compare(lhs.score, rhs.score);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                return ByteUtils.compare(lhs.chars, rhs.chars);
+            }
+        };
 
-    private static final Comparator<Node> NODE_BUILD_COMPARATOR = new Comparator<Node>() {
-        @Override
-        public int compare(Node lhs,
-                           Node rhs) {
-            if (lhs == rhs)
-                return 0;
+    private static final Comparator<Node> NODE_BUILD_COMPARATOR =
+        new Comparator<Node>() {
+            @Override
+            public int compare(Node lhs,
+                               Node rhs) {
+                if (lhs == rhs) {
+                    return 0;
+                }
 
-            int cmp = -Integer.compare(lhs.layer, rhs.layer);
-            if (cmp != 0)
-                return cmp;
+                int cmp = -Integer.compare(lhs.layer, rhs.layer);
+                if (cmp != 0) {
+                    return cmp;
+                }
 
-            cmp = -compare(lhs.parent, rhs.parent);
-            if (cmp != 0)
-                return cmp;
+                cmp = -compare(lhs.parent, rhs.parent);
+                if (cmp != 0) {
+                    return cmp;
+                }
 
-            cmp = Long.compare(lhs.score, rhs.score);
-            if (cmp != 0)
-                return cmp;
+                cmp = Long.compare(lhs.score, rhs.score);
+                if (cmp != 0) {
+                    return cmp;
+                }
 
-            return -ByteUtils.compare(lhs.chars, rhs.chars);
-        }
-    };
+                return -ByteUtils.compare(lhs.chars, rhs.chars);
+            }
+        };
 
     private boolean caseSensitive;
     private Node root;
@@ -102,17 +111,20 @@ public class CompletionTrieBuilder {
     public void add(String string,
                     long score) {
         Objects.requireNonNull(string, "Can't add null string.");
-        if (string.isEmpty())
+        if (string.isEmpty()) {
             throw new IllegalArgumentException("Can't add empty string.");
+        }
 
-        if (!caseSensitive)
+        if (!caseSensitive) {
             string = string.toLowerCase();
+        }
 
         byte[] chars = string.getBytes(Charset.forName("UTF-8"));
         int curChar = 0;
 
-        if (root.score < score)
+        if (root.score < score) {
             root.score = score;
+        }
 
         Node node = root, nextNode = null;
         long nodeScore = node.score;
@@ -121,8 +133,8 @@ public class CompletionTrieBuilder {
             for (Node child : node.childs) {
                 int curChildChar = 0;
                 while (curChar != chars.length
-                        && curChildChar != child.chars.length
-                        && chars[curChar] == child.chars[curChildChar]) {
+                    && curChildChar != child.chars.length
+                    && chars[curChar] == child.chars[curChildChar]) {
                     ++curChar;
                     ++curChildChar;
                 }
@@ -142,8 +154,9 @@ public class CompletionTrieBuilder {
                 }
             }
 
-            if (nextNode == null)
+            if (nextNode == null) {
                 break;
+            }
             if (nextNodeChar != nextNode.chars.length) {
                 node = nextNode;
                 break;
@@ -156,13 +169,14 @@ public class CompletionTrieBuilder {
         if (nextNodeChar != 0 && nextNodeChar != node.chars.length) {
             // We need to split node
             Node splitNode = new Node();
-            splitNode.chars = Arrays.copyOfRange(node.chars, nextNodeChar,
-                    node.chars.length);
+            splitNode.chars =
+                Arrays.copyOfRange(node.chars, nextNodeChar, node.chars.length);
             splitNode.score = nodeScore;
             splitNode.parent = node;
             splitNode.childs = node.childs;
-            for (Node child : splitNode.childs)
+            for (Node child : splitNode.childs) {
                 child.parent = splitNode;
+            }
             nodes.add(splitNode);
 
             node.childs = new TreeSet<>(NODE_SCORE_COMPARATOR);
@@ -176,14 +190,15 @@ public class CompletionTrieBuilder {
             // Do we need to add an epsilon node to mark this node as leaf?
             boolean noCharsLeft = curChar == chars.length;
 
-            if (isLeaf && noCharsLeft && nodeScore != score)
+            if (isLeaf && noCharsLeft && nodeScore != score) {
                 // TODO: update instead
                 // if nodeScore > score, we don't have to to anything
                 // if nodeSocre < score, we just have to walk up parent path,
                 // and recalc scores.
                 throw new IllegalStateException(
-                        "Attempted string to add already present with different score: '"
-                                + string + "'.");
+                    "Attempted string to add already present with different score: '"
+                        + string + "'.");
+            }
 
             if (isLeaf || noCharsLeft) {
                 Node epsNode = new Node();
@@ -197,10 +212,10 @@ public class CompletionTrieBuilder {
 
         while (curChar != chars.length) {
             Node newNode = new Node();
-            int newNodeCharsLength = Math.min(chars.length - curChar,
-                    CompletionTrie.MAX_CHARS_SIZE);
-            newNode.chars = Arrays.copyOfRange(chars, curChar, curChar
-                    + newNodeCharsLength);
+            int newNodeCharsLength =
+                Math.min(chars.length - curChar, CompletionTrie.MAX_CHARS_SIZE);
+            newNode.chars = Arrays.copyOfRange(chars, curChar,
+                curChar + newNodeCharsLength);
             curChar += newNodeCharsLength;
             newNode.score = score;
             newNode.parent = node;
@@ -213,8 +228,7 @@ public class CompletionTrieBuilder {
     private byte calcNodeSize(Node node,
                               int pointer) {
         return CompletionTrie.node_potentialSize(node.chars, node.scoreDelta,
-                node.firstChildPointer == 0 ? 0 : node.firstChildPointer
-                        - pointer);
+            node.firstChildPointer == 0 ? 0 : node.firstChildPointer - pointer);
     }
 
     public CompletionTrie build() {
@@ -234,14 +248,16 @@ public class CompletionTrieBuilder {
             pointer -= nodeSize;
 
             int firstChildOffset = 0;
-            if (node.firstChildPointer != 0)
+            if (node.firstChildPointer != 0) {
                 firstChildOffset = node.firstChildPointer - pointer;
+            }
 
             CompletionTrie.node_create(memory, pointer, node.isLastSibling,
-                    node.chars, node.scoreDelta, firstChildOffset);
+                node.chars, node.scoreDelta, firstChildOffset);
 
-            if (node.parent != null)
+            if (node.parent != null) {
                 node.parent.firstChildPointer = pointer;
+            }
         }
 
         memory = Arrays.copyOfRange(memory, pointer, maxMemory);
@@ -265,16 +281,17 @@ public class CompletionTrieBuilder {
         node.isLastSibling = isLastSibling;
         node.layer = trieLayer;
 
-        if (node.childs.isEmpty())
+        if (node.childs.isEmpty()) {
             return;
+        }
         parentScore = node.score;
         ++trieLayer;
         Iterator<Node> childIter = node.childs.iterator();
         while (true) {
             Node child = childIter.next();
-            if (childIter.hasNext())
+            if (childIter.hasNext()) {
                 updateAuxiliaryAttributes(child, parentScore, false, trieLayer);
-            else {
+            } else {
                 updateAuxiliaryAttributes(child, parentScore, true, trieLayer);
                 break;
             }
@@ -301,16 +318,18 @@ public class CompletionTrieBuilder {
     }
 
     private String printDot_getNodeChars(Node node) {
-        if (node == null)
+        if (node == null) {
             return "null";
-        if (node.chars.length == 0)
+        }
+        if (node.chars.length == 0) {
             return "ϵ";
+        }
         return StringUtils.replaceAll(new String(node.chars), " ", "_");
     }
 
     private String printDot_getNodeId(Node node) {
         return printDot_getNodeChars(node) + "-"
-                + Integer.toHexString(System.identityHashCode(node));
+            + Integer.toHexString(System.identityHashCode(node));
     }
 
     private void printDot_nodes(Writer writer,
@@ -319,25 +338,26 @@ public class CompletionTrieBuilder {
         writer.append(StringUtils.repeat("  ", depth));
         writer.append('"').append(printDot_getNodeId(node)).append('"');
         writer.append(" [ label=\"").append(printDot_getNodeChars(node));
-        //        writer.append(" [" + printDot_getNodeChars(node.parent) + ", "
-        //                + node.scoreDelta + ", " + node.layer + ", "
-        //                + node.firstChildOffset + ", " + node.isLastSibling + "]");
+        // writer.append(" [" + printDot_getNodeChars(node.parent) + ", "
+        // + node.scoreDelta + ", " + node.layer + ", "
+        // + node.firstChildOffset + ", " + node.isLastSibling + "]");
         writer.append("\" ];\n");
 
-        for (Node child : node.childs)
+        for (Node child : node.childs) {
             printDot_nodes(writer, child, depth + 1);
+        }
     }
 
     private void printDot_edges(Writer writer,
                                 Node node,
                                 int depth) throws IOException {
         String tmp = StringUtils.repeat("  ", depth) + '"'
-                + printDot_getNodeId(node) + "\" -- \"";
+            + printDot_getNodeId(node) + "\" -- \"";
 
         for (Node child : node.childs) {
             writer.append(tmp).append(printDot_getNodeId(child)).append('\"');
-            writer.append(" [ label=\"").append(Long.toString(child.scoreDelta)).append(
-                    "\" ];\n");
+            writer.append(" [ label=\"").append(Long.toString(child.scoreDelta))
+                .append("\" ];\n");
             printDot_edges(writer, child, depth + 1);
         }
     }

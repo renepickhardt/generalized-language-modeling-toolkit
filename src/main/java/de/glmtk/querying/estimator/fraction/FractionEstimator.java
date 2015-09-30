@@ -24,6 +24,7 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
+
 public abstract class FractionEstimator extends AbstractEstimator {
     @Override
     protected double calcProbability(NGram sequence,
@@ -32,7 +33,7 @@ public abstract class FractionEstimator extends AbstractEstimator {
         if (!isDefined(sequence, history, recDepth)) {
             logTrace(recDepth, "Fraction undefined, backing off.");
             return probability(sequence, history.backoff(BackoffMode.DEL),
-                    recDepth);
+                recDepth);
         }
 
         double numeratorVal = numerator(sequence, history, recDepth);

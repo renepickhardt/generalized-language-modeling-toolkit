@@ -25,6 +25,7 @@ import java.util.List;
 
 import de.glmtk.common.NGram;
 
+
 public class CondCalculator extends Calculator {
     @Override
     protected List<SequenceAndHistory> computeQueries(List<String> words) {

@@ -49,12 +49,14 @@ import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
+
 @RunWith(Parameterized.class)
 public class QueryCacheTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(QueryCacheTest.class);
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
-    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
+    private static Path testFile =
+        Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -82,8 +84,8 @@ public class QueryCacheTest extends TestCorporaTest {
         glmtk.count(requiredPatterns);
 
         GlmtkPaths paths = glmtk.getPaths();
-        GlmtkPaths queryCachePaths = glmtk.provideQueryCache(testFile,
-                requiredPatterns);
+        GlmtkPaths queryCachePaths =
+            glmtk.provideQueryCache(testFile, requiredPatterns);
 
         LOGGER.info("Loading cache without QueryCache...");
         Cache cache = requiredCache.withProgress().build(paths);
@@ -91,15 +93,15 @@ public class QueryCacheTest extends TestCorporaTest {
         Cache queryCache = requiredCache.withProgress().build(queryCachePaths);
 
         QueryMode queryMode = QueryMode.newCond(5);
-        QueryExecutor executor = new QueryExecutor(paths, queryMode, estimator,
-                5);
+        QueryExecutor executor =
+            new QueryExecutor(paths, queryMode, estimator, 5);
 
-        ProgressBar progressBar = new ProgressBar("Querying",
-                countNumberOfLines(testFile));
+        ProgressBar progressBar =
+            new ProgressBar("Querying", countNumberOfLines(testFile));
 
         Logger.setTraceEnabled(false);
-        try (BufferedReader reader = Files.newBufferedReader(testFile,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(testFile, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 double probExpected = Double.NaN, probActual = Double.NaN;
@@ -108,8 +110,11 @@ public class QueryCacheTest extends TestCorporaTest {
                     probExpected = executor.querySequence(line);
                     estimator.setCache(queryCache);
                     probActual = executor.querySequence(line);
-                    if (Math.abs(probExpected - probActual) > Math.abs(probExpected) / 1e6)
+                    if (Math
+                        .abs(probExpected - probActual) > Math.abs(probExpected)
+                            / 1e6) {
                         throw new Exception("failAssert");
+                    }
                 } catch (Throwable t) {
                     Logger.setTraceEnabled(true);
 
@@ -123,9 +128,10 @@ public class QueryCacheTest extends TestCorporaTest {
 
                     Logger.setTraceEnabled(false);
 
-                    if (t.getMessage().equals("failAssert"))
+                    if (t.getMessage().equals("failAssert")) {
                         fail(String.format("Expected <%e> but was <%e>.",
-                                probExpected, probActual));
+                            probExpected, probActual));
+                    }
 
                     throw t;
                 }

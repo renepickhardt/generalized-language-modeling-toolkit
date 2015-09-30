@@ -32,16 +32,18 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+
 public class CollectionUtils {
-    private CollectionUtils() {
-    }
+    private CollectionUtils() {}
 
     public static <T> boolean equal(Collection<T> lhs,
                                     Collection<T> rhs) {
         List<T> lhsElems = new ArrayList<>(lhs);
-        for (T rhsElem : rhs)
-            if (!lhsElems.remove(rhsElem))
+        for (T rhsElem : rhs) {
+            if (!lhsElems.remove(rhsElem)) {
                 return false;
+            }
+        }
         return lhsElems.size() == 0;
     }
 
@@ -49,20 +51,25 @@ public class CollectionUtils {
                                 int neededSize,
                                 T defaultValue) {
         int size = list.size();
-        if (size <= neededSize)
-            for (int i = size; i != neededSize + 1; ++i)
+        if (size <= neededSize) {
+            for (int i = size; i != neededSize + 1; ++i) {
                 list.add(defaultValue);
+            }
+        }
     }
 
     public static <T> boolean containsAny(Collection<T> haystack,
                                           Collection<T> needles) {
-        for (T needle : needles)
-            if (haystack.contains(needle))
+        for (T needle : needles) {
+            if (haystack.contains(needle)) {
                 return true;
+            }
+        }
         return false;
     }
 
-    public static <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> collection) {
+    public static <T extends Comparable<? super T>> List<T>
+            asSortedList(Collection<T> collection) {
         List<T> list = new ArrayList<>(collection);
         Collections.sort(list);
         return list;
@@ -76,34 +83,40 @@ public class CollectionUtils {
     public static <T> List<T> getQueueAsList(Queue<T> queue) {
         List<T> list = new ArrayList<>(queue.size());
         T obj;
-        while ((obj = queue.poll()) != null)
+        while ((obj = queue.poll()) != null) {
             list.add(obj);
-        for (T elem : list)
+        }
+        for (T elem : list) {
             queue.add(elem);
+        }
         return list;
     }
 
     public static <T> List<T> drainQueueToList(Queue<T> queue) {
         Deque<T> deque = new ArrayDeque<>(queue.size());
         T obj;
-        while ((obj = queue.poll()) != null)
+        while ((obj = queue.poll()) != null) {
             deque.addFirst(obj);
+        }
         return new ArrayList<>(deque);
     }
 
     public static <T, U> U getFromNestedMap(Map<T, U> map,
                                             T key1,
                                             String nullError,
-                                            String error1) throws IllegalStateException {
+                                            String error1)
+                                                    throws IllegalStateException {
         if (map == null) {
-            if (nullError != null)
+            if (nullError != null) {
                 throw new IllegalStateException(nullError);
+            }
             return null;
         }
 
         U value = map.get(key1);
-        if (value == null && error1 != null)
+        if (value == null && error1 != null) {
             throw new IllegalStateException(String.format(error1, key1));
+        }
 
         return value;
     }
@@ -115,12 +128,14 @@ public class CollectionUtils {
                                                String error1,
                                                String error2) {
         Map<U, V> nestedMap = getFromNestedMap(map, key1, nullError, error1);
-        if (nestedMap == null)
+        if (nestedMap == null) {
             return null;
+        }
 
         V value = nestedMap.get(key2);
-        if (value == null && error2 != null)
+        if (value == null && error2 != null) {
             throw new IllegalStateException(String.format(error2, key1, key2));
+        }
 
         return value;
     }
@@ -133,15 +148,17 @@ public class CollectionUtils {
                                                   String error1,
                                                   String error2,
                                                   String error3) {
-        Map<V, W> nestedMap = getFromNestedMap(map, key1, key2, nullError,
-                error1, error2);
-        if (nestedMap == null)
+        Map<V, W> nestedMap =
+            getFromNestedMap(map, key1, key2, nullError, error1, error2);
+        if (nestedMap == null) {
             return null;
+        }
 
         W value = nestedMap.get(key3);
-        if (value == null && error3 != null)
-            throw new IllegalStateException(String.format(error3, key1, key2,
-                    key3));
+        if (value == null && error3 != null) {
+            throw new IllegalStateException(
+                String.format(error3, key1, key2, key3));
+        }
 
         return value;
     }
@@ -164,11 +181,12 @@ public class CollectionUtils {
         putIntoNestedMap(nestedMap, key2, value);
     }
 
-    public static <T, U, V, W> void putIntoNestedMap(Map<T, Map<U, Map<V, W>>> map,
-                                                     T key1,
-                                                     U key2,
-                                                     V key3,
-                                                     W value) {
+    public static <T, U, V, W> void
+            putIntoNestedMap(Map<T, Map<U, Map<V, W>>> map,
+                             T key1,
+                             U key2,
+                             V key3,
+                             W value) {
         Map<U, Map<V, W>> nestedMap = map.get(key1);
         if (nestedMap == null) {
             nestedMap = new HashMap<>();
@@ -184,10 +202,11 @@ public class CollectionUtils {
             Set<U> rhsSet = entry.getValue();
 
             Set<U> lhsSet = lhs.get(key);
-            if (lhsSet == null)
+            if (lhsSet == null) {
                 lhs.put(key, rhsSet);
-            else
+            } else {
                 lhsSet.addAll(rhsSet);
+            }
         }
     }
 }

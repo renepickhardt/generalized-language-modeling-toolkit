@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.junit.Test;
+
 
 public class PatternTest {
     @Test
@@ -71,8 +72,9 @@ public class PatternTest {
     public void testIterator() {
         Pattern a = Patterns.get("101x");
         int i = -1;
-        for (PatternElem elem : a)
+        for (PatternElem elem : a) {
             assertEquals(elem, a.get(++i));
+        }
     }
 
     @Test
@@ -97,14 +99,12 @@ public class PatternTest {
         try {
             a.get(-1);
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
 
         try {
             a.get(5);
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
     }
 
     @Test
@@ -123,8 +123,7 @@ public class PatternTest {
         try {
             a.containsAny(new ArrayList<PatternElem>());
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
     }
 
     @Test
@@ -138,8 +137,7 @@ public class PatternTest {
         try {
             assertFalse(a.containsOnly(new ArrayList<PatternElem>()));
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
 
         Pattern b = Patterns.get("101x");
         assertFalse(b.containsOnly(CNT));
@@ -174,8 +172,7 @@ public class PatternTest {
         try {
             assertEquals(a.numElems(new ArrayList<PatternElem>()), 0);
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
     }
 
     @Test
@@ -206,14 +203,12 @@ public class PatternTest {
         try {
             a.range(-1, a.size());
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
 
         try {
             a.range(0, a.size() + 1);
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
     }
 
     @Test
@@ -242,24 +237,22 @@ public class PatternTest {
     @Test
     public void testGetContinuationSource() {
         assertEquals(Patterns.get("1011"),
-                Patterns.get("101x").getContinuationSource());
+            Patterns.get("101x").getContinuationSource());
         assertEquals(Patterns.get("1110"),
-                Patterns.get("1x10").getContinuationSource());
+            Patterns.get("1x10").getContinuationSource());
         assertEquals(Patterns.get("1x01"),
-                Patterns.get("1x0x").getContinuationSource());
+            Patterns.get("1x0x").getContinuationSource());
         assertEquals(Patterns.get("1xy02"),
-                Patterns.get("1xy0y").getContinuationSource());
+            Patterns.get("1xy0y").getContinuationSource());
 
         try {
             Patterns.get("1011").getContinuationSource();
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
 
         try {
             Patterns.get().getContinuationSource();
             fail("Expected IllegalArgumentException.");
-        } catch (IllegalArgumentException e) {
-        }
+        } catch (IllegalArgumentException e) {}
     }
 }

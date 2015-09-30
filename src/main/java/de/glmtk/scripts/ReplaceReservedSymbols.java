@@ -17,22 +17,25 @@ import de.glmtk.Constants;
 import de.glmtk.common.PatternElem;
 import de.glmtk.counting.Tagger;
 
+
 public class ReplaceReservedSymbols {
-    private static final List<String> RESERVED_SYMBOLS = Arrays.asList(
-            PatternElem.SKP_WORD, PatternElem.WSKP_WORD,
+    private static final List<String> RESERVED_SYMBOLS =
+        Arrays.asList(PatternElem.SKP_WORD, PatternElem.WSKP_WORD,
             Character.toString(Tagger.POS_SEPARATOR));
 
     public static void main(String args[]) throws IOException {
         Path inputFile = Paths.get("/home/lukas/langmodels/data/oanc.raw");
-        Path outputFile = Paths.get("/home/lukas/langmodels/data/oanc.noreserved");
+        Path outputFile =
+            Paths.get("/home/lukas/langmodels/data/oanc.noreserved");
 
-        try (BufferedReader reader = newBufferedReader(inputFile,
-                Constants.CHARSET);
-                BufferedWriter writer = newBufferedWriter(outputFile,
-                        Constants.CHARSET)) {
+        try (BufferedReader reader =
+            newBufferedReader(inputFile, Constants.CHARSET);
+             BufferedWriter writer =
+                 newBufferedWriter(outputFile, Constants.CHARSET)) {
             String line;
-            while ((line = reader.readLine()) != null)
+            while ((line = reader.readLine()) != null) {
                 writer.append(replaceReservedSymbolsInLine(line)).append('\n');
+            }
         }
     }
 
@@ -46,8 +49,9 @@ public class ReplaceReservedSymbols {
             offset += charCount(curChar);
 
             String string = String.valueOf(toChars(curChar));
-            if (RESERVED_SYMBOLS.contains(string))
+            if (RESERVED_SYMBOLS.contains(string)) {
                 string = "?";
+            }
             result.append(string);
         }
 

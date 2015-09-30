@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -31,6 +31,7 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.querying.calculator.Calculator;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
+
 
 public class QueryExecutor {
     private QueryMode mode;
@@ -51,9 +52,10 @@ public class QueryExecutor {
         calculator = Calculator.forQueryMode(mode);
         calculator.setEstimator(estimator);
 
-        if (mode.isWithLengthFreq())
-            cache = new CacheSpecification().withLengthDistribution().build(
-                    paths);
+        if (mode.isWithLengthFreq()) {
+            cache =
+                new CacheSpecification().withLengthDistribution().build(paths);
+        }
     }
 
     /**
@@ -73,22 +75,22 @@ public class QueryExecutor {
         int order = tokens.size();
         Integer modeOrder = mode.getOrder();
 
-        if (order == 0)
+        if (order == 0) {
             return Double.NaN;
-        else if (modeOrder != null && order != modeOrder)
-            throw new IllegalStateException(
-                    String.format(
-                            "Illegal sequence. Can only query sequences with length %d when using mode '%s'.",
-                            modeOrder, mode));
-        else if (order > corpusOrder)
-            throw new IllegalStateException(
-                    String.format(
-                            "Illegal sequence. Can only query sequences with max length learned on corpus %d.",
-                            corpusOrder));
+        } else if (modeOrder != null && order != modeOrder) {
+            throw new IllegalStateException(String.format(
+                "Illegal sequence. Can only query sequences with length %d when using mode '%s'.",
+                modeOrder, mode));
+        } else if (order > corpusOrder) {
+            throw new IllegalStateException(String.format(
+                "Illegal sequence. Can only query sequences with max length learned on corpus %d.",
+                corpusOrder));
+        }
 
         double prob = calculator.probability(tokens);
-        if (mode.isWithLengthFreq() && prob != 0)
+        if (mode.isWithLengthFreq() && prob != 0) {
             prob *= cache.getLengthFrequency(order);
+        }
 
         synchronized (stats) {
             stats.addProbability(prob);
@@ -104,22 +106,25 @@ public class QueryExecutor {
     public String queryLine(String line,
                             Integer lineNo) {
         String trimmed = line.trim();
-        if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
+        if (trimmed.isEmpty() || trimmed.charAt(0) == '#') {
             return line;
+        }
 
         Double prob = null;
         try {
             prob = querySequence(line);
         } catch (IllegalStateException e) {
-            if (lineNo == null)
+            if (lineNo == null) {
                 printlnWarning(e.getMessage());
-            else
+            } else {
                 printlnWarning("%s Line %d: '%s'.", e.getMessage(), lineNo,
-                        line);
+                    line);
+            }
         }
 
-        if (prob == null)
+        if (prob == null) {
             return line;
+        }
         return line + '\t' + prob.toString();
     }
 }

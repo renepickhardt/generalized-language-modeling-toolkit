@@ -15,8 +15,10 @@ import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
 import de.glmtk.querying.estimator.Estimator;
 
+
 public class EstimatorsOption extends Option {
-    public static final String DEFAULT_ARGNAME = EstimatorOption.DEFAULT_ARGNAME;
+    public static final String DEFAULT_ARGNAME =
+        EstimatorOption.DEFAULT_ARGNAME;
 
     private Arg arg = new Arg(DEFAULT_ARGNAME, GREATER_ONE, EXPLANATION);
     private boolean requireWeightedSum = false;
@@ -38,8 +40,9 @@ public class EstimatorsOption extends Option {
 
     public EstimatorsOption needWeightedSum() {
         requireWeightedSum = true;
-        if (arg.name.equals(DEFAULT_ARGNAME))
+        if (arg.name.equals(DEFAULT_ARGNAME)) {
             arg.name = "WEIGHTEDSUM_ESTIMATOR";
+        }
         arg.explanation = WEIGHTEDSUM_EXPLANATION;
         return this;
     }
@@ -56,11 +59,14 @@ public class EstimatorsOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        if (!given)
+        if (!given) {
             value = newArrayList();
+        }
 
-        for (String estimatorString : arg.values)
-            value.add(parseEstimator(estimatorString, requireWeightedSum, this));
+        for (String estimatorString : arg.values) {
+            value
+                .add(parseEstimator(estimatorString, requireWeightedSum, this));
+        }
     }
 
     public List<Estimator> getEstimators() {

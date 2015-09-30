@@ -48,12 +48,14 @@ import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
+
 @RunWith(Parameterized.class)
 public class EstimatorSpeedTest extends TestCorporaTest {
     private static final Logger LOGGER = Logger.get(EstimatorSpeedTest.class);
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
-    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
+    private static Path testFile =
+        Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
     private static Cache cache = null;
 
@@ -84,10 +86,12 @@ public class EstimatorSpeedTest extends TestCorporaTest {
 
     @BeforeClass
     public static void setUpCache() throws Exception {
-        if (cache != null)
+        if (cache != null) {
             return;
+        }
 
-        CacheSpecification requiredCache = new CacheSpecification().withProgress();
+        CacheSpecification requiredCache =
+            new CacheSpecification().withProgress();
         for (Object[] params : data()) {
             Estimator estimator = (Estimator) params[0];
             requiredCache.addAll(estimator.getRequiredCache(5));
@@ -98,8 +102,8 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         Glmtk glmtk = testCorpus.getGlmtk();
         glmtk.count(requiredPatterns);
 
-        GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
-                requiredPatterns);
+        GlmtkPaths queryCache =
+            glmtk.provideQueryCache(testFile, requiredPatterns);
 
         cache = requiredCache.withProgress().build(queryCache);
     }
@@ -107,16 +111,18 @@ public class EstimatorSpeedTest extends TestCorporaTest {
     @AfterClass
     public static void displayResults() {
         int maxNameLength = 0;
-        for (Estimator estimator : results.keySet())
-            if (maxNameLength < estimator.toString().length())
+        for (Estimator estimator : results.keySet()) {
+            if (maxNameLength < estimator.toString().length()) {
                 maxNameLength = estimator.toString().length();
+            }
+        }
 
         for (Entry<Estimator, Long> entry : results.entrySet()) {
             Estimator estimator = entry.getKey();
             Long speed = entry.getValue();
 
             LOGGER.info("%-" + maxNameLength + "s Estimator:  Querying: %6dms",
-                    estimator, speed);
+                estimator, speed);
         }
     }
 
@@ -136,12 +142,12 @@ public class EstimatorSpeedTest extends TestCorporaTest {
         estimator.setCache(cache);
 
         Files.createDirectories(paths.getQueriesDir());
-        Path outputFile = paths.getQueriesDir().resolve(
-                testFile.getFileName() + " " + estimator.toString());
+        Path outputFile = paths.getQueriesDir()
+            .resolve(testFile.getFileName() + " " + estimator.toString());
 
         long timeBeforeQuerying = System.currentTimeMillis();
         glmtk.queryFile(QueryMode.newSequence(), estimator, 5, testFile,
-                outputFile);
+            outputFile);
         long timeAfterQuerying = System.currentTimeMillis();
 
         results.put(estimator, timeAfterQuerying - timeBeforeQuerying);

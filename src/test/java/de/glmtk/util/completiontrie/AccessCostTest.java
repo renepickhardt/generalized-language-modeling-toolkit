@@ -19,15 +19,17 @@ import org.junit.Test;
 import de.glmtk.Constants;
 import de.glmtk.util.StringUtils;
 
+
 public class AccessCostTest {
-    public static final Path TEST_FILE = Constants.TEST_RESSOURCES_DIR.resolve("completiontrie-large.tsv");
+    public static final Path TEST_FILE =
+        Constants.TEST_RESSOURCES_DIR.resolve("completiontrie-large.tsv");
 
     @Test
     public void testHashMapRandomAccessCost() throws IOException {
         Map<String, Long> map = new HashMap<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -40,8 +42,8 @@ public class AccessCostTest {
         BigInteger timeSum = BigInteger.ZERO;
         int n = 0;
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -56,22 +58,23 @@ public class AccessCostTest {
 
                 assertEquals(score, scoreTrie);
 
-                timeSum = timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
+                timeSum =
+                    timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
                 ++n;
             }
         }
 
         BigInteger timePerAccess = timeSum.divide(BigInteger.valueOf(n));
         System.out.println("HashMap Average Random Access: "
-                + timePerAccess.toString() + "ns");
+            + timePerAccess.toString() + "ns");
     }
 
     @Test
     public void testTreeMapRandomAccessCost() throws IOException {
         Map<String, Long> map = new TreeMap<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -84,8 +87,8 @@ public class AccessCostTest {
         BigInteger timeSum = BigInteger.ZERO;
         int n = 0;
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -100,22 +103,23 @@ public class AccessCostTest {
 
                 assertEquals(score, scoreTrie);
 
-                timeSum = timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
+                timeSum =
+                    timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
                 ++n;
             }
         }
 
         BigInteger timePerAccess = timeSum.divide(BigInteger.valueOf(n));
         System.out.println("TreeMap Average Random Access: "
-                + timePerAccess.toString() + "ns");
+            + timePerAccess.toString() + "ns");
     }
 
     @Test
     public void testCompletionTrieRandomAccessCost() throws IOException {
         CompletionTrieBuilder builder = new CompletionTrieBuilder(true);
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -132,8 +136,8 @@ public class AccessCostTest {
         BigInteger timeSum = BigInteger.ZERO;
         int n = 0;
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -148,14 +152,15 @@ public class AccessCostTest {
 
                 assertEquals(score, scoreTrie);
 
-                timeSum = timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
+                timeSum =
+                    timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
                 ++n;
             }
         }
 
         BigInteger timePerAccess = timeSum.divide(BigInteger.valueOf(n));
         System.out.println("CompletionTrie Average Random Access: "
-                + timePerAccess.toString() + "ns");
+            + timePerAccess.toString() + "ns");
     }
 
     @Test
@@ -163,8 +168,8 @@ public class AccessCostTest {
         CompletionTrieBuilder builder = new CompletionTrieBuilder(true);
         Map<String, Long> map = new HashMap<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(TEST_FILE,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(TEST_FILE, Charset.defaultCharset())) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> split = StringUtils.split(line, '\t');
@@ -191,7 +196,7 @@ public class AccessCostTest {
             long timeAfter = System.nanoTime();
 
             assertEquals(map.get(entry.getString()).longValue(),
-                    entry.getScore());
+                entry.getScore());
 
             timeSum = timeSum.add(BigInteger.valueOf(timeAfter - timeBefore));
             ++n;
@@ -199,6 +204,6 @@ public class AccessCostTest {
 
         BigInteger timePerAccess = timeSum.divide(BigInteger.valueOf(n));
         System.out.println("CompletionTrie Average Sorted Access: "
-                + timePerAccess.toString() + "ns");
+            + timePerAccess.toString() + "ns");
     }
 }

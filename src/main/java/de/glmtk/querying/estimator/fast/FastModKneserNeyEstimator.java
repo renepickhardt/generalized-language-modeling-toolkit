@@ -24,6 +24,7 @@ import static de.glmtk.common.NGram.WSKP_NGRAM;
 
 import de.glmtk.common.NGram;
 
+
 public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
     @Override
     protected double calcProbability(NGram sequence,
@@ -31,14 +32,16 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
                                      int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
         long denominator = cache.getCount(fullHistory);
-        if (denominator == 0.0)
+        if (denominator == 0.0) {
             return probability(sequence, history.backoff(backoffMode),
-                    recDepth);
+                recDepth);
+        }
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getCount(fullSequence);
-        if (history.isEmptyOrOnlySkips())
+        if (history.isEmptyOrOnlySkips()) {
             return (double) numerator / denominator;
+        }
 
         double discount = cache.getDiscount(fullSequence);
         double gamma = cache.getGammaHigh(history) / denominator;
@@ -54,7 +57,7 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
                                          NGram history,
                                          int recDepth) {
         logTrace(recDepth, "%s#probabilityLower(%s,%s)",
-                getClass().getSimpleName(), sequence, history);
+            getClass().getSimpleName(), sequence, history);
         ++recDepth;
 
         double result = calcProbabilityLower(sequence, history, recDepth);
@@ -67,17 +70,19 @@ public class FastModKneserNeyEstimator extends FastModKneserNeyAbsEstimator {
                                           NGram history,
                                           int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
-        long denominator = cache.getCount(WSKP_NGRAM.concat(
-                fullHistory.convertSkpToWskp()));
-        if (denominator == 0.0)
+        long denominator =
+            cache.getCount(WSKP_NGRAM.concat(fullHistory.convertSkpToWskp()));
+        if (denominator == 0.0) {
             return probabilityLower(sequence, history.backoff(backoffMode),
-                    recDepth);
+                recDepth);
+        }
 
         NGram fullSequence = getFullSequence(sequence, history);
-        long numerator = cache.getCount(WSKP_NGRAM.concat(
-                fullSequence.convertSkpToWskp()));
-        if (history.isEmptyOrOnlySkips())
+        long numerator =
+            cache.getCount(WSKP_NGRAM.concat(fullSequence.convertSkpToWskp()));
+        if (history.isEmptyOrOnlySkips()) {
             return (double) numerator / denominator;
+        }
 
         double discount = cache.getDiscount(fullSequence);
         double gamma = cache.getGammaLow(history) / denominator;

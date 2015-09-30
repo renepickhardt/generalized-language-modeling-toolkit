@@ -27,6 +27,7 @@ import java.util.List;
 
 import de.glmtk.util.StringUtils;
 
+
 public class LengthDistributionReader extends AbstractFileReader {
     private int length;
     private double frequency;
@@ -54,9 +55,10 @@ public class LengthDistributionReader extends AbstractFileReader {
 
         List<String> split = StringUtils.split(line, '\t');
 
-        if (split.size() != 2)
+        if (split.size() != 2) {
             throw newFileFormatException("length distribution",
-                    "Expected line to have format '<length>\\t<frequency>'.");
+                "Expected line to have format '<length>\\t<frequency>'.");
+        }
 
         try {
             length = (int) parseNumber(split.get(0));

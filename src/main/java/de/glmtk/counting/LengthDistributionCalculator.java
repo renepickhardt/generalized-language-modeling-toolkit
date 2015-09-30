@@ -39,8 +39,10 @@ import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
+
 public class LengthDistributionCalculator {
-    private static final Logger LOGGER = Logger.get(LengthDistributionCalculator.class);
+    private static final Logger LOGGER =
+        Logger.get(LengthDistributionCalculator.class);
 
     private Config config;
 
@@ -58,7 +60,8 @@ public class LengthDistributionCalculator {
                           Path outputFile,
                           ProgressBar progressBar) throws IOException {
         if (status.isLengthDistribution()) {
-            LOGGER.debug("Status reports length distribution already calculated, returning.");
+            LOGGER.debug(
+                "Status reports length distribution already calculated, returning.");
             return;
         }
 
@@ -86,12 +89,13 @@ public class LengthDistributionCalculator {
 
         // count absolute frequencies
         try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
-                Constants.CHARSET, readerMemory)) {
+            Constants.CHARSET, readerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 progressBar.increase(line.getBytes(Constants.CHARSET).length);
 
-                // This is a slow method to get sequence length, better would be to count number of spaces.
+                // This is a slow method to get sequence length, better would be
+                // to count number of spaces.
                 int length = StringUtils.split(line, ' ').size();
 
                 ++sum;
@@ -101,18 +105,21 @@ public class LengthDistributionCalculator {
         }
 
         // convert to relative frequencies
-        for (int i = 0; i != frequencies.size(); ++i)
+        for (int i = 0; i != frequencies.size(); ++i) {
             frequencies.set(i, frequencies.get(i) / sum);
+        }
 
         return frequencies;
     }
 
-    private void writeLengthDistributionToFile(List<Double> frequencies) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
-                Constants.CHARSET)) {
-            for (int i = 0; i != frequencies.size(); ++i)
-                writer.append(Integer.toString(i)).append('\t').append(
-                        Double.toString(frequencies.get(i))).append('\n');
+    private void writeLengthDistributionToFile(List<Double> frequencies)
+            throws IOException {
+        try (BufferedWriter writer =
+            Files.newBufferedWriter(outputFile, Constants.CHARSET)) {
+            for (int i = 0; i != frequencies.size(); ++i) {
+                writer.append(Integer.toString(i)).append('\t')
+                    .append(Double.toString(frequencies.get(i))).append('\n');
+            }
         }
     }
 }

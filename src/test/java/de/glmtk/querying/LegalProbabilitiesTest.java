@@ -16,6 +16,7 @@ import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 
+
 @RunWith(Parameterized.class)
 public class LegalProbabilitiesTest extends TestCorporaTest {
     private static final TestCorpus TEST_CORPUS = TestCorpus.EN0008T;
@@ -25,13 +26,13 @@ public class LegalProbabilitiesTest extends TestCorporaTest {
     @BeforeClass
     public static void loadCache() throws IOException {
         CacheSpecification requiredCache = Estimators.GLM.getRequiredCache(5);
-        cache = requiredCache.withProgress().build(
-                TEST_CORPUS.getGlmtk().getPaths());
+        cache = requiredCache.withProgress()
+            .build(TEST_CORPUS.getGlmtk().getPaths());
     }
 
     @Parameters
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {{Estimators.GLM}});
+        return Arrays.asList(new Object[][] { { Estimators.GLM } });
     }
 
     private Estimator estimator;
@@ -41,6 +42,5 @@ public class LegalProbabilitiesTest extends TestCorporaTest {
     }
 
     @Test
-    public void testLegalProbability() {
-    }
+    public void testLegalProbability() {}
 }

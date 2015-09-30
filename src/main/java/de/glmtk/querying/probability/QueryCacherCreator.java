@@ -51,6 +51,7 @@ import de.glmtk.output.ProgressBar;
 import de.glmtk.util.NioUtils;
 import de.glmtk.util.StringUtils;
 
+
 public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
     private static final Logger LOGGER = Logger.get(QueryCacherCreator.class);
     private static final String PHASE_SCANNING_COUNTS = "Scanning Counts";
@@ -67,7 +68,7 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
         protected void work(Pattern pattern,
                             int patternNo) throws IOException {
             extractSequences(pattern);
-            //            LOGGER.trace("neededSequences = %s", neededSequences);
+            // LOGGER.trace("neededSequences = %s", neededSequences);
             getPatternFiles(pattern);
             filterAndWriteSequenceCounts();
 
@@ -84,22 +85,22 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
 
             Set<String> sequences = new HashSet<>();
             try (BufferedReader reader = NioUtils.newBufferedReader(queryFile,
-                    Constants.CHARSET, readerMemory)) {
+                Constants.CHARSET, readerMemory)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     List<String> sequenceList = StringUtils.split(line, ' ');
-                    String[] split = sequenceList.toArray(
-                            new String[sequenceList.size()]);
+                    String[] split =
+                        sequenceList.toArray(new String[sequenceList.size()]);
                     String[] words = new String[split.length];
                     String[] poses = new String[split.length];
                     StringUtils.extractWordsAndPoses(split, queryFileTagged,
-                            words, poses);
+                        words, poses);
 
                     int patternSize = corePattern.size();
                     for (int p = 0; p <= words.length - patternSize; ++p) {
                         String sequence = corePattern.apply(words, poses, p);
-                        sequences.add(leadingSequence + sequence
-                                + trailingSequence);
+                        sequences
+                            .add(leadingSequence + sequence + trailingSequence);
                     }
                 }
             }
@@ -114,8 +115,9 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
             StringBuilder leadingSequenceBuilder = new StringBuilder();
             for (int i = 0; i != pattern.size(); ++i) {
                 PatternElem elem = pattern.get(i);
-                if (!elem.equals(SKP) && !elem.equals(WSKP))
+                if (!elem.equals(SKP) && !elem.equals(WSKP)) {
                     break;
+                }
 
                 ++cntLeading;
                 leadingSequenceBuilder.append(elem.apply(null)).append(' ');
@@ -125,8 +127,9 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
             int cntTrailing = 0;
             for (int i = pattern.size() - 1; i != -1; --i) {
                 PatternElem elem = pattern.get(i);
-                if (!elem.equals(SKP) && !elem.equals(WSKP))
+                if (!elem.equals(SKP) && !elem.equals(WSKP)) {
                     break;
+                }
 
                 ++cntTrailing;
                 trailingSequenceBuilder.append(elem.apply(null)).append(' ');
@@ -141,11 +144,12 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
             LOGGER.trace("stringLeading:  '%s'", leadingSequence);
             LOGGER.trace("stringTrailing: '%s'", trailingSequence);
 
-            if (cntLeading >= pattern.size() - cntTrailing)
+            if (cntLeading >= pattern.size() - cntTrailing) {
                 return Patterns.get();
+            }
 
-            Pattern corePattern = pattern.range(cntLeading, pattern.size()
-                    - cntTrailing);
+            Pattern corePattern =
+                pattern.range(cntLeading, pattern.size() - cntTrailing);
 
             LOGGER.trace("Core Pattern:  %s", corePattern);
 
@@ -155,50 +159,55 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
         private void getPatternFiles(Pattern pattern) {
             if (pattern.isAbsolute()) {
                 patternFile = absoluteDir.resolve(pattern.toString());
-                targetPatternFile = targetAbsoluteDir.resolve(
-                        pattern.toString());
+                targetPatternFile =
+                    targetAbsoluteDir.resolve(pattern.toString());
             } else {
                 patternFile = continuationDir.resolve(pattern.toString());
-                targetPatternFile = targetContinuationDir.resolve(
-                        pattern.toString());
+                targetPatternFile =
+                    targetContinuationDir.resolve(pattern.toString());
             }
         }
 
         protected void filterAndWriteSequenceCounts() throws IOException {
-            try (CountsReader reader = new CountsReader(patternFile,
-                    Constants.CHARSET, readerMemory);
-                    BufferedWriter writer = NioUtils.newBufferedWriter(
-                            targetPatternFile, Constants.CHARSET,
-                            writerMemory)) {
+            try (CountsReader reader =
+                new CountsReader(patternFile, Constants.CHARSET, readerMemory);
+                 BufferedWriter writer = NioUtils.newBufferedWriter(
+                     targetPatternFile, Constants.CHARSET, writerMemory)) {
                 nextSequence = neededSequences.poll();
 
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (nextSequence == null)
+                    if (nextSequence == null) {
                         break;
+                    }
 
                     String sequence = reader.getSequence();
-                    if (sequence == null)
+                    if (sequence == null) {
                         continue;
+                    }
 
-                    if (isSequenceNeeded(sequence))
+                    if (isSequenceNeeded(sequence)) {
                         writer.append(line).append('\n');
+                    }
                 }
             }
         }
 
         protected boolean isSequenceNeeded(String sequence) {
-            if (nextSequence == null)
+            if (nextSequence == null) {
                 return false;
+            }
 
             int cmp;
             while ((cmp = sequence.compareTo(nextSequence)) >= 0) {
-                if (cmp == 0)
+                if (cmp == 0) {
                     return true;
+                }
 
                 nextSequence = neededSequences.poll();
-                if (nextSequence == null)
+                if (nextSequence == null) {
                     return false;
+                }
             }
 
             return false;
@@ -249,8 +258,9 @@ public class QueryCacherCreator extends AbstractWorkerExecutor<Pattern> {
     @Override
     protected Collection<? extends Worker> createWorkers() {
         List<Worker> workers = new ArrayList<>();
-        for (int i = 0; i != config.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i) {
             workers.add(new Worker());
+        }
         return workers;
     }
 }

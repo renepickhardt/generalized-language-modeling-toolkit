@@ -17,6 +17,7 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
+
 // FIXME: class not implemented yet, so suppress warnings.
 @SuppressWarnings("unused")
 public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
@@ -39,19 +40,23 @@ public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
 
     @Override
     public List<ArgmaxResult> queryArgmax(String history,
-            int numResults) {
-        if (numResults == 0)
+                                          int numResults) {
+        if (numResults == 0) {
             return new ArrayList<>();
-        if (numResults < 0)
+        }
+        if (numResults < 0) {
             throw new IllegalArgumentException("numResults must be positive.");
+        }
 
         NGram hist = new NGram(StringUtils.split(history, ' '));
-        WeightedSumFunction weightedSumFunction = estimator.calcWeightedSumFunction(hist);
+        WeightedSumFunction weightedSumFunction =
+            estimator.calcWeightedSumFunction(hist);
 
         int size = weightedSumFunction.size();
-        if (size == 0)
+        if (size == 0) {
             // TODO: what to do here?
             return new ArrayList<>();
+        }
 
         Pattern[] patterns = weightedSumFunction.getPatterns();
         NGram[] histories = weightedSumFunction.getHistories();
@@ -62,8 +67,9 @@ public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         for (int i = 0; i != size; ++i) {
             Pattern pattern = patterns[i];
             String h = histories[i].toString();
-            if (!h.isEmpty())
+            if (!h.isEmpty()) {
                 h += " ";
+            }
 
             CompletionTrie trie = cache.getCountCompletionTrie(pattern);
             Iterator<CompletionTrieEntry> iter = trie.getCompletions(h);
@@ -100,8 +106,9 @@ public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
      */
     private double calcAlpha(NGram sequence,
                              long count) {
-        if (count == 0)
+        if (count == 0) {
             return 0;
+        }
 
         long absSequenceCount = count;
 
@@ -110,9 +117,10 @@ public class BeamSearchArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             absSequenceCount = cache.getCount(sequence);
         }
 
-        if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
+        if (sequence.getPattern().numElems(PatternElem.CNT) == 1) {
             // If we are on last order don't discount.
             return count;
+        }
 
         Discounts discounts = cache.getDiscounts(sequence.getPattern());
         double d = discounts.getForCount(absSequenceCount);

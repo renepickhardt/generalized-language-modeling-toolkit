@@ -26,6 +26,7 @@ import de.glmtk.util.StringUtils;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieEntry;
 
+
 public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     public enum ProbabilityDislay {
         EXACT,
@@ -58,24 +59,28 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         public int lowerBoundCalc = -1;
 
         public double upperBound() {
-            if (upperBoundCalc == numSortedAccesses)
+            if (upperBoundCalc == numSortedAccesses) {
                 return upperBoundCache;
+            }
 
             double args[] = new double[alphas.length];
-            for (int i = 0; i != alphas.length; ++i)
-                if (alphas[i] == 0)
-                    args[i] = calcAlpha(histories[i].concat(sequence),
-                            lastCounts[i]);
-                else
+            for (int i = 0; i != alphas.length; ++i) {
+                if (alphas[i] == 0) {
+                    args[i] =
+                        calcAlpha(histories[i].concat(sequence), lastCounts[i]);
+                } else {
                     args[i] = alphas[i];
+                }
+            }
             upperBoundCache = calcProbability(weightedSumFunction, args);
             upperBoundCalc = numSortedAccesses;
             return upperBoundCache;
         }
 
         public double lowerBound() {
-            if (lowerBoundCalc == numSortedAccesses)
+            if (lowerBoundCalc == numSortedAccesses) {
                 return lowerBoundCache;
+            }
             lowerBoundCache = calcProbability(weightedSumFunction, alphas);
             lowerBoundCalc = numSortedAccesses;
             return lowerBoundCache;
@@ -87,17 +92,19 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
         }
     }
 
-    public static final Comparator<ArgmaxObject> ARGMAX_OBJECT_COMPARATOR = new Comparator<ArgmaxObject>() {
-        @Override
-        public int compare(ArgmaxObject lhs,
-                           ArgmaxObject rhs) {
-            int cmp = -Double.compare(lhs.lowerBound(), rhs.lowerBound());
-            if (cmp != 0)
-                return cmp;
+    public static final Comparator<ArgmaxObject> ARGMAX_OBJECT_COMPARATOR =
+        new Comparator<ArgmaxObject>() {
+            @Override
+            public int compare(ArgmaxObject lhs,
+                               ArgmaxObject rhs) {
+                int cmp = -Double.compare(lhs.lowerBound(), rhs.lowerBound());
+                if (cmp != 0) {
+                    return cmp;
+                }
 
-            return -Double.compare(rhs.upperBound(), rhs.upperBound());
-        }
-    };
+                return -Double.compare(rhs.upperBound(), rhs.upperBound());
+            }
+        };
 
     public NoRandomAccessArgmaxQueryExecutor(WeightedSumEstimator estimator,
                                              CompletionTrieCache cache,
@@ -133,18 +140,21 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                                           int numResults) {
         numSortedAccesses = 0;
 
-        if (numResults == 0)
+        if (numResults == 0) {
             return new ArrayList<>();
-        if (numResults < 0)
+        }
+        if (numResults < 0) {
             throw new IllegalArgumentException("numResults must be positive.");
+        }
 
         NGram hist = new NGram(StringUtils.split(history, ' '));
         weightedSumFunction = estimator.calcWeightedSumFunction(hist);
 
         int size = weightedSumFunction.size();
-        if (size == 0)
+        if (size == 0) {
             // TODO: what to do here?
             return new ArrayList<>();
+        }
 
         Pattern[] patterns = weightedSumFunction.getPatterns();
         histories = weightedSumFunction.getHistories();
@@ -159,30 +169,34 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             String h = hi.isEmpty() ? prefix : hi + " " + prefix;
 
             CompletionTrie trie = cache.getCountCompletionTrie(pattern);
-            PeekingIterator<CompletionTrieEntry> iter = peekingIterator(trie.getCompletions(h));
+            PeekingIterator<CompletionTrieEntry> iter =
+                peekingIterator(trie.getCompletions(h));
 
             tries[i] = trie;
             iters[i] = iter;
-            if (iter.hasNext())
+            if (iter.hasNext()) {
                 lastCounts[i] = iter.peek().getScore();
-            else
+            } else {
                 lastCounts[i] = 0;
+            }
         }
 
         Map<String, ArgmaxObject> objects = new HashMap<>();
-        PriorityQueue<ArgmaxObject> queue = new PriorityQueue<>(11,
-                ARGMAX_OBJECT_COMPARATOR);
+        PriorityQueue<ArgmaxObject> queue =
+            new PriorityQueue<>(11, ARGMAX_OBJECT_COMPARATOR);
         List<ArgmaxResult> results = new ArrayList<>(numResults);
 
         List<Integer> ptrs = new ArrayList<>(size);
-        for (int i = 0; i != size; ++i)
+        for (int i = 0; i != size; ++i) {
             ptrs.add(i);
+        }
 
         Iterator<Integer> ptrIter = ptrs.iterator();
         while (results.size() != numResults) {
             if (!ptrIter.hasNext()) {
-                if (ptrs.isEmpty())
+                if (ptrs.isEmpty()) {
                     break;
+                }
                 ptrIter = ptrs.iterator();
             }
             int ptr = ptrIter.next();
@@ -201,11 +215,13 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             String string = entry.getString();
             int lastSpacePos = string.lastIndexOf(' ');
             String sequence = string;
-            if (lastSpacePos != -1)
+            if (lastSpacePos != -1) {
                 sequence = string.substring(lastSpacePos + 1);
+            }
 
-            if (vocab != null && !vocab.contains(sequence))
+            if (vocab != null && !vocab.contains(sequence)) {
                 continue;
+            }
 
             ArgmaxObject curObject = objects.get(sequence);
             if (curObject == null) {
@@ -214,57 +230,65 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                 curObject.sequence = sequence;
                 curObject.done = false;
                 curObject.alphas = new double[size];
-                for (int i = 0; i != size; ++i)
+                for (int i = 0; i != size; ++i) {
                     curObject.alphas[i] = 0;
-            } else if (!curObject.done)
+                }
+            } else if (!curObject.done) {
                 queue.remove(curObject);
+            }
             if (!curObject.done) {
                 curObject.alphas[ptr] = calcAlpha(
-                        histories[ptr].concat(sequence), entry.getScore());
+                    histories[ptr].concat(sequence), entry.getScore());
                 queue.add(curObject);
             }
 
             while (results.size() != numResults) {
                 ArgmaxObject object = queue.remove();
                 if (queue.isEmpty()
-                        || object.lowerBound() < queue.peek().upperBound()) {
+                    || object.lowerBound() < queue.peek().upperBound()) {
                     queue.add(object);
                     break;
                 }
 
-                results.add(new ArgmaxResult(object.sequence,
-                        calcDisplayProbability(weightedSumFunction, histories,
-                                object)));
+                results.add(
+                    new ArgmaxResult(object.sequence, calcDisplayProbability(
+                        weightedSumFunction, histories, object)));
                 object.done = true;
             }
         }
 
         for (int i = results.size(); i < numResults; ++i) {
-            if (queue.isEmpty())
+            if (queue.isEmpty()) {
                 break;
+            }
             ArgmaxObject object = queue.remove();
-            if (object.upperBound() == 0.0)
+            if (object.upperBound() == 0.0) {
                 break;
-            results.add(new ArgmaxResult(object.sequence,
-                    calcDisplayProbability(weightedSumFunction, histories,
-                            object)));
+            }
+            results
+                .add(new ArgmaxResult(object.sequence, calcDisplayProbability(
+                    weightedSumFunction, histories, object)));
         }
 
         return results;
     }
 
-    private double calcDisplayProbability(WeightedSumFunction weightedSumFunction,
-                                          NGram[] histories,
-                                          ArgmaxObject object) {
+    private double
+            calcDisplayProbability(WeightedSumFunction weightedSumFunction,
+                                   NGram[] histories,
+                                   ArgmaxObject object) {
         switch (probabilityDislay) {
             case EXACT:
                 int size = histories.length;
                 double args[] = new double[size];
-                for (int i = 0; i != size; ++i)
-                    if (object.alphas[i] == 0)
-                        args[i] = calcAlpha(histories[i].concat(object.sequence));
-                    else
+                for (int i = 0; i != size; ++i) {
+                    if (object.alphas[i] == 0) {
+                        args[i] =
+                            calcAlpha(histories[i].concat(object.sequence));
+                    } else {
                         args[i] = object.alphas[i];
+                    }
+                }
                 return calcProbability(weightedSumFunction, args);
             case AVERAGE:
                 return (object.lowerBound() + object.upperBound()) / 2;
@@ -302,8 +326,9 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
      */
     private double calcAlpha(NGram sequence,
                              long count) {
-        if (count == 0)
+        if (count == 0) {
             return 0;
+        }
 
         long absSequenceCount = count;
 
@@ -312,9 +337,10 @@ public class NoRandomAccessArgmaxQueryExecutor implements ArgmaxQueryExecutor {
             absSequenceCount = cache.getCount(sequence);
         }
 
-        if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
+        if (sequence.getPattern().numElems(PatternElem.CNT) == 1) {
             // If we are on last order don't discount.
             return count;
+        }
 
         Discounts discounts = cache.getDiscounts(sequence.getPattern());
         double d = discounts.getForCount(absSequenceCount);

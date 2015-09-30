@@ -18,6 +18,7 @@ import de.glmtk.Constants;
 import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
 
+
 public class CorpusOption extends Option {
     public static final String CORPUS_DEFAULT_ARGNAME = "CORPUS";
     public static final String WORKINGDIR_DEFAULT_ARGNAME = "WORKINGDIR";
@@ -68,37 +69,46 @@ public class CorpusOption extends Option {
     @Override
     protected void parse() throws OptionException {
         corpus = parsePath(corpusArg.value, this);
-        if (workingDirArg.value != null)
+        if (workingDirArg.value != null) {
             workingDir = parsePath(workingDirArg.value, this);
+        }
 
         if (isDirectory(corpus)) {
-            if (workingDir != null)
+            if (workingDir != null) {
                 throw new OptionException("%s: Can't explicitly specify "
-                        + "working directory '%s' if given corpus is already "
-                        + "a directory.", this, workingDir, corpus);
+                    + "working directory '%s' if given corpus is already "
+                    + "a directory.", this, workingDir, corpus);
+            }
             workingDir = corpus;
             corpus = checkWorkingDirFile(Constants.TRAINING_FILE_NAME);
             checkWorkingDirFile(Constants.STATUS_FILE_NAME);
         } else {
-            if (workingDir == null)
+            if (workingDir == null) {
                 workingDir = Paths.get(corpus + suffix);
-            if (exists(workingDir) && !isDirectory(workingDir))
+            }
+            if (exists(workingDir) && !isDirectory(workingDir)) {
                 throw new OptionException(
-                        "%s: Working directory '%s' exists, but "
-                                + "is not a directory.", this, workingDir);
-            if (exists(workingDir) && !isReadable(workingDir))
+                    "%s: Working directory '%s' exists, but "
+                        + "is not a directory.",
+                    this, workingDir);
+            }
+            if (exists(workingDir) && !isReadable(workingDir)) {
                 throw new OptionException(
-                        "%s: Working directory '%s' exists, but "
-                                + "is not readable.", this, workingDir);
+                    "%s: Working directory '%s' exists, but "
+                        + "is not readable.",
+                    this, workingDir);
+            }
         }
     }
 
     private Path checkWorkingDirFile(String filename) throws OptionException {
         Path file = workingDir.resolve(filename);
-        if (!exists(file) || !isReadable(file) || !isRegularFile(file))
-            throw new OptionException("%s: %s file '%s' does not exist, is "
-                    + "not readable, or not a regular file.", this, filename,
-                    file);
+        if (!exists(file) || !isReadable(file) || !isRegularFile(file)) {
+            throw new OptionException(
+                "%s: %s file '%s' does not exist, is "
+                    + "not readable, or not a regular file.",
+                this, filename, file);
+        }
         return file;
     }
 

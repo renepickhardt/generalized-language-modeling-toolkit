@@ -58,6 +58,7 @@ import de.glmtk.querying.probability.QueryMode;
 import de.glmtk.util.StatisticalNumberHelper;
 import de.glmtk.util.StringUtils;
 
+
 public class GlmtkExecutable extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkExecutable.class);
 
@@ -86,19 +87,21 @@ public class GlmtkExecutable extends Executable {
     @Override
     protected void registerOptions() {
         optionCorpus = new CorpusOption(null, "corpus",
-                "Give corpus and maybe working directory.");
+            "Give corpus and maybe working directory.");
         optionEstimators = new EstimatorsOption("e", "estimator",
-                "Estimators to learn for and query with.").defaultValue(ImmutableList.of((Estimator) Estimators.FAST_MLE));
+            "Estimators to learn for and query with.").defaultValue(
+                ImmutableList.of((Estimator) Estimators.FAST_MLE));
         optionIo = new QueryModeOption("i", "io",
-                "Takes queries from standard input with given mode.");
+            "Takes queries from standard input with given mode.");
         optionQuery = new QueryModeFilesOption("q", "query",
-                "Query the given files with given mode.");
+            "Query the given files with given mode.");
         optionTrainingOrder = new IntegerOption("n", "training-order",
-                "Order to learn for training.").defaultValue(-1).requirePositive().requireNotZero();
+            "Order to learn for training.").defaultValue(-1).requirePositive()
+                .requireNotZero();
 
         commandLine.inputArgs(optionCorpus);
         commandLine.options(optionEstimators, optionIo, optionQuery,
-                optionTrainingOrder);
+            optionTrainingOrder);
     }
 
     @Override
@@ -115,30 +118,34 @@ public class GlmtkExecutable extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
-        if (!optionCorpus.wasGiven())
+        if (!optionCorpus.wasGiven()) {
             throw new CliArgumentException("%s missing.", optionCorpus);
+        }
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
         checkCorpusForReservedSymbols();
 
         estimators = newHashSet(optionEstimators.getEstimators());
 
-        if (optionIo.wasGiven() && optionQuery.wasGiven())
+        if (optionIo.wasGiven() && optionQuery.wasGiven()) {
             throw new CliArgumentException("%s and %s are mutually exclusive.",
-                    optionIo, optionQuery);
+                optionIo, optionQuery);
+        }
 
         ioQueryMode = optionIo.getQueryMode();
-        if (ioQueryMode != null && estimators.size() > 1)
+        if (ioQueryMode != null && estimators.size() > 1) {
             throw new CliArgumentException(String.format(
-                    "Can specify at most one estimator if using %s.", optionIo));
+                "Can specify at most one estimator if using %s.", optionIo));
+        }
 
         queries = optionQuery.getQueryModeFiles();
 
         trainingOrder = optionTrainingOrder.getInt();
-        if (trainingOrder == -1)
+        if (trainingOrder == -1) {
             trainingOrder = calculateTrainingOrder();
-        else
+        } else {
             verifyTrainingOrder();
+        }
 
         // Need to create workingDirectory here in order to create Logger for
         // "<workingdir>/log" as soon as possible.
@@ -146,13 +153,13 @@ public class GlmtkExecutable extends Executable {
             Files.createDirectories(workingDir);
         } catch (IOException e) {
             throw new IOException(String.format(
-                    "Could not create working directory '%s'.", workingDir), e);
+                "Could not create working directory '%s'.", workingDir), e);
         }
     }
 
     private void checkCorpusForReservedSymbols() throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(corpus,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(corpus, Constants.CHARSET)) {
             String line;
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
@@ -160,7 +167,7 @@ public class GlmtkExecutable extends Executable {
                 checkLineForReservedSymbol(line, lineNo, PatternElem.SKP_WORD);
                 checkLineForReservedSymbol(line, lineNo, PatternElem.WSKP_WORD);
                 checkLineForReservedSymbol(line, lineNo,
-                        Character.toString(Tagger.POS_SEPARATOR));
+                    Character.toString(Tagger.POS_SEPARATOR));
             }
         }
     }
@@ -168,39 +175,45 @@ public class GlmtkExecutable extends Executable {
     private void checkLineForReservedSymbol(String line,
                                             int lineNo,
                                             String symbol) {
-        if (line.contains(symbol))
+        if (line.contains(symbol)) {
             throw new FileFormatException(line, lineNo, corpus, "training",
-                    "Training file contains reserved symbol '%s'.", symbol);
+                "Training file contains reserved symbol '%s'.", symbol);
+        }
     }
 
     private int calculateTrainingOrder() throws IOException {
         int maxOrder = 0;
         for (QueryMode queryMode : queries.keySet()) {
             Integer queryOrder = queryMode.getOrder();
-            if (queryOrder != null && maxOrder < queryOrder)
+            if (queryOrder != null && maxOrder < queryOrder) {
                 maxOrder = queryOrder;
+            }
         }
-        for (Path file : queries.values())
-            try (BufferedReader reader = Files.newBufferedReader(file,
-                    Constants.CHARSET)) {
+        for (Path file : queries.values()) {
+            try (BufferedReader reader =
+                Files.newBufferedReader(file, Constants.CHARSET)) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String trimmed = line.trim();
-                    if (trimmed.isEmpty() || trimmed.charAt(0) == '#')
+                    if (trimmed.isEmpty() || trimmed.charAt(0) == '#') {
                         continue;
+                    }
 
                     List<String> split = StringUtils.split(trimmed, ' ');
                     int lineOrder = split.size();
-                    if (maxOrder < lineOrder)
+                    if (maxOrder < lineOrder) {
                         maxOrder = lineOrder;
+                    }
                 }
             } catch (IOException e) {
-                throw new IOException(String.format("Error reading file '%s'.",
-                        file), e);
+                throw new IOException(
+                    String.format("Error reading file '%s'.", file), e);
             }
+        }
 
-        if (maxOrder == 0)
+        if (maxOrder == 0) {
             maxOrder = 5;
+        }
 
         return maxOrder;
     }
@@ -208,11 +221,11 @@ public class GlmtkExecutable extends Executable {
     private void verifyTrainingOrder() {
         for (QueryMode queryMode : queries.keySet()) {
             Integer queryOrder = queryMode.getOrder();
-            if (queryOrder != null && queryOrder > trainingOrder)
-                throw new CliArgumentException(
-                        String.format(
-                                "Given order for query '%s' is higher than given training order '%d'.",
-                                queryMode, trainingOrder));
+            if (queryOrder != null && queryOrder > trainingOrder) {
+                throw new CliArgumentException(String.format(
+                    "Given order for query '%s' is higher than given training order '%d'.",
+                    queryMode, trainingOrder));
+            }
         }
     }
 
@@ -221,8 +234,8 @@ public class GlmtkExecutable extends Executable {
         super.configureLogging();
 
         addLoggingFileAppender(
-                workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
-                true);
+            workingDir.resolve(Constants.LOCAL_LOG_FILE_NAME), "FileLocal",
+            true);
     }
 
     /**
@@ -238,18 +251,21 @@ public class GlmtkExecutable extends Executable {
 
         // Set up Estimators
         ProbMode probMode = ProbMode.MARG;
-        for (Estimator estimator : estimators)
+        for (Estimator estimator : estimators) {
             estimator.setProbMode(probMode);
+        }
 
         CacheSpecification cacheBuilder = new CacheSpecification();
-        for (Estimator estimator : estimators)
+        for (Estimator estimator : estimators) {
             cacheBuilder.addAll(estimator.getRequiredCache(trainingOrder));
+        }
         // FIXME: Refactor this!
         cacheBuilder.withCounts(Patterns.getMany("x"));
 
         Set<Pattern> requiredPatterns = cacheBuilder.getRequiredPatterns();
-        if (needPos)
+        if (needPos) {
             requiredPatterns.addAll(Patterns.getPosPatterns(requiredPatterns));
+        }
         // FIXME: Refactor this!
         requiredPatterns.add(Patterns.get("x1111x"));
 
@@ -259,8 +275,8 @@ public class GlmtkExecutable extends Executable {
             QueryMode queryMode = entry.getKey();
             Path file = entry.getValue();
 
-            GlmtkPaths queryCache = glmtk.provideQueryCache(file,
-                    requiredPatterns);
+            GlmtkPaths queryCache =
+                glmtk.provideQueryCache(file, requiredPatterns);
             Cache cache = cacheBuilder.build(queryCache);
 
             for (Estimator estimator : estimators) {
@@ -274,15 +290,15 @@ public class GlmtkExecutable extends Executable {
             Estimator estimator = estimators.iterator().next();
             estimator.setCache(cache);
             glmtk.queryStream(ioQueryMode, estimator, trainingOrder, System.in,
-                    System.out);
+                System.out);
         }
 
         StatisticalNumberHelper.print();
     }
 
     private void logFields() {
-        LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-",
-                80 - getExecutableName().length()));
+        LOGGER.debug("%s %s", getExecutableName(),
+            StringUtils.repeat("-", 80 - getExecutableName().length()));
         LOGGER.debug("Corpus:        %s", corpus);
         LOGGER.debug("WorkingDir:    %s", workingDir);
         LOGGER.debug("TrainingOrder: %s", trainingOrder);

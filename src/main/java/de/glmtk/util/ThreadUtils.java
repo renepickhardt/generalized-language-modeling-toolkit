@@ -32,33 +32,37 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+
 public class ThreadUtils {
-    private ThreadUtils() {
-    }
+    private ThreadUtils() {}
 
     public static <T> List<T> executeThreads(int nThreads,
-            Collection<? extends Callable<T>> threads) throws Exception {
-        CancellingThreadPoolExecutor threadPool = new CancellingThreadPoolExecutor(
-                nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
+                                             Collection<? extends Callable<T>> threads)
+                                                     throws Exception {
+        CancellingThreadPoolExecutor threadPool =
+            new CancellingThreadPoolExecutor(nThreads, nThreads, 0L,
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 
         List<Future<T>> futures = new ArrayList<>(threads.size());
-        for (Callable<T> callable : threads)
+        for (Callable<T> callable : threads) {
             futures.add(threadPool.submit(callable));
+        }
         threadPool.shutdown();
         threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 
         threadPool.rethrowIfException();
 
         List<T> results = new ArrayList<>(threads.size());
-        for (Future<T> future : futures)
+        for (Future<T> future : futures) {
             results.add(future.get());
+        }
         return results;
     }
 
     public static int executeProcess(final Process p,
                                      long timeout,
-                                     TimeUnit unit) throws InterruptedException {
+                                     TimeUnit unit)
+                                             throws InterruptedException {
         Callable<Integer> callable = new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {

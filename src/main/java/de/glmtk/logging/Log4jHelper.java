@@ -41,11 +41,12 @@ import de.glmtk.Constants;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.logging.Logger.Level;
 
-public class Log4jHelper {
-    private Log4jHelper() {
-    }
 
-    private static final String LOGGING_PATTERN = "%date{yyyy-MM-dd HH:mm:ss} [%-5level]  %-100msg  [%class{1}#%method:%line] %thread (%logger)%n";
+public class Log4jHelper {
+    private Log4jHelper() {}
+
+    private static final String LOGGING_PATTERN =
+        "%date{yyyy-MM-dd HH:mm:ss} [%-5level]  %-100msg  [%class{1}#%method:%line] %thread (%logger)%n";
 
     /**
      * Buffer size to use for file appenders.
@@ -77,16 +78,17 @@ public class Log4jHelper {
         config = context.getConfiguration();
         rootLoggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
         layout = PatternLayout.createLayout(LOGGING_PATTERN, config, null,
-                Constants.CHARSET, true, true, null, null);
+            Constants.CHARSET, true, true, null, null);
 
         useBuffer = bufferLogging;
         initialized = true;
     }
 
     private static void checkInitialized() {
-        if (!initialized)
+        if (!initialized) {
             throw new IllegalStateException("Call #initLoggingHelper() before "
-                    + "using any other methods of this class.");
+                + "using any other methods of this class.");
+        }
     }
 
     public static Level getLogLevel() {
@@ -104,20 +106,21 @@ public class Log4jHelper {
     }
 
     private static Level fromLog4jLevel(org.apache.logging.log4j.Level level) {
-        if (level == org.apache.logging.log4j.Level.TRACE)
+        if (level == org.apache.logging.log4j.Level.TRACE) {
             return Level.TRACE;
-        else if (level == org.apache.logging.log4j.Level.DEBUG)
+        } else if (level == org.apache.logging.log4j.Level.DEBUG) {
             return Level.DEBUG;
-        else if (level == org.apache.logging.log4j.Level.INFO)
+        } else if (level == org.apache.logging.log4j.Level.INFO) {
             return Level.INFO;
-        else if (level == org.apache.logging.log4j.Level.WARN)
+        } else if (level == org.apache.logging.log4j.Level.WARN) {
             return Level.WARN;
-        else if (level == org.apache.logging.log4j.Level.ERROR)
+        } else if (level == org.apache.logging.log4j.Level.ERROR) {
             return Level.ERROR;
-        else
+        } else {
             throw new UnsupportedOperationException(String.format(
-                    "The Glmtk Logging Wrapper only supports the levels: %s",
-                    join(Level.values(), ", ")));
+                "The Glmtk Logging Wrapper only supports the levels: %s",
+                join(Level.values(), ", ")));
+        }
     }
 
     private static org.apache.logging.log4j.Level toLog4jLevel(Level level) {
@@ -142,7 +145,7 @@ public class Log4jHelper {
         checkNotNull(target);
 
         Appender consoleApender = ConsoleAppender.createAppender(layout, null,
-                target.toString(), target.toString() + "Log", "true", "false");
+            target.toString(), target.toString() + "Log", "true", "false");
         consoleApender.start();
         config.addAppender(consoleApender);
         rootLoggerConfig.addAppender(consoleApender, null, null);
@@ -171,11 +174,11 @@ public class Log4jHelper {
 
         int bufferSize = useBuffer ? BUFFER_SIZE : 0;
 
-        Appender fileLocalAppender = FileAppender.createAppender(
-                logFile.toString(), Boolean.toString(append), "false", name,
-                "false", "false", Boolean.toString(useBuffer),
-                Integer.toString(bufferSize), layout, null, "false", "false",
-                config);
+        Appender fileLocalAppender =
+            FileAppender.createAppender(logFile.toString(),
+                Boolean.toString(append), "false", name, "false", "false",
+                Boolean.toString(useBuffer), Integer.toString(bufferSize),
+                layout, null, "false", "false", config);
         fileLocalAppender.start();
         config.addAppender(fileLocalAppender);
         rootLoggerConfig.addAppender(fileLocalAppender, null, null);

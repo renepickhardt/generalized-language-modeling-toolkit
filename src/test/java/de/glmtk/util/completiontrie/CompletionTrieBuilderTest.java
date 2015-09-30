@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+
 public class CompletionTrieBuilderTest {
     @Test
     public void testDuplicateKeySameScore() {
@@ -19,7 +20,6 @@ public class CompletionTrieBuilderTest {
         try {
             builder.add("foo", 2);
             fail("Expeced IllegalStateException.");
-        } catch (IllegalStateException e) {
-        }
+        } catch (IllegalStateException e) {}
     }
 }

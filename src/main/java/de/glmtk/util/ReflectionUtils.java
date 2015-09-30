@@ -25,15 +25,22 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
+
 public class ReflectionUtils {
-    private ReflectionUtils() {
-    }
+    private ReflectionUtils() {}
 
     public static <T> T newInstance(Class<T> clazz,
-                                    Object... params) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                                    Object... params)
+                                            throws NoSuchMethodException,
+                                            SecurityException,
+                                            InstantiationException,
+                                            IllegalAccessException,
+                                            IllegalArgumentException,
+                                            InvocationTargetException {
         Class<?>[] paramTypes = new Class<?>[params.length];
-        for (int i = 0; i != params.length; ++i)
+        for (int i = 0; i != params.length; ++i) {
             paramTypes[i] = params[i].getClass();
+        }
         Constructor<T> cons = clazz.getDeclaredConstructor(paramTypes);
         cons.setAccessible(true);
         T obj = cons.newInstance(params);
@@ -47,7 +54,11 @@ public class ReflectionUtils {
      * reflection</a>
      */
     public static void setFinalStaticField(Field field,
-                                           Object newValue) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
+                                           Object newValue)
+                                                   throws IllegalArgumentException,
+                                                   IllegalAccessException,
+                                                   NoSuchFieldException,
+                                                   SecurityException {
         field.setAccessible(true);
 
         Field modifiersField = Field.class.getDeclaredField("modifiers");

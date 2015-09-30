@@ -20,10 +20,12 @@ public class CompletionTrieEntry {
 
     @Override
     public boolean equals(Object other) {
-        if (other == this)
+        if (other == this) {
             return true;
-        if (other == null || getClass() != other.getClass())
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
+        }
 
         CompletionTrieEntry o = (CompletionTrieEntry) other;
         return string.equals(o.string) && score == o.score;
@@ -41,6 +43,6 @@ public class CompletionTrieEntry {
     @Override
     public String toString() {
         return "CompletionTrieEntry [string=" + getString() + ", score="
-                + getScore() + "]";
+            + getScore() + "]";
     }
 }

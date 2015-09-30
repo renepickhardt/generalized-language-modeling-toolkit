@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -29,18 +29,21 @@ import org.junit.Test;
 
 import de.glmtk.common.ProbMode;
 
+
 public class SequenceCalculatorTest {
     @Test
-    public void testComputeQueries() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void testComputeQueries() throws NoSuchMethodException,
+            SecurityException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
         SequenceCalculator calculator = new SequenceCalculator();
         calculator.setProbMode(ProbMode.MARG);
 
-        Method computeQueries = SequenceCalculator.class.getDeclaredMethod(
-                "computeQueries", List.class);
+        Method computeQueries = SequenceCalculator.class
+            .getDeclaredMethod("computeQueries", List.class);
         computeQueries.setAccessible(true);
 
         // TODO: Write actual test.
-        System.out.println(computeQueries.invoke(calculator, Arrays.asList("a",
-                "b", "c", "d", "e", "f", "g")));
+        System.out.println(computeQueries.invoke(calculator,
+            Arrays.asList("a", "b", "c", "d", "e", "f", "g")));
     }
 }

@@ -27,17 +27,20 @@ import java.util.Comparator;
 
 import de.glmtk.util.ObjectUtils;
 
+
 public class SequenceReader extends AbstractFileReader {
-    public static class SequenceComparator<T extends SequenceReader> implements Comparator<T> {
+    public static class SequenceComparator<T extends SequenceReader>
+            implements Comparator<T> {
         @Override
         public int compare(T lhs,
                            T rhs) {
-            if (lhs == rhs)
+            if (lhs == rhs) {
                 return 0;
-            else if (lhs == null)
+            } else if (lhs == null) {
                 return 1;
-            else if (rhs == null)
+            } else if (rhs == null) {
                 return -1;
+            }
             return ObjectUtils.compare(lhs.sequence, rhs.sequence);
         }
     }
@@ -76,10 +79,12 @@ public class SequenceReader extends AbstractFileReader {
      */
     public void forwardToSequence(String target) throws Exception {
         while (sequence == null || !sequence.equals(target)) {
-            if (isEof() || (sequence != null && sequence.compareTo(target) > 0))
-                throw new Exception(String.format(
-                        "Could not forward to sequence '%s' in '%s'.", target,
-                        file));
+            if (isEof()
+                || (sequence != null && sequence.compareTo(target) > 0)) {
+                throw new Exception(
+                    String.format("Could not forward to sequence '%s' in '%s'.",
+                        target, file));
+            }
 
             readLine();
         }

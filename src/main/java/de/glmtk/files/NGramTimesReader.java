@@ -29,6 +29,7 @@ import de.glmtk.common.Pattern;
 import de.glmtk.counts.NGramTimes;
 import de.glmtk.util.StringUtils;
 
+
 public class NGramTimesReader extends AbstractFileReader {
     private Pattern pattern;
     private NGramTimes ngramTimes;
@@ -53,15 +54,16 @@ public class NGramTimesReader extends AbstractFileReader {
         }
 
         List<String> split = StringUtils.split(line, '\t');
-        if (split.size() != 5)
+        if (split.size() != 5) {
             throw newFileFormatException("ngram times",
-                    "Expected line to have format '<pattern>(\\t<count>){4}'.");
+                "Expected line to have format '<pattern>(\\t<count>){4}'.");
+        }
 
         try {
             pattern = parsePattern(split.get(0));
             ngramTimes = new NGramTimes(parseNumber(split.get(1)),
-                    parseNumber(split.get(2)), parseNumber(split.get(3)),
-                    parseNumber(split.get(4)));
+                parseNumber(split.get(2)), parseNumber(split.get(3)),
+                parseNumber(split.get(4)));
         } catch (IllegalArgumentException e) {
             throw newFileFormatException("ngram times", e.getMessage());
         }

@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+
 /**
  * Immutable.
  *
@@ -73,13 +74,15 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     @Override
     public int compareTo(Pattern other) {
-        int cmp = Integer.compare(numElems(CSKIP_ELEMS), other.numElems(
-                CSKIP_ELEMS));
-        if (cmp != 0)
+        int cmp =
+            Integer.compare(numElems(CSKIP_ELEMS), other.numElems(CSKIP_ELEMS));
+        if (cmp != 0) {
             return cmp;
+        }
         cmp = Integer.compare(asString.length(), other.asString.length());
-        if (cmp != 0)
+        if (cmp != 0) {
             return cmp;
+        }
         return asString.compareTo(other.asString);
     }
 
@@ -110,36 +113,41 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     }
 
     public PatternElem get(int index) {
-        if (index < 0 || index >= size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal index: %d. Size: %d.", index, size()));
+        if (index < 0 || index >= size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal index: %d. Size: %d.", index, size()));
+        }
         return elems.get(index);
     }
 
     // TODO: untested
     public Pattern set(int index,
                        PatternElem elem) {
-        if (index < 0 || index >= size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal index: %d. Size: %d.", index, size()));
+        if (index < 0 || index >= size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal index: %d. Size: %d.", index, size()));
+        }
         List<PatternElem> elems = new ArrayList<>(this.elems);
         elems.set(index, elem);
         return Patterns.get(elems);
     }
 
     public Pattern remove(int index) {
-        if (index < 0 || index >= size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal index: %d. Size: %d.", index, size()));
+        if (index < 0 || index >= size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal index: %d. Size: %d.", index, size()));
+        }
         List<PatternElem> elems = new ArrayList<>(this.elems);
         elems.remove(index);
         return Patterns.get(elems);
     }
 
     public PatternElem getFirstNonSkp() {
-        for (PatternElem elem : elems)
-            if (!elem.equals(SKP))
+        for (PatternElem elem : elems) {
+            if (!elem.equals(SKP)) {
                 return elem;
+            }
+        }
         return SKP;
     }
 
@@ -148,31 +156,38 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
     }
 
     public boolean containsAny(Collection<PatternElem> elems) {
-        if (elems.isEmpty())
+        if (elems.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument was empty collection.");
-        for (PatternElem elem : elems)
-            if (this.elems.contains(elem))
+                "Argument was empty collection.");
+        }
+        for (PatternElem elem : elems) {
+            if (this.elems.contains(elem)) {
                 return true;
+            }
+        }
         return false;
     }
 
     public boolean containsOnly(PatternElem elem) {
-        for (PatternElem e : elems)
-            if (!e.equals(elem))
+        for (PatternElem e : elems) {
+            if (!e.equals(elem)) {
                 return false;
+            }
+        }
         return true;
     }
 
     public boolean containsOnly(Collection<PatternElem> elems) {
-        if (elems.isEmpty())
+        if (elems.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument was empty collection.");
-        outerLoop:
-        for (PatternElem e : this.elems) {
-            for (PatternElem elem : elems)
-                if (e.equals(elem))
+                "Argument was empty collection.");
+        }
+        outerLoop: for (PatternElem e : this.elems) {
+            for (PatternElem elem : elems) {
+                if (e.equals(elem)) {
                     continue outerLoop;
+                }
+            }
             return false;
         }
         return true;
@@ -180,14 +195,16 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     // TODO: untested
     public boolean containsAll(Collection<PatternElem> elems) {
-        if (elems.isEmpty())
+        if (elems.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument was empty collection.");
-        outerLoop:
-        for (PatternElem e : elems) {
-            for (PatternElem elem : this.elems)
-                if (elem.equals(e))
+                "Argument was empty collection.");
+        }
+        outerLoop: for (PatternElem e : elems) {
+            for (PatternElem elem : this.elems) {
+                if (elem.equals(e)) {
                     continue outerLoop;
+                }
+            }
             return false;
         }
         return true;
@@ -203,24 +220,28 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     public int numElems(PatternElem elem) {
         int num = 0;
-        for (PatternElem e : elems)
-            if (e.equals(elem))
+        for (PatternElem e : elems) {
+            if (e.equals(elem)) {
                 ++num;
+            }
+        }
         return num;
     }
 
     public int numElems(Collection<PatternElem> elems) {
-        if (elems.isEmpty())
+        if (elems.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument was empty collection.");
+                "Argument was empty collection.");
+        }
         int num = 0;
-        outerLoop:
-        for (PatternElem elem : this.elems)
-            for (PatternElem e : elems)
+        outerLoop: for (PatternElem elem : this.elems) {
+            for (PatternElem e : elems) {
                 if (elem.equals(e)) {
                     ++num;
                     continue outerLoop;
                 }
+            }
+        }
         return num;
     }
 
@@ -237,23 +258,26 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
 
     public Pattern range(int from,
                          int to) {
-        if (from < 0 || from > size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal from index: %d", from));
-        else if (to < 0 || to > size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal to index: %d", to));
-        else if (from > to)
-            throw new IllegalArgumentException(String.format(
-                    "From index larger than to index: %d > %d", from, to));
+        if (from < 0 || from > size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal from index: %d", from));
+        } else if (to < 0 || to > size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal to index: %d", to));
+        } else if (from > to) {
+            throw new IllegalArgumentException(String
+                .format("From index larger than to index: %d > %d", from, to));
+        }
 
-        if (from == 0 && to == size())
+        if (from == 0 && to == size()) {
             return this;
+        }
 
         List<PatternElem> resultElems = new ArrayList<>(to - from);
 
-        for (int i = from; i != to; ++i)
+        for (int i = from; i != to; ++i) {
             resultElems.add(elems.get(i));
+        }
 
         return Patterns.get(resultElems);
     }
@@ -262,11 +286,13 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
                            PatternElem replacement) {
         StringBuilder resultAsString = new StringBuilder();
 
-        for (PatternElem elem : elems)
-            if (elem.equals(target))
+        for (PatternElem elem : elems) {
+            if (elem.equals(target)) {
                 resultAsString.append(replacement.toChar());
-            else
+            } else {
                 resultAsString.append(elem.toChar());
+            }
+        }
 
         return Patterns.get(resultAsString.toString());
     }
@@ -275,11 +301,12 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
                                PatternElem replacement) {
         List<PatternElem> resultElems = new ArrayList<>(elems);
 
-        for (int i = size() - 1; i != -1; --i)
+        for (int i = size() - 1; i != -1; --i) {
             if (elems.get(i).equals(target)) {
                 resultElems.set(i, replacement);
                 break;
             }
+        }
 
         return Patterns.get(resultElems);
     }
@@ -302,8 +329,8 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
             }
         }
 
-        throw new IllegalArgumentException(String.format(
-                "Pattern '%s' is not a continuation pattern.", this));
+        throw new IllegalArgumentException(
+            String.format("Pattern '%s' is not a continuation pattern.", this));
     }
 
     public List<String> apply(List<String> tokens) {
@@ -327,8 +354,9 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
             PatternElem elem = elems.get(i);
 
             if (elem != DEL) {
-                if (!first)
+                if (!first) {
                     result.append(' ');
+                }
                 first = false;
             }
 
@@ -349,8 +377,9 @@ public class Pattern implements Iterable<PatternElem>, Comparable<Pattern> {
             PatternElem elem = elems.get(i);
 
             if (elem != DEL) {
-                if (!first)
+                if (!first) {
                     result.append(' ');
+                }
                 first = false;
             }
 

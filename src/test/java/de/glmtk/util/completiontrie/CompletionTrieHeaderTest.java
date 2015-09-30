@@ -15,26 +15,31 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+
 @RunWith(Parameterized.class)
 public class CompletionTrieHeaderTest {
     @Parameters(name = "numCharsBytes={0}, isLastSibling={1}, numScoreBytes={2}, numFirstChildOffsetBytes={3}")
     public static Iterable<Object[]> data() {
-        byte[] numCharsBytesValues = {0, 1, 2, 3, 4, 5, 6, 7};
-        boolean[] isLastSiblingValues = {false, true};
-        byte[] numScoreBytesValues = {0, 1, 2, 8};
-        byte[] numFirstChildOffsetBytesValue = {0, 1, 2, 4};
+        byte[] numCharsBytesValues = { 0, 1, 2, 3, 4, 5, 6, 7 };
+        boolean[] isLastSiblingValues = { false, true };
+        byte[] numScoreBytesValues = { 0, 1, 2, 8 };
+        byte[] numFirstChildOffsetBytesValue = { 0, 1, 2, 4 };
 
         int numPermutations = numCharsBytesValues.length
-                * isLastSiblingValues.length * numScoreBytesValues.length
-                * numFirstChildOffsetBytesValue.length;
+            * isLastSiblingValues.length * numScoreBytesValues.length
+            * numFirstChildOffsetBytesValue.length;
 
         List<Object[]> data = new ArrayList<>(numPermutations);
-        for (Byte numCharsBytes : numCharsBytesValues)
-            for (Boolean isLastSibling : isLastSiblingValues)
-                for (Byte numScoreBytes : numScoreBytesValues)
-                    for (Byte numFirstChildOffsetBytes : numFirstChildOffsetBytesValue)
-                        data.add(new Object[] {numCharsBytes, isLastSibling,
-                                numScoreBytes, numFirstChildOffsetBytes});
+        for (Byte numCharsBytes : numCharsBytesValues) {
+            for (Boolean isLastSibling : isLastSiblingValues) {
+                for (Byte numScoreBytes : numScoreBytesValues) {
+                    for (Byte numFirstChildOffsetBytes : numFirstChildOffsetBytesValue) {
+                        data.add(new Object[] { numCharsBytes, isLastSibling,
+                            numScoreBytes, numFirstChildOffsetBytes });
+                    }
+                }
+            }
+        }
 
         return data;
     }
@@ -54,7 +59,7 @@ public class CompletionTrieHeaderTest {
         this.numScoreBytes = numScoreBytes;
         this.numFirstChildOffsetBytes = numFirstChildOffsetBytes;
         header = header_create(numCharsBytes, isLastSibling, numScoreBytes,
-                numFirstChildOffsetBytes);
+            numFirstChildOffsetBytes);
     }
 
     @Test
@@ -75,6 +80,6 @@ public class CompletionTrieHeaderTest {
     @Test
     public void testnumFirstChildOffsetBytes() {
         assertEquals(numFirstChildOffsetBytes,
-                header_numFirstChildOffsetBytes(header));
+            header_numFirstChildOffsetBytes(header));
     }
 }

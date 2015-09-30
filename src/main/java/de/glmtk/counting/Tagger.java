@@ -42,6 +42,7 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
+
 public class Tagger {
     public static final char POS_SEPARATOR = '/';
 
@@ -49,18 +50,19 @@ public class Tagger {
     private static final String PHASE_TAGGING = "Tagging";
 
     public static boolean detectFileTagged(Path file) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(file,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(file, Constants.CHARSET)) {
             String line;
             int lineNo = 0;
             while ((line = reader.readLine()) != null) {
                 ++lineNo;
                 for (String tokenAndTag : StringUtils.split(line, ' ')) {
                     int lastSlash = tokenAndTag.lastIndexOf('/');
-                    if (lastSlash <= 0 || lastSlash == tokenAndTag.length() - 1) {
+                    if (lastSlash <= 0
+                        || lastSlash == tokenAndTag.length() - 1) {
                         LOGGER.debug(
-                                "Detected Corpus untagged, because in line '%d' at least one token does not have the form '<token>/<pos>'.",
-                                lineNo);
+                            "Detected Corpus untagged, because in line '%d' at least one token does not have the form '<token>/<pos>'.",
+                            lineNo);
                         return false;
                     }
                 }
@@ -83,41 +85,45 @@ public class Tagger {
 
     public void tag(Path inputFile,
                     Path outputFile) throws IOException {
-        ProgressBar progressBar = new ProgressBar(PHASE_TAGGING,
-                size(inputFile));
+        ProgressBar progressBar =
+            new ProgressBar(PHASE_TAGGING, size(inputFile));
 
-        if (inputFile.equals(outputFile))
-            throw new IllegalArgumentException(String.format(
-                    "Input- equals OutputFile: '%s'.", inputFile));
+        if (inputFile.equals(outputFile)) {
+            throw new IllegalArgumentException(
+                String.format("Input- equals OutputFile: '%s'.", inputFile));
+        }
 
         calculateMemory();
 
-        if (tagger == null)
+        if (tagger == null) {
             tagger = new MaxentTagger(config.getTaggingModel().toString());
+        }
 
         try (BufferedReader reader = NioUtils.newBufferedReader(inputFile,
-                Constants.CHARSET, readerMemory);
-                BufferedWriter writer = NioUtils.newBufferedWriter(outputFile,
-                        Constants.CHARSET, writerMemory)) {
+            Constants.CHARSET, readerMemory);
+             BufferedWriter writer = NioUtils.newBufferedWriter(outputFile,
+                 Constants.CHARSET, writerMemory)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 progressBar.increase(line.getBytes(Constants.CHARSET).length);
 
                 // Tag
                 List<HasWord> sequence = new LinkedList<>();
-                for (String token : StringUtils.split(line, ' '))
+                for (String token : StringUtils.split(line, ' ')) {
                     sequence.add(new Word(token));
+                }
                 List<TaggedWord> taggedSequence = tagger.tagSentence(sequence);
 
                 // Write
                 boolean first = true;
                 for (TaggedWord tagged : taggedSequence) {
-                    if (first)
+                    if (first) {
                         first = false;
-                    else
+                    } else {
                         writer.append(' ');
-                    writer.append(tagged.word()).append('/').append(
-                            tagged.tag());
+                    }
+                    writer.append(tagged.word()).append('/')
+                        .append(tagged.tag());
                 }
                 writer.append('\n');
             }

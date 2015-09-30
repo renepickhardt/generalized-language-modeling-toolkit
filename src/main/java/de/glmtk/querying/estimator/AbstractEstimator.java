@@ -43,6 +43,7 @@ import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.substitute.AbsoluteUnigramEstimator;
 import de.glmtk.querying.estimator.substitute.SubstituteEstimator;
 
+
 public abstract class AbstractEstimator implements Estimator {
     private static final Logger LOGGER = Logger.get(AbstractEstimator.class);
 
@@ -54,22 +55,23 @@ public abstract class AbstractEstimator implements Estimator {
     protected static final NGram getFullHistory(NGram sequence,
                                                 NGram history) {
         List<String> skippedSequence = new ArrayList<>(sequence.size());
-        for (int i = 0; i != sequence.size(); ++i)
+        for (int i = 0; i != sequence.size(); ++i) {
             skippedSequence.add(SKP_WORD);
+        }
         return history.concat(new NGram(skippedSequence));
     }
 
     protected static final void logTrace(int recDepth,
                                          String message) {
         // TODO: commented out to not experiments
-        //        LOGGER.trace(StringUtils.repeat("  ", recDepth) + message);
+        // LOGGER.trace(StringUtils.repeat(" ", recDepth) + message);
     }
 
     protected static final void logTrace(int recDepth,
                                          String format,
                                          Object... params) {
         // TODO: commented out to not experiments
-        //        LOGGER.trace(StringUtils.repeat("  ", recDepth) + format, params);
+        // LOGGER.trace(StringUtils.repeat(" ", recDepth) + format, params);
     }
 
     protected final SubstituteEstimator SUBSTITUTE_ESTIMATOR;
@@ -78,10 +80,11 @@ public abstract class AbstractEstimator implements Estimator {
     protected ProbMode probMode;
 
     public AbstractEstimator() {
-        if (this instanceof SubstituteEstimator)
+        if (this instanceof SubstituteEstimator) {
             SUBSTITUTE_ESTIMATOR = null;
-        else
+        } else {
             SUBSTITUTE_ESTIMATOR = new AbsoluteUnigramEstimator();
+        }
         name = "Unnamed";
         cache = null;
         probMode = ProbMode.MARG;
@@ -106,8 +109,9 @@ public abstract class AbstractEstimator implements Estimator {
     public void setCache(Cache cache) {
         this.cache = cache;
 
-        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)
+        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
             SUBSTITUTE_ESTIMATOR.setCache(cache);
+        }
     }
 
     @Override
@@ -119,15 +123,16 @@ public abstract class AbstractEstimator implements Estimator {
     public void setProbMode(ProbMode probMode) {
         this.probMode = probMode;
 
-        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this)
+        if (SUBSTITUTE_ESTIMATOR != null && SUBSTITUTE_ESTIMATOR != this) {
             SUBSTITUTE_ESTIMATOR.setProbMode(probMode);
+        }
     }
 
     @Override
     public final double probability(NGram sequence,
                                     NGram history) {
         Objects.requireNonNull(cache,
-                "You have to set a cache that is not null before using this method");
+            "You have to set a cache that is not null before using this method");
 
         return probability(sequence, history, 1);
     }
@@ -137,7 +142,7 @@ public abstract class AbstractEstimator implements Estimator {
                                     NGram history,
                                     int recDepth) {
         logTrace(recDepth, "%s#probability(%s,%s)", getClass().getSimpleName(),
-                sequence, history);
+            sequence, history);
         ++recDepth;
 
         double result = calcProbability(sequence, history, recDepth);
@@ -155,27 +160,30 @@ public abstract class AbstractEstimator implements Estimator {
         CacheSpecification requiredCache = new CacheSpecification();
 
         Set<Pattern> alphaAbsPatterns = new HashSet<>();
-        for (int i = 1; i != modelSize + 1; ++i)
+        for (int i = 1; i != modelSize + 1; ++i) {
             alphaAbsPatterns.addAll(Patterns.getPermutations(i, CNT, SKP));
+        }
 
         Set<Pattern> alphaContPatterns = new HashSet<>();
         alphaContPatterns.add(WSKP_PATTERN);
-        for (Pattern pattern : alphaAbsPatterns)
-            alphaContPatterns.add(WSKP_PATTERN.concat(
-                    pattern.convertSkpToWskp()));
+        for (Pattern pattern : alphaAbsPatterns) {
+            alphaContPatterns
+                .add(WSKP_PATTERN.concat(pattern.convertSkpToWskp()));
+        }
 
         Set<Pattern> gammaPatterns = new HashSet<>();
         Set<Pattern> gammaCountPatterns = new HashSet<>();
-        for (Pattern pattern : alphaAbsPatterns)
+        for (Pattern pattern : alphaAbsPatterns) {
             if (pattern.size() != modelSize) {
                 gammaPatterns.add(pattern);
-                //                gammaCountPatterns.add(pattern.concat(CNT));
+                // gammaCountPatterns.add(pattern.concat(CNT));
                 // highest order gamma
                 gammaCountPatterns.add(pattern.concat(WSKP));
                 // lower order gammas
-                gammaCountPatterns.add(SKP_PATTERN.concat(pattern).concat(
-                        WSKP));
+                gammaCountPatterns
+                    .add(SKP_PATTERN.concat(pattern).concat(WSKP));
             }
+        }
 
         requiredCache.withCounts(alphaAbsPatterns);
         requiredCache.withCounts(alphaContPatterns);

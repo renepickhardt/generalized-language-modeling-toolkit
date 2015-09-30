@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 
+
 public abstract class Option {
     protected static class Arg {
         public String name;
@@ -35,8 +36,7 @@ public abstract class Option {
     }
 
     /* package */static enum Type {
-        OPTION,
-        INPUT_ARG
+        OPTION, INPUT_ARG
     }
 
     protected static final int GREATER_ONE = -1;
@@ -69,8 +69,9 @@ public abstract class Option {
     public String toString() {
         switch (type) {
             case OPTION:
-                if (shortopt == null)
+                if (shortopt == null) {
                     return format("Option --%s", longopt);
+                }
                 return format("Option -%s (--%s)", shortopt, longopt);
 
             case INPUT_ARG:
@@ -86,8 +87,9 @@ public abstract class Option {
     }
 
     /* package */final void runParse() throws OptionException {
-        if (given && !mayBeGivenRepeatedly)
+        if (given && !mayBeGivenRepeatedly) {
             throw new OptionException("%s may only be given once.", this);
+        }
 
         parse();
         given = true;

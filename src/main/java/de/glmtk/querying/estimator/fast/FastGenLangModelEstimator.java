@@ -26,6 +26,7 @@ import java.util.Set;
 
 import de.glmtk.common.NGram;
 
+
 public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
     @Override
     protected double calcProbability(NGram sequence,
@@ -35,28 +36,31 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
         long denominator = cache.getCount(fullHistory);
         if (denominator == 0.0) {
             double result = 0;
-            Set<NGram> diffHistories = history.getDifferentiatedNGrams(
-                    backoffMode);
-            for (NGram diffHistory : diffHistories)
+            Set<NGram> diffHistories =
+                history.getDifferentiatedNGrams(backoffMode);
+            for (NGram diffHistory : diffHistories) {
                 result += probability(sequence, diffHistory, recDepth);
+            }
             result /= diffHistories.size();
             return result;
         }
 
         NGram fullSequence = getFullSequence(sequence, history);
         long numerator = cache.getCount(fullSequence);
-        if (history.isEmptyOrOnlySkips())
+        if (history.isEmptyOrOnlySkips()) {
             return (double) numerator / denominator;
+        }
 
         double discount = cache.getDiscount(fullSequence);
         double gamma = cache.getGammaHigh(history) / denominator;
 
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = 0;
-        Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(
-                backoffMode);
-        for (NGram differentiatedHistory : differentiatedHistories)
+        Set<NGram> differentiatedHistories =
+            history.getDifferentiatedNGrams(backoffMode);
+        for (NGram differentiatedHistory : differentiatedHistories) {
             beta += probabilityLower(sequence, differentiatedHistory, recDepth);
+        }
         beta /= differentiatedHistories.size();
 
         return alpha + gamma * beta;
@@ -66,7 +70,7 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
                                          NGram history,
                                          int recDepth) {
         logTrace(recDepth, "%s#probabilityLower(%s,%s)",
-                getClass().getSimpleName(), sequence, history);
+            getClass().getSimpleName(), sequence, history);
         ++recDepth;
 
         double result = calcProbabilityLower(sequence, history, recDepth);
@@ -79,33 +83,36 @@ public class FastGenLangModelEstimator extends FastGenLangModelAbsEstimator {
                                           NGram history,
                                           int recDepth) {
         NGram fullHistory = getFullHistory(sequence, history);
-        long denominator = cache.getCount(WSKP_NGRAM.concat(
-                fullHistory.convertSkpToWskp()));
+        long denominator =
+            cache.getCount(WSKP_NGRAM.concat(fullHistory.convertSkpToWskp()));
         if (denominator == 0.0) {
             double result = 0;
-            Set<NGram> diffHistories = history.getDifferentiatedNGrams(
-                    backoffMode);
-            for (NGram diffHistory : diffHistories)
+            Set<NGram> diffHistories =
+                history.getDifferentiatedNGrams(backoffMode);
+            for (NGram diffHistory : diffHistories) {
                 result += probabilityLower(sequence, diffHistory, recDepth);
+            }
             result /= diffHistories.size();
             return result;
         }
 
         NGram fullSequence = getFullSequence(sequence, history);
-        long numerator = cache.getCount(WSKP_NGRAM.concat(
-                fullSequence.convertSkpToWskp()));
-        if (history.isEmptyOrOnlySkips())
+        long numerator =
+            cache.getCount(WSKP_NGRAM.concat(fullSequence.convertSkpToWskp()));
+        if (history.isEmptyOrOnlySkips()) {
             return (double) numerator / denominator;
+        }
 
         double discount = cache.getDiscount(fullSequence);
         double gamma = cache.getGammaLow(history) / denominator;
 
         double alpha = Math.max(numerator - discount, 0.0) / denominator;
         double beta = 0;
-        Set<NGram> differentiatedHistories = history.getDifferentiatedNGrams(
-                backoffMode);
-        for (NGram differentiatedHistory : differentiatedHistories)
+        Set<NGram> differentiatedHistories =
+            history.getDifferentiatedNGrams(backoffMode);
+        for (NGram differentiatedHistory : differentiatedHistories) {
             beta += probabilityLower(sequence, differentiatedHistory, recDepth);
+        }
         beta /= differentiatedHistories.size();
 
         return alpha + gamma * beta;

@@ -14,6 +14,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+
 public class PathOption extends Option {
     public static final String DEFAULT_ARGNAME = "PATH";
 
@@ -35,28 +36,35 @@ public class PathOption extends Option {
         try {
             path = Paths.get(pathString);
         } catch (InvalidPathException e) {
-            throw new OptionException("%s path could not be parsed as "
-                    + "a path: '%s'. Reason: %s.", option, pathString,
-                    e.getMessage());
+            throw new OptionException(
+                "%s path could not be parsed as " + "a path: '%s'. Reason: %s.",
+                option, pathString, e.getMessage());
         }
 
-        if (!requireMayExist && !requireMustExist)
+        if (!requireMayExist && !requireMustExist) {
             return path;
-        if (requireMayExist && !exists(path))
+        }
+        if (requireMayExist && !exists(path)) {
             return path;
-        if (requireMustExist && !exists(path))
+        }
+        if (requireMustExist && !exists(path)) {
             throw new OptionException("%s path does not exist: '%s'.", option,
-                    path);
+                path);
+        }
 
-        if (!isReadable(path))
-            throw new OptionException("%s path does exist, "
-                    + "but is not readable: '%s'.", option, path);
-        if (requireFile && !isRegularFile(path))
+        if (!isReadable(path)) {
+            throw new OptionException(
+                "%s path does exist, " + "but is not readable: '%s'.", option,
+                path);
+        }
+        if (requireFile && !isRegularFile(path)) {
+            throw new OptionException(
+                "%s path is required to be a " + "file, but was not: '%s'.",
+                option, path);
+        } else if (requireDirectory && !isDirectory(path)) {
             throw new OptionException("%s path is required to be a "
-                    + "file, but was not: '%s'.", option, path);
-        else if (requireDirectory && !isDirectory(path))
-            throw new OptionException("%s path is required to be a "
-                    + "directory, but was not: '%s'.", option, path);
+                + "directory, but was not: '%s'.", option, path);
+        }
 
         return path;
     }
@@ -111,20 +119,24 @@ public class PathOption extends Option {
     }
 
     private void checkrequiretsConflict() {
-        if (requireFile && requireDirectory)
+        if (requireFile && requireDirectory) {
             throw new IllegalStateException(
-                    "Conflict: both needFile() and needDirectory() active.");
-        if (requireMayExist & requireMustExist)
+                "Conflict: both needFile() and needDirectory() active.");
+        }
+        if (requireMayExist & requireMustExist) {
             throw new IllegalStateException(
-                    "Conflict: both mayExist() and mustExist() active.");
+                "Conflict: both mayExist() and mustExist() active.");
+        }
     }
 
     private void improveArgName() {
-        if (arg.name.equals(DEFAULT_ARGNAME))
-            if (requireFile)
+        if (arg.name.equals(DEFAULT_ARGNAME)) {
+            if (requireFile) {
                 arg.name = "FILE";
-            else if (requireDirectory)
+            } else if (requireDirectory) {
                 arg.name = "DIR";
+            }
+        }
     }
 
     public PathOption defaultValue(Path defaultValue) {
@@ -140,7 +152,7 @@ public class PathOption extends Option {
     @Override
     protected void parse() throws OptionException {
         value = parsePath(arg.value, requireMayExist, requireMustExist,
-                requireFile, requireDirectory, this);
+            requireFile, requireDirectory, this);
     }
 
     public Path getPath() {

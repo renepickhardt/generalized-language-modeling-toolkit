@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -35,8 +35,10 @@ import java.util.Set;
 
 import de.glmtk.util.ArrayUtils;
 
+
 public class Patterns {
-    private static final Map<String, Pattern> AS_STRING_TO_PATTERN = new HashMap<>();
+    private static final Map<String, Pattern> AS_STRING_TO_PATTERN =
+        new HashMap<>();
 
     public static Pattern get() {
         Pattern pattern = AS_STRING_TO_PATTERN.get("");
@@ -58,8 +60,9 @@ public class Patterns {
 
     public static Pattern get(List<PatternElem> elems) {
         StringBuilder asStringBuilder = new StringBuilder();
-        for (PatternElem elem : elems)
+        for (PatternElem elem : elems) {
             asStringBuilder.append(elem.toString());
+        }
         String asString = asStringBuilder.toString();
 
         Pattern pattern = AS_STRING_TO_PATTERN.get(asString);
@@ -76,9 +79,10 @@ public class Patterns {
             List<PatternElem> elems = new ArrayList<>(asString.length());
             for (char elemAsChar : asString.toCharArray()) {
                 PatternElem elem = PatternElem.fromChar(elemAsChar);
-                if (elem == null)
-                    throw new IllegalArgumentException(String.format(
-                            "Unkown PatternElem: '%s'.", elemAsChar));
+                if (elem == null) {
+                    throw new IllegalArgumentException(
+                        String.format("Unkown PatternElem: '%s'.", elemAsChar));
+                }
                 elems.add(elem);
             }
 
@@ -90,8 +94,9 @@ public class Patterns {
 
     public static Set<Pattern> getMany(String... patterns) {
         Set<Pattern> result = new HashSet<>();
-        for (String pattern : patterns)
+        for (String pattern : patterns) {
             result.add(Patterns.get(pattern));
+        }
         return result;
     }
 
@@ -118,7 +123,7 @@ public class Patterns {
                                                List<PatternElem> elems) {
         Set<Pattern> result = new HashSet<>();
 
-        for (int i = 1; i != modelSize + 1; ++i)
+        for (int i = 1; i != modelSize + 1; ++i) {
             for (int j = 0; j != pow(elems.size(), i); ++j) {
                 List<PatternElem> pattern = new ArrayList<>(i);
                 int n = j;
@@ -128,6 +133,7 @@ public class Patterns {
                 }
                 result.add(Patterns.get(pattern));
             }
+        }
 
         return result;
     }
@@ -135,32 +141,37 @@ public class Patterns {
     public static List<Pattern> getPermutations(int size,
                                                 PatternElem one,
                                                 PatternElem two) {
-        if (size == 0)
-            throw new IllegalArgumentException(String.format(
-                    "Size was '%d'. Must be greater zero.", size));
+        if (size == 0) {
+            throw new IllegalArgumentException(
+                String.format("Size was '%d'. Must be greater zero.", size));
+        }
 
         List<Pattern> result = new ArrayList<>();
 
         for (int order = 0; order != size + 1; ++order) {
             PatternElem[] pattern = new PatternElem[size];
-            for (int i = 0; i != order; ++i)
+            for (int i = 0; i != order; ++i) {
                 pattern[i] = one;
-            for (int i = order; i != size; ++i)
+            }
+            for (int i = order; i != size; ++i) {
                 pattern[i] = two;
+            }
             result.add(Patterns.get(new ArrayList<>(Arrays.asList(pattern))));
 
             int first = 0, last = size;
-            for (int i = last - 2; i != first - 1; --i)
+            for (int i = last - 2; i != first - 1; --i) {
                 if (pattern[i].equals(one) && pattern[i + 1].equals(two)) {
                     int j = last - 1;
-                    while (pattern[i].equals(two) || pattern[j].equals(one))
+                    while (pattern[i].equals(two) || pattern[j].equals(one)) {
                         --j;
+                    }
                     ArrayUtils.swap(pattern, i, j);
                     ArrayUtils.reverse(pattern, i + 1, last);
-                    result.add(Patterns.get(new ArrayList<>(
-                            Arrays.asList(pattern))));
+                    result.add(
+                        Patterns.get(new ArrayList<>(Arrays.asList(pattern))));
                     i = last - 1;
                 }
+            }
         }
 
         return result;
@@ -173,12 +184,14 @@ public class Patterns {
     private static int pow(int base,
                            int power) {
         int result = 1;
-        for (int i = 0; i != power; ++i)
+        for (int i = 0; i != power; ++i) {
             result *= base;
+        }
         return result;
     }
 
-    public static Map<Integer, Set<Pattern>> groupPatternsBySize(Set<Pattern> patterns) {
+    public static Map<Integer, Set<Pattern>>
+            groupPatternsBySize(Set<Pattern> patterns) {
         Map<Integer, Set<Pattern>> result = new HashMap<>();
         for (Pattern pattern : patterns) {
             Set<Pattern> patternsWithSize = result.get(pattern.size());

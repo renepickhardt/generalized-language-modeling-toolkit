@@ -17,6 +17,7 @@ import de.glmtk.files.CountsReader;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.CollectionUtils;
 
+
 public class HashMapCache extends AbstractCache {
     private static final Logger LOGGER = Logger.get(HashMapCache.class);
 
@@ -32,31 +33,36 @@ public class HashMapCache extends AbstractCache {
     // Counts //////////////////////////////////////////////////////////////////
 
     @Override
-    /* package */void loadCounts(Collection<Pattern> patterns) throws IOException {
+            /* package */void loadCounts(Collection<Pattern> patterns)
+                    throws IOException {
         checkCountPatternsArg(patterns);
 
         LOGGER.debug("Loading counts for patterns: %s", patterns);
 
-        if (counts == null)
+        if (counts == null) {
             counts = new HashMap<>();
+        }
 
         for (Pattern pattern : patterns) {
-            if (counts.containsKey(pattern))
+            if (counts.containsKey(pattern)) {
                 continue;
+            }
 
             Map<String, Long> countsForPattern = new HashMap<>();
             counts.put(pattern, countsForPattern);
 
             Path file = paths.getPatternsFile(pattern);
-            try (CountsReader reader = new CountsReader(file,
-                    Constants.CHARSET)) {
-                while (reader.readLine() != null)
+            try (CountsReader reader =
+                new CountsReader(file, Constants.CHARSET)) {
+                while (reader.readLine() != null) {
                     countsForPattern.put(reader.getSequence(),
-                            reader.getCount());
+                        reader.getCount());
+                }
             }
 
-            if (progressBar != null)
+            if (progressBar != null) {
                 progressBar.increase();
+            }
         }
     }
 
@@ -65,8 +71,8 @@ public class HashMapCache extends AbstractCache {
         checkNGramArg(ngram);
 
         Long result = CollectionUtils.getFromNestedMap(counts,
-                ngram.getPattern(), ngram.toString(), "Counts not loaded.",
-                "Counts with pattern '%s' not loaded.", null);
+            ngram.getPattern(), ngram.toString(), "Counts not loaded.",
+            "Counts with pattern '%s' not loaded.", null);
         return result == null ? 0L : result;
     }
 
@@ -74,20 +80,24 @@ public class HashMapCache extends AbstractCache {
     // Gammas //////////////////////////////////////////////////////////////////
 
     @Override
-    /* package */void loadGammas(Collection<Pattern> patterns) throws IOException {
+            /* package */void loadGammas(Collection<Pattern> patterns)
+                    throws IOException {
         checkGammaPatternsArg(patterns);
 
         LOGGER.debug("Loading gammas for patterns: %s", patterns);
 
-        if (gammasHigh == null)
+        if (gammasHigh == null) {
             gammasHigh = new HashMap<>();
-        if (gammasLow == null)
+        }
+        if (gammasLow == null) {
             gammasLow = new HashMap<>();
+        }
 
         for (Pattern pattern : patterns) {
-            if (gammasHigh.containsKey(pattern) && gammasLow.containsKey(
-                    pattern))
+            if (gammasHigh.containsKey(pattern)
+                && gammasLow.containsKey(pattern)) {
                 continue;
+            }
 
             Map<String, Double> gammasHighForPattern = new HashMap<>();
             gammasHigh.put(pattern, gammasHighForPattern);
@@ -95,8 +105,8 @@ public class HashMapCache extends AbstractCache {
             gammasLow.put(pattern, gammasLowForPattern);
 
             Path gammasHighFile = paths.getPatternsFile(pattern.concat(WSKP));
-            try (CountsReader reader = new CountsReader(gammasHighFile,
-                    Constants.CHARSET)) {
+            try (CountsReader reader =
+                new CountsReader(gammasHighFile, Constants.CHARSET)) {
                 while (reader.readLine() != null) {
                     String sequence = getGammaHighNGram(reader.getSequence());
                     double gammaHigh = calcGamma(pattern, reader.getCounts());
@@ -104,10 +114,10 @@ public class HashMapCache extends AbstractCache {
                 }
             }
 
-            Path gammasLowFile = paths.getPatternsFile(SKP_PATTERN.concat(
-                    pattern).concat(WSKP));
-            try (CountsReader reader = new CountsReader(gammasLowFile,
-                    Constants.CHARSET)) {
+            Path gammasLowFile =
+                paths.getPatternsFile(SKP_PATTERN.concat(pattern).concat(WSKP));
+            try (CountsReader reader =
+                new CountsReader(gammasLowFile, Constants.CHARSET)) {
                 while (reader.readLine() != null) {
                     String sequence = getGammaLowNGram(reader.getSequence());
                     double gammaLow = calcGamma(pattern, reader.getCounts());
@@ -115,8 +125,9 @@ public class HashMapCache extends AbstractCache {
                 }
             }
 
-            if (progressBar != null)
+            if (progressBar != null) {
                 progressBar.increase();
+            }
         }
     }
 
@@ -124,9 +135,9 @@ public class HashMapCache extends AbstractCache {
     public double getGammaHigh(NGram ngram) {
         checkNGramArg(ngram);
 
-        Double result = CollectionUtils.getFromNestedMap(gammasHigh,
-                ngram.getPattern(), ngram.toString(),
-                "Highest order Gammas not loaded.",
+        Double result =
+            CollectionUtils.getFromNestedMap(gammasHigh, ngram.getPattern(),
+                ngram.toString(), "Highest order Gammas not loaded.",
                 "Highest order Gammas for pattern '%s' not loaded.", null);
         return result == null ? 0.0 : result;
     }
@@ -135,9 +146,9 @@ public class HashMapCache extends AbstractCache {
     public double getGammaLow(NGram ngram) {
         checkNGramArg(ngram);
 
-        Double result = CollectionUtils.getFromNestedMap(gammasLow,
-                ngram.getPattern(), ngram.toString(),
-                "Lower order Gammas not loaded.",
+        Double result =
+            CollectionUtils.getFromNestedMap(gammasLow, ngram.getPattern(),
+                ngram.toString(), "Lower order Gammas not loaded.",
                 "Lower order Gammas for pattern '%s' not loaded.", null);
         return result == null ? 0.0 : result;
     }

@@ -29,6 +29,7 @@ import de.glmtk.logging.Logger;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.querying.probability.QueryMode;
 
+
 public abstract class Calculator {
     protected static class SequenceAndHistory {
         public NGram sequence;
@@ -72,33 +73,37 @@ public abstract class Calculator {
 
     public void setEstimator(Estimator estimator) {
         this.estimator = estimator;
-        if (probMode == null)
+        if (probMode == null) {
             probMode = estimator.getProbMode();
-        else
+        } else {
             estimator.setProbMode(probMode);
+        }
     }
 
     public void setProbMode(ProbMode probMode) {
         this.probMode = probMode;
-        if (estimator != null)
+        if (estimator != null) {
             estimator.setProbMode(probMode);
+        }
     }
 
     public double probability(List<String> words) {
         LOGGER.trace("%s#probability(%s,%s)", getClass().getSimpleName(),
-                estimator.getClass().getSimpleName(), words);
+            estimator.getClass().getSimpleName(), words);
 
         estimator.setProbMode(probMode);
 
         List<SequenceAndHistory> queries = computeQueries(words);
 
         double result = 1.0;
-        for (SequenceAndHistory query : queries)
+        for (SequenceAndHistory query : queries) {
             result *= estimator.probability(query.sequence, query.history);
+        }
 
         LOGGER.trace("  result = %e", result);
         return result;
     }
 
-    protected abstract List<SequenceAndHistory> computeQueries(List<String> words);
+    protected abstract List<SequenceAndHistory>
+            computeQueries(List<String> words);
 }

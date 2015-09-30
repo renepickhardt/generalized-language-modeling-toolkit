@@ -26,6 +26,7 @@ import java.util.List;
 
 import de.glmtk.util.StringUtils;
 
+
 /**
  * 2014-12-21 Experiment to get a feel about GLM recursiveness and eventually
  * get a formula to how many unique skipped sequences per order there are.
@@ -38,8 +39,8 @@ import de.glmtk.util.StringUtils;
  *
  * <p>
  * Uses Ansi-Color-Codes to color recurring calls. If you are using Eclipse and
- * want it to see colors, install <a
- * href="http://mihai-nita.net/2013/06/03/eclipse-plugin-ansi-in-console/">
+ * want it to see colors, install
+ * <a href="http://mihai-nita.net/2013/06/03/eclipse-plugin-ansi-in-console/">
  * AnsiConsole</a>.
  */
 public class E01_GlmCountSkpSeqs {
@@ -52,11 +53,13 @@ public class E01_GlmCountSkpSeqs {
     }
 
     private static List<String> skpSequence(List<String> sequence,
-            int skpPos) {
+                                            int skpPos) {
         List<String> result = new ArrayList<>(sequence);
-        for (int i = 0; i != result.size(); ++i)
-            if (i == skpPos)
+        for (int i = 0; i != result.size(); ++i) {
+            if (i == skpPos) {
                 result.set(i, "*");
+            }
+        }
         return result;
     }
 
@@ -84,12 +87,14 @@ public class E01_GlmCountSkpSeqs {
                     List<String> skpSeq = skpSequence(seq, j);
                     if (!skpSeq.equals(seq)) {
                         if (col == 0) {
-                            if (s.contains(skpSeq))
+                            if (s.contains(skpSeq)) {
                                 c.add(1);
-                            else
+                            } else {
                                 c.add(0);
-                        } else
+                            }
+                        } else {
                             c.add(col + 1);
+                        }
                         s.add(skpSeq);
                     }
                 }
@@ -105,16 +110,18 @@ public class E01_GlmCountSkpSeqs {
             System.out.println("--- count=" + s.size());
             for (int i = 0; i != order; ++i) {
                 int cnt = 0;
-                for (int col : c)
-                    if (col == i)
+                for (int col : c) {
+                    if (col == i) {
                         ++cnt;
+                    }
+                }
                 System.out.println("--- col-" + i + "=" + cnt);
             }
             for (int i = 0; i != s.size(); ++i) {
                 List<String> seq = s.get(i);
                 int col = c.get(i);
-                System.out.println(colorStart(col) + StringUtils.join(seq, " ")
-                        + colorEnd());
+                System.out.println(
+                    colorStart(col) + StringUtils.join(seq, " ") + colorEnd());
             }
         }
         System.out.println("-----------");
@@ -127,16 +134,19 @@ public class E01_GlmCountSkpSeqs {
             System.out.println("-----------");
             System.out.println("--- order=" + order);
             int cnt = 0;
-            for (int col : c)
-                if (col == 0)
+            for (int col : c) {
+                if (col == 0) {
                     ++cnt;
+                }
+            }
             System.out.println("--- count=" + cnt);
             for (int i = 0; i != s.size(); ++i) {
                 List<String> seq = s.get(i);
                 int col = c.get(i);
-                if (col == 0)
+                if (col == 0) {
                     System.out.println(colorStart(col)
-                            + StringUtils.join(seq, " ") + colorEnd());
+                        + StringUtils.join(seq, " ") + colorEnd());
+                }
             }
         }
         System.out.println("-----------");

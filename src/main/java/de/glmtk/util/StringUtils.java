@@ -27,12 +27,12 @@ import java.util.List;
 import de.glmtk.Constants;
 import de.glmtk.counting.Tagger;
 
+
 /**
  * Util class containing various static helper methods related to strings.
  */
 public class StringUtils {
-    private StringUtils() {
-    }
+    private StringUtils() {}
 
     /**
      * Takes a {@code string} and returns a list containing all substrings which
@@ -56,13 +56,15 @@ public class StringUtils {
 
             if (sp2 == -1) {
                 String substr = string.substring(sp1);
-                if (!substr.isEmpty())
+                if (!substr.isEmpty()) {
                     result.add(substr);
+                }
                 break;
             }
 
-            if (sp1 != sp2)
+            if (sp1 != sp2) {
                 result.add(string.substring(sp1, sp2));
+            }
             sp1 = sp2 + 1;
         }
 
@@ -100,10 +102,11 @@ public class StringUtils {
         StringBuilder result = new StringBuilder();
         boolean first = true;
         for (Object object : objects) {
-            if (first)
+            if (first) {
                 first = false;
-            else
+            } else {
                 result.append(conjuction);
+            }
             result.append(object.toString());
         }
         return result.toString();
@@ -119,10 +122,11 @@ public class StringUtils {
         StringBuilder result = new StringBuilder();
         boolean first = true;
         for (Object object : objects) {
-            if (first)
+            if (first) {
                 first = false;
-            else
+            } else {
                 result.append(conjunction);
+            }
             result.append(object.toString());
         }
         return result.toString();
@@ -138,10 +142,11 @@ public class StringUtils {
         StringBuilder result = new StringBuilder();
         boolean first = true;
         for (T object : objects) {
-            if (first)
+            if (first) {
                 first = false;
-            else
+            } else {
                 result.append(conjunction);
+            }
             result.append(object.toString());
         }
         return result.toString();
@@ -153,27 +158,30 @@ public class StringUtils {
      */
     public static String repeat(String string,
                                 int times) {
-        if (times < 0)
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Argument 'times' needs to be greater or equal to zero, was '%d'.",
-                            times));
+        if (times < 0) {
+            throw new IllegalArgumentException(String.format(
+                "Argument 'times' needs to be greater or equal to zero, was '%d'.",
+                times));
+        }
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i != times; ++i)
+        for (int i = 0; i != times; ++i) {
             result.append(string);
+        }
         return result.toString();
     }
 
     public static String replaceAll(String string,
                                     String target,
                                     String replace) {
-        if (target.length() != replace.length())
+        if (target.length() != replace.length()) {
             throw new IllegalArgumentException(
-                    "<target> and <replace> need to be of same length.");
+                "<target> and <replace> need to be of same length.");
+        }
 
         String result = string;
-        for (int i = 0; i != target.length(); ++i)
+        for (int i = 0; i != target.length(); ++i) {
             result = result.replace(target.charAt(i), replace.charAt(i));
+        }
         return result;
     }
 
@@ -189,11 +197,13 @@ public class StringUtils {
     public static String surroundWithTokens(int maxPatternLength,
                                             String line) {
         StringBuilder lineBuilder = new StringBuilder();
-        for (int i = 1; i != maxPatternLength; ++i)
+        for (int i = 1; i != maxPatternLength; ++i) {
             lineBuilder.append("<s").append(i).append(">/<BOS> ");
+        }
         lineBuilder.append(line);
-        for (int i = maxPatternLength - 1; i != 0; --i)
+        for (int i = maxPatternLength - 1; i != 0; --i) {
             lineBuilder.append(" </s").append(i).append(">/<EOS>");
+        }
         return lineBuilder.toString();
     }
 

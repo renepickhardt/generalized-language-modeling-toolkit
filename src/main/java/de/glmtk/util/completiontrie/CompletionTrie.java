@@ -15,6 +15,7 @@ import java.util.PriorityQueue;
 
 import de.glmtk.util.StringUtils;
 
+
 /**
  * <p>
  * A Node consists of:
@@ -59,13 +60,14 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     private static final int ROOT = 0;
 
     private static class Entry {
-        public static final Comparator<Entry> BY_SCORE_COMPARATOR = new Comparator<Entry>() {
-            @Override
-            public int compare(Entry lhs,
-                               Entry rhs) {
-                return -Long.compare(lhs.getScore(), rhs.getScore());
-            }
-        };
+        public static final Comparator<Entry> BY_SCORE_COMPARATOR =
+            new Comparator<Entry>() {
+                @Override
+                public int compare(Entry lhs,
+                                   Entry rhs) {
+                    return -Long.compare(lhs.getScore(), rhs.getScore());
+                }
+            };
 
         public byte[] chars;
         public long score;
@@ -98,10 +100,12 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         }
     }
 
-    private class CompletionTrieIterator implements Iterator<CompletionTrieEntry> {
+    private class CompletionTrieIterator
+            implements Iterator<CompletionTrieEntry> {
         private boolean isFirstNode = true;
-        private PriorityQueue<Entry> queue = new PriorityQueue<>(11, // 11 is PriorityQueue.DEFAULT_INITIAL_CAPACITY
-                Entry.BY_SCORE_COMPARATOR);
+        private PriorityQueue<Entry> queue = new PriorityQueue<>(11, // 11 is
+                                                                     // PriorityQueue.DEFAULT_INITIAL_CAPACITY
+            Entry.BY_SCORE_COMPARATOR);
 
         public CompletionTrieIterator(Entry entry) {
             queue.add(entry);
@@ -111,7 +115,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         public boolean hasNext() {
             Entry entry = queue.peek();
             return entry != null
-                    && !(node_isRoot(entry.node) && node_isLeaf(entry.node));
+                && !(node_isRoot(entry.node) && node_isLeaf(entry.node));
         }
 
         @Override
@@ -128,13 +132,15 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
             Entry result = null;
             do {
                 Entry entry = queue.poll();
-                if (entry == null)
+                if (entry == null) {
                     throw new NoSuchElementException();
+                }
                 int node = entry.node;
 
                 if (node_isLeaf(node)) {
-                    if (node_isRoot(node))
+                    if (node_isRoot(node)) {
                         throw new NoSuchElementException();
+                    }
                     result = entry;
                 } else {
                     int child = node_getFirstChild(node);
@@ -147,8 +153,9 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                 }
 
                 int sibling = node_getNextSibling(node);
-                if (sibling != -1)
+                if (sibling != -1) {
                     queue.add(makeSiblingEntry(sibling, entry));
+                }
             } while (result == null);
             return result;
         }
@@ -173,8 +180,9 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
 
     private Entry findPath(String string,
                            boolean requireLeaf) {
-        if (!caseSensitive)
+        if (!caseSensitive) {
             string = string.toLowerCase();
+        }
 
         byte[] prefixChars = string.getBytes(CHARSET);
         int curChar = 0;
@@ -190,8 +198,8 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                 childChars = node_getChars(child);
                 int curChildChar = 0;
                 while (curChar != prefixChars.length
-                        && curChildChar != childChars.length
-                        && prefixChars[curChar] == childChars[curChildChar]) {
+                    && curChildChar != childChars.length
+                    && prefixChars[curChar] == childChars[curChildChar]) {
                     ++curChar;
                     ++curChildChar;
                 }
@@ -206,8 +214,9 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                 child = node_getNextSibling(child);
             }
 
-            if (nextNode == -1)
+            if (nextNode == -1) {
                 break;
+            }
             if (nextNodeChar != node_getChars(nextNode).length) {
                 node = nextNode;
                 entry = makeChildEntry(nextNode, entry);
@@ -219,18 +228,21 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
             nextNode = -1;
         }
 
-        if (curChar != prefixChars.length)
+        if (curChar != prefixChars.length) {
             return null;
+        }
 
         if (requireLeaf) {
-            if (nextNode != -1)
+            if (nextNode != -1) {
                 return null;
+            }
             if (!node_isLeaf(node)) {
                 // Look if we have epsilon leaf node.
                 int child = node_getFirstChild(node);
                 while (child != -1) {
-                    if (header_numCharsBytes(node_getHeader(child)) == 0)
+                    if (header_numCharsBytes(node_getHeader(child)) == 0) {
                         return makeChildEntry(child, entry);
+                    }
 
                     child = node_getNextSibling(child);
                 }
@@ -242,21 +254,24 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     }
 
     public boolean containsPrefix(String prefix) {
-        if (prefix == null)
+        if (prefix == null) {
             return false;
+        }
         return findPath(prefix, false) != null;
     }
 
     public boolean contains(String string) {
-        if (string == null || string.isEmpty())
+        if (string == null || string.isEmpty()) {
             return false;
+        }
         return findPath(string, true) != null;
     }
 
     public Long get(String string) {
         Entry entry = findPath(string, true);
-        if (entry == null)
+        if (entry == null) {
             return null;
+        }
         return entry.getScore();
     }
 
@@ -266,48 +281,51 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     }
 
     public Iterator<CompletionTrieEntry> getCompletions(String prefix) {
-        if (!caseSensitive)
+        if (!caseSensitive) {
             prefix = prefix.toLowerCase();
+        }
 
         Entry entry = findPath(prefix, false);
 
-        if (entry == null)
+        if (entry == null) {
             return emptyIterator();
+        }
         return new CompletionTrieIterator(entry);
     }
 
     public List<CompletionTrieEntry> getTopKCompletions(String prefix,
-            int k) {
+                                                        int k) {
         List<CompletionTrieEntry> result = new ArrayList<>(k);
         Iterator<CompletionTrieEntry> iter = getCompletions(prefix);
-        for (int i = 0; i != k && iter.hasNext(); ++i)
+        for (int i = 0; i != k && iter.hasNext(); ++i) {
             result.add(iter.next());
+        }
         return result;
     }
 
     private Entry makeRootEntry() {
         long rootScore = node_getScoreDelta(ROOT);
         return new Entry(ByteUtils.EMPTY_BYTE_ARRAY, rootScore, ROOT,
-                ByteUtils.EMPTY_BYTE_ARRAY, rootScore + rootScore);
+            ByteUtils.EMPTY_BYTE_ARRAY, rootScore + rootScore);
     }
 
     private Entry makeChildEntry(int child,
                                  Entry parent) {
-        return new Entry(node_getChars(child), node_getScoreDelta(child),
-                child, parent.getBytes(), parent.getScore());
+        return new Entry(node_getChars(child), node_getScoreDelta(child), child,
+            parent.getBytes(), parent.getScore());
     }
 
     private Entry makeSiblingEntry(int sibling,
                                    Entry prevSibling) {
         return new Entry(node_getChars(sibling), node_getScoreDelta(sibling),
-                sibling, prevSibling.parentChars, prevSibling.parentScore);
+            sibling, prevSibling.parentChars, prevSibling.parentScore);
     }
 
     // NODE ////////////////////////////////////////////////////////////////////
 
     /* package */static byte node_maxSize() {
         return HEADER_SIZE + MAX_CHARS_SIZE + MAX_SCORE_SIZE
-                + MAX_FIRST_CHILD_OFFSET_SIZE;
+            + MAX_FIRST_CHILD_OFFSET_SIZE;
     }
 
     /* package */static byte node_potentialSize(byte[] chars,
@@ -316,7 +334,8 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         byte[] scoreDeltaBytes = ByteUtils.toByteArray(scoreDelta);
         byte[] firstChildOffsetBytes = ByteUtils.toByteArray(firstChildOffset);
 
-        return (byte) (HEADER_SIZE + chars.length + scoreDeltaBytes.length + firstChildOffsetBytes.length);
+        return (byte) (HEADER_SIZE + chars.length + scoreDeltaBytes.length
+            + firstChildOffsetBytes.length);
     }
 
     /* package */static void node_create(byte[] memory,
@@ -325,9 +344,10 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                                          byte[] chars,
                                          long scoreDelta,
                                          int firstChildOffset) {
-        if (chars.length > MAX_CHARS_SIZE)
-            throw new IllegalArgumentException("String must be short than "
-                    + MAX_CHARS_SIZE + " bytes.");
+        if (chars.length > MAX_CHARS_SIZE) {
+            throw new IllegalArgumentException(
+                "String must be short than " + MAX_CHARS_SIZE + " bytes.");
+        }
 
         byte[] scoreDeltaBytes = ByteUtils.toByteArray(scoreDelta);
         byte[] firstChildOffsetBytes = ByteUtils.toByteArray(firstChildOffset);
@@ -337,7 +357,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
         byte numFirstChildOffsetBytes = (byte) firstChildOffsetBytes.length;
 
         byte header = header_create(numCharsBytes, isLastSibling,
-                numScoreDeltaBytes, numFirstChildOffsetBytes);
+            numScoreDeltaBytes, numFirstChildOffsetBytes);
 
         memory[node] = header;
 
@@ -355,13 +375,13 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     }
 
     @Deprecated
-    /* package */void node_create(int node,
-                                  boolean isLastSibling,
-                                  String chars,
-                                  long scoreDelta,
-                                  int firstChildOffset) {
+            /* package */void node_create(int node,
+                                          boolean isLastSibling,
+                                          String chars,
+                                          long scoreDelta,
+                                          int firstChildOffset) {
         node_create(memory, node, isLastSibling, chars.getBytes(CHARSET),
-                scoreDelta, firstChildOffset);
+            scoreDelta, firstChildOffset);
     }
 
     /* package */byte node_getHeader(int node) {
@@ -371,15 +391,16 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     /**
      * Size in byte this node occupies.
      */
-    /* package */byte node_getSize(int node) {
+            /* package */byte node_getSize(int node) {
         byte header = node_getHeader(node);
         // Header + Chars + Score + FirstChildOffset
         return (byte) (HEADER_SIZE + header_numCharsBytes(header)
-                + header_numScoreBytes(header) + header_numFirstChildOffsetBytes(header));
+            + header_numScoreBytes(header)
+            + header_numFirstChildOffsetBytes(header));
     }
 
     @Deprecated
-    /* package */String node_getString(int node) {
+            /* package */String node_getString(int node) {
         return new String(node_getChars(node));
     }
 
@@ -402,7 +423,7 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     /* package */int node_getFirstChildOffset(int node) {
         byte header = node_getHeader(node);
         int from = node + HEADER_SIZE + header_numCharsBytes(header)
-                + header_numScoreBytes(header);
+            + header_numScoreBytes(header);
         int to = from + header_numFirstChildOffsetBytes(header);
         byte[] firstChildOffset = Arrays.copyOfRange(memory, from, to);
         return ByteUtils.intFromByteArray(firstChildOffset);
@@ -422,29 +443,31 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     }
 
     /* package */int node_getFirstChild(int node) {
-        if (node_isLeaf(node))
+        if (node_isLeaf(node)) {
             return -1;
+        }
         return node + node_getFirstChildOffset(node);
     }
 
     /* package */int node_getNextSibling(int node) {
-        if (node_isLastSibling(node))
+        if (node_isLastSibling(node)) {
             return -1;
+        }
         return node + node_getSize(node);
     }
 
     /* package */String node_toString(int node) {
         StringBuilder builder = new StringBuilder();
-        builder.append("---- node: ").append(Integer.toString(node)).append(
-                '\n');
+        builder.append("---- node: ").append(Integer.toString(node))
+            .append('\n');
         builder.append("-- size: ").append(node_getSize(node)).append('\n');
         builder.append(header_toString(memory[node]));
-        builder.append("-- chars: \"").append(node_getString(node)).append(
-                "\"\n");
-        builder.append("-- scoreDelta: ").append(node_getScoreDelta(node)).append(
-                '\n');
-        builder.append("-- firstChildOffset: ").append(
-                node_getFirstChildOffset(node)).append('\n');
+        builder.append("-- chars: \"").append(node_getString(node))
+            .append("\"\n");
+        builder.append("-- scoreDelta: ").append(node_getScoreDelta(node))
+            .append('\n');
+        builder.append("-- firstChildOffset: ")
+            .append(node_getFirstChildOffset(node)).append('\n');
         return builder.toString();
     }
 
@@ -463,34 +486,43 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                                            boolean isLastSibling,
                                            byte numScoreBytes,
                                            byte numFirstChildOffsetBytes) {
-        if (numCharsBytes < 0 || numCharsBytes > 7)
+        if (numCharsBytes < 0 || numCharsBytes > 7) {
             throw new IllegalArgumentException(
-                    "numCharsBytes needs to be one of 0,1,2,3,4,5,6,7.");
-        if (!(numScoreBytes == 0 || numScoreBytes == 1 || numScoreBytes == 2 || numScoreBytes == 8))
+                "numCharsBytes needs to be one of 0,1,2,3,4,5,6,7.");
+        }
+        if (!(numScoreBytes == 0 || numScoreBytes == 1 || numScoreBytes == 2
+            || numScoreBytes == 8)) {
             throw new IllegalArgumentException(
-                    "numScoreBytes needs to be one of 0,1,2,8, was: "
-                            + numScoreBytes + ".");
+                "numScoreBytes needs to be one of 0,1,2,8, was: "
+                    + numScoreBytes + ".");
+        }
         if (!(numFirstChildOffsetBytes == 0 || numFirstChildOffsetBytes == 1
-                || numFirstChildOffsetBytes == 2 || numFirstChildOffsetBytes == 4))
+            || numFirstChildOffsetBytes == 2
+            || numFirstChildOffsetBytes == 4)) {
             throw new IllegalArgumentException(
-                    "numFirstChildOffsetBytes needs to be one of 0,1,2,4.");
+                "numFirstChildOffsetBytes needs to be one of 0,1,2,4.");
+        }
 
-        if (numScoreBytes == 8)
+        if (numScoreBytes == 8) {
             numScoreBytes = 3;
-        if (numFirstChildOffsetBytes == 4)
+        }
+        if (numFirstChildOffsetBytes == 4) {
             numFirstChildOffsetBytes = 3;
+        }
 
         byte result = 0;
         result |= numCharsBytes << HEADER_NUM_CHARS_BYTES_OFFSET;
-        if (isLastSibling)
+        if (isLastSibling) {
             result |= HEADER_IS_LAST_SIBLING_MASK;
+        }
         result |= numScoreBytes << HEADER_NUM_SCORE_BYTES_OFFSET;
         result |= numFirstChildOffsetBytes << HEADER_FSTCHILD_OFFSET_OFFSET;
         return result;
     }
 
     /* package */static byte header_numCharsBytes(byte header) {
-        return (byte) ((header >>> HEADER_NUM_CHARS_BYTES_OFFSET) & HEADER_NUM_CHARS_BYTES_MASK);
+        return (byte) ((header >>> HEADER_NUM_CHARS_BYTES_OFFSET)
+            & HEADER_NUM_CHARS_BYTES_MASK);
     }
 
     /* package */static boolean header_isLastSibling(byte header) {
@@ -498,27 +530,30 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
     }
 
     /* package */static byte header_numScoreBytes(byte header) {
-        byte numScoreBytes = (byte) ((header >>> HEADER_NUM_SCORE_BYTES_OFFSET) & HEADER_NUM_SCORE_BYTES_MASK);
+        byte numScoreBytes = (byte) ((header >>> HEADER_NUM_SCORE_BYTES_OFFSET)
+            & HEADER_NUM_SCORE_BYTES_MASK);
         return numScoreBytes == 3 ? 8 : numScoreBytes;
     }
 
     /* package */static byte header_numFirstChildOffsetBytes(byte header) {
-        byte numFirstChildOffsetBytes = (byte) ((header >>> HEADER_FSTCHILD_OFFSET_OFFSET) & HEADER_FSTCHILD_OFFSET_MASK);
+        byte numFirstChildOffsetBytes =
+            (byte) ((header >>> HEADER_FSTCHILD_OFFSET_OFFSET)
+                & HEADER_FSTCHILD_OFFSET_MASK);
         return numFirstChildOffsetBytes == 3 ? 4 : numFirstChildOffsetBytes;
     }
 
     /* package */static String header_toString(byte header) {
         StringBuilder builder = new StringBuilder();
-        builder.append("-- header: ").append(
-                Integer.toBinaryString(header & 0xFF)).append('\n');
-        builder.append("numCharsBytes            = ").append(
-                header_numCharsBytes(header)).append('\n');
-        builder.append("isLastSibling            = ").append(
-                header_isLastSibling(header)).append('\n');
-        builder.append("numScoreBytes            = ").append(
-                header_numScoreBytes(header)).append('\n');
-        builder.append("numFirstChildOffsetBytes = ").append(
-                header_numFirstChildOffsetBytes(header)).append('\n');
+        builder.append("-- header: ")
+            .append(Integer.toBinaryString(header & 0xFF)).append('\n');
+        builder.append("numCharsBytes            = ")
+            .append(header_numCharsBytes(header)).append('\n');
+        builder.append("isLastSibling            = ")
+            .append(header_isLastSibling(header)).append('\n');
+        builder.append("numScoreBytes            = ")
+            .append(header_numScoreBytes(header)).append('\n');
+        builder.append("numFirstChildOffsetBytes = ")
+            .append(header_numFirstChildOffsetBytes(header)).append('\n');
         return builder.toString();
     }
 
@@ -541,8 +576,9 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
 
     private String printDot_getNodeChars(int node) {
         String chars = node_getString(node);
-        if (chars.isEmpty())
+        if (chars.isEmpty()) {
             return "ϵ";
+        }
         return StringUtils.replaceAll(chars, " ", "_");
     }
 
@@ -555,8 +591,8 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                                 int depth) throws IOException {
         writer.append(StringUtils.repeat("  ", depth));
         writer.append('"').append(printDot_getNodeId(node)).append('"');
-        writer.append(" [ label=\"").append(printDot_getNodeChars(node)).append(
-                "\" ];\n");
+        writer.append(" [ label=\"").append(printDot_getNodeChars(node))
+            .append("\" ];\n");
 
         int child = node_getFirstChild(node);
         while (child != -1) {
@@ -569,13 +605,14 @@ public class CompletionTrie implements Iterable<CompletionTrieEntry> {
                                 int node,
                                 int depth) throws IOException {
         String tmp = StringUtils.repeat("  ", depth) + '"'
-                + printDot_getNodeId(node) + "\" -- \"";
+            + printDot_getNodeId(node) + "\" -- \"";
 
         int child = node_getFirstChild(node);
         while (child != -1) {
             writer.append(tmp).append(printDot_getNodeId(child)).append('\"');
-            writer.append(" [ label=\"").append(
-                    Long.toString(node_getScoreDelta(child))).append("\" ];\n");
+            writer.append(" [ label=\"")
+                .append(Long.toString(node_getScoreDelta(child)))
+                .append("\" ];\n");
             printDot_edges(writer, child, depth + 1);
             child = node_getNextSibling(child);
         }

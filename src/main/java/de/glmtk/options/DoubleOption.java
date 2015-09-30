@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+
 public class DoubleOption extends Option {
     public static final String DEFAULT_ARGNAME = "FLOAT";
 
@@ -20,15 +21,18 @@ public class DoubleOption extends Option {
         try {
             value = Double.parseDouble(doubleString);
         } catch (NumberFormatException e) {
-            throw new OptionException("%s could not be parsed as a "
-                    + "floating point value: '%s'. Reason: %s.", option,
-                    doubleString, e.getMessage());
+            throw new OptionException(
+                "%s could not be parsed as a "
+                    + "floating point value: '%s'. Reason: %s.",
+                option, doubleString, e.getMessage());
         }
 
-        if (requireProbability && (value < 0.0 || value > 1.0))
-            throw new OptionException("%s must be a valid probability "
+        if (requireProbability && (value < 0.0 || value > 1.0)) {
+            throw new OptionException(
+                "%s must be a valid probability "
                     + "in the range of [0.0, 1.0], got '%.2f' instead.",
-                    option, value);
+                option, value);
+        }
 
         return value;
     }

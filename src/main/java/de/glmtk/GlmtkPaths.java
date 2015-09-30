@@ -46,6 +46,7 @@ import de.glmtk.common.Pattern;
 import de.glmtk.logging.Logger;
 import de.glmtk.util.StringUtils;
 
+
 public class GlmtkPaths {
     private static final Logger LOGGER = Logger.get(GlmtkPaths.class);
 
@@ -69,15 +70,15 @@ public class GlmtkPaths {
 
     static {
         USER_DIR = Paths.get(System.getProperty("user.dir"));
-        GLMTK_DIR = Paths.get(System.getProperty("glmtk.dir",
-                USER_DIR.toString()));
+        GLMTK_DIR =
+            Paths.get(System.getProperty("glmtk.dir", USER_DIR.toString()));
         LOG_DIR = GLMTK_DIR.resolve(LOG_DIR_NAME);
         CONFIG_FILE = GLMTK_DIR.resolve(Constants.CONFIG_FILE);
     }
 
     public static void logStaticPaths() {
-        LOGGER.info("GlmtkPath static %s", StringUtils.repeat("-", 80
-                - "GlmtkPath static ".length()));
+        LOGGER.info("GlmtkPath static %s",
+            StringUtils.repeat("-", 80 - "GlmtkPath static ".length()));
         LOGGER.info("USER_DIR:    %s", USER_DIR);
         LOGGER.info("GLMTK_DIR:   %s", GLMTK_DIR);
         LOGGER.info("LOG_DIR:     %s", LOG_DIR);
@@ -113,13 +114,13 @@ public class GlmtkPaths {
         statusFile = dir.resolve(STATUS_FILE_NAME);
 
         trainingFile = dir.resolve(TRAINING_FILE_NAME);
-        untaggedTrainingFile = dir.resolve(TRAINING_FILE_NAME
-                + UNTAGGED_SUFFIX);
+        untaggedTrainingFile =
+            dir.resolve(TRAINING_FILE_NAME + UNTAGGED_SUFFIX);
 
         fillCountsDirPaths(this);
         ngramTimesFile = countsDir.resolve(NGRAMTIMES_FILE_NAME);
-        lengthDistributionFile = countsDir.resolve(
-                LENGTHDISTRIBUTION_FILE_NAME);
+        lengthDistributionFile =
+            countsDir.resolve(LENGTHDISTRIBUTION_FILE_NAME);
 
         queryCachesDir = dir.resolve(QUERYHACHES_DIR_NAME);
         queriesDir = dir.resolve(QUERIES_DIR_NAME);
@@ -128,11 +129,11 @@ public class GlmtkPaths {
     private void fillCountsDirPaths(GlmtkPaths paths) {
         paths.countsDir = paths.dir.resolve(COUNTS_DIR_NAME);
         paths.absoluteDir = paths.countsDir.resolve(ABSOLUTE_DIR_NAME);
-        paths.absoluteChunkedDir = paths.countsDir.resolve(ABSOLUTE_DIR_NAME
-                + CHUNKED_SUFFIX);
+        paths.absoluteChunkedDir =
+            paths.countsDir.resolve(ABSOLUTE_DIR_NAME + CHUNKED_SUFFIX);
         paths.continuationDir = paths.countsDir.resolve(CONTINUATION_DIR_NAME);
-        paths.continuationChunkedDir = paths.countsDir.resolve(
-                CONTINUATION_DIR_NAME + CHUNKED_SUFFIX);
+        paths.continuationChunkedDir =
+            paths.countsDir.resolve(CONTINUATION_DIR_NAME + CHUNKED_SUFFIX);
         paths.triesDir = paths.countsDir.resolve(TRIES_DIR_NAME);
     }
 
@@ -152,8 +153,8 @@ public class GlmtkPaths {
      */
     public void logPaths() {
         List<Entry<String, Path>> paths = new ArrayList<>();
-        for (Field field : GlmtkPaths.class.getDeclaredFields())
-            if (field.getType().equals(Path.class))
+        for (Field field : GlmtkPaths.class.getDeclaredFields()) {
+            if (field.getType().equals(Path.class)) {
                 try {
                     String name = field.getName();
                     Path path = (Path) field.get(this);
@@ -161,16 +162,19 @@ public class GlmtkPaths {
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     // This is just logging, we don't care for errors
                 }
+            }
+        }
 
         int maxNameLength = 0;
         for (Entry<String, Path> entry : paths) {
             String name = entry.getKey();
-            if (maxNameLength < name.length())
+            if (maxNameLength < name.length()) {
                 maxNameLength = name.length();
+            }
         }
 
-        LOGGER.debug("Paths %s", StringUtils.repeat("-", 80
-                - "Paths ".length()));
+        LOGGER.debug("Paths %s",
+            StringUtils.repeat("-", 80 - "Paths ".length()));
         for (Entry<String, Path> entry : paths) {
             String name = entry.getKey();
             Path path = entry.getValue();
@@ -219,8 +223,9 @@ public class GlmtkPaths {
     }
 
     public Path getPatternsFile(Pattern pattern) {
-        if (pattern.isAbsolute())
+        if (pattern.isAbsolute()) {
             return getAbsoluteDir().resolve(pattern.toString());
+        }
         return getContinuationDir().resolve(pattern.toString());
     }
 

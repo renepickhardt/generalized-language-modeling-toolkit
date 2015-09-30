@@ -2,6 +2,7 @@ package de.glmtk.options;
 
 import static java.lang.String.format;
 
+
 public class OptionException extends Exception {
 
     private static final long serialVersionUID = 1L;

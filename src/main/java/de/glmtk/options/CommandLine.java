@@ -24,6 +24,7 @@ import de.glmtk.Constants;
 import de.glmtk.options.Option.Arg;
 import de.glmtk.options.Option.Type;
 
+
 /**
  * Entities of package {@link org.apache.commons.cli} are not imported and
  * instead used fully qualified, because of name clashes, and I expect to
@@ -43,28 +44,33 @@ public class CommandLine {
             args = option.arguments();
             boolean hasArgs = args.size() != 0;
             commonsCliOption = new org.apache.commons.cli.Option(
-                    option.shortopt, option.longopt, hasArgs, option.desc);
+                option.shortopt, option.longopt, hasArgs, option.desc);
 
             if (hasArgs) {
                 int numArgs = 0;
                 StringBuilder argNamesBuilder = new StringBuilder();
                 for (Arg arg : args) {
-                    if (numArgs == org.apache.commons.cli.Option.UNLIMITED_VALUES)
+                    if (numArgs == org.apache.commons.cli.Option.UNLIMITED_VALUES) {
                         throw new RuntimeException("Only the last option may "
-                                + "have an unspecified number of values.");
+                            + "have an unspecified number of values.");
+                    }
 
-                    if (numArgs != 0)
+                    if (numArgs != 0) {
                         argNamesBuilder.append("> <");
+                    }
                     argNamesBuilder.append(arg.name);
 
                     if (arg.count == GREATER_ONE) {
                         argNamesBuilder.append(MULTIPLE_ARG_SUFFIX);
-                        numArgs = org.apache.commons.cli.Option.UNLIMITED_VALUES;
+                        numArgs =
+                            org.apache.commons.cli.Option.UNLIMITED_VALUES;
                     } else if (arg.count == MAX_ONE) {
                         argNamesBuilder.append(OPTIONAL_ARG_SUFFIX);
-                        numArgs = org.apache.commons.cli.Option.UNLIMITED_VALUES;
-                    } else
+                        numArgs =
+                            org.apache.commons.cli.Option.UNLIMITED_VALUES;
+                    } else {
                         numArgs += arg.count;
+                    }
                 }
                 argNames = argNamesBuilder.toString();
                 commonsCliOption.setArgName(argNamesBuilder.toString());
@@ -79,8 +85,10 @@ public class CommandLine {
     private List<OptionWrapper> options = newArrayList();
     private List<OptionWrapper> inputArgs = newArrayList();
     /** For sorting options in {@link #help(OutputStream)}. */
-    private List<org.apache.commons.cli.Option> commonsCliOptionList = newArrayList();
-    private org.apache.commons.cli.Options commonsCliOptions = new org.apache.commons.cli.Options();
+    private List<org.apache.commons.cli.Option> commonsCliOptionList =
+        newArrayList();
+    private org.apache.commons.cli.Options commonsCliOptions =
+        new org.apache.commons.cli.Options();
 
     public CommandLine options(Option... options) {
         checkNotNull(options);
@@ -97,7 +105,8 @@ public class CommandLine {
     }
 
     // TODO: catch if option is both registered as an option and as an inputArg.
-    // TODO: Catch if an argument parses a dynamic number of values that is not the last.
+    // TODO: Catch if an argument parses a dynamic number of values that is not
+    // the last.
     public CommandLine inputArgs(Option... options) {
         checkNotNull(options);
 
@@ -127,29 +136,34 @@ public class CommandLine {
     public void help(OutputStream outputStream) {
         checkNotNull(outputStream);
 
-        org.apache.commons.cli.HelpFormatter formatter = new org.apache.commons.cli.HelpFormatter();
+        org.apache.commons.cli.HelpFormatter formatter =
+            new org.apache.commons.cli.HelpFormatter();
         formatter.setLongOptPrefix(" --");
-        formatter.setOptionComparator(new Comparator<org.apache.commons.cli.Option>() {
-            @Override
-            public int compare(org.apache.commons.cli.Option o1,
-                               org.apache.commons.cli.Option o2) {
-                return commonsCliOptionList.indexOf(o1)
+        formatter.setOptionComparator(
+            new Comparator<org.apache.commons.cli.Option>() {
+                @Override
+                public int compare(org.apache.commons.cli.Option o1,
+                                   org.apache.commons.cli.Option o2) {
+                    return commonsCliOptionList.indexOf(o1)
                         - commonsCliOptionList.indexOf(o2);
-            }
-        });
+                }
+            });
 
         Multimap<String, String> explanations = LinkedHashMultimap.create();
-        for (OptionWrapper optionWrapper : options)
-            for (Arg arg : optionWrapper.args)
-                if (arg.explanation != null)
+        for (OptionWrapper optionWrapper : options) {
+            for (Arg arg : optionWrapper.args) {
+                if (arg.explanation != null) {
                     explanations.put(arg.explanation, arg.name);
+                }
+            }
+        }
 
         // Must not close PrintWriter, as it will also close the outputStream
         // which is not our resource. For Example: We my close System.out
         // and make further writing to stdout.
         @SuppressWarnings("resource")
-        PrintWriter pw = new PrintWriter(new OutputStreamWriter(outputStream,
-                Constants.CHARSET));
+        PrintWriter pw = new PrintWriter(
+            new OutputStreamWriter(outputStream, Constants.CHARSET));
         formatter.printOptions(pw, 80, commonsCliOptions, 2, 2);
 
         for (String explanation : explanations.keySet()) {
@@ -163,7 +177,8 @@ public class CommandLine {
     public void parse(String[] args) throws OptionException {
         checkNotNull(args);
 
-        org.apache.commons.cli.CommandLineParser parser = new org.apache.commons.cli.PosixParser();
+        org.apache.commons.cli.CommandLineParser parser =
+            new org.apache.commons.cli.PosixParser();
         org.apache.commons.cli.CommandLine line;
         try {
             line = parser.parse(commonsCliOptions, args);
@@ -175,29 +190,35 @@ public class CommandLine {
         parseOptions(line);
     }
 
-    private void parseArgs(org.apache.commons.cli.CommandLine line) throws OptionException {
+    private void parseArgs(org.apache.commons.cli.CommandLine line)
+            throws OptionException {
         @SuppressWarnings("unchecked")
         Iterator<String> valuesIter = line.getArgList().iterator();
 
         for (OptionWrapper optionWrapper : inputArgs) {
-            if (!valuesIter.hasNext())
+            if (!valuesIter.hasNext()) {
                 break;
+            }
 
-            for (Arg arg : optionWrapper.args)
+            for (Arg arg : optionWrapper.args) {
                 parseOptionArgs(valuesIter, optionWrapper, arg);
+            }
 
             optionWrapper.option.runParse();
         }
 
-        if (valuesIter.hasNext())
-            throw new OptionException("Too many input arguments: '%s'.", join(
-                    ImmutableList.copyOf(valuesIter), "', '"));
+        if (valuesIter.hasNext()) {
+            throw new OptionException("Too many input arguments: '%s'.",
+                join(ImmutableList.copyOf(valuesIter), "', '"));
+        }
     }
 
-    private void parseOptions(org.apache.commons.cli.CommandLine line) throws OptionException {
+    private void parseOptions(org.apache.commons.cli.CommandLine line)
+            throws OptionException {
         @SuppressWarnings("unchecked")
         Iterator<org.apache.commons.cli.Option> iter = line.iterator();
-        for (org.apache.commons.cli.Option commonsCliOption : ImmutableList.copyOf(iter)) {
+        for (org.apache.commons.cli.Option commonsCliOption : ImmutableList
+            .copyOf(iter)) {
             @SuppressWarnings("unchecked")
             List<String> values = commonsCliOption.getValuesList();
 
@@ -208,8 +229,9 @@ public class CommandLine {
             OptionWrapper optionWrapper = options.get(index);
 
             Iterator<String> valuesIter = values.iterator();
-            for (Arg arg : optionWrapper.args)
+            for (Arg arg : optionWrapper.args) {
                 parseOptionArgs(valuesIter, optionWrapper, arg);
+            }
 
             optionWrapper.option.runParse();
         }
@@ -223,18 +245,22 @@ public class CommandLine {
         try {
             if (arg.count == GREATER_ONE) {
                 arg.values.add(valuesIter.next());
-                while (valuesIter.hasNext())
+                while (valuesIter.hasNext()) {
                     arg.values.add(valuesIter.next());
+                }
             } else if (arg.count == MAX_ONE) {
-                if (valuesIter.hasNext())
+                if (valuesIter.hasNext()) {
                     arg.values.add(valuesIter.next());
-            } else
-                for (int i = 0; i != arg.count; ++i)
+                }
+            } else {
+                for (int i = 0; i != arg.count; ++i) {
                     arg.values.add(valuesIter.next());
+                }
+            }
         } catch (NoSuchElementException e) {
-            throw new OptionException("%s got too few "
-                    + "arguments, need to have the form: <%s>",
-                    optionWrapper.option, optionWrapper.argNames);
+            throw new OptionException(
+                "%s got too few " + "arguments, need to have the form: <%s>",
+                optionWrapper.option, optionWrapper.argNames);
         }
 
         arg.value = arg.values.isEmpty() ? null : arg.values.get(0);

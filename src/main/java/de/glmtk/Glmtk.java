@@ -59,6 +59,7 @@ import de.glmtk.querying.probability.QueryStats;
 import de.glmtk.querying.probability.StreamQueryExecutor;
 import de.glmtk.util.NioUtils;
 
+
 /**
  * Here happens counting (during training phase) and also querying (during
  * application phase) This class is been called either by one of the Executable
@@ -70,10 +71,14 @@ public class Glmtk {
     private static final Logger LOGGER = Logger.get(Glmtk.class);
     private static final String PHASE_ABSOLUTE_CHUNKING = "Chunking Absolute";
     private static final String PHASE_ABSOLUTE_MERGING = "Merging Absolute";
-    private static final String PHASE_CONTINUATION_CHUNKING = "Chunking Continuation";
-    private static final String PHASE_CONTINUATION_MERGING = "Merging Continuation";
-    private static final String PHASE_NGRAM_TIMES_COUNTING = "Counting NGram Times";
-    private static final String PHASE_LENGTH_DISTRIBUTION_MEASURING = "Measuring Length Distribution";
+    private static final String PHASE_CONTINUATION_CHUNKING =
+        "Chunking Continuation";
+    private static final String PHASE_CONTINUATION_MERGING =
+        "Merging Continuation";
+    private static final String PHASE_NGRAM_TIMES_COUNTING =
+        "Counting NGram Times";
+    private static final String PHASE_LENGTH_DISTRIBUTION_MEASURING =
+        "Measuring Length Distribution";
 
     private static class NeededComputations {
         private boolean tagging;
@@ -160,25 +165,24 @@ public class Glmtk {
         println("Corpus analyzation...");
 
         ProgressBar progressBar = new ProgressBar(PHASE_ABSOLUTE_CHUNKING,
-                PHASE_ABSOLUTE_MERGING, PHASE_CONTINUATION_CHUNKING,
-                PHASE_CONTINUATION_MERGING, PHASE_NGRAM_TIMES_COUNTING,
-                PHASE_LENGTH_DISTRIBUTION_MEASURING);
+            PHASE_ABSOLUTE_MERGING, PHASE_CONTINUATION_CHUNKING,
+            PHASE_CONTINUATION_MERGING, PHASE_NGRAM_TIMES_COUNTING,
+            PHASE_LENGTH_DISTRIBUTION_MEASURING);
 
         countAbsolute(needed.getAbsolute(), progressBar);
         countContinuation(needed.getContinuation(), progressBar);
 
         progressBar.setPhase(PHASE_NGRAM_TIMES_COUNTING);
         ngramTimesCounter.count(status, paths.getNGramTimesFile(),
-                paths.getAbsoluteDir(), paths.getContinuationDir(),
-                progressBar);
+            paths.getAbsoluteDir(), paths.getContinuationDir(), progressBar);
 
         progressBar.setPhase(PHASE_LENGTH_DISTRIBUTION_MEASURING);
         lengthDistributionCalculator.calculate(status, paths.getTrainingFile(),
-                paths.getLengthDistributionFile(), progressBar);
+            paths.getLengthDistributionFile(), progressBar);
 
         long corpusSize = NioUtils.calcFileSize(paths.getCountsDir());
         println("    Saved as '%s' (uses %s).", Output.bold(paths.getDir()),
-                humanReadableByteCount(corpusSize));
+            humanReadableByteCount(corpusSize));
     }
 
     private NeededComputations computeNeeded(Set<Pattern> neededPatterns) {
@@ -189,15 +193,18 @@ public class Glmtk {
         Queue<Pattern> queue = new LinkedList<>(neededPatterns);
         while (!queue.isEmpty()) {
             Pattern pattern = queue.poll();
-            if (pattern.isPos())
+            if (pattern.isPos()) {
                 tagging = true;
-            if (pattern.isAbsolute())
+            }
+            if (pattern.isAbsolute()) {
                 absolute.add(pattern);
-            else {
+            } else {
                 continuation.add(pattern);
                 Pattern source = pattern.getContinuationSource();
-                if ((source.isAbsolute() ? absolute : continuation).add(source))
+                if ((source.isAbsolute() ? absolute : continuation)
+                    .add(source)) {
                     queue.add(source);
+                }
             }
         }
 
@@ -225,10 +232,11 @@ public class Glmtk {
                 Files.deleteIfExists(trainingFile);
                 Files.copy(corpus, trainingFile);
             }
-            if (status.isCorpusTagged())
+            if (status.isCorpusTagged()) {
                 status.setTraining(Training.TAGGED);
-            else
+            } else {
                 status.setTraining(Training.UNTAGGED);
+            }
         } else {
             if (status.isCorpusTagged()) {
                 if (!corpus.equals(trainingFile)) {
@@ -250,7 +258,7 @@ public class Glmtk {
     private void countAbsolute(Set<Pattern> neededPatterns,
                                ProgressBar progressBar) throws Exception {
         LOGGER.info("Absolute counting '%s' -> '%s'.", paths.getTrainingFile(),
-                paths.getAbsoluteDir());
+            paths.getAbsoluteDir());
 
         Set<Pattern> countingPatterns = new HashSet<>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(true));
@@ -264,23 +272,22 @@ public class Glmtk {
 
         progressBar.setPhase(PHASE_ABSOLUTE_CHUNKING);
         chunker.chunkAbsolute(status, chunkingPatterns, paths.getTrainingFile(),
-                status.getTraining() == Training.TAGGED,
-                paths.getAbsoluteChunkedDir(), progressBar);
+            status.getTraining() == Training.TAGGED,
+            paths.getAbsoluteChunkedDir(), progressBar);
         validateExpectedResults("Absolute chunking", chunkingPatterns,
-                status.getChunkedPatterns(true));
+            status.getChunkedPatterns(true));
 
         progressBar.setPhase(PHASE_ABSOLUTE_MERGING);
         merger.mergeAbsolute(status, countingPatterns,
-                paths.getAbsoluteChunkedDir(), paths.getAbsoluteDir(),
-                progressBar);
+            paths.getAbsoluteChunkedDir(), paths.getAbsoluteDir(), progressBar);
         validateExpectedResults("Absolute counting", countingPatterns,
-                status.getCounted(true));
+            status.getCounted(true));
     }
 
     private void countContinuation(Set<Pattern> neededPatterns,
                                    ProgressBar progressBar) throws Exception {
         LOGGER.info("Continuation counting '%s' -> '%s'.",
-                paths.getAbsoluteDir(), paths.getContinuationDir());
+            paths.getAbsoluteDir(), paths.getContinuationDir());
 
         Set<Pattern> countingPatterns = new HashSet<>(neededPatterns);
         countingPatterns.removeAll(status.getCounted(false));
@@ -294,22 +301,23 @@ public class Glmtk {
 
         progressBar.setPhase(PHASE_CONTINUATION_CHUNKING);
         chunker.chunkContinuation(status, chunkingPatterns,
-                paths.getAbsoluteDir(), paths.getContinuationDir(),
-                paths.getAbsoluteChunkedDir(),
-                paths.getContinuationChunkedDir(), progressBar);
+            paths.getAbsoluteDir(), paths.getContinuationDir(),
+            paths.getAbsoluteChunkedDir(), paths.getContinuationChunkedDir(),
+            progressBar);
         validateExpectedResults("Continuation chunking", chunkingPatterns,
-                status.getChunkedPatterns(false));
+            status.getChunkedPatterns(false));
 
         progressBar.setPhase(PHASE_CONTINUATION_MERGING);
         merger.mergeContinuation(status, countingPatterns,
-                paths.getContinuationChunkedDir(), paths.getContinuationDir(),
-                progressBar);
+            paths.getContinuationChunkedDir(), paths.getContinuationDir(),
+            progressBar);
         validateExpectedResults("Continuation counting", countingPatterns,
-                status.getCounted(false));
+            status.getCounted(false));
     }
 
     public GlmtkPaths provideQueryCache(Path queryFile,
-                                        Set<Pattern> patterns) throws Exception {
+                                        Set<Pattern> patterns)
+                                                throws Exception {
         println("QueryCache for file '%s'...", queryFile);
 
         String hash = hash(queryFile.toFile(), md5()).toString();
@@ -319,20 +327,21 @@ public class Glmtk {
 
         boolean tagged = Tagger.detectFileTagged(queryFile);
         GlmtkPaths queryCachePaths = queryCacherCreator.createQueryCache(hash,
-                queryFile, tagged, neededPatterns, status, paths);
+            queryFile, tagged, neededPatterns, status, paths);
         validateExpectedResults("Caching pattern counts", neededPatterns,
-                status.getQueryCacheCounted(hash));
+            status.getQueryCacheCounted(hash));
 
         Path dir = queryCachePaths.getDir();
         long size = calcFileSize(dir);
         println("    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
-                dir.getParent(), humanReadableByteCount(size));
+            dir.getParent(), humanReadableByteCount(size));
 
         return queryCachePaths;
     }
 
     public GlmtkPaths provideArgmaxQueryCache(Path queryFile,
-                                              Set<Pattern> patterns) throws Exception {
+                                              Set<Pattern> patterns)
+                                                      throws Exception {
         println("ArgmaxQueryCache for file '%s'...", queryFile);
 
         String hash = "argmax" + hash(queryFile.toFile(), md5()).toString();
@@ -342,14 +351,14 @@ public class Glmtk {
 
         boolean tagged = Tagger.detectFileTagged(queryFile);
         GlmtkPaths queryCachePaths = argmaxQueryCacheCreator.createQueryCache(
-                hash, queryFile, tagged, neededPatterns, status, paths);
+            hash, queryFile, tagged, neededPatterns, status, paths);
         validateExpectedResults("Caching pattern counts", neededPatterns,
-                status.getQueryCacheCounted(hash));
+            status.getQueryCacheCounted(hash));
 
         Path dir = queryCachePaths.getDir();
         long size = calcFileSize(dir);
         println("    Saved as '%s' under '%s' (uses %s).", dir.getFileName(),
-                dir.getParent(), humanReadableByteCount(size));
+            dir.getParent(), humanReadableByteCount(size));
 
         return queryCachePaths;
     }
@@ -358,9 +367,10 @@ public class Glmtk {
                                   Estimator estimator,
                                   int corpusOrder,
                                   InputStream inputStream,
-                                  OutputStream outputStream) throws IOException {
+                                  OutputStream outputStream)
+                                          throws IOException {
         return streamQueryExecutor.queryStream(paths, mode, estimator,
-                corpusOrder, inputStream, outputStream);
+            corpusOrder, inputStream, outputStream);
     }
 
     public QueryStats queryFile(QueryMode mode,
@@ -369,10 +379,11 @@ public class Glmtk {
                                 Path inputFile) throws Exception {
         Files.createDirectories(paths.getQueriesDir());
 
-        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(
-                Calendar.getInstance().getTime());
-        Path outputFile = paths.getQueriesDir().resolve(String.format(
-                "%s %s %s %s", inputFile.getFileName(), estimator, mode, date));
+        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            .format(Calendar.getInstance().getTime());
+        Path outputFile =
+            paths.getQueriesDir().resolve(String.format("%s %s %s %s",
+                inputFile.getFileName(), estimator, mode, date));
 
         return queryFile(mode, estimator, corpusOrder, inputFile, outputFile);
     }
@@ -383,7 +394,7 @@ public class Glmtk {
                                 Path inputFile,
                                 Path outputFile) throws Exception {
         return fileQueryExecutor.queryFile(paths, mode, estimator, corpusOrder,
-                inputFile, outputFile);
+            inputFile, outputFile);
     }
 
     /**

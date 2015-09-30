@@ -25,6 +25,7 @@ import java.util.Formatter;
 
 import org.yaml.snakeyaml.error.Mark;
 
+
 public class FileFormatException extends RuntimeException {
     private static final long serialVersionUID = 7551127644841955051L;
 
@@ -32,10 +33,11 @@ public class FileFormatException extends RuntimeException {
                                           String fileType,
                                           String message,
                                           Object... params) {
-        if (fileType == null)
+        if (fileType == null) {
             fileType = "";
-        else
+        } else {
             fileType += ' ';
+        }
 
         try (Formatter f = new Formatter()) {
             f.format(message, params);
@@ -50,10 +52,11 @@ public class FileFormatException extends RuntimeException {
                                           String fileType,
                                           String message,
                                           Object... params) {
-        if (fileType == null)
+        if (fileType == null) {
             fileType = "";
-        else
+        } else {
             fileType += ' ';
+        }
 
         try (Formatter f = new Formatter()) {
             f.format(message, params);
@@ -70,15 +73,16 @@ public class FileFormatException extends RuntimeException {
                                           Object... params) {
         int line = mark.getLine() + 1;
         int column = mark.getColumn() + 1;
-        if (fileType == null)
+        if (fileType == null) {
             fileType = "";
-        else
+        } else {
             fileType += ' ';
+        }
 
         try (Formatter f = new Formatter()) {
             f.format(message, params);
-            f.format("%nIn %s file '%s', line %d, column %d:%n", fileType,
-                    file, line, column);
+            f.format("%nIn %s file '%s', line %d, column %d:%n", fileType, file,
+                line, column);
             f.format(mark.get_snippet());
             return f.toString();
         }

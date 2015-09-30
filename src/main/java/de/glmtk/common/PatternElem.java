@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -28,23 +28,21 @@ import java.util.Set;
 
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 
+
 public enum PatternElem {
-    CNT('1'),
-    POS('2'),
-    SKP('0'),
-    WSKP('x'),
-    PSKP('y'),
-    WPOS('z'),
-    DEL('d');
+    CNT('1'), POS('2'), SKP('0'), WSKP('x'), PSKP('y'), WPOS('z'), DEL('d');
 
     public static final String SKP_WORD = "_";
     public static final String WSKP_WORD = "%";
-    public static final Set<PatternElem> CSKIP_ELEMS = new HashSet<>(
-            Arrays.asList(WSKP, PSKP, WPOS));
-    private static final Map<Character, PatternElem> CHAR_TO_ELEM = new HashMap<>();
+    public static final Set<PatternElem> CSKIP_ELEMS =
+        new HashSet<>(Arrays.asList(WSKP, PSKP, WPOS));
+    private static final Map<Character, PatternElem> CHAR_TO_ELEM =
+        new HashMap<>();
+
     static {
-        for (PatternElem elem : values())
+        for (PatternElem elem : values()) {
             CHAR_TO_ELEM.put(elem.asChar, elem);
+        }
     }
 
     /**
@@ -55,12 +53,13 @@ public enum PatternElem {
     }
 
     public static PatternElem fromWord(String word) {
-        if (word.equals(SKP_WORD))
+        if (word.equals(SKP_WORD)) {
             return SKP;
-        else if (word.equals(WSKP_WORD))
+        } else if (word.equals(WSKP_WORD)) {
             return WSKP;
-        else
+        } else {
             return CNT;
+        }
     }
 
     private char asChar;

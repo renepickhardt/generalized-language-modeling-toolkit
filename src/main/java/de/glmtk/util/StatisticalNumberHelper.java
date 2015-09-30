@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -25,14 +25,15 @@ import java.util.Map;
 
 import de.glmtk.logging.Logger;
 
+
 /**
  * Helper class to determine average byte consumption of types of objects.
  */
 public class StatisticalNumberHelper {
-    private StatisticalNumberHelper() {
-    }
+    private StatisticalNumberHelper() {}
 
-    private static final Logger LOGGER = Logger.get(StatisticalNumberHelper.class);
+    private static final Logger LOGGER =
+        Logger.get(StatisticalNumberHelper.class);
 
     private static class AverageItem {
         public long max = Long.MIN_VALUE;
@@ -52,8 +53,9 @@ public class StatisticalNumberHelper {
                              long number) {
         if (LOGGER.isDebugEnabled()) {
             Long counter = counters.get(name);
-            if (counter == null)
+            if (counter == null) {
                 counter = 0L;
+            }
             counter += number;
             counters.put(name, counter);
         }
@@ -67,10 +69,12 @@ public class StatisticalNumberHelper {
                 average = new AverageItem();
                 averages.put(name, average);
             }
-            if (number > average.max)
+            if (number > average.max) {
                 average.max = number;
-            if (number < average.min)
+            }
+            if (number < average.min) {
                 average.min = number;
+            }
             average.number += number;
             ++average.count;
         }
@@ -87,8 +91,8 @@ public class StatisticalNumberHelper {
                 String name = entry.getKey();
                 AverageItem average = entry.getValue();
                 LOGGER.debug("'%s'-Average = %.2f (min=%d max=%d)", name,
-                        (double) average.number / average.count, average.min,
-                        average.max);
+                    (double) average.number / average.count, average.min,
+                    average.max);
             }
         }
     }

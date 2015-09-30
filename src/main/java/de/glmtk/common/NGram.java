@@ -39,6 +39,7 @@ import de.glmtk.cache.Cache;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.StringUtils;
 
+
 /**
  * Immutable.
  */
@@ -71,8 +72,9 @@ public class NGram {
         string = StringUtils.join(tokens, " ");
 
         List<PatternElem> patternElems = new ArrayList<>(tokens.size());
-        for (String token : tokens)
+        for (String token : tokens) {
             patternElems.add(PatternElem.fromWord(token));
+        }
         pattern = Patterns.get(patternElems);
     }
 
@@ -93,10 +95,12 @@ public class NGram {
 
     @Override
     public boolean equals(Object other) {
-        if (other == this)
+        if (other == this) {
             return true;
-        if (other == null || getClass() != other.getClass())
+        }
+        if (other == null || getClass() != other.getClass()) {
             return false;
+        }
 
         NGram o = (NGram) other;
         return tokens.equals(o.tokens);
@@ -148,9 +152,10 @@ public class NGram {
 
     public NGram set(int index,
                      String token) {
-        if (index < 0 || index >= size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal index: %d. Size: %d.", index, size()));
+        if (index < 0 || index >= size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal index: %d. Size: %d.", index, size()));
+        }
         List<String> newTokens = new ArrayList<>(tokens);
         newTokens.set(index, token);
         Pattern newPattern = pattern.set(index, PatternElem.fromWord(token));
@@ -158,9 +163,10 @@ public class NGram {
     }
 
     public NGram remove(int index) {
-        if (index < 0 || index >= size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal index: %d. Size: %d.", index, size()));
+        if (index < 0 || index >= size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal index: %d. Size: %d.", index, size()));
+        }
         List<String> newTokens = new ArrayList<>(tokens);
         newTokens.remove(index);
         Pattern newPattern = pattern.remove(index);
@@ -168,11 +174,14 @@ public class NGram {
     }
 
     public boolean isEmptyOrOnlySkips() {
-        if (isEmpty())
+        if (isEmpty()) {
             return true;
-        for (String token : tokens)
-            if (!token.equals(SKP_WORD))
+        }
+        for (String token : tokens) {
+            if (!token.equals(SKP_WORD)) {
                 return false;
+            }
+        }
         return true;
     }
 
@@ -181,15 +190,17 @@ public class NGram {
      */
     // TODO: move method into class Cache?
     public boolean seen(Cache cache) {
-        if (isEmpty())
+        if (isEmpty()) {
             return true;
+        }
 
         return cache.getCount(this) != 0;
     }
 
     public NGram concat(String token) {
-        if (isEmpty())
+        if (isEmpty()) {
             return new NGram(token);
+        }
         List<String> resultTokens = new ArrayList<>(tokens);
         resultTokens.add(token);
         String newString = string + " " + token;
@@ -198,10 +209,12 @@ public class NGram {
     }
 
     public NGram concat(NGram other) {
-        if (isEmpty())
+        if (isEmpty()) {
             return other;
-        if (other.isEmpty())
+        }
+        if (other.isEmpty()) {
             return this;
+        }
         List<String> newTokens = new ArrayList<>(tokens);
         newTokens.addAll(other.tokens);
         String newString = string + " " + other.string;
@@ -211,15 +224,16 @@ public class NGram {
 
     public NGram range(int from,
                        int to) {
-        if (from < 0 || from > size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal from index: %d", from));
-        else if (to < 0 || to > size())
-            throw new IllegalArgumentException(String.format(
-                    "Illegal to index: %d", to));
-        else if (from > to)
-            throw new IllegalArgumentException(String.format(
-                    "From index larger than to index: %d > %d", from, to));
+        if (from < 0 || from > size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal from index: %d", from));
+        } else if (to < 0 || to > size()) {
+            throw new IllegalArgumentException(
+                String.format("Illegal to index: %d", to));
+        } else if (from > to) {
+            throw new IllegalArgumentException(String
+                .format("From index larger than to index: %d > %d", from, to));
+        }
 
         List<String> newTokens = new ArrayList<>(to - from);
         List<PatternElem> newPattern = new ArrayList<>(to - from);
@@ -261,16 +275,19 @@ public class NGram {
     }
 
     public NGram backoff(BackoffMode backoffMode) {
-        if (isEmpty())
+        if (isEmpty()) {
             throw new IllegalStateException("Can't backoff empty ngrams.");
+        }
 
         switch (backoffMode) {
             case SKP:
-                for (int i = 0; i != tokens.size(); ++i)
-                    if (!tokens.get(i).equals(SKP_WORD))
+                for (int i = 0; i != tokens.size(); ++i) {
+                    if (!tokens.get(i).equals(SKP_WORD)) {
                         return set(i, SKP_WORD);
+                    }
+                }
                 throw new IllegalStateException(
-                        "Can't backoff ngrams containing only skips.");
+                    "Can't backoff ngrams containing only skips.");
 
             case DEL:
                 return remove(0);
@@ -292,8 +309,9 @@ public class NGram {
     public NGram backoffUntilSeen(BackoffMode backoffMode,
                                   Cache cache) {
         NGram result = backoff(backoffMode);
-        while (!result.seen(cache))
+        while (!result.seen(cache)) {
             result = result.backoff(backoffMode);
+        }
         return result;
     }
 
@@ -301,12 +319,14 @@ public class NGram {
         Set<NGram> result = new LinkedHashSet<>();
         for (int i = 0; i != size(); ++i) {
             if (backoffMode == SKP_AND_DEL || backoffMode == DEL
-                    || (backoffMode == DEL_FRONT && i == 0))
+                || (backoffMode == DEL_FRONT && i == 0)) {
                 result.add(remove(i));
+            }
             if ((backoffMode == SKP || backoffMode == SKP_AND_DEL
-                    || (backoffMode == DEL_FRONT && i != 0)) && !tokens.get(
-                            i).equals(SKP_WORD))
+                || (backoffMode == DEL_FRONT && i != 0))
+                && !tokens.get(i).equals(SKP_WORD)) {
                 result.add(set(i, SKP_WORD));
+            }
         }
         return result;
     }
@@ -314,13 +334,15 @@ public class NGram {
     // TODO: implement backoffMode
     public List<NGram> getAllDifferentiatedNGrams(BackoffMode backoffMode) {
         int order = size();
-        if (order == 0)
+        if (order == 0) {
             return Arrays.asList(this);
+        }
         List<NGram> result = new ArrayList<>(pow(2, order));
 
         for (Pattern pattern : Patterns.getPermutations(order, PatternElem.SKP,
-                PatternElem.CNT))
+            PatternElem.CNT)) {
             result.add(new NGram(pattern.apply(tokens), pattern));
+        }
 
         return result;
     }
@@ -328,8 +350,9 @@ public class NGram {
     private int pow(int base,
                     int times) {
         int result = 1;
-        for (int i = 0; i != times; ++i)
+        for (int i = 0; i != times; ++i) {
             result *= base;
+        }
         return result;
     }
 
@@ -338,9 +361,8 @@ public class NGram {
                                  int order) {
         List<PatternElem> elems = new ArrayList<>(order);
         for (int i = 0; i != order; ++i) {
-            elems.add((intPattern & 1) == 1
-                    ? PatternElem.CNT
-                    : PatternElem.SKP);
+            elems
+                .add((intPattern & 1) == 1 ? PatternElem.CNT : PatternElem.SKP);
             intPattern >>= 1;
         }
         Pattern pattern = Patterns.get(elems);

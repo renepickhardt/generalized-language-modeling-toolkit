@@ -15,9 +15,11 @@ import de.glmtk.querying.estimator.Estimators;
 import de.glmtk.querying.estimator.fast.FastGenLangModelEstimator;
 import de.glmtk.testutil.LoggingTest;
 
+
 @RunWith(Parameterized.class)
 public class EstimatorRequiredCacheTest extends LoggingTest {
-    private static final Logger LOGGER = Logger.get(EstimatorRequiredCacheTest.class);
+    private static final Logger LOGGER =
+        Logger.get(EstimatorRequiredCacheTest.class);
 
     @Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
@@ -44,7 +46,8 @@ public class EstimatorRequiredCacheTest extends LoggingTest {
         CacheSpecification requiredCache = estimator.getRequiredCache(5);
 
         LOGGER.info("Estimator '%s' requires cache: %s", estimator,
-                requiredCache);
-        LOGGER.info(new TreeSet<>(requiredCache.getRequiredPatterns()).toString());
+            requiredCache);
+        LOGGER.info(
+            new TreeSet<>(requiredCache.getRequiredPatterns()).toString());
     }
 }

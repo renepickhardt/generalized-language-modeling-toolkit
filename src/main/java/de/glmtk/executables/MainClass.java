@@ -22,13 +22,15 @@ package de.glmtk.executables;
 
 import java.util.Arrays;
 
+
 /**
  * GLMTK entry point for all executables.
  */
 public class MainClass {
     public static void main(String[] args) throws Exception {
-        if (args.length == 0)
+        if (args.length == 0) {
             throw new IllegalArgumentException("No main class specified.");
+        }
 
         String mainClass = args[0];
         String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
@@ -58,9 +60,10 @@ public class MainClass {
                 break;
 
             default:
-                // TODO: when can this happen? if it happens is the error message helpful?
-                throw new IllegalArgumentException(String.format(
-                        "Unkown main class specified: '%s'.", mainClass));
+                // TODO: when can this happen? if it happens is the error
+                // message helpful?
+                throw new IllegalArgumentException(String
+                    .format("Unkown main class specified: '%s'.", mainClass));
         }
     }
 }

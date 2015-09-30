@@ -33,18 +33,18 @@ import de.glmtk.cache.CacheSpecification;
 import de.glmtk.common.Config;
 import de.glmtk.common.Pattern;
 
+
 /**
  * Make sure you are inherting {@link TestCorporaTest} when writing a test using
  * that wants to use this class.
  */
 public enum TestCorpus {
-    ABC,
-    MOBYDICK,
-    EN0008T;
+    ABC, MOBYDICK, EN0008T;
 
     public static void intializeTestCorpora(Config config) throws Exception {
-        for (TestCorpus testCorpus : values())
+        for (TestCorpus testCorpus : values()) {
             testCorpus.intialize(config);
+        }
     }
 
     private String corpusName;
@@ -58,10 +58,11 @@ public enum TestCorpus {
      */
     private void intialize(Config config) throws Exception {
         corpusName = toString();
-        corpus = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
+        corpus =
+            Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase());
 
-        Path workingDir = Constants.TEST_RESSOURCES_DIR.resolve(corpusName.toLowerCase()
-                + Constants.WORKING_DIR_SUFFIX);
+        Path workingDir = Constants.TEST_RESSOURCES_DIR
+            .resolve(corpusName.toLowerCase() + Constants.WORKING_DIR_SUFFIX);
         glmtk = new Glmtk(config, corpus, workingDir);
         tokens = null;
     }
@@ -83,10 +84,12 @@ public enum TestCorpus {
      */
     public String[] getTokens() throws Exception {
         if (tokens == null) {
-            CacheSpecification requiredCache = new CacheSpecification().withWords();
+            CacheSpecification requiredCache =
+                new CacheSpecification().withWords();
             Set<Pattern> requiredPatterns = requiredCache.getRequiredPatterns();
-            if (!glmtk.getStatus().getCounted().containsAll(requiredPatterns))
+            if (!glmtk.getStatus().getCounted().containsAll(requiredPatterns)) {
                 glmtk.count(requiredPatterns);
+            }
             Cache cache = requiredCache.build(glmtk.getPaths());
             Set<String> tokens = cache.getWords();
             this.tokens = tokens.toArray(new String[tokens.size()]);

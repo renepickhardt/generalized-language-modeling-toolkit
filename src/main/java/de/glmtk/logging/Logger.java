@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -27,6 +27,7 @@ import org.slf4j.Marker;
 import org.slf4j.spi.LocationAwareLogger;
 
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
+
 
 /**
  * Wrapper around {@link org.slf4j.Logger} to include formatting with
@@ -45,11 +46,7 @@ public class Logger implements org.slf4j.Logger {
     private static boolean errorEnabled = true;
 
     public static enum Level {
-        TRACE,
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR;
+        TRACE, DEBUG, INFO, WARN, ERROR;
 
         public int toInt() {
             switch (this) {
@@ -132,8 +129,9 @@ public class Logger implements org.slf4j.Logger {
     private Logger(Class<?> clazz) {
         logger = LoggerFactory.getLogger(clazz);
         locationAwareLogger = null;
-        if (logger instanceof LocationAwareLogger)
+        if (logger instanceof LocationAwareLogger) {
             locationAwareLogger = (LocationAwareLogger) logger;
+        }
         stringBuilder = new StringBuilder();
         formatter = new Formatter(stringBuilder);
 
@@ -236,55 +234,63 @@ public class Logger implements org.slf4j.Logger {
 
     @Override
     public void trace(String msg) {
-        if (isTraceEnabled())
+        if (isTraceEnabled()) {
             log(Level.TRACE, (Marker) null, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void trace(String format,
                       Object arg) {
-        if (isTraceEnabled())
+        if (isTraceEnabled()) {
             log(Level.TRACE, (Marker) null, makeMessage(format, arg),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void trace(String format,
                       Object arg1,
                       Object arg2) {
-        if (isTraceEnabled())
+        if (isTraceEnabled()) {
             log(Level.TRACE, (Marker) null, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void trace(String format,
                       Object... args) {
-        if (isTraceEnabled())
+        if (isTraceEnabled()) {
             log(Level.TRACE, (Marker) null, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void trace(String msg,
                       Throwable t) {
-        if (isTraceEnabled())
+        if (isTraceEnabled()) {
             log(Level.TRACE, (Marker) null, msg, t);
+        }
     }
 
     @Override
     public void trace(Marker marker,
                       String msg) {
-        if (isTraceEnabled(marker))
+        if (isTraceEnabled(marker)) {
             log(Level.TRACE, marker, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void trace(Marker marker,
                       String format,
                       Object arg) {
-        if (isTraceEnabled(marker))
-            log(Level.TRACE, marker, makeMessage(format, arg), (Throwable) null);
+        if (isTraceEnabled(marker)) {
+            log(Level.TRACE, marker, makeMessage(format, arg),
+                (Throwable) null);
+        }
     }
 
     @Override
@@ -292,79 +298,90 @@ public class Logger implements org.slf4j.Logger {
                       String format,
                       Object arg1,
                       Object arg2) {
-        if (isTraceEnabled(marker))
+        if (isTraceEnabled(marker)) {
             log(Level.TRACE, marker, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void trace(Marker marker,
                       String format,
                       Object... args) {
-        if (isTraceEnabled(marker))
+        if (isTraceEnabled(marker)) {
             log(Level.TRACE, marker, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void trace(Marker marker,
                       String msg,
                       Throwable t) {
-        if (isTraceEnabled(marker))
+        if (isTraceEnabled(marker)) {
             log(Level.TRACE, marker, msg, t);
+        }
     }
 
     @Override
     public void debug(String msg) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             log(Level.DEBUG, (Marker) null, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void debug(String format,
                       Object arg) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             log(Level.DEBUG, (Marker) null, makeMessage(format, arg),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void debug(String format,
                       Object arg1,
                       Object arg2) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             log(Level.DEBUG, (Marker) null, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void debug(String format,
                       Object... args) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             log(Level.DEBUG, (Marker) null, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void debug(String msg,
                       Throwable t) {
-        if (isDebugEnabled())
+        if (isDebugEnabled()) {
             log(Level.DEBUG, (Marker) null, msg, t);
+        }
     }
 
     @Override
     public void debug(Marker marker,
                       String msg) {
-        if (isDebugEnabled(marker))
+        if (isDebugEnabled(marker)) {
             log(Level.DEBUG, marker, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void debug(Marker marker,
                       String format,
                       Object arg) {
-        if (isDebugEnabled(marker))
-            log(Level.DEBUG, marker, makeMessage(format, arg), (Throwable) null);
+        if (isDebugEnabled(marker)) {
+            log(Level.DEBUG, marker, makeMessage(format, arg),
+                (Throwable) null);
+        }
     }
 
     @Override
@@ -372,79 +389,89 @@ public class Logger implements org.slf4j.Logger {
                       String format,
                       Object arg1,
                       Object arg2) {
-        if (isDebugEnabled(marker))
+        if (isDebugEnabled(marker)) {
             log(Level.DEBUG, marker, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void debug(Marker marker,
                       String format,
                       Object... args) {
-        if (isDebugEnabled(marker))
+        if (isDebugEnabled(marker)) {
             log(Level.DEBUG, marker, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void debug(Marker marker,
                       String msg,
                       Throwable t) {
-        if (isDebugEnabled(marker))
+        if (isDebugEnabled(marker)) {
             log(Level.DEBUG, marker, msg, t);
+        }
     }
 
     @Override
     public void info(String msg) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             log(Level.INFO, (Marker) null, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void info(String format,
                      Object arg) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             log(Level.INFO, (Marker) null, makeMessage(format, arg),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void info(String format,
                      Object arg1,
                      Object arg2) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             log(Level.INFO, (Marker) null, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void info(String format,
                      Object... args) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             log(Level.INFO, (Marker) null, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void info(String msg,
                      Throwable t) {
-        if (isInfoEnabled())
+        if (isInfoEnabled()) {
             log(Level.INFO, (Marker) null, msg, t);
+        }
     }
 
     @Override
     public void info(Marker marker,
                      String msg) {
-        if (isInfoEnabled(marker))
+        if (isInfoEnabled(marker)) {
             log(Level.INFO, marker, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void info(Marker marker,
                      String format,
                      Object arg) {
-        if (isInfoEnabled(marker))
+        if (isInfoEnabled(marker)) {
             log(Level.INFO, marker, makeMessage(format, arg), (Throwable) null);
+        }
     }
 
     @Override
@@ -452,78 +479,89 @@ public class Logger implements org.slf4j.Logger {
                      String format,
                      Object arg1,
                      Object arg2) {
-        if (isInfoEnabled(marker))
+        if (isInfoEnabled(marker)) {
             log(Level.INFO, marker, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void info(Marker marker,
                      String format,
                      Object... args) {
-        if (isInfoEnabled(marker))
-            log(Level.INFO, marker, makeMessage(format, args), (Throwable) null);
+        if (isInfoEnabled(marker)) {
+            log(Level.INFO, marker, makeMessage(format, args),
+                (Throwable) null);
+        }
     }
 
     @Override
     public void info(Marker marker,
                      String msg,
                      Throwable t) {
-        if (isInfoEnabled(marker))
+        if (isInfoEnabled(marker)) {
             log(Level.INFO, marker, msg, t);
+        }
     }
 
     @Override
     public void warn(String msg) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             log(Level.WARN, (Marker) null, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void warn(String format,
                      Object arg) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             log(Level.WARN, (Marker) null, makeMessage(format, arg),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void warn(String format,
                      Object arg1,
                      Object arg2) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             log(Level.WARN, (Marker) null, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void warn(String format,
                      Object... args) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             log(Level.WARN, (Marker) null, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void warn(String msg,
                      Throwable t) {
-        if (isWarnEnabled())
+        if (isWarnEnabled()) {
             log(Level.WARN, (Marker) null, msg, t);
+        }
     }
 
     @Override
     public void warn(Marker marker,
                      String msg) {
-        if (isWarnEnabled(marker))
+        if (isWarnEnabled(marker)) {
             log(Level.WARN, marker, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void warn(Marker marker,
                      String format,
                      Object arg) {
-        if (isWarnEnabled(marker))
+        if (isWarnEnabled(marker)) {
             log(Level.WARN, marker, makeMessage(format, arg), (Throwable) null);
+        }
     }
 
     @Override
@@ -531,78 +569,90 @@ public class Logger implements org.slf4j.Logger {
                      String format,
                      Object arg1,
                      Object arg2) {
-        if (isWarnEnabled(marker))
+        if (isWarnEnabled(marker)) {
             log(Level.WARN, marker, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void warn(Marker marker,
                      String format,
                      Object... args) {
-        if (isWarnEnabled(marker))
-            log(Level.WARN, marker, makeMessage(format, args), (Throwable) null);
+        if (isWarnEnabled(marker)) {
+            log(Level.WARN, marker, makeMessage(format, args),
+                (Throwable) null);
+        }
     }
 
     @Override
     public void warn(Marker marker,
                      String msg,
                      Throwable t) {
-        if (isWarnEnabled(marker))
+        if (isWarnEnabled(marker)) {
             log(Level.WARN, marker, msg, t);
+        }
     }
 
     @Override
     public void error(String msg) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             log(Level.ERROR, (Marker) null, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void error(String format,
                       Object arg) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             log(Level.ERROR, (Marker) null, makeMessage(format, arg),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void error(String format,
                       Object arg1,
                       Object arg2) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             log(Level.ERROR, (Marker) null, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void error(String format,
                       Object... args) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             log(Level.ERROR, (Marker) null, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void error(String msg,
                       Throwable t) {
-        if (isErrorEnabled())
+        if (isErrorEnabled()) {
             log(Level.ERROR, (Marker) null, msg, t);
+        }
     }
 
     @Override
     public void error(Marker marker,
                       String msg) {
-        if (isErrorEnabled(marker))
+        if (isErrorEnabled(marker)) {
             log(Level.ERROR, marker, msg, (Throwable) null);
+        }
     }
 
     @Override
     public void error(Marker marker,
                       String format,
                       Object arg) {
-        if (isErrorEnabled(marker))
-            log(Level.ERROR, marker, makeMessage(format, arg), (Throwable) null);
+        if (isErrorEnabled(marker)) {
+            log(Level.ERROR, marker, makeMessage(format, arg),
+                (Throwable) null);
+        }
     }
 
     @Override
@@ -610,79 +660,89 @@ public class Logger implements org.slf4j.Logger {
                       String format,
                       Object arg1,
                       Object arg2) {
-        if (isErrorEnabled(marker))
+        if (isErrorEnabled(marker)) {
             log(Level.ERROR, marker, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void error(Marker marker,
                       String format,
                       Object... args) {
-        if (isErrorEnabled(marker))
+        if (isErrorEnabled(marker)) {
             log(Level.ERROR, marker, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     @Override
     public void error(Marker marker,
                       String msg,
                       Throwable t) {
-        if (isErrorEnabled(marker))
+        if (isErrorEnabled(marker)) {
             log(Level.ERROR, marker, msg, t);
+        }
     }
 
     public void log(Level level,
                     String msg) {
-        if (isLoggingEnabled(level))
+        if (isLoggingEnabled(level)) {
             log(level, (Marker) null, msg, (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     String format,
                     Object arg) {
-        if (isLoggingEnabled(level))
+        if (isLoggingEnabled(level)) {
             log(level, (Marker) null, makeMessage(format, arg),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     String format,
                     Object arg1,
                     Object arg2) {
-        if (isLoggingEnabled(level))
+        if (isLoggingEnabled(level)) {
             log(level, (Marker) null, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     String format,
                     Object... args) {
-        if (isLoggingEnabled(level))
+        if (isLoggingEnabled(level)) {
             log(level, (Marker) null, makeMessage(format, args),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     String msg,
                     Throwable t) {
-        if (isLoggingEnabled(level))
+        if (isLoggingEnabled(level)) {
             log(level, (Marker) null, msg, t);
+        }
     }
 
     public void log(Level level,
                     Marker marker,
                     String msg) {
-        if (isLoggingEnabled(level, marker))
+        if (isLoggingEnabled(level, marker)) {
             log(level, marker, msg, (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     Marker marker,
                     String format,
                     Object arg) {
-        if (isLoggingEnabled(level, marker))
+        if (isLoggingEnabled(level, marker)) {
             log(level, marker, makeMessage(format, arg), (Throwable) null);
+        }
     }
 
     public void log(Level level,
@@ -690,26 +750,28 @@ public class Logger implements org.slf4j.Logger {
                     String format,
                     Object arg1,
                     Object arg2) {
-        if (isLoggingEnabled(level, marker))
+        if (isLoggingEnabled(level, marker)) {
             log(level, marker, makeMessage(format, arg1, arg2),
-                    (Throwable) null);
+                (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     Marker marker,
                     String format,
                     Object... args) {
-        if (isLoggingEnabled(level, marker))
+        if (isLoggingEnabled(level, marker)) {
             log(level, marker, makeMessage(format, args), (Throwable) null);
+        }
     }
 
     public void log(Level level,
                     Marker marker,
                     String msg,
                     Throwable t) {
-        if (locationAwareLogger != null)
+        if (locationAwareLogger != null) {
             locationAwareLogger.log(marker, FCQN, level.toInt(), msg, null, t);
-        else
+        } else {
             switch (level) {
                 case TRACE:
                     logger.trace(marker, msg, t);
@@ -729,6 +791,7 @@ public class Logger implements org.slf4j.Logger {
                 default:
                     throw new SwitchCaseNotImplementedException();
             }
+        }
     }
 
     private String makeMessage(String format,

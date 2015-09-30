@@ -8,15 +8,17 @@ import de.glmtk.counts.Discounts;
 import de.glmtk.querying.estimator.AbstractEstimator;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction.Summand;
 
-public abstract class AbstractWeightedSumEstimator extends AbstractEstimator implements WeightedSumEstimator {
+
+public abstract class AbstractWeightedSumEstimator extends AbstractEstimator
+        implements WeightedSumEstimator {
     @Override
     public double probability(NGram sequence,
                               WeightedSumFunction weightedSumFunction) {
         Objects.requireNonNull(cache,
-                "You have to set a cache that is not null before using this method");
+            "You have to set a cache that is not null before using this method");
 
         logTrace(1, "%s#probability(%s,?)", getClass().getSimpleName(),
-                sequence);
+            sequence);
 
         double result = calcProbability(sequence, weightedSumFunction, 2);
         logTrace(2, "result = %e", result);
@@ -28,7 +30,8 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
     protected double calcProbability(NGram sequence,
                                      NGram history,
                                      int recDepth) {
-        WeightedSumFunction weightedSumFunction = calcWeightedSumFunction(history);
+        WeightedSumFunction weightedSumFunction =
+            calcWeightedSumFunction(history);
         return calcProbability(sequence, weightedSumFunction, recDepth);
     }
 
@@ -38,7 +41,8 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
         double prob = 0.0;
 
         for (Summand summand : weightedSumFunction) {
-            NGram fullSequence = getFullSequence(sequence, summand.getHistory());
+            NGram fullSequence =
+                getFullSequence(sequence, summand.getHistory());
             prob += summand.getWeight() * calcAlpha(fullSequence);
         }
 
@@ -53,9 +57,10 @@ public abstract class AbstractWeightedSumEstimator extends AbstractEstimator imp
             absSequenceCount = cache.getCount(sequence);
         }
 
-        if (sequence.getPattern().numElems(PatternElem.CNT) == 1)
+        if (sequence.getPattern().numElems(PatternElem.CNT) == 1) {
             // If we are on last order don't discount.
             return count;
+        }
 
         Discounts discounts = cache.getDiscounts(sequence.getPattern());
         double d = discounts.getForCount(absSequenceCount);

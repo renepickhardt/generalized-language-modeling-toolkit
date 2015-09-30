@@ -17,6 +17,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+
 public class ProgressBar {
     private static final long DISPLAY_INTERVAL = 200;
     private static final long DISABLE_PERCENT_DISPLAY = -1;
@@ -52,14 +53,16 @@ public class ProgressBar {
         for (String phase : phases) {
             checkNotNull(phase);
             checkArgument(!phase.isEmpty());
-            if (maxPhaseLength < phase.length())
+            if (maxPhaseLength < phase.length()) {
                 maxPhaseLength = phase.length();
+            }
         }
 
-        if (phases instanceof List)
+        if (phases instanceof List) {
             this.phases = (List<String>) phases;
-        else
+        } else {
             this.phases = ImmutableList.copyOf(phases);
+        }
 
         curPhase = null;
         curIndex = 0;
@@ -74,7 +77,7 @@ public class ProgressBar {
                          long total) {
         checkNotNull(phase);
         checkArgument(phases.contains(phase),
-                "Given phase was not specified in constructor.");
+            "Given phase was not specified in constructor.");
 
         curPhase = phase;
         curIndex = phases.indexOf(phase) + 1;// indexOf() starts at 0.
@@ -99,13 +102,15 @@ public class ProgressBar {
 
     public void set(long current) {
         this.current = current;
-        if (current > total)
+        if (current > total) {
             throw new IllegalStateException(
-                    "current must not be larger than total.");
-        if (total == DISABLE_PERCENT_DISPLAY || current == total)
+                "current must not be larger than total.");
+        }
+        if (total == DISABLE_PERCENT_DISPLAY || current == total) {
             forceDisplay();
-        else
+        } else {
             display();
+        }
     }
 
     public void set(double percent) {
@@ -114,8 +119,9 @@ public class ProgressBar {
 
     public void display() {
         long time = currentTimeMillis();
-        if (time - lastDisplay < DISPLAY_INTERVAL)
+        if (time - lastDisplay < DISPLAY_INTERVAL) {
             return;
+        }
         lastDisplay = time;
 
         forceDisplay();
@@ -123,7 +129,7 @@ public class ProgressBar {
 
     private void forceDisplay() {
         String phaseCounter = format("(%" + numDigits(phases.size()) + "d/%d)",
-                curIndex, maxIndex);
+            curIndex, maxIndex);
 
         if (total == DISABLE_PERCENT_DISPLAY) {
             eraseLine();
@@ -133,19 +139,20 @@ public class ProgressBar {
 
         float percent = (float) current / total;
 
-        String beforeBlocks = format("%s %-" + maxPhaseLength + "s [",
-                phaseCounter, curPhase);
+        String beforeBlocks =
+            format("%s %-" + maxPhaseLength + "s [", phaseCounter, curPhase);
         String afterBlocks = format("] %6.2f%%", 100.0 * percent);
 
         int lengthWithoutBlocks = beforeBlocks.length() + afterBlocks.length();
         int widthForBlocks = 80 - lengthWithoutBlocks;
-        if (isOutputFormattingEnabled())
+        if (isOutputFormattingEnabled()) {
             widthForBlocks = getTerminalWidth() - lengthWithoutBlocks;
+        }
         int numBlocks = (int) ceil(percent * widthForBlocks);
 
         eraseLine();
-        printlnVolatile(beforeBlocks + repeat("#", numBlocks) + repeat("-",
-                widthForBlocks - numBlocks) + afterBlocks);
+        printlnVolatile(beforeBlocks + repeat("#", numBlocks)
+            + repeat("-", widthForBlocks - numBlocks) + afterBlocks);
     }
 
     private static int numDigits(long number) {

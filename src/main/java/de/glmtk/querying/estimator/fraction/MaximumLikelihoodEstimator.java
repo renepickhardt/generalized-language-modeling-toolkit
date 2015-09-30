@@ -22,6 +22,7 @@ package de.glmtk.querying.estimator.fraction;
 
 import de.glmtk.common.NGram;
 
+
 public class MaximumLikelihoodEstimator extends FractionEstimator {
     @Override
     public boolean isDefined(NGram sequence,
@@ -37,7 +38,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
         NGram fullSequence = getFullSequence(sequence, history);
         long fullSequenceCount = cache.getCount(fullSequence);
         logTrace(recDepth, "fullSequence = %s (%d)", fullSequence,
-                fullSequenceCount);
+            fullSequenceCount);
         return fullSequenceCount;
     }
 
@@ -48,7 +49,7 @@ public class MaximumLikelihoodEstimator extends FractionEstimator {
         NGram fullHistory = getFullHistory(sequence, history);
         long fullHistoryCount = cache.getCount(fullHistory);
         logTrace(recDepth, "fullHistory = %s (%d)", fullHistory,
-                fullHistoryCount);
+            fullHistoryCount);
         return fullHistoryCount;
     }
 }

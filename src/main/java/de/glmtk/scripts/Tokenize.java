@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 
 import de.glmtk.Constants;
 
+
 /**
  * Takes a file and puts spaces between all tokens.
  *
@@ -22,16 +23,18 @@ import de.glmtk.Constants;
  */
 public class Tokenize {
     public static void main(String[] args) throws IOException {
-        Path inputFile = Paths.get("/home/lukas/langmodels/data/oanc.noreserved");
+        Path inputFile =
+            Paths.get("/home/lukas/langmodels/data/oanc.noreserved");
         Path outputFile = Paths.get("/home/lukas/langmodels/data/oanc");
 
-        try (BufferedReader reader = newBufferedReader(inputFile,
-                Constants.CHARSET);
-                BufferedWriter writer = newBufferedWriter(outputFile,
-                        Constants.CHARSET)) {
+        try (BufferedReader reader =
+            newBufferedReader(inputFile, Constants.CHARSET);
+             BufferedWriter writer =
+                 newBufferedWriter(outputFile, Constants.CHARSET)) {
             String line;
-            while ((line = reader.readLine()) != null)
+            while ((line = reader.readLine()) != null) {
                 writer.append(tokenizeLine(line)).append('\n');
+            }
         }
     }
 
@@ -49,12 +52,14 @@ public class Tokenize {
                 result.append(toChars(curChar));
                 lastCharWasSpace = false;
             } else if (curChar == ' ') {
-                if (!lastCharWasSpace)
+                if (!lastCharWasSpace) {
                     result.append(' ');
+                }
                 lastCharWasSpace = true;
             } else { // curChar is special character
-                if (!lastCharWasSpace)
+                if (!lastCharWasSpace) {
                     result.append(' ');
+                }
                 result.append(toChars(curChar));
                 result.append(' ');
                 lastCharWasSpace = true;
@@ -64,8 +69,9 @@ public class Tokenize {
         // Delete trailing whitespace that occurs if last char was a special
         // character
         int resultLength = result.length();
-        if (resultLength != 0 && result.charAt(resultLength - 1) == ' ')
+        if (resultLength != 0 && result.charAt(resultLength - 1) == ' ') {
             result.deleteCharAt(resultLength - 1);
+        }
 
         return result.toString();
     }

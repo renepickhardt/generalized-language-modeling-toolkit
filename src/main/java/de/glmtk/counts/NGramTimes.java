@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -80,19 +80,20 @@ public class NGramTimes {
     }
 
     public void add(long count) {
-        if (count == 1)
+        if (count == 1) {
             ++oneCount;
-        else if (count == 2)
+        } else if (count == 2) {
             ++twoCount;
-        else if (count == 3)
+        } else if (count == 3) {
             ++threeCount;
-        else if (count == 4)
+        } else if (count == 4) {
             ++fourCount;
+        }
     }
 
     @Override
     public String toString() {
         return String.format("1=%d, 2=%d, 3=%d, 4=%d", oneCount, twoCount,
-                threeCount, fourCount);
+            threeCount, fourCount);
     }
 }

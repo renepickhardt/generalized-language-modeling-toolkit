@@ -25,10 +25,12 @@ import de.glmtk.querying.argmax.ThresholdArgmaxQueryExecutor;
 import de.glmtk.querying.argmax.TrivialArgmaxQueryExecutor;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumEstimator;
 
+
 public class ArgmaxExecutorOption extends Option {
     public static final String DEFAULT_ARGNAME = "ARGMAX_EXECUTOR";
 
     private static final Map<String, String> VALUES = new LinkedHashMap<>();
+
     static {
         VALUES.put("TA", "TopK Treshold Algorithm");
         VALUES.put("NRA", "TopK No Random Access");
@@ -37,28 +39,32 @@ public class ArgmaxExecutorOption extends Option {
     }
 
     protected static final String EXPLANATION;
+
     static {
         int longestAbbr = maxKeyLength(VALUES);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Where <%s> may be any of:\n");
-        for (Entry<String, String> executor : VALUES.entrySet())
+        for (Entry<String, String> executor : VALUES.entrySet()) {
             sb.append(format("  * %-" + longestAbbr + "s - %s\n",
-                    executor.getKey(), executor.getValue()));
+                executor.getKey(), executor.getValue()));
+        }
 
         EXPLANATION = sb.toString();
     }
 
     public static final String parseArgmaxExecutor(String executorString,
-                                                   Option option) throws OptionException {
+                                                   Option option)
+                                                           throws OptionException {
         checkNotNull(executorString);
         checkNotNull(option);
 
         executorString = executorString.toUpperCase();
-        if (!VALUES.containsKey(executorString))
+        if (!VALUES.containsKey(executorString)) {
             throw new OptionException(
-                    "%s argmax executor not recognized: '%s'. Valid Values: %s.",
-                    option, executorString, join(VALUES.keySet(), ", "));
+                "%s argmax executor not recognized: '%s'. Valid Values: %s.",
+                option, executorString, join(VALUES.keySet(), ", "));
+        }
         return executorString;
     }
 
@@ -103,29 +109,30 @@ public class ArgmaxExecutorOption extends Option {
         return value;
     }
 
-    public static ArgmaxQueryExecutor argmaxQueryExecutorFromString(String executor,
-                                                                    WeightedSumEstimator estimator,
-                                                                    Cache randomAccessCache,
-                                                                    CompletionTrieCache sortedAccessCache) {
+    public static ArgmaxQueryExecutor
+            argmaxQueryExecutorFromString(String executor,
+                                          WeightedSumEstimator estimator,
+                                          Cache randomAccessCache,
+                                          CompletionTrieCache sortedAccessCache) {
         checkNotNull(executor);
         checkNotNull(estimator);
 
         switch (executor) {
             case "TA":
                 return new ThresholdArgmaxQueryExecutor(estimator,
-                        randomAccessCache, sortedAccessCache);
+                    randomAccessCache, sortedAccessCache);
 
             case "NRA":
                 return new NoRandomAccessArgmaxQueryExecutor(estimator,
-                        sortedAccessCache);
+                    sortedAccessCache);
 
             case "BEAM":
                 return new BeamSearchArgmaxQueryExecutor(estimator,
-                        sortedAccessCache);
+                    sortedAccessCache);
 
             case "SMPL":
                 return new TrivialArgmaxQueryExecutor(estimator,
-                        randomAccessCache);
+                    randomAccessCache);
 
             default:
                 throw new SwitchCaseNotImplementedException();

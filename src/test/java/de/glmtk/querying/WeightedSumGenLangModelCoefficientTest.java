@@ -16,14 +16,16 @@ import org.junit.runners.Parameterized.Parameters;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumGenLangModelEstimator;
 import de.glmtk.testutil.LoggingTest;
 
+
 @RunWith(Parameterized.class)
 public class WeightedSumGenLangModelCoefficientTest extends LoggingTest {
     private static Method getCoefficentMethod;
 
     @BeforeClass
-    public static void setUpPrivateMethod() throws NoSuchMethodException, SecurityException {
-        getCoefficentMethod = WeightedSumGenLangModelEstimator.class.getDeclaredMethod(
-                "getCoefficient", Integer.TYPE, Integer.TYPE);
+    public static void setUpPrivateMethod()
+            throws NoSuchMethodException, SecurityException {
+        getCoefficentMethod = WeightedSumGenLangModelEstimator.class
+            .getDeclaredMethod("getCoefficient", Integer.TYPE, Integer.TYPE);
         getCoefficentMethod.setAccessible(true);
     }
 
@@ -31,9 +33,11 @@ public class WeightedSumGenLangModelCoefficientTest extends LoggingTest {
     public static Iterable<Object[]> data() {
         List<Object[]> data = new ArrayList<>();
 
-        for (int order = 1; order != 6; ++order)
-            for (int level = 0; level != order + 1; ++level)
-                data.add(new Object[] {order, level});
+        for (int order = 1; order != 6; ++order) {
+            for (int level = 0; level != order + 1; ++level) {
+                data.add(new Object[] { order, level });
+            }
+        }
 
         return data;
     }
@@ -48,7 +52,8 @@ public class WeightedSumGenLangModelCoefficientTest extends LoggingTest {
     }
 
     @Test
-    public void testCoefficient() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public void testCoefficient() throws IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException {
         double expected = factorial(order - level) / factorial(order);
         double actual = (double) getCoefficentMethod.invoke(null, order, level);
 

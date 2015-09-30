@@ -3,15 +3,17 @@ package de.glmtk.querying.argmax;
 import java.util.Comparator;
 import java.util.List;
 
+
 public interface ArgmaxQueryExecutor {
     public static class ArgmaxResult {
-        public static final Comparator<ArgmaxResult> COMPARATOR = new Comparator<ArgmaxResult>() {
-            @Override
-            public int compare(ArgmaxResult lhs,
-                               ArgmaxResult rhs) {
-                return Double.compare(lhs.probability, rhs.probability);
-            }
-        };
+        public static final Comparator<ArgmaxResult> COMPARATOR =
+            new Comparator<ArgmaxResult>() {
+                @Override
+                public int compare(ArgmaxResult lhs,
+                                   ArgmaxResult rhs) {
+                    return Double.compare(lhs.probability, rhs.probability);
+                }
+            };
 
         private String sequence;
         private double probability;

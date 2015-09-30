@@ -11,6 +11,7 @@ import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
 import de.glmtk.querying.probability.QueryMode;
 
+
 public class QueryModeOption extends Option {
     public static final String DEFAULT_ARGNAME = "QUERY_MODE";
 
@@ -24,7 +25,8 @@ public class QueryModeOption extends Option {
     //@formatter:on
 
     public static QueryMode parseQueryMode(String queryModeString,
-                                           Option option) throws OptionException {
+                                           Option option)
+                                                   throws OptionException {
         checkNotNull(queryModeString);
         checkNotNull(option);
 
@@ -32,7 +34,7 @@ public class QueryModeOption extends Option {
             return QueryMode.forString(queryModeString);
         } catch (RuntimeException e) {
             throw new OptionException("%s got illegal query mode string '%s'.",
-                    option, queryModeString);
+                option, queryModeString);
         }
     }
 

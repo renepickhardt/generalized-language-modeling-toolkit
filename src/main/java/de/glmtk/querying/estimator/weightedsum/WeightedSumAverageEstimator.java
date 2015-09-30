@@ -21,13 +21,14 @@
 package de.glmtk.querying.estimator.weightedsum;
 
 import static de.glmtk.common.NGram.WSKP_NGRAM;
+
 import de.glmtk.common.NGram;
 import de.glmtk.util.BinomDiamond;
 import de.glmtk.util.BinomDiamondNode;
 
+
 public class WeightedSumAverageEstimator extends AbstractWeightedSumEstimator {
-    private static class Node extends BinomDiamondNode<Node> {
-    }
+    private static class Node extends BinomDiamondNode<Node> {}
 
     @Override
     public WeightedSumFunction calcWeightedSumFunction(NGram history) {
@@ -42,14 +43,14 @@ public class WeightedSumAverageEstimator extends AbstractWeightedSumEstimator {
 
         int numWeights = 2 * diamond.size();
 
-        WeightedSumFunction weightedSumFunction = new WeightedSumFunction(
-                numWeights);
+        WeightedSumFunction weightedSumFunction =
+            new WeightedSumFunction(numWeights);
 
         for (Node node : diamond.inOrder()) {
             NGram hist = history.applyIntPattern(~node.getIndex(), order);
             weightedSumFunction.add(1.0 / numWeights, hist);
             weightedSumFunction.add(1.0 / numWeights,
-                    WSKP_NGRAM.concat(hist.convertSkpToWskp()));
+                WSKP_NGRAM.concat(hist.convertSkpToWskp()));
         }
 
         return weightedSumFunction;

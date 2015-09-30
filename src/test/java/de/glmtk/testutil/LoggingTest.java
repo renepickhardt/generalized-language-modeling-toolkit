@@ -30,12 +30,13 @@ import org.junit.BeforeClass;
 
 import de.glmtk.GlmtkPaths;
 
+
 public class LoggingTest {
     @BeforeClass
     public static void setUpLogging() {
         initLog4jHelper(false);
         addLoggingFileAppender(GlmtkPaths.LOG_DIR.resolve("test"), "FileTest",
-                false);
+            false);
         addLoggingConsoleAppender(Target.SYSTEM_ERR);
     }
 

@@ -27,6 +27,7 @@ import java.util.List;
 import de.glmtk.util.ArrayUtils;
 import de.glmtk.util.StringUtils;
 
+
 /**
  * Didn't work.
  */
@@ -35,29 +36,34 @@ public class E05_GlmGenComb {
     private static List<String> getPatternedHistory(List<String> history,
                                                     boolean[] pattern) {
         List<String> result = new ArrayList<>(history);
-        for (int i = 0; i != pattern.length; ++i)
-            if (pattern[i])
+        for (int i = 0; i != pattern.length; ++i) {
+            if (pattern[i]) {
                 result.set(i, "*");
+            }
+        }
         return result;
     }
 
     private static boolean nextPattern(boolean[] pattern) {
         int first = 0, last = pattern.length;
-        for (int i = last - 2; i != first - 1; --i)
+        for (int i = last - 2; i != first - 1; --i) {
             if (pattern[i] && !pattern[i + 1]) { // pattern[i] > pattern[ii]
                 int j = last - 1;
-                while (!pattern[i] || pattern[j])
+                while (!pattern[i] || pattern[j]) {
                     --j;
+                }
                 ArrayUtils.swap(pattern, i, j);
                 ArrayUtils.reverse(pattern, i + 1, last);
                 return true;
             }
+        }
         ArrayUtils.reverse(pattern, first, last);
-        for (int i = 0; i != pattern.length; ++i)
+        for (int i = 0; i != pattern.length; ++i) {
             if (!pattern[i]) {
                 pattern[i] = true;
                 return true;
             }
+        }
         return false;
     }
 
@@ -85,8 +91,9 @@ public class E05_GlmGenComb {
         }
 
         boolean[] pattern = new boolean[history.size()];
-        for (int i = 0; i != pattern.length; ++i)
+        for (int i = 0; i != pattern.length; ++i) {
             pattern[i] = false;
+        }
 
         int order = 0;
         int numOrder = numOrder(history.size(), order);
@@ -103,19 +110,20 @@ public class E05_GlmGenComb {
             List<String> alpha = ArrayUtils.unionWithSingleton(h, sequence);
             alphas.set(i, alpha);
             for (int j = orderEnd; j != numAlphas; ++j) {
-                //                gammasss.get(j).add(alpha);
+                // gammasss.get(j).add(alpha);
                 if (i == 0) {
                     gammasss.get(j).add(Arrays.asList(alpha));
                     continue;
                 }
                 if (iInOrder == 0) {
                     List<List<List<String>>> gammass = gammasss.get(j);
-                    List<List<List<String>>> newGammass = new ArrayList<>(
-                            gammass.size() * numOrder);
+                    List<List<List<String>>> newGammass =
+                        new ArrayList<>(gammass.size() * numOrder);
                     for (int k = 0; k != gammass.size(); ++k) {
                         List<List<String>> gammas = gammass.get(k);
-                        for (int l = 0; l != numOrder; ++l)
+                        for (int l = 0; l != numOrder; ++l) {
                             newGammass.add(new ArrayList<>(gammas));
+                        }
                     }
                     gammasss.set(j, newGammass);
                 }
@@ -132,20 +140,21 @@ public class E05_GlmGenComb {
             List<String> alpha = alphas.get(i);
             List<List<List<String>>> gammass = gammasss.get(i);
 
-            String alphaStr = alpha == null ? "null" : StringUtils.join(alpha,
-                    " ");
+            String alphaStr =
+                alpha == null ? "null" : StringUtils.join(alpha, " ");
             System.out.println("α(" + alphaStr + ")");
-            if (gammass != null)
-                for (List<List<String>> gammas : gammass)
+            if (gammass != null) {
+                for (List<List<String>> gammas : gammass) {
                     if (gammas != null) {
                         for (List<String> gamma : gammas) {
                             String gammaStr = gamma == null
-                                    ? "null"
-                                    : StringUtils.join(gamma, " ");
+                                ? "null" : StringUtils.join(gamma, " ");
                             System.out.print("  γ(" + gammaStr + ")");
                         }
                         System.out.println();
                     }
+                }
+            }
         }
     }
 

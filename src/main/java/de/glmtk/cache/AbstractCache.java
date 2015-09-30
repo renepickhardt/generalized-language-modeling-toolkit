@@ -52,6 +52,7 @@ import de.glmtk.output.ProgressBar;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.NioUtils;
 
+
 /**
  * Implements functionality that is common to all cache implementations.
  *
@@ -62,7 +63,8 @@ import de.glmtk.util.NioUtils;
  * Implements Words, NGramTimes and LengthDistribution functionality.
  */
 public abstract class AbstractCache implements Cache {
-    // TODO: Test case that checks for all estimators whether probabilities are equal using different cache implementations.
+    // TODO: Test case that checks for all estimators whether probabilities are
+    // equal using different cache implementations.
 
     private static final Logger LOGGER = Logger.get(AbstractCache.class);
 
@@ -86,38 +88,43 @@ public abstract class AbstractCache implements Cache {
 
     protected void checkNGramArg(NGram ngram) {
         Objects.requireNonNull(ngram);
-        if (ngram.isEmpty())
+        if (ngram.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argumnet 'ngram' is the empty ngram.");
+                "Argumnet 'ngram' is the empty ngram.");
+        }
     }
 
     protected void checkPatternArg(Pattern pattern) {
         Objects.requireNonNull(pattern);
-        if (pattern.isEmpty())
+        if (pattern.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Argument 'pattern' is the empty pattern.");
+                "Argument 'pattern' is the empty pattern.");
+        }
     }
 
     protected void checkCountPatternsArg(Collection<Pattern> patterns) {
         Objects.requireNonNull(patterns);
-        for (Pattern pattern : patterns)
-            if (pattern.isEmpty())
+        for (Pattern pattern : patterns) {
+            if (pattern.isEmpty()) {
                 throw new IllegalArgumentException(
-                        "Argument 'patterns' contains empty pattern.");
+                    "Argument 'patterns' contains empty pattern.");
+            }
+        }
     }
 
     protected void checkGammaPatternsArg(Collection<Pattern> patterns) {
         checkCountPatternsArg(patterns);
         for (Pattern pattern : patterns) {
-            Path cntFile = paths.getPatternsFile(pattern.concat(
-                    PatternElem.CNT));
-            Path wskpFile = paths.getPatternsFile(pattern.concat(
-                    PatternElem.WSKP));
-            if (!NioUtils.checkFile(cntFile, EXISTS) || !NioUtils.checkFile(
-                    wskpFile, EXISTS))
+            Path cntFile =
+                paths.getPatternsFile(pattern.concat(PatternElem.CNT));
+            Path wskpFile =
+                paths.getPatternsFile(pattern.concat(PatternElem.WSKP));
+            if (!NioUtils.checkFile(cntFile, EXISTS)
+                || !NioUtils.checkFile(wskpFile, EXISTS)) {
                 throw new IllegalStateException(String.format(
-                        "In order to load gamma counts for pattern '%1$s', counts for patterns '%1$s1' and '%1$sx' have to be computed.",
-                        pattern));
+                    "In order to load gamma counts for pattern '%1$s', counts for patterns '%1$s1' and '%1$sx' have to be computed.",
+                    pattern));
+            }
         }
     }
 
@@ -132,14 +139,16 @@ public abstract class AbstractCache implements Cache {
 
         Set<String> unsortedWords = new TreeSet<>();
         try (CountsReader reader = new CountsReader(file, Constants.CHARSET)) {
-            while (reader.readLine() != null)
+            while (reader.readLine() != null) {
                 unsortedWords.add(reader.getSequence());
+            }
         }
 
         words = new TreeSet<>(unsortedWords);
 
-        if (progressBar != null)
+        if (progressBar != null) {
             progressBar.increase();
+        }
     }
 
     @Override
@@ -149,8 +158,9 @@ public abstract class AbstractCache implements Cache {
     }
 
     private void checkWordsLoaded() {
-        if (words == null)
+        if (words == null) {
             throw new IllegalStateException("Words not loaded.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -159,12 +169,12 @@ public abstract class AbstractCache implements Cache {
     /**
      * Loads discounts and ngramTimes counts.
      */
-    /* package */void loadDiscounts() throws IOException {
+            /* package */void loadDiscounts() throws IOException {
         LOGGER.debug("Loading Discounts...");
 
         ngramTimes = new HashMap<>();
         try (NGramTimesReader reader = new NGramTimesReader(
-                paths.getNGramTimesFile(), Constants.CHARSET)) {
+            paths.getNGramTimesFile(), Constants.CHARSET)) {
             while (reader.readLine() != null) {
                 Pattern pattern = reader.getPattern();
                 NGramTimes times = reader.getNGramTimes();
@@ -175,14 +185,17 @@ public abstract class AbstractCache implements Cache {
         }
 
         LOGGER.trace("NGramTimes:");
-        for (Entry<Pattern, NGramTimes> entry : ngramTimes.entrySet())
+        for (Entry<Pattern, NGramTimes> entry : ngramTimes.entrySet()) {
             LOGGER.trace("  %s\t: %s", entry.getKey(), entry.getValue());
+        }
         LOGGER.trace("Discounts:");
-        for (Entry<Pattern, Discounts> entry : discounts.entrySet())
+        for (Entry<Pattern, Discounts> entry : discounts.entrySet()) {
             LOGGER.trace("  %s\t: %s", entry.getKey(), entry.getValue());
+        }
 
-        if (progressBar != null)
+        if (progressBar != null) {
             progressBar.increase();
+        }
     }
 
     private Discounts calcDiscounts(NGramTimes n) {
@@ -198,8 +211,9 @@ public abstract class AbstractCache implements Cache {
 
     @Override
     public double getDiscount(NGram ngram) {
-        if (true)
+        if (true) {
             return 0.75;
+        }
         checkNGramArg(ngram);
         checkDiscountsLoaded();
 
@@ -208,21 +222,24 @@ public abstract class AbstractCache implements Cache {
 
     @Override
     public Discounts getDiscounts(Pattern pattern) {
-        if (true)
+        if (true) {
             return new Discounts(0.75, 0.75, 0.75);
+        }
         checkPatternArg(pattern);
         checkDiscountsLoaded();
 
         Discounts result = discounts.get(pattern);
-        if (result == null)
-            throw new IllegalArgumentException(String.format(
-                    "No Discounts learned for pattern '%s'.", pattern));
+        if (result == null) {
+            throw new IllegalArgumentException(String
+                .format("No Discounts learned for pattern '%s'.", pattern));
+        }
         return result;
     }
 
     private void checkDiscountsLoaded() {
-        if (discounts == null)
+        if (discounts == null) {
             throw new IllegalStateException("Discounts not loaded.");
+        }
     }
 
     @Override
@@ -231,15 +248,17 @@ public abstract class AbstractCache implements Cache {
         checkNGramTimesLoaded();
 
         NGramTimes result = ngramTimes.get(pattern);
-        if (result == null)
-            throw new IllegalStateException(String.format(
-                    "No NGramTimes learned for pattern '%s'.", pattern));
+        if (result == null) {
+            throw new IllegalStateException(String
+                .format("No NGramTimes learned for pattern '%s'.", pattern));
+        }
         return result;
     }
 
     private void checkNGramTimesLoaded() {
-        if (ngramTimes == null)
+        if (ngramTimes == null) {
             throw new IllegalStateException("NGram times not loaded.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -250,7 +269,7 @@ public abstract class AbstractCache implements Cache {
 
         lengthFrequencies = new ArrayList<>();
         try (LengthDistributionReader reader = new LengthDistributionReader(
-                paths.getLengthDistributionFile(), Constants.CHARSET)) {
+            paths.getLengthDistributionFile(), Constants.CHARSET)) {
             while (reader.readLine() != null) {
                 int l = reader.getLength();
                 double f = reader.getFrequency();
@@ -260,20 +279,23 @@ public abstract class AbstractCache implements Cache {
             }
         }
 
-        if (progressBar != null)
+        if (progressBar != null) {
             progressBar.increase();
+        }
     }
 
     @Override
     public double getLengthFrequency(int length) {
-        if (length <= 0)
+        if (length <= 0) {
             throw new IllegalArgumentException(String.format(
-                    "Illegal length requested: '%s'. Must be an integer greater zero.",
-                    length));
+                "Illegal length requested: '%s'. Must be an integer greater zero.",
+                length));
+        }
 
         checkLengthFrequenciesLoaded();
-        if (length >= lengthFrequencies.size())
+        if (length >= lengthFrequencies.size()) {
             return 0.0;
+        }
         return lengthFrequencies.get(length);
     }
 
@@ -284,33 +306,38 @@ public abstract class AbstractCache implements Cache {
     }
 
     private void checkLengthFrequenciesLoaded() {
-        if (lengthFrequencies == null)
+        if (lengthFrequencies == null) {
             throw new IllegalStateException("Length distribution not loaded.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Counts //////////////////////////////////////////////////////////////////
 
-    /* package */abstract void loadCounts(Collection<Pattern> patterns) throws IOException;
+    /* package */abstract void loadCounts(Collection<Pattern> patterns)
+            throws IOException;
 
     @Override
     public long getNumWords() {
-        if (numWords == -1)
+        if (numWords == -1) {
             numWords = getCount(NGram.SKP_NGRAM);
+        }
         return numWords;
     }
 
     @Override
     public long getVocabSize() {
-        if (vocabSize == -1)
+        if (vocabSize == -1) {
             vocabSize = getCount(NGram.WSKP_NGRAM);
+        }
         return vocabSize;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Gammas //////////////////////////////////////////////////////////////////
 
-    /* package */abstract void loadGammas(Collection<Pattern> patterns) throws IOException;
+    /* package */abstract void loadGammas(Collection<Pattern> patterns)
+            throws IOException;
 
     /**
      * All highest order gamma ngrams have a trailing " %" because they all end

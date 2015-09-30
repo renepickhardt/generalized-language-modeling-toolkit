@@ -33,6 +33,7 @@ import com.google.common.base.Optional;
 
 import de.glmtk.Constants;
 
+
 /**
  * Utility for formatting terminal output to stderr.
  *
@@ -76,13 +77,12 @@ import de.glmtk.Constants;
  * {@link #disableOutputFormatting()}.
  *
  * <p>
- * This class is internally implemented as a wrapper on top of <a
- * href="https://github.com/fusesource/jansi">Jansi</a>. However its behaviour
- * differs from our use case:
+ * This class is internally implemented as a wrapper on top of
+ * <a href="https://github.com/fusesource/jansi">Jansi</a>. However its
+ * behaviour differs from our use case:
  */
 public class Output {
-    private Output() {
-    }
+    private Output() {}
 
     private static final long TERMINAL_WIDTH_UPDATE_INTERVALL = 500;
     private static final long TERMINAL_WDITH_UPDATE_TIME = 10;
@@ -127,22 +127,24 @@ public class Output {
      *         {@link Optional#of(Object)}.
      */
     public static Optional<String> enableOutputFormatting() {
-        boolean isttyStderr = parseBoolean(System.getProperty("glmtk.isttyStderr"));
-        if (!isttyStderr)
+        boolean isttyStderr =
+            parseBoolean(System.getProperty("glmtk.isttyStderr"));
+        if (!isttyStderr) {
             return Optional.of("Ansi codes will not be enables because "
-                    + "ISTTY_STDERR is 'false'.");
+                + "ISTTY_STDERR is 'false'.");
+        }
 
         try {
             setFinalStaticField(AnsiConsole.class.getField("out"),
-                    AnsiConsole.system_out);
+                AnsiConsole.system_out);
             setFinalStaticField(AnsiConsole.class.getField("err"),
-                    new PrintStream(wrapStream(AnsiConsole.system_err)));
+                new PrintStream(wrapStream(AnsiConsole.system_err)));
             AnsiConsole.systemInstall();
             isFormattingEnabled = true;
             return Optional.absent();
         } catch (Throwable e) {
             return Optional.of("Ansi codes could not be enables because: "
-                    + getStackTraceAsString(e));
+                + getStackTraceAsString(e));
         }
     }
 
@@ -162,12 +164,13 @@ public class Output {
      */
     private static OutputStream wrapStream(OutputStream stream) {
         String os = System.getProperty("os.name");
-        if (os.startsWith("Windows"))
+        if (os.startsWith("Windows")) {
             try {
                 return new WindowsAnsiOutputStream(stream);
             } catch (Throwable e) {
                 return new AnsiOutputStream(stream);
             }
+        }
 
         return new FilterOutputStream(stream) {
             @Override
@@ -203,23 +206,23 @@ public class Output {
      */
     private synchronized static void updateTerminalWidth() {
         long time = currentTimeMillis();
-        if (time - lastTerminalWidthCheck < TERMINAL_WIDTH_UPDATE_INTERVALL)
+        if (time - lastTerminalWidthCheck < TERMINAL_WIDTH_UPDATE_INTERVALL) {
             return;
+        }
         lastTerminalWidthCheck = time;
 
         try {
-            Process tputColsProc = getRuntime().exec(
-                    new String[] {"bash", "-c", "tput cols 2> /dev/tty"});
+            Process tputColsProc = getRuntime()
+                .exec(new String[] { "bash", "-c", "tput cols 2> /dev/tty" });
 
             executeProcess(tputColsProc, TERMINAL_WDITH_UPDATE_TIME,
-                    MILLISECONDS);
+                MILLISECONDS);
 
             try (BufferedReader reader = newBufferedReader(
-                    tputColsProc.getInputStream(), Constants.CHARSET)) {
+                tputColsProc.getInputStream(), Constants.CHARSET)) {
                 terminalWidth = parseInt(reader.readLine());
             }
-        } catch (Throwable e) {
-        }
+        } catch (Throwable e) {}
     }
 
     public static void flush() {
@@ -306,11 +309,13 @@ public class Output {
                                             Color color) {
         StringBuilder sb = new StringBuilder();
         for (String line : splitSparse(message, '\n')) {
-            if (isFormattingEnabled)
+            if (isFormattingEnabled) {
                 sb.append(ansi().fg(color));
+            }
             sb.append(prefix).append(line);
-            if (isFormattingEnabled)
+            if (isFormattingEnabled) {
                 sb.append(ansi().fg(Color.DEFAULT));
+            }
             sb.append('\n');
         }
 
@@ -332,8 +337,9 @@ public class Output {
         err.println(message);
         int terminalWidth = getTerminalWidth();
         List<String> lines = splitSparse(message, '\n');
-        for (String line : lines)
+        for (String line : lines) {
             numVolatileLines += ceil(((float) line.length() / terminalWidth));
+        }
     }
 
     public static void printlnVolatile(String format,
@@ -356,8 +362,9 @@ public class Output {
 
     public static String bold(String message) {
         checkNotNull(message);
-        if (!isFormattingEnabled)
+        if (!isFormattingEnabled) {
             return message;
+        }
         return ansi().bold() + message + ansi().boldOff();
     }
 
@@ -384,8 +391,9 @@ public class Output {
      * @see #eraseAllLines()
      */
     public static void eraseLine() {
-        if (!isFormattingEnabled || numVolatileLines == 0)
+        if (!isFormattingEnabled || numVolatileLines == 0) {
             return;
+        }
         --numVolatileLines;
         err.print(ansi().cursorUp(1).eraseLine());
         flush();
@@ -393,15 +401,18 @@ public class Output {
 
     public static void eraseLines(int count) {
         checkArgument(count >= 0, "Argument 'count' must be positive!");
-        for (int i = 0; i != count; ++i)
+        for (int i = 0; i != count; ++i) {
             eraseLine();
+        }
     }
 
     public static void eraseAllLines() {
-        if (!isFormattingEnabled)
+        if (!isFormattingEnabled) {
             return;
+        }
 
-        while (numVolatileLines != 0)
+        while (numVolatileLines != 0) {
             eraseLine();
+        }
     }
 }

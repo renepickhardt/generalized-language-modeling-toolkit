@@ -24,6 +24,7 @@ import de.glmtk.Constants;
 import de.glmtk.util.PrintUtils;
 import de.glmtk.util.StringUtils;
 
+
 @RunWith(Parameterized.class)
 public class FileTest {
     @Parameters(name = "{0}")
@@ -50,8 +51,8 @@ public class FileTest {
 
         long timeBefore, timeAfter;
 
-        try (BufferedReader reader = Files.newBufferedReader(path,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(path, Charset.defaultCharset())) {
             timeBefore = System.currentTimeMillis();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -61,42 +62,44 @@ public class FileTest {
                 builder.add(string, score);
             }
             timeAfter = System.currentTimeMillis();
-            System.out.println("Adding all entries... "
-                    + (timeAfter - timeBefore) + "ms");
+            System.out.println(
+                "Adding all entries... " + (timeAfter - timeBefore) + "ms");
         }
 
         timeBefore = System.currentTimeMillis();
         CompletionTrie trie = builder.build();
         timeAfter = System.currentTimeMillis();
-        System.out.println("Building packed trie... "
-                + (timeAfter - timeBefore) + "ms");
+        System.out.println(
+            "Building packed trie... " + (timeAfter - timeBefore) + "ms");
 
         System.out.println("Memory consumption... "
-                + PrintUtils.humanReadableByteCount(trie.getMemoryConsumption()));
+            + PrintUtils.humanReadableByteCount(trie.getMemoryConsumption()));
 
         timeBefore = System.currentTimeMillis();
         assertTrue(CompletionTrieUtils.equal(trie, builder));
         timeAfter = System.currentTimeMillis();
         System.out.println("Verifying equals input trie... "
-                + (timeAfter - timeBefore) + "ms");
+            + (timeAfter - timeBefore) + "ms");
 
         builder.reset();
 
         Deque<CompletionTrieEntry> entries = new ArrayDeque<>();
         timeBefore = System.currentTimeMillis();
-        for (CompletionTrieEntry entry : trie)
+        for (CompletionTrieEntry entry : trie) {
             entries.addFirst(entry);
+        }
         timeAfter = System.currentTimeMillis();
-        System.out.println("Iterating elements... " + (timeAfter - timeBefore)
-                + "ms");
+        System.out.println(
+            "Iterating elements... " + (timeAfter - timeBefore) + "ms");
 
         Iterator<CompletionTrieEntry> entriesIter = entries.iterator();
-        try (BufferedReader reader = Files.newBufferedReader(path,
-                Charset.defaultCharset())) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(path, Charset.defaultCharset())) {
             String line, lastLine = null;
             while ((line = reader.readLine()) != null) {
-                if (line.equals(lastLine))
+                if (line.equals(lastLine)) {
                     continue;
+                }
                 CompletionTrieEntry entry = entriesIter.next();
                 assertEquals(line, entry.getScore() + "\t" + entry.getString());
                 lastLine = line;
@@ -104,7 +107,7 @@ public class FileTest {
                 assertTrue(trie.contains(entry.getString()));
                 assertTrue(trie.containsPrefix(entry.getString()));
                 assertEquals(Long.valueOf(entry.getScore()),
-                        trie.get(entry.getString()));
+                    trie.get(entry.getString()));
             }
         }
         assertFalse(entriesIter.hasNext());

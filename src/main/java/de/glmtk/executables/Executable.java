@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -52,6 +52,7 @@ import de.glmtk.logging.Logger.Level;
 import de.glmtk.options.BooleanOption;
 import de.glmtk.options.CommandLine;
 import de.glmtk.options.OptionException;
+
 
 /* package */abstract class Executable {
     // TODO: make --debug and --log options for all executables.
@@ -91,15 +92,18 @@ import de.glmtk.options.OptionException;
             exec();
             printLogFooter();
         } catch (Termination e) {
-            if (e.getMessage() != null)
+            if (e.getMessage() != null) {
                 println(e.getMessage());
+            }
         } catch (Throwable e) {
             String error = e.getMessage();
-            if (error != null)
+            if (error != null) {
                 printlnError(error);
-            else
+            } else {
                 printlnError(e.getClass().getSimpleName());
-            LOGGER.error(String.format("Exception %s", getStackTraceAsString(e)));
+            }
+            LOGGER
+                .error(String.format("Exception %s", getStackTraceAsString(e)));
         }
     }
 
@@ -108,13 +112,13 @@ import de.glmtk.options.OptionException;
 
         optionHelp = new BooleanOption("h", "help", "Print this message.");
         optionVersion = new BooleanOption("v", "version",
-                "Print the version information and exit.");
+            "Print the version information and exit.");
         optionLogConsole = new BooleanOption(null, "log",
-                "Logging messages are also written to stdout.");
-        optionLogDebug = new BooleanOption(null, "debug",
-                "Set log level to DEBUG.");
-        optionLogTrace = new BooleanOption(null, "trace",
-                "Set log level to TRACE.");
+            "Logging messages are also written to stdout.");
+        optionLogDebug =
+            new BooleanOption(null, "debug", "Set log level to DEBUG.");
+        optionLogTrace =
+            new BooleanOption(null, "trace", "Set log level to TRACE.");
 
         commandLine.options(optionHelp, optionVersion);
         registerOptions();
@@ -131,9 +135,10 @@ import de.glmtk.options.OptionException;
             String helpFooter = getHelpFooter();
 
             System.out.format("%s%s <OPTION...>\n", getExecutableName(),
-                    commandLine.getInputArgsLine());
-            if (helpHeader != null)
+                commandLine.getInputArgsLine());
+            if (helpHeader != null) {
                 System.out.println(helpHeader);
+            }
 
             commandLine.help(System.out);
 
@@ -143,14 +148,17 @@ import de.glmtk.options.OptionException;
             }
             System.out.println();
             System.out.println("For more information, see:");
-            System.out.println("https://github.com/renepickhardt/generalized-language-modeling-toolkit/");
+            System.out.println(
+                "https://github.com/renepickhardt/generalized-language-modeling-toolkit/");
 
             throw new Termination();
         }
 
         if (optionVersion.getBoolean()) {
-            // TODO: other version?  especially the version should not be hardcoded here but rather being pulled from maven pom?
-            System.out.println("GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
+            // TODO: other version? especially the version should not be
+            // hardcoded here but rather being pulled from maven pom?
+            System.out.println(
+                "GLMTK (Generalized Language Modeling Toolkit) version 0.1.");
             throw new Termination();
         }
 
@@ -174,13 +182,13 @@ import de.glmtk.options.OptionException;
         initLog4jHelper(false);
 
         addLoggingFileAppender(
-                GlmtkPaths.LOG_DIR.resolve(Constants.ALL_LOG_FILE_NAME),
-                "FileAll", true);
+            GlmtkPaths.LOG_DIR.resolve(Constants.ALL_LOG_FILE_NAME), "FileAll",
+            true);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String time = format.format(Calendar.getInstance().getTime());
         addLoggingFileAppender(GlmtkPaths.LOG_DIR.resolve(time + ".log"),
-                "FileTimestamp", false);
+            "FileTimestamp", false);
 
     }
 
@@ -208,10 +216,12 @@ import de.glmtk.options.OptionException;
             addLoggingConsoleAppender(Target.SYSTEM_ERR);
         }
 
-        if (logDebug && getLogLevel().isMoreSpecificThan(Level.DEBUG))
+        if (logDebug && getLogLevel().isMoreSpecificThan(Level.DEBUG)) {
             setLogLevel(Level.DEBUG);
-        if (logTrace && getLogLevel().isMoreSpecificThan(Level.TRACE))
+        }
+        if (logTrace && getLogLevel().isMoreSpecificThan(Level.TRACE)) {
             setLogLevel(Level.TRACE);
+        }
     }
 
     private void printLogHeader(String[] args) {
@@ -224,18 +234,17 @@ import de.glmtk.options.OptionException;
         String gitCommit = "unavailable";
         try {
             Process gitLogProc = Runtime.getRuntime().exec(
-                    new String[] {"git", "log", "-1", "--format=%H: %s"}, null,
-                    GlmtkPaths.GLMTK_DIR.toFile());
+                new String[] { "git", "log", "-1", "--format=%H: %s" }, null,
+                GlmtkPaths.GLMTK_DIR.toFile());
 
             executeProcess(gitLogProc, Constants.MAX_IDLE_TIME,
-                    TimeUnit.MILLISECONDS);
+                TimeUnit.MILLISECONDS);
 
             try (BufferedReader reader = newBufferedReader(
-                    gitLogProc.getInputStream(), Constants.CHARSET)) {
+                gitLogProc.getInputStream(), Constants.CHARSET)) {
                 gitCommit = reader.readLine();
             }
-        } catch (Throwable e) {
-        }
+        } catch (Throwable e) {}
         LOGGER.info("Git Commit: %s", gitCommit);
 
         // log arguments

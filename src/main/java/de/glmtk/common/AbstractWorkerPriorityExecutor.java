@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
-public abstract class AbstractWorkerPriorityExecutor<T> extends AbstractWorkerExecutor<T> {
+
+public abstract class AbstractWorkerPriorityExecutor<T> extends
+                                                    AbstractWorkerExecutor<T> {
     public AbstractWorkerPriorityExecutor(Config config) {
         super(config);
     }

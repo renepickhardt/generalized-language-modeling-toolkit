@@ -23,12 +23,10 @@ package de.glmtk.querying.probability;
 import de.glmtk.exceptions.SwitchCaseNotImplementedException;
 import de.glmtk.util.ObjectUtils;
 
+
 public class QueryMode {
     public static enum QueryType {
-        SEQUENCE,
-        FIXED,
-        MARKOV,
-        COND;
+        SEQUENCE, FIXED, MARKOV, COND;
     }
 
     public static QueryMode forString(String string) {
@@ -36,30 +34,33 @@ public class QueryMode {
         int pos = posOfFirstNumber(stringLower);
         if (pos == -1) {
             String type = stringLower;
-            if (!type.isEmpty() && "sequence".startsWith(type))
+            if (!type.isEmpty() && "sequence".startsWith(type)) {
                 return newSequence();
+            }
         } else {
             String type = stringLower.substring(0, pos);
             String orderStr = stringLower.substring(pos);
             try {
                 int order = Integer.parseInt(orderStr);
-                if (type.isEmpty())
+                if (type.isEmpty()) {
                     return newFixed(order);
-                else if ("markov".startsWith(type))
+                } else if ("markov".startsWith(type)) {
                     return newMarkov(order);
-                else if ("cond".startsWith(type))
+                } else if ("cond".startsWith(type)) {
                     return newCond(order);
-            } catch (NumberFormatException e) {
-            }
+                }
+            } catch (NumberFormatException e) {}
         }
-        throw new RuntimeException(String.format(
-                "Illegal QueryMode string '%s'", string));
+        throw new RuntimeException(
+            String.format("Illegal QueryMode string '%s'", string));
     }
 
     private static int posOfFirstNumber(String string) {
-        for (int i = 0; i != string.length(); ++i)
-            if (Character.isDigit(string.charAt(i)))
+        for (int i = 0; i != string.length(); ++i) {
+            if (Character.isDigit(string.charAt(i))) {
                 return i;
+            }
+        }
         return -1;
     }
 
@@ -96,8 +97,7 @@ public class QueryMode {
     private boolean withLengthFreq = false;
     private Integer order = null;
 
-    private QueryMode() {
-    }
+    private QueryMode() {}
 
     public QueryType getType() {
         return type;
@@ -130,19 +130,21 @@ public class QueryMode {
             default:
                 throw new SwitchCaseNotImplementedException();
         }
-        if (order != null)
+        if (order != null) {
             result.append(order);
+        }
         return result.toString();
     }
 
     public boolean equals(QueryMode other) {
-        if (other == this)
+        if (other == this) {
             return true;
-        else if (other == null || getClass() != other.getClass())
+        } else if (other == null || getClass() != other.getClass()) {
             return false;
+        }
 
         QueryMode o = other;
         return type.equals(o.type) && withLengthFreq == o.withLengthFreq
-                && ObjectUtils.equals(order, o.order);
+            && ObjectUtils.equals(order, o.order);
     }
 }

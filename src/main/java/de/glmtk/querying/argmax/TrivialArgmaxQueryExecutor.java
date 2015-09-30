@@ -33,8 +33,10 @@ import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction;
 import de.glmtk.util.CollectionUtils;
 import de.glmtk.util.StringUtils;
 
+
 public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
-    // TODO: ArgmaxComputation with this class tries out all possible arguments. A nice test case would be to check if those probabilities sum to one.
+    // TODO: ArgmaxComputation with this class tries out all possible arguments.
+    // A nice test case would be to check if those probabilities sum to one.
 
     private Estimator estimator;
     private WeightedSumEstimator weightedSumEstimator;
@@ -46,8 +48,9 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
                                       Cache randomAccessCache,
                                       Collection<String> vocab) {
         this.estimator = estimator;
-        if (estimator instanceof WeightedSumEstimator)
+        if (estimator instanceof WeightedSumEstimator) {
             weightedSumEstimator = (WeightedSumEstimator) estimator;
+        }
         this.randomAccessCache = randomAccessCache;
         this.vocab = vocab;
     }
@@ -67,37 +70,45 @@ public class TrivialArgmaxQueryExecutor implements ArgmaxQueryExecutor {
     public List<ArgmaxResult> queryArgmax(String history,
                                           String prefix,
                                           int numResults) {
-        if (numResults == 0)
+        if (numResults == 0) {
             return new ArrayList<>();
-        if (numResults < 0)
+        }
+        if (numResults < 0) {
             throw new IllegalArgumentException("numResults must be positive.");
+        }
 
         NGram hist = new NGram(StringUtils.split(history, ' '));
         WeightedSumFunction weightedSumFunction = null;
-        if (weightedSumEstimator != null)
-            weightedSumFunction = weightedSumEstimator.calcWeightedSumFunction(hist);
+        if (weightedSumEstimator != null) {
+            weightedSumFunction =
+                weightedSumEstimator.calcWeightedSumFunction(hist);
+        }
 
-        PriorityQueue<ArgmaxResult> queue = new PriorityQueue<>(numResults + 1,
-                ArgmaxResult.COMPARATOR);
+        PriorityQueue<ArgmaxResult> queue =
+            new PriorityQueue<>(numResults + 1, ArgmaxResult.COMPARATOR);
         for (String sequence : vocab) {
-            if (!sequence.startsWith(prefix))
+            if (!sequence.startsWith(prefix)) {
                 continue;
+            }
 
             NGram seq = new NGram(sequence);
 
             double prob;
-            if (weightedSumEstimator != null)
-                prob = weightedSumEstimator.probability(seq,
-                        weightedSumFunction);
-            else
+            if (weightedSumEstimator != null) {
+                prob =
+                    weightedSumEstimator.probability(seq, weightedSumFunction);
+            } else {
                 prob = estimator.probability(seq, hist);
+            }
 
-            if (prob == 0.0)
+            if (prob == 0.0) {
                 continue;
+            }
 
             queue.add(new ArgmaxResult(sequence, prob));
-            if (queue.size() > numResults)
+            if (queue.size() > numResults) {
                 queue.poll();
+            }
         }
 
         return CollectionUtils.drainQueueToList(queue);

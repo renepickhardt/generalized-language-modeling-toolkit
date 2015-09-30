@@ -7,6 +7,7 @@ import de.glmtk.common.Pattern;
 import de.glmtk.common.PatternElem;
 import de.glmtk.querying.estimator.weightedsum.WeightedSumFunction.Summand;
 
+
 public class WeightedSumFunction extends ArrayList<Summand> {
     private static final long serialVersionUID = -671750055618705155L;
 
@@ -49,15 +50,17 @@ public class WeightedSumFunction extends ArrayList<Summand> {
 
     public Pattern[] getPatterns() {
         Pattern[] patterns = new Pattern[size()];
-        for (int i = 0; i != size(); ++i)
+        for (int i = 0; i != size(); ++i) {
             patterns[i] = get(i).history.getPattern().concat(PatternElem.CNT);
+        }
         return patterns;
     }
 
     public NGram[] getHistories() {
         NGram[] histories = new NGram[size()];
-        for (int i = 0; i != size(); ++i)
+        for (int i = 0; i != size(); ++i) {
             histories[i] = get(i).history;
+        }
         return histories;
     }
 
@@ -65,9 +68,10 @@ public class WeightedSumFunction extends ArrayList<Summand> {
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append(getClass().getSimpleName()).append(" [\n");
-        for (Summand summand : this)
-            result.append(String.format("  %-20s %e%n", summand.history,
-                    summand.weight));
+        for (Summand summand : this) {
+            result.append(
+                String.format("  %-20s %e%n", summand.history, summand.weight));
+        }
         result.append("]");
         return result.toString();
     }

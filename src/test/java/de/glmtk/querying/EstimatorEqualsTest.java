@@ -71,6 +71,7 @@ import de.glmtk.testutil.TestCorporaTest;
 import de.glmtk.testutil.TestCorpus;
 import de.glmtk.util.NioUtils;
 
+
 /**
  * Test optimized estimator implementations using the slower ones. Test whether
  * two estimators return identical probabilities for all sequences from a test
@@ -87,8 +88,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
     private static final String PHASE_QUERYING = "Querying";
 
     private static TestCorpus testCorpus = TestCorpus.EN0008T;
-    private static Path testFile = Constants.TEST_RESSOURCES_DIR.resolve(
-            "en0008t.testing.5");
+    private static Path testFile =
+        Constants.TEST_RESSOURCES_DIR.resolve("en0008t.testing.5");
 
     private static Cache cache = null;
 
@@ -123,8 +124,9 @@ public class EstimatorEqualsTest extends TestCorporaTest {
 
     @BeforeClass
     public static void setUpCache() throws Exception {
-        if (cache != null)
+        if (cache != null) {
             return;
+        }
 
         CacheSpecification requiredCache = new CacheSpecification();
         for (Object[] params : data()) {
@@ -139,8 +141,8 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         Glmtk glmtk = testCorpus.getGlmtk();
         glmtk.count(requiredPatterns);
 
-        GlmtkPaths queryCache = glmtk.provideQueryCache(testFile,
-                requiredPatterns);
+        GlmtkPaths queryCache =
+            glmtk.provideQueryCache(testFile, requiredPatterns);
 
         cache = requiredCache.withProgress().build(queryCache);
     }
@@ -165,18 +167,18 @@ public class EstimatorEqualsTest extends TestCorporaTest {
         actual.setCache(cache);
 
         QueryMode queryMode = QueryMode.newSequence();
-        //        QueryMode queryMode = QueryMode.newCond(5);
-        QueryExecutor executorExpected = new QueryExecutor(paths, queryMode,
-                expected, 5);
-        QueryExecutor executorActual = new QueryExecutor(paths, queryMode,
-                actual, 5);
+        // QueryMode queryMode = QueryMode.newCond(5);
+        QueryExecutor executorExpected =
+            new QueryExecutor(paths, queryMode, expected, 5);
+        QueryExecutor executorActual =
+            new QueryExecutor(paths, queryMode, actual, 5);
 
         ProgressBar progressBar = new ProgressBar(PHASE_QUERYING,
-                NioUtils.countNumberOfLines(testFile));
+            NioUtils.countNumberOfLines(testFile));
 
         Logger.setTraceEnabled(false);
-        try (BufferedReader reader = Files.newBufferedReader(testFile,
-                Constants.CHARSET)) {
+        try (BufferedReader reader =
+            Files.newBufferedReader(testFile, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 double probExpected = Double.NaN, probActual = Double.NaN;
@@ -184,19 +186,22 @@ public class EstimatorEqualsTest extends TestCorporaTest {
                     probExpected = executorExpected.querySequence(line);
                     probActual = executorActual.querySequence(line);
                     if (Double.isNaN(probActual) || probActual < 0.0
-                            || probActual > 1.0 || Math.abs(probExpected
-                                    - probActual) > Math.abs(probExpected)
-                                            / 1e6)
+                        || probActual > 1.0
+                        || Math.abs(
+                            probExpected - probActual) > Math.abs(probExpected)
+                                / 1e6) {
                         throw new Exception("failAssert");
+                    }
                 } catch (Throwable t) {
                     Logger.setTraceEnabled(true);
                     executorExpected.querySequence(line);
                     executorActual.querySequence(line);
                     Logger.setTraceEnabled(false);
 
-                    if (t.getMessage().equals("failAssert"))
+                    if (t.getMessage().equals("failAssert")) {
                         fail(String.format("Expected <%e> but was <%e>.",
-                                probExpected, probActual));
+                            probExpected, probActual));
+                    }
 
                     throw t;
                 }

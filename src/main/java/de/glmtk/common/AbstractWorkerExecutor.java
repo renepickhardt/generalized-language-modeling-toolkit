@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -34,23 +34,26 @@ import de.glmtk.logging.Logger;
 import de.glmtk.output.ProgressBar;
 import de.glmtk.util.ThreadUtils;
 
+
 public abstract class AbstractWorkerExecutor<T> {
-    private static final Logger LOGGER = Logger.get(AbstractWorkerExecutor.class);
+    private static final Logger LOGGER =
+        Logger.get(AbstractWorkerExecutor.class);
 
     protected abstract class Worker implements Callable<Object> {
         @Override
         public Object call() throws Exception {
             LOGGER.debug("%s$%s started.",
-                    AbstractWorkerExecutor.this.getClass().getSimpleName(),
-                    getClass().getSimpleName());
+                AbstractWorkerExecutor.this.getClass().getSimpleName(),
+                getClass().getSimpleName());
 
             while (!queue.isEmpty()) {
                 T obj;
                 int objNo;
                 synchronized (queue) {
                     if ((obj = queue.poll(Constants.MAX_IDLE_TIME,
-                            TimeUnit.MILLISECONDS)) == null)
+                        TimeUnit.MILLISECONDS)) == null) {
                         continue;
+                    }
                     objNo = objectNo++;
                 }
 
@@ -62,8 +65,8 @@ public abstract class AbstractWorkerExecutor<T> {
             }
 
             LOGGER.debug("%s$%s finished.",
-                    AbstractWorkerExecutor.this.getClass().getSimpleName(),
-                    getClass().getSimpleName());
+                AbstractWorkerExecutor.this.getClass().getSimpleName(),
+                getClass().getSimpleName());
             return null;
         }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import de.glmtk.common.NGram;
 import de.glmtk.common.ProbMode;
 
+
 public class SequenceCalculator extends Calculator {
     /**
      * If {@link #probMode} = {@link ProbMode#COND}:<br>
@@ -46,15 +47,18 @@ public class SequenceCalculator extends Calculator {
             // build s
             s = new ArrayList<>(i + 1);
             s.add(h.get(h.size() - 1));
-            if (probMode == ProbMode.COND)
-                for (int j = 0; j != i; ++j)
+            if (probMode == ProbMode.COND) {
+                for (int j = 0; j != i; ++j) {
                     s.add(SKP_WORD);
+                }
+            }
 
             // build h
-            if (h.size() >= 1)
+            if (h.size() >= 1) {
                 h = new ArrayList<>(h.subList(0, h.size() - 1));
-            else
+            } else {
                 h = new ArrayList<>();
+            }
 
             queries.add(new SequenceAndHistory(new NGram(s), new NGram(h)));
         }

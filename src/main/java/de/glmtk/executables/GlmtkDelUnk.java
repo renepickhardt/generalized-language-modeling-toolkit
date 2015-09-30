@@ -18,6 +18,7 @@ import de.glmtk.logging.Logger;
 import de.glmtk.options.custom.CorpusOption;
 import de.glmtk.util.StringUtils;
 
+
 public class GlmtkDelUnk extends Executable {
     private static final Logger LOGGER = Logger.get(GlmtkDelUnk.class);
 
@@ -38,7 +39,7 @@ public class GlmtkDelUnk extends Executable {
     @Override
     protected void registerOptions() {
         optionCorpus = new CorpusOption("c", "corpus",
-                "Give corpus and maybe working directory.");
+            "Give corpus and maybe working directory.");
 
         commandLine.options(optionCorpus);
     }
@@ -57,8 +58,9 @@ public class GlmtkDelUnk extends Executable {
     protected void parseOptions(String[] args) throws Exception {
         super.parseOptions(args);
 
-        if (!optionCorpus.wasGiven())
+        if (!optionCorpus.wasGiven()) {
             throw new CliArgumentException("%s missing.", optionCorpus);
+        }
         corpus = optionCorpus.getCorpus();
         workingDir = optionCorpus.getWorkingDir();
     }
@@ -70,14 +72,15 @@ public class GlmtkDelUnk extends Executable {
         Glmtk glmtk = new Glmtk(config, corpus, workingDir);
 
         CacheSpecification chacheSpec = new CacheSpecification();
-        chacheSpec.withCounts(Patterns.getMany("1")).withCacheImplementation(
-                CacheImplementation.HASH_MAP).withProgress();
+        chacheSpec.withCounts(Patterns.getMany("1"))
+            .withCacheImplementation(CacheImplementation.HASH_MAP)
+            .withProgress();
         Cache cache = chacheSpec.build(glmtk.getPaths());
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                System.in, Constants.CHARSET));
-                OutputStreamWriter writer = new OutputStreamWriter(System.out,
-                        Constants.CHARSET)) {
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(System.in, Constants.CHARSET));
+             OutputStreamWriter writer =
+                 new OutputStreamWriter(System.out, Constants.CHARSET)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> words = StringUtils.split(line.trim(), ' ');
@@ -91,16 +94,17 @@ public class GlmtkDelUnk extends Executable {
                     }
                 }
 
-                if (allWordsSeen)
+                if (allWordsSeen) {
                     writer.append(line).append('\n');
+                }
                 writer.flush();
             }
         }
     }
 
     private void logFields() {
-        LOGGER.debug("%s %s", getExecutableName(), StringUtils.repeat("-",
-                80 - getExecutableName().length()));
+        LOGGER.debug("%s %s", getExecutableName(),
+            StringUtils.repeat("-", 80 - getExecutableName().length()));
         LOGGER.debug("Corpus:     %s", corpus);
         LOGGER.debug("WorkingDir: %s", workingDir);
     }

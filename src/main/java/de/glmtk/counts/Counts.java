@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -93,28 +93,32 @@ public class Counts {
 
     public void add(long count) {
         onePlusCount += count;
-        if (count == 1)
+        if (count == 1) {
             ++oneCount;
-        if (count == 2)
+        }
+        if (count == 2) {
             ++twoCount;
-        if (count >= 3)
+        }
+        if (count >= 3) {
             ++threePlusCount;
+        }
     }
 
     public void addOne(long count) {
         ++onePlusCount;
-        if (count == 1)
+        if (count == 1) {
             ++oneCount;
-        else if (count == 2)
+        } else if (count == 2) {
             ++twoCount;
-        else if (count >= 3)
+        } else if (count >= 3) {
             ++threePlusCount;
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("1+=%d, 1=%d, 2=%d, 3+=%d", onePlusCount,
-                oneCount, twoCount, threePlusCount);
+        return String.format("1+=%d, 1=%d, 2=%d, 3+=%d", onePlusCount, oneCount,
+            twoCount, threePlusCount);
     }
 
     /**
@@ -125,20 +129,22 @@ public class Counts {
      */
     @Override
     public boolean equals(Object other) {
-        if (this == other)
+        if (this == other) {
             return true;
-        else if (other == null || getClass() != other.getClass())
+        } else if (other == null || getClass() != other.getClass()) {
             return false;
+        }
 
         Counts o = (Counts) other;
-        if (onePlusCount != o.onePlusCount)
+        if (onePlusCount != o.onePlusCount) {
             return false;
-        else if (oneCount != o.oneCount)
+        } else if (oneCount != o.oneCount) {
             return false;
-        else if (twoCount != o.twoCount)
+        } else if (twoCount != o.twoCount) {
             return false;
-        else if (threePlusCount != o.threePlusCount)
+        } else if (threePlusCount != o.threePlusCount) {
             return false;
+        }
         return true;
     }
 

@@ -25,6 +25,7 @@ import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimat
 import de.glmtk.querying.estimator.fraction.FractionEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 
+
 public class ModKneserNeyDiscountEstimator extends DiscountEstimator {
     public ModKneserNeyDiscountEstimator(FractionEstimator fractionEstimator) {
         super(fractionEstimator);
@@ -35,13 +36,15 @@ public class ModKneserNeyDiscountEstimator extends DiscountEstimator {
                                   NGram history,
                                   int recDepth) {
         NGram fullSequence;
-        if (getFractionEstimator() instanceof MaximumLikelihoodEstimator)
+        if (getFractionEstimator() instanceof MaximumLikelihoodEstimator) {
             fullSequence = getFullSequence(sequence, history);
-        else if (getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator)
-            fullSequence = NGram.WSKP_NGRAM.concat(getFullSequence(sequence,
-                    history).convertSkpToWskp());
-        else
+        } else
+            if (getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator) {
+            fullSequence = NGram.WSKP_NGRAM
+                .concat(getFullSequence(sequence, history).convertSkpToWskp());
+        } else {
             throw new IllegalStateException();
+        }
         return cache.getDiscount(fullSequence);
     }
 }

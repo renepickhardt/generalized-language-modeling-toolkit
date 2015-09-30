@@ -20,6 +20,7 @@ import de.glmtk.output.ProgressBar;
 import de.glmtk.querying.estimator.Estimator;
 import de.glmtk.util.StringUtils;
 
+
 // TODO: optimize for test files that do not completely fit into memory, by quering chunks at a time.
 public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
     private static final Logger LOGGER = Logger.get(FileQueryExecutor.class);
@@ -49,9 +50,9 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
                                 Path inputFile,
                                 Path outputFile) throws Exception {
         println("Querying '%s' using mode %s with %s estimation...",
-                bold(inputFile), mode, estimator);
+            bold(inputFile), mode, estimator);
         LOGGER.info("Querying '%s' using mode %s with %s estimation...",
-                inputFile, mode, estimator);
+            inputFile, mode, estimator);
 
         progressBar = new ProgressBar(PHASE_QUERYING, PHASE_ASSEMBLING);
 
@@ -60,12 +61,13 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
         queryLines(inputFile);
         QueryStats stats = assembleFile(outputFile);
 
-        println("    Saved as '%s' under '%s'.",
-                bold(outputFile.getFileName()), outputFile.getParent());
+        println("    Saved as '%s' under '%s'.", bold(outputFile.getFileName()),
+            outputFile.getParent());
 
         List<String> statsLines = StringUtils.split(stats.toString(), '\n');
-        for (String statsLine : statsLines)
+        for (String statsLine : statsLines) {
             println("    " + statsLine);
+        }
 
         return stats;
     }
@@ -85,15 +87,17 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
         Files.deleteIfExists(outputFile);
 
         QueryStats stats = null;
-        try (BufferedWriter writer = Files.newBufferedWriter(outputFile,
-                Constants.CHARSET)) {
-            for (String line : resultingLines)
+        try (BufferedWriter writer =
+            Files.newBufferedWriter(outputFile, Constants.CHARSET)) {
+            for (String line : resultingLines) {
                 writer.append(line).append('\n');
+            }
 
             stats = executor.getResultingStats();
             List<String> statsLines = StringUtils.split(stats.toString(), '\n');
-            for (String statsLine : statsLines)
+            for (String statsLine : statsLines) {
                 writer.append("# ").append(statsLine).append('\n');
+            }
         }
 
         resultingLines = null; // Enable gc on memory
@@ -106,8 +110,9 @@ public class FileQueryExecutor extends AbstractWorkerExecutor<String> {
     @Override
     protected Collection<? extends Worker> createWorkers() {
         List<Worker> workers = new ArrayList<>();
-        for (int i = 0; i != config.getNumberOfThreads(); ++i)
+        for (int i = 0; i != config.getNumberOfThreads(); ++i) {
             workers.add(new Worker());
+        }
         return workers;
     }
 }

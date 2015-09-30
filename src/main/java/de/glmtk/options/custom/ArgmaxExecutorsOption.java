@@ -13,8 +13,10 @@ import com.google.common.collect.ImmutableList;
 import de.glmtk.options.Option;
 import de.glmtk.options.OptionException;
 
+
 public class ArgmaxExecutorsOption extends Option {
-    public static final String DEFAULT_ARGNAME = ArgmaxExecutorOption.DEFAULT_ARGNAME;
+    public static final String DEFAULT_ARGNAME =
+        ArgmaxExecutorOption.DEFAULT_ARGNAME;
 
     private Arg arg = new Arg(DEFAULT_ARGNAME, GREATER_ONE, EXPLANATION);
     private List<String> value = newArrayList();
@@ -45,11 +47,13 @@ public class ArgmaxExecutorsOption extends Option {
 
     @Override
     protected void parse() throws OptionException {
-        if (!given)
+        if (!given) {
             value = newArrayList();
+        }
 
-        for (String executorString : arg.values)
+        for (String executorString : arg.values) {
             value.add(parseArgmaxExecutor(executorString, this));
+        }
     }
 
     public List<String> getArgmaxExecutors() {

@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+
 public class IntegerOption extends Option {
     public static final String DEFAULT_ARGNAME = "INT";
 
@@ -21,17 +22,19 @@ public class IntegerOption extends Option {
         try {
             value = Integer.parseInt(integerString);
         } catch (NumberFormatException e) {
-            throw new OptionException("%s could not be parsed as an "
-                    + "integer: '%s'. Reason: %s.", option, integerString,
-                    e.getMessage());
+            throw new OptionException(
+                "%s could not be parsed as an " + "integer: '%s'. Reason: %s.",
+                option, integerString, e.getMessage());
         }
 
-        if (requirePositive && value < 0)
+        if (requirePositive && value < 0) {
             throw new OptionException(
-                    "%s must not be negative, got '%d' instead.", option, value);
+                "%s must not be negative, got '%d' instead.", option, value);
+        }
 
-        if (requireNotZero && value == 0)
+        if (requireNotZero && value == 0) {
             throw new OptionException("%s must not be zero.", option);
+        }
 
         return value;
     }
@@ -70,13 +73,15 @@ public class IntegerOption extends Option {
     }
 
     private void improveArgName() {
-        if (arg.name.equals(DEFAULT_ARGNAME))
-            if (requirePositive && requireNotZero)
+        if (arg.name.equals(DEFAULT_ARGNAME)) {
+            if (requirePositive && requireNotZero) {
                 arg.name += ">0";
-            else if (requirePositive)
+            } else if (requirePositive) {
                 arg.name += ">=0";
-            else if (requireNotZero)
+            } else if (requireNotZero) {
                 arg.name += "!=0";
+            }
+        }
     }
 
     public IntegerOption defaultValue(int defaultValue) {

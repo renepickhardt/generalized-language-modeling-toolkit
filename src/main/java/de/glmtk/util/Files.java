@@ -13,6 +13,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 
+
 public class Files {
     public static BufferedReader newBufferedReader(InputStream inputstream,
                                                    Charset charset) {
@@ -21,18 +22,20 @@ public class Files {
 
     public static BufferedWriter newBufferedWriter(OutputStream outputstream,
                                                    Charset charset) {
-        return new BufferedWriter(new OutputStreamWriter(outputstream, charset));
+        return new BufferedWriter(
+            new OutputStreamWriter(outputstream, charset));
     }
 
     public static LineNumberReader newLineNumberReader(Path path,
-                                                       Charset charset) throws IOException {
+                                                       Charset charset)
+                                                               throws IOException {
         return newLineNumberReader(path, charset, 8192);
     }
 
     public static LineNumberReader newLineNumberReader(Path path,
                                                        Charset charset,
                                                        int sz) throws IOException {
-        return new LineNumberReader(new InputStreamReader(newInputStream(path),
-                charset), sz);
+        return new LineNumberReader(
+            new InputStreamReader(newInputStream(path), charset), sz);
     }
 }

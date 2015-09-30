@@ -35,6 +35,7 @@ import de.glmtk.querying.estimator.discount.ModKneserNeyDiscountEstimator;
 import de.glmtk.querying.estimator.fraction.ContinuationMaximumLikelihoodEstimator;
 import de.glmtk.querying.estimator.fraction.MaximumLikelihoodEstimator;
 
+
 public class InterpolEstimator extends AbstractEstimator {
     protected DiscountEstimator alpha;
     protected Estimator beta;
@@ -68,22 +69,25 @@ public class InterpolEstimator extends AbstractEstimator {
     public void setCache(Cache cache) {
         super.setCache(cache);
         alpha.setCache(cache);
-        if (beta != this)
+        if (beta != this) {
             beta.setCache(cache);
+        }
     }
 
     @Override
     public void setProbMode(ProbMode probMode) {
         super.setProbMode(probMode);
         alpha.setProbMode(probMode);
-        if (beta != this)
+        if (beta != this) {
             beta.setProbMode(probMode);
+        }
     }
 
     public void setBackoffMode(BackoffMode backoffMode) {
-        if (backoffMode != BackoffMode.DEL && backoffMode != BackoffMode.SKP)
+        if (backoffMode != BackoffMode.DEL && backoffMode != BackoffMode.SKP) {
             throw new IllegalArgumentException(
-                    "Illegal BackoffMode for this class.");
+                "Illegal BackoffMode for this class.");
+        }
         this.backoffMode = backoffMode;
     }
 
@@ -93,13 +97,13 @@ public class InterpolEstimator extends AbstractEstimator {
                                      int recDepth) {
         if (history.isEmptyOrOnlySkips()) {
             logTrace(recDepth,
-                    "history empty, returning fraction estimator probability");
+                "history empty, returning fraction estimator probability");
             return alpha.getFractionEstimator().probability(sequence, history,
-                    recDepth);
+                recDepth);
         } else if (!alpha.isDefined(sequence, history, recDepth)) {
             logTrace(recDepth, "Alpha undefined, backing off.");
             return probability(sequence, history.backoff(backoffMode),
-                    recDepth);
+                recDepth);
         }
 
         NGram backoffHistory = history.backoffUntilSeen(backoffMode, cache);
@@ -136,30 +140,36 @@ public class InterpolEstimator extends AbstractEstimator {
             return 0;
         }
 
-        if (alpha instanceof ModKneserNeyDiscountEstimator)
-            if (alpha.getFractionEstimator() instanceof MaximumLikelihoodEstimator) {
+        if (alpha instanceof ModKneserNeyDiscountEstimator) {
+            if (alpha
+                .getFractionEstimator() instanceof MaximumLikelihoodEstimator) {
                 double gammaHigh = cache.getGammaHigh(history);
                 logTrace(recDepth, "gammaHigh = %e", gammaHigh);
                 return gammaHigh / denominator;
-            } else
-                if (alpha.getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator) {
+            } else if (alpha
+                .getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator) {
                 double gammaLow = cache.getGammaLow(history);
                 logTrace(recDepth, "gammaLow = %e", gammaLow);
                 return gammaLow / denominator;
-            } else
+            } else {
                 throw new IllegalStateException(format(
-                        "Fraction Estimator '%s' not implented in Interpolation Estimator.",
-                        alpha.getFractionEstimator().getClass()));
-
-        NGram gammaHistory;
-        if (alpha.getFractionEstimator() instanceof MaximumLikelihoodEstimator)
-            gammaHistory = history.concat(WSKP_WORD);
-        else if (alpha.getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator)
-            gammaHistory = SKP_NGRAM.concat(history.concat(WSKP_WORD));
-        else
-            throw new IllegalStateException(format(
                     "Fraction Estimator '%s' not implented in Interpolation Estimator.",
                     alpha.getFractionEstimator().getClass()));
+            }
+        }
+
+        NGram gammaHistory;
+        if (alpha
+            .getFractionEstimator() instanceof MaximumLikelihoodEstimator) {
+            gammaHistory = history.concat(WSKP_WORD);
+        } else if (alpha
+            .getFractionEstimator() instanceof ContinuationMaximumLikelihoodEstimator) {
+            gammaHistory = SKP_NGRAM.concat(history.concat(WSKP_WORD));
+        } else {
+            throw new IllegalStateException(format(
+                "Fraction Estimator '%s' not implented in Interpolation Estimator.",
+                alpha.getFractionEstimator().getClass()));
+        }
 
         logTrace(recDepth, "gammaHistory = %s", gammaHistory);
 

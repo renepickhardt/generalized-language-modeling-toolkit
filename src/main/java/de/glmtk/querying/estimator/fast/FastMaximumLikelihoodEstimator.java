@@ -4,6 +4,7 @@ import de.glmtk.common.BackoffMode;
 import de.glmtk.common.NGram;
 import de.glmtk.querying.estimator.AbstractEstimator;
 
+
 public class FastMaximumLikelihoodEstimator extends AbstractEstimator {
 
     @Override
@@ -11,9 +12,10 @@ public class FastMaximumLikelihoodEstimator extends AbstractEstimator {
                                      NGram history,
                                      int recDepth) {
         long denominator = cache.getCount(getFullHistory(sequence, history));
-        if (denominator == 0.0)
+        if (denominator == 0.0) {
             return probability(sequence, history.backoff(BackoffMode.DEL),
-                    recDepth);
+                recDepth);
+        }
 
         long numerator = cache.getCount(getFullSequence(sequence, history));
 

@@ -44,11 +44,10 @@ import de.glmtk.logging.Logger;
 import de.glmtk.util.completiontrie.CompletionTrie;
 import de.glmtk.util.completiontrie.CompletionTrieBuilder;
 
+
 public class CompletionTrieCache extends AbstractCache {
     private static enum TrieType {
-        COUNTS,
-        GAMMAS_HIGH,
-        GAMMAS_LOW
+        COUNTS, GAMMAS_HIGH, GAMMAS_LOW
     }
 
     private static final Logger LOGGER = Logger.get(CompletionTrieCache.class);
@@ -65,29 +64,34 @@ public class CompletionTrieCache extends AbstractCache {
     // Counts //////////////////////////////////////////////////////////////////
 
     @Override
-    /* package */void loadCounts(Collection<Pattern> patterns) throws IOException {
+            /* package */void loadCounts(Collection<Pattern> patterns)
+                    throws IOException {
         checkCountPatternsArg(patterns);
 
         LOGGER.debug("Loading counts for patterns: %s", patterns);
 
-        if (counts == null)
+        if (counts == null) {
             counts = new HashMap<>();
-
-        for (Pattern pattern : patterns) {
-            if (counts.containsKey(pattern))
-                continue;
-            ensureCompletionTrieMaterialized(pattern, TrieType.COUNTS);
-
-            if (progressBar != null)
-                progressBar.increase();
         }
 
         for (Pattern pattern : patterns) {
-            if (counts.containsKey(pattern))
+            if (counts.containsKey(pattern)) {
                 continue;
+            }
+            ensureCompletionTrieMaterialized(pattern, TrieType.COUNTS);
 
-            CompletionTrie completionTrie = loadCompletionTrieFromTrieFile(
-                    pattern, TrieType.COUNTS);
+            if (progressBar != null) {
+                progressBar.increase();
+            }
+        }
+
+        for (Pattern pattern : patterns) {
+            if (counts.containsKey(pattern)) {
+                continue;
+            }
+
+            CompletionTrie completionTrie =
+                loadCompletionTrieFromTrieFile(pattern, TrieType.COUNTS);
 
             counts.put(pattern, completionTrie);
         }
@@ -99,10 +103,10 @@ public class CompletionTrieCache extends AbstractCache {
         checkCountsLoaded();
 
         CompletionTrie completionTrie = counts.get(ngram.getPattern());
-        if (completionTrie == null)
+        if (completionTrie == null) {
             throw new IllegalStateException(String.format(
-                    "Counts with pattern '%s' not loaded.",
-                    ngram.getPattern()));
+                "Counts with pattern '%s' not loaded.", ngram.getPattern()));
+        }
 
         Long result = completionTrie.get(ngram.toString());
         return result == null ? 0L : result;
@@ -115,8 +119,9 @@ public class CompletionTrieCache extends AbstractCache {
     }
 
     private void checkCountsLoaded() {
-        if (counts == null)
+        if (counts == null) {
             throw new IllegalStateException("Counts not loaded.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -128,43 +133,50 @@ public class CompletionTrieCache extends AbstractCache {
      * long on a byte level, using {@link #longFromDouble(double)}.
      */
     @Override
-    /* package */void loadGammas(Collection<Pattern> patterns) throws IOException {
+            /* package */void loadGammas(Collection<Pattern> patterns)
+                    throws IOException {
         checkGammaPatternsArg(patterns);
 
         LOGGER.debug("Loading gammas for patterns: %s", patterns);
 
-        if (gammasHigh == null)
+        if (gammasHigh == null) {
             gammasHigh = new HashMap<>();
-        if (gammasLow == null)
+        }
+        if (gammasLow == null) {
             gammasLow = new HashMap<>();
+        }
 
         for (Pattern pattern : patterns) {
-            if (gammasHigh.containsKey(pattern) && gammasLow.containsKey(
-                    pattern))
+            if (gammasHigh.containsKey(pattern)
+                && gammasLow.containsKey(pattern)) {
                 continue;
+            }
 
             ensureCompletionTrieMaterialized(pattern, TrieType.GAMMAS_HIGH);
             ensureCompletionTrieMaterialized(pattern, TrieType.GAMMAS_LOW);
 
-            if (progressBar != null)
+            if (progressBar != null) {
                 progressBar.increase();
+            }
         }
 
         for (Pattern pattern : patterns) {
-            if (gammasHigh.containsKey(pattern))
+            if (gammasHigh.containsKey(pattern)) {
                 continue;
+            }
 
-            CompletionTrie completionTrie = loadCompletionTrieFromTrieFile(
-                    pattern, TrieType.GAMMAS_HIGH);
+            CompletionTrie completionTrie =
+                loadCompletionTrieFromTrieFile(pattern, TrieType.GAMMAS_HIGH);
             gammasHigh.put(pattern, completionTrie);
         }
 
         for (Pattern pattern : patterns) {
-            if (gammasLow.containsKey(pattern))
+            if (gammasLow.containsKey(pattern)) {
                 continue;
+            }
 
-            CompletionTrie completionTrie = loadCompletionTrieFromTrieFile(
-                    pattern, TrieType.GAMMAS_LOW);
+            CompletionTrie completionTrie =
+                loadCompletionTrieFromTrieFile(pattern, TrieType.GAMMAS_LOW);
             gammasLow.put(pattern, completionTrie);
         }
     }
@@ -180,10 +192,11 @@ public class CompletionTrieCache extends AbstractCache {
         checkGammasLoaded();
 
         CompletionTrie completionTrie = gammasHigh.get(ngram.getPattern());
-        if (completionTrie == null)
-            throw new IllegalStateException(format(
-                    "Higest order Gammas for pattern '%s' not loaded.",
+        if (completionTrie == null) {
+            throw new IllegalStateException(
+                format("Higest order Gammas for pattern '%s' not loaded.",
                     ngram.getPattern()));
+        }
 
         Long result = completionTrie.get(ngram.toString());
         return result == null ? 0.0 : doubleFromLong(result);
@@ -195,10 +208,11 @@ public class CompletionTrieCache extends AbstractCache {
         checkGammasLoaded();
 
         CompletionTrie completionTrie = gammasLow.get(ngram.getPattern());
-        if (completionTrie == null)
-            throw new IllegalStateException(format(
-                    "Lower orders Gammas for pattern '%s' not loaded.",
+        if (completionTrie == null) {
+            throw new IllegalStateException(
+                format("Lower orders Gammas for pattern '%s' not loaded.",
                     ngram.getPattern()));
+        }
 
         Long result = completionTrie.get(ngram.toString());
         return result == null ? 0.0 : doubleFromLong(result);
@@ -225,10 +239,12 @@ public class CompletionTrieCache extends AbstractCache {
     }
 
     private void checkGammasLoaded() {
-        if (gammasHigh == null)
+        if (gammasHigh == null) {
             throw new IllegalStateException("Highest order Gammas not loaded.");
-        if (gammasLow == null)
+        }
+        if (gammasLow == null) {
             throw new IllegalStateException("Lower orders Gamma not loaded.");
+        }
     }
 
     /**
@@ -254,7 +270,8 @@ public class CompletionTrieCache extends AbstractCache {
     // Helper //////////////////////////////////////////////////////////////////
 
     private void ensureCompletionTrieMaterialized(Pattern pattern,
-                                                  TrieType trieType) throws IOException {
+                                                  TrieType trieType)
+                                                          throws IOException {
         Path trieFile;
         switch (trieType) {
             case COUNTS:
@@ -273,20 +290,22 @@ public class CompletionTrieCache extends AbstractCache {
                 throw new SwitchCaseNotImplementedException();
         }
 
-        if (Files.exists(trieFile))
+        if (Files.exists(trieFile)) {
             return;
+        }
 
-        CompletionTrie completionTrie = loadCompletionTrieFromRawFile(pattern,
-                trieType);
+        CompletionTrie completionTrie =
+            loadCompletionTrieFromRawFile(pattern, trieType);
 
         createDirectories(paths.getTriesDir());
         write(completionTrie.getMemory(), trieFile.toFile());
     }
 
     private CompletionTrie loadCompletionTrieFromRawFile(Pattern pattern,
-                                                         TrieType trieType) throws IOException {
-        CompletionTrieBuilder completionTrieBuilder = new CompletionTrieBuilder(
-                true);
+                                                         TrieType trieType)
+                                                                 throws IOException {
+        CompletionTrieBuilder completionTrieBuilder =
+            new CompletionTrieBuilder(true);
 
         Path rawFile;
         switch (trieType) {
@@ -299,40 +318,41 @@ public class CompletionTrieCache extends AbstractCache {
                 break;
 
             case GAMMAS_LOW:
-                rawFile = paths.getPatternsFile(SKP_PATTERN.concat(
-                        pattern).concat(WSKP));
+                rawFile = paths
+                    .getPatternsFile(SKP_PATTERN.concat(pattern).concat(WSKP));
                 break;
 
             default:
                 throw new SwitchCaseNotImplementedException();
         }
 
-        try (CountsReader reader = new CountsReader(rawFile,
-                Constants.CHARSET)) {
+        try (CountsReader reader =
+            new CountsReader(rawFile, Constants.CHARSET)) {
             switch (trieType) {
                 case COUNTS:
-                    while (reader.readLine() != null)
+                    while (reader.readLine() != null) {
                         completionTrieBuilder.add(reader.getSequence(),
-                                reader.getCount());
+                            reader.getCount());
+                    }
                     break;
 
                 case GAMMAS_HIGH:
                     while (reader.readLine() != null) {
-                        String sequence = getGammaHighNGram(
-                                reader.getSequence());
+                        String sequence =
+                            getGammaHighNGram(reader.getSequence());
                         double gamma = calcGamma(pattern, reader.getCounts());
-                        completionTrieBuilder.add(sequence, longFromDouble(
-                                gamma));
+                        completionTrieBuilder.add(sequence,
+                            longFromDouble(gamma));
                     }
                     break;
 
                 case GAMMAS_LOW:
                     while (reader.readLine() != null) {
-                        String sequence = getGammaLowNGram(
-                                reader.getSequence());
+                        String sequence =
+                            getGammaLowNGram(reader.getSequence());
                         double gamma = calcGamma(pattern, reader.getCounts());
-                        completionTrieBuilder.add(sequence, longFromDouble(
-                                gamma));
+                        completionTrieBuilder.add(sequence,
+                            longFromDouble(gamma));
                     }
                     break;
 
@@ -351,7 +371,8 @@ public class CompletionTrieCache extends AbstractCache {
     }
 
     private CompletionTrie loadCompletionTrieFromTrieFile(Pattern pattern,
-                                                          TrieType trieType) throws IOException {
+                                                          TrieType trieType)
+                                                                  throws IOException {
         Path trieFile;
         switch (trieType) {
             case COUNTS:

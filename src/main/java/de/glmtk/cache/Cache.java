@@ -27,6 +27,7 @@ import de.glmtk.common.Pattern;
 import de.glmtk.counts.Discounts;
 import de.glmtk.counts.NGramTimes;
 
+
 public interface Cache {
     // Words ///////////////////////////////////////////////////////////////////
 

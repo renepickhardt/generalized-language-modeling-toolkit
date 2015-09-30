@@ -1,20 +1,20 @@
 /*
  * Generalized Language Modeling Toolkit (GLMTK)
- * 
+ *
  * Copyright (C) 2014-2015 Lukas Schmelzeisen
- * 
+ *
  * GLMTK is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
- * 
+ *
  * GLMTK is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with
  * GLMTK. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * See the AUTHORS file for contributors.
  */
 
@@ -62,13 +62,12 @@ import de.glmtk.logging.Logger;
 import de.glmtk.util.AbstractYamlParser;
 import de.glmtk.util.StringUtils;
 
+
 public class Status {
     private static final Logger LOGGER = Logger.get(Status.class);
 
     public static enum Training {
-        NONE,
-        UNTAGGED,
-        TAGGED;
+        NONE, UNTAGGED, TAGGED;
     }
 
     private static class Model {
@@ -117,8 +116,7 @@ public class Status {
         @Override
         public String toString() {
             return "{discounts=" + Boolean.toString(discounts) + ", alphas"
-                    + alphas.toString() + ", lambdas=" + lambdas.toString()
-                    + "}";
+                + alphas.toString() + ", lambdas=" + lambdas.toString() + "}";
         }
     }
 
@@ -153,17 +151,18 @@ public class Status {
         private class OrderedPropertyUtils extends PropertyUtils {
             @Override
             protected Set<Property> createPropertySet(Class<?> type,
-                                                      BeanAccess beanAccess) throws IntrospectionException {
+                                                      BeanAccess beanAccess)
+                                                              throws IntrospectionException {
                 Set<Property> result = new LinkedHashSet<>();
                 result.add(getProperty(type, "hash", BeanAccess.FIELD));
                 result.add(getProperty(type, "taggedHash", BeanAccess.FIELD));
                 result.add(getProperty(type, "training", BeanAccess.FIELD));
                 result.add(getProperty(type, "counted", BeanAccess.FIELD));
                 result.add(getProperty(type, "chunked", BeanAccess.FIELD));
-                result.add(getProperty(type, "ngramTimesCounted",
-                        BeanAccess.FIELD));
-                result.add(getProperty(type, "lengthDistribution",
-                        BeanAccess.FIELD));
+                result.add(
+                    getProperty(type, "ngramTimesCounted", BeanAccess.FIELD));
+                result.add(
+                    getProperty(type, "lengthDistribution", BeanAccess.FIELD));
                 result.add(getProperty(type, "models", BeanAccess.FIELD));
                 result.add(getProperty(type, "queryCaches", BeanAccess.FIELD));
                 return result;
@@ -181,9 +180,11 @@ public class Status {
             @Override
             public Node representData(Object data) {
                 Pattern pattern = (Pattern) data;
-                for (char c : pattern.toString().toCharArray())
-                    if (!Character.isDigit(c))
+                for (char c : pattern.toString().toCharArray()) {
+                    if (!Character.isDigit(c)) {
                         return representScalar(Tag.STR, data.toString());
+                    }
+                }
                 return representScalar(Tag.INT, data.toString());
             }
         }
@@ -234,10 +235,9 @@ public class Status {
         }
 
         private void parseStatus() {
-            Map<String, Boolean> keys = createValidKeysMap("hash",
-                    "taggedHash", "training", "counted", "chunked",
-                    "ngramTimesCounted", "lengthDistribution", "models",
-                    "queryCaches");
+            Map<String, Boolean> keys = createValidKeysMap("hash", "taggedHash",
+                "training", "counted", "chunked", "ngramTimesCounted",
+                "lengthDistribution", "models", "queryCaches");
 
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
@@ -260,12 +260,13 @@ public class Status {
                             training = Training.valueOf(trainingStr);
                         } catch (IllegalArgumentException e) {
                             List<String> possible = new ArrayList<>();
-                            for (Training training : Training.values())
+                            for (Training training : Training.values()) {
                                 possible.add(training.toString());
+                            }
                             throw newFileFormatException(
-                                    "Illegal training value: '%s'. Possible values: '%s'.",
-                                    trainingStr, StringUtils.join(possible,
-                                            "', '"));
+                                "Illegal training value: '%s'. Possible values: '%s'.",
+                                trainingStr,
+                                StringUtils.join(possible, "', '"));
                         }
                         break;
 
@@ -307,7 +308,7 @@ public class Status {
                 return Patterns.get(patternStr);
             } catch (IllegalArgumentException e) {
                 throw newFileFormatException("Illegal pattern: '%s'. %s",
-                        patternStr, e.getMessage());
+                    patternStr, e.getMessage());
             }
         }
 
@@ -330,10 +331,11 @@ public class Status {
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
                 Pattern pattern = parsePattern();
-                if (result.containsKey(pattern))
+                if (result.containsKey(pattern)) {
                     throw newFileFormatException(
-                            "Map contains pattern multiple times as key: '%s'.",
-                            pattern);
+                        "Map contains pattern multiple times as key: '%s'.",
+                        pattern);
+                }
                 nextEvent();
                 Set<String> scalars = parseSetScalar();
                 result.put(pattern, scalars);
@@ -348,9 +350,10 @@ public class Status {
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
                 String name = parseScalar();
-                if (models.containsKey(name))
+                if (models.containsKey(name)) {
                     throw newFileFormatException(
-                            "Model name occurs multiple time: '%s'.", name);
+                        "Model name occurs multiple time: '%s'.", name);
+                }
                 nextEvent();
                 Model model = parseModel();
                 models.put(name, model);
@@ -363,8 +366,8 @@ public class Status {
 
             Model result = new Model();
 
-            Map<String, Boolean> keys = createValidKeysMap("discounts",
-                    "alphas", "lambdas");
+            Map<String, Boolean> keys =
+                createValidKeysMap("discounts", "alphas", "lambdas");
 
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
@@ -400,10 +403,10 @@ public class Status {
             nextEvent();
             while (!event.is(ID.MappingEnd)) {
                 String name = parseScalar();
-                if (queryCaches.containsKey(name))
+                if (queryCaches.containsKey(name)) {
                     throw newFileFormatException(
-                            "QueryCache name occurs multiple times: '%s'.",
-                            name);
+                        "QueryCache name occurs multiple times: '%s'.", name);
+                }
                 nextEvent();
                 QueryCache queryCache = parseQueryCache();
                 queryCaches.put(name, queryCache);
@@ -465,8 +468,9 @@ public class Status {
         corpusTagged = Tagger.detectFileTagged(corpus);
 
         setVoidSettings();
-        if (Files.exists(file))
+        if (Files.exists(file)) {
             readStatusFromFile();
+        }
 
         writeStatusToFile();
     }
@@ -488,16 +492,18 @@ public class Status {
 
         String hash = hash(paths.getTrainingFile().toFile(), md5()).toString();
         if (training == Training.UNTAGGED) {
-            if (this.hash == null)
+            if (this.hash == null) {
                 this.hash = hash;
+            }
             if (this.hash.equals(hash)) {
                 writeStatusToFile();
                 return;
             }
             this.hash = hash;
         } else {
-            if (taggedHash == null)
+            if (taggedHash == null) {
                 taggedHash = hash;
+            }
             if (taggedHash.equals(hash)) {
                 writeStatusToFile();
                 return;
@@ -505,7 +511,8 @@ public class Status {
             taggedHash = hash;
         }
 
-        LOGGER.info("Setting training with different hash than last execution. Can't continue with state of last execution.");
+        LOGGER.info(
+            "Setting training with different hash than last execution. Can't continue with state of last execution.");
         setVoidSettings();
         writeStatusToFile();
     }
@@ -528,7 +535,8 @@ public class Status {
     }
 
     public synchronized void setChunksForPattern(Pattern pattern,
-                                                 Collection<String> chunks) throws IOException {
+                                                 Collection<String> chunks)
+                                                         throws IOException {
         boolean isAbsolute = pattern.isAbsolute();
         chunked.put(pattern, new TreeSet<>(chunks));
         chunked(isAbsolute).put(pattern, new TreeSet<>(chunks));
@@ -537,7 +545,8 @@ public class Status {
 
     public synchronized void performMergeForChunks(Pattern pattern,
                                                    Collection<String> mergedChunks,
-                                                   String mergeFile) throws IOException {
+                                                   String mergeFile)
+                                                           throws IOException {
         boolean isAbsolute = pattern.isAbsolute();
         Set<String> chunks = chunked.get(pattern);
         chunks.removeAll(mergedChunks);
@@ -591,12 +600,14 @@ public class Status {
 
     public synchronized boolean areDiscountsCalculated(String model) {
         Model m = models.get(model);
-        if (m == null)
+        if (m == null) {
             return false;
+        }
         return m.getDiscounts();
     }
 
-    public synchronized void setDiscountsCalculated(String model) throws IOException {
+    public synchronized void setDiscountsCalculated(String model)
+            throws IOException {
         Model m = models.get(model);
         if (m == null) {
             m = new Model();
@@ -608,8 +619,9 @@ public class Status {
 
     public synchronized Set<Pattern> getAlphas(String model) {
         Model m = models.get(model);
-        if (m == null)
+        if (m == null) {
             return new TreeSet<>();
+        }
         return m.getAlphas();
     }
 
@@ -626,8 +638,9 @@ public class Status {
 
     public synchronized Set<Pattern> getLambdas(String model) {
         Model m = models.get(model);
-        if (m == null)
+        if (m == null) {
             return new TreeSet<>();
+        }
         return m.getLambdas();
     }
 
@@ -644,14 +657,16 @@ public class Status {
 
     public synchronized Set<Pattern> getQueryCacheCounted(String queryCache) {
         QueryCache qc = queryCaches.get(queryCache);
-        if (qc == null)
+        if (qc == null) {
             return new TreeSet<>();
+        }
         Set<Pattern> patterns = qc.getCounted();
         return patterns != null ? patterns : new TreeSet<Pattern>();
     }
 
     public synchronized void addQueryCacheCounted(String model,
-                                                  Pattern pattern) throws IOException {
+                                                  Pattern pattern)
+                                                          throws IOException {
         QueryCache qc = queryCaches.get(model);
         if (qc == null) {
             qc = new QueryCache();
@@ -662,8 +677,8 @@ public class Status {
     }
 
     public synchronized void logStatus() {
-        LOGGER.debug("Status %s", StringUtils.repeat("-",
-                80 - "Status ".length()));
+        LOGGER.debug("Status %s",
+            StringUtils.repeat("-", 80 - "Status ".length()));
         LOGGER.debug("hash                         = %s", hash);
         LOGGER.debug("taggedHash                   = %s", taggedHash);
         LOGGER.debug("training                     = %s", training);
@@ -695,18 +710,20 @@ public class Status {
 
     private void checkWithFileSystem() {
         checkCounted("counting", counted, paths.getAbsoluteDir(),
-                paths.getContinuationDir());
+            paths.getContinuationDir());
         checkChunked("absolute chunking", absoluteChunked,
-                paths.getAbsoluteChunkedDir());
+            paths.getAbsoluteChunkedDir());
         checkChunked("continuation chunking", continuationChunked,
-                paths.getContinuationChunkedDir());
-        if (ngramTimesCounted && !Files.exists(paths.getNGramTimesFile()))
+            paths.getContinuationChunkedDir());
+        if (ngramTimesCounted && !Files.exists(paths.getNGramTimesFile())) {
             throw new WrongStatusException("ngram times counting",
-                    paths.getNGramTimesFile());
+                paths.getNGramTimesFile());
+        }
         if (lengthDistribution
-                && !Files.exists(paths.getLengthDistributionFile()))
+            && !Files.exists(paths.getLengthDistributionFile())) {
             throw new WrongStatusException("length distribution calculating",
-                    paths.getLengthDistributionFile());
+                paths.getLengthDistributionFile());
+        }
         for (Entry<String, QueryCache> entry : queryCaches.entrySet()) {
             String name = entry.getKey();
             QueryCache queryCache = entry.getValue();
@@ -714,8 +731,8 @@ public class Status {
             GlmtkPaths queryCachePaths = paths.newQueryCache(name);
 
             checkCounted("queryCache " + name + " counting",
-                    queryCache.getCounted(), queryCachePaths.getAbsoluteDir(),
-                    queryCachePaths.getContinuationDir());
+                queryCache.getCounted(), queryCachePaths.getAbsoluteDir(),
+                queryCachePaths.getContinuationDir());
         }
     }
 
@@ -724,13 +741,13 @@ public class Status {
                               Path absoluteDir,
                               Path continuationDir) {
         for (Pattern pattern : counted) {
-            Path countedDir = pattern.isAbsolute()
-                    ? absoluteDir
-                    : continuationDir;
+            Path countedDir =
+                pattern.isAbsolute() ? absoluteDir : continuationDir;
             Path patternFile = countedDir.resolve(pattern.toString());
-            if (!Files.exists(patternFile))
+            if (!Files.exists(patternFile)) {
                 throw new WrongStatusException(name + " pattern " + pattern,
-                        patternFile);
+                    patternFile);
+            }
         }
     }
 
@@ -744,9 +761,10 @@ public class Status {
             Path patternDir = chunkedDir.resolve(pattern.toString());
             for (String chunk : chunks) {
                 Path chunkFile = patternDir.resolve(chunk);
-                if (!Files.exists(chunkFile))
-                    throw new WrongStatusException(
-                            name + " pattern " + pattern, chunkFile);
+                if (!Files.exists(chunkFile)) {
+                    throw new WrongStatusException(name + " pattern " + pattern,
+                        chunkFile);
+                }
             }
         }
     }
@@ -756,43 +774,52 @@ public class Status {
 
         new StatusParser(file).run();
 
-        for (Pattern pattern : counted)
-            if (pattern.isAbsolute())
+        for (Pattern pattern : counted) {
+            if (pattern.isAbsolute()) {
                 absoluteCounted.add(pattern);
-            else
+            } else {
                 continuationCounted.add(pattern);
+            }
+        }
 
         for (Entry<Pattern, Set<String>> entry : chunked.entrySet()) {
             Pattern pattern = entry.getKey();
             Set<String> chunks = new TreeSet<>(entry.getValue());
-            if (pattern.isAbsolute())
+            if (pattern.isAbsolute()) {
                 absoluteChunked.put(pattern, chunks);
-            else
+            } else {
                 continuationChunked.put(pattern, chunks);
+            }
         }
 
-        if (!validCorpusHash())
+        if (!validCorpusHash()) {
             setVoidSettings();
+        }
     }
 
     private boolean validCorpusHash() throws IOException {
         if (!corpusTagged) {
             String corpusHash = hash(corpus.toFile(), md5()).toString();
-            if (hash == null)
+            if (hash == null) {
                 hash = corpusHash;
-            if (hash.equals(corpusHash))
+            }
+            if (hash.equals(corpusHash)) {
                 return true;
+            }
             hash = corpusHash;
         } else {
             String taggedCorpusHash = hash(corpus.toFile(), md5()).toString();
-            if (taggedHash == null)
+            if (taggedHash == null) {
                 taggedHash = taggedCorpusHash;
-            if (taggedHash.equals(taggedCorpusHash))
+            }
+            if (taggedHash.equals(taggedCorpusHash)) {
                 return true;
+            }
             taggedHash = taggedCorpusHash;
         }
 
-        LOGGER.info("Executing with corpus with different hash than last execution. Can't continue with state of last execution.");
+        LOGGER.info(
+            "Executing with corpus with different hash than last execution. Can't continue with state of last execution.");
         return false;
     }
 
@@ -808,8 +835,8 @@ public class Status {
         dumperOptions.setDefaultFlowStyle(FlowStyle.BLOCK);
         Yaml yaml = new Yaml(new StatusRepresenter(), dumperOptions);
 
-        try (BufferedWriter writer = Files.newBufferedWriter(tmpFile,
-                Constants.CHARSET)) {
+        try (BufferedWriter writer =
+            Files.newBufferedWriter(tmpFile, Constants.CHARSET)) {
             yaml.dump(this, writer);
         }
 

@@ -24,9 +24,9 @@ import java.io.PrintStream;
 import java.util.Map;
 import java.util.Map.Entry;
 
+
 public class PrintUtils {
-    private PrintUtils() {
-    }
+    private PrintUtils() {}
 
     public static <K, V> void printMap(Map<K, V> map,
                                        String keyValueDelim) {
@@ -50,18 +50,22 @@ public class PrintUtils {
                                        String keyValueDelim,
                                        boolean align) {
         int maxKeyLength = 0;
-        if (align)
-            for (K key : map.keySet())
-                if (key.toString().length() >= maxKeyLength)
+        if (align) {
+            for (K key : map.keySet()) {
+                if (key.toString().length() >= maxKeyLength) {
                     maxKeyLength = key.toString().length();
+                }
+            }
+        }
 
         StringBuilder result = new StringBuilder();
         for (Entry<K, V> entry : map.entrySet()) {
-            if (align)
+            if (align) {
                 result.append(String.format("%-" + maxKeyLength + "s",
-                        entry.getKey().toString()));
-            else
+                    entry.getKey().toString()));
+            } else {
                 result.append(entry.getKey().toString());
+            }
             result.append(keyValueDelim);
             result.append(entry.getValue().toString());
             result.append('\n');
@@ -80,11 +84,12 @@ public class PrintUtils {
     public static String humanReadableByteCount(long bytes,
                                                 boolean si) {
         int unit = si ? 1000 : 1024;
-        if (bytes < unit)
+        if (bytes < unit) {
             return bytes + " B";
+        }
         int exp = (int) (Math.log(bytes) / Math.log(unit));
-        String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1)
-                + (si ? "" : "i");
+        String pre =
+            (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
